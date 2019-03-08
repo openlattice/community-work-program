@@ -1,6 +1,8 @@
 import React from 'react';
 import styled from 'styled-components';
 
+import DashboardContent from './DashboardContent';
+
 const DashboardWrapper = styled.div`
   display: flex;
   flex: 1 1 auto;
@@ -16,7 +18,9 @@ const DashboardInnerWrapper = styled.div`
 
 const Dashboard = () => (
   <DashboardWrapper>
-    <DashboardInnerWrapper />
+    <DashboardInnerWrapper>
+      <DashboardContent />
+    </DashboardInnerWrapper>
   </DashboardWrapper>
 );
 
