@@ -74,8 +74,8 @@ class AppContainer extends Component<Props> {
     return (
       <Switch>
         <Route exact strict path={Routes.DASHBOARD} />
-        <Route path="/tab1" render={() => null} />
-        <Route path="/tab2" render={() => null} />
+        <Route path={Routes.PARTICIPANTS} render={() => null} />
+        <Route path={Routes.WORKSITES} render={() => null} />
         <Redirect to={Routes.DASHBOARD} />
       </Switch>
     );
