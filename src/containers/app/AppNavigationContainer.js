@@ -64,9 +64,7 @@ class AppNavigationContainer extends Component<Props> {
 
     return (
       <NavigationContentWrapper>
-        <NavLinkWrapper to={Routes.HOME}>
-          Home
-        </NavLinkWrapper>
+        <NavLinkWrapper to={Routes.DASHBOARD}>Dashboard</NavLinkWrapper>
         <NavLinkWrapper to="/tab1">
           Tab 1
         </NavLinkWrapper>
