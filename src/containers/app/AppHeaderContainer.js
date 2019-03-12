@@ -5,7 +5,7 @@
 import React, { Component } from 'react';
 
 import styled from 'styled-components';
-import { AuthActions } from 'lattice-auth';
+import { AuthActions, AuthUtils } from 'lattice-auth';
 import { Button, Colors } from 'lattice-ui-kit';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
@@ -99,6 +99,11 @@ const LogoutButton = styled(Button)`
   padding: 6px 29px;
 `;
 
+const DisplayName = styled.span`
+  color: #2e2e34;
+  font-size: 12px;
+`;
+
 type Props = {
   actions :{
     logout :() => void;
@@ -107,12 +112,21 @@ type Props = {
 
 class AppHeaderContainer extends Component<Props> {
 
+  renderDisplayName = () => {
+    const userInfo = AuthUtils.getUserInfo();
+
+    if (userInfo.email && userInfo.email.length > 0) {
+      return <DisplayName>{userInfo.email}</DisplayName>;
+    }
+    return null;
+  };
+
   renderLeftSideContent = () => (
     <LeftSideContentWrapper>
       <LogoTitleWrapperLink to={Routes.ROOT}>
         <AppLogoIcon />
         <AppTitle>
-          OpenLattice React App
+          Community Work Program
         </AppTitle>
       </LogoTitleWrapperLink>
       <AppNavigationContainer />
@@ -124,6 +138,7 @@ class AppHeaderContainer extends Component<Props> {
     const { actions } = this.props;
     return (
       <RightSideContentWrapper>
+        { this.renderDisplayName() }
         <LogoutButton onClick={actions.logout}>
           Log Out
         </LogoutButton>

@@ -3,6 +3,7 @@
  */
 
 export const ROOT :string = '/';
-
-export const HOME :string = '/home';
 export const LOGIN :string = '/login';
+export const DASHBOARD :string = '/dashboard';
+export const PARTICIPANTS :string = '/participants';
+export const WORKSITES :string = '/worksites';
