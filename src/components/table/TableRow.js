@@ -79,15 +79,15 @@ const TableRow = ({
       </StyledPersonPhoto>
     ) : <PersonPicture small={small} src={defaultUserIcon} alt="" />;
 
-  /* DUMMY DATA */
-  const name = formatValue('Tommy Morrison');
-  const age = formatNumericalValue(35);
-  const startDate = formatDate('08/02/2018', 'MM/DD/YYYY');
-  const sentenceDate = formatDate('08/09/2018', 'MM/DD/YYYY');
-  const sentenceEndDate = formatDate('11/10/2018', 'MM/DD/YYYY');
-  const hoursServed = formatValue('62h / 100h');
-  const numberOfWarnings = formatNumericalValue(0);
-  const numberOfViolations = formatNumericalValue(0);
+  /* BASED ON DUMMY DATA */
+  const name = formatValue(person.get('name'));
+  const age = formatNumericalValue(person.get('age'));
+  const startDate = formatDate(person.get('startDate'), 'MM/DD/YYYY');
+  const sentenceDate = formatDate(person.get('sentenceDate'), 'MM/DD/YYYY');
+  const sentenceEndDate = formatDate(person.get('sentenceEndDate'), 'MM/DD/YYYY');
+  const hoursServed = formatValue(person.get('hoursServed'));
+  const numberOfWarnings = formatNumericalValue(person.get('numberOfWarnings'));
+  const numberOfViolations = formatNumericalValue(person.get('numberOfViolations'));
 
   return (
     <Row

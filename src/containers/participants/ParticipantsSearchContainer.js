@@ -51,9 +51,31 @@ const dropdowns :List = List().withMutations((list :List) => {
 });
 
 /* DUMMY DATA */
+const person = Map().withMutations((map :Map) => {
+  map.set('name', 'Tommy Morrison');
+  map.set('age', 25);
+  map.set('startDate', '08/02/2018');
+  map.set('sentenceDate', '08/09/2018');
+  map.set('sentenceEndDate', '11/10/2018');
+  map.set('hoursServed', '62h / 100h');
+  map.set('numberOfWarnings', 0);
+  map.set('numberOfViolations', 0);
+});
+
+const anotherPerson = Map().withMutations((map :Map) => {
+  map.set('name', 'Mabel Garrett');
+  map.set('age', 19);
+  map.set('startDate', '08/02/2018');
+  map.set('sentenceDate', '08/06/2018');
+  map.set('sentenceEndDate', '12/31/2018');
+  map.set('hoursServed', '24h / 100h');
+  map.set('numberOfWarnings', 1);
+  map.set('numberOfViolations', 0);
+});
+
 const people = List([
-  Map(),
-  Map(),
+  person,
+  anotherPerson,
 ]).asImmutable();
 
 /*
@@ -85,8 +107,9 @@ class ParticipantsSearchContainer extends Component<Props> {
           <ParticipantsTable
               handleSelect={this.handleOnSelectPerson}
               people={people}
-              totalParticipants={people.count()}
-              small />
+              selectedPersonId=""
+              small
+              totalParticipants={people.count()} />
         </ParticipantSearchInnerWrapper>
       </ParticipantSearchOuterWrapper>
     );
