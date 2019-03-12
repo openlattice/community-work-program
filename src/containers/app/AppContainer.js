@@ -11,9 +11,9 @@ import { Redirect, Route, Switch } from 'react-router-dom';
 
 import AppHeaderContainer from './AppHeaderContainer';
 import Spinner from '../../components/spinner/Spinner';
-import Dashboard from '../../components/dashboard/Dashboard';
+import Dashboard from '../dashboard/Dashboard';
 import ParticipantsSearchContainer from '../participants/ParticipantsSearchContainer';
-import Worksites from '../../components/worksites/Worksites';
+import Worksites from '../worksites/Worksites';
 import * as AppActions from './AppActions';
 import * as Routes from '../../core/router/Routes';
 import {
