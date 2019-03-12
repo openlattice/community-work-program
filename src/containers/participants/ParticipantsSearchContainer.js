@@ -5,6 +5,7 @@ import { List, Map } from 'immutable';
 
 import ParticipantsTable from '../../components/table/Table';
 
+import { PARTICIPANT_PROFILE } from '../../core/router/Routes';
 import { OL } from '../../utils/constants/Colors';
 import {
   APP_CONTENT_PADDING,
@@ -45,16 +46,32 @@ const people = List([
   Map(),
 ]).asImmutable();
 
+/*
+ * Props
+ */
+
 type Props = {
+  history :string[],
 };
 
+/*
+ * React component
+ */
+
 class ParticipantsSearchContainer extends Component<Props> {
+
+  handleOnSelectPerson = (person :Map, entityKeyId :string, personId :string) => {
+    const { history } = this.props;
+    history.push(PARTICIPANT_PROFILE.replace(':subjectId', personId));
+  }
+
   render() {
     return (
       <ParticipantSearchOuterWrapper>
         <ParticipantSearchInnerWrapper>
           <ParticipantsHeader>Participants</ParticipantsHeader>
           <ParticipantsTable
+              handleSelect={this.handleOnSelectPerson}
               people={people}
               totalParticipants={people.count()}
               small />
