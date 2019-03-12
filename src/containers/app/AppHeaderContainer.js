@@ -112,10 +112,13 @@ type Props = {
 
 class AppHeaderContainer extends Component<Props> {
 
-  getDisplayName = () => {
-
+  renderDisplayName = () => {
     const userInfo = AuthUtils.getUserInfo();
-    return (userInfo.email && userInfo.email.length > 0) ? userInfo.email : '';
+
+    if (userInfo.email && userInfo.email.length > 0) {
+      return <DisplayName>{userInfo.email}</DisplayName>;
+    }
+    return null;
   };
 
   renderLeftSideContent = () => (
@@ -135,9 +138,7 @@ class AppHeaderContainer extends Component<Props> {
     const { actions } = this.props;
     return (
       <RightSideContentWrapper>
-        <DisplayName>
-          {this.getDisplayName()}
-        </DisplayName>
+        { this.renderDisplayName() }
         <LogoutButton onClick={actions.logout}>
           Log Out
         </LogoutButton>
