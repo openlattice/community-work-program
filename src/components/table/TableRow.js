@@ -18,7 +18,7 @@ const Cell = styled.td`
   padding: 7px 0;
   font-family: 'Open Sans', sans-serif;
   font-size: ${props => (props.small ? '12' : '14')}px;
-  text-align: center;
+  text-align: left;
   color: ${OL.GREY02};
 `;
 const StyledPersonPhoto = styled(PersonPhoto)`
@@ -51,7 +51,6 @@ const Row = styled.tr`
   &:active {
     background-color: ${OL.PURPLE06};
   }
-  background-color: ${props => (props.active ? OL.PURPLE06 : 'none')};
 `;
 
 type Props = {

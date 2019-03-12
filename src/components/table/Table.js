@@ -45,6 +45,7 @@ const HeaderElement = styled.th`
   text-transform: uppercase;
   padding: 12px 0;
   border-bottom: 1px solid ${OL.BLACK};
+  text-align: left;
 `;
 
 const Headers = () => (

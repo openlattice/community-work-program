@@ -6,16 +6,30 @@ import { List, Map } from 'immutable';
 import ParticipantsTable from '../../components/table/Table';
 
 import { OL } from '../../utils/constants/Colors';
+import {
+  APP_CONTENT_PADDING,
+  SEARCH_CONTAINER_WIDTH,
+} from '../../core/style/Sizes';
+
+/*
+ * styled components
+ */
 
 const ParticipantSearchOuterWrapper = styled.div`
   display: flex;
-  flex: 1 1 auto;
   justify-content: center;
+  flex-direction: column;
 `;
 
 const ParticipantSearchInnerWrapper = styled.div`
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  padding: ${APP_CONTENT_PADDING}px;
   margin-top: 30px;
-  width: 1080px;
+  width: ${SEARCH_CONTAINER_WIDTH}px;
+  position: relative;
+  align-self: center;
 `;
 
 const ParticipantsHeader = styled.div`
