@@ -33,6 +33,9 @@ const InnerSelectWrapper = styled.div`
   position: relative;
   width: 100%;
   height: 100%;
+  &:hover {
+    cursor: pointer;
+  }
 `;
 
 const Select = styled.div`
@@ -221,7 +224,8 @@ class StyledSelect extends Component<Props, State> {
     } = this.props;
     return (
       <SelectWrapper isVisibleDataTable={isVisibleDataTable}>
-        <InnerSelectWrapper>
+        <InnerSelectWrapper
+            onClick={e => (isVisibleDataTable ? this.hideDataTable() : this.showDataTable(e))}>
           <Select>
             {title}
             <SelectCategory>{selectedLabel}</SelectCategory>
