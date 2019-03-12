@@ -1,0 +1,51 @@
+// @flow
+import React from 'react';
+import styled from 'styled-components';
+import { List, Map } from 'immutable';
+
+import StyledInput from '../controls/StyledInput';
+import StyledSelect from '../controls/StyledSelect';
+import searchIcon from '../../assets/svg/search-icon.svg';
+
+import { OL } from '../../utils/constants/Colors';
+
+const SearchBarWrapper = styled.div`
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  width: 100%;
+  height: 50px;
+  border-bottom: 1px solid ${OL.GREY11};
+  background-color: ${OL.WHITE};
+  padding: 0 20px;
+`;
+
+const FormattedInput = styled(StyledInput)`
+  width: 250px;
+  margin: 10px;
+  padding: 0 20px;
+  height: 35px;
+`;
+
+type Props = {
+  dropdowns :List;
+};
+
+const SearchBar = ({ dropdowns } :Props) => (
+  <SearchBarWrapper>
+    <FormattedInput
+        icon={searchIcon}
+        placeholder="Search name" />
+    {
+      dropdowns.map((dropdownMap :Map) => (
+        <StyledSelect
+            key={dropdownMap.get('title')}
+            onSelect={() => {}}
+            options={dropdownMap.get('enums')}
+            title={dropdownMap.get('title')} />
+      ))
+    }
+  </SearchBarWrapper>
+);
+
+export default SearchBar;
