@@ -3,12 +3,12 @@ import React from 'react';
 import styled from 'styled-components';
 import { List, Map } from 'immutable';
 
-import StyledSelect from '../controls/StyledSelect';
+import StyledSelect from './StyledSelect';
 import SearchContainer from '../../containers/search/SearchContainer';
 
 import { OL } from '../../utils/constants/Colors';
 
-const SearchBarWrapper = styled.div`
+const ToolBarWrapper = styled.div`
   display: flex;
   justify-content: flex-start;
   align-items: center;
@@ -24,8 +24,8 @@ type Props = {
   search :(input :string) => void;
 };
 
-const SearchBar = ({ dropdowns, search } :Props) => (
-  <SearchBarWrapper>
+const ToolBar = ({ dropdowns, search } :Props) => (
+  <ToolBarWrapper>
     <SearchContainer
         search={search} />
     {
@@ -37,7 +37,7 @@ const SearchBar = ({ dropdowns, search } :Props) => (
             title={dropdownMap.get('title')} />
       ))
     }
-  </SearchBarWrapper>
+  </ToolBarWrapper>
 );
 
-export default SearchBar;
+export default ToolBar;

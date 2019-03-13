@@ -4,7 +4,7 @@ import styled from 'styled-components';
 import { List, Map } from 'immutable';
 
 import ParticipantsTable from '../../components/table/Table';
-import SearchBar from '../../components/search/SearchBar';
+import ToolBar from '../../components/controls/ToolBar';
 
 import { sortDropdown } from './ParticipantsConstants';
 import { PARTICIPANT_PROFILE } from '../../core/router/Routes';
@@ -131,7 +131,7 @@ class ParticipantsSearchContainer extends Component<Props, State> {
     const peopleToRender = searchedPeople.count() === 0 ? people : searchedPeople;
     return (
       <ParticipantSearchOuterWrapper>
-        <SearchBar
+        <ToolBar
             dropdowns={dropdowns}
             search={this.searchParticipantList} />
         <ParticipantSearchInnerWrapper>
