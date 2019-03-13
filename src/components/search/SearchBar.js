@@ -3,9 +3,8 @@ import React from 'react';
 import styled from 'styled-components';
 import { List, Map } from 'immutable';
 
-import StyledInput from '../controls/StyledInput';
 import StyledSelect from '../controls/StyledSelect';
-import searchIcon from '../../assets/svg/search-icon.svg';
+import SearchContainer from '../../containers/search/SearchContainer';
 
 import { OL } from '../../utils/constants/Colors';
 
@@ -20,22 +19,15 @@ const SearchBarWrapper = styled.div`
   padding: 0 20px;
 `;
 
-const FormattedInput = styled(StyledInput)`
-  width: 250px;
-  margin: 10px;
-  padding: 0 20px;
-  height: 35px;
-`;
-
 type Props = {
   dropdowns :List;
+  search :(input :string) => void;
 };
 
-const SearchBar = ({ dropdowns } :Props) => (
+const SearchBar = ({ dropdowns, search } :Props) => (
   <SearchBarWrapper>
-    <FormattedInput
-        icon={searchIcon}
-        placeholder="Search name" />
+    <SearchContainer
+        search={search} />
     {
       dropdowns.map((dropdownMap :Map) => (
         <StyledSelect

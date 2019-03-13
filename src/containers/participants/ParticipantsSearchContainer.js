@@ -86,27 +86,59 @@ type Props = {
   history :string[],
 };
 
+type State = {
+  searchedPeople :List;
+};
+
 /*
  * React component
  */
 
-class ParticipantsSearchContainer extends Component<Props> {
+class ParticipantsSearchContainer extends Component<Props, State> {
+
+  constructor(props :Props) {
+    super(props);
+
+    this.state = {
+      searchedPeople: List(),
+    };
+  }
 
   handleOnSelectPerson = (person :Map, entityKeyId :string, personId :string) => {
     const { history } = this.props;
     history.push(PARTICIPANT_PROFILE.replace(':subjectId', personId));
   }
 
+  searchParticipantList = (input :string) => {
+    const matches = people.filter((p) => {
+      const fullName = p.get('name').trim().toLowerCase()
+      const firstName = p.get('name').split(' ')[0].trim().toLowerCase();
+      const lastName = p.get('name').split(' ')[1].trim().toLowerCase();
+      const trimmedInput = input.trim().toLowerCase();
+
+      const match = firstName.includes(trimmedInput) || lastName.includes(trimmedInput)
+        || fullName.includes(trimmedInput);
+
+      return match;
+    });
+
+    this.setState({ searchedPeople: matches });
+
+  }
+
   render() {
+    const { searchedPeople } = this.state;
+    const peopleToRender = searchedPeople.count() === 0 ? people : searchedPeople;
     return (
       <ParticipantSearchOuterWrapper>
         <SearchBar
-            dropdowns={dropdowns} />
+            dropdowns={dropdowns}
+            search={this.searchParticipantList} />
         <ParticipantSearchInnerWrapper>
           <ParticipantsHeader>Participants</ParticipantsHeader>
           <ParticipantsTable
               handleSelect={this.handleOnSelectPerson}
-              people={people}
+              people={peopleToRender}
               selectedPersonId=""
               small
               totalParticipants={people.count()} />
