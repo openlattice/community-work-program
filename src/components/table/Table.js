@@ -85,18 +85,18 @@ const ParticipantsTable = ({
       <tbody>
         <Headers />
         {
-          people.map(((person) => {
+          people.map((person :Map, index :number) => {
             const personId = person.getIn([OPENLATTICE_ID_FQN, 0], '');
             const selected = personId === selectedPersonId;
             return (
               <TableRow
-                  key={personId}
+                  key={`${personId}-${index}`}
                   handleSelect={handleSelect}
                   person={person}
                   selected={selected}
                   small={small} />
             );
-          }))
+          })
         }
       </tbody>
     </Table>
