@@ -7,12 +7,14 @@ import { AuthReducer } from 'lattice-auth';
 import { combineReducers } from 'redux-immutable';
 
 import appReducer from '../../containers/app/AppReducer';
+import ParticipantsReducer from '../../containers/participants/ParticipantsReducer';
 
 export default function reduxReducer(routerHistory :any) {
 
   return combineReducers({
     app: appReducer,
     auth: AuthReducer,
+    participants: ParticipantsReducer,
     router: connectRouter(routerHistory),
   });
 }
