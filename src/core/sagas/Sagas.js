@@ -9,6 +9,8 @@ import * as AppSagas from '../../containers/app/AppSagas';
 import * as EDMSagas from '../edm/EDMSagas';
 import * as RoutingSagas from '../router/RoutingSagas';
 
+import * as ParticipantsSagas from '../../containers/participants/ParticipantsSagas';
+
 export default function* sagas() :Generator<*, *, *> {
 
   yield all([
@@ -30,5 +32,8 @@ export default function* sagas() :Generator<*, *, *> {
     // RoutingSagas
     fork(RoutingSagas.goToRootWatcher),
     fork(RoutingSagas.goToRouteWatcher),
+
+    // ParticipantsSagas
+    fork(ParticipantsSagas.getParticipantsWatcher),
   ]);
 }

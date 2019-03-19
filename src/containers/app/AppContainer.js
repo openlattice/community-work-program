@@ -18,13 +18,18 @@ import Dashboard from '../dashboard/Dashboard';
 import ParticipantsSearchContainer from '../participants/ParticipantsSearchContainer';
 import Worksites from '../worksites/Worksites';
 import * as AppActions from './AppActions';
+import * as ParticipantsActions from '../participants/ParticipantsActions';
 import * as Routes from '../../core/router/Routes';
 import {
   APP_CONTAINER_WIDTH,
 } from '../../core/style/Sizes';
+import { APP, STATE } from '../../utils/constants/ReduxStateConsts';
+import { APP_TYPE_FQN_STRINGS } from '../../core/edm/constants/FQNsToString';
 
 // TODO: this should come from lattice-ui-kit, maybe after the next release. current version v0.1.1
 const APP_CONTENT_BG :string = '#f8f8fb';
+const { PEOPLE } = APP_TYPE_FQN_STRINGS;
+
 const { getAllPropertyTypes } = EntityDataModelApiActions;
 const { logout } = AuthActions;
 
@@ -59,6 +64,7 @@ type Props = {
   selectedOrganizationSettings :Map<*, *>,
   actions:{
     getAllPropertyTypes :RequestSequence;
+    getParticipants :RequestSequence;
     loadApp :RequestSequence;
     logout :() => void;
   },
@@ -74,6 +80,25 @@ class AppContainer extends Component<Props> {
     actions.loadApp();
     actions.getAllPropertyTypes();
   }
+
+  componentDidUpdate(prevProps :Props) {
+    const { app, actions } = this.props;
+    const nextOrg = app.get(APP.ORGS);
+    const prevOrg = prevProps.app.get(APP.ORGS);
+    if (prevOrg.size !== nextOrg.size) {
+      nextOrg.keySeq().forEach((id) => {
+        const selectedOrgId :string = id;
+        const peopleEntitySetId = app.getIn(
+          [PEOPLE, APP.ENTITY_SETS_BY_ORG, selectedOrgId]
+        );
+
+        if (peopleEntitySetId) {
+          actions.getParticipants({
+            peopleEntitySetId
+          });
+        }
+      });
+    }
   }
 
   renderAppContent = () => {
@@ -128,6 +153,9 @@ function mapDispatchToProps(dispatch :Function) :Object {
     actions[action] = AppActions[action];
   });
 
+  Object.keys(ParticipantsActions).forEach((action :string) => {
+    actions[action] = ParticipantsActions[action];
+  });
 
   actions.logout = logout;
   actions.getAllPropertyTypes = getAllPropertyTypes;
