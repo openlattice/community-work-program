@@ -8,13 +8,14 @@ import { List, Map, fromJS } from 'immutable';
 import {
   getParticipants,
 } from './ParticipantsActions';
+import { PEOPLE } from '../../utils/constants/ReduxStateConsts';
 
 const INITIAL_STATE :Map<*, *> = fromJS({
-  actions: {
-    getParticipants: Map(),
+  [PEOPLE.ACTIONS]: {
+    [PEOPLE.GET_PARTICIPANTS]: Map(),
   },
-  isFetchingParticipants: false,
-  participants: List(),
+  [PEOPLE.IS_FETCHING_PARTICIPANTS]: false,
+  [PEOPLE.PARTICIPANTS]: List(),
 });
 
 export default function studyReducer(state :Map<*, *> = INITIAL_STATE, action :Object) :Map<*, *> {

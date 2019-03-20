@@ -14,7 +14,7 @@ export default function reduxReducer(routerHistory :any) {
   return combineReducers({
     app: appReducer,
     auth: AuthReducer,
-    participants: ParticipantsReducer,
+    people: ParticipantsReducer,
     router: connectRouter(routerHistory),
   });
 }

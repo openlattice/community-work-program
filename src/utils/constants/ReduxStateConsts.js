@@ -27,24 +27,8 @@ export const APP = {
 // People
 
 export const PEOPLE = {
-  SCORES_ENTITY_SET_ID: 'scoresEntitySetId',
-  RESULTS: 'peopleResults',
-  PERSON_DATA: 'selectedPersonData',
-  PERSON_ENTITY_KEY_ID: 'selectedPersonEntityKeyId',
-  FETCHING_PEOPLE: 'isFetchingPeople',
-  FETCHING_PERSON_DATA: 'isFetchingPersonData',
-  NEIGHBORS: 'neighbors',
-  REFRESHING_PERSON_NEIGHBORS: 'refreshingPersonNeighbors',
-  MOST_RECENT_PSA: 'mostRecentPSA',
-  MOST_RECENT_PSA_NEIGHBORS: 'mostRecentPSANeighbors',
-  REQUIRES_ACTION_PEOPLE: 'requiresActionPeople',
-  REQUIRES_ACTION_SCORES: 'requiresActionPSAScores',
-  NO_PENDING_CHARGES_PSA_SCORES: 'psaScoresWithNoPendingCharges',
-  RECENT_FTA_PSA_SCORES: 'psaScoresWithRecentFTAs',
-  REQUIRES_ACTION_NEIGHBORS: 'requiresActionPeopleNeighbors',
-  PSA_NEIGHBORS_BY_ID: 'psaNeighborsById',
-  MULTIPLE_PSA_PEOPLE: 'peopleWithMultiplePSAs',
-  RECENT_FTA_PEOPLE: 'peopleWithRecentFTAs',
-  NO_PENDING_CHARGES_PEOPLE: 'peopleWithNoPendingCharges',
-  REQUIRES_ACTION_LOADING: 'loadingRequiresActionPeople'
+  ACTIONS: 'actions',
+  GET_PARTICIPANTS: 'getParticipants',
+  IS_FETCHING_PARTICIPANTS: 'isFetchingParticipants',
+  PARTICIPANTS: 'participants',
 };

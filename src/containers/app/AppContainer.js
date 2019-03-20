@@ -7,7 +7,7 @@ import React, { Component } from 'react';
 import styled from 'styled-components';
 import { AuthActions } from 'lattice-auth';
 import { bindActionCreators } from 'redux';
-import { Map } from 'immutable';
+import { List, Map } from 'immutable';
 import { connect } from 'react-redux';
 import { Redirect, Route, Switch } from 'react-router-dom';
 import { EntityDataModelApiActions } from 'lattice-sagas';
@@ -23,12 +23,11 @@ import * as Routes from '../../core/router/Routes';
 import {
   APP_CONTAINER_WIDTH,
 } from '../../core/style/Sizes';
-import { APP, STATE } from '../../utils/constants/ReduxStateConsts';
+import { APP, STATE, PEOPLE } from '../../utils/constants/ReduxStateConsts';
 import { APP_TYPE_FQN_STRINGS } from '../../core/edm/constants/FQNsToString';
 
 // TODO: this should come from lattice-ui-kit, maybe after the next release. current version v0.1.1
 const APP_CONTENT_BG :string = '#f8f8fb';
-const { PEOPLE } = APP_TYPE_FQN_STRINGS;
 
 const { getAllPropertyTypes } = EntityDataModelApiActions;
 const { logout } = AuthActions;
@@ -69,6 +68,8 @@ type Props = {
     logout :() => void;
   },
   isLoadingApp :boolean;
+  participants :List;
+  people :Map;
 };
 
 class AppContainer extends Component<Props> {
@@ -89,7 +90,7 @@ class AppContainer extends Component<Props> {
       nextOrg.keySeq().forEach((id) => {
         const selectedOrgId :string = id;
         const peopleEntitySetId = app.getIn(
-          [PEOPLE, APP.ENTITY_SETS_BY_ORG, selectedOrgId]
+          [APP_TYPE_FQN_STRINGS.PEOPLE, APP.ENTITY_SETS_BY_ORG, selectedOrgId]
         );
 
         if (peopleEntitySetId) {
@@ -137,12 +138,15 @@ class AppContainer extends Component<Props> {
 
 const mapStateToProps = (state :Map<*, *>) => {
   const app = state.get(STATE.APP);
+  const people = state.get(STATE.PEOPLE);
   return {
     app,
     [APP.LOADING]: app.get(APP.LOADING),
     [APP.SELECTED_ORG_ID]: app.get(APP.APP_SETTINGS_ID),
     [APP.SETTINGS_BY_ORG_ID]: app.get(APP.SETTINGS_BY_ORG_ID),
     [APP.SELECTED_ORG_SETTINGS]: app.get(APP.SELECTED_ORG_SETTINGS),
+    people,
+    [PEOPLE.PARTICIPANTS]: people.get(PEOPLE.PARTICIPANTS),
   };
 };
 
