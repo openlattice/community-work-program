@@ -3,7 +3,7 @@ import React, { Component } from 'react';
 import styled from 'styled-components';
 import { List, Map } from 'immutable';
 
-import ParticipantsTable from '../../components/table/Table';
+import ParticipantsTable from '../../components/table/ParticipantsTable';
 import ToolBar from '../../components/controls/ToolBar';
 
 import { sortDropdown } from './ParticipantsConstants';

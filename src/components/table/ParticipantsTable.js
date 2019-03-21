@@ -6,7 +6,7 @@ import styled from 'styled-components';
 import { Constants } from 'lattice';
 import Immutable from 'immutable';
 
-import TableRow from './TableRow';
+import ParticipantsTableRow from './ParticipantsTableRow';
 
 import { OL } from '../../utils/constants/Colors';
 
@@ -89,7 +89,7 @@ const ParticipantsTable = ({
             const personId = person.getIn([OPENLATTICE_ID_FQN, 0], '');
             const selected = personId === selectedPersonId;
             return (
-              <TableRow
+              <ParticipantsTableRow
                   key={`${personId}-${index}`}
                   handleSelect={handleSelect}
                   person={person}
