@@ -11,7 +11,7 @@ import { Redirect, Route, Switch } from 'react-router-dom';
 
 import AppHeaderContainer from './AppHeaderContainer';
 import Spinner from '../../components/spinner/Spinner';
-import Dashboard from '../dashboard/Dashboard';
+import DashboardContainer from '../dashboard/DashboardContainer';
 import ParticipantsSearchContainer from '../participants/ParticipantsSearchContainer';
 import Worksites from '../worksites/Worksites';
 import * as AppActions from './AppActions';
@@ -76,7 +76,7 @@ class AppContainer extends Component<Props> {
 
     return (
       <Switch>
-        <Route exact strict path={Routes.DASHBOARD} component={Dashboard} />
+        <Route exact strict path={Routes.DASHBOARD} component={DashboardContainer} />
         <Route path={Routes.PARTICIPANTS} component={ParticipantsSearchContainer} />
         <Route path={Routes.WORKSITES} component={Worksites} />
         <Redirect to={Routes.DASHBOARD} />
