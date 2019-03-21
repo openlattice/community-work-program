@@ -9,7 +9,7 @@ import { Constants } from 'lattice';
 
 import defaultUserIcon from '../../assets/svg/profile-placeholder-round.svg';
 import { PersonPicture, PersonPhoto } from '../picture/PersonPicture';
-import { formatValue, formatNumericalValue, formatDate } from '../../utils/FormattingUtils';
+import { formatValue, formatDate } from '../../utils/FormattingUtils';
 import { OL } from '../../utils/constants/Colors';
 
 const { OPENLATTICE_ID_FQN } = Constants;
@@ -60,7 +60,7 @@ type Props = {
   small? :boolean,
 };
 
-const TableRow = ({
+const PendingReviewParticipantsTableRow = ({
   handleSelect,
   person,
   selected,
@@ -100,10 +100,10 @@ const TableRow = ({
   );
 };
 
-TableRow.defaultProps = {
+PendingReviewParticipantsTableRow.defaultProps = {
   handleSelect: () => {},
   selected: false,
   small: false
 };
 
-export default TableRow;
+export default PendingReviewParticipantsTableRow;

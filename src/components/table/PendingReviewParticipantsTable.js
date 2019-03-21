@@ -81,7 +81,7 @@ type Props = {
   totalParticipants :number;
 };
 
-const NewParticipantsTable = ({
+const PendingReviewParticipantsTable = ({
   handleSelect,
   people,
   selectedPersonId,
@@ -115,4 +115,4 @@ const NewParticipantsTable = ({
   </TableWrapper>
 );
 
-export default NewParticipantsTable;
+export default PendingReviewParticipantsTable;
