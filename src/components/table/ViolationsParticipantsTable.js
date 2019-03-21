@@ -27,6 +27,7 @@ const TableBanner = styled.tr`
   padding: 40px;
   display: flex;
   align-items: center;
+  font-weight: 600;
 `;
 
 const TotalParticipants = styled.div`

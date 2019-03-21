@@ -14,7 +14,7 @@ const { OPENLATTICE_ID_FQN } = Constants;
 
 const TableWrapper = styled.div`
   width: 600px;
-  margin: 30px 0 30px 30px;
+  margin-bottom: 30px;
   background-color: ${OL.WHITE};
   border: 1px solid ${OL.GREY08};
   border-radius: 5px;
@@ -28,6 +28,7 @@ const TableBanner = styled.tr`
   padding: 40px;
   display: flex;
   align-items: center;
+  font-weight: 600;
 `;
 
 const TotalParticipants = styled.div`

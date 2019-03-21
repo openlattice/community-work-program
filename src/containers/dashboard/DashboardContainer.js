@@ -40,7 +40,6 @@ const DashboardWrapper = styled.div`
   flex-direction: row;
   justify-content: flex-start;
   padding: ${APP_CONTENT_PADDING}px;
-  margin-top: 30px;
   width: ${DASHBOARD_WIDTH};
   position: relative;
   align-self: center;
@@ -57,7 +56,7 @@ const RightWrapper = styled.div`
   width: 600px;
   display: flex;
   flex-direction: column;
-  margin: 30px 0 30px 30px;
+  margin: 0 0 30px 30px;
 `;
 
 const Dashboard = () => (
