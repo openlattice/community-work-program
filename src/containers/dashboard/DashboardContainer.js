@@ -6,6 +6,7 @@ import { Switch } from 'react-router-dom';
 
 import NewParticipantsTable from '../../components/table/NewParticipantsTable';
 import PendingReviewParticipantsTable from '../../components/table/PendingReviewParticipantsTable';
+import ViolationsParticipantsTable from '../../components/table/ViolationsParticipantsTable';
 
 import {
   APP_CONTENT_PADDING,
@@ -18,6 +19,7 @@ const person = Map().withMutations((map :Map) => {
   map.set('sentenceDate', '08/09/2018');
   map.set('enrollmentDeadline', '08/23/2018');
   map.set('requiredHours', '100h');
+  map.set('numberViolations', 2);
 });
 
 const anotherPerson = Map().withMutations((map :Map) => {
@@ -25,6 +27,7 @@ const anotherPerson = Map().withMutations((map :Map) => {
   map.set('sentenceDate', '08/06/2018');
   map.set('enrollmentDeadline', '08/20/2018');
   map.set('requiredHours', '60h');
+  map.set('numberViolations', 1);
 });
 
 const people = List([
@@ -68,6 +71,12 @@ const Dashboard = () => (
           totalParticipants={people.count()} />
       <RightWrapper>
         <PendingReviewParticipantsTable
+            handleSelect={() => {}}
+            people={people}
+            selectedPersonId=""
+            small
+            totalParticipants={people.count()} />
+        <ViolationsParticipantsTable
             handleSelect={() => {}}
             people={people}
             selectedPersonId=""
