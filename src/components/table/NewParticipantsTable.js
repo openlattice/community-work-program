@@ -18,6 +18,7 @@ const TableWrapper = styled.div`
   background-color: ${OL.WHITE};
   border: 1px solid ${OL.GREY08};
   border-radius: 5px;
+  align-self: start;
 `;
 
 const TableBanner = styled.tr`
