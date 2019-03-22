@@ -2,7 +2,7 @@
 import React, { Component } from 'react';
 import styled from 'styled-components';
 
-import StyledInput from '../../components/controls/StyledInput';
+import { StyledInput } from '../../components/controls/index';
 
 import searchIcon from '../../assets/svg/search-icon.svg';
 

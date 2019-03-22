@@ -4,7 +4,7 @@ import styled from 'styled-components';
 import { List, Map } from 'immutable';
 
 import ParticipantsTable from '../../components/table/ParticipantsTable';
-import ToolBar from '../../components/controls/ToolBar';
+import { ToolBar } from '../../components/controls/index';
 
 import { sortDropdown } from './ParticipantsConstants';
 import { PARTICIPANT_PROFILE } from '../../core/router/Routes';
