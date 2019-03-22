@@ -1,16 +1,18 @@
 import styled from 'styled-components';
 import StyledButton from './StyledButton';
 
+import { OL } from '../../../utils/constants/Colors';
+
 const PrimaryButton = styled(StyledButton)`
-  background-color: #6124e2;
-  color: #fff;
+  background-color: ${OL.PURPLE02};
+  color: ${OL.WHITE};
 
   &:hover:enabled {
-    background-color: #8045ff;
+    background-color: ${OL.PURPLE03};
   }
 
   &:active:enabled {
-    background-color: #361876;
+    background-color: ${OL.PURPLE01};
   }
 `;
 

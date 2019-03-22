@@ -2,10 +2,11 @@
 import React, { Component } from 'react';
 import styled from 'styled-components';
 import { List, Map } from 'immutable';
+import { withRouter } from 'react-router-dom';
+import type { RouterHistory } from 'react-router';
 
 import ParticipantsTable from '../../components/table/ParticipantsTable';
 import ToolBar from '../../components/controls/ToolBar';
-
 import { sortDropdown } from './ParticipantsConstants';
 import { PARTICIPANT_PROFILE } from '../../core/router/Routes';
 import { OL } from '../../utils/constants/Colors';
@@ -31,7 +32,6 @@ const ParticipantSearchInnerWrapper = styled.div`
   padding: ${APP_CONTENT_PADDING}px;
   margin-top: 30px;
   width: ${SEARCH_CONTAINER_WIDTH}px;
-  position: relative;
   align-self: center;
 `;
 
@@ -51,7 +51,7 @@ const dropdowns :List = List().withMutations((list :List) => {
 });
 
 /* DUMMY DATA */
-const person = Map().withMutations((map :Map) => {
+const somePerson = Map().withMutations((map :Map) => {
   map.set('name', 'Tommy Morrison');
   map.set('age', 25);
   map.set('startDate', '08/02/2018');
@@ -60,6 +60,7 @@ const person = Map().withMutations((map :Map) => {
   map.set('hoursServed', '62h / 100h');
   map.set('numberOfWarnings', 0);
   map.set('numberOfViolations', 0);
+  map.set('personId', '12gsdaru23hg0sei420');
 });
 
 const anotherPerson = Map().withMutations((map :Map) => {
@@ -71,10 +72,11 @@ const anotherPerson = Map().withMutations((map :Map) => {
   map.set('hoursServed', '24h / 100h');
   map.set('numberOfWarnings', 1);
   map.set('numberOfViolations', 0);
+  map.set('personId', 'dgal9827423bksdafgf');
 });
 
 const people = List([
-  person,
+  somePerson,
   anotherPerson,
 ]).asImmutable();
 
@@ -83,7 +85,7 @@ const people = List([
  */
 
 type Props = {
-  history :string[],
+  history :RouterHistory,
 };
 
 type State = {
@@ -111,7 +113,7 @@ class ParticipantsSearchContainer extends Component<Props, State> {
 
   searchParticipantList = (input :string) => {
     const matches = people.filter((p) => {
-      const fullName = p.get('name').trim().toLowerCase()
+      const fullName = p.get('name').trim().toLowerCase();
       const firstName = p.get('name').split(' ')[0].trim().toLowerCase();
       const lastName = p.get('name').split(' ')[1].trim().toLowerCase();
       const trimmedInput = input.trim().toLowerCase();
@@ -148,4 +150,4 @@ class ParticipantsSearchContainer extends Component<Props, State> {
   }
 }
 
-export default ParticipantsSearchContainer;
+export default withRouter(ParticipantsSearchContainer);

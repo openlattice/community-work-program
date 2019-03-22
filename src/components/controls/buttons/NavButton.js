@@ -1,6 +1,8 @@
 import styled from 'styled-components';
 
 export const NavButton = styled.button`
+  display: flex;
+  justify-content: flex-start;
   border: none;
   font-family: 'Open Sans', sans-serif;
   color: ${props => (props.disabled ? '#8e929b' : '#6124e2')};
@@ -8,6 +10,7 @@ export const NavButton = styled.button`
   font-weight: 600;
   padding: 0;
   background: transparent;
+  overflow: hidden;
   span {
     margin-left: 7px;
   }
