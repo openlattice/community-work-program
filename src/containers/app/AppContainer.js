@@ -15,7 +15,7 @@ import { EntityDataModelApiActions } from 'lattice-sagas';
 import AppHeaderContainer from './AppHeaderContainer';
 import Spinner from '../../components/spinner/Spinner';
 import Dashboard from '../dashboard/Dashboard';
-import ParticipantsSearchContainer from '../participants/ParticipantsSearchContainer';
+import ParticipantsContainer from '../participants/ParticipantsContainer';
 import Worksites from '../worksites/Worksites';
 import * as AppActions from './AppActions';
 import * as ParticipantsActions from '../participants/ParticipantsActions';
@@ -114,7 +114,7 @@ class AppContainer extends Component<Props> {
     return (
       <Switch>
         <Route exact strict path={Routes.DASHBOARD} component={Dashboard} />
-        <Route path={Routes.PARTICIPANTS} component={ParticipantsSearchContainer} />
+        <Route path={Routes.PARTICIPANTS} component={ParticipantsContainer} />
         <Route path={Routes.WORKSITES} component={Worksites} />
         <Redirect to={Routes.DASHBOARD} />
       </Switch>

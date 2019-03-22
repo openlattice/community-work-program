@@ -68,7 +68,7 @@ const TableRow = ({
 } :Props) => {
 
   const entityKeyId :string = person.getIn([OPENLATTICE_ID_FQN, 0], '');
-  const personId :string = '';
+  const personId :string = person.get('personId');
 
   // let photo :string = person.getIn([MUGSHOT, 0]) || person.getIn([PICTURE, 0]);
   let photo;
