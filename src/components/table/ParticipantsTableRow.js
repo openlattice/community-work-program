@@ -19,7 +19,24 @@ const Cell = styled.td`
   font-family: 'Open Sans', sans-serif;
   font-size: ${props => (props.small ? '12' : '14')}px;
   text-align: left;
-  color: ${OL.GREY02};
+  color: ${(props) => {
+    if (props.status === 'Active') {
+      return `${OL.GREEN02};`;
+    }
+    if (props.status === 'Completed') {
+      return `${OL.BLUE02};`;
+    }
+    if (props.status === 'Noncompliant - active') {
+      return `${OL.YELLOW01};`;
+    }
+    if (props.status === 'Noncompliant - removed') {
+      return `${OL.RED01};`;
+    }
+    if (props.status === 'Awaiting enrollment') {
+      return `${OL.PURPLE03};`;
+    }
+    return `${OL.GREY01};`;
+  }}
 `;
 const StyledPersonPhoto = styled(PersonPhoto)`
   width: ${props => (props.small ? 30 : 36)}px;
@@ -88,6 +105,7 @@ const TableRow = ({
   const hoursServed = formatValue(person.get('hoursServed'));
   const numberOfWarnings = formatNumericalValue(person.get('numberOfWarnings'));
   const numberOfViolations = formatNumericalValue(person.get('numberOfViolations'));
+  const status = formatValue(person.get('status'));
 
   return (
     <Row
@@ -103,6 +121,7 @@ const TableRow = ({
       <Cell small={small}>{ startDate }</Cell>
       <Cell small={small}>{ sentenceDate }</Cell>
       <Cell small={small}>{ sentenceEndDate }</Cell>
+      <Cell small={small} status={status}>{ status }</Cell>
       <Cell small={small}>{ hoursServed }</Cell>
       <Cell small={small}>{ numberOfWarnings }</Cell>
       <Cell small={small}>{ numberOfViolations }</Cell>

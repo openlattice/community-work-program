@@ -57,6 +57,7 @@ const Headers = () => (
       <HeaderElement>START DATE</HeaderElement>
       <HeaderElement>SENT. DATE</HeaderElement>
       <HeaderElement>SENT. END DATE</HeaderElement>
+      <HeaderElement>STATUS</HeaderElement>
       <HeaderElement>HRS. SERVED</HeaderElement>
       <HeaderElement># OF WARN.</HeaderElement>
       <HeaderElement># OF VIO.</HeaderElement>
