@@ -45,12 +45,6 @@ const NameHeader = styled.div`
   color: ${OL.BLACK};
 `;
 
-const StyledPrimaryButton = styled(PrimaryButton)`
-  padding: 8px 30px;
-  font-weight: 500;
-  font-spacing: 2px;
-`;
-
 const RowWrapper = styled.div`
   width: 100%;
   display: flex;
