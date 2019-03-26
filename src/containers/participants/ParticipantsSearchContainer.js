@@ -183,10 +183,14 @@ class ParticipantsSearchContainer extends Component<Props, State> {
   render() {
     const { searchedPeople } = this.state;
     const peopleToRender = searchedPeople.count() === 0 ? people : searchedPeople;
+    const onSelectFunctions = Map().withMutations((map :Map) => {
+      map.set('Sort by', this.handleOnSort);
+    });
     return (
       <ParticipantSearchOuterWrapper>
         <ToolBar
             dropdowns={dropdowns}
+            onSelectFunctions={onSelectFunctions}
             search={this.searchParticipantList} />
         <ParticipantSearchInnerWrapper>
           <ParticipantsHeader>Participants</ParticipantsHeader>

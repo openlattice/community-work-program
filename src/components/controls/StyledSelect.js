@@ -136,7 +136,7 @@ const SearchOptionContainer = styled.div`
 
 type Props = {
   openAbove :boolean;
-  onSelect :() => void;
+  onSelect :(selectedOption :Map) => void;
   options :List;
   scrollVisible :boolean;
   title :string;
@@ -200,7 +200,7 @@ class StyledSelect extends Component<Props, State> {
       selectedLabel: selectedOption.get('label'),
     });
 
-    onSelect();
+    onSelect(selectedOption);
     this.hideDataTable();
   }
 
