@@ -58,9 +58,26 @@ const Title = styled.div`
 `;
 
 const Value = styled.div`
-  color: ${OL.BLACK};
   text-align: left;
   width: 60%;
+  color: ${(props) => {
+    if (props.status === 'Active') {
+      return `${OL.GREEN02};`;
+    }
+    if (props.status === 'Completed') {
+      return `${OL.BLUE02};`;
+    }
+    if (props.status === 'Noncompliant - active') {
+      return `${OL.YELLOW01};`;
+    }
+    if (props.status === 'Noncompliant - removed') {
+      return `${OL.RED01};`;
+    }
+    if (props.status === 'Awaiting enrollment') {
+      return `${OL.PURPLE03};`;
+    }
+    return `${OL.BLACK};`;
+  }}
 `;
 
 type Props = {
@@ -79,6 +96,10 @@ const GeneralInfo = ({ contactInfo, person } :Props) => (
         )
         : <StyledPlaceholderPicture src={defaultUserIcon} alt="" />
     }
+    <InfoRow>
+      <Title>Status</Title>
+      <Value status={person.get('status')}>{person.get('status')}</Value>
+    </InfoRow>
     <InfoRow>
       <Title>Date of Birth</Title>
       <Value>{person.get('dateOfBirth')}</Value>
