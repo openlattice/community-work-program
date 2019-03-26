@@ -70,6 +70,16 @@ const ButtonWrapper = styled.div`
   align-items: center;
 `;
 
+const CalendarWrapper = styled.div`
+  display: flex;
+  height: 600px;
+  width: 100%;
+  border: 1px solid ${OL.GREY08};
+  border-radius: 5px;
+  margin: 15px 0;
+  background-color: ${OL.WHITE};
+`;
+
 type Props = {
   contactInfo :Map;
   history :RouterHistory;
@@ -109,6 +119,15 @@ const ParticipantProfile = ({ contactInfo, history, person } :Props) => (
         <ButtonWrapper>
           <SecondaryButton>Print Schedule</SecondaryButton>
           <PrimaryButton>Create Appointment</PrimaryButton>
+        </ButtonWrapper>
+      </NameRowWrapper>
+      <CalendarWrapper />
+    </ProfileBody>
+    <ProfileBody>
+      <NameRowWrapper>
+        <NameHeader>Warnings & Violations</NameHeader>
+        <ButtonWrapper>
+          <PrimaryButton>Report Warning or Violation</PrimaryButton>
         </ButtonWrapper>
       </NameRowWrapper>
     </ProfileBody>
