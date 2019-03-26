@@ -4,9 +4,10 @@ import styled from 'styled-components';
 import { List, Map } from 'immutable';
 
 import ParticipantsTable from '../../components/table/ParticipantsTable';
-import { ToolBar } from '../../components/controls/index';
 
+import { ToolBar } from '../../components/controls/index';
 import { sortDropdown } from './ParticipantsConstants';
+import { isDefined } from '../../utils/LangUtils';
 import { PARTICIPANT_PROFILE } from '../../core/router/Routes';
 import { OL } from '../../utils/constants/Colors';
 import {
@@ -132,6 +133,8 @@ const people = List([
   anotherHuman,
 ]).asImmutable();
 
+const defaultSortOption :Map = sortDropdown.get('enums').find(option => option.get('default'));
+
 /*
  * Props
  */
@@ -141,7 +144,8 @@ type Props = {
 };
 
 type State = {
-  searchedPeople :List;
+  peopleToRender :List;
+  selectedSortOption :Map;
 };
 
 /*
@@ -154,8 +158,16 @@ class ParticipantsSearchContainer extends Component<Props, State> {
     super(props);
 
     this.state = {
-      searchedPeople: List(),
+      peopleToRender: people,
+      selectedSortOption: defaultSortOption,
     };
+  }
+
+  componentDidMount() {
+    const sortedByDefault = this.handleOnSort(defaultSortOption);
+    this.setState({
+      peopleToRender: sortedByDefault,
+    });
   }
 
   handleOnSelectPerson = (person :Map, entityKeyId :string, personId :string) => {
@@ -163,9 +175,53 @@ class ParticipantsSearchContainer extends Component<Props, State> {
     history.push(PARTICIPANT_PROFILE.replace(':subjectId', personId));
   }
 
+  handleOnSort = (clickedColumnHeader :Map, peopleToSort :List) => {
+    this.setState({ selectedSortOption: clickedColumnHeader });
+
+    const column = clickedColumnHeader.get('label').toLowerCase();
+    let columnToSortBy = '';
+    if (column === 'start date') {
+      columnToSortBy = 'startDate';
+    }
+    if (column === 'sent. end date') {
+      columnToSortBy = 'sentenceEndDate';
+    }
+    if (column === 'name') {
+      columnToSortBy = 'name';
+    }
+    const participants :List = isDefined(peopleToSort) ? peopleToSort : people;
+    const sortedData = participants.sort((a, b) => {
+      const valueA = a.get(columnToSortBy);
+      const valueB = b.get(columnToSortBy);
+      if (!isDefined(valueA)) {
+        return -1;
+      }
+      if (!isDefined(valueB)) {
+        return 1;
+      }
+      if (!isDefined(valueA) && !isDefined(valueB)) {
+        return 0;
+      }
+      if (valueA === valueB) {
+        return 0;
+      }
+      if (columnToSortBy === 'name') {
+        const valueASplit = valueA.split(' ');
+        const valueBSplit = valueB.split(' ');
+        return valueASplit[valueASplit.length - 1]
+          .localeCompare(valueBSplit[valueBSplit.length - 1], undefined, { sensitivity: 'base' });
+      }
+      return valueA.localeCompare(valueB, undefined, { numeric: true, sensitivity: 'base' });
+    });
+
+    this.setState({ peopleToRender: sortedData });
+    return sortedData;
+  }
+
   searchParticipantList = (input :string) => {
+    const { selectedSortOption } = this.state;
     const matches = people.filter((p) => {
-      const fullName = p.get('name').trim().toLowerCase()
+      const fullName = p.get('name').trim().toLowerCase();
       const firstName = p.get('name').split(' ')[0].trim().toLowerCase();
       const lastName = p.get('name').split(' ')[1].trim().toLowerCase();
       const trimmedInput = input.trim().toLowerCase();
@@ -175,14 +231,13 @@ class ParticipantsSearchContainer extends Component<Props, State> {
 
       return match;
     });
-
-    this.setState({ searchedPeople: matches });
+    const sortedFilteredPeople = this.handleOnSort(selectedSortOption, matches);
+    this.setState({ peopleToRender: sortedFilteredPeople });
 
   }
 
   render() {
-    const { searchedPeople } = this.state;
-    const peopleToRender = searchedPeople.count() === 0 ? people : searchedPeople;
+    const { peopleToRender } = this.state;
     const onSelectFunctions = Map().withMutations((map :Map) => {
       map.set('Sort by', this.handleOnSort);
     });
