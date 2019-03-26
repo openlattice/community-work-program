@@ -4,29 +4,28 @@ import { List, Map } from 'immutable';
 /* Sort Participant Table */
 const sortOptions :List = List().withMutations((list :List) => {
 
-  const name = Map().withMutations((map :Map) => {
-    map.set('label', 'Name');
-    map.set('default', true);
-  });
-  list.set(0, name);
-
   const startDate = Map().withMutations((map :Map) => {
     map.set('label', 'Start date');
-    map.set('default', false);
+    map.set('default', true);
   });
-  list.set(1, startDate);
+  list.set(0, startDate);
 
   const sentEndDate = Map().withMutations((map :Map) => {
     map.set('label', 'Sent. end date');
     map.set('default', false);
   });
-  list.set(2, sentEndDate);
+  list.set(1, sentEndDate);
 
-  const numberHours = Map().withMutations((map :Map) => {
-    map.set('label', 'Number of hours');
+  const name = Map().withMutations((map :Map) => {
+    map.set('label', 'Name');
     map.set('default', false);
   });
-  list.set(3, numberHours);
+  list.set(2, name);
+  // const numberHours = Map().withMutations((map :Map) => {
+  //   map.set('label', 'Hours remaining');
+  //   map.set('default', false);
+  // });
+  // list.set(3, numberHours);
 });
 
 const sortDropdown :Map = Map().withMutations((map :Map) => {
