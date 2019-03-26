@@ -32,10 +32,11 @@ const ToolBarInnerWrapper = styled.div`
 
 type Props = {
   dropdowns :List;
+  onSelectFunctions :Map;
   search :(input :string) => void;
 };
 
-const ToolBar = ({ dropdowns, search } :Props) => (
+const ToolBar = ({ dropdowns, onSelectFunctions, search } :Props) => (
   <ToolBarWrapper>
     <ToolBarInnerWrapper>
       <SearchContainer
@@ -44,7 +45,7 @@ const ToolBar = ({ dropdowns, search } :Props) => (
         dropdowns.map((dropdownMap :Map) => (
           <StyledSelect
               key={dropdownMap.get('title')}
-              onSelect={() => {}}
+              onSelect={onSelectFunctions.get(dropdownMap.get('title'))}
               options={dropdownMap.get('enums')}
               title={dropdownMap.get('title')} />
         ))
