@@ -17,6 +17,11 @@ import {
   SEARCH_CONTAINER_WIDTH,
 } from '../../core/style/Sizes';
 
+import {
+  people,
+  contactInfo,
+} from './FakeData';
+
 /*
  * styled components
  */
@@ -52,98 +57,15 @@ const dropdowns :List = List().withMutations((list :List) => {
   list.set(0, sortDropdown);
 });
 
-/* DUMMY DATA */
-const somePerson = Map().withMutations((map :Map) => {
-  map.set('name', 'Tommy Morrison');
-  map.set('age', 25);
-  map.set('startDate', '08/02/2018');
-  map.set('sentenceDate', '08/09/2018');
-  map.set('sentenceEndDate', '11/10/2018');
-  map.set('hoursServed', '62h / 100h');
-  map.set('numberOfWarnings', 0);
-  map.set('numberOfViolations', 0);
-  map.set('personId', '12gsdaru23hg0sei420');
-  map.set('status', 'Active');
-});
-
-const anotherPerson = Map().withMutations((map :Map) => {
-  map.set('name', 'Mabel Garrett');
-  map.set('age', 19);
-  map.set('startDate', '08/02/2018');
-  map.set('sentenceDate', '08/06/2018');
-  map.set('sentenceEndDate', '12/31/2018');
-  map.set('hoursServed', '100h / 100h');
-  map.set('numberOfWarnings', 1);
-  map.set('numberOfViolations', 0);
-  map.set('personId', 'dgal9827423bksdafgf');
-  map.set('status', 'Completed');
-});
-
-const someone = Map().withMutations((map :Map) => {
-  map.set('name', 'Phoebe Oates');
-  map.set('age', 28);
-  map.set('startDate', '06/02/2018');
-  map.set('sentenceDate', '06/06/2018');
-  map.set('sentenceEndDate', '12/31/2018');
-  map.set('hoursServed', '5h / 25h');
-  map.set('numberOfWarnings', 3);
-  map.set('numberOfViolations', 1);
-  map.set('status', 'Noncompliant - active');
-});
-
-const someoneElse = Map().withMutations((map :Map) => {
-  map.set('name', 'Frank Seebold');
-  map.set('age', 34);
-  map.set('startDate', '01/02/2018');
-  map.set('sentenceDate', '01/06/2018');
-  map.set('sentenceEndDate', '10/08/2018');
-  map.set('hoursServed', '53h / 150h');
-  map.set('numberOfWarnings', 2);
-  map.set('numberOfViolations', 0);
-  map.set('status', 'Closed');
-});
-
-const human = Map().withMutations((map :Map) => {
-  map.set('name', 'Lori Amaratti');
-  map.set('age', 21);
-  map.set('startDate', '');
-  map.set('sentenceDate', '09/01/2018');
-  map.set('sentenceEndDate', '10/08/2018');
-  map.set('hoursServed', '0h / 50h');
-  map.set('numberOfWarnings', 0);
-  map.set('numberOfViolations', 0);
-  map.set('status', 'Awaiting enrollment');
-});
-
-const anotherHuman = Map().withMutations((map :Map) => {
-  map.set('name', 'Heather Everett');
-  map.set('age', 23);
-  map.set('startDate', '09/04/2018');
-  map.set('sentenceDate', '09/01/2018');
-  map.set('sentenceEndDate', '12/08/2018');
-  map.set('hoursServed', '15h / 50h');
-  map.set('numberOfWarnings', 3);
-  map.set('numberOfViolations', 2);
-  map.set('status', 'Noncompliant - removed');
-});
-
-const people = List([
-  somePerson,
-  anotherPerson,
-  someone,
-  someoneElse,
-  human,
-  anotherHuman,
-]).asImmutable();
-
 const defaultSortOption :Map = sortDropdown.get('enums').find(option => option.get('default'));
 
 /*
- * Props
+ * Props and State
  */
 
 type Props = {
   history :RouterHistory,
+  selectPerson :(selectedPerson :Map) => void;
 };
 
 type State = {
@@ -209,6 +131,7 @@ class ParticipantsSearchContainer extends Component<Props, State> {
         return 0;
       }
       if (columnToSortBy === 'name') {
+        // NOTE: this sorts alphabetically by last name
         const valueASplit = valueA.split(' ');
         const valueBSplit = valueB.split(' ');
         return valueASplit[valueASplit.length - 1]
@@ -241,6 +164,7 @@ class ParticipantsSearchContainer extends Component<Props, State> {
 
   render() {
     const { peopleToRender } = this.state;
+    const { selectPerson } = this.props;
     const onSelectFunctions = Map().withMutations((map :Map) => {
       map.set('Sort by', this.handleOnSort);
     });
@@ -253,8 +177,10 @@ class ParticipantsSearchContainer extends Component<Props, State> {
         <ParticipantSearchInnerWrapper>
           <ParticipantsHeader>Participants</ParticipantsHeader>
           <ParticipantsTable
+              contactInfo={contactInfo}
               handleSelect={this.handleOnSelectPerson}
               people={peopleToRender}
+              selectPerson={selectPerson}
               selectedPersonId=""
               small
               totalParticipants={people.count()} />

@@ -64,10 +64,11 @@ const Value = styled.div`
 `;
 
 type Props = {
+  contactInfo :Map;
   person :Map;
 };
 
-const GeneralInfo = ({ person } :Props) => (
+const GeneralInfo = ({ contactInfo, person } :Props) => (
   <InfoWrapper>
     {
       person && person.get('mughshot')
@@ -80,19 +81,19 @@ const GeneralInfo = ({ person } :Props) => (
     }
     <InfoRow>
       <Title>Date of Birth</Title>
-      <Value>01/25/1993</Value>
+      <Value>{person.get('dateOfBirth')}</Value>
     </InfoRow>
     <InfoRow>
       <Title>Phone #</Title>
-      <Value>123-456-7890</Value>
+      <Value>{contactInfo.get('phoneNumber')}</Value>
     </InfoRow>
     <InfoRow>
       <Title>Address</Title>
-      <Value>123 Apple Street, Rapid City, SD 12345</Value>
+      <Value>{contactInfo.get('address')}</Value>
     </InfoRow>
     <InfoRow>
       <Title>Email</Title>
-      <Value>alexburgess@gmail.com</Value>
+      <Value>{contactInfo.get('email')}</Value>
     </InfoRow>
   </InfoWrapper>
 );

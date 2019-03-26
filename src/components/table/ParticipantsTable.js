@@ -66,16 +66,20 @@ const Headers = () => (
 );
 
 type Props = {
+  contactInfo :Immutable.List<*, *>;
   handleSelect :(person :Immutable.Map, entityKeyId :string, personId :string) => void;
   people :Immutable.List<*, *>;
+  selectPerson :(selectedPerson :Immutable.Map) => void;
   selectedPersonId :string;
   small :boolean;
   totalParticipants :number;
 };
 
 const ParticipantsTable = ({
+  contactInfo,
   handleSelect,
   people,
+  selectPerson,
   selectedPersonId,
   small,
   totalParticipants,
@@ -89,11 +93,14 @@ const ParticipantsTable = ({
           people.map((person :Map, index :number) => {
             const personId = person.getIn([OPENLATTICE_ID_FQN, 0], '');
             const selected = personId === selectedPersonId;
+            const contact = contactInfo.find(value => value.get('personId') === person.get('personId'));
             return (
               <ParticipantsTableRow
                   key={`${personId}-${index}`}
+                  contactInfo={contact}
                   handleSelect={handleSelect}
                   person={person}
+                  selectPerson={selectPerson}
                   selected={selected}
                   small={small} />
             );

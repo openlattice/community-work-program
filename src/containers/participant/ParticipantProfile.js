@@ -1,6 +1,7 @@
 // @flow
 import React from 'react';
 import styled from 'styled-components';
+import { Map } from 'immutable';
 import type { RouterHistory } from 'react-router';
 
 import GeneralInfo from '../../components/participant/GeneralInfo';
@@ -70,10 +71,12 @@ const ButtonWrapper = styled.div`
 `;
 
 type Props = {
+  contactInfo :Map;
   history :RouterHistory;
+  person :Map;
 };
 
-const ParticipantProfile = ({ history } :Props) => (
+const ParticipantProfile = ({ contactInfo, history, person } :Props) => (
   <ProfileWrapper>
     <ProfileBody>
       <BackNavButton
@@ -83,13 +86,16 @@ const ParticipantProfile = ({ history } :Props) => (
         Back to Dashboard
       </BackNavButton>
       <NameRowWrapper>
-        <NameHeader>Alex Burgess</NameHeader>
+        <NameHeader>{person.get('name')}</NameHeader>
         <PrimaryButton>Start Program</PrimaryButton>
       </NameRowWrapper>
       <RowWrapper>
-        <GeneralInfo />
+        <GeneralInfo
+            contactInfo={contactInfo}
+            person={person} />
         <InnerColumnWrapper>
-          <KeyDates />
+          <KeyDates
+              person={person} />
           <InnerRowWrapper>
             <CaseInfo />
             <ViolationsDisplay />

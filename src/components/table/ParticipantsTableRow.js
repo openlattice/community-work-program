@@ -71,15 +71,19 @@ const Row = styled.tr`
 `;
 
 type Props = {
+  contactInfo :Immutable.Map;
   handleSelect :(person :Immutable.Map, entityKeyId :string, personId :string) => void;
   person :Immutable.Map<*, *>,
+  selectPerson :(selectedPerson :Immutable.Map, contactInfo :Immutable.List) => void;
   selected? :boolean,
   small? :boolean,
 };
 
 const TableRow = ({
+  contactInfo,
   handleSelect,
   person,
+  selectPerson,
   selected,
   small
 } :Props) => {
@@ -113,6 +117,9 @@ const TableRow = ({
         onClick={() => {
           if (handleSelect) {
             handleSelect(person, entityKeyId, personId);
+          }
+          if (selectPerson) {
+            selectPerson(person, contactInfo);
           }
         }}>
       <Cell small={small}>{ photo }</Cell>

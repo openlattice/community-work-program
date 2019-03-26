@@ -1,6 +1,7 @@
 // @flow
 import React from 'react';
 import styled from 'styled-components';
+import { Map } from 'immutable';
 
 import { OL } from '../../utils/constants/Colors';
 
@@ -42,15 +43,19 @@ const Date = styled.div`
   margin: 8px 30px;
 `;
 
-const KeyDates = () => (
+type Props = {
+  person :Map;
+};
+
+const KeyDates = ({ person } :Props) => (
   <DatesWrapper>
     <DateBlock>
       <Header>Sentence Date</Header>
-      <Date>07/29/2019</Date>
+      <Date>{person.get('sentenceDate')}</Date>
     </DateBlock>
     <DateBlock>
       <Header>Sentence End Date</Header>
-      <Date>12/02/2019</Date>
+      <Date>{person.get('sentenceEndDate')}</Date>
     </DateBlock>
     <DateBlock>
       <Header>Enrollment Deadline</Header>
