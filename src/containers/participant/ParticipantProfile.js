@@ -3,6 +3,8 @@ import React from 'react';
 import styled from 'styled-components';
 import { Map } from 'immutable';
 import type { RouterHistory } from 'react-router';
+import BigCalendar from 'react-big-calendar';
+import moment from 'moment';
 
 import GeneralInfo from '../../components/participant/GeneralInfo';
 import KeyDates from '../../components/participant/KeyDates';
@@ -80,6 +82,25 @@ const CalendarWrapper = styled.div`
   background-color: ${OL.WHITE};
 `;
 
+const localizer = BigCalendar.momentLocalizer(moment);
+
+/* Fake Data */
+const myEvents :Object[] = [
+  {
+    title: 'Work Assignment',
+    start: new Date(2019, 3, 1),
+    end: new Date(2019, 3, 1),
+    resourceId: 'resource1',
+    id: 1,
+  },
+];
+const eventResources :Object[] = [
+  {
+    resourceId: 'resource1',
+    resourceTitle: 'Pennington County',
+  },
+];
+
 type Props = {
   contactInfo :Map;
   history :RouterHistory;
@@ -122,6 +143,15 @@ const ParticipantProfile = ({ contactInfo, history, person } :Props) => (
         </ButtonWrapper>
       </NameRowWrapper>
       <CalendarWrapper />
+      <CalendarWrapper>
+        <BigCalendar
+            localizer={localizer}
+            events={myEvents}
+            defaultDate={new Date()}
+            resources={eventResources}
+            resourceIdAccessor="resourceId"
+            resourceTitleAccessor="resourceTitle" />
+      </CalendarWrapper>
     </ProfileBody>
     <ProfileBody>
       <NameRowWrapper>
