@@ -13,6 +13,11 @@ import ViolationsDisplay from '../../components/participant/ViolationsDisplay';
 import * as Routes from '../../core/router/Routes';
 
 import { BackNavButton, PrimaryButton, SecondaryButton } from '../../components/controls/index';
+import {
+  BackNavButton,
+  PrimaryButton,
+  TertiaryButton,
+} from '../../components/controls/index';
 import { PARTICIPANT_PROFILE_WIDTH } from '../../core/style/Sizes';
 import { OL } from '../../utils/constants/Colors';
 
@@ -163,5 +168,8 @@ const ParticipantProfile = ({ contactInfo, history, person } :Props) => (
     </ProfileBody>
   </ProfileWrapper>
 );
+              <TertiaryButton>Print Schedule</TertiaryButton>
+              <TertiaryButton>Create Appointment</TertiaryButton>
+              <TertiaryButton>Report Warning or Violation</TertiaryButton>
 
 export default ParticipantProfile;
