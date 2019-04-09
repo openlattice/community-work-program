@@ -13,7 +13,7 @@ import { Redirect, Route, Switch } from 'react-router-dom';
 import { EntityDataModelApiActions } from 'lattice-sagas';
 
 import AppHeaderContainer from './AppHeaderContainer';
-import Spinner from '../../components/spinner/Spinner';
+import LogoLoader from '../../components/LogoLoader';
 import Dashboard from '../dashboard/Dashboard';
 import ParticipantsContainer from '../participants/ParticipantsContainer';
 import Worksites from '../worksites/Worksites';
@@ -107,7 +107,9 @@ class AppContainer extends Component<Props> {
     const { isLoadingApp } = this.props;
     if (isLoadingApp) {
       return (
-        <Spinner />
+        <LogoLoader
+            loadingText="Please wait..."
+            size={60} />
       );
     }
 
