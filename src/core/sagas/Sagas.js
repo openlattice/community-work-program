@@ -10,6 +10,7 @@ import * as EDMSagas from '../edm/EDMSagas';
 import * as RoutingSagas from '../router/RoutingSagas';
 
 import * as ParticipantsSagas from '../../containers/participants/ParticipantsSagas';
+import * as ParticipantSagas from '../../containers/participant/ParticipantSagas';
 
 export default function* sagas() :Generator<*, *, *> {
 
@@ -35,5 +36,9 @@ export default function* sagas() :Generator<*, *, *> {
 
     // ParticipantsSagas
     fork(ParticipantsSagas.getParticipantsWatcher),
+
+    // ParticipantSagas
+    fork(ParticipantSagas.getWarningsViolationsListWatcher),
+    fork(ParticipantSagas.getWarningsViolationsNoteWatcher),
   ]);
 }

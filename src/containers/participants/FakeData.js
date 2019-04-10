@@ -154,3 +154,27 @@ export const contactInfo = List([
   personFiveContact,
   personSixContact,
 ]).asImmutable();
+
+/* WARNINGS / VIOLATIONS */
+
+export const violationOne = Map().withMutations((map :Map) => {
+  map.set('id', '1234567890');
+  map.set('datetime', '2019-04-01T17:58:32.849Z');
+  map.set('worksite', 'Community Garden');
+  map.set('level', 'Warning');
+  map.set('description', 'Tommy was found smoking when he was supposed to be working.');
+});
+
+export const violationTwo = Map().withMutations((map :Map) => {
+  map.set('id', '0987654321');
+  map.set('datetime', '2019-04-03T11:58:32.849Z');
+  map.set('worksite', 'Community Garden');
+  map.set('level', 'Violation');
+  /* eslint-disable max-len */
+  map.set('description', 'Tommy was found smoking again. Instead of stopping immediately, he tried to keep smoking when the supervisor looked the other way.');
+});
+
+export const violations = List([
+  violationOne,
+  violationTwo,
+]).asImmutable();
