@@ -9,6 +9,7 @@ import GeneralInfo from '../../components/participant/GeneralInfo';
 import KeyDates from '../../components/participant/KeyDates';
 import CaseInfo from '../../components/participant/CaseInfo';
 import ViolationsDisplay from '../../components/participant/ViolationsDisplay';
+import WarningsViolationsContainer from '../violations/WarningsViolationsContainer';
 import * as Routes from '../../core/router/Routes';
 
 import {
@@ -234,6 +235,7 @@ class ParticipantProfile extends Component<Props, State> {
               <TertiaryButton>Report Warning or Violation</TertiaryButton>
             </ButtonWrapper>
           </NameRowWrapper>
+          <WarningsViolationsContainer />
         </ProfileBody>
       </ProfileWrapper>
     );
