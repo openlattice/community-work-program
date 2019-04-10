@@ -21,11 +21,6 @@ const sortOptions :List = List().withMutations((list :List) => {
     map.set('default', false);
   });
   list.set(2, name);
-  // const numberHours = Map().withMutations((map :Map) => {
-  //   map.set('label', 'Hours remaining');
-  //   map.set('default', false);
-  // });
-  // list.set(3, numberHours);
 });
 
 const sortDropdown :Map = Map().withMutations((map :Map) => {
@@ -37,6 +32,35 @@ const sortDropdown :Map = Map().withMutations((map :Map) => {
 
 /* Filter Participant Table by start date or sentence date */
 
+/* Participant Status */
+const participantStatuses = [
+  {
+    value: '',
+    label: 'Active',
+  },
+  {
+    value: '',
+    label: 'Noncompliant - active',
+  },
+  {
+    value: '',
+    label: 'Awaiting enrollment',
+  },
+  {
+    value: '',
+    label: 'Closed',
+  },
+  {
+    value: '',
+    label: 'Completed',
+  },
+  {
+    value: '',
+    label: 'Noncompliant - removed',
+  },
+];
+
 export {
   sortDropdown,
+  participantStatuses,
 };
