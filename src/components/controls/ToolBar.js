@@ -3,11 +3,11 @@ import React from 'react';
 import styled from 'styled-components';
 import { List, Map } from 'immutable';
 
-import StyledSelect from './StyledSelect';
 import SearchContainer from '../../containers/search/SearchContainer';
 
 import { OL } from '../../utils/constants/Colors';
 import { APP_CONTAINER_MAX_WIDTH, APP_CONTAINER_WIDTH } from '../../core/style/Sizes';
+import { StyledFunctionSelect } from './index';
 
 const ToolBarWrapper = styled.div`
   display: flex;
@@ -43,7 +43,7 @@ const ToolBar = ({ dropdowns, onSelectFunctions, search } :Props) => (
           search={search} />
       {
         dropdowns.map((dropdownMap :Map) => (
-          <StyledSelect
+          <StyledFunctionSelect
               key={dropdownMap.get('title')}
               onSelect={onSelectFunctions.get(dropdownMap.get('title'))}
               options={dropdownMap.get('enums')}
