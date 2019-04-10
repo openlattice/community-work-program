@@ -7,9 +7,9 @@ import StyledInput from '../controls/StyledInput';
 import StyledSelect from '../controls/StyledSelect';
 import searchIcon from '../../assets/svg/search-icon.svg';
 
-import { OL } from '../../utils/constants/Colors';
+import { OL } from '../../core/style/Colors';
 
-const SearchBarWrapper = styled.div`
+const ToolBarWrapper = styled.div`
   display: flex;
   justify-content: flex-start;
   align-items: center;
@@ -31,8 +31,8 @@ type Props = {
   dropdowns :List;
 };
 
-const SearchBar = ({ dropdowns } :Props) => (
-  <SearchBarWrapper>
+const ToolBar = ({ dropdowns } :Props) => (
+  <ToolBarWrapper>
     <FormattedInput
         icon={searchIcon}
         placeholder="Search name" />
@@ -45,7 +45,7 @@ const SearchBar = ({ dropdowns } :Props) => (
             title={dropdownMap.get('title')} />
       ))
     }
-  </SearchBarWrapper>
+  </ToolBarWrapper>
 );
 
-export default SearchBar;
+export default ToolBar;
