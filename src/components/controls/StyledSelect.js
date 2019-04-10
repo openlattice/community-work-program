@@ -1,260 +1,162 @@
-/*
- * @flow
- */
-
-import React, { Component } from 'react';
 import styled, { css } from 'styled-components';
-import { List, Map } from 'immutable';
-import { faTimes } from '@fortawesome/pro-regular-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import Select from 'react-select';
 
 import { OL } from '../../utils/constants/Colors';
-import downArrowIcon from '../../assets/svg/down-arrow.svg';
 
-/*
- * styled components
- */
+export const selectStyles = css`
+  .lattice-select__control {
+    min-height: 44px;
+    border-radius: 3px;
+    background-color: #f9f9fd;
+    border: solid 1px #dcdce7;
+    box-shadow: 0 0 0 0;
 
-const SelectWrapper = styled.div`
-  border: none;
-  display: flex;
-  flex-direction: column;
-  margin-right: 10px;
-  padding: 0;
-  position: relative;
-  min-width: 150px;
-  height: 35px;
-`;
-
-const InnerSelectWrapper = styled.div`
-  display: flex;
-  flex: 0 0 auto;
-  flex-direction: row;
-  position: relative;
-  width: 100%;
-  height: 100%;
-  &:hover {
-    cursor: pointer;
-  }
-`;
-
-const Select = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex: 1 0 auto;
-  border: 1px solid ${OL.GREY05};
-  border-radius: 3px;
-  color: ${OL.GREY01};
-  font-size: 14px;
-  font-weight: 600;
-  letter-spacing: 0;
-  line-height: 24px;
-  outline: none;
-  padding: 0 45px 0 10px;
-  &:focus {
-    border-color: ${OL.PURPLE02};
-  }
-  background-color: ${OL.WHITE};
-`;
-
-const SelectCategory = styled.div`
-  color: ${OL.GREY02};
-  font-size: 14px;
-  margin-left: 10px;
-`;
-
-const SelectIcon = styled.div`
-  align-self: center;
-  color: ${OL.GREY20};
-  position: absolute;
-  margin: 0 20px;
-  right: 0;
-
-  &:hover {
-    cursor: pointer;
-  }
-`;
-
-const CloseIcon = styled.div`
-  align-self: center;
-  color: ${OL.GREY20};
-  position: absolute;
-  right: 20px;
-
-  &:hover {
-    cursor: pointer;
-  }
-`;
-
-const DataTableWrapper = styled.div`
-  background-color: ${OL.GREY16};
-  border-radius: 5px;
-  border: 1px solid ${OL.GREY11};
-  position: absolute;
-  z-index: 1;
-  width: 100%;
-  visibility: ${props => (props.isVisible ? 'visible' : 'hidden')}};
-  box-shadow: 0 10px 20px 0 rgba(0, 0, 0, 0.1);
-  margin: ${props => (props.openAbove ? '-303px 0 0 0' : '45px 0 0 0')};
-  bottom: ${props => (props.openAbove ? '45px' : 'auto')};
-`;
-
-const SearchOption = styled.div`
-  padding: 10px 20px;
-
-  &:hover {
-    background-color: ${OL.GREY08};
-    cursor: pointer;
-  }
-
-  &:active {
-    background-color: ${OL.PURPLE06};
-  }
-`;
-
-const SearchOptionContainer = styled.div`
-  max-height: 300px;
-  overflow-x: auto;
-  overflow-y: scroll;
-
-  &::-webkit-scrollbar-thumb {
-    background-color: ${props => (props.scrollVisible ? OL.GREY03 : 'transparent')};
-    border-radius: ${props => (props.scrollVisible ? 3 : 0)}px;
-  }
-
-  &::-webkit-scrollbar {
-    width: ${props => (props.scrollVisible ? 10 : 0)}px;
-    display: ${props => (props.scrollVisible ? 'initial' : 'none')};
-  }
-
-`;
-
-/*
- * react component
- */
-
-type Props = {
-  openAbove :boolean;
-  onSelect :(selectedOption :Map) => void;
-  options :List;
-  scrollVisible :boolean;
-  title :string;
-};
-
-type State = {
-  isVisibleDataTable :boolean;
-  selectedLabel :string;
-};
-
-class StyledSelect extends Component<Props, State> {
-
-  static defaultProps = {
-    openAbove: false,
-    options: List(),
-    onSelect: () => {},
-    scrollVisible: false,
-    title: '',
-  };
-
-  constructor(props :Props) {
-
-    super(props);
-
-    this.state = {
-      isVisibleDataTable: false,
-      selectedLabel: '',
-    };
-  }
-
-  componentDidMount() {
-    const { options } = this.props;
-
-    if (options) {
-      options.forEach((option :Map) => {
-        if (option.get('default')) {
-          this.setState({ selectedLabel: option.get('label') });
-        }
-      });
+    :hover {
+      background-color: #f0f0f7;
+      border: solid 1px #dcdce7;
     }
   }
 
-  hideDataTable = () => {
-    this.setState({
-      isVisibleDataTable: false,
-    });
+  .lattice-select__control.lattice-select__control--is-focused {
+    border: solid 1px #6124e2;
+    box-shadow: 0 0 0 0;
+    background-color: white;
   }
 
-  showDataTable = (e :Event) => {
-    e.stopPropagation();
-
-    this.setState({
-      isVisibleDataTable: true,
-    });
+  .lattice-select__menu {
+    display: ${({ hideMenu }) => (hideMenu ? 'none' : 'block')};
   }
 
-  handleOnSelect = (selectedOption :Map) => {
-    const { onSelect } = this.props;
+  .lattice-select__option {
+    color: #555e6f;
+    font-size: 14px;
+    line-height: 19px;
 
-    this.setState({
-      selectedLabel: selectedOption.get('label'),
-    });
-
-    onSelect(selectedOption);
-    this.hideDataTable();
+    :active {
+      background-color: #e4d8ff;
+    }
   }
 
-  renderTable = () => {
-    const { scrollVisible, options } = this.props;
-    const enums = options.map(value => (
-      <SearchOption
-          key={value.get('label')}
-          onMouseDown={() => this.handleOnSelect(value)}>
-        {value.get('label')}
-      </SearchOption>
-    ));
-    return <SearchOptionContainer scrollVisible={scrollVisible}>{enums}</SearchOptionContainer>;
+  .lattice-select__option--is-focused {
+    background-color: #f0f0f7;
   }
 
-  render() {
-    const { isVisibleDataTable, selectedLabel } = this.state;
-    const {
-      openAbove,
-      title,
-    } = this.props;
-    return (
-      <SelectWrapper isVisibleDataTable={isVisibleDataTable}>
-        <InnerSelectWrapper
-            onClick={e => (isVisibleDataTable ? this.hideDataTable() : this.showDataTable(e))}>
-          <Select>
-            {title}
-            <SelectCategory>{selectedLabel}</SelectCategory>
-          </Select>
-          {
-            isVisibleDataTable ? (
-              <CloseIcon onClick={this.hideDataTable}>
-                <FontAwesomeIcon icon={faTimes} />
-              </CloseIcon>
-            ) : (
-              <SelectIcon
-                  onClick={this.showDataTable}>
-                <img src={downArrowIcon} alt="" />
-              </SelectIcon>
-            )
-          }
-        </InnerSelectWrapper>
-        {
-          !isVisibleDataTable
-            ? null
-            : (
-              <DataTableWrapper isVisible={isVisibleDataTable} openAbove={openAbove}>
-                {this.renderTable()}
-              </DataTableWrapper>
-            )
-        }
-      </SelectWrapper>
-    );
+  .lattice-select__option--is-selected {
+    background-color: #e6e6f7;
+    color: #6124e2;
   }
-}
+
+  .lattice-select__single-value {
+    color: #2e2e34;
+    font-size: 14px;
+    line-height: 19px;
+  }
+
+  .lattice-select__indicator-container {
+    margin-right: '5px';
+    color: '#b6bbc7';
+  }
+
+  .lattice-select__indicator-separator {
+    display: none;
+  }
+
+  .lattice-select__clear-indicator {
+    padding: '0';
+    margin: '5px';
+  }
+
+  .lattice-select__dropdown-indicator {
+    display: ${({ hideMenu }) => (hideMenu ? 'none' : 'flex')};
+    color: #b6bbc7;
+    padding: '0';
+    margin: '5px';
+  }
+`;
+
+const StyledSelect = styled(Select)`
+  ${selectStyles}
+`;
 
 export default StyledSelect;
+
+export const emotionStyles = {
+  container: (base, state) => {
+    const { isDisabled } = state;
+    return {
+      ...base,
+      cursor: isDisabled ? 'not-allowed' : 'default',
+      pointerEvents: 'auto',
+      width: '100%'
+    };
+  },
+  control: (base, state) => {
+    const { isFocused, isDisabled, selectProps } = state;
+    let backgroundColor = `${OL.WHITE}`;
+    let border = isFocused ? 'solid 1px #6124e2' : `solid 1px ${OL.GREY08}`;
+
+    if (selectProps && selectProps.noBorder) {
+      backgroundColor = 'transparent';
+      border = 'none';
+    }
+
+    const style = {
+      backgroundColor,
+      border,
+      borderRadius: '3px',
+      boxShadow: 'none',
+      fontSize: '14px',
+      minHeight: '44px',
+      pointerEvents: isDisabled ? 'none' : 'auto',
+      ':hover': {
+        backgroundColor,
+        border,
+      },
+    };
+    return { ...base, ...style };
+  },
+  menuPortal: base => ({ ...base, zIndex: 550 }),
+  menu: (base, state) => {
+    const { selectProps } = state;
+    const display = (selectProps && selectProps.hideMenu) ? 'none' : 'block';
+    return { ...base, display };
+  },
+  option: (base, state) => {
+    const { isFocused, isSelected } = state;
+    const color = isSelected ? '#6124e2' : '#555e6f';
+    let backgroundColor = 'white';
+
+    if (isSelected) {
+      backgroundColor = '#e6e6f7';
+    }
+    else if (isFocused) {
+      backgroundColor = '#f0f0f7';
+    }
+
+    return {
+      ...base,
+      color,
+      backgroundColor,
+      ':active': {
+        backgroundColor: '#e4d8ff'
+      }
+    };
+  },
+  singleValue: (base, state) => {
+    const { isDisabled } = state;
+    return { ...base, color: isDisabled ? '#8e929b' : '#2e2e34' };
+  },
+  indicatorSeparator: () => ({ display: 'none' }),
+  indicatorsContainer: base => ({ ...base, marginRight: '10px', color: '#b6bbc7' }),
+  clearIndicator: base => ({ ...base, padding: '0', margin: '5px' }),
+  dropdownIndicator: (base, state) => {
+    const { selectProps } = state;
+    const style = {
+      color: '#b6bbc7',
+      padding: '0',
+      margin: '5px',
+      display: selectProps && selectProps.hideMenu ? 'none' : 'flex'
+    };
+    return { ...base, ...style };
+  },
+};
