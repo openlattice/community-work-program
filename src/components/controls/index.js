@@ -9,6 +9,13 @@ import StyledInput from './input/StyledInput';
 
 import StyledFunctionSelect from './dropdowns/StyledFunctionSelect';
 import StyledSelect from './dropdowns/StyledSelect';
+
+import StyledRadio from './radio/StyledRadio';
+import RadioWidget from './radio/RadioWidget';
+
+import DateWidget from './datetime/DateWidget';
+import TimeWidget from './datetime/TimeWidget';
+
 import ToolBar from './ToolBar';
 
 export {
@@ -21,5 +28,9 @@ export {
   StyledInput,
   StyledFunctionSelect,
   StyledSelect,
+  StyledRadio,
+  RadioWidget,
+  DateWidget,
+  TimeWidget,
   ToolBar,
 };
