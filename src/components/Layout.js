@@ -11,7 +11,13 @@ const Segment = styled.div`
   padding: 30px;
 `;
 
+const ButtonWrapper = styled.div`
+  display: flex;
+  align-items: center;
+`;
+
 export {
   FixedWidthWrapper,
   Segment,
+  ButtonWrapper,
 };

@@ -19,6 +19,7 @@ import {
   StyledSelect,
 } from '../../components/controls/index';
 import { emotionStyles } from '../../components/controls/StyledSelect';
+import { ButtonWrapper } from '../../components/Layout';
 import { PARTICIPANT_PROFILE_WIDTH } from '../../core/style/Sizes';
 import { OL } from '../../utils/constants/Colors';
 import { participantStatuses } from '../participants/ParticipantsConstants';
@@ -74,10 +75,6 @@ const InnerRowWrapper = styled.div`
   width: 100%;
 `;
 
-const ButtonWrapper = styled.div`
-  display: flex;
-  align-items: center;
-`;
 
 const CalendarWrapper = styled.div`
   display: flex;
