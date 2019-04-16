@@ -179,6 +179,36 @@ export const violations = List([
   violationTwo,
 ]).asImmutable();
 
+/* WORKSITES */
+
+export const worksites = [
+  {
+    value: 'Community Garden',
+    label: 'Community Garden',
+  },
+  {
+    value: 'B&G',
+    label: 'B&G',
+  },
+  {
+    value: 'County Shop',
+    label: 'County Shop',
+  },
+  {
+    value: '24/7',
+    label: '24/7',
+  },
+];
+
+/* CASES */
+
+export const caseNumbers = [
+  {
+    value: '1234567890123456',
+    label: '1234567890123456',
+  },
+];
+
 /* APPOINTMENTS */
 
 export const upcomingApptOne = Map().withMutations((map :Map) => {
