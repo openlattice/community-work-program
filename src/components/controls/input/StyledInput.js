@@ -1,7 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 
-import { OL } from '../../utils/constants/Colors';
+import { OL } from '../../../utils/constants/Colors';
 
 const StyledInput = styled.input`
   display: flex;

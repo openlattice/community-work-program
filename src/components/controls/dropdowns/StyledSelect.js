@@ -1,7 +1,7 @@
 import styled, { css } from 'styled-components';
 import Select from 'react-select';
 
-import { OL } from '../../utils/constants/Colors';
+import { OL } from '../../../utils/constants/Colors';
 
 export const selectStyles = css`
   .lattice-select__control {

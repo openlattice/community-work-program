@@ -4,9 +4,11 @@ import PrimaryButton from './buttons/PrimaryButton';
 import StyledButton from './buttons/StyledButton';
 import SecondaryButton from './buttons/SecondaryButton';
 import TertiaryButton from './buttons/TertiaryButton';
-import StyledInput from './StyledInput';
-import StyledFunctionSelect from './StyledFunctionSelect';
-import StyledSelect from './StyledSelect';
+
+import StyledInput from './input/StyledInput';
+
+import StyledFunctionSelect from './dropdowns/StyledFunctionSelect';
+import StyledSelect from './dropdowns/StyledSelect';
 import ToolBar from './ToolBar';
 
 export {

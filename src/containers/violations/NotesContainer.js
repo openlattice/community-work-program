@@ -12,7 +12,7 @@ import SubmitStates from '../../utils/constants/SubmitStates';
 
 import { Segment } from '../../components/Layout';
 import { StyledSelect } from '../../components/controls';
-import { emotionStyles } from '../../components/controls/StyledSelect';
+import { emotionStyles } from '../../components/controls/dropdowns/StyledSelect';
 import type { FetchState } from '../../utils/constants/FetchStates';
 import type { SubmitState } from '../../utils/constants/SubmitStates';
 import { violations } from '../participants/FakeData';
