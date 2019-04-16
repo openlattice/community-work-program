@@ -23,6 +23,7 @@
   },
   "license": "GPL-3.0",
   "dependencies": {
+    "@atlaskit/datetime-picker": "^7.0.3",
     "@babel/polyfill": "~7.2.0",
     "@babel/runtime": "~7.3.0",
     "@fortawesome/fontawesome-svg-core": "~1.2.0",
@@ -43,6 +44,7 @@
     "loglevel": "~1.6.0",
     "moment": "~2.24.0",
     "polished": "~3.0.0",
+    "prop-types": "^15.7.2",
     "react": "~16.8.0",
     "react-big-calendar": "^0.20.4",
     "react-dom": "~16.8.0",
