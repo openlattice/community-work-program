@@ -178,3 +178,56 @@ export const violations = List([
   violationOne,
   violationTwo,
 ]).asImmutable();
+
+/* APPOINTMENTS */
+
+export const upcomingApptOne = Map().withMutations((map :Map) => {
+  map.set('id', '1234567890');
+  map.set('datetimestart', '2019-04-30T15:30:00.000Z');
+  map.set('datetimeend', '2019-04-30T19:30:00.000Z');
+  map.set('worksite', 'Community Garden');
+});
+
+export const upcomingApptTwo = Map().withMutations((map :Map) => {
+  map.set('id', '0987654321');
+  map.set('datetimestart', '2019-05-02T18:00:00.000Z');
+  map.set('datetimeend', '2019-05-02T20:00:00.000Z');
+  map.set('worksite', 'B&G');
+});
+
+export const upcomingApptThree = Map().withMutations((map :Map) => {
+  map.set('id', '1029384756');
+  map.set('datetimestart', '2019-05-04T20:00:00.000Z');
+  map.set('datetimeend', '2019-05-02T23:00:00.000Z');
+  map.set('worksite', 'Pennington County General Store');
+});
+
+export const pastApptOne = Map().withMutations((map :Map) => {
+  map.set('id', '0192837465');
+  map.set('datetimestart', '2019-03-20T20:00:00.000Z');
+  map.set('datetimeend', '2019-03-20T23:00:00.000Z');
+  map.set('worksite', 'Pennington County General Store');
+});
+
+export const pastApptTwo = Map().withMutations((map :Map) => {
+  map.set('id', '7765531923');
+  map.set('datetimestart', '2019-03-13T20:00:00.000Z');
+  map.set('datetimeend', '2019-03-13T23:00:00.000Z');
+  map.set('worksite', 'Community Garden');
+});
+
+export const pastApptThree = Map().withMutations((map :Map) => {
+  map.set('id', '9982344324');
+  map.set('datetimestart', '2019-04-01T15:00:00.000Z');
+  map.set('datetimeend', '2019-04-01T20:00:00.000Z');
+  map.set('worksite', 'B&G');
+});
+
+export const tommyAppts = List([
+  upcomingApptOne,
+  upcomingApptTwo,
+  upcomingApptThree,
+  pastApptOne,
+  pastApptTwo,
+  pastApptThree,
+]).asImmutable();

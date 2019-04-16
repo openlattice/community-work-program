@@ -8,6 +8,7 @@ import { Modal } from 'lattice-ui-kit';
 import GeneralInfo from '../../components/participant/GeneralInfo';
 import KeyDates from '../../components/participant/KeyDates';
 import CaseInfo from '../../components/participant/CaseInfo';
+import ParticipantWorkSchedule from '../schedule/ParticipantWorkSchedule';
 import ViolationsDisplay from '../../components/participant/ViolationsDisplay';
 import WarningsViolationsContainer from '../violations/WarningsViolationsContainer';
 import * as Routes from '../../core/router/Routes';
@@ -44,7 +45,7 @@ const ProfileBody = styled.div`
 `;
 
 const NameRowWrapper = styled.div`
-  margin: 15px;
+  margin: 15px 0;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -56,7 +57,8 @@ const NameHeader = styled.div`
   color: ${OL.BLACK};
 `;
 
-const RowWrapper = styled.div`
+const BasicInfoWrapper = styled.div`
+  margin-top: 15px;
   width: 100%;
   display: flex;
   justify-content: space-between;
@@ -75,23 +77,9 @@ const InnerRowWrapper = styled.div`
   width: 100%;
 `;
 
-
-const CalendarWrapper = styled.div`
-  display: flex;
-  height: 600px;
-  width: 100%;
-  border: 1px solid ${OL.GREY08};
-  border-radius: 5px;
-  margin: 15px 0;
-  background-color: ${OL.WHITE};
-`;
-
 const ModalBodyWrapper = styled.div`
   width: 400px;
   height: 110px;
-  /* display: flex;
-  flex-direction: column;
-  justify-content: center; */
   display: grid;
 `;
 
@@ -202,7 +190,7 @@ class ParticipantProfile extends Component<Props, State> {
             </PrimaryButton>
             { this.renderEnrollmentModal() }
           </NameRowWrapper>
-          <RowWrapper>
+          <BasicInfoWrapper>
             <GeneralInfo
                 contactInfo={contactInfo}
                 person={person} />
@@ -214,16 +202,14 @@ class ParticipantProfile extends Component<Props, State> {
                 <ViolationsDisplay />
               </InnerRowWrapper>
             </InnerColumnWrapper>
-          </RowWrapper>
+          </BasicInfoWrapper>
         </ProfileBody>
         <ProfileBody>
           <NameRowWrapper>
             <NameHeader>Work Schedule</NameHeader>
-            <ButtonWrapper>
-              <TertiaryButton>Print Schedule</TertiaryButton>
-              <TertiaryButton>Create Appointment</TertiaryButton>
-            </ButtonWrapper>
           </NameRowWrapper>
+          <ParticipantWorkSchedule
+              person={person} />
         </ProfileBody>
         <ProfileBody>
           <NameRowWrapper>
