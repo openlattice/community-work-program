@@ -19,6 +19,7 @@ const Cell = styled.td`
   font-family: 'Open Sans', sans-serif;
   font-size: ${props => (props.small ? '12' : '14')}px;
   text-align: left;
+  font-weight: ${props => props.fontWeight};
   color: ${(props) => {
     if (props.status === 'Active') {
       return `${OL.GREEN02};`;
@@ -26,10 +27,10 @@ const Cell = styled.td`
     if (props.status === 'Completed') {
       return `${OL.BLUE02};`;
     }
-    if (props.status === 'Noncompliant - active') {
+    if (props.status === 'Active – noncompliant') {
       return `${OL.YELLOW01};`;
     }
-    if (props.status === 'Noncompliant - removed') {
+    if (props.status === 'Removed – noncompliant') {
       return `${OL.RED01};`;
     }
     if (props.status === 'Awaiting enrollment') {
@@ -128,7 +129,7 @@ const TableRow = ({
       <Cell small={small}>{ startDate }</Cell>
       <Cell small={small}>{ sentenceDate }</Cell>
       <Cell small={small}>{ sentenceEndDate }</Cell>
-      <Cell small={small} status={status}>{ status }</Cell>
+      <Cell small={small} status={status} fontWeight={600}>{ status }</Cell>
       <Cell small={small}>{ hoursServed }</Cell>
       <Cell small={small}>{ numberOfWarnings }</Cell>
       <Cell small={small}>{ numberOfViolations }</Cell>

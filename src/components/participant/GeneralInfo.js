@@ -60,6 +60,7 @@ const Title = styled.div`
 const Value = styled.div`
   text-align: left;
   width: 60%;
+  font-weight: ${props => props.fontWeight};
   color: ${(props) => {
     if (props.status === 'Active') {
       return `${OL.GREEN02};`;
@@ -67,16 +68,16 @@ const Value = styled.div`
     if (props.status === 'Completed') {
       return `${OL.BLUE02};`;
     }
-    if (props.status === 'Noncompliant - active') {
+    if (props.status === 'Active – noncompliant') {
       return `${OL.YELLOW01};`;
     }
-    if (props.status === 'Noncompliant - removed') {
+    if (props.status === 'Removed – noncompliant') {
       return `${OL.RED01};`;
     }
     if (props.status === 'Awaiting enrollment') {
       return `${OL.PURPLE03};`;
     }
-    return `${OL.BLACK};`;
+    return `${OL.GREY01};`;
   }}
 `;
 
@@ -98,7 +99,11 @@ const GeneralInfo = ({ contactInfo, person } :Props) => (
     }
     <InfoRow>
       <Title>Status</Title>
-      <Value status={person.get('status')}>{person.get('status')}</Value>
+      <Value
+          status={person.get('status')}
+          fontWeight={600}>
+        {person.get('status')}
+      </Value>
     </InfoRow>
     <InfoRow>
       <Title>Date of Birth</Title>

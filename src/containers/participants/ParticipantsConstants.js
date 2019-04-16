@@ -40,7 +40,7 @@ const participantStatuses = [
   },
   {
     value: '',
-    label: 'Noncompliant - active',
+    label: 'Active – noncompliant',
   },
   {
     value: '',
@@ -56,7 +56,7 @@ const participantStatuses = [
   },
   {
     value: '',
-    label: 'Noncompliant - removed',
+    label: 'Removed – noncompliant',
   },
 ];
 

@@ -43,7 +43,7 @@ export const personThree = Map().withMutations((map :Map) => {
   map.set('numberOfWarnings', 3);
   map.set('numberOfViolations', 1);
   map.set('personId', '2yehf8as124124hbjhrb');
-  map.set('status', 'Noncompliant - active');
+  map.set('status', 'Active – noncompliant');
   map.set('caseNumber: ', '123456789012345');
   map.set('dateOfBirth', '12/04/1990');
 });
@@ -88,7 +88,7 @@ export const personSix = Map().withMutations((map :Map) => {
   map.set('numberOfWarnings', 3);
   map.set('numberOfViolations', 2);
   map.set('personId', '12r4242412sdhlfahgas');
-  map.set('status', 'Noncompliant - removed');
+  map.set('status', 'Removed – noncompliant');
   map.set('caseNumber: ', '123456789012345');
   map.set('dateOfBirth', '06/27/1995');
 });
