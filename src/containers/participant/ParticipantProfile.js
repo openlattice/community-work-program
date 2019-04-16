@@ -2,7 +2,8 @@
 import React, { Component } from 'react';
 import styled from 'styled-components';
 import { Map } from 'immutable';
-import type { RouterHistory } from 'react-router';
+import { Link, withRouter } from 'react-router-dom';
+import type { Match, RouterHistory } from 'react-router';
 import { Modal } from 'lattice-ui-kit';
 
 import GeneralInfo from '../../components/participant/GeneralInfo';
@@ -83,6 +84,38 @@ const ModalBodyWrapper = styled.div`
   display: grid;
 `;
 
+const TertiaryButtonLink = styled(Link)`
+  display: flex;
+  justify-content: center;
+  align-content: center;
+  align-items: center;
+  margin-left: 20px;
+  padding: 8px 30px;
+  cursor: pointer;
+  font-family: 'Open Sans', Arial, sans-serif;
+  line-height: 20px;
+  font-size: 14px;
+  font-spacing: 2px;
+  font-weight: 600;
+  text-align: center;
+  text-decoration: none;
+  white-space: nowrap;
+  width: auto;
+  background-color: ${OL.WHITE};
+  color: ${OL.GREY02};
+  border: 1px solid ${OL.GREY08};
+  border-radius: 3px;
+
+  &:hover:enabled {
+    background-color: ${OL.GREY05};
+  }
+
+  &:active:enabled {
+    background-color: ${OL.GREY02};
+    color: ${OL.WHITE};
+  }
+`;
+
 const ActionWrapper = styled.div`
   position: fixed;
   width: 400px;
@@ -101,11 +134,13 @@ const ModalText = styled.div`
 type Props = {
   contactInfo :Map;
   history :RouterHistory;
+  match :Match;
   person :Map;
 };
 
 type State = {
   isEnrollmentModalVisible :boolean;
+  isWarningsModalVisible :boolean;
 };
 
 class ParticipantProfile extends Component<Props, State> {
@@ -115,6 +150,7 @@ class ParticipantProfile extends Component<Props, State> {
 
     this.state = {
       isEnrollmentModalVisible: false,
+      isWarningsModalVisible: false,
     };
   }
 
@@ -163,6 +199,16 @@ class ParticipantProfile extends Component<Props, State> {
         </ModalBodyWrapper>
       </Modal>
     );
+  }
+
+  reportWarningOrViolation = () => {
+    // const { history, match } = this.props;
+    // const { subjectId } = match.params;
+    // if (subjectId) {
+    //   history.push(Routes.WARNINGS_VIOLATIONS_FORM.replace(':subjectId', subjectId));
+    // }
+    const { history, person } = this.props;
+    history.push(Routes.WARNINGS_VIOLATIONS_FORM.replace(':subjectId', person.get('personId')));
   }
 
   showEnrollmentModal = () => {
@@ -215,7 +261,10 @@ class ParticipantProfile extends Component<Props, State> {
           <NameRowWrapper>
             <NameHeader>Warnings & Violations</NameHeader>
             <ButtonWrapper>
-              <TertiaryButton>Report Warning or Violation</TertiaryButton>
+              <TertiaryButtonLink
+                  to={Routes.WARNINGS_VIOLATIONS_FORM.replace(':subjectId', person.get('personId'))}>
+                Report Warning or Violation
+              </TertiaryButtonLink>
             </ButtonWrapper>
           </NameRowWrapper>
           <WarningsViolationsContainer />
@@ -225,4 +274,4 @@ class ParticipantProfile extends Component<Props, State> {
   }
 }
 
-export default ParticipantProfile;
+export default withRouter(ParticipantProfile);

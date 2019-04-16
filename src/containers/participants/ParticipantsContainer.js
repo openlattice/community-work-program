@@ -5,6 +5,7 @@ import { Map } from 'immutable';
 
 import ParticipantsSearchContainer from './ParticipantsSearchContainer';
 import ParticipantProfile from '../participant/ParticipantProfile';
+import NewWarningViolationContainer from '../violations/NewWarningViolationContainer';
 
 import * as Routes from '../../core/router/Routes';
 
@@ -34,6 +35,13 @@ class ParticipantsContainer extends Component<Props, State> {
     const { selectedPerson, selectedContactInfo } = this.state;
     return (
       <Switch>
+        <Route
+            path={Routes.WARNINGS_VIOLATIONS_FORM}
+            render={props => (
+              <NewWarningViolationContainer
+                  person={selectedPerson}
+                  {...props} />
+            )} />
         <Route
             path={Routes.PARTICIPANT_PROFILE}
             render={props => (
