@@ -3,6 +3,7 @@
 import React, { Component } from 'react';
 import styled from 'styled-components';
 import { Map, List } from 'immutable';
+import moment from 'moment';
 import type { RouterHistory } from 'react-router';
 
 import * as Routes from '../../core/router/Routes';
@@ -18,6 +19,7 @@ import {
   TimeWidget,
 } from '../../components/controls/index';
 import { worksites, caseNumbers } from '../participants/FakeData';
+import { ISO_DATE_FORMAT, TIME_HM_FORMAT } from '../../utils/DateTimeUtils';
 
 const FormWrapper = styled.div`
   width: ${PARTICIPANT_PROFILE_WIDTH}px;
@@ -149,6 +151,41 @@ class NewWarningViolationContainer extends Component<Props, State> {
     };
   }
 
+  getSplitDateAndTime = () :State => {
+    const { formData } = this.state;
+    const date = moment(formData.get('datetime')).format(ISO_DATE_FORMAT);
+    const time = moment(formData.get('datetime')).format(TIME_HM_FORMAT);
+    return {
+      date,
+      time
+    };
+  }
+
+  mergeDateWithTime = (date, time) => {
+    let dateTime;
+
+    if (date || time) {
+      const dateValue = date || moment().format(ISO_DATE_FORMAT);
+      const timeValue = time || moment().startOf('day').format(TIME_HM_FORMAT);
+      dateTime = moment(`${dateValue} ${timeValue}`).toISOString(true);
+    }
+    return dateTime;
+  }
+
+  handleDateTimeChange = (value :string, type :string) => {
+    let { formData } = this.state;
+    const { date, time } = this.getSplitDateAndTime();
+    let newDateTime;
+    if (type === 'date') {
+      newDateTime = this.mergeDateWithTime(value, time);
+    }
+    if (type === 'time') {
+      newDateTime = this.mergeDateWithTime(date, value);
+    }
+    formData = formData.set('datetime', newDateTime);
+    this.setState({ formData });
+  }
+
   storeReportLevel = (value :string) => {
     let { formData } = this.state;
     formData = formData.set('reportLevel', value);
@@ -159,6 +196,7 @@ class NewWarningViolationContainer extends Component<Props, State> {
     const { formData } = this.state;
     const { history, location } = this.props;
     const personId = location.pathname.split('/')[2];
+    const { date, time } = this.getSplitDateAndTime();
     return (
       <FormWrapper>
         <BackNavButton
@@ -204,7 +242,8 @@ class NewWarningViolationContainer extends Component<Props, State> {
                 <ActionWrapper width={300}>
                   <DateWidget
                       id="warningViolationDate"
-                      onChange={value => console.log(value)}
+                      onChange={this.handleDateTimeChange}
+                      value={date} />
                 </ActionWrapper>
               </InfoBlock>
               <InfoBlock>
@@ -212,7 +251,8 @@ class NewWarningViolationContainer extends Component<Props, State> {
                 <ActionWrapper width={300}>
                   <TimeWidget
                       id="warningViolationTime"
-                      onChange={value => console.log(value)}
+                      onChange={this.handleDateTimeChange}
+                      value={time} />
                 </ActionWrapper>
               </InfoBlock>
             </InfoRow>

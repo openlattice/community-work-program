@@ -6,16 +6,13 @@ import React, { PureComponent } from 'react';
 import moment from 'moment';
 import { DatePicker } from '@atlaskit/datetime-picker';
 import { emotionStyles } from '../dropdowns/StyledSelect';
-// import { DATE_MDY_SLASH_FORMAT, ISO_DATE_FORMAT } from '../../../utils/DateTimeUtils';
-const DATE_MDY_SLASH_FORMAT :string = 'MM/DD/YYYY';
+import { DATE_MDY_SLASH_FORMAT, ISO_DATE_FORMAT } from '../../../utils/DateTimeUtils';
 
-const ISO_DATE_FORMAT :string = 'YYYY-MM-DD';
 type Props = {
   disabled ? :boolean,
   format ? :string,
   id :string,
   onChange :(value :string | moment | void) => void,
-  options :{now :boolean},
   value ? :string | moment,
 };
 
@@ -28,16 +25,15 @@ class DateWidget extends PureComponent<Props> {
   }
 
   componentDidMount() {
-    const { options, value } = this.props;
-    console.log('options: ', options);
-    if (!value && options && options.now) {
+    const { value } = this.props;
+    if (!value) {
       this.handleChange(moment().format(ISO_DATE_FORMAT));
     }
   }
 
   handleChange = (value :string | moment) => {
     const { onChange } = this.props;
-    onChange(value || undefined);
+    onChange(value || undefined, 'date');
   }
 
   render() {
@@ -50,14 +46,13 @@ class DateWidget extends PureComponent<Props> {
         value
       },
     } = this;
-
     return (
       <DatePicker
           dateFormat={format}
           id={id}
           isDisabled={disabled}
+          disabled={[]}
           onChange={handleChange}
-          placeholder={DATE_MDY_SLASH_FORMAT}
           selectProps={{ styles: emotionStyles }}
           value={value} />
     );
