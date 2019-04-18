@@ -140,7 +140,6 @@ type Props = {
 
 type State = {
   isEnrollmentModalVisible :boolean;
-  isWarningsModalVisible :boolean;
 };
 
 class ParticipantProfile extends Component<Props, State> {
@@ -150,7 +149,6 @@ class ParticipantProfile extends Component<Props, State> {
 
     this.state = {
       isEnrollmentModalVisible: false,
-      isWarningsModalVisible: false,
     };
   }
 
