@@ -31,7 +31,7 @@ const FormWrapper = styled.div`
   position: relative;
 `;
 
-const ProfileBody = styled.div`
+const FormBody = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -205,7 +205,7 @@ class NewWarningViolationContainer extends Component<Props, State> {
             }}>
           Back to Participant's Profile
         </BackNavButton>
-        <ProfileBody>
+        <FormBody>
           <NameRowWrapper>
             <NameHeader>Warning or Violation</NameHeader>
             <PrimaryButton>Submit Report</PrimaryButton>
@@ -263,7 +263,7 @@ class NewWarningViolationContainer extends Component<Props, State> {
               </InfoBlock>
             </InfoRow>
           </InfoWrapper>
-        </ProfileBody>
+        </FormBody>
       </FormWrapper>
     );
   }
