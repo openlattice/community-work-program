@@ -203,11 +203,8 @@ class NewWarningViolationContainer extends Component<Props, State> {
                 <Title>Date of Incident</Title>
                 <ActionWrapper width={300}>
                   <DateWidget
-                      appearance={emotionStyles}
                       id="warningViolationDate"
-                      onBlur={() => console.log('blur')}
                       onChange={value => console.log(value)}
-                      onFocus={() => console.log('focus')} />
                 </ActionWrapper>
               </InfoBlock>
               <InfoBlock>
@@ -215,9 +212,7 @@ class NewWarningViolationContainer extends Component<Props, State> {
                 <ActionWrapper width={300}>
                   <TimeWidget
                       id="warningViolationTime"
-                      onBlur={() => console.log('blur')}
                       onChange={value => console.log(value)}
-                      onFocus={() => console.log('focus')} />
                 </ActionWrapper>
               </InfoBlock>
             </InfoRow>
