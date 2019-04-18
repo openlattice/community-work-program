@@ -137,7 +137,7 @@ type Props = {
 };
 
 type State = {
-  data :Map;
+  formData :Map;
 };
 
 class NewWarningViolationContainer extends Component<Props, State> {
@@ -145,24 +145,18 @@ class NewWarningViolationContainer extends Component<Props, State> {
     super(props);
 
     this.state = {
-      data: defaultData,
+      formData: defaultData,
     };
   }
 
   storeReportLevel = (value :string) => {
-    let { data } = this.state;
-    data = data.set('reportLevel', value);
-    this.setState({ data });
-  }
-
-  storeDateTime = (value :string) => {
-    let { data } = this.state;
-    data = data.set('datetime', value);
-    this.setState({ data });
+    let { formData } = this.state;
+    formData = formData.set('reportLevel', value);
+    this.setState({ formData });
   }
 
   render() {
-    const { data } = this.state;
+    const { formData } = this.state;
     const { history, location } = this.props;
     const personId = location.pathname.split('/')[2];
     return (
@@ -185,7 +179,7 @@ class NewWarningViolationContainer extends Component<Props, State> {
                 <RadioWidget
                     onChange={this.storeReportLevel}
                     options={radioOptions}
-                    value={data.get('reportLevel')} />
+                    value={formData.get('reportLevel')} />
               </InfoBlock>
               <InfoBlock>
                 <Title>Worksite</Title>
