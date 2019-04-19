@@ -9,4 +9,5 @@ export const PARTICIPANTS :string = '/participants';
 export const WORKSITES :string = '/worksites';
 
 export const PARTICIPANT_PROFILE :string = `${PARTICIPANTS}/:subjectId`;
+export const NEW_APPOINTMENT :string = `${PARTICIPANT_PROFILE}/newappointment`;
 export const WARNINGS_VIOLATIONS_FORM :string = `${PARTICIPANT_PROFILE}/reportwarningorviolation`;

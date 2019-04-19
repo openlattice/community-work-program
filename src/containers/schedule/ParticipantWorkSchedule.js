@@ -2,11 +2,13 @@
 import React, { Component } from 'react';
 import styled from 'styled-components';
 import { Map, List } from 'immutable';
+import { withRouter } from 'react-router-dom';
 
 import AppointmentBlock from './AppointmentBlock';
+import * as Routes from '../../core/router/Routes';
 
 import { ButtonWrapper } from '../../components/Layout';
-import { TertiaryButton } from '../../components/controls/index';
+import { TertiaryButton, TertiaryButtonLink } from '../../components/controls/index';
 import { OL } from '../../utils/constants/Colors';
 import { tommyAppts } from '../participants/FakeData';
 
@@ -57,6 +59,7 @@ type Props = {
 };
 
 type State = {
+  isAppointmentModalVisible :boolean;
   selectedView :string;
 };
 
@@ -66,6 +69,7 @@ class ParticipantWorkSchedule extends Component<Props, State> {
     super(props);
 
     this.state = {
+      isAppointmentModalVisible: false,
       selectedView: scheduleViews[1],
     };
   }
@@ -93,6 +97,10 @@ class ParticipantWorkSchedule extends Component<Props, State> {
     return filteredList;
   }
 
+  hideAppointmentModal = () => {
+    this.setState({ isAppointmentModalVisible: false });
+  }
+
   renderAppointmentList = () => {
     const sortedAppointmentsList = this.sortAppointmentsByDate();
     const filteredSortedList = this.filterAppointmentList(sortedAppointmentsList);
@@ -101,6 +109,21 @@ class ParticipantWorkSchedule extends Component<Props, State> {
           appointment={appt}
           key={appt.get('id')} />
     ));
+  }
+
+  renderAppointmentModal = () => {
+    const { person } = this.props;
+    const { isAppointmentModalVisible } = this.state;
+    return (
+      <NewAppointmentModal
+          hideModal={this.hideAppointmentModal}
+          isVisible={isAppointmentModalVisible}
+          person={person} />
+    );
+  }
+
+  showAppointmentModal = () => {
+    this.setState({ isAppointmentModalVisible: true });
   }
 
   sortAppointmentsByDate = () => {
@@ -122,6 +145,7 @@ class ParticipantWorkSchedule extends Component<Props, State> {
 
   render() {
     const { selectedView } = this.state;
+    const { person } = this.props;
     return (
       <ComponentWrapper>
         <RowWrapper>
@@ -142,7 +166,10 @@ class ParticipantWorkSchedule extends Component<Props, State> {
           </Menu>
           <ButtonWrapper>
             <TertiaryButton>Print Schedule</TertiaryButton>
-            <TertiaryButton>Create Appointment</TertiaryButton>
+            <TertiaryButtonLink
+                to={Routes.NEW_APPOINTMENT.replace(':subjectId', person.get('personId'))}>
+              Create Appointment
+            </TertiaryButtonLink>
           </ButtonWrapper>
         </RowWrapper>
         <BodyWrapper>
@@ -153,4 +180,4 @@ class ParticipantWorkSchedule extends Component<Props, State> {
   }
 }
 
-export default ParticipantWorkSchedule;
+export default withRouter(ParticipantWorkSchedule);
