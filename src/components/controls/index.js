@@ -3,6 +3,7 @@ import NavButton from './buttons/NavButton';
 import PrimaryButton from './buttons/PrimaryButton';
 import StyledButton from './buttons/StyledButton';
 import TertiaryButton from './buttons/TertiaryButton';
+import TertiaryButtonLink from './buttons/TertiaryButtonLink';
 
 import StyledFunctionSelect from './dropdowns/StyledFunctionSelect';
 import StyledSelect from './dropdowns/StyledSelect';
@@ -20,5 +21,6 @@ export {
   StyledInput,
   StyledSelect,
   TertiaryButton,
+  TertiaryButtonLink,
   ToolBar,
 };
