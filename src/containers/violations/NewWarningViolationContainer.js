@@ -62,7 +62,7 @@ const InfoWrapper = styled.div`
   background-color: ${OL.WHITE};
   border: 1px solid ${OL.GREY08};
   border-radius: 5px;
-  padding: 30px;
+  padding: 40px 40px 40px 100px;
   min-height: 400px;
 `;
 
