@@ -4,6 +4,7 @@ import PrimaryButton from './buttons/PrimaryButton';
 import StyledButton from './buttons/StyledButton';
 import SecondaryButton from './buttons/SecondaryButton';
 import TertiaryButton from './buttons/TertiaryButton';
+import TertiaryButtonLink from './buttons/TertiaryButtonLink';
 
 import StyledInput from './input/StyledInput';
 
@@ -24,6 +25,7 @@ export {
   PrimaryButton,
   SecondaryButton,
   TertiaryButton,
+  TertiaryButtonLink,
   StyledButton,
   StyledInput,
   StyledFunctionSelect,
