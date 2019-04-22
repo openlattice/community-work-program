@@ -47,8 +47,6 @@ const AppContentInnerWrapper = styled.div`
   flex: 1 0 auto;
   flex-direction: column;
   justify-content: flex-start;
-  max-width: ${APP_CONTAINER_MAX_WIDTH}px;
-  padding: ${APP_CONTENT_PADDING}px;
   position: relative;
 `;
 
