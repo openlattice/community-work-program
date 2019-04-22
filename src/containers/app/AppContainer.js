@@ -13,7 +13,7 @@ import AppHeaderContainer from './AppHeaderContainer';
 import Spinner from '../../components/spinner/Spinner';
 import Dashboard from '../dashboard/Dashboard';
 import ParticipantsSearchContainer from '../participants/ParticipantsSearchContainer';
-import Worksites from '../worksites/Worksites';
+import WorksitesContainer from '../worksites/WorksitesContainer';
 import * as AppActions from './AppActions';
 import * as Routes from '../../core/router/Routes';
 import {
@@ -76,7 +76,7 @@ class AppContainer extends Component<Props> {
       <Switch>
         <Route exact strict path={Routes.DASHBOARD} component={Dashboard} />
         <Route path={Routes.PARTICIPANTS} component={ParticipantsSearchContainer} />
-        <Route path={Routes.WORKSITES} component={Worksites} />
+        <Route path={Routes.WORKSITES} component={WorksitesContainer} />
         <Redirect to={Routes.DASHBOARD} />
       </Switch>
     );
