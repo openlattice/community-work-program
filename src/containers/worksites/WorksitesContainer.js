@@ -32,6 +32,7 @@ import { organizations, worksites } from './FakeData';
 const dropdowns :List = List().withMutations((list :List) => {
   list.set(0, statusDropdown);
 });
+const defaultFilterOption :Map = statusDropdown.get('enums').find(option => option.get('default'));
 
 /*
  * Props and State
@@ -40,22 +41,67 @@ const dropdowns :List = List().withMutations((list :List) => {
 type Props = {
 };
 
+type State = {
+  numberTotalWorksitesToRender :number;
+  organizationsToRender :List;
+  selectedFilterOption :Map;
+};
+
 /*
  * React component
  */
 
-class WorksitesContainer extends Component<Props> {
+class WorksitesContainer extends Component<Props, State> {
 
-  handleOnFilter = () => {
+  constructor(props :Props) {
+    super(props);
+
+    this.state = {
+      numberTotalWorksitesToRender: worksites.count(),
+      organizationsToRender: organizations,
+      selectedFilterOption: defaultFilterOption,
+    };
+  }
+
+  componentDidMount() {
+    this.setState({ organizationsToRender: organizations });
+  }
+
+  handleOnFilter = (clickedStatus :Map) => {
+    this.setState({ selectedFilterOption: clickedStatus });
+    const statusName :string = clickedStatus.get('label').toLowerCase();
+    let filteredOrgs = organizations;
+    if (statusName !== 'all') {
+      filteredOrgs = organizations.filter((org :Map) => (
+        org.get('status').toLowerCase() === statusName
+      ));
+    }
+    this.setState({ organizationsToRender: filteredOrgs });
+
+    let numberOfWorksites = 0;
+    filteredOrgs.forEach((org :Map) => {
+      worksites.forEach((worksite :Map) => {
+        if (org.get('name') === worksite.get('organization')) {
+          numberOfWorksites += 1;
+        }
+      });
+    });
+    this.setState({ numberTotalWorksitesToRender: numberOfWorksites });
+    return filteredOrgs;
+  }
+
+  handleOnSearch = () => {
   }
 
   render() {
+    const { numberTotalWorksitesToRender, organizationsToRender } = this.state;
     const onSelectFunctions :Map = Map().withMutations((map :Map) => {
       map.set('Status', this.handleOnFilter);
     });
-    const orgSubHeader :string = organizations.count() !== 1
-      ? `${organizations.count()} Organizations` : '1 Organization';
-    const worksiteSubHeader :string = worksites.count() !== 1 ? `${worksites.count()} Worksites` : '1 Worksite';
+    const orgSubHeader :string = organizationsToRender.count() !== 1
+      ? `${organizationsToRender.count()} Organizations` : '1 Organization';
+    const worksiteSubHeader :string = numberTotalWorksitesToRender !== 1
+      ? `${numberTotalWorksitesToRender} Worksites` : '1 Worksite';
     return (
       <ContainerOuterWrapper>
         <ToolBar
@@ -72,7 +118,7 @@ class WorksitesContainer extends Component<Props> {
             <ContainerSubHeader>{worksiteSubHeader}</ContainerSubHeader>
           </HeaderWrapper>
           {
-            organizations.map((org :Map) => {
+            organizationsToRender.map((org :Map) => {
               const orgWorksites = worksites.filter(
                 (worksite :Map) => worksite.get('organization') === org.get('name')
               );
