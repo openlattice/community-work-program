@@ -17,7 +17,6 @@ const ToolBarWrapper = styled.div`
   height: 50px;
   border-bottom: 1px solid ${OL.GREY11};
   background-color: ${OL.WHITE};
-  padding: 0 20px;
 `;
 
 const ToolBarInnerWrapper = styled.div`
@@ -28,6 +27,7 @@ const ToolBarInnerWrapper = styled.div`
   flex: 1 0 auto;
   justify-content: space-between;
   align-items: center;
+  padding: 0 30px;
 `;
 
 const ActionsWrapper = styled.span`
