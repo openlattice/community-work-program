@@ -16,6 +16,7 @@ import {
   Separator,
 } from '../../components/Layout';
 import { ToolBar } from '../../components/controls/index';
+import { isDefined } from '../../utils/LangUtils';
 import { OL } from '../../core/style/Colors';
 
 /* Fake Data */
@@ -67,29 +68,45 @@ class WorksitesContainer extends Component<Props, State> {
     this.setState({ organizationsToRender: organizations });
   }
 
-  handleOnFilter = (clickedStatus :Map) => {
-    const statusName :string = clickedStatus.get('label').toLowerCase();
-    let filteredOrgs = organizations;
-    if (statusName !== 'all') {
-      filteredOrgs = organizations.filter((org :Map) => (
-        org.get('status').toLowerCase() === statusName
-      ));
-    }
-    this.setState({ organizationsToRender: filteredOrgs });
-
+  getNumberOfWorksites = (orgs :List) => {
     let numberOfWorksites = 0;
-    filteredOrgs.forEach((org :Map) => {
+    orgs.forEach((org :Map) => {
       worksites.forEach((worksite :Map) => {
         if (org.get('name') === worksite.get('organization')) {
           numberOfWorksites += 1;
         }
       });
     });
-    this.setState({ numberTotalWorksitesToRender: numberOfWorksites });
-    return filteredOrgs;
+    return numberOfWorksites;
   }
 
-  handleOnSearch = () => {
+  handleOnFilter = (clickedStatus :Map, orgs :List) => {
+    this.setState({ selectedFilter: clickedStatus });
+    const statusName :string = clickedStatus.get('label').toLowerCase();
+    const orgsToFilter = isDefined(orgs) ? orgs : organizations;
+    let filteredOrgs = orgsToFilter;
+    if (statusName !== 'all') {
+      filteredOrgs = orgsToFilter.filter((org :Map) => (
+        org.get('status').toLowerCase() === statusName
+      ));
+    }
+    const numberOfWorksites :number = this.getNumberOfWorksites(filteredOrgs);
+
+    this.setState({
+      numberWorksitesToRender: numberOfWorksites,
+      organizationsToRender: filteredOrgs,
+    });
+  }
+
+  handleOnSearch = (input :string) => {
+    const { selectedFilter } = this.state;
+    const matches :List = organizations.filter((org :Map) => {
+      const trimmedInput = input.trim().toLowerCase();
+      const orgName = org.get('name').trim().toLowerCase();
+      const match = orgName.includes(trimmedInput);
+      return match;
+    });
+    this.handleOnFilter(selectedFilter, matches);
   }
 
   render() {
@@ -108,7 +125,7 @@ class WorksitesContainer extends Component<Props, State> {
             buttonText="Add Worksite"
             dropdowns={dropdowns}
             onSelectFunctions={onSelectFunctions}
-            search={() => {}} />
+            search={this.handleOnSearch} />
         <ContainerInnerWrapper>
           <HeaderWrapper>
             <ContainerHeader>Worksites</ContainerHeader>
