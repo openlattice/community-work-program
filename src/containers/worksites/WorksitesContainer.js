@@ -44,7 +44,7 @@ type Props = {
 type State = {
   numberWorksitesToRender :number;
   organizationsToRender :List;
-  selectedFilterOption :Map;
+  selectedFilter :Map;
 };
 
 /*
@@ -59,7 +59,7 @@ class WorksitesContainer extends Component<Props, State> {
     this.state = {
       numberWorksitesToRender: worksites.count(),
       organizationsToRender: organizations,
-      selectedFilterOption: defaultFilterOption,
+      selectedFilter: defaultFilterOption,
     };
   }
 
@@ -68,7 +68,6 @@ class WorksitesContainer extends Component<Props, State> {
   }
 
   handleOnFilter = (clickedStatus :Map) => {
-    this.setState({ selectedFilterOption: clickedStatus });
     const statusName :string = clickedStatus.get('label').toLowerCase();
     let filteredOrgs = organizations;
     if (statusName !== 'all') {
