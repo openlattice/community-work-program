@@ -42,7 +42,7 @@ type Props = {
 };
 
 type State = {
-  numberTotalWorksitesToRender :number;
+  numberWorksitesToRender :number;
   organizationsToRender :List;
   selectedFilterOption :Map;
 };
@@ -57,7 +57,7 @@ class WorksitesContainer extends Component<Props, State> {
     super(props);
 
     this.state = {
-      numberTotalWorksitesToRender: worksites.count(),
+      numberWorksitesToRender: worksites.count(),
       organizationsToRender: organizations,
       selectedFilterOption: defaultFilterOption,
     };
@@ -94,14 +94,14 @@ class WorksitesContainer extends Component<Props, State> {
   }
 
   render() {
-    const { numberTotalWorksitesToRender, organizationsToRender } = this.state;
+    const { numberWorksitesToRender, organizationsToRender } = this.state;
     const onSelectFunctions :Map = Map().withMutations((map :Map) => {
       map.set('Status', this.handleOnFilter);
     });
     const orgSubHeader :string = organizationsToRender.count() !== 1
       ? `${organizationsToRender.count()} Organizations` : '1 Organization';
-    const worksiteSubHeader :string = numberTotalWorksitesToRender !== 1
-      ? `${numberTotalWorksitesToRender} Worksites` : '1 Worksite';
+    const worksiteSubHeader :string = numberWorksitesToRender !== 1
+      ? `${numberWorksitesToRender} Worksites` : '1 Worksite';
     return (
       <ContainerOuterWrapper>
         <ToolBar
