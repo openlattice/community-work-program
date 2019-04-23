@@ -5,28 +5,25 @@ import { List, Map } from 'immutable';
 
 import { statusDropdown } from './WorksitesConstants';
 
+import WorksitesByOrgCard from '../../components/organization/WorksitesByOrgCard';
+
 import {
   ContainerOuterWrapper,
   ContainerInnerWrapper,
   HeaderWrapper,
   ContainerHeader,
   ContainerSubHeader,
+  Separator,
 } from '../../components/Layout';
 import { ToolBar } from '../../components/controls/index';
 import { OL } from '../../core/style/Colors';
 
+/* Fake Data */
+import { organizations, worksites } from './FakeData';
+
 /*
  * styled components
  */
-
-const Separator = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  color: ${OL.GREY02};
-  font-weight: 600;
-  margin: 0 10px 40px 10px;
-`;
 
 /*
  * constants
@@ -40,7 +37,8 @@ const dropdowns :List = List().withMutations((list :List) => {
  * Props and State
  */
 
-type Props = {};
+type Props = {
+};
 
 /*
  * React component
@@ -52,9 +50,12 @@ class WorksitesContainer extends Component<Props> {
   }
 
   render() {
-    const onSelectFunctions = Map().withMutations((map :Map) => {
+    const onSelectFunctions :Map = Map().withMutations((map :Map) => {
       map.set('Status', this.handleOnFilter);
     });
+    const orgSubHeader :string = organizations.count() !== 1
+      ? `${organizations.count()} Organizations` : '1 Organization';
+    const worksiteSubHeader :string = worksites.count() !== 1 ? `${worksites.count()} Worksites` : '1 Worksite';
     return (
       <ContainerOuterWrapper>
         <ToolBar
@@ -66,10 +67,26 @@ class WorksitesContainer extends Component<Props> {
         <ContainerInnerWrapper>
           <HeaderWrapper>
             <ContainerHeader>Worksites</ContainerHeader>
-            <ContainerSubHeader>10 Organizations</ContainerSubHeader>
+            <ContainerSubHeader>{orgSubHeader}</ContainerSubHeader>
             <Separator>•</Separator>
-            <ContainerSubHeader>21 Worksites</ContainerSubHeader>
+            <ContainerSubHeader>{worksiteSubHeader}</ContainerSubHeader>
           </HeaderWrapper>
+          {
+            organizations.map((org :Map) => {
+              const orgWorksites = worksites.filter(
+                (worksite :Map) => worksite.get('organization') === org.get('name')
+              );
+              const worksiteCount :string = orgWorksites.count() !== 1
+                ? `${orgWorksites.count()} Worksites` : '1 Worksite';
+              return (
+                <WorksitesByOrgCard
+                    key={org.get('id')}
+                    organization={org}
+                    worksiteCount={worksiteCount}
+                    worksites={orgWorksites} />
+              );
+            })
+          }
         </ContainerInnerWrapper>
       </ContainerOuterWrapper>
     );
