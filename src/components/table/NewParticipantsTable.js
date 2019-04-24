@@ -16,7 +16,7 @@ const TableWrapper = styled.div`
   width: 600px;
   margin-bottom: 30px;
   background-color: ${OL.WHITE};
-  border: 1px solid ${OL.GREY08};
+  border: 1px solid ${OL.GREY11};
   border-radius: 5px;
   align-self: start;
 `;
