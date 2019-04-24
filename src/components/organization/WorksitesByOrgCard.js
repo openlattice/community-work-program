@@ -1,7 +1,7 @@
 // @flow
 import React from 'react';
 import styled from 'styled-components';
-import { List } from 'immutable';
+import { List, Map } from 'immutable';
 
 import WorksitesTable from '../table/WorksitesTable';
 import { Separator } from '../Layout';
@@ -61,15 +61,24 @@ const Description = styled.div`
 `;
 
 type Props = {
-  organization :List;
+  onClickOrganization :(organization :Map) => void;
+  organization :Map;
   worksiteCount :string;
   worksites :List;
 };
 
-const WorksitesByOrgCard = ({ organization, worksiteCount, worksites } :Props) => (
+const WorksitesByOrgCard = ({
+  onClickOrganization,
+  organization,
+  worksiteCount,
+  worksites
+} :Props) => (
   <CardOuterWrapper>
     <InnerTextWrapper>
-      <OrganizationName>{organization.get('name')}</OrganizationName>
+      <OrganizationName
+          onClick={() => onClickOrganization(organization)}>
+        {organization.get('name')}
+      </OrganizationName>
       <SubtitleWrapper>
         <Subtitle>{worksiteCount}</Subtitle>
         <SmallSeparator>•</SmallSeparator>

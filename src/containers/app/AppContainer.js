@@ -14,6 +14,7 @@ import Spinner from '../../components/spinner/Spinner';
 import Dashboard from '../dashboard/Dashboard';
 import ParticipantsSearchContainer from '../participants/ParticipantsSearchContainer';
 import WorksitesContainer from '../worksites/WorksitesContainer';
+import OrganizationContainer from '../organizations/OrganizationContainer';
 import * as AppActions from './AppActions';
 import * as Routes from '../../core/router/Routes';
 import { APP_CONTAINER_WIDTH } from '../../core/style/Sizes';
@@ -73,6 +74,7 @@ class AppContainer extends Component<Props> {
         <Route exact strict path={Routes.DASHBOARD} component={Dashboard} />
         <Route path={Routes.PARTICIPANTS} component={ParticipantsSearchContainer} />
         <Route path={Routes.WORKSITES} component={WorksitesContainer} />
+        <Route path={Routes.ORGANIZATION_PROFILE} component={OrganizationContainer} />
         <Redirect to={Routes.DASHBOARD} />
       </Switch>
     );

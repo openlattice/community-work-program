@@ -1,12 +1,11 @@
 // @flow
 import React, { Component } from 'react';
-import styled from 'styled-components';
+// import styled from 'styled-components';
 import { List, Map } from 'immutable';
-
-import { statusDropdown } from './WorksitesConstants';
+import type { RouterHistory } from 'react-router';
 
 import WorksitesByOrgCard from '../../components/organization/WorksitesByOrgCard';
-
+import * as Routes from '../../core/router/Routes';
 import {
   ContainerOuterWrapper,
   ContainerInnerWrapper,
@@ -17,7 +16,8 @@ import {
 } from '../../components/Layout';
 import { ToolBar } from '../../components/controls/index';
 import { isDefined } from '../../utils/LangUtils';
-import { OL } from '../../core/style/Colors';
+import { statusDropdown } from './WorksitesConstants';
+// import { OL } from '../../core/style/Colors';
 
 /* Fake Data */
 import { organizations, worksites } from './FakeData';
@@ -40,6 +40,7 @@ const defaultFilterOption :Map = statusDropdown.get('enums').find(option => opti
  */
 
 type Props = {
+  history :RouterHistory,
 };
 
 type State = {
@@ -78,6 +79,11 @@ class WorksitesContainer extends Component<Props, State> {
       });
     });
     return numberOfWorksites;
+  }
+
+  handleOnClickOrganization = (org :Map) => {
+    const { history } = this.props;
+    history.push(Routes.ORGANIZATION_PROFILE.replace(':organizationId', org.get('id')));
   }
 
   handleOnFilter = (clickedStatus :Map, orgs :List) => {
@@ -143,6 +149,7 @@ class WorksitesContainer extends Component<Props, State> {
               return (
                 <WorksitesByOrgCard
                     key={org.get('id')}
+                    onClickOrganization={this.handleOnClickOrganization}
                     organization={org}
                     worksiteCount={worksiteCount}
                     worksites={orgWorksites} />
