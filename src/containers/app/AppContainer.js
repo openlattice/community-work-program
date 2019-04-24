@@ -16,11 +16,7 @@ import ParticipantsSearchContainer from '../participants/ParticipantsSearchConta
 import WorksitesContainer from '../worksites/WorksitesContainer';
 import * as AppActions from './AppActions';
 import * as Routes from '../../core/router/Routes';
-import {
-  APP_CONTAINER_MAX_WIDTH,
-  APP_CONTAINER_WIDTH,
-  APP_CONTENT_PADDING
-} from '../../core/style/Sizes';
+import { APP_CONTAINER_WIDTH } from '../../core/style/Sizes';
 
 // TODO: this should come from lattice-ui-kit, maybe after the next release. current version v0.1.1
 const APP_CONTENT_BG :string = '#f8f8fb';
