@@ -12,29 +12,9 @@ import {
   APP_CONTENT_PADDING,
   DASHBOARD_WIDTH,
 } from '../../core/style/Sizes';
+import { people } from './FakeData';
 
-/* DUMMY DATA */
-const person = Map().withMutations((map :Map) => {
-  map.set('name', 'Tommy Morrison');
-  map.set('sentenceDate', '08/09/2018');
-  map.set('enrollmentDeadline', '08/23/2018');
-  map.set('requiredHours', '100h');
-  map.set('numberViolations', 2);
-});
-
-const anotherPerson = Map().withMutations((map :Map) => {
-  map.set('name', 'Mabel Garrett');
-  map.set('sentenceDate', '08/06/2018');
-  map.set('enrollmentDeadline', '08/20/2018');
-  map.set('requiredHours', '60h');
-  map.set('numberViolations', 1);
-});
-
-const people = List([
-  person,
-  anotherPerson,
-]).asImmutable();
-
+/* styled components */
 const DashboardWrapper = styled.div`
   display: flex;
   flex-direction: row;
@@ -59,28 +39,38 @@ const RightWrapper = styled.div`
   margin: 0 0 30px 30px;
 `;
 
+/* constants */
+const newParticipants = people.filter((person :Map) => person.get('status') === 'Awaiting enrollment');
+const pendingCompletionReview = people.filter((person :Map) => (
+  person.get('status').includes('Active') && person.get('requiredHours') === person.get('hoursServed')
+));
+const violationsWatch = people.filter((person :Map) => (
+  person.get('numberOfViolations') > 0 && person.get('status').includes('Active')
+));
+
+/* react component */
 const Dashboard = () => (
   <DashboardWrapper>
     <DashboardBody>
       <NewParticipantsTable
           handleSelect={() => {}}
-          people={people}
+          people={newParticipants}
           selectedPersonId=""
           small
-          totalParticipants={people.count()} />
+          totalParticipants={newParticipants.count()} />
       <RightWrapper>
         <PendingReviewParticipantsTable
             handleSelect={() => {}}
-            people={people}
+            people={pendingCompletionReview}
             selectedPersonId=""
             small
-            totalParticipants={people.count()} />
+            totalParticipants={pendingCompletionReview.count()} />
         <ViolationsParticipantsTable
             handleSelect={() => {}}
-            people={people}
+            people={violationsWatch}
             selectedPersonId=""
             small
-            totalParticipants={people.count()} />
+            totalParticipants={violationsWatch.count()} />
       </RightWrapper>
     </DashboardBody>
   </DashboardWrapper>
