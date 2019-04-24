@@ -14,7 +14,7 @@ const { OPENLATTICE_ID_FQN } = Constants;
 
 const TableWrapper = styled.div`
   width: 100%;
-  margin-bottom: 15px;
+  margin-bottom: ${props => props.margin}px;
 `;
 
 const Table = styled.table`
@@ -58,6 +58,7 @@ type Props = {
   selectWorksite :(selectedWorksite :Immutable.Map) => void;
   selectedWorksiteId :string;
   small :boolean;
+  tableMargin :string;
 };
 
 const WorksitesTable = ({
@@ -66,8 +67,9 @@ const WorksitesTable = ({
   selectWorksite,
   selectedWorksiteId,
   small,
+  tableMargin,
 } :Props) => (
-  <TableWrapper>
+  <TableWrapper margin={tableMargin}>
     <Table>
       <tbody>
         <Headers />
