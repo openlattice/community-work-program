@@ -42,7 +42,6 @@ const Row = styled.tr`
 `;
 
 type Props = {
-  contactInfo :Immutable.Map;
   handleSelect :(worksite :Immutable.Map, entityKeyId :string, worksiteId :string) => void;
   worksite :Immutable.Map<*, *>,
   selectWorksite :(selectedWorksite :Immutable.Map, contactInfo :Immutable.List) => void;
@@ -51,7 +50,6 @@ type Props = {
 };
 
 const TableRow = ({
-  contactInfo,
   handleSelect,
   worksite,
   selectWorksite,
