@@ -89,10 +89,22 @@ export const homelessShelter = Map().withMutations((map :Map) => {
   map.set('totalHours', 356);
 });
 
+export const countyHospital = Map().withMutations((map :Map) => {
+  map.set('name', 'County Hospital');
+  map.set('status', 'Inactive');
+  map.set('organization', 'Pennington County Center');
+  map.set('startDate', '07/15/2018');
+  map.set('lastActiveDate', '02/20/2019');
+  map.set('scheduledParticipantCount', 0);
+  map.set('pastParticipantCount', 3);
+  map.set('totalHours', 42);
+});
+
 export const worksites = List([
   communityGarden,
   countyShop,
   bg,
   roadwayTrash,
   homelessShelter,
+  countyHospital,
 ]).asImmutable();
