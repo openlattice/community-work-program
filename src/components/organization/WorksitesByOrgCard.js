@@ -4,22 +4,15 @@ import styled from 'styled-components';
 import { List, Map } from 'immutable';
 
 import WorksitesTable from '../table/WorksitesTable';
-import { Separator } from '../Layout';
+import {
+  CardOuterWrapper,
+  CardInnerWrapper,
+  SmallSeparator,
+  SubtitleWrapper,
+  Subtitle,
+  Status,
+} from '../Layout';
 import { OL } from '../../core/style/Colors';
-
-const CardOuterWrapper = styled.div`
-  width: 100%;
-  border-radius: 5px;
-  border: solid 1px ${OL.GREY11};
-  background-color: ${OL.WHITE};
-  margin-bottom: 20px;
-`;
-
-const InnerTextWrapper = styled.div`
-  margin: 50px;
-  display: flex;
-  flex-direction: column;
-`;
 
 const OrganizationName = styled.span`
   color: ${OL.GREY15};
@@ -33,25 +26,6 @@ const OrganizationName = styled.span`
   &:active {
     color: ${OL.PURPLE01};
   }
-`;
-
-const SubtitleWrapper = styled.span`
-  display: flex;
-`;
-
-const Subtitle = styled.span`
-  font-size: 14px;
-  font-weight: 600;
-  color: ${OL.GREY02};
-`;
-
-const SmallSeparator = styled(Separator)`
-  margin: 0 5px;
-  font-weight: 300;
-`;
-
-const Status = styled(Subtitle)`
-  color: ${props => (props.active ? OL.GREEN02 : OL.RED01)};
 `;
 
 const Description = styled.div`
@@ -74,7 +48,7 @@ const WorksitesByOrgCard = ({
   worksites
 } :Props) => (
   <CardOuterWrapper>
-    <InnerTextWrapper>
+    <CardInnerWrapper>
       <OrganizationName
           onClick={() => onClickOrganization(organization)}>
         {organization.get('name')}
@@ -87,7 +61,7 @@ const WorksitesByOrgCard = ({
         </Status>
       </SubtitleWrapper>
       <Description>{organization.get('description')}</Description>
-    </InnerTextWrapper>
+    </CardInnerWrapper>
     {
       worksites
         ? (
@@ -96,6 +70,7 @@ const WorksitesByOrgCard = ({
               selectedWorksiteId=""
               small={false}
               selectWorksite={() => {}}
+              tableMargin="15"
               worksites={worksites} />
         ) : null
     }

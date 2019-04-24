@@ -3,6 +3,8 @@ import styled from 'styled-components';
 import { APP_CONTENT_PADDING, SEARCH_CONTAINER_WIDTH } from '../core/style/Sizes';
 import { OL } from '../core/style/Colors';
 
+/* Component Wrappers */
+
 export const ContainerOuterWrapper = styled.div`
   display: flex;
   justify-content: center;
@@ -45,3 +47,39 @@ export const Separator = styled.div`
   font-weight: 600;
   margin: 0 10px 0 10px;
 `;
+
+export const SubtitleWrapper = styled.span`
+  display: flex;
+`;
+
+export const Subtitle = styled.span`
+  font-size: 14px;
+  font-weight: 600;
+  color: ${OL.GREY02};
+`;
+
+export const SmallSeparator = styled(Separator)`
+  margin: 0 5px;
+  font-weight: 300;
+`;
+
+export const Status = styled(Subtitle)`
+  color: ${props => (props.active ? OL.GREEN02 : OL.RED01)};
+`;
+
+/* Cards */
+
+export const CardOuterWrapper = styled.div`
+  width: 100%;
+  border-radius: 5px;
+  border: solid 1px ${OL.GREY11};
+  background-color: ${OL.WHITE};
+  margin-bottom: 20px;
+`;
+
+export const CardInnerWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  margin: 50px;
+`;
+
