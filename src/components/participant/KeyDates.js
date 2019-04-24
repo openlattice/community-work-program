@@ -2,6 +2,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import { Map } from 'immutable';
+import moment from 'moment';
 
 import { OL } from '../../utils/constants/Colors';
 
@@ -59,7 +60,7 @@ const KeyDates = ({ person } :Props) => (
     </DateBlock>
     <DateBlock>
       <Header>Enrollment Deadline</Header>
-      <Date>08/01/2019</Date>
+      <Date>{moment(person.get('sentenceDate')).add(14, 'day').format('L')}</Date>
     </DateBlock>
   </DatesWrapper>
 );
