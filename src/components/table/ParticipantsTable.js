@@ -24,7 +24,7 @@ const TableBanner = styled.tr`
   width: 100%;
   font-size: 24px;
   color: ${OL.BLACK};
-  padding: 40px 80px;
+  padding: 40px 60px;
   display: flex;
 `;
 

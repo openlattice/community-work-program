@@ -26,10 +26,10 @@ const Cell = styled.td`
     if (props.status === 'Completed') {
       return `${OL.BLUE02};`;
     }
-    if (props.status === 'Noncompliant - active') {
+    if (props.status === 'Active — noncompliant') {
       return `${OL.YELLOW01};`;
     }
-    if (props.status === 'Noncompliant - removed') {
+    if (props.status === 'Removed — noncompliant') {
       return `${OL.RED01};`;
     }
     if (props.status === 'Awaiting enrollment') {
