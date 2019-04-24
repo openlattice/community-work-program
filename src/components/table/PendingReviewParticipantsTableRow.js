@@ -51,6 +51,9 @@ const Row = styled.tr`
   &:active {
     background-color: ${OL.PURPLE06};
   }
+  :last-of-type {
+    border: none;
+  }
 `;
 
 type Props = {
