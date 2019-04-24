@@ -84,7 +84,7 @@ const ViolationsParticipantsTableRow = ({
 
   /* BASED ON DUMMY DATA */
   const name = formatValue(person.get('name'));
-  const numberViolations = formatNumericalValue(person.get('numberViolations'));
+  const numberViolations = formatNumericalValue(person.get('numberOfViolations'));
   const requiredHours = formatDate(person.get('requiredHours'));
 
   return (
