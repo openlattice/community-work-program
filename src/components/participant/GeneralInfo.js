@@ -4,6 +4,7 @@ import styled from 'styled-components';
 import { Map } from 'immutable';
 
 import defaultUserIcon from '../../assets/svg/profile-placeholder-round.svg';
+import smallEditIcon from '../../assets/svg/small-edit.svg';
 import { OL } from '../../utils/constants/Colors';
 import { PersonPhoto, PersonPicture } from '../picture/PersonPicture';
 
@@ -81,6 +82,12 @@ const Value = styled.div`
   }}
 `;
 
+const EmailWrapper = styled(Value)`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+`;
+
 type Props = {
   contactInfo :Map;
   person :Map;
@@ -119,7 +126,10 @@ const GeneralInfo = ({ contactInfo, person } :Props) => (
     </InfoRow>
     <InfoRow>
       <Title>Email</Title>
-      <Value>{contactInfo.get('email')}</Value>
+      <EmailWrapper>
+        {contactInfo.get('email')}
+        <img src={smallEditIcon} alt="" />
+      </EmailWrapper>
     </InfoRow>
   </InfoWrapper>
 );

@@ -2,6 +2,7 @@
 import React from 'react';
 import styled from 'styled-components';
 
+import smallEditIcon from '../../assets/svg/small-edit.svg';
 import { OL } from '../../utils/constants/Colors';
 
 const CaseInfoWrapper = styled.div`
@@ -24,11 +25,17 @@ const Header = styled.div`
   margin: 8px;
 `;
 
-const Number = styled.div`
+const Number = styled.span`
   color: ${OL.BLACK};
   font-size: 18px;
   font-weight: 600;
-  margin: 0 0 8px 0;
+  margin: 0 8px 0 0
+`;
+
+const NumberWrapper = styled.span`
+  display: flex;
+  justify-content: center;
+  align-items: center;
   border-bottom: 1px solid ${OL.GREY08};
   padding-bottom: 15px;
 
@@ -41,7 +48,10 @@ const Number = styled.div`
 const CaseInfo = () => (
   <CaseInfoWrapper>
     <Header>Case Number</Header>
-    <Number>1234567890123456</Number>
+    <NumberWrapper>
+      <Number>1234567890123456</Number>
+      <img src={smallEditIcon} alt="" />
+    </NumberWrapper>
     <Header>Required Hours</Header>
     <Number>100</Number>
   </CaseInfoWrapper>
