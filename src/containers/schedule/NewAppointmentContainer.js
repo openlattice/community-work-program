@@ -114,12 +114,16 @@ const TextArea = styled.textarea`
 const radioOptions = {
   enumOptions: [
     {
-      value: 'Warning',
-      label: 'Warning',
+      value: 'Daily',
+      label: 'Daily',
     },
     {
-      value: 'Violation',
-      label: 'Violation',
+      value: 'Weekly',
+      label: 'Weekly',
+    },
+    {
+      value: 'Monthly',
+      label: 'Monthly',
     },
   ],
   inline: true,
@@ -130,6 +134,7 @@ const defaultData = Map().withMutations((map :Map) => {
   map.set('worksite', undefined);
   map.set('caseNumber', undefined);
   map.set('datetime', undefined);
+  map.set('recurringInterval', undefined);
 });
 
 type Props = {
@@ -192,6 +197,12 @@ class NewAppointmentContainer extends Component<Props, State> {
     this.setState({ formData });
   }
 
+  storeRecurrenceInterval = (value :string) => {
+    let { formData } = this.state;
+    formData = formData.set('recurringInterval', value);
+    this.setState({ formData });
+  }
+
   render() {
     const { formData } = this.state;
     const { history, location } = this.props;
@@ -242,7 +253,7 @@ class NewAppointmentContainer extends Component<Props, State> {
               </InfoBlock>
               <InfoBlock>
                 <Title>End Time</Title>
-                <ActionWrapper width={300}>
+                <ActionWrapper width={300} zIndex={299}>
                   <TimeWidget
                       id="warningViolationTime"
                       onChange={this.handleDateTimeChange}
@@ -252,7 +263,20 @@ class NewAppointmentContainer extends Component<Props, State> {
             </InfoRow>
             <InfoRow>
               <InfoBlock>
-                <Title>Is this appointment recurring?</Title>
+                <Title style={{ color: OL.PURPLE02 }}>Repeat appointment:</Title>
+                <RadioWidget
+                    onChange={this.storeRecurrenceInterval}
+                    options={radioOptions}
+                    value={formData.get('recurringInterval')} />
+              </InfoBlock>
+              <InfoBlock>
+                <Title style={{ color: OL.PURPLE02 }}>until:</Title>
+                <ActionWrapper width={300} zIndex={250}>
+                  <DateWidget
+                      id="warningViolationDate"
+                      onChange={this.handleDateTimeChange}
+                      value={date} />
+                </ActionWrapper>
               </InfoBlock>
             </InfoRow>
           </InfoWrapper>
