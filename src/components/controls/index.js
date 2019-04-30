@@ -1,6 +1,6 @@
 import PrimaryButton from './buttons/PrimaryButton';
 import StyledButton from './buttons/StyledButton';
-import NavButton from './buttons/NavButton';
+import { NavButton } from './buttons/NavButton';
 import BackNavButton from './buttons/BackNavButton';
 import TertiaryButton from './buttons/TertiaryButton';
 
