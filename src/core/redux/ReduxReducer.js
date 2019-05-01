@@ -7,6 +7,7 @@ import { AuthReducer } from 'lattice-auth';
 import { combineReducers } from 'redux-immutable';
 
 import appReducer from '../../containers/app/AppReducer';
+import worksitesReducer from '../../containers/worksites/WorksitesReducer';
 
 export default function reduxReducer(routerHistory :any) {
 
@@ -14,5 +15,6 @@ export default function reduxReducer(routerHistory :any) {
     app: appReducer,
     auth: AuthReducer,
     router: connectRouter(routerHistory),
+    worksites: worksitesReducer,
   });
 }
