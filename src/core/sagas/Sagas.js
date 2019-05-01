@@ -8,6 +8,7 @@ import { AuthSagas } from 'lattice-auth';
 import * as AppSagas from '../../containers/app/AppSagas';
 import * as EDMSagas from '../edm/EDMSagas';
 import * as RoutingSagas from '../router/RoutingSagas';
+import * as OrganizationSagas from '../../containers/organization/OrganizationSagas';
 import * as WorksitesSagas from '../../containers/worksites/WorksitesSagas';
 
 export default function* sagas() :Generator<*, *, *> {
@@ -26,6 +27,9 @@ export default function* sagas() :Generator<*, *, *> {
     // EDMSagas
     fork(EDMSagas.getEntityDataModelTypesWatcher),
     fork(EDMSagas.getEntitySetIdsWatcher),
+
+    // OrganizationSagas
+    fork(OrganizationSagas.getOrganizationWatcher),
 
     // WorksitesSagas
     fork(WorksitesSagas.getOrganizationsWatcher),
