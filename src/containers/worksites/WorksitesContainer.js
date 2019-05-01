@@ -2,6 +2,8 @@
 import React, { Component } from 'react';
 // import styled from 'styled-components';
 import { List, Map } from 'immutable';
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
 import type { RouterHistory } from 'react-router';
 
 import WorksitesByOrgCard from '../../components/organization/WorksitesByOrgCard';
@@ -17,30 +19,51 @@ import {
 import { ToolBar } from '../../components/controls/index';
 import { isDefined } from '../../utils/LangUtils';
 import { statusDropdown } from './WorksitesConstants';
+import { WORKSITES } from '../../utils/constants/ReduxStateConsts';
 // import { OL } from '../../core/style/Colors';
+
+import {
+  getOrganizations,
+  getOrganizationWorksites,
+} from './WorksitesActions';
 
 /* Fake Data */
 import { organizations, worksites } from './FakeData';
 
 /*
- * styled components
- */
-
-/*
  * constants
  */
 
+const {
+  ACTIONS,
+  IS_FETCHING_ORGANIZATIONS,
+  IS_FETCHING_WORKSITES,
+  ORGANIZATIONS,
+  WORKSITES_BY_ORGANIZATION,
+} = WORKSITES;
 const dropdowns :List = List().withMutations((list :List) => {
   list.set(0, statusDropdown);
 });
 const defaultFilterOption :Map = statusDropdown.get('enums').find(option => option.get('default'));
 
 /*
+ * styled components
+ */
+
+/*
  * Props and State
  */
 
 type Props = {
-  history :RouterHistory,
+  [ACTIONS]:{
+    getOrganizations :RequestSequence;
+    getOrganizationWorksites :RequestSequence;
+  },
+  history :RouterHistory;
+  IS_FETCHING_ORGANIZATIONS :boolean;
+  IS_FETCHING_WORKSITES :boolean;
+  ORGANIZATIONS :List;
+  WORKSITES_BY_ORGANIZATION :Map;
 };
 
 type State = {
@@ -162,4 +185,18 @@ class WorksitesContainer extends Component<Props, State> {
   }
 }
 
-export default WorksitesContainer;
+const mapStateToProps = state => ({
+  [IS_FETCHING_ORGANIZATIONS]: state.getIn([WORKSITES, IS_FETCHING_ORGANIZATIONS]),
+  [IS_FETCHING_WORKSITES]: state.getIn([WORKSITES, IS_FETCHING_WORKSITES]),
+  [ORGANIZATIONS]: state.getIn([WORKSITES, ORGANIZATIONS]),
+  [WORKSITES_BY_ORGANIZATION]: state.getIn([WORKSITES, WORKSITES_BY_ORGANIZATION]),
+});
+
+const mapDispatchToProps = dispatch => ({
+  actions: bindActionCreators({
+    getOrganizations,
+    getOrganizationWorksites,
+  }, dispatch)
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(WorksitesContainer);
