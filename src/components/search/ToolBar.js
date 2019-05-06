@@ -3,8 +3,7 @@ import React from 'react';
 import styled from 'styled-components';
 import { List, Map } from 'immutable';
 
-import StyledInput from '../controls/StyledInput';
-import StyledSelect from '../controls/StyledSelect';
+import { StyledInput, StyledFunctionSelect } from '../controls/index';
 import searchIcon from '../../assets/svg/search-icon.svg';
 
 import { OL } from '../../core/style/Colors';
@@ -50,7 +49,7 @@ const ToolBar = ({ dropdowns } :Props) => (
           placeholder="Search name" />
       {
         dropdowns.map((dropdownMap :Map) => (
-          <StyledSelect
+          <StyledFunctionSelect
               key={dropdownMap.get('title')}
               onSelect={() => {}}
               options={dropdownMap.get('enums')}
