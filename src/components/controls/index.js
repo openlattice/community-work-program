@@ -9,6 +9,8 @@ import StyledSelect from './dropdowns/StyledSelect';
 
 import StyledInput from './input/StyledInput';
 
+import ToolBar from './ToolBar';
+
 export {
   BackNavButton,
   NavButton,
@@ -18,4 +20,5 @@ export {
   StyledInput,
   StyledSelect,
   TertiaryButton,
+  ToolBar,
 };
