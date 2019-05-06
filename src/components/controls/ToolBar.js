@@ -7,7 +7,7 @@ import SearchContainer from '../../containers/search/SearchContainer';
 
 import { OL } from '../../core/style/Colors';
 import { APP_CONTAINER_MAX_WIDTH, APP_CONTAINER_WIDTH } from '../../core/style/Sizes';
-import { StyledInput, StyledFunctionSelect } from './index';
+import { PrimaryButton, StyledFunctionSelect } from './index';
 
 const ToolBarWrapper = styled.div`
   display: flex;
@@ -37,12 +37,20 @@ const ActionsWrapper = styled.span`
 `;
 
 type Props = {
+  buttonAction :() => void;
+  buttonText :string;
   dropdowns :List;
   onSelectFunctions :Map;
   search :(input :string) => void;
 };
 
-const ToolBar = ({ dropdowns, onSelectFunctions, search } :Props) => (
+const ToolBar = ({
+  buttonAction,
+  buttonText,
+  dropdowns,
+  onSelectFunctions,
+  search,
+} :Props) => (
   <ToolBarWrapper>
     <ToolBarInnerWrapper>
       <ActionsWrapper>
@@ -59,6 +67,12 @@ const ToolBar = ({ dropdowns, onSelectFunctions, search } :Props) => (
           ))
         }
       </ActionsWrapper>
+      {
+        (buttonAction && buttonText)
+          ? (
+            <PrimaryButton>{buttonText}</PrimaryButton>
+          ) : null
+      }
     </ToolBarInnerWrapper>
   </ToolBarWrapper>
 );
