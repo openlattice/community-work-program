@@ -8,6 +8,7 @@ import StyledSelect from '../controls/StyledSelect';
 import searchIcon from '../../assets/svg/search-icon.svg';
 
 import { OL } from '../../core/style/Colors';
+import { APP_CONTAINER_MAX_WIDTH, APP_CONTAINER_WIDTH } from '../../core/style/Sizes';
 
 const ToolBarWrapper = styled.div`
   display: flex;
@@ -18,6 +19,16 @@ const ToolBarWrapper = styled.div`
   border-bottom: 1px solid ${OL.GREY11};
   background-color: ${OL.WHITE};
   padding: 0 20px;
+`;
+
+const ToolBarInnerWrapper = styled.div`
+  height: 100%;
+  max-width: ${APP_CONTAINER_MAX_WIDTH}px;
+  min-width: ${APP_CONTAINER_WIDTH}px;
+  display: flex;
+  flex: 1 0 auto;
+  justify-content: flex-start;
+  align-items: center;
 `;
 
 const FormattedInput = styled(StyledInput)`
@@ -33,18 +44,20 @@ type Props = {
 
 const ToolBar = ({ dropdowns } :Props) => (
   <ToolBarWrapper>
-    <FormattedInput
-        icon={searchIcon}
-        placeholder="Search name" />
-    {
-      dropdowns.map((dropdownMap :Map) => (
-        <StyledSelect
-            key={dropdownMap.get('title')}
-            onSelect={() => {}}
-            options={dropdownMap.get('enums')}
-            title={dropdownMap.get('title')} />
-      ))
-    }
+    <ToolBarInnerWrapper>
+      <FormattedInput
+          icon={searchIcon}
+          placeholder="Search name" />
+      {
+        dropdowns.map((dropdownMap :Map) => (
+          <StyledSelect
+              key={dropdownMap.get('title')}
+              onSelect={() => {}}
+              options={dropdownMap.get('enums')}
+              title={dropdownMap.get('title')} />
+        ))
+      }
+    </ToolBarInnerWrapper>
   </ToolBarWrapper>
 );
 
