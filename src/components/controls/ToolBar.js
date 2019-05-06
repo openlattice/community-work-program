@@ -3,7 +3,7 @@ import React from 'react';
 import styled from 'styled-components';
 import { List, Map } from 'immutable';
 
-import searchIcon from '../../assets/svg/search-icon.svg';
+import SearchContainer from '../../containers/search/SearchContainer';
 
 import { OL } from '../../core/style/Colors';
 import { APP_CONTAINER_MAX_WIDTH, APP_CONTAINER_WIDTH } from '../../core/style/Sizes';
@@ -30,32 +30,35 @@ const ToolBarInnerWrapper = styled.div`
   align-items: center;
 `;
 
-const FormattedInput = styled(StyledInput)`
-  width: 250px;
-  margin: 10px;
-  padding: 0 20px;
-  height: 35px;
+const ActionsWrapper = styled.span`
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
 `;
 
 type Props = {
   dropdowns :List;
+  onSelectFunctions :Map;
+  search :(input :string) => void;
 };
 
-const ToolBar = ({ dropdowns } :Props) => (
+const ToolBar = ({ dropdowns, onSelectFunctions, search } :Props) => (
   <ToolBarWrapper>
     <ToolBarInnerWrapper>
-      <FormattedInput
-          icon={searchIcon}
-          placeholder="Search name" />
-      {
-        dropdowns.map((dropdownMap :Map) => (
-          <StyledFunctionSelect
-              key={dropdownMap.get('title')}
-              onSelect={() => {}}
-              options={dropdownMap.get('enums')}
-              title={dropdownMap.get('title')} />
-        ))
-      }
+      <ActionsWrapper>
+        <SearchContainer
+            search={search} />
+        {
+          dropdowns.map((dropdownMap :Map) => (
+            <StyledFunctionSelect
+                key={dropdownMap.get('title')}
+                onSelect={() => {}}
+                onSelectFunctions={onSelectFunctions.get(dropdownMap.get('title'))}
+                options={dropdownMap.get('enums')}
+                title={dropdownMap.get('title')} />
+          ))
+        }
+      </ActionsWrapper>
     </ToolBarInnerWrapper>
   </ToolBarWrapper>
 );
