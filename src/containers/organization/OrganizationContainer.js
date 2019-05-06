@@ -2,6 +2,8 @@
 import React from 'react';
 import styled from 'styled-components';
 import { Map, List } from 'immutable';
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
 import type { RouterHistory } from 'react-router';
 
 import WorksitesTable from '../../components/table/WorksitesTable';
@@ -36,8 +38,19 @@ import {
 } from '../../components/Layout';
 import { BackNavButton, PrimaryButton, TertiaryButton } from '../../components/controls/index';
 import { OL } from '../../core/style/Colors';
-
+import { ORGANIZATION } from '../../utils/constants/ReduxStateConsts';
+import { getOrganization } from './OrganizationActions';
 import { worksites } from '../worksites/FakeData';
+
+/* constants */
+const currentWorksites :List = worksites.filter((ws :Map) => ws.get('organization') === 'Pennington County Center');
+const worksiteHeader :string = currentWorksites.count() !== 1 ? `${currentWorksites.count()} Worksites` : '1 Worksite';
+
+const {
+  ACTIONS,
+  IS_FETCHING_ORGANIZATION,
+  SELECTED_ORGANIZATION,
+} = ORGANIZATION;
 
 const OrganizationCard = styled(CardOuterWrapper)`
   margin-top: 30px;
@@ -67,11 +80,12 @@ const ScheduleCard = styled(CardOuterWrapper)`
   flex-direction: column;
 `;
 
-/* constants */
-const currentWorksites :List = worksites.filter((ws :Map) => ws.get('organization') === 'Pennington County Center');
-const worksiteHeader :string = currentWorksites.count() !== 1 ? `${currentWorksites.count()} Worksites` : '1 Worksite';
-
 type Props = {
+  [ACTIONS]:{
+    getOrganization :() => void;
+  },
+  IS_FETCHING_ORGANIZATION :boolean;
+  SELECTED_ORGANIZATION :Map;
   history :RouterHistory;
 };
 /* eslint-disable max-len */
@@ -183,4 +197,15 @@ const OrganizationContainer = ({ history } :Props) => (
   </ContainerOuterWrapper>
 );
 
-export default OrganizationContainer;
+const mapStateToProps = state => ({
+  [IS_FETCHING_ORGANIZATION]: state.getIn([ORGANIZATION, IS_FETCHING_ORGANIZATION]),
+  [SELECTED_ORGANIZATION]: state.getIn([ORGANIZATION, SELECTED_ORGANIZATION]),
+});
+
+const mapDispatchToProps = dispatch => ({
+  actions: bindActionCreators({
+    getOrganization,
+  }, dispatch)
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(OrganizationContainer);
