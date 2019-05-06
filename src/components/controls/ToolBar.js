@@ -3,11 +3,11 @@ import React from 'react';
 import styled from 'styled-components';
 import { List, Map } from 'immutable';
 
-import { StyledInput, StyledFunctionSelect } from '../controls/index';
 import searchIcon from '../../assets/svg/search-icon.svg';
 
 import { OL } from '../../core/style/Colors';
 import { APP_CONTAINER_MAX_WIDTH, APP_CONTAINER_WIDTH } from '../../core/style/Sizes';
+import { StyledInput, StyledFunctionSelect } from './index';
 
 const ToolBarWrapper = styled.div`
   display: flex;
