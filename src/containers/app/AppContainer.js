@@ -14,7 +14,7 @@ import Spinner from '../../components/spinner/Spinner';
 import Dashboard from '../dashboard/Dashboard';
 import ParticipantsSearchContainer from '../participants/ParticipantsSearchContainer';
 import WorksitesContainer from '../worksites/WorksitesContainer';
-import OrganizationContainer from '../organizations/OrganizationContainer';
+import OrganizationContainer from '../organization/OrganizationContainer';
 import * as AppActions from './AppActions';
 import * as Routes from '../../core/router/Routes';
 import { APP_CONTAINER_WIDTH } from '../../core/style/Sizes';
