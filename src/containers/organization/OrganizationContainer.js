@@ -74,7 +74,7 @@ const SectionBlockWrapper = styled.div`
   display: flex;
 `;
 
-const ScheduleCard = styled(CardOuterWrapper)`
+const WorksitesWrapper = styled(CardOuterWrapper)`
   margin-top: 30px;
   display: flex;
   flex-direction: column;
@@ -177,7 +177,7 @@ const OrganizationContainer = ({ history } :Props) => (
           <MenuItem>Inactive</MenuItem>
         </Menu>
       </RowWrapper>
-      <ScheduleCard>
+      <WorksitesWrapper>
         <TableBanner>{worksiteHeader}</TableBanner>
         <WorksitesTable
             handleSelect={() => {}}
@@ -192,7 +192,7 @@ const OrganizationContainer = ({ history } :Props) => (
           <FooterCell style={{ width: '14%' }}>24</FooterCell>
           <FooterCell>866</FooterCell>
         </TableFooter>
-      </ScheduleCard>
+      </WorksitesWrapper>
     </ContainerInnerWrapper>
   </ContainerOuterWrapper>
 );
