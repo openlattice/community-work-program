@@ -32,3 +32,7 @@ export const APP_TYPE_FQNS = {
   WORKS_AT: new FullyQualifiedName('app.worksat'),
   WORKSITE: new FullyQualifiedName('app.worksite'),
 };
+
+export const PROPERTY_TYPE_FQNS = {
+  OL_ID_FQN: new FullyQualifiedName('ol.id'),
+};
