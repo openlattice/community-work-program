@@ -13,6 +13,7 @@ import AppHeaderContainer from './AppHeaderContainer';
 import Spinner from '../../components/spinner/Spinner';
 import Dashboard from '../dashboard/Dashboard';
 import ParticipantsSearchContainer from '../participants/ParticipantsSearchContainer';
+import WorksiteContainer from '../worksite/WorksiteContainer';
 import WorksitesContainer from '../worksites/WorksitesContainer';
 import OrganizationContainer from '../organization/OrganizationContainer';
 import * as AppActions from './AppActions';
@@ -75,6 +76,7 @@ class AppContainer extends Component<Props> {
         <Route path={Routes.PARTICIPANTS} component={ParticipantsSearchContainer} />
         <Route path={Routes.WORKSITES} component={WorksitesContainer} />
         <Route path={Routes.ORGANIZATION_PROFILE} component={OrganizationContainer} />
+        <Route path={Routes.WORKSITE_PROFILE} component={WorksiteContainer} />
         <Redirect to={Routes.DASHBOARD} />
       </Switch>
     );
