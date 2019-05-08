@@ -36,6 +36,7 @@ const Description = styled.div`
 
 type Props = {
   onClickOrganization :(organization :Map) => void;
+  onClickWorksite :(worksite :Map) => void;
   organization :Map;
   worksiteCount :string;
   worksites :List;
@@ -43,6 +44,7 @@ type Props = {
 
 const WorksitesByOrgCard = ({
   onClickOrganization,
+  onClickWorksite,
   organization,
   worksiteCount,
   worksites
@@ -66,10 +68,9 @@ const WorksitesByOrgCard = ({
       worksites
         ? (
           <WorksitesTable
-              handleSelect={() => {}}
               selectedWorksiteId=""
               small={false}
-              selectWorksite={() => {}}
+              selectWorksite={onClickWorksite}
               tableMargin="15"
               worksites={worksites} />
         ) : null
