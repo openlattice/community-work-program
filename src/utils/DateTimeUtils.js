@@ -45,12 +45,14 @@ function formatAsISOTime(value :string) :string {
   return '';
 }
 
-function calculateAge(dateOfBirth :string) :number {
+function calculateAge(value :string) :number {
 
-  const valueAsDate = DateTime.fromISO(dateOfBirth);
-  if (valueAsDate.isValid) {
-    const now = DateTime.local();
-    return now.diff(valueAsDate, 'years').toFormat('y');
+  const dateOfBirth = DateTime.fromISO(value);
+  if (dateOfBirth.isValid) {
+    const age = dateOfBirth
+      .until(DateTime.local())
+      .toDuration(['years', 'months', 'days', 'hours']);
+    return age.years;
   }
   return -1;
 }
