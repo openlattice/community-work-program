@@ -2,9 +2,7 @@
  * @flow
  */
 
-import differenceInYears from 'date-fns/difference_in_years';
-import format from 'date-fns/format';
-import isValid from 'date-fns/is_valid';
+import { DateTime } from 'luxon';
 
 import { isNonEmptyString } from './LangUtils';
 
@@ -16,17 +14,17 @@ const TIME_HM_FORMAT :string = 'HH:mm';
 function isValidDateTimeString(value :string) :boolean {
 
   if (isNonEmptyString(value)) {
-    const valueAsDate :Date = new Date(value);
-    return isValid(valueAsDate);
+    const valueAsDate = DateTime.fromISO(value);
+    return valueAsDate.isValid;
   }
-
   return false;
 }
 
 function formatAsDate(value :string) :string {
 
   if (isValidDateTimeString(value)) {
-    return format(value, DATE_MDY_SLASH_FORMAT);
+    const valueAsDate = DateTime.fromISO(value);
+    return valueAsDate.toLocaleString(DateTime.DATE_SHORT);
   }
   return '';
 }
@@ -34,7 +32,8 @@ function formatAsDate(value :string) :string {
 function formatAsISODate(value :string) :string {
 
   if (isValidDateTimeString(value)) {
-    return format(value, ISO_DATE_FORMAT);
+    const valueAsDate = DateTime.fromISO(value);
+    return valueAsDate.toISODate();
   }
   return '';
 }
@@ -42,7 +41,8 @@ function formatAsISODate(value :string) :string {
 function formatAsTime(value :string) :string {
 
   if (isValidDateTimeString(value)) {
-    return format(value, TIME_HM_FORMAT);
+    const valueAsDate = DateTime.fromISO(value);
+    return valueAsDate.toLocaleString(DateTime.TIME_24_SIMPLE);
   }
   return '';
 }
@@ -50,7 +50,8 @@ function formatAsTime(value :string) :string {
 function formatAsISOTime(value :string) :string {
 
   if (isValidDateTimeString(value)) {
-    return format(value, ISO_TIME_HMS_FORMAT);
+    const valueAsDate = DateTime.fromISO(value);
+    return valueAsDate.toISOTime();
   }
   return '';
 }
@@ -58,7 +59,9 @@ function formatAsISOTime(value :string) :string {
 function calculateAge(dateOfBirth :string) :number {
 
   if (isValidDateTimeString(dateOfBirth)) {
-    return differenceInYears(new Date(), dateOfBirth);
+    const valueAsDate = DateTime.fromISO(dateOfBirth);
+    const now = DateTime.fromJSDate(new Date());
+    return parseInt(now.diff(valueAsDate, 'years').toObject().years, 10);
   }
   return -1;
 }
