@@ -96,6 +96,13 @@ export const CardInnerWrapper = styled.div`
   margin: 50px;
 `;
 
+export const CardInnerText = styled.div`
+  margin-bottom: 30px;
+  :last-of-type {
+    margin-bottom: 0;
+  }
+`;
+
 export const InnerSectionWrapper = styled.div`
   display: flex;
   justify-content: space-between;
