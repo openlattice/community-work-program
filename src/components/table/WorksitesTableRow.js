@@ -11,7 +11,7 @@ import { formatValue, formatNumericalValue } from '../../utils/FormattingUtils';
 import { formatAsDate } from '../../utils/DateTimeUtils';
 import { OL } from '../../core/style/Colors';
 
-const { OPENLATTICE_ID_FQN } = Constants;
+// const { OPENLATTICE_ID_FQN } = Constants;
 
 const Cell = styled.td`
   padding: 15px 0;
@@ -55,9 +55,6 @@ const TableRow = ({
   selected,
   small
 } :Props) => {
-
-  const entityKeyId :string = worksite.getIn([OPENLATTICE_ID_FQN, 0], '');
-  const worksiteId :string = worksite.get('worksiteId');
 
   /* BASED ON DUMMY DATA */
   const name = formatValue(worksite.get('name'));
