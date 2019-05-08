@@ -43,7 +43,6 @@ const Row = styled.tr`
 `;
 
 type Props = {
-  handleSelect :(worksite :Immutable.Map, entityKeyId :string, worksiteId :string) => void;
   worksite :Immutable.Map<*, *>,
   selectWorksite :(selectedWorksite :Immutable.Map) => void;
   selected? :boolean,
@@ -51,7 +50,6 @@ type Props = {
 };
 
 const TableRow = ({
-  handleSelect,
   worksite,
   selectWorksite,
   selected,
@@ -74,9 +72,6 @@ const TableRow = ({
     <Row
         active={selected}
         onClick={() => {
-          if (handleSelect) {
-            handleSelect(worksite, entityKeyId, worksiteId);
-          }
           if (selectWorksite) {
             selectWorksite(worksite);
           }

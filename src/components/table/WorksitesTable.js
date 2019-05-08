@@ -53,7 +53,6 @@ const Headers = () => (
 );
 
 type Props = {
-  handleSelect :(worksite :Immutable.Map, entityKeyId :string, personId :string) => void;
   worksites :Immutable.List<*, *>;
   selectWorksite :(selectedWorksite :Immutable.Map) => void;
   selectedWorksiteId :string;
@@ -62,7 +61,6 @@ type Props = {
 };
 
 const WorksitesTable = ({
-  handleSelect,
   worksites,
   selectWorksite,
   selectedWorksiteId,
@@ -80,7 +78,6 @@ const WorksitesTable = ({
             return (
               <WorksitesTableRow
                   key={`${worksiteId}-${index}`}
-                  handleSelect={handleSelect}
                   worksite={worksite}
                   selectWorksite={selectWorksite}
                   selected={selected}
