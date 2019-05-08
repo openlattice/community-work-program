@@ -42,7 +42,7 @@
     "lattice-ui-kit": "0.2.1",
     "lodash": "~4.17.10",
     "loglevel": "~1.6.0",
-    "moment": "^2.24.0",
+    "luxon": "~1.8.1",
     "polished": "~3.0.0",
     "react": "~16.8.0",
     "react-dom": "~16.8.0",
