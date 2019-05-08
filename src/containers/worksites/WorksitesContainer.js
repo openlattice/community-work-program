@@ -109,6 +109,11 @@ class WorksitesContainer extends Component<Props, State> {
     history.push(Routes.ORGANIZATION_PROFILE.replace(':organizationId', org.get('id')));
   }
 
+  handleOnClickWorksite = (worksite :Map) => {
+    const { history } = this.props;
+    history.push(Routes.WORKSITE_PROFILE.replace(':worksiteId', worksite.get('id')));
+  }
+
   handleOnFilter = (clickedStatus :Map, orgs :List) => {
     this.setState({ selectedFilter: clickedStatus });
     const statusName :string = clickedStatus.get('label').toLowerCase();
@@ -173,6 +178,7 @@ class WorksitesContainer extends Component<Props, State> {
                 <WorksitesByOrgCard
                     key={org.get('id')}
                     onClickOrganization={this.handleOnClickOrganization}
+                    onClickWorksite={this.handleOnClickWorksite}
                     organization={org}
                     worksiteCount={worksiteCount}
                     worksites={orgWorksites} />
