@@ -60,8 +60,7 @@ function calculateAge(dateOfBirth :string) :number {
 
   if (isValidDateTimeString(dateOfBirth)) {
     const valueAsDate = DateTime.fromISO(dateOfBirth);
-    const now = DateTime.fromJSDate(new Date());
-    return parseInt(now.diff(valueAsDate, 'years').toObject().years, 10);
+    return valueAsDate.diffNow('years').years;
   }
   return -1;
 }
