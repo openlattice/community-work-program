@@ -180,10 +180,11 @@ const OrganizationContainer = ({ history } :Props) => (
       <WorksitesWrapper>
         <TableBanner>{worksiteHeader}</TableBanner>
         <WorksitesTable
-            handleSelect={() => {}}
             selectedWorksiteId=""
             small={false}
-            selectWorksite={() => {}}
+            selectWorksite={(worksite :Map) => {
+              history.push(Routes.WORKSITE_PROFILE.replace(':worksiteId', worksite.get('id')));
+            }}
             tableMargin="0"
             worksites={currentWorksites} />
         <TableFooter>
