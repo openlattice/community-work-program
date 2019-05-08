@@ -35,6 +35,7 @@ export const organizations = List([
 /* Worksites */
 
 export const communityGarden = Map().withMutations((map :Map) => {
+  map.set('id', '1234567890');
   map.set('name', 'Community Garden');
   map.set('status', 'Active');
   map.set('organization', 'Pennington County Center');
@@ -46,6 +47,7 @@ export const communityGarden = Map().withMutations((map :Map) => {
 });
 
 export const countyShop = Map().withMutations((map :Map) => {
+  map.set('id', '0987654321');
   map.set('name', 'County Shop');
   map.set('status', 'Active');
   map.set('organization', 'Pennington County Center');
@@ -57,6 +59,7 @@ export const countyShop = Map().withMutations((map :Map) => {
 });
 
 export const bg = Map().withMutations((map :Map) => {
+  map.set('id', '1029384756');
   map.set('name', 'B&G');
   map.set('status', 'Active');
   map.set('organization', 'Youth Organization');
@@ -68,6 +71,7 @@ export const bg = Map().withMutations((map :Map) => {
 });
 
 export const roadwayTrash = Map().withMutations((map :Map) => {
+  map.set('id', '0192837465');
   map.set('name', 'Roadway Trash');
   map.set('status', 'Inactive');
   map.set('organization', 'City Committee');
@@ -79,6 +83,7 @@ export const roadwayTrash = Map().withMutations((map :Map) => {
 });
 
 export const homelessShelter = Map().withMutations((map :Map) => {
+  map.set('id', '142536475869708');
   map.set('name', 'Homeless Shelter');
   map.set('status', 'Inactive');
   map.set('organization', 'City Committee');
@@ -90,6 +95,7 @@ export const homelessShelter = Map().withMutations((map :Map) => {
 });
 
 export const countyHospital = Map().withMutations((map :Map) => {
+  map.set('id', '0897867564534231');
   map.set('name', 'County Hospital');
   map.set('status', 'Inactive');
   map.set('organization', 'Pennington County Center');
