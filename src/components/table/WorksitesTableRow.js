@@ -7,7 +7,8 @@ import styled from 'styled-components';
 import Immutable from 'immutable';
 import { Constants } from 'lattice';
 
-import { formatValue, formatNumericalValue, formatDate } from '../../utils/FormattingUtils';
+import { formatValue, formatNumericalValue } from '../../utils/FormattingUtils';
+import { formatAsDate } from '../../utils/DateTimeUtils';
 import { OL } from '../../core/style/Colors';
 
 const { OPENLATTICE_ID_FQN } = Constants;
@@ -44,7 +45,7 @@ const Row = styled.tr`
 type Props = {
   handleSelect :(worksite :Immutable.Map, entityKeyId :string, worksiteId :string) => void;
   worksite :Immutable.Map<*, *>,
-  selectWorksite :(selectedWorksite :Immutable.Map, contactInfo :Immutable.List) => void;
+  selectWorksite :(selectedWorksite :Immutable.Map) => void;
   selected? :boolean,
   small? :boolean,
 };
@@ -63,8 +64,8 @@ const TableRow = ({
   /* BASED ON DUMMY DATA */
   const name = formatValue(worksite.get('name'));
   const status = formatValue(worksite.get('status'));
-  const startDate = formatDate(worksite.get('startDate'), 'MM/DD/YYYY');
-  const lastActiveDate = formatDate(worksite.get('lastActiveDate'), 'MM/DD/YYYY');
+  const startDate = formatAsDate(new Date(worksite.get('startDate')).toISOString());
+  const lastActiveDate = formatAsDate(new Date(worksite.get('lastActiveDate')).toISOString());
   const scheduledParticipantCount = formatNumericalValue(worksite.get('scheduledParticipantCount'));
   const pastParticipantCount = formatNumericalValue(worksite.get('pastParticipantCount'));
   const totalHours = formatNumericalValue(worksite.get('totalHours'));
@@ -77,7 +78,7 @@ const TableRow = ({
             handleSelect(worksite, entityKeyId, worksiteId);
           }
           if (selectWorksite) {
-            selectWorksite(worksite, contactInfo);
+            selectWorksite(worksite);
           }
         }}>
       <Cell small={small} />
