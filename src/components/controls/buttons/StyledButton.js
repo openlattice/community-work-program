@@ -22,6 +22,7 @@ const StyledButton = styled.button.attrs({
   text-decoration: none;
   white-space: nowrap;
   width: ${props => (props.fluid ? '100%' : 'auto')};
+
   &[disabled] {
     background-color: #e1e1eb;
     color: #aaafbc;

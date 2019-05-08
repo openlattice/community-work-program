@@ -5,11 +5,10 @@
 import React, { Component } from 'react';
 import styled from 'styled-components';
 import { List, Map } from 'immutable';
-import { faTimes } from '@fortawesome/pro-regular-svg-icons';
+import { faTimes, faChevronDown } from '@fortawesome/pro-regular-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 import { OL } from '../../../core/style/Colors';
-import downArrowIcon from '../../../assets/svg/down-arrow.svg';
 
 /*
  * styled components
@@ -70,6 +69,7 @@ const SelectIcon = styled.div`
   position: absolute;
   margin: 0 20px;
   right: 0;
+
   &:hover {
     cursor: pointer;
   }
@@ -80,6 +80,7 @@ const CloseIcon = styled.div`
   color: ${OL.GREY20};
   position: absolute;
   right: 20px;
+
   &:hover {
     cursor: pointer;
   }
@@ -100,10 +101,12 @@ const DataTableWrapper = styled.div`
 
 const SearchOption = styled.div`
   padding: 10px 20px;
+
   &:hover {
     background-color: ${OL.GREY08};
     cursor: pointer;
   }
+
   &:active {
     background-color: ${OL.PURPLE06};
   }
@@ -113,14 +116,17 @@ const SearchOptionContainer = styled.div`
   max-height: 300px;
   overflow-x: auto;
   overflow-y: scroll;
+
   &::-webkit-scrollbar-thumb {
     background-color: ${props => (props.scrollVisible ? OL.GREY03 : 'transparent')};
     border-radius: ${props => (props.scrollVisible ? 3 : 0)}px;
   }
+
   &::-webkit-scrollbar {
     width: ${props => (props.scrollVisible ? 10 : 0)}px;
     display: ${props => (props.scrollVisible ? 'initial' : 'none')};
   }
+
 `;
 
 /*
@@ -231,7 +237,7 @@ class StyledFunctionSelect extends Component<Props, State> {
             ) : (
               <SelectIcon
                   onClick={this.showDataTable}>
-                <img src={downArrowIcon} alt="" />
+                <FontAwesomeIcon icon={faChevronDown} />
               </SelectIcon>
             )
           }
