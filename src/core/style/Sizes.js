@@ -8,3 +8,7 @@ export const APP_CONTAINER_MAX_WIDTH :number = 2000;
 export const APP_CONTAINER_WIDTH :number = 1020;
 export const APP_CONTENT_PADDING :number = 30;
 export const APP_CONTENT_WIDTH :number = APP_CONTAINER_WIDTH - (APP_CONTENT_PADDING * 2);
+
+export const DASHBOARD_WIDTH :number = 2000;
+export const SEARCH_CONTAINER_WIDTH :number = 1080;
+export const PARTICIPANT_PROFILE_WIDTH :number = 1024;
