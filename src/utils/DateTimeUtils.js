@@ -49,7 +49,8 @@ function calculateAge(dateOfBirth :string) :number {
 
   const valueAsDate = DateTime.fromISO(dateOfBirth);
   if (valueAsDate.isValid) {
-    return valueAsDate.diffNow('years').years;
+    const now = DateTime.local();
+    return now.diff(valueAsDate, 'years').toFormat('y');
   }
   return -1;
 }
