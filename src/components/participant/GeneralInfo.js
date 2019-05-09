@@ -2,8 +2,9 @@
 import React from 'react';
 import styled from 'styled-components';
 import { Map } from 'immutable';
+import { faUserCircle } from '@fortawesome/pro-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
-import defaultUserIcon from '../../assets/svg/profile-placeholder-round.svg';
 import smallEditIcon from '../../assets/svg/small-edit.svg';
 import { OL } from '../../utils/constants/Colors';
 import { PersonPhoto, PersonPicture } from '../picture/PersonPicture';
@@ -30,9 +31,7 @@ const StyledPersonPhoto = styled(PersonPhoto)`
   align-items: center;
 `;
 
-const StyledPlaceholderPicture = styled(PersonPicture)`
-  height: 100px;
-  width: 100px;
+const StyledPlaceholderPicture = styled.div`
   margin: 0 0 30px 0;
 `;
 
@@ -102,7 +101,11 @@ const GeneralInfo = ({ contactInfo, person } :Props) => (
             <PersonPicture src={person.get('mugshot')} alt="" />
           </StyledPersonPhoto>
         )
-        : <StyledPlaceholderPicture src={defaultUserIcon} alt="" />
+        : (
+          <StyledPlaceholderPicture>
+            <FontAwesomeIcon icon={faUserCircle} size="6x" color="#D8D8D8" />
+          </StyledPlaceholderPicture>
+        )
     }
     <InfoRow>
       <Title>Status</Title>
