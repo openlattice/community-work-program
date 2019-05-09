@@ -24,6 +24,9 @@ export const ContainerInnerWrapper = styled.div`
 export const ButtonWrapper = styled.div`
   display: flex;
   align-items: center;
+  &:hover {
+    cursor: pointer;
+  }
 `;
 
 /* Component Headers */
