@@ -190,9 +190,9 @@ class ParticipantProfile extends Component<Props, State> {
         <ProfileBody>
           <BackNavButton
               onClick={() => {
-                history.push(Routes.DASHBOARD);
+                history.push(Routes.PARTICIPANTS);
               }}>
-            Back to Dashboard
+            Back to Participants
           </BackNavButton>
           <NameRowWrapper>
             <NameHeader>{person.get('name')}</NameHeader>
