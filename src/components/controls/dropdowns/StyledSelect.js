@@ -81,7 +81,7 @@ export const emotionStyles = {
   control: (base, state) => {
     const { isFocused, isDisabled, selectProps } = state;
     let backgroundColor = `${OL.WHITE}`;
-    let border = isFocused ? `solid 1px ${OL.PURPLE02}` : `solid 1px ${OL.GREY08}`;
+    let border = isFocused ? `solid 1px ${OL.PURPLE02}` : `solid 1px ${OL.GREY11}`;
 
     if (selectProps && selectProps.noBorder) {
       backgroundColor = 'transparent';
