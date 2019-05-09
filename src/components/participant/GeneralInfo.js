@@ -96,10 +96,10 @@ type Props = {
 const GeneralInfo = ({ contactInfo, person } :Props) => (
   <InfoWrapper>
     {
-      person && person.get('mughshot')
+      person && person.get('mugshot')
         ? (
           <StyledPersonPhoto>
-            <PersonPicture src={person.get('mughshot')} alt="" />
+            <PersonPicture src={person.get('mugshot')} alt="" />
           </StyledPersonPhoto>
         )
         : <StyledPlaceholderPicture src={defaultUserIcon} alt="" />
