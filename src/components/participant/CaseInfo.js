@@ -1,8 +1,10 @@
 // @flow
 import React from 'react';
 import styled from 'styled-components';
+import { faPenSquare } from '@fortawesome/pro-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
-import smallEditIcon from '../../assets/svg/small-edit.svg';
+import { ButtonWrapper } from '../Layout';
 import { OL } from '../../utils/constants/Colors';
 
 const CaseInfoWrapper = styled.div`
@@ -50,7 +52,9 @@ const CaseInfo = () => (
     <Header>Case Number</Header>
     <NumberWrapper>
       <Number>1234567890123456</Number>
-      <img src={smallEditIcon} alt="" />
+      <ButtonWrapper>
+        <FontAwesomeIcon icon={faPenSquare} size="lg" color={OL.GREY04} />
+      </ButtonWrapper>
     </NumberWrapper>
     <Header>Required Hours</Header>
     <Number>100</Number>
