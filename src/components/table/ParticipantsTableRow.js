@@ -64,6 +64,9 @@ const Row = styled.tr`
   ${Cell}:last-child {
     padding-right: 30px;
   }
+  :last-of-type {
+    border-bottom: none;
+  }
   &:hover {
     cursor: pointer;
     background: ${OL.GREY14};
