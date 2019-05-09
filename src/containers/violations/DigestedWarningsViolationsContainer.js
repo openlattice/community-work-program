@@ -20,7 +20,7 @@ const NoteWrapper = styled.div`
   margin-top: 20px;
   padding: 40px;
   background-color: ${OL.WHITE};
-  border: 1px solid ${OL.GREY08};
+  border: 1px solid ${OL.GREY11};
   border-radius: 5px;
   display: flex;
   flex-direction: column;

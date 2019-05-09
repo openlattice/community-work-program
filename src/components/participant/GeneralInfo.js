@@ -16,7 +16,7 @@ const InfoWrapper = styled.div`
   align-items: center;
   width: 400px;
   height: 400px;
-  border: 1px solid ${OL.GREY08};
+  border: 1px solid ${OL.GREY11};
   background-color: ${OL.WHITE};
   padding: 30px;
   border-radius: 5px;
@@ -94,6 +94,9 @@ type Props = {
 
 const GeneralInfo = ({ contactInfo, person } :Props) => (
   <InfoWrapper>
+    {
+      console.log('contactInfo: ', contactInfo.toJS())
+    }
     {
       person && person.get('mugshot')
         ? (

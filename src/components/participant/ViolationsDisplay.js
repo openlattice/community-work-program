@@ -10,7 +10,7 @@ const ViolationsWrapper = styled.div`
   align-items: center;
   width: 320px;
   height: 200px;
-  border: 1px solid ${OL.GREY08};
+  border: 1px solid ${OL.GREY11};
   background-color: ${OL.WHITE};
   padding: 70px 0;
   border-radius: 5px;

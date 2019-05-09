@@ -101,7 +101,7 @@ const ActionWrapper = styled.div`
 const TextArea = styled.textarea`
   width: 500px;
   padding: 20px;
-  border: 1px solid ${OL.GREY08};
+  border: 1px solid ${OL.GREY11};
   border-radius: 5px;
   resize: none;
 
