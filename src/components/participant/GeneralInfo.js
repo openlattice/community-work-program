@@ -2,12 +2,12 @@
 import React from 'react';
 import styled from 'styled-components';
 import { Map } from 'immutable';
-import { faUserCircle } from '@fortawesome/pro-solid-svg-icons';
+import { faPenSquare, faUserCircle } from '@fortawesome/pro-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
-import smallEditIcon from '../../assets/svg/small-edit.svg';
 import { OL } from '../../utils/constants/Colors';
 import { PersonPhoto, PersonPicture } from '../picture/PersonPicture';
+import { ButtonWrapper } from '../Layout';
 
 const InfoWrapper = styled.div`
   display: flex;
@@ -83,7 +83,7 @@ const Value = styled.div`
 
 const EmailWrapper = styled(Value)`
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
 `;
 
@@ -131,7 +131,9 @@ const GeneralInfo = ({ contactInfo, person } :Props) => (
       <Title>Email</Title>
       <EmailWrapper>
         {contactInfo.get('email')}
-        <img src={smallEditIcon} alt="" />
+        <ButtonWrapper>
+          <FontAwesomeIcon icon={faPenSquare} size="lg" color={OL.GREY04} />
+        </ButtonWrapper>
       </EmailWrapper>
     </InfoRow>
   </InfoWrapper>
