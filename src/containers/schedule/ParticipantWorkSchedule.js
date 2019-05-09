@@ -3,6 +3,7 @@ import React, { Component } from 'react';
 import styled from 'styled-components';
 import { Map, List } from 'immutable';
 import { withRouter } from 'react-router-dom';
+import { DateTime } from 'luxon';
 
 import AppointmentBlock from './AppointmentBlock';
 import * as Routes from '../../core/router/Routes';
@@ -81,18 +82,20 @@ class ParticipantWorkSchedule extends Component<Props, State> {
   filterAppointmentList = (sortedList :List) => {
     const { selectedView } = this.state;
     let filteredList = List();
-    const today = new Date().getTime();
+    const today = DateTime.local();
 
     if (selectedView === scheduleViews[0]) {
       filteredList = sortedList;
     }
     if (selectedView === scheduleViews[1]) {
       filteredList = sortedList.filter((appt :Map) => (
-        new Date(appt.get('datetimestart')).getTime() > today));
+        DateTime.fromISO(appt.get('datetimestart')) > today
+      ));
     }
     if (selectedView === scheduleViews[2]) {
       filteredList = sortedList.filter((appt :Map) => (
-        new Date(appt.get('datetimestart')).getTime() < today));
+        DateTime.fromISO(appt.get('datetimestart')) < today
+      ));
     }
     return filteredList;
   }
