@@ -6,8 +6,9 @@ import React from 'react';
 import styled from 'styled-components';
 import Immutable from 'immutable';
 import { Constants } from 'lattice';
+import { faUserCircle } from '@fortawesome/pro-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
-import defaultUserIcon from '../../assets/svg/profile-placeholder-round.svg';
 import { PersonPicture, PersonPhoto } from '../picture/PersonPicture';
 import { formatValue, formatNumericalValue } from '../../utils/FormattingUtils';
 import { formatAsDate } from '../../utils/DateTimeUtils';
@@ -100,7 +101,7 @@ const TableRow = ({
       <StyledPersonPhoto small={small}>
         <PersonPicture src={photo} alt="" />
       </StyledPersonPhoto>
-    ) : <PersonPicture small={small} src={defaultUserIcon} alt="" />;
+    ) : <FontAwesomeIcon icon={faUserCircle} size="lg" color="#D8D8D8" />;
 
   /* BASED ON DUMMY DATA */
   const name = formatValue(person.get('name'));
