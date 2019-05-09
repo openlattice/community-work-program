@@ -2,8 +2,9 @@
 import React from 'react';
 import styled from 'styled-components';
 import { Map } from 'immutable';
-import moment from 'moment';
+import { DateTime } from 'luxon';
 
+import { formatAsDate } from '../../utils/DateTimeUtils';
 import { OL } from '../../utils/constants/Colors';
 
 const DatesWrapper = styled.div`
@@ -52,15 +53,15 @@ const KeyDates = ({ person } :Props) => (
   <DatesWrapper>
     <DateBlock>
       <Header>Sentence Date</Header>
-      <Date>{person.get('sentenceDate')}</Date>
+      <Date>{formatAsDate(person.get('sentenceDate'))}</Date>
     </DateBlock>
     <DateBlock>
       <Header>Sentence End Date</Header>
-      <Date>{person.get('sentenceEndDate')}</Date>
+      <Date>{formatAsDate(person.get('sentenceEndDate'))}</Date>
     </DateBlock>
     <DateBlock>
       <Header>Enrollment Deadline</Header>
-      <Date>{moment(person.get('sentenceDate')).add(14, 'day').format('L')}</Date>
+      <Date>{DateTime.fromISO(person.get('sentenceDate')).plus({ weeks: 2 }).toLocaleString()}</Date>
     </DateBlock>
   </DatesWrapper>
 );
