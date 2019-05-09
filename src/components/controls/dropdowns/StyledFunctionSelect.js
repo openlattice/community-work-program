@@ -3,13 +3,12 @@
  */
 
 import React, { Component } from 'react';
-import styled, { css } from 'styled-components';
+import styled from 'styled-components';
 import { List, Map } from 'immutable';
-import { faTimes } from '@fortawesome/pro-regular-svg-icons';
+import { faTimes, faChevronDown } from '@fortawesome/pro-regular-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
-import { OL } from '../../../utils/constants/Colors';
-import downArrowIcon from '../../../assets/svg/down-arrow.svg';
+import { OL } from '../../../core/style/Colors';
 
 /*
  * styled components
@@ -238,7 +237,7 @@ class StyledFunctionSelect extends Component<Props, State> {
             ) : (
               <SelectIcon
                   onClick={this.showDataTable}>
-                <img src={downArrowIcon} alt="" />
+                <FontAwesomeIcon icon={faChevronDown} />
               </SelectIcon>
             )
           }

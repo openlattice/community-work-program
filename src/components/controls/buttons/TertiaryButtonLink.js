@@ -1,7 +1,7 @@
 import styled from 'styled-components';
 import { Link } from 'react-router-dom';
 
-import { OL } from '../../../utils/constants/Colors';
+import { OL } from '../../../core/style/Colors';
 
 const TertiaryButtonLink = styled(Link)`
   display: flex;

@@ -2,63 +2,57 @@
  * @flow
  */
 
-import differenceInYears from 'date-fns/difference_in_years';
-import format from 'date-fns/format';
-import isValid from 'date-fns/is_valid';
-
-import { isNonEmptyString } from './LangUtils';
+import { DateTime } from 'luxon';
 
 const DATE_MDY_SLASH_FORMAT :string = 'MM/DD/YYYY';
 const ISO_DATE_FORMAT :string = 'YYYY-MM-DD';
 const ISO_TIME_HMS_FORMAT :string = 'HH:mm:ss';
 const TIME_HM_FORMAT :string = 'HH:mm';
 
-function isValidDateTimeString(value :string) :boolean {
-
-  if (isNonEmptyString(value)) {
-    const valueAsDate :Date = new Date(value);
-    return isValid(valueAsDate);
-  }
-
-  return false;
-}
-
 function formatAsDate(value :string) :string {
 
-  if (isValidDateTimeString(value)) {
-    return format(value, DATE_MDY_SLASH_FORMAT);
+  const valueAsDate = DateTime.fromISO(value);
+  if (valueAsDate.isValid) {
+    return valueAsDate.toLocaleString(DateTime.DATE_SHORT);
   }
   return '';
 }
 
 function formatAsISODate(value :string) :string {
 
-  if (isValidDateTimeString(value)) {
-    return format(value, ISO_DATE_FORMAT);
+  const valueAsDateTime = DateTime.fromISO(value);
+  if (valueAsDateTime.isValid) {
+    return valueAsDateTime.toISODate();
   }
   return '';
 }
 
 function formatAsTime(value :string) :string {
 
-  if (isValidDateTimeString(value)) {
-    return format(value, TIME_HM_FORMAT);
+  const valueAsTime = DateTime.fromISO(value);
+  if (valueAsTime.isValid) {
+    return valueAsTime.toLocaleString(DateTime.TIME_24_SIMPLE);
   }
   return '';
 }
 
 function formatAsISOTime(value :string) :string {
 
-  if (isValidDateTimeString(value)) {
-    return format(value, ISO_TIME_HMS_FORMAT);
+  const valueAsTime = DateTime.fromISO(value);
+  if (valueAsTime.isValid) {
+    return valueAsTime.toISOTime();
   }
   return '';
 }
 
-function calculateAge(dateOfBirth :string) :number {
+function calculateAge(value :string) :number {
 
-  if (isValidDateTimeString(dateOfBirth)) {
-    return differenceInYears(new Date(), dateOfBirth);
+  const dateOfBirth = DateTime.fromISO(value);
+  if (dateOfBirth.isValid) {
+    const age = dateOfBirth
+      .until(DateTime.local())
+      .toDuration(['years', 'months', 'days', 'hours']);
+    return age.years;
   }
   return -1;
 }
@@ -73,5 +67,4 @@ export {
   formatAsISODate,
   formatAsISOTime,
   formatAsTime,
-  isValidDateTimeString,
 };

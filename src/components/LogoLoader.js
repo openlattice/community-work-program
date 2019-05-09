@@ -30,7 +30,6 @@ const Ellipse = styled.div`
   border-radius: 500px;
   background: #b898ff;
   opacity: 0;
-
   animation: ${KeyFrames} 3s ease-in-out 3s infinite;
   animation-delay: 0.3s;
 `;

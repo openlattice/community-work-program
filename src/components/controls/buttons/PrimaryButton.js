@@ -1,7 +1,7 @@
 import styled from 'styled-components';
 import StyledButton from './StyledButton';
 
-import { OL } from '../../../utils/constants/Colors';
+import { OL } from '../../../core/style/Colors';
 
 const PrimaryButton = styled(StyledButton)`
   background-color: ${OL.PURPLE03};

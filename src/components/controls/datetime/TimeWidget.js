@@ -3,17 +3,16 @@
  */
 
 import React, { PureComponent } from 'react';
-import moment from 'moment';
 import { TimePicker } from '@atlaskit/datetime-picker';
 import { emotionStyles } from '../dropdowns/StyledSelect';
-import { TIME_HM_FORMAT } from '../../../utils/DateTimeUtils';
+import { TIME_HM_FORMAT, formatAsTime } from '../../../utils/DateTimeUtils';
 
 type Props = {
   disabled :boolean,
   id :string,
-  onChange :(value :string | moment | void) => void,
+  onChange :(value :string | void) => void,
   format :string,
-  value :string | moment,
+  value :string,
 };
 
 class TimeWidget extends PureComponent<Props> {
@@ -27,11 +26,11 @@ class TimeWidget extends PureComponent<Props> {
   componentDidMount() {
     const { value } = this.props;
     if (!value) {
-      this.handleChange(moment().format(TIME_HM_FORMAT));
+      this.handleChange(formatAsTime(value));
     }
   }
 
-  handleChange = (value :string | moment) => {
+  handleChange = (value :string) => {
     const { onChange } = this.props;
     onChange(value || undefined, 'time');
   }

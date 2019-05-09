@@ -10,14 +10,12 @@ const StyledButton = styled.button.attrs({
   align-items: center;
   border-radius: 3px;
   border: 0;
-  margin-left: 20px;
-  padding: 8px 30px;
   cursor: pointer;
   font-family: 'Open Sans', Arial, sans-serif;
   line-height: 20px;
   font-size: 14px;
-  font-spacing: 2px;
-  font-weight: 500;
+  padding: 12px;
+  font-weight: 600;
   text-align: center;
   text-decoration: none;
   white-space: nowrap;

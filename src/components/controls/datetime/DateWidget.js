@@ -3,17 +3,16 @@
  */
 
 import React, { PureComponent } from 'react';
-import moment from 'moment';
 import { DatePicker } from '@atlaskit/datetime-picker';
 import { emotionStyles } from '../dropdowns/StyledSelect';
-import { DATE_MDY_SLASH_FORMAT, ISO_DATE_FORMAT } from '../../../utils/DateTimeUtils';
+import { DATE_MDY_SLASH_FORMAT, formatAsISODate } from '../../../utils/DateTimeUtils';
 
 type Props = {
   disabled ? :boolean,
   format ? :string,
   id :string,
-  onChange :(value :string | moment | void) => void,
-  value ? :string | moment,
+  onChange :(value :string | void) => void,
+  value ? :string,
 };
 
 class DateWidget extends PureComponent<Props> {
@@ -27,11 +26,11 @@ class DateWidget extends PureComponent<Props> {
   componentDidMount() {
     const { value } = this.props;
     if (!value) {
-      this.handleChange(moment().format(ISO_DATE_FORMAT));
+      this.handleChange(formatAsISODate(value));
     }
   }
 
-  handleChange = (value :string | moment) => {
+  handleChange = (value :string) => {
     const { onChange } = this.props;
     onChange(value || undefined, 'date');
   }

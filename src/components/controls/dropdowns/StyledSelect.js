@@ -1,74 +1,62 @@
 import styled, { css } from 'styled-components';
 import Select from 'react-select';
 
-import { OL } from '../../../utils/constants/Colors';
+import { OL } from '../../../core/style/Colors';
 
 export const selectStyles = css`
   .lattice-select__control {
     min-height: 44px;
     border-radius: 3px;
-    background-color: #f9f9fd;
-    border: solid 1px #dcdce7;
+    background-color: ${OL.GREY10};
+    border: solid 1px ${OL.GREY05};
     box-shadow: 0 0 0 0;
-
     :hover {
-      background-color: #f0f0f7;
-      border: solid 1px #dcdce7;
+      background-color: ${OL.GREY08};
+      border: solid 1px ${OL.GREY05};
     }
   }
-
   .lattice-select__control.lattice-select__control--is-focused {
-    border: solid 1px #6124e2;
+    border: solid 1px ${OL.PURPLE02};
     box-shadow: 0 0 0 0;
     background-color: white;
   }
-
   .lattice-select__menu {
     display: ${({ hideMenu }) => (hideMenu ? 'none' : 'block')};
   }
-
   .lattice-select__option {
-    color: #555e6f;
+    color: ${OL.GREY01};
     font-size: 14px;
     line-height: 19px;
-
     :active {
-      background-color: #e4d8ff;
+      background-color: ${OL.PURPLE06};
     }
   }
-
   .lattice-select__option--is-focused {
-    background-color: #f0f0f7;
+    background-color: ${OL.GREY08};
   }
-
   .lattice-select__option--is-selected {
-    background-color: #e6e6f7;
-    color: #6124e2;
+    background-color: ${OL.GREY06};
+    color: ${OL.PURPLE02};
   }
-
   .lattice-select__single-value {
-    color: #2e2e34;
+    color: ${OL.GREY15};
     font-size: 14px;
     line-height: 19px;
   }
-
   .lattice-select__indicator-container {
     margin-right: '5px';
-    color: '#b6bbc7';
+    color: ${OL.GREY03};
   }
-
   .lattice-select__indicator-separator {
     display: none;
   }
-
   .lattice-select__clear-indicator {
     padding: '0';
     margin: '5px';
   }
-
   .lattice-select__dropdown-indicator {
     display: ${({ hideMenu }) => (hideMenu ? 'none' : 'flex')};
-    color: #b6bbc7;
+    color: ${OL.GREY03};
     padding: '0';
     margin: '5px';
   }
@@ -93,7 +81,7 @@ export const emotionStyles = {
   control: (base, state) => {
     const { isFocused, isDisabled, selectProps } = state;
     let backgroundColor = `${OL.WHITE}`;
-    let border = isFocused ? 'solid 1px #6124e2' : `solid 1px ${OL.GREY08}`;
+    let border = isFocused ? `solid 1px ${OL.PURPLE02}` : `solid 1px ${OL.GREY08}`;
 
     if (selectProps && selectProps.noBorder) {
       backgroundColor = 'transparent';
@@ -123,14 +111,14 @@ export const emotionStyles = {
   },
   option: (base, state) => {
     const { isFocused, isSelected } = state;
-    const color = isSelected ? '#6124e2' : '#555e6f';
+    const color = isSelected ? `${OL.PURPLE02}` : `${OL.GREY01}`;
     let backgroundColor = 'white';
 
     if (isSelected) {
-      backgroundColor = '#e6e6f7';
+      backgroundColor = `${OL.GREY06}`;
     }
     else if (isFocused) {
-      backgroundColor = '#f0f0f7';
+      backgroundColor = `${OL.GREY08}`;
     }
 
     return {
@@ -138,21 +126,21 @@ export const emotionStyles = {
       color,
       backgroundColor,
       ':active': {
-        backgroundColor: '#e4d8ff'
+        backgroundColor: `${OL.PURPLE06}`
       }
     };
   },
   singleValue: (base, state) => {
     const { isDisabled } = state;
-    return { ...base, color: isDisabled ? '#8e929b' : '#2e2e34' };
+    return { ...base, color: isDisabled ? `${OL.GREY02}` : `${OL.GREY15}` };
   },
   indicatorSeparator: () => ({ display: 'none' }),
-  indicatorsContainer: base => ({ ...base, marginRight: '10px', color: '#b6bbc7' }),
+  indicatorsContainer: base => ({ ...base, marginRight: '10px', color: `${OL.GREY03}` }),
   clearIndicator: base => ({ ...base, padding: '0', margin: '5px' }),
   dropdownIndicator: (base, state) => {
     const { selectProps } = state;
     const style = {
-      color: '#b6bbc7',
+      color: `${OL.GREY03}`,
       padding: '0',
       margin: '5px',
       display: selectProps && selectProps.hideMenu ? 'none' : 'flex'
