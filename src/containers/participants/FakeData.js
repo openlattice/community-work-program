@@ -6,9 +6,9 @@ import { Map, List } from 'immutable';
 export const personOne = Map().withMutations((map :Map) => {
   map.set('name', 'Tommy Morrison');
   map.set('age', 25);
-  map.set('startDate', '03/01/2018');
-  map.set('sentenceDate', '02/26/2019');
-  map.set('sentenceEndDate', '08/26/2019');
+  map.set('startDate', '2018-03-01T08:00:00.000Z');
+  map.set('sentenceDate', '2018-02-16T08:00:00.000Z');
+  map.set('sentenceEndDate', '2018-08-26T08:00:00.000Z');
   map.set('hoursServed', '84h');
   map.set('requiredHours', '100h');
   map.set('numberOfWarnings', 0);
@@ -22,9 +22,9 @@ export const personOne = Map().withMutations((map :Map) => {
 export const personTwo = Map().withMutations((map :Map) => {
   map.set('name', 'Mabel Garrett');
   map.set('age', 19);
-  map.set('startDate', '08/02/2018');
-  map.set('sentenceDate', '08/06/2018');
-  map.set('sentenceEndDate', '12/31/2018');
+  map.set('startDate', '2018-08-02T07:00:00.000Z');
+  map.set('sentenceDate', '2018-08-06T07:00:00.000Z');
+  map.set('sentenceEndDate', '2018-12-31T07:00:00.000Z');
   map.set('hoursServed', '100h');
   map.set('requiredHours', '100h');
   map.set('numberOfWarnings', 1);
@@ -38,9 +38,9 @@ export const personTwo = Map().withMutations((map :Map) => {
 export const personThree = Map().withMutations((map :Map) => {
   map.set('name', 'Phoebe Oates');
   map.set('age', 28);
-  map.set('startDate', '06/02/2018');
-  map.set('sentenceDate', '06/06/2018');
-  map.set('sentenceEndDate', '12/31/2018');
+  map.set('startDate', '2018-08-02T07:00:00.000Z');
+  map.set('sentenceDate', '2018-08-06T07:00:00.000Z');
+  map.set('sentenceEndDate', '2018-12-31T07:00:00.000Z');
   map.set('hoursServed', '14h');
   map.set('requiredHours', '25h');
   map.set('numberOfWarnings', 3);
@@ -54,9 +54,9 @@ export const personThree = Map().withMutations((map :Map) => {
 export const personFour = Map().withMutations((map :Map) => {
   map.set('name', 'Frank Seebold');
   map.set('age', 34);
-  map.set('startDate', '01/02/2018');
-  map.set('sentenceDate', '01/06/2018');
-  map.set('sentenceEndDate', '10/08/2018');
+  map.set('startDate', '2018-08-02T07:00:00.000Z');
+  map.set('sentenceDate', '2018-08-06T07:00:00.000Z');
+  map.set('sentenceEndDate', '2018-12-31T07:00:00.000Z');
   map.set('hoursServed', '58h');
   map.set('requiredHours', '150h');
   map.set('numberOfWarnings', 2);
@@ -71,8 +71,8 @@ export const personFive = Map().withMutations((map :Map) => {
   map.set('name', 'Lori Amaratti');
   map.set('age', 21);
   map.set('startDate', '');
-  map.set('sentenceDate', '04/14/2019');
-  map.set('sentenceEndDate', '06/08/2019');
+  map.set('sentenceDate', '2019-08-06T07:00:00.000Z');
+  map.set('sentenceEndDate', '2019-12-31T07:00:00.000Z');
   map.set('hoursServed', '0h');
   map.set('requiredHours', '50h');
   map.set('numberOfWarnings', 0);
@@ -86,9 +86,9 @@ export const personFive = Map().withMutations((map :Map) => {
 export const personSix = Map().withMutations((map :Map) => {
   map.set('name', 'Heather Everett');
   map.set('age', 23);
-  map.set('startDate', '09/04/2018');
-  map.set('sentenceDate', '09/01/2018');
-  map.set('sentenceEndDate', '12/08/2018');
+  map.set('startDate', '2018-09-15T07:00:00.000Z');
+  map.set('sentenceDate', '2018-09-06T07:00:00.000Z');
+  map.set('sentenceEndDate', '2018-12-31T07:00:00.000Z');
   map.set('hoursServed', '34h');
   map.set('requiredHours', '150h');
   map.set('numberOfWarnings', 3);
@@ -103,8 +103,8 @@ export const personSeven = Map().withMutations((map :Map) => {
   map.set('name', 'Carly McDonough');
   map.set('age', 18);
   map.set('startDate', '');
-  map.set('sentenceDate', '04/20/2019');
-  map.set('sentenceEndDate', '10/08/2019');
+  map.set('sentenceDate', '2019-08-06T07:00:00.000Z');
+  map.set('sentenceEndDate', '2019-12-31T07:00:00.000Z');
   map.set('hoursServed', '0h');
   map.set('requiredHours', '30h');
   map.set('numberOfWarnings', 0);
@@ -119,8 +119,8 @@ export const personEight = Map().withMutations((map :Map) => {
   map.set('name', 'Jack Rodriguez');
   map.set('age', 18);
   map.set('startDate', '');
-  map.set('sentenceDate', '04/23/2019');
-  map.set('sentenceEndDate', '08/08/2019');
+  map.set('sentenceDate', '2019-07-06T07:00:00.000Z');
+  map.set('sentenceEndDate', '2019-11-30T07:00:00.000Z');
   map.set('hoursServed', '0h');
   map.set('requiredHours', '60h');
   map.set('numberOfWarnings', 0);
@@ -135,8 +135,8 @@ export const personNine = Map().withMutations((map :Map) => {
   map.set('name', 'Daniel Wilson');
   map.set('age', 17);
   map.set('startDate', '');
-  map.set('sentenceDate', '04/15/2019');
-  map.set('sentenceEndDate', '08/15/2019');
+  map.set('sentenceDate', '2019-06-06T07:00:00.000Z');
+  map.set('sentenceEndDate', '2019-08-31T07:00:00.000Z');
   map.set('hoursServed', '0h');
   map.set('requiredHours', '50h');
   map.set('numberOfWarnings', 0);
@@ -151,8 +151,8 @@ export const personTen = Map().withMutations((map :Map) => {
   map.set('name', 'Joshua Cohen');
   map.set('age', 17);
   map.set('startDate', '');
-  map.set('sentenceDate', '04/24/2019');
-  map.set('sentenceEndDate', '09/30/2019');
+  map.set('sentenceDate', '2019-10-06T07:00:00.000Z');
+  map.set('sentenceEndDate', '2019-12-31T07:00:00.000Z');
   map.set('hoursServed', '0h');
   map.set('requiredHours', '100h');
   map.set('numberOfWarnings', 0);
@@ -167,8 +167,8 @@ export const personEleven = Map().withMutations((map :Map) => {
   map.set('name', 'Jessica Garcia');
   map.set('age', 19);
   map.set('startDate', '');
-  map.set('sentenceDate', '04/24/2019');
-  map.set('sentenceEndDate', '09/30/2019');
+  map.set('sentenceDate', '2019-04-06T07:00:00.000Z');
+  map.set('sentenceEndDate', '2019-06-30T07:00:00.000Z');
   map.set('hoursServed', '0h');
   map.set('requiredHours', '25h');
   map.set('numberOfWarnings', 0);
@@ -182,9 +182,9 @@ export const personEleven = Map().withMutations((map :Map) => {
 export const personTwelve = Map().withMutations((map :Map) => {
   map.set('name', 'Amelia Torres');
   map.set('age', 20);
-  map.set('startDate', '');
-  map.set('sentenceDate', '03/24/2019');
-  map.set('sentenceEndDate', '09/30/2019');
+  map.set('startDate', '2019-05-09T07:00:00.000Z');
+  map.set('sentenceDate', '2019-05-06T07:00:00.000Z');
+  map.set('sentenceEndDate', '2019-07-31T07:00:00.000Z');
   map.set('hoursServed', '0h');
   map.set('requiredHours', '40h');
   map.set('numberOfWarnings', 3);
@@ -198,9 +198,9 @@ export const personTwelve = Map().withMutations((map :Map) => {
 export const personThirteen = Map().withMutations((map :Map) => {
   map.set('name', 'Matthew Miller');
   map.set('age', 20);
-  map.set('startDate', '');
-  map.set('sentenceDate', '01/24/2019');
-  map.set('sentenceEndDate', '04/30/2019');
+  map.set('startDate', '2019-08-10T07:00:00.000Z');
+  map.set('sentenceDate', '2019-08-06T07:00:00.000Z');
+  map.set('sentenceEndDate', '2019-10-31T07:00:00.000Z');
   map.set('hoursServed', '40h');
   map.set('requiredHours', '40h');
   map.set('numberOfWarnings', 3);
@@ -338,15 +338,15 @@ export const caseNumbers = [
 
 export const upcomingApptOne = Map().withMutations((map :Map) => {
   map.set('id', '1234567890');
-  map.set('datetimestart', '2019-04-30T15:30:00.000Z');
-  map.set('datetimeend', '2019-04-30T19:30:00.000Z');
+  map.set('datetimestart', '2019-05-30T15:30:00.000Z');
+  map.set('datetimeend', '2019-05-30T19:30:00.000Z');
   map.set('worksite', 'Community Garden');
 });
 
 export const upcomingApptTwo = Map().withMutations((map :Map) => {
   map.set('id', '0987654321');
-  map.set('datetimestart', '2019-05-02T18:00:00.000Z');
-  map.set('datetimeend', '2019-05-02T20:00:00.000Z');
+  map.set('datetimestart', '2019-06-02T18:00:00.000Z');
+  map.set('datetimeend', '2019-06-02T20:00:00.000Z');
   map.set('worksite', 'B&G');
 });
 
