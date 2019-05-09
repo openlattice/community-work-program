@@ -6,7 +6,7 @@ import { OL } from '../../../core/style/Colors';
 const TertiaryButton = styled(StyledButton)`
   background-color: ${OL.WHITE};
   color: ${OL.GREY02};
-  border: 1px solid ${OL.GREY08};
+  border: 1px solid ${OL.GREY11};
   font-weight: 600;
   padding: 8px 30px;
   &:hover:enabled {

@@ -22,7 +22,7 @@ const TertiaryButtonLink = styled(Link)`
   width: auto;
   background-color: ${OL.WHITE};
   color: ${OL.GREY02};
-  border: 1px solid ${OL.GREY08};
+  border: 1px solid ${OL.GREY11};
   border-radius: 3px;
 
   &:hover:enabled {
