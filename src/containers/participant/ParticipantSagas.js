@@ -7,7 +7,7 @@ import {
   put,
   takeEvery
 } from '@redux-saga/core/effects';
-import moment from 'moment';
+import { DateTime } from 'luxon';
 
 import Logger from '../../utils/Logger';
 
@@ -35,9 +35,9 @@ export function* getWarningsViolationsListWorker(action :SequenceAction) :Genera
       .sortBy(
         violations.get('datetime'),
         (timeA, timeB) => {
-          const dateTimeA = moment(timeA);
-          const dateTimeB = moment(timeB);
-          return dateTimeB.diff(dateTimeA);
+          const dateTimeA = DateTime.fromISO(timeA);
+          const dateTimeB = DateTime.fromISO(timeB);
+          return dateTimeB < dateTimeA;
         }
       )
       .map((notesDetails :Map) => {
