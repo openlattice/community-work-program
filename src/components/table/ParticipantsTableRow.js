@@ -17,7 +17,7 @@ import { OL } from '../../utils/constants/Colors';
 const { OPENLATTICE_ID_FQN } = Constants;
 
 const Cell = styled.td`
-  padding: 7px 0;
+  padding: 10px 0;
   font-family: 'Open Sans', sans-serif;
   font-size: ${props => (props.small ? '12' : '14')}px;
   text-align: left;
@@ -101,7 +101,7 @@ const TableRow = ({
       <StyledPersonPhoto small={small}>
         <PersonPicture src={photo} alt="" />
       </StyledPersonPhoto>
-    ) : <FontAwesomeIcon icon={faUserCircle} size="lg" color="#D8D8D8" />;
+    ) : <FontAwesomeIcon icon={faUserCircle} size="2x" color="#D8D8D8" />;
 
   /* BASED ON DUMMY DATA */
   const name = formatValue(person.get('name'));

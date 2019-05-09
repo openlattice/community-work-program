@@ -182,7 +182,7 @@ class ParticipantsSearchContainer extends Component<Props, State> {
               people={peopleToRender}
               selectPerson={selectPerson}
               selectedPersonId=""
-              small
+              small={false}
               totalParticipants={people.count()} />
         </ParticipantSearchInnerWrapper>
       </ParticipantSearchOuterWrapper>
