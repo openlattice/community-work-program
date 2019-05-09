@@ -8,6 +8,7 @@ const TertiaryButton = styled(StyledButton)`
   color: ${OL.GREY02};
   border: 1px solid ${OL.GREY08};
   font-weight: 600;
+  padding: 8px 30px;
   &:hover:enabled {
     background-color: ${OL.GREY07};
   }
