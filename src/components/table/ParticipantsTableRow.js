@@ -9,7 +9,8 @@ import { Constants } from 'lattice';
 
 import defaultUserIcon from '../../assets/svg/profile-placeholder-round.svg';
 import { PersonPicture, PersonPhoto } from '../picture/PersonPicture';
-import { formatValue, formatNumericalValue, formatDate } from '../../utils/FormattingUtils';
+import { formatValue, formatNumericalValue } from '../../utils/FormattingUtils';
+import { formatAsDate } from '../../utils/DateTimeUtils';
 import { OL } from '../../utils/constants/Colors';
 
 const { OPENLATTICE_ID_FQN } = Constants;
@@ -104,9 +105,9 @@ const TableRow = ({
   /* BASED ON DUMMY DATA */
   const name = formatValue(person.get('name'));
   const age = formatNumericalValue(person.get('age'));
-  const startDate = formatDate(person.get('startDate'), 'MM/DD/YYYY');
-  const sentenceDate = formatDate(person.get('sentenceDate'), 'MM/DD/YYYY');
-  const sentenceEndDate = formatDate(person.get('sentenceEndDate'), 'MM/DD/YYYY');
+  const startDate = formatAsDate(person.get('startDate'));
+  const sentenceDate = formatAsDate(person.get('sentenceDate'));
+  const sentenceEndDate = formatAsDate(person.get('sentenceEndDate'));
   const hoursServed = formatValue(person.get('hoursServed'));
   const numberOfWarnings = formatNumericalValue(person.get('numberOfWarnings'));
   const numberOfViolations = formatNumericalValue(person.get('numberOfViolations'));
