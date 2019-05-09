@@ -14,7 +14,7 @@ const AppointmentWrapper = styled.div`
   background-color: ${OL.WHITE};
   margin-bottom: 15px;
   height: 69px;
-  border: 1px solid ${OL.GREY08};
+  border: 1px solid ${OL.GREY11};
   border-radius: 5px;
   padding: 30px;
 `;
