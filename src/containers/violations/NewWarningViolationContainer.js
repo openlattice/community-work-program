@@ -3,7 +3,7 @@
 import React, { Component } from 'react';
 import styled from 'styled-components';
 import { Map, List } from 'immutable';
-import moment from 'moment';
+import { DateTime } from 'luxon';
 import type { RouterHistory } from 'react-router';
 
 import * as Routes from '../../core/router/Routes';
@@ -19,7 +19,7 @@ import {
   TimeWidget,
 } from '../../components/controls/index';
 import { worksites, caseNumbers } from '../participants/FakeData';
-import { ISO_DATE_FORMAT, TIME_HM_FORMAT } from '../../utils/DateTimeUtils';
+import { formatAsISODate, formatAsISOTime } from '../../utils/DateTimeUtils';
 
 const FormWrapper = styled.div`
   width: ${PARTICIPANT_PROFILE_WIDTH}px;
@@ -153,8 +153,8 @@ class NewWarningViolationContainer extends Component<Props, State> {
 
   getSplitDateAndTime = () :State => {
     const { formData } = this.state;
-    const date = moment(formData.get('datetime')).format(ISO_DATE_FORMAT);
-    const time = moment(formData.get('datetime')).format(TIME_HM_FORMAT);
+    const date = formatAsISODate(formData.get('datetime'));
+    const time = formatAsISOTime(formData.get('datetime'));
     return {
       date,
       time
@@ -165,9 +165,9 @@ class NewWarningViolationContainer extends Component<Props, State> {
     let dateTime;
 
     if (date || time) {
-      const dateValue = date || moment().format(ISO_DATE_FORMAT);
-      const timeValue = time || moment().startOf('day').format(TIME_HM_FORMAT);
-      dateTime = moment(`${dateValue} ${timeValue}`).toISOString(true);
+      const dateValue = date || formatAsISODate(DateTime.local().toISO());
+      const timeValue = time || formatAsISOTime(DateTime.local().startOf('day'));
+      dateTime = DateTime.fromISO(`${dateValue} ${timeValue}`).toISOString();
     }
     return dateTime;
   }
