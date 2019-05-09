@@ -10,7 +10,7 @@ import NoInformation from '../../components/participant/NoInformation';
 import FetchStates from '../../utils/constants/FetchStates';
 import SubmitStates from '../../utils/constants/SubmitStates';
 
-import { Segment } from '../../components/Layout';
+import { CardOuterWrapper } from '../../components/Layout';
 import { StyledSelect } from '../../components/controls';
 import { emotionStyles } from '../../components/controls/dropdowns/StyledSelect';
 import type { FetchState } from '../../utils/constants/FetchStates';
@@ -23,8 +23,9 @@ const NotesWrapper = styled.div`
   margin-top: 15px;
 `;
 
-const StyledSegment = styled(Segment)`
+const StyledOuterWrapper = styled(CardOuterWrapper)`
   margin: 20px 0;
+  padding: 30px;
 `;
 
 type Props = {
@@ -98,18 +99,18 @@ class NotesContainer extends Component<Props, State> {
     } = this.props;
     if (fetchStateNote === FetchStates.IS_FETCHING || fetchStateOptions === FetchStates.IS_FETCHING) {
       return (
-        <StyledSegment>
+        <StyledOuterWrapper>
           <LogoLoader
               loadingText="Searching..."
               size={30} />
-        </StyledSegment>
+        </StyledOuterWrapper>
       );
     }
     if (noteData.isEmpty()) {
       return (
-        <StyledSegment>
+        <StyledOuterWrapper>
           <NoInformation caption="No Warnings or Violations" />
-        </StyledSegment>
+        </StyledOuterWrapper>
       );
     }
 
