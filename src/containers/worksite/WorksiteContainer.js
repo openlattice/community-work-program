@@ -6,6 +6,7 @@ import type { RouterHistory } from 'react-router';
 import contactIcon from '../../assets/svg/contact.svg';
 import clockIcon from '../../assets/svg/clock.svg';
 
+import WorksiteWorkSchedule from '../schedule/WorksiteWorkSchedule';
 import * as Routes from '../../core/router/Routes';
 import {
   ContainerOuterWrapper,
@@ -30,11 +31,11 @@ import {
 } from '../../components/Layout';
 import { BackNavButton, PrimaryButton, TertiaryButton } from '../../components/controls/index';
 import { OL } from '../../core/style/Colors';
-
 // import { worksites } from '../worksites/FakeData';
 
 type Props = {
   history :RouterHistory;
+  worksite :Map;
 };
 
 const OrganizationCard = styled(CardOuterWrapper)`
@@ -60,7 +61,7 @@ const SectionBlockWrapper = styled.div`
 `;
 
 /* eslint-disable max-len */
-const WorksiteContainer = ({ history } :Props) => (
+const WorksiteContainer = ({ history, worksite } :Props) => (
   <ContainerOuterWrapper>
     <ContainerInnerWrapper style={{ padding: '0' }}>
       <BackNavButton
@@ -160,6 +161,10 @@ const WorksiteContainer = ({ history } :Props) => (
           </Section>
         </InnerSectionWrapper>
       </OrganizationCard>
+    </ContainerInnerWrapper>
+    <ContainerInnerWrapper style={{ padding: '0' }}>
+      <WorksiteWorkSchedule
+          worksite={worksite} />
     </ContainerInnerWrapper>
   </ContainerOuterWrapper>
 );
