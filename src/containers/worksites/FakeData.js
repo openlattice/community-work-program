@@ -114,3 +114,62 @@ export const worksites = List([
   homelessShelter,
   countyHospital,
 ]).asImmutable();
+
+/* Appointments */
+
+export const upcomingApptOne = Map().withMutations((map :Map) => {
+  map.set('id', '1234567890');
+  map.set('datetimestart', '2019-05-30T15:30:00.000Z');
+  map.set('datetimeend', '2019-05-30T19:30:00.000Z');
+  map.set('worksite', 'Community Garden');
+  map.set('person', 'Florence Welch');
+});
+
+export const upcomingApptTwo = Map().withMutations((map :Map) => {
+  map.set('id', '0987654321');
+  map.set('datetimestart', '2019-06-02T18:00:00.000Z');
+  map.set('datetimeend', '2019-06-02T20:00:00.000Z');
+  map.set('worksite', 'Community Garden');
+  map.set('person', 'Mark Johnson');
+});
+
+export const upcomingApptThree = Map().withMutations((map :Map) => {
+  map.set('id', '1029384756');
+  map.set('datetimestart', '2019-05-04T20:00:00.000Z');
+  map.set('datetimeend', '2019-05-02T23:00:00.000Z');
+  map.set('worksite', 'Community Garden');
+  map.set('person', 'Sara Liu');
+});
+
+export const pastApptOne = Map().withMutations((map :Map) => {
+  map.set('id', '0192837465');
+  map.set('datetimestart', '2019-03-20T20:00:00.000Z');
+  map.set('datetimeend', '2019-03-20T23:00:00.000Z');
+  map.set('worksite', 'Community Garden');
+  map.set('person', 'Tommy Morrison');
+});
+
+export const pastApptTwo = Map().withMutations((map :Map) => {
+  map.set('id', '7765531923');
+  map.set('datetimestart', '2019-03-13T20:00:00.000Z');
+  map.set('datetimeend', '2019-03-13T23:00:00.000Z');
+  map.set('worksite', 'Community Garden');
+  map.set('person', 'Lori Amaratti');
+});
+
+export const pastApptThree = Map().withMutations((map :Map) => {
+  map.set('id', '9982344324');
+  map.set('datetimestart', '2019-04-01T15:00:00.000Z');
+  map.set('datetimeend', '2019-04-01T20:00:00.000Z');
+  map.set('worksite', 'Community Garden');
+  map.set('person', 'Nathan Moore');
+});
+
+export const appts = List([
+  upcomingApptOne,
+  upcomingApptTwo,
+  upcomingApptThree,
+  pastApptOne,
+  pastApptTwo,
+  pastApptThree,
+]).asImmutable();
