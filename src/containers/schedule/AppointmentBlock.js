@@ -5,6 +5,7 @@ import { Map } from 'immutable';
 
 import { OL } from '../../core/style/Colors';
 import { EditButton } from '../../components/controls/index';
+import { PERSON, WORKSITE } from '../../utils/constants/GeneralConsts';
 
 const AppointmentWrapper = styled.div`
   display: flex;
@@ -40,21 +41,23 @@ const Text = styled.span`
 
 type Props = {
   appointment :Map;
+  display :string;
 };
 
 // eslint-disable-next-line react/prefer-stateless-function
 class AppointmentBlock extends Component<Props> {
   render() {
-    const { appointment } = this.props;
+    const { appointment, display } = this.props;
     const datetimestart = new Date(appointment.get('datetimestart'));
     const date = datetimestart.toLocaleString().split(',')[0];
     const timestart = datetimestart.toTimeString().slice(0, 5);
     const timeend = new Date(appointment.get('datetimeend')).toTimeString().slice(0, 5);
+    const displayName = display === PERSON ? appointment.get('person') : appointment.get('worksite');
     return (
       <AppointmentWrapper>
         <InfoWrapper>
           <DateText>{date}</DateText>
-          <Text>{appointment.get('worksite')}</Text>
+          <Text>{displayName}</Text>
           <Text>{`${timestart}—${timeend}`}</Text>
         </InfoWrapper>
         <EditButton>Edit</EditButton>
