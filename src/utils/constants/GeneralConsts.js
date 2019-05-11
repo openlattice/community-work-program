@@ -11,3 +11,6 @@ export const scheduleMenu = [
   'Saturday',
   'Sunday',
 ];
+// Names to display on AppointmentBlock:
+export const PERSON = 'PERSON';
+export const WORKSITE = 'WORKSITE';
