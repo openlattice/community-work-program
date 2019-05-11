@@ -4,7 +4,7 @@ import { Map } from 'immutable';
 
 import WorkSchedule from './WorkSchedule';
 
-import { scheduleMenu } from '../../utils/constants/GeneralConsts';
+import { PERSON, scheduleMenu } from '../../utils/constants/GeneralConsts';
 import { apptMap } from '../worksites/FakeData';
 
 type Props = {
@@ -43,6 +43,7 @@ class WorksiteWorkSchedule extends Component<Props> {
     return (
       <WorkSchedule
           appointments={apptMap}
+          display={PERSON}
           scheduleViews={scheduleMenu} />
     );
   }

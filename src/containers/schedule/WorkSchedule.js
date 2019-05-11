@@ -22,6 +22,7 @@ import { isDefined } from '../../utils/LangUtils';
 type Props = {
   appointments :Map;
   buttonRoute ? :string;
+  display :string;
   printable ? :boolean;
   scheduleViews :string[];
 };
@@ -49,11 +50,12 @@ class WorkSchedule extends Component<Props, State> {
   }
 
   renderAppointmentList = () => {
-    const { appointments } = this.props;
+    const { appointments, display } = this.props;
     const { selectedView } = this.state;
     return appointments.get(selectedView).map(appt => (
       <AppointmentBlock
           appointment={appt}
+          display={display}
           key={appt.get('id')} />
     ));
   }
