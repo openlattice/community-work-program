@@ -1,10 +1,10 @@
 // @flow
 import React from 'react';
 import styled from 'styled-components';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faAddressBook } from '@fortawesome/pro-regular-svg-icons';
+import { faClock, faTools } from '@fortawesome/pro-light-svg-icons';
 import type { RouterHistory } from 'react-router';
-
-import contactIcon from '../../assets/svg/contact.svg';
-import clockIcon from '../../assets/svg/clock.svg';
 
 import WorksiteWorkSchedule from '../schedule/WorksiteWorkSchedule';
 import * as Routes from '../../core/router/Routes';
@@ -102,7 +102,7 @@ const WorksiteContainer = ({ history, worksite } :Props) => (
         <InnerSectionWrapper>
           <Section>
             <SectionHeaderWrapper>
-              <img src={contactIcon} alt="" />
+              <FontAwesomeIcon icon={faAddressBook} size="lg" color={OL.GREY15} />
               <SectionHeader>Point of contact</SectionHeader>
             </SectionHeaderWrapper>
             <OrganizationSectionText>
@@ -122,7 +122,7 @@ const WorksiteContainer = ({ history, worksite } :Props) => (
           </Section>
           <Section>
             <SectionHeaderWrapper>
-              <img src={clockIcon} alt="" />
+              <FontAwesomeIcon icon={faClock} size="lg" color={OL.GREY15} />
               <SectionHeader>Hours of operation</SectionHeader>
             </SectionHeaderWrapper>
             <SectionBlockWrapper>
@@ -150,7 +150,7 @@ const WorksiteContainer = ({ history, worksite } :Props) => (
         <InnerSectionWrapper>
           <Section>
             <SectionHeaderWrapper>
-              <img src={contactIcon} alt="" />
+              <FontAwesomeIcon icon={faTools} size="lg" color={OL.GREY15} />
               <SectionHeader>Available work</SectionHeader>
             </SectionHeaderWrapper>
             <SectionBlockWrapper>
