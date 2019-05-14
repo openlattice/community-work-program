@@ -6,9 +6,9 @@ import { Map, List } from 'immutable';
 export const personOne = Map().withMutations((map :Map) => {
   map.set('name', 'Tommy Morrison');
   map.set('age', 25);
-  map.set('startDate', '08/02/2018');
-  map.set('sentenceDate', '08/09/2018');
-  map.set('sentenceEndDate', '11/10/2018');
+  map.set('startDate', '2018-08-02T07:00:00.000Z');
+  map.set('sentenceDate', '2018-08-09T07:00:00.000Z');
+  map.set('sentenceEndDate', '2018-11-01T07:00:00.000Z');
   map.set('hoursServed', '84h');
   map.set('requiredHours', '100h');
   map.set('numberOfWarnings', 0);
@@ -22,9 +22,9 @@ export const personOne = Map().withMutations((map :Map) => {
 export const personTwo = Map().withMutations((map :Map) => {
   map.set('name', 'Mabel Garrett');
   map.set('age', 19);
-  map.set('startDate', '08/02/2018');
-  map.set('sentenceDate', '08/06/2018');
-  map.set('sentenceEndDate', '12/31/2018');
+  map.set('startDate', '2018-08-02T07:00:00.000Z');
+  map.set('sentenceDate', '2018-08-09T07:00:00.000Z');
+  map.set('sentenceEndDate', '2018-11-01T07:00:00.000Z');
   map.set('hoursServed', '100h');
   map.set('requiredHours', '100h');
   map.set('numberOfWarnings', 1);
@@ -38,9 +38,9 @@ export const personTwo = Map().withMutations((map :Map) => {
 export const personThree = Map().withMutations((map :Map) => {
   map.set('name', 'Phoebe Oates');
   map.set('age', 28);
-  map.set('startDate', '06/02/2018');
-  map.set('sentenceDate', '06/06/2018');
-  map.set('sentenceEndDate', '12/31/2018');
+  map.set('startDate', '2019-04-02T07:00:00.000Z');
+  map.set('sentenceDate', '2019-04-09T07:00:00.000Z');
+  map.set('sentenceEndDate', '2019-11-30T07:00:00.000Z');
   map.set('hoursServed', '14h');
   map.set('requiredHours', '25h');
   map.set('numberOfWarnings', 3);
@@ -54,9 +54,9 @@ export const personThree = Map().withMutations((map :Map) => {
 export const personFour = Map().withMutations((map :Map) => {
   map.set('name', 'Frank Seebold');
   map.set('age', 17);
-  map.set('startDate', '01/02/2018');
-  map.set('sentenceDate', '01/06/2018');
-  map.set('sentenceEndDate', '10/08/2018');
+  map.set('startDate', '2018-06-02T07:00:00.000Z');
+  map.set('sentenceDate', '2018-06-09T07:00:00.000Z');
+  map.set('sentenceEndDate', '2018-11-30T07:00:00.000Z');
   map.set('hoursServed', '58h');
   map.set('requiredHours', '150h');
   map.set('numberOfWarnings', 2);
@@ -216,13 +216,13 @@ export const people = List([
   personTwo,
   personThree,
   personFour,
-  personFive,
-  personSix,
-  personSeven,
-  personEight,
-  personNine,
-  personTen,
-  personEleven,
-  personTwelve,
-  personThirteen,
+  // personFive,
+  // personSix,
+  // personSeven,
+  // personEight,
+  // personNine,
+  // personTen,
+  // personEleven,
+  // personTwelve,
+  // personThirteen,
 ]).asImmutable();
