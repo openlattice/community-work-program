@@ -47,12 +47,16 @@ const NumberWrapper = styled.span`
   }
 `;
 
-const CaseInfo = () => (
+type Props = {
+  edit :() => void;
+};
+
+const CaseInfo = ({ edit } :Props) => (
   <CaseInfoWrapper>
     <Header>Case Number</Header>
     <NumberWrapper>
       <Number>1234567890123456</Number>
-      <ButtonWrapper>
+      <ButtonWrapper onClick={edit}>
         <FontAwesomeIcon icon={faPenSquare} size="lg" color={OL.GREY04} />
       </ButtonWrapper>
     </NumberWrapper>
