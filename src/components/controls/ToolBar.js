@@ -3,15 +3,15 @@ import React from 'react';
 import styled from 'styled-components';
 import { List, Map } from 'immutable';
 
-import StyledSelect from './StyledSelect';
 import SearchContainer from '../../containers/search/SearchContainer';
 
-import { OL } from '../../utils/constants/Colors';
+import { OL } from '../../core/style/Colors';
 import { APP_CONTAINER_MAX_WIDTH, APP_CONTAINER_WIDTH } from '../../core/style/Sizes';
+import { PrimaryButton, StyledFunctionSelect } from './index';
 
 const ToolBarWrapper = styled.div`
   display: flex;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: center;
   width: 100%;
   height: 50px;
@@ -30,25 +30,48 @@ const ToolBarInnerWrapper = styled.div`
   align-items: center;
 `;
 
+const ActionsWrapper = styled.span`
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+`;
+
 type Props = {
+  buttonAction :() => void;
+  buttonText :string;
   dropdowns :List;
   onSelectFunctions :Map;
   search :(input :string) => void;
 };
 
-const ToolBar = ({ dropdowns, onSelectFunctions, search } :Props) => (
+const ToolBar = ({
+  buttonAction,
+  buttonText,
+  dropdowns,
+  onSelectFunctions,
+  search,
+} :Props) => (
   <ToolBarWrapper>
     <ToolBarInnerWrapper>
-      <SearchContainer
-          search={search} />
+      <ActionsWrapper>
+        <SearchContainer
+            search={search} />
+        {
+          dropdowns.map((dropdownMap :Map) => (
+            <StyledFunctionSelect
+                key={dropdownMap.get('title')}
+                onSelect={() => {}}
+                onSelectFunctions={onSelectFunctions.get(dropdownMap.get('title'))}
+                options={dropdownMap.get('enums')}
+                title={dropdownMap.get('title')} />
+          ))
+        }
+      </ActionsWrapper>
       {
-        dropdowns.map((dropdownMap :Map) => (
-          <StyledSelect
-              key={dropdownMap.get('title')}
-              onSelect={onSelectFunctions.get(dropdownMap.get('title'))}
-              options={dropdownMap.get('enums')}
-              title={dropdownMap.get('title')} />
-        ))
+        (buttonAction && buttonText)
+          ? (
+            <PrimaryButton>{buttonText}</PrimaryButton>
+          ) : null
       }
     </ToolBarInnerWrapper>
   </ToolBarWrapper>

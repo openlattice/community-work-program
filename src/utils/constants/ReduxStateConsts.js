@@ -3,7 +3,7 @@ export const STATE = {
   PEOPLE: 'people',
 };
 
-// App
+/* App */
 
 export const APP = {
   ACTIONS: 'actions',
@@ -24,7 +24,7 @@ export const APP = {
   SETTINGS_BY_ORG_ID: 'appSettingsByOrgId'
 };
 
-// People
+/* People */
 
 export const PEOPLE = {
   ACTIONS: 'actions',
