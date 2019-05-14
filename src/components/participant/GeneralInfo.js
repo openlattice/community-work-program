@@ -4,6 +4,7 @@ import styled from 'styled-components';
 import { Map } from 'immutable';
 import { faPenSquare, faUserCircle } from '@fortawesome/pro-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { withRouter } from 'react-router-dom';
 
 import { OL } from '../../utils/constants/Colors';
 import { PersonPhoto, PersonPicture } from '../picture/PersonPicture';
@@ -89,14 +90,12 @@ const EmailWrapper = styled(Value)`
 
 type Props = {
   contactInfo :Map;
+  edit :() => void;
   person :Map;
 };
 
-const GeneralInfo = ({ contactInfo, person } :Props) => (
+const GeneralInfo = ({ contactInfo, edit, person } :Props) => (
   <InfoWrapper>
-    {
-      console.log('contactInfo: ', contactInfo.toJS())
-    }
     {
       person && person.get('mugshot')
         ? (
@@ -134,7 +133,7 @@ const GeneralInfo = ({ contactInfo, person } :Props) => (
       <Title>Email</Title>
       <EmailWrapper>
         {contactInfo.get('email')}
-        <ButtonWrapper>
+        <ButtonWrapper onClick={edit}>
           <FontAwesomeIcon icon={faPenSquare} size="lg" color={OL.GREY04} />
         </ButtonWrapper>
       </EmailWrapper>
@@ -142,4 +141,4 @@ const GeneralInfo = ({ contactInfo, person } :Props) => (
   </InfoWrapper>
 );
 
-export default GeneralInfo;
+export default withRouter(GeneralInfo);

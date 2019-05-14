@@ -104,6 +104,7 @@ type Props = {
   history :RouterHistory;
   match :Match;
   person :Map;
+  renderModalVisible :() => void;
 };
 
 type State = {
@@ -122,6 +123,12 @@ class ParticipantProfile extends Component<Props, State> {
 
   changeEnrollmentStatus = () => {
     const { person } = this.props;
+  }
+
+  edit = (newRoute :string) => {
+    const { history, person, renderModalVisible } = this.props;
+    history.push(newRoute.replace(':subjectId', person.get('personId')));
+    renderModalVisible();
   }
 
   getProgramAction = () => {
@@ -205,12 +212,14 @@ class ParticipantProfile extends Component<Props, State> {
           <BasicInfoWrapper>
             <GeneralInfo
                 contactInfo={contactInfo}
+                edit={() => this.edit(Routes.PARTICIPANT_GENERAL_INFO_EDIT)}
                 person={person} />
             <InnerColumnWrapper>
               <KeyDates
                   person={person} />
               <InnerRowWrapper>
-                <CaseInfo />
+                <CaseInfo
+                    edit={() => this.edit(Routes.PARTICIPANT_CASE_EDIT)} />
                 <ViolationsDisplay />
               </InnerRowWrapper>
             </InnerColumnWrapper>
