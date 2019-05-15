@@ -103,6 +103,7 @@ const TableRow = ({
   /* BASED ON DUMMY DATA */
   const name = formatValue(person.get('name'));
   const age = formatNumericalValue(person.get('age'));
+  const typeOfCourt = formatValue(person.get('typeOfCourt'));
   const startDate = person.get('startDate') ? formatAsDate(new Date(person.get('startDate')).toISOString()) : '';
   const sentenceDate = person.get('sentenceDate')
     ? formatAsDate(new Date(person.get('sentenceDate')).toISOString()) : '';
@@ -124,6 +125,7 @@ const TableRow = ({
       <Cell small={small}>{ photo }</Cell>
       <Cell small={small}>{ name }</Cell>
       <Cell small={small}>{ age }</Cell>
+      <Cell small={small}>{ typeOfCourt }</Cell>
       <Cell small={small}>{ startDate }</Cell>
       <Cell small={small}>{ sentenceDate }</Cell>
       <Cell small={small}>{ sentenceEndDate }</Cell>

@@ -6,6 +6,7 @@ import { Map, List } from 'immutable';
 export const personOne = Map().withMutations((map :Map) => {
   map.set('name', 'Tommy Morrison');
   map.set('age', 25);
+  map.set('typeOfCourt', 'Sentenced');
   map.set('startDate', '2018-08-02T07:00:00.000Z');
   map.set('sentenceDate', '2018-08-09T07:00:00.000Z');
   map.set('sentenceEndDate', '2018-11-01T07:00:00.000Z');
@@ -22,6 +23,7 @@ export const personOne = Map().withMutations((map :Map) => {
 export const personTwo = Map().withMutations((map :Map) => {
   map.set('name', 'Mabel Garrett');
   map.set('age', 19);
+  map.set('typeOfCourt', 'Veterans Court');
   map.set('startDate', '2018-08-02T07:00:00.000Z');
   map.set('sentenceDate', '2018-08-09T07:00:00.000Z');
   map.set('sentenceEndDate', '2018-11-01T07:00:00.000Z');
@@ -38,6 +40,7 @@ export const personTwo = Map().withMutations((map :Map) => {
 export const personThree = Map().withMutations((map :Map) => {
   map.set('name', 'Phoebe Oates');
   map.set('age', 28);
+  map.set('typeOfCourt', 'OTSC/Child Support');
   map.set('startDate', '2019-04-02T07:00:00.000Z');
   map.set('sentenceDate', '2019-04-09T07:00:00.000Z');
   map.set('sentenceEndDate', '2019-11-30T07:00:00.000Z');
@@ -54,6 +57,7 @@ export const personThree = Map().withMutations((map :Map) => {
 export const personFour = Map().withMutations((map :Map) => {
   map.set('name', 'Frank Seebold');
   map.set('age', 17);
+  map.set('typeOfCourt', 'Sentenced');
   map.set('startDate', '2018-06-02T07:00:00.000Z');
   map.set('sentenceDate', '2018-06-09T07:00:00.000Z');
   map.set('sentenceEndDate', '2018-11-30T07:00:00.000Z');
@@ -70,6 +74,7 @@ export const personFour = Map().withMutations((map :Map) => {
 export const personFive = Map().withMutations((map :Map) => {
   map.set('name', 'Lori Amaratti');
   map.set('age', 21);
+  map.set('typeOfCourt', 'Veterans Court');
   map.set('startDate', undefined);
   map.set('sentenceDate', '2019-05-20T07:00:00.000Z');
   map.set('sentenceEndDate', '2019-07-01T07:00:00.000Z');
@@ -86,6 +91,7 @@ export const personFive = Map().withMutations((map :Map) => {
 export const personSix = Map().withMutations((map :Map) => {
   map.set('name', 'Heather Everett');
   map.set('age', 23);
+  map.set('typeOfCourt', 'OTSC/Child Support');
   map.set('startDate', '2018-05-20T07:00:00.000Z');
   map.set('sentenceDate', '2018-05-20T07:00:00.000Z');
   map.set('sentenceEndDate', '2018-07-08T07:00:00.000Z');

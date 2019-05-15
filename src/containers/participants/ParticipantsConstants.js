@@ -27,6 +27,12 @@ const sortOptions :List = List().withMutations((list :List) => {
     map.set('default', true);
   });
   list.set(3, status);
+
+  const courtType = Map().withMutations((map :Map) => {
+    map.set('label', 'Court type');
+    map.set('default', false);
+  });
+  list.set(4, courtType);
 });
 
 const sortDropdown :Map = Map().withMutations((map :Map) => {

@@ -54,6 +54,7 @@ const Headers = () => (
       <HeaderElement />
       <HeaderElement>NAME</HeaderElement>
       <HeaderElement>AGE</HeaderElement>
+      <HeaderElement>COURT TYPE</HeaderElement>
       <HeaderElement>START DATE</HeaderElement>
       <HeaderElement>SENT. DATE</HeaderElement>
       <HeaderElement>SENT. END DATE</HeaderElement>

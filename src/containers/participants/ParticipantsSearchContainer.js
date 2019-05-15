@@ -111,6 +111,9 @@ class ParticipantsSearchContainer extends Component<Props, State> {
     if (column === 'status') {
       columnToSortBy = 'status';
     }
+    if (column === 'court type') {
+      columnToSortBy = 'typeOfCourt';
+    }
     const participants :List = isDefined(peopleToSort) ? peopleToSort : people;
     const sortedData = participants.sort((a, b) => {
       const valueA = a.get(columnToSortBy);
