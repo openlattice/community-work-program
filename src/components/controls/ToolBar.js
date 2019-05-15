@@ -6,12 +6,12 @@ import { List, Map } from 'immutable';
 import SearchContainer from '../../containers/search/SearchContainer';
 
 import { OL } from '../../core/style/Colors';
-import { APP_CONTAINER_MAX_WIDTH, APP_CONTAINER_WIDTH } from '../../core/style/Sizes';
+import { APP_CONTAINER_MAX_WIDTH, APP_CONTAINER_WIDTH, APP_CONTENT_PADDING } from '../../core/style/Sizes';
 import { PrimaryButton, StyledFunctionSelect } from './index';
 
 const ToolBarWrapper = styled.div`
   display: flex;
-  justify-content: flex-start;
+  justify-content: center;
   align-items: center;
   width: 100%;
   height: 50px;
@@ -24,6 +24,7 @@ const ToolBarInnerWrapper = styled.div`
   height: 100%;
   max-width: ${APP_CONTAINER_MAX_WIDTH}px;
   min-width: ${APP_CONTAINER_WIDTH}px;
+  padding: ${APP_CONTENT_PADDING}px;
   display: flex;
   flex: 1 0 auto;
   justify-content: flex-start;
