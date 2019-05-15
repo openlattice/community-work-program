@@ -6,7 +6,7 @@ const sortOptions :List = List().withMutations((list :List) => {
 
   const startDate = Map().withMutations((map :Map) => {
     map.set('label', 'Start date');
-    map.set('default', true);
+    map.set('default', false);
   });
   list.set(0, startDate);
 
@@ -21,11 +21,12 @@ const sortOptions :List = List().withMutations((list :List) => {
     map.set('default', false);
   });
   list.set(2, name);
-  // const numberHours = Map().withMutations((map :Map) => {
-  //   map.set('label', 'Hours remaining');
-  //   map.set('default', false);
-  // });
-  // list.set(3, numberHours);
+
+  const status = Map().withMutations((map :Map) => {
+    map.set('label', 'Status');
+    map.set('default', true);
+  });
+  list.set(3, status);
 });
 
 const sortDropdown :Map = Map().withMutations((map :Map) => {
