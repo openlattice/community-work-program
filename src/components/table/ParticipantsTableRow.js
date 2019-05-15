@@ -103,9 +103,11 @@ const TableRow = ({
   /* BASED ON DUMMY DATA */
   const name = formatValue(person.get('name'));
   const age = formatNumericalValue(person.get('age'));
-  const startDate = formatAsDate(new Date(person.get('startDate')).toISOString());
-  const sentenceDate = formatAsDate(new Date(person.get('sentenceDate')).toISOString());
-  const sentenceEndDate = formatAsDate(new Date(person.get('sentenceEndDate')).toISOString());
+  const startDate = person.get('startDate') ? formatAsDate(new Date(person.get('startDate')).toISOString()) : '';
+  const sentenceDate = person.get('sentenceDate')
+    ? formatAsDate(new Date(person.get('sentenceDate')).toISOString()) : '';
+  const sentenceEndDate = person.get('sentenceEndDate')
+    ? formatAsDate(new Date(person.get('sentenceEndDate')).toISOString()) : '';
   const hoursServed = `${formatValue(person.get('hoursServed'))} / ${formatValue(person.get('requiredHours'))}`;
   const numberOfWarnings = formatNumericalValue(person.get('numberOfWarnings'));
   const numberOfViolations = formatNumericalValue(person.get('numberOfViolations'));
