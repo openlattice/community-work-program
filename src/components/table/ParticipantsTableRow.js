@@ -16,7 +16,7 @@ import { OL } from '../../utils/constants/Colors';
 const { OPENLATTICE_ID_FQN } = Constants;
 
 const Cell = styled.td`
-  padding: 7px 0;
+  padding: 7px 10px;
   font-family: 'Open Sans', sans-serif;
   font-size: ${props => (props.small ? '12' : '14')}px;
   text-align: left;

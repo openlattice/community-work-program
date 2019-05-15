@@ -33,7 +33,7 @@ const ParticipantSearchInnerWrapper = styled.div`
   flex-direction: column;
   padding: ${APP_CONTENT_PADDING}px;
   margin-top: 30px;
-  width: ${SEARCH_CONTAINER_WIDTH}px;
+  min-width: ${SEARCH_CONTAINER_WIDTH}px;
   position: relative;
   align-self: center;
 `;

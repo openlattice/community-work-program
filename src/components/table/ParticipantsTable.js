@@ -43,7 +43,7 @@ const HeaderElement = styled.th`
   font-family: 'Open Sans', sans-serif;
   color: ${OL.BLACK};
   text-transform: uppercase;
-  padding: 12px 0;
+  padding: 12px 10px;
   border-bottom: 1px solid ${OL.BLACK};
   text-align: left;
 `;
