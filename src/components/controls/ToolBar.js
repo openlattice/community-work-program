@@ -60,8 +60,8 @@ const ToolBar = ({
           dropdowns.map((dropdownMap :Map) => (
             <StyledFunctionSelect
                 key={dropdownMap.get('title')}
-                onSelect={() => {}}
-                onSelectFunctions={onSelectFunctions.get(dropdownMap.get('title'))}
+                onSelect={onSelectFunctions.get(dropdownMap.get('title'))}
+                onSelectFunctions={onSelectFunctions}
                 options={dropdownMap.get('enums')}
                 title={dropdownMap.get('title')} />
           ))
