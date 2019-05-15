@@ -70,9 +70,9 @@ export const personFour = Map().withMutations((map :Map) => {
 export const personFive = Map().withMutations((map :Map) => {
   map.set('name', 'Lori Amaratti');
   map.set('age', 21);
-  map.set('startDate', '');
-  map.set('sentenceDate', '04/14/2019');
-  map.set('sentenceEndDate', '06/08/2019');
+  map.set('startDate', undefined);
+  map.set('sentenceDate', '2019-05-20T07:00:00.000Z');
+  map.set('sentenceEndDate', '2019-07-01T07:00:00.000Z');
   map.set('hoursServed', '0h');
   map.set('requiredHours', '50h');
   map.set('numberOfWarnings', 0);
@@ -86,9 +86,9 @@ export const personFive = Map().withMutations((map :Map) => {
 export const personSix = Map().withMutations((map :Map) => {
   map.set('name', 'Heather Everett');
   map.set('age', 23);
-  map.set('startDate', '09/04/2018');
-  map.set('sentenceDate', '09/01/2018');
-  map.set('sentenceEndDate', '12/08/2018');
+  map.set('startDate', '2018-05-20T07:00:00.000Z');
+  map.set('sentenceDate', '2018-05-20T07:00:00.000Z');
+  map.set('sentenceEndDate', '2018-07-08T07:00:00.000Z');
   map.set('hoursServed', '34h');
   map.set('requiredHours', '150h');
   map.set('numberOfWarnings', 3);
@@ -216,8 +216,8 @@ export const people = List([
   personTwo,
   personThree,
   personFour,
-  // personFive,
-  // personSix,
+  personFive,
+  personSix,
   // personSeven,
   // personEight,
   // personNine,
