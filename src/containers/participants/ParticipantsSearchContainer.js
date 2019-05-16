@@ -62,6 +62,7 @@ type Props = {
 
 type State = {
   peopleToRender :List;
+  selectedFilterOption :Map;
   selectedSortOption :Map;
 };
 
@@ -76,6 +77,7 @@ class ParticipantsSearchContainer extends Component<Props, State> {
 
     this.state = {
       peopleToRender: people,
+      selectedFilterOption: defaultFilterOption,
       selectedSortOption: defaultSortOption,
     };
   }
@@ -85,6 +87,26 @@ class ParticipantsSearchContainer extends Component<Props, State> {
     this.setState({
       peopleToRender: sortedByDefault,
     });
+  }
+
+  handleOnFilter = (clickedProperty :Map, peopleToSort :List) => {
+    this.setState({ selectedFilterOption: clickedProperty });
+
+    const participants :List = isDefined(peopleToSort) ? peopleToSort : people;
+    const filter :string = clickedProperty.get('filter').toLowerCase(); // dropdown/property name
+    const property :string = clickedProperty.get('label').toLowerCase(); // value
+
+    if (property === 'all') {
+      this.setState({ peopleToRender: people });
+      return participants;
+    }
+
+    const filteredPeople = participants.filter((participant :Map) => (
+      participant.get(filter).toLowerCase() === property.toLowerCase()
+    ));
+
+    this.setState({ peopleToRender: filteredPeople });
+    return filteredPeople;
   }
 
   handleOnSelectPerson = (person :Map, entityKeyId :string, personId :string) => {
@@ -142,7 +164,7 @@ class ParticipantsSearchContainer extends Component<Props, State> {
   }
 
   searchParticipantList = (input :string) => {
-    const { selectedSortOption } = this.state;
+    const { selectedFilterOption, selectedSortOption } = this.state;
     const matches = people.filter((p) => {
       const fullName = p.get('name').trim().toLowerCase();
       const firstName = p.get('name').split(' ')[0].trim().toLowerCase();
@@ -154,8 +176,9 @@ class ParticipantsSearchContainer extends Component<Props, State> {
 
       return match;
     });
-    const sortedFilteredPeople = this.handleOnSort(selectedSortOption, matches);
-    this.setState({ peopleToRender: sortedFilteredPeople });
+    const sortedSearchedPeople = this.handleOnSort(selectedSortOption, matches);
+    const sortedSearchedFilteredPeople = this.handleOnFilter(selectedFilterOption, sortedSearchedPeople);
+    this.setState({ peopleToRender: sortedSearchedFilteredPeople });
 
   }
 
@@ -163,6 +186,7 @@ class ParticipantsSearchContainer extends Component<Props, State> {
     const { peopleToRender } = this.state;
     const onSelectFunctions = Map().withMutations((map :Map) => {
       map.set('Sort by', this.handleOnSort);
+      map.set('Status', this.handleOnFilter);
     });
     return (
       <ParticipantSearchOuterWrapper>
