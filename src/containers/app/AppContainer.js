@@ -17,9 +17,7 @@ import Worksites from '../worksites/Worksites';
 import * as AppActions from './AppActions';
 import * as Routes from '../../core/router/Routes';
 import {
-  APP_CONTAINER_MAX_WIDTH,
   APP_CONTAINER_WIDTH,
-  APP_CONTENT_PADDING
 } from '../../core/style/Sizes';
 
 // TODO: this should come from lattice-ui-kit, maybe after the next release. current version v0.1.1
@@ -47,8 +45,6 @@ const AppContentInnerWrapper = styled.div`
   flex: 1 0 auto;
   flex-direction: column;
   justify-content: flex-start;
-  max-width: ${APP_CONTAINER_MAX_WIDTH}px;
-  padding: ${APP_CONTENT_PADDING}px;
   position: relative;
 `;
 
