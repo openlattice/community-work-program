@@ -40,10 +40,71 @@ const sortDropdown :Map = Map().withMutations((map :Map) => {
   map.set('enums', sortOptions);
 });
 
-/* Filter Participant Table by enrollment status */
+/* Filters */
 
-/* Filter Participant Table by start date or sentence date */
+const STATUS = 'status';
+
+/* Filter Participant Table by status */
+
+const statusFilterOptions :List = List().withMutations((list :List) => {
+
+  const all = Map().withMutations((map :Map) => {
+    map.set('label', 'All');
+    map.set('default', true);
+    map.set('filter', STATUS);
+  });
+  list.set(0, all);
+
+  const active = Map().withMutations((map :Map) => {
+    map.set('label', 'Active');
+    map.set('default', false);
+    map.set('filter', STATUS);
+  });
+  list.set(1, active);
+
+  const activeNoncompliant = Map().withMutations((map :Map) => {
+    map.set('label', 'Active — noncompliant');
+    map.set('default', false);
+    map.set('filter', STATUS);
+  });
+  list.set(2, activeNoncompliant);
+
+  const awaitingEnrollment = Map().withMutations((map :Map) => {
+    map.set('label', 'Awaiting enrollment');
+    map.set('default', false);
+    map.set('filter', STATUS);
+  });
+  list.set(3, awaitingEnrollment);
+
+  const closed = Map().withMutations((map :Map) => {
+    map.set('label', 'Closed');
+    map.set('default', false);
+    map.set('filter', STATUS);
+  });
+  list.set(4, closed);
+
+  const completed = Map().withMutations((map :Map) => {
+    map.set('label', 'Completed');
+    map.set('default', false);
+    map.set('filter', STATUS);
+  });
+  list.set(5, completed);
+
+  const removedNoncompliant = Map().withMutations((map :Map) => {
+    map.set('label', 'Removed — noncompliant');
+    map.set('default', false);
+    map.set('filter', STATUS);
+  });
+  list.set(6, removedNoncompliant);
+
+});
+
+const statusFilterDropdown :Map = Map().withMutations((map :Map) => {
+  map.set('title', 'Status');
+  map.set('enums', statusFilterOptions);
+});
 
 export {
   sortDropdown,
+  statusFilterDropdown,
 };

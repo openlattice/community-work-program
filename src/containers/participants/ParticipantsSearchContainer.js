@@ -6,7 +6,7 @@ import { List, Map } from 'immutable';
 import ParticipantsTable from '../../components/table/ParticipantsTable';
 
 import { ToolBar } from '../../components/controls/index';
-import { sortDropdown } from './ParticipantsConstants';
+import { sortDropdown, statusFilterDropdown } from './ParticipantsConstants';
 import { isDefined } from '../../utils/LangUtils';
 import { PARTICIPANT_PROFILE } from '../../core/router/Routes';
 import { OL } from '../../utils/constants/Colors';
@@ -47,7 +47,9 @@ const ParticipantsHeader = styled.div`
 
 const dropdowns :List = List().withMutations((list :List) => {
   list.set(0, sortDropdown);
+  list.set(1, statusFilterDropdown);
 });
+const defaultFilterOption :Map = statusFilterDropdown.get('enums').find(option => option.get('default'));
 const defaultSortOption :Map = sortDropdown.get('enums').find(option => option.get('default'));
 
 /*
