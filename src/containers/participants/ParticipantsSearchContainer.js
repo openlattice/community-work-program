@@ -10,10 +10,7 @@ import { sortDropdown } from './ParticipantsConstants';
 import { isDefined } from '../../utils/LangUtils';
 import { PARTICIPANT_PROFILE } from '../../core/router/Routes';
 import { OL } from '../../utils/constants/Colors';
-import {
-  APP_CONTENT_PADDING,
-  SEARCH_CONTAINER_WIDTH,
-} from '../../core/style/Sizes';
+import { SEARCH_CONTAINER_WIDTH } from '../../core/style/Sizes';
 
 import { people } from './FakeData';
 
@@ -31,7 +28,6 @@ const ParticipantSearchInnerWrapper = styled.div`
   display: flex;
   justify-content: center;
   flex-direction: column;
-  padding: ${APP_CONTENT_PADDING}px;
   margin-top: 30px;
   min-width: ${SEARCH_CONTAINER_WIDTH}px;
   position: relative;
