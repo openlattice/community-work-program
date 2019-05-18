@@ -1,5 +1,6 @@
 export const STATE = {
   APP: 'app',
+  PEOPLE: 'people',
 };
 
 /* App */
@@ -21,4 +22,13 @@ export const APP = {
   APP_SETTINGS_ID: 'appSettingsEntitySetId',
   SELECTED_ORG_SETTINGS: 'selectedOrganizationSettings',
   SETTINGS_BY_ORG_ID: 'appSettingsByOrgId'
+};
+
+/* People */
+
+export const PEOPLE = {
+  ACTIONS: 'actions',
+  GET_PARTICIPANTS: 'getParticipants',
+  IS_FETCHING_PARTICIPANTS: 'isFetchingParticipants',
+  PARTICIPANTS: 'participants',
 };
