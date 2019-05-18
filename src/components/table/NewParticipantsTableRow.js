@@ -6,11 +6,12 @@ import React from 'react';
 import styled from 'styled-components';
 import Immutable from 'immutable';
 import { Constants } from 'lattice';
-import moment from 'moment';
+import { DateTime } from 'luxon';
 
 import defaultUserIcon from '../../assets/svg/profile-placeholder-round.svg';
 import { PersonPicture, PersonPhoto } from '../picture/PersonPicture';
-import { formatValue, formatDate } from '../../utils/FormattingUtils';
+import { formatValue, formatNumericalValue } from '../../utils/FormattingUtils';
+import { formatAsDate } from '../../utils/DateTimeUtils';
 import { OL } from '../../utils/constants/Colors';
 
 const { OPENLATTICE_ID_FQN } = Constants;
@@ -85,9 +86,10 @@ const TableRow = ({
 
   /* BASED ON DUMMY DATA */
   const name = formatValue(person.get('name'));
-  const sentenceDate = formatDate(person.get('sentenceDate'), 'MM/DD/YYYY');
-  const enrollmentDeadline = formatDate(moment(person.get('sentenceDate')).add(14, 'day'), 'MM/DD/YYYY');
-  const requiredHours = formatDate(person.get('requiredHours'));
+  const sentenceDate = person.get('sentenceDate')
+    ? formatAsDate(new Date(person.get('sentenceDate')).toISOString()) : '';
+  const enrollmentDeadline = DateTime.fromISO(person.get('sentenceDate')).plus({ weeks: 2 }).toLocaleString();
+  const requiredHours = formatNumericalValue(person.get('requiredHours'));
 
   return (
     <Row

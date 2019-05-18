@@ -9,7 +9,8 @@ import { Constants } from 'lattice';
 
 import defaultUserIcon from '../../assets/svg/profile-placeholder-round.svg';
 import { PersonPicture, PersonPhoto } from '../picture/PersonPicture';
-import { formatValue, formatDate } from '../../utils/FormattingUtils';
+import { formatValue, formatNumericalValue } from '../../utils/FormattingUtils';
+import { formatAsDate } from '../../utils/DateTimeUtils';
 import { OL } from '../../utils/constants/Colors';
 
 const { OPENLATTICE_ID_FQN } = Constants;
@@ -84,8 +85,9 @@ const PendingReviewParticipantsTableRow = ({
 
   /* BASED ON DUMMY DATA */
   const name = formatValue(person.get('name'));
-  const sentenceDate = formatDate(person.get('sentenceDate'), 'MM/DD/YYYY');
-  const requiredHours = formatDate(person.get('requiredHours'));
+  const sentenceDate = person.get('sentenceDate')
+    ? formatAsDate(new Date(person.get('sentenceDate')).toISOString()) : '';
+  const requiredHours = formatNumericalValue(person.get('requiredHours'));
 
   return (
     <Row

@@ -9,7 +9,8 @@ import { Constants } from 'lattice';
 
 import defaultUserIcon from '../../assets/svg/profile-placeholder-round.svg';
 import { PersonPicture, PersonPhoto } from '../picture/PersonPicture';
-import { formatValue, formatNumericalValue, formatDate } from '../../utils/FormattingUtils';
+import { formatValue, formatNumericalValue } from '../../utils/FormattingUtils';
+import { formatAsDate } from '../../utils/DateTimeUtils';
 import { OL } from '../../utils/constants/Colors';
 
 const { OPENLATTICE_ID_FQN } = Constants;
@@ -85,7 +86,8 @@ const ViolationsParticipantsTableRow = ({
   /* BASED ON DUMMY DATA */
   const name = formatValue(person.get('name'));
   const numberViolations = formatNumericalValue(person.get('numberOfViolations'));
-  const requiredHours = formatDate(person.get('requiredHours'));
+  const hoursServed = `${formatNumericalValue(person.get('hoursServed'))}
+    / ${formatNumericalValue(person.get('requiredHours'))}`;
 
   return (
     <Row
@@ -98,7 +100,7 @@ const ViolationsParticipantsTableRow = ({
       <Cell small={small}>{ photo }</Cell>
       <Cell small={small}>{ name }</Cell>
       <Cell small={small}>{ numberViolations }</Cell>
-      <Cell small={small}>{ requiredHours }</Cell>
+      <Cell small={small}>{ hoursServed }</Cell>
     </Row>
   );
 };
