@@ -50,6 +50,56 @@ export const APP_TYPE_FQNS = {
   // WORKSITE_PLAN: new FullyQualifiedName('app.worksiteplan'),
 };
 
-export const PROPERTY_TYPE_FQNS = {
-  OL_ID_FQN: new FullyQualifiedName('ol.id'),
+/* general.person */
+export const PEOPLE_FQNS = {
+  FIRST_NAME: new FullyQualifiedName('nc.PersonGivenName'),
+  MIDDLE_NAME: new FullyQualifiedName('nc.PersonMiddleName'),
+  LAST_NAME: new FullyQualifiedName('nc.PersonSurName'),
+  SSN: new FullyQualifiedName('nc.SSN'),
+  DOB: new FullyQualifiedName('nc.PersonBirthDate'),
+  AGE: new FullyQualifiedName('person.age'),
+  RACE: new FullyQualifiedName('nc.PersonRace'),
+  ETHNICITY: new FullyQualifiedName('nc.PersonEthnicity'),
+  SEX: new FullyQualifiedName('nc.PersonSex'),
+  STATE_ID_NUMBER: new FullyQualifiedName('person.stateidnumber'),
+  MUGSHOT: new FullyQualifiedName('publicsafety.mugshot'),
+  HAIR_COLOR: new FullyQualifiedName('nc.PersonHairColorText'),
+  WEIGHT: new FullyQualifiedName('nc.PersonWeightMeasure'),
+  EYE_COLOR: new FullyQualifiedName('nc.PersonEyeColorText'),
+  SEX_OFFENDER: new FullyQualifiedName('j.SentenceRegisterSexOffenderIndicator'),
+  HEIGHT: new FullyQualifiedName('nc.PersonHeightMeasure'),
+  PICTURE: new FullyQualifiedName('person.picture'),
+  PERSON_ID: new FullyQualifiedName('nc.SubjectIdentification'),
+  ISSUING_JURISDICTION: new FullyQualifiedName('ol.idjurisdiction'),
+  NOTES: new FullyQualifiedName('housing.notes'),
+  GENDER: new FullyQualifiedName('bhr.gender'),
+};
+
+/* j.sentence */
+export const SENTENCE_FQNS = {
+  CONCURRENT_CONSECUTIVE: new FullyQualifiedName('justice.concurrentconsecutive'),
+  INCARCERATION_DAYS: new FullyQualifiedName('justice.incarcerationdays'),
+  INCARCERATION_MONTHS: new FullyQualifiedName('justice.incarcerationmonths'),
+  INCARCERATION_START_DATE: new FullyQualifiedName('justice.incarcerationstartdate'),
+  INCARCERATION_YEARS: new FullyQualifiedName('justice.incarcerationyears'),
+};
+
+/* ol.notification */
+export const INFRACTION_FQNS = {
+  CATEGORY: new FullyQualifiedName('ol.category'),
+  DATETIME: new FullyQualifiedName('general.datetime'),
+  DESCRIPTION: new FullyQualifiedName('ol.description'),
+  TYPE: new FullyQualifiedName('ol.type'),
+};
+
+/* ol.enrollment */
+export const ENROLLMENT_STATUS_FQNS = {
+  DATETIME_END: new FullyQualifiedName('ol.datetimeend'),
+  EFFECTIVE_DATE: new FullyQualifiedName('ol.effectivedate'),
+  STATUS: new FullyQualifiedName('ol.status'),
+};
+
+/* ol.has */
+export const HAS_FQNS = {
+  DATETIME_COMPLETED: new FullyQualifiedName('date.completeddatetime'),
 };
