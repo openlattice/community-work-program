@@ -36,15 +36,12 @@
     "date-fns": "~1.30.0",
     "history": "~4.7.2",
     "immutable": "4.0.0-rc.9",
-<<<<<<< HEAD
     "lattice": "0.54.2",
     "lattice-auth": "0.15.0",
     "lattice-sagas": "0.20.0",
-=======
     "lattice": "0.60.0",
     "lattice-auth": "0.13.0",
     "lattice-sagas": "0.15.0",
->>>>>>> develop
     "lattice-ui-kit": "0.2.1",
     "lodash": "~4.17.10",
     "loglevel": "~1.6.0",
@@ -58,7 +55,7 @@
     "react-select": "~2.4.3",
     "redux": "~4.0.0",
     "redux-immutable": "4.0.0",
-    "redux-reqseq": "0.2.1",
+    "redux-reqseq": "0.4.0",
     "styled-components": "~4.1.0"
   },
   "devDependencies": {
