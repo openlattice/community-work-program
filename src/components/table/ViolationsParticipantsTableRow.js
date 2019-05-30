@@ -12,7 +12,14 @@ import { PersonPicture, PersonPhoto } from '../picture/PersonPicture';
 import { formatValue, formatNumericalValue } from '../../utils/FormattingUtils';
 import { formatAsDate } from '../../utils/DateTimeUtils';
 import { OL } from '../../utils/constants/Colors';
+import { PEOPLE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 
+const {
+  FIRST_NAME,
+  LAST_NAME,
+  MUGSHOT,
+  PICTURE
+} = PEOPLE_FQNS;
 const { OPENLATTICE_ID_FQN } = Constants;
 
 const Cell = styled.td`
@@ -62,20 +69,21 @@ type Props = {
   person :Immutable.Map<*, *>,
   selected? :boolean,
   small? :boolean,
+  violationsCount :number;
 };
 
 const ViolationsParticipantsTableRow = ({
   handleSelect,
   person,
   selected,
-  small
+  small,
+  violationsCount,
 } :Props) => {
 
   const entityKeyId :string = person.getIn([OPENLATTICE_ID_FQN, 0], '');
   const personId :string = '';
 
-  // let photo :string = person.getIn([MUGSHOT, 0]) || person.getIn([PICTURE, 0]);
-  let photo;
+  let photo :string = person.getIn([MUGSHOT, 0]) || person.getIn([PICTURE, 0]);
   photo = photo
     ? (
       <StyledPersonPhoto small={small}>
@@ -84,10 +92,10 @@ const ViolationsParticipantsTableRow = ({
     ) : <PersonPicture small={small} src={defaultUserIcon} alt="" />;
 
   /* BASED ON DUMMY DATA */
-  const name = formatValue(person.get('name'));
-  const numberViolations = formatNumericalValue(person.get('numberOfViolations'));
-  const hoursServed = `${formatNumericalValue(person.get('hoursServed'))}
-    / ${formatNumericalValue(person.get('requiredHours'))}`;
+  const name = `${formatValue(person.getIn([FIRST_NAME, 0]))} ${formatValue(person.getIn([LAST_NAME, 0]))}`;
+  const numberViolations = formatNumericalValue(violationsCount);
+  // const hoursServed = `${formatNumericalValue(person.get('hoursServed'))}
+  //   / ${formatNumericalValue(person.get('requiredHours'))}`;
 
   return (
     <Row
@@ -100,7 +108,7 @@ const ViolationsParticipantsTableRow = ({
       <Cell small={small}>{ photo }</Cell>
       <Cell small={small}>{ name }</Cell>
       <Cell small={small}>{ numberViolations }</Cell>
-      <Cell small={small}>{ hoursServed }</Cell>
+      <Cell small={small}></Cell>
     </Row>
   );
 };

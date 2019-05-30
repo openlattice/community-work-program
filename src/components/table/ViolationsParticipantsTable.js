@@ -4,7 +4,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import { Constants } from 'lattice';
-import Immutable from 'immutable';
+import { Map, List } from 'immutable';
 
 import ViolationsParticipantsTableRow from './ViolationsParticipantsTableRow';
 
@@ -70,17 +70,18 @@ const Headers = () => (
       <HeaderElement />
       <HeaderElement>NAME</HeaderElement>
       <HeaderElement># OF VIO.</HeaderElement>
-      <HeaderElement>REQ. HRS.</HeaderElement>
+      <HeaderElement>HRS. SERVED</HeaderElement>
     </HeaderRow>
   </>
 );
 
 type Props = {
-  handleSelect :(person :Immutable.Map, entityKeyId :string, personId :string) => void;
-  people :Immutable.List<*, *>;
+  handleSelect :(person :Map, entityKeyId :string, personId :string) => void;
+  people :List<*, *>;
   selectedPersonId :string;
   small :boolean;
   totalParticipants :number;
+  violations :Map;
 };
 
 const ViolationsParticipantsTable = ({
@@ -89,6 +90,7 @@ const ViolationsParticipantsTable = ({
   selectedPersonId,
   small,
   totalParticipants,
+  violations,
 } :Props) => (
   <TableWrapper>
     <TableBanner>
@@ -102,13 +104,15 @@ const ViolationsParticipantsTable = ({
           people.map((person :Map, index :number) => {
             const personId = person.getIn([OPENLATTICE_ID_FQN, 0], '');
             const selected = personId === selectedPersonId;
+            const violationsCount = violations ? violations.get(personId).count() : 0;
             return (
               <ViolationsParticipantsTableRow
                   key={`${personId}-${index}`}
                   handleSelect={handleSelect}
                   person={person}
                   selected={selected}
-                  small={small} />
+                  small={small}
+                  violationsCount={violationsCount} />
             );
           })
         }
