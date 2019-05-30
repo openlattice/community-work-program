@@ -16,7 +16,7 @@ import type { RequestSequence, RequestState } from 'redux-reqseq';
 
 import AppHeaderContainer from './AppHeaderContainer';
 import LogoLoader from '../../components/LogoLoader';
-import Dashboard from '../dashboard/DashboardContainer';
+import DashboardContainer from '../dashboard/DashboardContainer';
 import ParticipantsContainer from '../participants/ParticipantsSearchContainer';
 import Worksites from '../worksites/Worksites';
 import * as AppActions from './AppActions';
@@ -131,7 +131,7 @@ class AppContainer extends Component<Props> {
         <Route
             exact strict path={Routes.DASHBOARD}
             render={props => (
-              <Dashboard
+              <DashboardContainer
                   enrollmentByParticipant={enrollment}
                   getParticipantsRequestState={getParticipantsRequestState}
                   infractionsByParticipant={infractions}
