@@ -30,6 +30,7 @@ export const PEOPLE = {
   ACTIONS: 'actions',
   ENROLLMENT_BY_PARTICIPANT: 'enrollmentByParticipant',
   ERRORS: 'errors',
+  FIND_COMMUNITY_SERVICE_SENTENCES: 'findCommunityServiceSentences',
   GET_ENROLLMENT_STATUSES: 'getEnrollmentStatuses',
   GET_INFRACTIONS: 'getInfractions',
   GET_PARTICIPANTS: 'getParticipants',

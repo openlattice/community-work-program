@@ -10,7 +10,7 @@ import {
   select,
   takeEvery,
 } from '@redux-saga/core/effects';
-import { Constants, Models } from 'lattice';
+import { Constants } from 'lattice';
 import {
   DataApiActions,
   DataApiSagas,
@@ -31,18 +31,25 @@ import {
   getParticipants,
   GET_SENTENCES,
   getSentences,
+  FIND_COMMUNITY_SERVICE_SENTENCES,
+  findCommunityServiceSentences,
 } from './ParticipantsActions';
 import { getEntitySetIdFromApp, getPropertyTypeIdFromApp } from '../../utils/AppUtils';
 import { STATE } from '../../utils/constants/ReduxStateConsts';
-import { APP_TYPE_FQNS, ENROLLMENT_STATUS_FQNS, HAS_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import {
+  APP_TYPE_FQNS,
+  ENROLLMENT_STATUS_FQNS,
+  HAS_FQNS,
+  SENTENCE_FQNS
+} from '../../core/edm/constants/FullyQualifiedNames';
 import { isDefined } from '../../utils/LangUtils';
 
 const { createEntityAndAssociationData, getEntitySetData } = DataApiActions;
 const { createEntityAndAssociationDataWorker, getEntitySetDataWorker } = DataApiSagas;
-const { searchEntityNeighborsWithFilter } = SearchApiActions;
-const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
+const { searchEntityNeighborsWithFilter, searchEntitySetData } = SearchApiActions;
+const { searchEntityNeighborsWithFilterWorker, searchEntitySetDataWorker } = SearchApiSagas;
 const { OPENLATTICE_ID_FQN } = Constants;
-const { DataGraphBuilder } = Models;
+
 const {
   ENROLLMENT_STATUS,
   HAS,
@@ -52,66 +59,11 @@ const {
   SENTENCES,
 } = APP_TYPE_FQNS;
 const { STATUS } = ENROLLMENT_STATUS_FQNS;
-const { DATETIME_COMPLETED } = HAS_FQNS;
+const { SENTENCE_CONDITIONS } = SENTENCE_FQNS;
 
 const getAppFromState = state => state.get(STATE.APP, Map());
 
 const LOG = new Logger('StudySagas');
-
-/*
- *
- * ParticipantsActions.getSentences()
- *
- */
-
-function* getSentencesWorker(action :SequenceAction) :Generator<*, *, *> {
-
-  const { id, value } = action;
-  if (value === null || value === undefined) {
-    yield put(getSentences.failure(id, ERR_ACTION_VALUE_NOT_DEFINED));
-    return;
-  }
-  let response :Object = {};
-  try {
-    yield put(getSentences.request(id));
-
-    const { participants, peopleESID } = value;
-    const participantEKIDs = participants.map((participant :Map) => participant.getIn([OPENLATTICE_ID_FQN, 0])).toJS();
-
-    const app = yield select(getAppFromState);
-    const sentenceESID = getEntitySetIdFromApp(app, SENTENCES.toString());
-    const manualSentenceESID = getEntitySetIdFromApp(app, MANUAL_SENTENCES.toString());
-
-    const searchFilter = {
-      entityKeyIds: participantEKIDs,
-      destinationEntitySetIds: [sentenceESID, manualSentenceESID],
-      sourceEntitySetIds: [],
-    };
-    response = yield call(
-      searchEntityNeighborsWithFilterWorker,
-      searchEntityNeighborsWithFilter({ entitySetId: peopleESID, filter: searchFilter })
-    );
-    if (response.error) {
-      throw response.error;
-    }
-    const sentencesMap :Map = fromJS(response.data);
-    // console.log('sentencesMap ', sentencesMap.toJS());
-
-    yield put(getSentences.success(id, sentencesMap));
-  }
-  catch (error) {
-    LOG.error('caught exception in getSentencesWorker()', error);
-    yield put(getSentences.failure(id, error));
-  }
-  finally {
-    yield put(getSentences.finally(id));
-  }
-}
-
-function* getSentencesWatcher() :Generator<*, *, *> {
-
-  yield takeEvery(GET_SENTENCES, getSentencesWorker);
-}
 
 /*
  *
@@ -284,28 +236,108 @@ function* getInfractionsWatcher() :Generator<*, *, *> {
 
 /*
  *
+ * ParticipantsActions.getSentences()
+ *
+ */
+
+function* getSentencesWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+  if (value === null || value === undefined) {
+    yield put(getSentences.failure(id, ERR_ACTION_VALUE_NOT_DEFINED));
+    return;
+  }
+  let response :Object = {};
+  try {
+    yield put(getSentences.request(id));
+
+    const { participants, peopleESID } = value;
+    const participantEKIDs = participants.map((participant :Map) => participant.getIn([OPENLATTICE_ID_FQN, 0])).toJS();
+
+    const app = yield select(getAppFromState);
+    const sentenceESID = getEntitySetIdFromApp(app, SENTENCES.toString());
+    const manualSentenceESID = getEntitySetIdFromApp(app, MANUAL_SENTENCES.toString());
+
+    const searchFilter = {
+      entityKeyIds: participantEKIDs,
+      destinationEntitySetIds: [sentenceESID, manualSentenceESID],
+      sourceEntitySetIds: [],
+    };
+    response = yield call(
+      searchEntityNeighborsWithFilterWorker,
+      searchEntityNeighborsWithFilter({ entitySetId: peopleESID, filter: searchFilter })
+    );
+    if (response.error) {
+      throw response.error;
+    }
+    const sentencesMap :Map = fromJS(response.data);
+    // console.log('sentencesMap ', sentencesMap.toJS());
+
+    yield put(getSentences.success(id, sentencesMap));
+  }
+  catch (error) {
+    LOG.error('caught exception in getSentencesWorker()', error);
+    yield put(getSentences.failure(id, error));
+  }
+  finally {
+    yield put(getSentences.finally(id));
+  }
+}
+
+function* getSentencesWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(GET_SENTENCES, getSentencesWorker);
+}
+
+/*
+ *
  * ParticipantsActions.getParticipants()
  *
  */
 
 function* getParticipantsWorker(action :SequenceAction) :Generator<*, *, *> {
 
-  const { id } = action;
+  const { id, value } = action;
+  if (value === null || value === undefined) {
+    yield put(getParticipants.failure(id, ERR_ACTION_VALUE_NOT_DEFINED));
+    return;
+  }
   let response :Object = {};
   let participants :List = List();
   try {
     yield put(getParticipants.request(id));
+    const { sentences, sentenceESID } = value;
     const app = yield select(getAppFromState);
     const peopleESID = getEntitySetIdFromApp(app, PEOPLE.toString());
-    // console.log('peopleESID: ', peopleESID);
+    // console.log('peopleESID: ', peopleESID)
     // console.log('esid: ', getEntitySetIdFromApp(app, APP_TYPE_FQNS.INFRACTIONS.toString()));
 
-    response = yield call(getEntitySetDataWorker, getEntitySetData({ entitySetId: peopleESID }));
-    if (response.error) {
-      throw response.error;
+    // response = yield call(getEntitySetDataWorker, getEntitySetData({ entitySetId: peopleESID }));
+    // if (response.error) {
+    //   throw response.error;
+    // }
+    // participants = fromJS(response.data);
+    // console.log('participants in getParticipants: ', participants.toJS());
+
+    if (sentences.count() > 0) {
+      const sentenceEKIDs :string[] = sentences.map((sentence :Map) => sentence.getIn([OPENLATTICE_ID_FQN, 0])).toJS();
+
+      const searchFilter = {
+        entityKeyIds: sentenceEKIDs,
+        destinationEntitySetIds: [],
+        sourceEntitySetIds: [peopleESID],
+      };
+      response = yield call(
+        searchEntityNeighborsWithFilterWorker,
+        searchEntityNeighborsWithFilter({ entitySetId: sentenceESID, filter: searchFilter })
+      );
+      if (response.error) {
+        throw response.error;
+      }
+      console.log('response in getParticipants: ', response);
+
+      participants = fromJS(response.data);
     }
-    participants = fromJS(response.data);
-    console.log('PARTICIPANTS: ', participants.toJS());
 
     if (participants.count() > 0) {
       yield call(getSentencesWorker, getSentences({ participants, peopleESID }));
@@ -331,7 +363,73 @@ function* getParticipantsWatcher() :Generator<*, *, *> {
   yield takeEvery(GET_PARTICIPANTS, getParticipantsWorker);
 }
 
+/*
+ *
+ * ParticipantsActions.getSentences()
+ *
+ */
+
+function* findCommunityServiceSentencesWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id } = action;
+  let response :Object = {};
+  try {
+    yield put(findCommunityServiceSentences.request(id));
+
+    /*
+     * 1. Do advanced search for sentences with sentences conditions including "community service".
+     */
+    const app = yield select(getAppFromState);
+    const sentenceESID = getEntitySetIdFromApp(app, SENTENCES.toString());
+
+    response = yield call(getEntitySetDataWorker, getEntitySetData({ entitySetId: sentenceESID }));
+    if (response.error) {
+      throw response.error;
+    }
+    console.log('sentences: ', response);
+
+
+    const sentenceConditionsPTID = getPropertyTypeIdFromApp(app, SENTENCES.toString(), SENTENCE_CONDITIONS.toString());
+    const searchOptions = {
+      searchFields: [{
+        searchTerm: 'COMMUNITY SERVICE',
+        property: sentenceConditionsPTID,
+        exact: true,
+      }],
+      start: 0,
+      maxHits: 10000,
+    };
+    response = yield call(searchEntitySetDataWorker, searchEntitySetData({ entitySetId: sentenceESID, searchOptions }));
+    console.log('response in findCommunityServiceSentences: ', response);
+    if (response.error) {
+      throw response.error;
+    }
+    const sentences = fromJS(response.data.hits);
+
+    /*
+     * 2. Get all participants associated with sentences found.
+     */
+    yield call(getParticipantsWorker, getParticipants({ sentences, sentenceESID }));
+
+    yield put(findCommunityServiceSentences.success(id, {}));
+  }
+  catch (error) {
+    LOG.error('caught exception in findCommunityServiceSentencesWorker()', error);
+    yield put(findCommunityServiceSentences.failure(id, error));
+  }
+  finally {
+    yield put(findCommunityServiceSentences.finally(id));
+  }
+}
+
+function* findCommunityServiceSentencesWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(FIND_COMMUNITY_SERVICE_SENTENCES, findCommunityServiceSentencesWorker);
+}
+
 export {
+  findCommunityServiceSentencesWatcher,
+  findCommunityServiceSentencesWorker,
   getEnrollmentStatusesWorker,
   getEnrollmentStatusesWatcher,
   getInfractionsWorker,

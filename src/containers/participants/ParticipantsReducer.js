@@ -8,6 +8,7 @@ import { RequestStates } from 'redux-reqseq';
 import type { SequenceAction } from 'redux-reqseq';
 
 import {
+  findCommunityServiceSentences,
   getEnrollmentStatuses,
   getInfractions,
   getParticipants,
@@ -20,6 +21,7 @@ const {
   ACTIONS,
   ENROLLMENT_BY_PARTICIPANT,
   ERRORS,
+  FIND_COMMUNITY_SERVICE_SENTENCES,
   GET_ENROLLMENT_STATUSES,
   GET_INFRACTIONS,
   GET_PARTICIPANTS,
@@ -32,6 +34,9 @@ const {
 
 const INITIAL_STATE :Map<*, *> = fromJS({
   [ACTIONS]: {
+    [FIND_COMMUNITY_SERVICE_SENTENCES]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
     [GET_ENROLLMENT_STATUSES]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
@@ -46,6 +51,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     },
   },
   [ERRORS]: {
+    [FIND_COMMUNITY_SERVICE_SENTENCES]: Map(),
     [GET_ENROLLMENT_STATUSES]: Map(),
     [GET_INFRACTIONS]: Map(),
     [GET_PARTICIPANTS]: Map(),
@@ -240,6 +246,43 @@ export default function studyReducer(state :Map<*, *> = INITIAL_STATE, action :O
         FINALLY: () => {
           return state
             .deleteIn([ACTIONS, GET_INFRACTIONS, seqAction.id]);
+        },
+      });
+    }
+
+    case findCommunityServiceSentences.case(action.type): {
+      const seqAction :SequenceAction = (action :any);
+      return findCommunityServiceSentences.reducer(state, action, {
+
+        REQUEST: () => {
+          return state
+            .setIn([ACTIONS, FIND_COMMUNITY_SERVICE_SENTENCES, seqAction.id], fromJS(seqAction))
+            .setIn([ACTIONS, FIND_COMMUNITY_SERVICE_SENTENCES, REQUEST_STATE], RequestStates.PENDING);
+        },
+        SUCCESS: () => {
+
+          if (!state.hasIn([ACTIONS, FIND_COMMUNITY_SERVICE_SENTENCES, seqAction.id])) {
+            return state;
+          }
+
+          return state
+            .setIn([ACTIONS, FIND_COMMUNITY_SERVICE_SENTENCES, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => {
+
+          const error = {};
+          const { value: axiosError } = seqAction;
+          if (axiosError && axiosError.response && isNumber(axiosError.response.status)) {
+            error.status = axiosError.response.status;
+          }
+
+          return state
+            .setIn([ERRORS, FIND_COMMUNITY_SERVICE_SENTENCES], error)
+            .setIn([ACTIONS, FIND_COMMUNITY_SERVICE_SENTENCES, REQUEST_STATE], RequestStates.FAILURE);
+        },
+        FINALLY: () => {
+          return state
+            .deleteIn([ACTIONS, FIND_COMMUNITY_SERVICE_SENTENCES, seqAction.id]);
         },
       });
     }

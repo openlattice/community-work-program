@@ -63,7 +63,7 @@ const AppContentInnerWrapper = styled.div`
 type Props = {
   actions:{
     getAllPropertyTypes :RequestSequence;
-    getParticipants :RequestSequence;
+    findCommunityServiceSentences :RequestSequence;
     getSentences :RequestSequence;
     loadApp :RequestSequence;
     logout :() => void;
@@ -98,8 +98,9 @@ class AppContainer extends Component<Props> {
         const peopleEntitySetId = app.getIn(
           [APP_TYPE_FQNS.PEOPLE.toString(), APP.ENTITY_SETS_BY_ORG, selectedOrgId]
         );
+        console.log('peopleEntitySetId: ', peopleEntitySetId);
         if (peopleEntitySetId) {
-          actions.getParticipants();
+          actions.findCommunityServiceSentences();
         }
       });
     }
