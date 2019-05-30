@@ -28,7 +28,14 @@ export const APP = {
 
 export const PEOPLE = {
   ACTIONS: 'actions',
+  ENROLLMENT_BY_PARTICIPANT: 'enrollmentByParticipant',
+  ERRORS: 'errors',
+  GET_ENROLLMENT_STATUSES: 'getEnrollmentStatuses',
+  GET_INFRACTIONS: 'getInfractions',
   GET_PARTICIPANTS: 'getParticipants',
-  IS_FETCHING_PARTICIPANTS: 'isFetchingParticipants',
+  GET_SENTENCES: 'getSentences',
+  INFRACTIONS_BY_PARTICIPANT: 'infractionsByParticipant',
   PARTICIPANTS: 'participants',
+  REQUEST_STATE: 'requestState',
+  SENTENCES_BY_PARTICIPANT: 'sentencesByParticipant',
 };
