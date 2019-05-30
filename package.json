@@ -21,7 +21,7 @@
   "bugs": {
     "url": "https://github.com/Lattice-Works/Community-Work-Program/issues"
   },
-  "license": "GPL-3.0",
+  "license": "UNLICENSED",
   "dependencies": {
     "@atlaskit/datetime-picker": "7.0.2",
     "@babel/polyfill": "~7.2.0",
