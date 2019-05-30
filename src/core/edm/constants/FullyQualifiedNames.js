@@ -50,6 +50,32 @@ export const APP_TYPE_FQNS = {
   // WORKSITE_PLAN: new FullyQualifiedName('app.worksiteplan'),
 };
 
+/* Entity Type FQNs */
+
+/* ol.diversionplan */
+export const DIVERSION_PLAN_FQNS = {
+  CONCURRENT: new FullyQualifiedName('ol.concurrent'),
+  CONSECUTIVE: new FullyQualifiedName('ol.consecutive'),
+  NAME: new FullyQualifiedName('ol.name'),
+  NOTES: new FullyQualifiedName('ol.notes'),
+  REQUIRED_HOURS: new FullyQualifiedName('ol.requiredhours'),
+};
+
+/* ol.enrollment */
+export const ENROLLMENT_STATUS_FQNS = {
+  DATETIME_END: new FullyQualifiedName('ol.datetimeend'),
+  EFFECTIVE_DATE: new FullyQualifiedName('ol.effectivedate'),
+  STATUS: new FullyQualifiedName('ol.status'),
+};
+
+/* ol.notification */
+export const INFRACTION_FQNS = {
+  CATEGORY: new FullyQualifiedName('ol.category'),
+  DATETIME: new FullyQualifiedName('general.datetime'),
+  DESCRIPTION: new FullyQualifiedName('ol.description'),
+  TYPE: new FullyQualifiedName('ol.type'),
+};
+
 /* general.person */
 export const PEOPLE_FQNS = {
   FIRST_NAME: new FullyQualifiedName('nc.PersonGivenName'),
@@ -82,22 +108,15 @@ export const SENTENCE_FQNS = {
   INCARCERATION_MONTHS: new FullyQualifiedName('justice.incarcerationmonths'),
   INCARCERATION_START_DATE: new FullyQualifiedName('justice.incarcerationstartdate'),
   INCARCERATION_YEARS: new FullyQualifiedName('justice.incarcerationyears'),
+  SENTENCE_CONDITIONS: new FullyQualifiedName('justice.sentenceconditions'),
 };
 
-/* ol.notification */
-export const INFRACTION_FQNS = {
-  CATEGORY: new FullyQualifiedName('ol.category'),
-  DATETIME: new FullyQualifiedName('general.datetime'),
-  DESCRIPTION: new FullyQualifiedName('ol.description'),
-  TYPE: new FullyQualifiedName('ol.type'),
+/* ol.individualactivityplan */
+export const WORKSITE_PLAN_FQNS = {
+  REQUIRED_HOURS: new FullyQualifiedName('ol.requiredhours'),
 };
 
-/* ol.enrollment */
-export const ENROLLMENT_STATUS_FQNS = {
-  DATETIME_END: new FullyQualifiedName('ol.datetimeend'),
-  EFFECTIVE_DATE: new FullyQualifiedName('ol.effectivedate'),
-  STATUS: new FullyQualifiedName('ol.status'),
-};
+/* Association Type FQNs */
 
 /* ol.has */
 export const HAS_FQNS = {
