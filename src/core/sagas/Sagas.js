@@ -23,7 +23,9 @@ export default function* sagas() :Generator<*, *, *> {
 
     // Lattice-Sagas
     fork(DataApiSagas.createEntityAndAssociationDataWatcher),
+    fork(DataApiSagas.getEntitySetDataWatcher),
     fork(SearchApiSagas.searchEntityNeighborsWithFilterWatcher),
+    fork(SearchApiSagas.searchEntitySetDataWatcher),
 
     // AppSagas
     fork(AppSagas.initializeApplicationWatcher),
@@ -35,7 +37,6 @@ export default function* sagas() :Generator<*, *, *> {
 
     // ParticipantsSagas
     fork(ParticipantsSagas.getEnrollmentStatusesWatcher),
-    fork(ParticipantsSagas.findCommunityServiceSentencesWatcher),
     fork(ParticipantsSagas.getInfractionsWatcher),
     fork(ParticipantsSagas.getParticipantsWatcher),
     fork(ParticipantsSagas.getSentencesWatcher),

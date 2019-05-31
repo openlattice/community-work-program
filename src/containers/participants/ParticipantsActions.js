@@ -5,9 +5,6 @@
 import { newRequestSequence } from 'redux-reqseq';
 import type { RequestSequence } from 'redux-reqseq';
 
-const FIND_COMMUNITY_SERVICE_SENTENCES :'FIND_COMMUNITY_SERVICE_SENTENCES' = 'FIND_COMMUNITY_SERVICE_SENTENCES';
-const findCommunityServiceSentences :RequestSequence = newRequestSequence(FIND_COMMUNITY_SERVICE_SENTENCES);
-
 const GET_ENROLLMENT_STATUSES :'GET_ENROLLMENT_STATUSES' = 'GET_ENROLLMENT_STATUSES';
 const getEnrollmentStatuses :RequestSequence = newRequestSequence(GET_ENROLLMENT_STATUSES);
 
@@ -29,8 +26,6 @@ function resetRequestState(actionType :string) {
 }
 
 export {
-  FIND_COMMUNITY_SERVICE_SENTENCES,
-  findCommunityServiceSentences,
   GET_ENROLLMENT_STATUSES,
   getEnrollmentStatuses,
   GET_INFRACTIONS,
