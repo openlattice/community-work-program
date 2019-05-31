@@ -104,7 +104,7 @@ const ViolationsParticipantsTable = ({
           people.map((person :Map, index :number) => {
             const personId = person.getIn([OPENLATTICE_ID_FQN, 0], '');
             const selected = personId === selectedPersonId;
-            const violationsCount = violations ? violations.get(personId).count() : 0;
+            const violationsCount = violations ? violations.get(personId) : 0;
             return (
               <ViolationsParticipantsTableRow
                   key={`${personId}-${index}`}

@@ -1,6 +1,7 @@
 // @flow
 import React, { Component } from 'react';
 import styled from 'styled-components';
+import { Constants } from 'lattice';
 import { List, Map } from 'immutable';
 import { RequestStates } from 'redux-reqseq';
 import type { RequestState } from 'redux-reqseq';
@@ -16,6 +17,7 @@ import {
 } from '../../core/style/Sizes';
 import { GET_PARTICIPANTS } from '../participants/ParticipantsActions';
 
+const { OPENLATTICE_ID_FQN } = Constants;
 /* styled components */
 const DashboardWrapper = styled.div`
   display: flex;
@@ -45,6 +47,7 @@ type Props = {
   enrollmentByParticipant :Map;
   getParticipantsRequestState :RequestState;
   infractionsByParticipant :Map;
+  infractionCount :Map;
   participants :List;
   sentencesByParticipant :Map;
   resetRequestState :(actionType :string) => void;
@@ -53,6 +56,7 @@ type Props = {
 type State = {
   newParticipants :List;
   pendingCompletionReview :List;
+  violationMap :Map;
   violationsWatch :List;
 };
 
@@ -64,6 +68,7 @@ class DashboardContainer extends Component<Props, State> {
     this.state = {
       newParticipants: List(),
       pendingCompletionReview: List(),
+      violationMap: Map(),
       violationsWatch: List(),
     };
   }
@@ -87,12 +92,24 @@ class DashboardContainer extends Component<Props, State> {
   }
 
   getParticipantsWithViolations = () => {
+    const { infractionCount, participants } = this.props;
+
+    const violationMap :Map = infractionCount.map((count :Map) => count.get('violations'));
+    console.log('violationMap: ', violationMap);
+    const violationsWatch :List = participants.filter((participant :Map) => violationMap
+      .get(participant.getIn([OPENLATTICE_ID_FQN, 0])) > 0);
+    console.log('violationsWatch: ', violationsWatch);
+    this.setState({
+      violationMap,
+      violationsWatch,
+    });
   }
 
   render() {
     const {
       newParticipants,
       pendingCompletionReview,
+      violationMap,
       violationsWatch,
     } = this.state;
     const {
@@ -133,7 +150,7 @@ class DashboardContainer extends Component<Props, State> {
                 selectedPersonId=""
                 small
                 totalParticipants={violationsWatch.count()}
-                violations={infractionsByParticipant} />
+                violations={violationMap} />
           </RightWrapper>
         </DashboardBody>
       </DashboardWrapper>

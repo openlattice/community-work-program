@@ -38,9 +38,11 @@ import {
   APP_TYPE_FQNS,
   ENROLLMENT_STATUS_FQNS,
   HAS_FQNS,
+  INFRACTION_FQNS,
   SENTENCE_FQNS
 } from '../../core/edm/constants/FullyQualifiedNames';
 import { isDefined } from '../../utils/LangUtils';
+import { INFRACTIONS_CONSTS } from '../../core/edm/constants/DataModelConsts';
 
 const { createEntityAndAssociationData, getEntitySetData } = DataApiActions;
 const { createEntityAndAssociationDataWorker, getEntitySetDataWorker } = DataApiSagas;
@@ -58,6 +60,7 @@ const {
 } = APP_TYPE_FQNS;
 const { STATUS } = ENROLLMENT_STATUS_FQNS;
 const { SENTENCE_CONDITIONS } = SENTENCE_FQNS;
+const { TYPE } = INFRACTION_FQNS;
 
 const getAppFromState = state => state.get(STATE.APP, Map());
 
@@ -224,7 +227,21 @@ function* getInfractionsWorker(action :SequenceAction) :Generator<*, *, *> {
 
     console.log('infractionsMap: ', infractionsMap.toJS());
 
-    yield put(getInfractions.success(id, infractionsMap));
+    const infractionCountMap :Map = infractionsMap.map((infractions :List) => {
+      const infractionCount = { warnings: 0, violations: 0 };
+      infractions.forEach((infraction :Map) => {
+        if (infraction.getIn([TYPE, 0]) === INFRACTIONS_CONSTS.WARNING) {
+          infractionCount.warnings += 1;
+        }
+        if (infraction.getIn([TYPE, 0]) === INFRACTIONS_CONSTS.VIOLATION) {
+          infractionCount.violations += 1;
+        }
+      });
+      return fromJS(infractionCount);
+    });
+    console.log('infractionCountMap: ', infractionCountMap.toJS());
+
+    yield put(getInfractions.success(id, { infractionCountMap, infractionsMap }));
   }
   catch (error) {
     LOG.error('caught exception in getInfractionsWorker()', error);

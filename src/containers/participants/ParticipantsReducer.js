@@ -25,6 +25,7 @@ const {
   GET_PARTICIPANTS,
   GET_SENTENCES,
   INFRACTIONS_BY_PARTICIPANT,
+  INFRACTION_COUNTS_BY_PARTICIPANT,
   PARTICIPANTS,
   REQUEST_STATE,
   SENTENCES,
@@ -53,8 +54,9 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     [GET_SENTENCES]: Map(),
   },
   [INFRACTIONS_BY_PARTICIPANT]: Map(),
+  [INFRACTION_COUNTS_BY_PARTICIPANT]: Map(),
   [PARTICIPANTS]: List(),
-  [SENTENCES]: Map(),
+  [SENTENCES]: List(),
 });
 
 export default function participantsReducer(state :Map<*, *> = INITIAL_STATE, action :Object) :Map<*, *> {
@@ -222,7 +224,8 @@ export default function participantsReducer(state :Map<*, *> = INITIAL_STATE, ac
           }
 
           return state
-            .set(INFRACTIONS_BY_PARTICIPANT, value)
+            .set(INFRACTIONS_BY_PARTICIPANT, value.infractionsMap)
+            .set(INFRACTION_COUNTS_BY_PARTICIPANT, value.infractionCountMap)
             .setIn([ACTIONS, GET_INFRACTIONS, REQUEST_STATE], RequestStates.SUCCESS);
         },
         FAILURE: () => {
@@ -234,7 +237,8 @@ export default function participantsReducer(state :Map<*, *> = INITIAL_STATE, ac
           }
 
           return state
-            .set(INFRACTIONS_BY_PARTICIPANT, List())
+            .set(INFRACTIONS_BY_PARTICIPANT, Map())
+            .set(INFRACTION_COUNTS_BY_PARTICIPANT, Map())
             .setIn([ERRORS, GET_INFRACTIONS], error)
             .setIn([ACTIONS, GET_INFRACTIONS, REQUEST_STATE], RequestStates.FAILURE);
         },

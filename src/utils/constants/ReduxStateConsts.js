@@ -35,6 +35,7 @@ export const PEOPLE = {
   GET_PARTICIPANTS: 'getParticipants',
   GET_SENTENCES: 'getSentences',
   INFRACTIONS_BY_PARTICIPANT: 'infractionsByParticipant',
+  INFRACTION_COUNTS_BY_PARTICIPANT: 'infractionCountsByParticipant',
   PARTICIPANTS: 'participants',
   REQUEST_STATE: 'requestState',
   SENTENCES: 'sentences',

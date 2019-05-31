@@ -125,6 +125,7 @@ class AppContainer extends Component<Props> {
 
     const enrollment = people.get(PEOPLE.ENROLLMENT_BY_PARTICIPANT);
     const infractions = people.get(PEOPLE.INFRACTIONS_BY_PARTICIPANT);
+    const infractionCount = people.get(PEOPLE.INFRACTION_COUNTS_BY_PARTICIPANT);
     const sentences = people.get(PEOPLE.SENTENCES_BY_PARTICIPANT);
     return (
       <Switch>
@@ -135,6 +136,7 @@ class AppContainer extends Component<Props> {
                   enrollmentByParticipant={enrollment}
                   getParticipantsRequestState={getParticipantsRequestState}
                   infractionsByParticipant={infractions}
+                  infractionCount={infractionCount}
                   participants={participants}
                   sentencesByParticipant={sentences}
                   resetRequestState={actions.resetRequestState}
