@@ -76,20 +76,16 @@ const Headers = () => (
 );
 
 type Props = {
-  handleSelect :(person :Map, entityKeyId :string, personId :string) => void;
   hoursWorked :Map;
   people :List<*, *>;
-  selectedPersonId :string;
   small :boolean;
   totalParticipants :number;
   violations :Map;
 };
 
 const ViolationsParticipantsTable = ({
-  handleSelect,
   hoursWorked,
   people,
-  selectedPersonId,
   small,
   totalParticipants,
   violations,
@@ -103,18 +99,15 @@ const ViolationsParticipantsTable = ({
       <tbody>
         <Headers />
         {
-          people.map((person :Map, index :number) => {
+          people.map((person :Map) => {
             const personId = person.getIn([OPENLATTICE_ID_FQN, 0], '');
-            const selected = personId === selectedPersonId;
             const violationsCount = violations ? violations.get(personId) : 0;
             const hours = hoursWorked.get(personId);
             return (
               <ViolationsParticipantsTableRow
-                  key={`${personId}-${index}`}
-                  handleSelect={handleSelect}
+                  key={personId}
                   hours={hours}
                   person={person}
-                  selected={selected}
                   small={small}
                   violationsCount={violationsCount} />
             );

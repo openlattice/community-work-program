@@ -66,16 +66,14 @@ const Row = styled.tr`
 `;
 
 type Props = {
-  handleSelect :(person :Immutable.Map, entityKeyId :string, personId :string) => void;
   hours :Map;
-  person :Immutable.Map<*, *>,
-  selected? :boolean,
-  small? :boolean,
+  person :Map;
+  selected? :boolean;
+  small? :boolean;
   violationsCount :number;
 };
 
 const ViolationsParticipantsTableRow = ({
-  handleSelect,
   hours,
   person,
   selected,
@@ -84,7 +82,6 @@ const ViolationsParticipantsTableRow = ({
 } :Props) => {
 
   const entityKeyId :string = person.getIn([OPENLATTICE_ID_FQN, 0], '');
-  const personId :string = '';
 
   let photo :string = person.getIn([MUGSHOT, 0]) || person.getIn([PICTURE, 0]);
   photo = photo
@@ -102,13 +99,7 @@ const ViolationsParticipantsTableRow = ({
   const hoursServed = `${formatNumericalValue(worked)} / ${formatNumericalValue(required)}`;
 
   return (
-    <Row
-        active={selected}
-        onClick={() => {
-          if (handleSelect) {
-            handleSelect(person, entityKeyId, personId);
-          }
-        }}>
+    <Row active={selected}>
       <Cell small={small}>{ photo }</Cell>
       <Cell small={small}>{ name }</Cell>
       <Cell small={small}>{ numberViolations }</Cell>
@@ -118,7 +109,6 @@ const ViolationsParticipantsTableRow = ({
 };
 
 ViolationsParticipantsTableRow.defaultProps = {
-  handleSelect: () => {},
   selected: false,
   small: false
 };

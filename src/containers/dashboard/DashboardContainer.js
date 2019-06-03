@@ -156,27 +156,21 @@ class DashboardContainer extends Component<Props, State> {
       <DashboardWrapper>
         <DashboardBody>
           <NewParticipantsTable
-              handleSelect={() => {}}
               hoursWorked={hoursWorked}
               people={newParticipants}
-              selectedPersonId=""
               small
               sentenceTerms={sentenceTerms}
               totalParticipants={newParticipants.count()} />
           <RightWrapper>
             <PendingReviewParticipantsTable
-                handleSelect={() => {}}
                 hoursWorked={hoursWorked}
                 people={pendingCompletionReview}
-                selectedPersonId=""
                 small
                 sentenceTerms={sentenceTerms}
                 totalParticipants={pendingCompletionReview.count()} />
             <ViolationsParticipantsTable
-                handleSelect={() => {}}
                 hoursWorked={hoursWorked}
                 people={violationsWatch}
-                selectedPersonId=""
                 small
                 totalParticipants={violationsWatch.count()}
                 violations={violationMap} />

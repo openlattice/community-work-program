@@ -77,20 +77,16 @@ const Headers = () => (
 );
 
 type Props = {
-  handleSelect :(person :Immutable.Map, entityKeyId :string, personId :string) => void;
   hoursWorked :Map;
-  people :Immutable.List<*, *>;
-  selectedPersonId :string;
+  people :List<*, *>;
   sentenceTerms :Map;
   small :boolean;
   totalParticipants :number;
 };
 
 const PendingReviewParticipantsTable = ({
-  handleSelect,
   hoursWorked,
   people,
-  selectedPersonId,
   sentenceTerms,
   small,
   totalParticipants,
@@ -104,18 +100,15 @@ const PendingReviewParticipantsTable = ({
       <tbody>
         <Headers />
         {
-          people.map((person :Map, index :number) => {
+          people.map((person :Map) => {
             const personId = person.getIn([OPENLATTICE_ID_FQN, 0], '');
-            const selected = personId === selectedPersonId;
             const sentenceDate = sentenceTerms.getIn([personId, DATETIME_START.toString(), 0]);
             const hours = hoursWorked.get(personId);
             return (
               <PendingReviewParticipantsTableRow
-                  key={`${personId}-${index}`}
-                  handleSelect={handleSelect}
+                  key={personId}
                   hours={hours}
                   person={person}
-                  selected={selected}
                   sentenceDate={sentenceDate}
                   small={small} />
             );

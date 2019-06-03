@@ -68,16 +68,14 @@ const Row = styled.tr`
 `;
 
 type Props = {
-  handleSelect :(person :Immutable.Map, entityKeyId :string, personId :string) => void;
   hours :Map;
-  person :Immutable.Map<*, *>,
-  selected? :boolean,
+  person :Map<*, *>;
+  selected? :boolean;
   sentenceDate :string;
-  small? :boolean,
+  small? :boolean;
 };
 
 const TableRow = ({
-  handleSelect,
   hours,
   person,
   selected,
@@ -102,13 +100,7 @@ const TableRow = ({
   const requiredHours = formatNumericalValue(hours.get(REQUIRED));
 
   return (
-    <Row
-        active={selected}
-        onClick={() => {
-          if (handleSelect) {
-            handleSelect(person, entityKeyId, personId);
-          }
-        }}>
+    <Row active={selected}>
       <Cell small={small}>{ photo }</Cell>
       <Cell small={small}>{ name }</Cell>
       <Cell small={small}>{ sentenceDateDisplay }</Cell>
@@ -119,7 +111,6 @@ const TableRow = ({
 };
 
 TableRow.defaultProps = {
-  handleSelect: () => {},
   selected: false,
   small: false
 };
