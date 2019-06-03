@@ -69,8 +69,8 @@ type Props = {
   hours :Map;
   person :Immutable.Map<*, *>;
   selected? :boolean;
-  small? :boolean;
   sentenceDate :string;
+  small? :boolean;
 };
 
 const PendingReviewParticipantsTableRow = ({
@@ -78,8 +78,8 @@ const PendingReviewParticipantsTableRow = ({
   hours,
   person,
   selected,
+  sentenceDate,
   small,
-  sentenceDate
 } :Props) => {
 
   const entityKeyId :string = person.getIn([OPENLATTICE_ID_FQN, 0], '');

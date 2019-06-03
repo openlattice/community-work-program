@@ -81,8 +81,8 @@ type Props = {
   hoursWorked :Map;
   people :Immutable.List<*, *>;
   selectedPersonId :string;
-  small :boolean;
   sentenceTerms :Map;
+  small :boolean;
   totalParticipants :number;
 };
 
@@ -90,8 +90,8 @@ const PendingReviewParticipantsTable = ({
   handleSelect,
   hoursWorked,
   people,
-  sentenceTerms,
   selectedPersonId,
+  sentenceTerms,
   small,
   totalParticipants,
 } :Props) => (
