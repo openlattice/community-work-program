@@ -104,14 +104,39 @@ class AppContainer extends Component<Props> {
     }
   }
 
-  renderAppContent = () => {
+  renderDashboardContainer = () => {
 
     const {
       actions,
       getParticipantsRequestState,
-      isLoadingApp,
       participants,
-      people
+      people,
+    } = this.props;
+
+    const enrollment :Map = people ? people.get(PEOPLE.ENROLLMENT_BY_PARTICIPANT) : Map();
+    const hoursWorked :Map = people ? people.get(PEOPLE.HOURS_WORKED) : Map();
+    const infractions :Map = people ? people.get(PEOPLE.INFRACTIONS_BY_PARTICIPANT) : Map();
+    const infractionCount :Map = people ? people.get(PEOPLE.INFRACTION_COUNTS_BY_PARTICIPANT) : Map();
+    const sentenceTermsByParticipant :Map = people ? people.get(PEOPLE.SENTENCE_TERMS_BY_PARTICIPANT) : Map();
+    return (
+      <DashboardContainer
+          enrollmentByParticipant={enrollment}
+          getParticipantsRequestState={getParticipantsRequestState}
+          hoursWorked={hoursWorked}
+          infractionsByParticipant={infractions}
+          infractionCount={infractionCount}
+          participants={participants}
+          sentenceTerms={sentenceTermsByParticipant}
+          resetRequestState={actions.resetRequestState}
+          {...this.props} />
+    );
+  }
+
+  renderAppContent = () => {
+
+    const {
+      getParticipantsRequestState,
+      isLoadingApp,
     } = this.props;
 
     if (isLoadingApp || getParticipantsRequestState === RequestStates.PENDING) {
@@ -122,27 +147,9 @@ class AppContainer extends Component<Props> {
       );
     }
 
-    const enrollment :Map = people ? people.get(PEOPLE.ENROLLMENT_BY_PARTICIPANT) : Map();
-    const hoursWorked :Map = people ? people.get(PEOPLE.HOURS_WORKED) : Map();
-    const infractions :Map = people ? people.get(PEOPLE.INFRACTIONS_BY_PARTICIPANT) : Map();
-    const infractionCount :Map = people ? people.get(PEOPLE.INFRACTION_COUNTS_BY_PARTICIPANT) : Map();
-    const sentenceTermsByParticipant :Map = people ? people.get(PEOPLE.SENTENCE_TERMS_BY_PARTICIPANT) : Map();
     return (
       <Switch>
-        <Route
-            exact strict path={Routes.DASHBOARD}
-            render={props => (
-              <DashboardContainer
-                  enrollmentByParticipant={enrollment}
-                  getParticipantsRequestState={getParticipantsRequestState}
-                  hoursWorked={hoursWorked}
-                  infractionsByParticipant={infractions}
-                  infractionCount={infractionCount}
-                  participants={participants}
-                  sentenceTerms={sentenceTermsByParticipant}
-                  resetRequestState={actions.resetRequestState}
-                  {...props} />
-            )} />
+        <Route exact strict path={Routes.DASHBOARD} render={this.renderDashboardContainer} />
         <Route path={Routes.PARTICIPANTS} component={ParticipantsContainer} />
         <Route path={Routes.WORKSITES} component={Worksites} />
         <Redirect to={Routes.DASHBOARD} />
