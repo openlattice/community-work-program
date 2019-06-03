@@ -126,7 +126,7 @@ class AppContainer extends Component<Props> {
     const hoursWorked = people.get(PEOPLE.HOURS_WORKED);
     const infractions = people.get(PEOPLE.INFRACTIONS_BY_PARTICIPANT);
     const infractionCount = people.get(PEOPLE.INFRACTION_COUNTS_BY_PARTICIPANT);
-    const sentences = people.get(PEOPLE.SENTENCES_BY_PARTICIPANT);
+    const sentenceTermsByParticipant = people.get(PEOPLE.SENTENCE_TERMS_BY_PARTICIPANT);
     return (
       <Switch>
         <Route
@@ -139,7 +139,7 @@ class AppContainer extends Component<Props> {
                   infractionsByParticipant={infractions}
                   infractionCount={infractionCount}
                   participants={participants}
-                  sentencesByParticipant={sentences}
+                  sentenceTerms={sentenceTermsByParticipant}
                   resetRequestState={actions.resetRequestState}
                   {...props} />
             )} />

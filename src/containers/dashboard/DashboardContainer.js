@@ -52,7 +52,7 @@ type Props = {
   infractionsByParticipant :Map;
   infractionCount :Map;
   participants :List;
-  sentencesByParticipant :Map;
+  sentenceTerms :Map;
   resetRequestState :(actionType :string) => void;
 };
 
@@ -101,7 +101,7 @@ class DashboardContainer extends Component<Props, State> {
       const participant :Map = participants.find((person :Map) => person.getIn([OPENLATTICE_ID_FQN, 0]) === ekid);
       pendingCompletionReview = pendingCompletionReview.push(participant);
     });
-    console.log('pendingCompletionReview: ', pendingCompletionReview.toJS());
+
     this.setState({
       pendingCompletionReview,
     });
@@ -124,7 +124,7 @@ class DashboardContainer extends Component<Props, State> {
     const {
       getParticipantsRequestState,
       hoursWorked,
-      sentencesByParticipant,
+      sentenceTerms,
     } = this.props;
     const {
       newParticipants,
@@ -147,7 +147,7 @@ class DashboardContainer extends Component<Props, State> {
           <NewParticipantsTable
               handleSelect={() => {}}
               people={newParticipants}
-              sentences={sentencesByParticipant}
+              sentenceTerms={sentenceTerms}
               selectedPersonId=""
               small
               totalParticipants={newParticipants.count()} />
@@ -156,6 +156,7 @@ class DashboardContainer extends Component<Props, State> {
                 handleSelect={() => {}}
                 hoursWorked={hoursWorked}
                 people={pendingCompletionReview}
+                sentenceTerms={sentenceTerms}
                 selectedPersonId=""
                 small
                 totalParticipants={pendingCompletionReview.count()} />
