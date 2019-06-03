@@ -56,7 +56,7 @@ const NewParticipantsTable = ({
         <Headers />
         {
           people.map((person :Map) => {
-            const { [ENTITY_KEY_ID]: personEntityKeyId } = getEntityProperties(person, [ENTITY_KEY_ID]);
+            const { [ENTITY_KEY_ID]: personEntityKeyId } :UUID = getEntityProperties(person, [ENTITY_KEY_ID]);
             const sentenceDate = sentenceTerms ? sentenceTerms
               .getIn([personEntityKeyId, DATETIME_START.toString(), 0]) : '';
             const hours = hoursWorked ? hoursWorked.get(personEntityKeyId) : '';

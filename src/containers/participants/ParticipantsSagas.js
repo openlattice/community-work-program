@@ -17,7 +17,6 @@ import {
   SearchApiActions,
   SearchApiSagas,
 } from 'lattice-sagas';
-import { DateTime } from 'luxon';
 import type { SequenceAction } from 'redux-reqseq';
 
 import Logger from '../../utils/Logger';
@@ -104,11 +103,11 @@ function* getEnrollmentStatusesWorker(action :SequenceAction) :Generator<*, *, *
      * 1. Get participant EKIDs and enrollment status ESID.
      */
     const { participants, peopleESID } = value;
-    const participantEKIDs :string[] = participants
+    const participantEKIDs :UUID[] = participants
       .map((participant :Map) => participant.getIn([OPENLATTICE_ID_FQN, 0]))
       .toJS();
     const app = yield select(getAppFromState);
-    const enrollmentStatusESID :string = getEntitySetIdFromApp(app, ENROLLMENT_STATUS.toString());
+    const enrollmentStatusESID :UUID = getEntitySetIdFromApp(app, ENROLLMENT_STATUS.toString());
 
     /*
      * 2. Find enrollment statuses for all participants, if any.
@@ -130,13 +129,13 @@ function* getEnrollmentStatusesWorker(action :SequenceAction) :Generator<*, *, *
     /*
      * 3. For each participant without an enrollment status, create one.
      */
-    const hasESID :string = getEntitySetIdFromApp(app, HAS.toString());
-    const participantsWithoutEnrollmentStatus :string[] = participantEKIDs
+    const hasESID :UUID = getEntitySetIdFromApp(app, HAS.toString());
+    const participantsWithoutEnrollmentStatus :UUID[] = participantEKIDs
       .filter(ekid => !isDefined(enrollmentMap.get(ekid)));
 
     const statusTypeId = getPropertyTypeIdFromApp(app, ENROLLMENT_STATUS.toString(), STATUS.toString());
 
-    response = yield all(participantsWithoutEnrollmentStatus.map((ekid :string) => {
+    response = yield all(participantsWithoutEnrollmentStatus.map((ekid :UUID) => {
       const enrollment = {
         associations: {
           [hasESID]: [{
@@ -166,12 +165,7 @@ function* getEnrollmentStatusesWorker(action :SequenceAction) :Generator<*, *, *
     if (response.error) {
       throw response.error;
     }
-
     enrollmentMap = fromJS(response.data).map((status :Map) => status.getIn([0, NEIGHBOR_DETAILS]));
-
-    // const newParticipants = participantsWithoutEnrollmentStatus
-    //   .map((ekid :string) => participants.getIn([OPENLATTICE_ID_FQN, 0]) === ekid);
-    // console.log('newParticipants: ', newParticipants);
 
     yield put(getEnrollmentStatuses.success(id, enrollmentMap));
   }
@@ -214,7 +208,7 @@ function* getHoursWorkedWorker(action :SequenceAction) :Generator<*, *, *> {
      * 1. Get diversion plans of participants given.
      */
     const app = yield select(getAppFromState);
-    const diversionPlanESID :string = getEntitySetIdFromApp(app, DIVERSION_PLAN.toString());
+    const diversionPlanESID :UUID = getEntitySetIdFromApp(app, DIVERSION_PLAN.toString());
 
 
     let searchFilter = {
@@ -238,7 +232,7 @@ function* getHoursWorkedWorker(action :SequenceAction) :Generator<*, *, *> {
       .map((plan :Map) => plan.getIn([OPENLATTICE_ID_FQN, 0])))
       .valueSeq().toJS().flat();
 
-    const worksitePlanESID :string = getEntitySetIdFromApp(app, WORKSITE_PLAN.toString());
+    const worksitePlanESID :UUID = getEntitySetIdFromApp(app, WORKSITE_PLAN.toString());
     searchFilter = {
       entityKeyIds: activeDiversionPlanEKIDs,
       destinationEntitySetIds: [worksitePlanESID],
@@ -255,7 +249,7 @@ function* getHoursWorkedWorker(action :SequenceAction) :Generator<*, *, *> {
 
     let hoursWorkedMap :Map = Map();
     diversionPlanNeighbors.forEach((plan :Map) => {
-      const personEKID :string = plan.find((neighbor :Map) => neighbor
+      const personEKID :UUID = plan.find((neighbor :Map) => neighbor
         .getIn([NEIGHBOR_ENTITY_SET, 'name']).includes(PEOPLE.toString().split('.')[1]))
         .getIn([NEIGHBOR_DETAILS, OPENLATTICE_ID_FQN, 0]);
       const worksitePlan :Map = plan.find((neighbor :Map) => neighbor
@@ -300,9 +294,10 @@ function* getInfractionsWorker(action :SequenceAction) :Generator<*, *, *> {
     yield put(getInfractions.request(id));
     const { participants, peopleESID } = value;
 
-    const participantEKIDs = participants.map((participant :Map) => participant.getIn([OPENLATTICE_ID_FQN, 0])).toJS();
+    const participantEKIDs :UUID[] = participants
+      .map((participant :Map) => participant.getIn([OPENLATTICE_ID_FQN, 0])).toJS();
     const app = yield select(getAppFromState);
-    const infractionsESID = getEntitySetIdFromApp(app, INFRACTIONS.toString());
+    const infractionsESID :UUID = getEntitySetIdFromApp(app, INFRACTIONS.toString());
 
     const searchFilter = {
       entityKeyIds: participantEKIDs,
@@ -369,8 +364,9 @@ function* getSentenceTermsWorker(action :SequenceAction) :Generator<*, *, *> {
     const { participants, peopleESID } = value;
 
     const app = yield select(getAppFromState);
-    const participantEKIDs = participants.map((participant :Map) => participant.getIn([OPENLATTICE_ID_FQN, 0])).toJS();
-    const sentenceTermESID = getEntitySetIdFromApp(app, SENTENCE_TERM.toString());
+    const participantEKIDs :UUID[] = participants
+      .map((participant :Map) => participant.getIn([OPENLATTICE_ID_FQN, 0])).toJS();
+    const sentenceTermESID :UUID = getEntitySetIdFromApp(app, SENTENCE_TERM.toString());
     const searchFilter = {
       entityKeyIds: participantEKIDs,
       destinationEntitySetIds: [sentenceTermESID],
@@ -429,7 +425,7 @@ function* getParticipantsWorker(action :SequenceAction) :Generator<*, *, *> {
 
     if (sentences.count() > 0) {
 
-      const integratedSentencesEKIDs :string[] = sentences
+      const integratedSentencesEKIDs :UUID[] = sentences
         .map((sentence :Map) => sentence
           .getIn([OPENLATTICE_ID_FQN, 0]))
         .toJS();
@@ -452,7 +448,7 @@ function* getParticipantsWorker(action :SequenceAction) :Generator<*, *, *> {
         .map(person => person.get(NEIGHBOR_DETAILS))
         .toList();
 
-      const manualSentencesEKIDs :string[] = sentences
+      const manualSentencesEKIDs :UUID[] = sentences
         .map((sentence :Map) => sentence
           .getIn([OPENLATTICE_ID_FQN, 0]))
         .toJS();
@@ -517,8 +513,10 @@ function* getSentencesWorker(action :SequenceAction) :Generator<*, *, *> {
      * 1. Do advanced search for integrated sentences with sentences conditions that include "community service".
      */
     const app = yield select(getAppFromState);
-    const sentenceESID = getEntitySetIdFromApp(app, SENTENCES.toString());
-    const sentenceConditionsPTID = getPropertyTypeIdFromApp(app, SENTENCES.toString(), SENTENCE_CONDITIONS.toString());
+    const sentenceESID :UUID = getEntitySetIdFromApp(app, SENTENCES.toString());
+    const sentenceConditionsPTID :UUID = getPropertyTypeIdFromApp(
+      app, SENTENCES.toString(), SENTENCE_CONDITIONS.toString()
+    );
     const searchOptions = {
       searchFields: [{
         searchTerm: '*COMMUNITY SERVICE*',
@@ -537,7 +535,7 @@ function* getSentencesWorker(action :SequenceAction) :Generator<*, *, *> {
      * 2. Get all manually created sentences.
      */
 
-    const manualSentenceESID = getEntitySetIdFromApp(app, MANUAL_SENTENCES.toString());
+    const manualSentenceESID :UUID = getEntitySetIdFromApp(app, MANUAL_SENTENCES.toString());
     response = yield call(getEntitySetDataWorker, getEntitySetData({ entitySetId: manualSentenceESID }));
     if (response.error) {
       throw response.error;

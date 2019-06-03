@@ -103,9 +103,9 @@ class DashboardContainer extends Component<Props, State> {
       })
         .keySeq()
         .toList()
-        .map((ekid :string) => participants
+        .map((ekid :UUID) => participants
           .find((participant :Map) => {
-            const { [ENTITY_KEY_ID]: personEntityKeyId } = getEntityProperties(participant, [ENTITY_KEY_ID]);
+            const { [ENTITY_KEY_ID]: personEntityKeyId } :UUID = getEntityProperties(participant, [ENTITY_KEY_ID]);
             return personEntityKeyId === ekid;
           }));
       this.setState({
@@ -121,9 +121,9 @@ class DashboardContainer extends Component<Props, State> {
       .filter((hours :Map) => hours.get(WORKED) === hours.get(REQUIRED));
 
     let pendingCompletionReview :List = List();
-    participantsWithHoursComplete.forEach((hours :Map, ekid :string) => {
+    participantsWithHoursComplete.forEach((hours :Map, ekid :UUID) => {
       const participant :Map = participants.find((person :Map) => {
-        const { [ENTITY_KEY_ID]: personEntityKeyId } = getEntityProperties(person, [ENTITY_KEY_ID]);
+        const { [ENTITY_KEY_ID]: personEntityKeyId } :UUID = getEntityProperties(person, [ENTITY_KEY_ID]);
         return personEntityKeyId === ekid;
       });
       pendingCompletionReview = pendingCompletionReview.push(participant);
@@ -138,7 +138,7 @@ class DashboardContainer extends Component<Props, State> {
     const { infractionCount, participants } = this.props;
     const violationMap :Map = infractionCount.map((count :Map) => count.get(VIOLATIONS));
     const violationsWatch :List = participants.filter((participant :Map) => {
-      const { [ENTITY_KEY_ID]: personEntityKeyId } = getEntityProperties(participant, [ENTITY_KEY_ID]);
+      const { [ENTITY_KEY_ID]: personEntityKeyId } :UUID = getEntityProperties(participant, [ENTITY_KEY_ID]);
       return violationMap.get(personEntityKeyId) > 0;
     });
     this.setState({

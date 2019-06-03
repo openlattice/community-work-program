@@ -53,7 +53,7 @@ const ViolationsParticipantsTable = ({
         <Headers />
         {
           people.map((person :Map) => {
-            const { [ENTITY_KEY_ID]: personEntityKeyId } = getEntityProperties(person, [ENTITY_KEY_ID]);
+            const { [ENTITY_KEY_ID]: personEntityKeyId } :UUID = getEntityProperties(person, [ENTITY_KEY_ID]);
             const violationsCount = violations ? violations.get(personEntityKeyId) : 0;
             const hours = hoursWorked.get(personEntityKeyId);
             return (

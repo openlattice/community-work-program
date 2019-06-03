@@ -93,8 +93,8 @@ class AppContainer extends Component<Props> {
     const prevOrg = prevProps.app.get(APP.ORGS);
     if (prevOrg.size !== nextOrg.size) {
       nextOrg.keySeq().forEach((id) => {
-        const selectedOrgId :string = id;
-        const peopleEntitySetId = app.getIn(
+        const selectedOrgId :UUID = id;
+        const peopleEntitySetId :UUID = app.getIn(
           [APP_TYPE_FQNS.PEOPLE.toString(), APP.ENTITY_SETS_BY_ORG, selectedOrgId]
         );
         if (peopleEntitySetId) {
