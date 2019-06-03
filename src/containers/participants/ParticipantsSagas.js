@@ -33,6 +33,8 @@ import {
   getParticipants,
   GET_SENTENCES,
   getSentences,
+  GET_SENTENCE_TERMS,
+  getSentenceTerms,
 } from './ParticipantsActions';
 import { getEntitySetIdFromApp, getPropertyTypeIdFromApp } from '../../utils/AppUtils';
 import { STATE } from '../../utils/constants/ReduxStateConsts';
@@ -42,6 +44,7 @@ import {
   ENROLLMENT_STATUS_FQNS,
   INFRACTION_FQNS,
   SENTENCE_FQNS,
+  SENTENCE_TERM_FQNS,
   WORKSITE_PLAN_FQNS,
 } from '../../core/edm/constants/FullyQualifiedNames';
 import { isDefined } from '../../utils/LangUtils';
@@ -60,6 +63,7 @@ const {
   INFRACTIONS,
   MANUAL_SENTENCES,
   PEOPLE,
+  SENTENCE_TERM,
   SENTENCES,
   WORKSITE_PLAN,
 } = APP_TYPE_FQNS;
@@ -68,6 +72,7 @@ const { SENTENCE_CONDITIONS } = SENTENCE_FQNS;
 const { TYPE } = INFRACTION_FQNS;
 const { COMPLETED } = DIVERSION_PLAN_FQNS;
 const { HOURS_WORKED, REQUIRED_HOURS } = WORKSITE_PLAN_FQNS;
+const { DATETIME_START } = SENTENCE_TERM_FQNS;
 const getAppFromState = state => state.get(STATE.APP, Map());
 
 const LOG = new Logger('StudySagas');
@@ -346,6 +351,61 @@ function* getInfractionsWatcher() :Generator<*, *, *> {
 
 /*
  *
+ * ParticipantsActions.getSentenceTerms()
+ *
+ */
+function* getSentenceTermsWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+  if (value === null || value === undefined) {
+    yield put(getHoursWorked.failure(id, ERR_ACTION_VALUE_NOT_DEFINED));
+    return;
+  }
+  let response :Object = {};
+
+  try {
+    yield put(getSentenceTerms.request(id));
+    const { participants, peopleESID } = value;
+
+    const app = yield select(getAppFromState);
+    const participantEKIDs = participants.map((participant :Map) => participant.getIn([OPENLATTICE_ID_FQN, 0])).toJS();
+    const sentenceTermESID = getEntitySetIdFromApp(app, SENTENCE_TERM.toString());
+    const searchFilter = {
+      entityKeyIds: participantEKIDs,
+      destinationEntitySetIds: [sentenceTermESID],
+      sourceEntitySetIds: [],
+    };
+    response = yield call(
+      searchEntityNeighborsWithFilterWorker,
+      searchEntityNeighborsWithFilter({ entitySetId: peopleESID, filter: searchFilter })
+    );
+    if (response.error) {
+      throw response.error;
+    }
+    const sentenceTermsMap :Map = fromJS(response.data)
+      .map((terms :List) => terms
+        .map((term :Map) => term.get('neighborDetails'))
+        .sort((term1 :Map, term2 :Map) => term1.getIn([DATETIME_START, 0]) - term2.getIn([DATETIME_START, 0]))
+        .last());
+
+    yield put(getSentenceTerms.success(id, sentenceTermsMap));
+  }
+  catch (error) {
+    LOG.error('caught exception in getSentenceTermsWorker()', error);
+    yield put(getSentenceTerms.failure(id, error));
+  }
+  finally {
+    yield put(getSentenceTerms.finally(id));
+  }
+}
+
+function* getSentenceTermsWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(GET_SENTENCE_TERMS, getSentenceTermsWorker);
+}
+
+/*
+ *
  * ParticipantsActions.getParticipants()
  *
  */
@@ -400,7 +460,7 @@ function* getParticipantsWorker(action :SequenceAction) :Generator<*, *, *> {
         entityKeyIds: manualSentencesEKIDs,
         destinationEntitySetIds: [],
         sourceEntitySetIds: [peopleESID],
-      }
+      };
       response = yield call(
         searchEntityNeighborsWithFilterWorker,
         searchEntityNeighborsWithFilter({ entitySetId: manualSentenceESID, filter: searchFilter })
@@ -417,6 +477,7 @@ function* getParticipantsWorker(action :SequenceAction) :Generator<*, *, *> {
     }
 
     if (participants.count() > 0) {
+      yield call(getSentenceTermsWorker, getSentenceTerms({ participants, peopleESID }));
       yield call(getEnrollmentStatusesWorker, getEnrollmentStatuses({ participants, peopleESID }));
       yield call(getInfractionsWorker, getInfractions({ participants, peopleESID }));
       yield call(getHoursWorkedWorker, getHoursWorked({ participants, peopleESID }));
@@ -515,4 +576,6 @@ export {
   getParticipantsWorker,
   getSentencesWatcher,
   getSentencesWorker,
+  getSentenceTermsWatcher,
+  getSentenceTermsWorker,
 };

@@ -20,6 +20,9 @@ const getParticipants :RequestSequence = newRequestSequence(GET_PARTICIPANTS);
 const GET_SENTENCES :'GET_SENTENCES' = 'GET_SENTENCES';
 const getSentences :RequestSequence = newRequestSequence(GET_SENTENCES);
 
+const GET_SENTENCE_TERMS :'GET_SENTENCE_TERMS' = 'GET_SENTENCE_TERMS';
+const getSentenceTerms :RequestSequence = newRequestSequence(GET_SENTENCE_TERMS);
+
 const RESET_REQUEST_STATE :'RESET_REQUEST_STATE' = 'RESET_REQUEST_STATE';
 function resetRequestState(actionType :string) {
   return {
@@ -39,6 +42,8 @@ export {
   getParticipants,
   GET_SENTENCES,
   getSentences,
+  GET_SENTENCE_TERMS,
+  getSentenceTerms,
   RESET_REQUEST_STATE,
   resetRequestState,
 };

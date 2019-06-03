@@ -12,6 +12,7 @@ import {
   getHoursWorked,
   getInfractions,
   getParticipants,
+  getSentenceTerms,
   getSentences,
   RESET_REQUEST_STATE,
 } from './ParticipantsActions';
@@ -25,12 +26,14 @@ const {
   GET_HOURS_WORKED,
   GET_INFRACTIONS,
   GET_PARTICIPANTS,
+  GET_SENTENCE_TERMS,
   GET_SENTENCES,
   HOURS_WORKED,
   INFRACTIONS_BY_PARTICIPANT,
   INFRACTION_COUNTS_BY_PARTICIPANT,
   PARTICIPANTS,
   REQUEST_STATE,
+  SENTENCE_TERMS_BY_PARTICIPANT,
   SENTENCES,
 } = PEOPLE;
 
@@ -48,6 +51,9 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     [GET_PARTICIPANTS]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
+    [GET_SENTENCE_TERMS]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
     [GET_SENTENCES]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
@@ -58,12 +64,14 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     [GET_HOURS_WORKED]: Map(),
     [GET_INFRACTIONS]: Map(),
     [GET_PARTICIPANTS]: Map(),
+    [GET_SENTENCE_TERMS]: Map(),
     [GET_SENTENCES]: Map(),
   },
   [HOURS_WORKED]: Map(),
   [INFRACTIONS_BY_PARTICIPANT]: Map(),
   [INFRACTION_COUNTS_BY_PARTICIPANT]: Map(),
   [PARTICIPANTS]: List(),
+  [SENTENCE_TERMS_BY_PARTICIPANT]: Map(),
   [SENTENCES]: List(),
 });
 
@@ -297,6 +305,50 @@ export default function participantsReducer(state :Map<*, *> = INITIAL_STATE, ac
         FINALLY: () => {
           return state
             .deleteIn([ACTIONS, GET_HOURS_WORKED, seqAction.id]);
+        },
+      });
+    }
+
+    case getSentenceTerms.case(action.type): {
+      const seqAction :SequenceAction = (action :any);
+      return getSentenceTerms.reducer(state, action, {
+
+        REQUEST: () => {
+          return state
+            .setIn([ACTIONS, GET_SENTENCE_TERMS, seqAction.id], fromJS(seqAction))
+            .setIn([ACTIONS, GET_SENTENCE_TERMS, REQUEST_STATE], RequestStates.PENDING);
+        },
+        SUCCESS: () => {
+
+          if (!state.hasIn([ACTIONS, GET_SENTENCE_TERMS, seqAction.id])) {
+            return state;
+          }
+
+          const { value } = seqAction;
+          if (value === null || value === undefined) {
+            return state;
+          }
+
+          return state
+            .set(SENTENCE_TERMS_BY_PARTICIPANT, value)
+            .setIn([ACTIONS, GET_SENTENCE_TERMS, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => {
+
+          const error = {};
+          const { value: axiosError } = seqAction;
+          if (axiosError && axiosError.response && isNumber(axiosError.response.status)) {
+            error.status = axiosError.response.status;
+          }
+
+          return state
+            .set(SENTENCE_TERMS_BY_PARTICIPANT, Map())
+            .setIn([ERRORS, GET_SENTENCE_TERMS], error)
+            .setIn([ACTIONS, GET_SENTENCE_TERMS, REQUEST_STATE], RequestStates.FAILURE);
+        },
+        FINALLY: () => {
+          return state
+            .deleteIn([ACTIONS, GET_SENTENCE_TERMS, seqAction.id]);
         },
       });
     }
