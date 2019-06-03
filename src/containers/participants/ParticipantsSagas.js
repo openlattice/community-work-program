@@ -123,11 +123,7 @@ function* getEnrollmentStatusesWorker(action :SequenceAction) :Generator<*, *, *
     let enrollmentMap :Map = fromJS(response.data).map((status :Map) => status.getIn([0, 'neighborDetails']));
 
     /*
-     * 3. Find participants whose enrollment status is "planned".
-     */
-
-    /*
-     * 3. For each participant without an enrollment status, create one. These are "new", unenrolled participants.
+     * 3. For each participant without an enrollment status, create one.
      */
     const hasESID :string = getEntitySetIdFromApp(app, HAS.toString());
     const participantsWithoutEnrollmentStatus :string[] = participantEKIDs
