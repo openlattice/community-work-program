@@ -28,9 +28,7 @@ import {
 } from '../../core/style/Sizes';
 import { APP, STATE, PEOPLE } from '../../utils/constants/ReduxStateConsts';
 import { APP_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
-
-// TODO: this should come from lattice-ui-kit, maybe after the next release. current version v0.1.1
-const APP_CONTENT_BG :string = '#f8f8fb';
+import { OL } from '../../core/style/Colors';
 
 const { getAllPropertyTypes } = EntityDataModelApiActions;
 const { logout } = AuthActions;
@@ -45,7 +43,7 @@ const AppContainerWrapper = styled.div`
 `;
 
 const AppContentOuterWrapper = styled.main`
-  background-color: ${APP_CONTENT_BG};
+  background-color: ${OL.GREY38};
   display: flex;
   flex: 1 0 auto;
   justify-content: center;
