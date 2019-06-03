@@ -48,7 +48,7 @@ import {
   WORKSITE_PLAN_FQNS,
 } from '../../core/edm/constants/FullyQualifiedNames';
 import { isDefined } from '../../utils/LangUtils';
-import { INFRACTIONS_CONSTS } from '../../core/edm/constants/DataModelConsts';
+import { ENROLLMENT_STATUSES, INFRACTIONS_CONSTS } from '../../core/edm/constants/DataModelConsts';
 
 const { createEntityAndAssociationData, getEntitySetData } = DataApiActions;
 const { createEntityAndAssociationDataWorker, getEntitySetDataWorker } = DataApiSagas;
@@ -144,7 +144,7 @@ function* getEnrollmentStatusesWorker(action :SequenceAction) :Generator<*, *, *
         },
         entities: {
           [enrollmentStatusESID]: [{
-            [statusTypeId]: ['planned']
+            [statusTypeId]: [ENROLLMENT_STATUSES.PLANNED]
           }]
         }
       };

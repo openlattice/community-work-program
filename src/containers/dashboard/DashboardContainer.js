@@ -16,10 +16,12 @@ import {
   DASHBOARD_WIDTH,
 } from '../../core/style/Sizes';
 import { GET_PARTICIPANTS } from '../participants/ParticipantsActions';
+import { ENROLLMENT_STATUSES, HOURS_CONSTS } from '../../core/edm/constants/DataModelConsts';
 import { ENROLLMENT_STATUS_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 
 const { OPENLATTICE_ID_FQN } = Constants;
 const { STATUS } = ENROLLMENT_STATUS_FQNS;
+const { REQUIRED, WORKED } = HOURS_CONSTS;
 const VIOLATIONS = 'violations';
 
 /* styled components */
@@ -92,7 +94,7 @@ class DashboardContainer extends Component<Props, State> {
   getNewParticipants = () => {
     const { enrollmentByParticipant, participants } = this.props;
     const newParticipants = enrollmentByParticipant.filter((enrollment :Map) => enrollment
-      .getIn([STATUS.toString(), 0]) === 'planned')
+      .getIn([STATUS.toString(), 0]) === ENROLLMENT_STATUSES.PLANNED)
       .keySeq()
       .toList()
       .map((ekid :string) => participants.find((participant :Map) => participant
@@ -105,7 +107,7 @@ class DashboardContainer extends Component<Props, State> {
   getParticipantsWithHoursComplete = () => {
     const { hoursWorked, participants } = this.props;
     const participantsWithHoursComplete :Map = hoursWorked
-      .filter((hours :Map) => hours.get('worked') === hours.get('required'));
+      .filter((hours :Map) => hours.get(WORKED) === hours.get(REQUIRED));
 
     let pendingCompletionReview :List = List();
     participantsWithHoursComplete.forEach((hours :Map, ekid :string) => {

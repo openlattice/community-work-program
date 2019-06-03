@@ -12,6 +12,7 @@ import { PersonPicture, PersonPhoto } from '../picture/PersonPicture';
 import { formatValue, formatNumericalValue } from '../../utils/FormattingUtils';
 import { OL } from '../../utils/constants/Colors';
 import { PEOPLE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { HOURS_CONSTS } from '../../core/edm/constants/DataModelConsts';
 
 const {
   FIRST_NAME,
@@ -19,6 +20,7 @@ const {
   MUGSHOT,
   PICTURE
 } = PEOPLE_FQNS;
+const { REQUIRED, WORKED } = HOURS_CONSTS;
 const { OPENLATTICE_ID_FQN } = Constants;
 
 const Cell = styled.td`
@@ -95,8 +97,8 @@ const ViolationsParticipantsTableRow = ({
   const name = `${formatValue(person.getIn([FIRST_NAME, 0]))} ${formatValue(person.getIn([LAST_NAME, 0]))}`;
   const numberViolations = formatNumericalValue(violationsCount);
 
-  const worked = hours ? hours.get('worked') : 0;
-  const required = hours ? hours.get('required') : 0;
+  const worked = hours ? hours.get(WORKED) : 0;
+  const required = hours ? hours.get(REQUIRED) : 0;
   const hoursServed = `${formatNumericalValue(worked)} / ${formatNumericalValue(required)}`;
 
   return (
