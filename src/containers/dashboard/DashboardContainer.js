@@ -1,7 +1,6 @@
 // @flow
 import React, { Component } from 'react';
 import styled from 'styled-components';
-import { Constants } from 'lattice';
 import { List, Map } from 'immutable';
 import { RequestStates } from 'redux-reqseq';
 import type { RequestState } from 'redux-reqseq';
@@ -11,15 +10,15 @@ import PendingReviewParticipantsTable from '../../components/table/PendingReview
 import ViolationsParticipantsTable from '../../components/table/ViolationsParticipantsTable';
 import LogoLoader from '../../components/LogoLoader';
 
+import { getEntityProperties } from '../../utils/DataUtils';
 import {
   APP_CONTENT_PADDING,
   DASHBOARD_WIDTH,
 } from '../../core/style/Sizes';
 import { GET_PARTICIPANTS } from '../participants/ParticipantsActions';
 import { ENROLLMENT_STATUSES, HOURS_CONSTS } from '../../core/edm/constants/DataModelConsts';
-import { ENROLLMENT_STATUS_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { ENROLLMENT_STATUS_FQNS, ENTITY_KEY_ID } from '../../core/edm/constants/FullyQualifiedNames';
 
-const { OPENLATTICE_ID_FQN } = Constants;
 const { STATUS } = ENROLLMENT_STATUS_FQNS;
 const { REQUIRED, WORKED } = HOURS_CONSTS;
 const VIOLATIONS = 'violations';
@@ -92,26 +91,39 @@ class DashboardContainer extends Component<Props, State> {
   }
 
   getNewParticipants = () => {
+
     const { enrollmentByParticipant, participants } = this.props;
-    const newParticipants = enrollmentByParticipant.filter((enrollment :Map) => enrollment
-      .getIn([STATUS.toString(), 0]) === ENROLLMENT_STATUSES.PLANNED)
-      .keySeq()
-      .toList()
-      .map((ekid :string) => participants.find((participant :Map) => participant
-        .getIn([OPENLATTICE_ID_FQN, 0]) === ekid));
-    this.setState({
-      newParticipants,
-    });
+    if (enrollmentByParticipant.count() > 0 && participants.count() > 0) {
+
+      const newParticipants = enrollmentByParticipant.filter((enrollment :Map) => {
+        const { [STATUS]: status } = getEntityProperties(enrollment, [STATUS]);
+        return status === ENROLLMENT_STATUSES.PLANNED;
+      })
+        .keySeq()
+        .toList()
+        .map((ekid :string) => participants
+          .find((participant :Map) => {
+            const { [ENTITY_KEY_ID]: personEntityKeyId } = getEntityProperties(participant, [ENTITY_KEY_ID]);
+            return personEntityKeyId === ekid;
+          }));
+      this.setState({
+        newParticipants,
+      });
+    }
   }
 
   getParticipantsWithHoursComplete = () => {
+
     const { hoursWorked, participants } = this.props;
     const participantsWithHoursComplete :Map = hoursWorked
       .filter((hours :Map) => hours.get(WORKED) === hours.get(REQUIRED));
 
     let pendingCompletionReview :List = List();
     participantsWithHoursComplete.forEach((hours :Map, ekid :string) => {
-      const participant :Map = participants.find((person :Map) => person.getIn([OPENLATTICE_ID_FQN, 0]) === ekid);
+      const participant :Map = participants.find((person :Map) => {
+        const { [ENTITY_KEY_ID]: personEntityKeyId } = getEntityProperties(person, [ENTITY_KEY_ID]);
+        return personEntityKeyId === ekid;
+      });
       pendingCompletionReview = pendingCompletionReview.push(participant);
     });
     this.setState({
@@ -120,11 +132,13 @@ class DashboardContainer extends Component<Props, State> {
   }
 
   getParticipantsWithViolations = () => {
-    const { infractionCount, participants } = this.props;
 
+    const { infractionCount, participants } = this.props;
     const violationMap :Map = infractionCount.map((count :Map) => count.get(VIOLATIONS));
-    const violationsWatch :List = participants.filter((participant :Map) => violationMap
-      .get(participant.getIn([OPENLATTICE_ID_FQN, 0])) > 0);
+    const violationsWatch :List = participants.filter((participant :Map) => {
+      const { [ENTITY_KEY_ID]: personEntityKeyId } = getEntityProperties(participant, [ENTITY_KEY_ID]);
+      return violationMap.get(personEntityKeyId) > 0;
+    });
     this.setState({
       violationMap,
       violationsWatch,
