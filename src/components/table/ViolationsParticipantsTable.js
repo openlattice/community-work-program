@@ -2,14 +2,12 @@
  * @flow
  */
 import React from 'react';
-import { Constants } from 'lattice';
 import { Map, List } from 'immutable';
 
 import ViolationsParticipantsTableRow from './ViolationsParticipantsTableRow';
 
-
-const { OPENLATTICE_ID_FQN } = Constants;
-
+import { ENTITY_KEY_ID } from '../../core/edm/constants/FullyQualifiedNames';
+import { getEntityProperties } from '../../utils/DataUtils';
 import {
   TableWrapper,
   TableBanner,
@@ -55,12 +53,12 @@ const ViolationsParticipantsTable = ({
         <Headers />
         {
           people.map((person :Map) => {
-            const personId = person.getIn([OPENLATTICE_ID_FQN, 0], '');
-            const violationsCount = violations ? violations.get(personId) : 0;
-            const hours = hoursWorked.get(personId);
+            const { [ENTITY_KEY_ID]: personEntityKeyId } = getEntityProperties(person, [ENTITY_KEY_ID]);
+            const violationsCount = violations ? violations.get(personEntityKeyId) : 0;
+            const hours = hoursWorked.get(personEntityKeyId);
             return (
               <ViolationsParticipantsTableRow
-                  key={personId}
+                  key={personEntityKeyId}
                   hours={hours}
                   person={person}
                   small={small}

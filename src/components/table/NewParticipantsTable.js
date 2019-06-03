@@ -2,12 +2,12 @@
  * @flow
  */
 import React from 'react';
-import { Constants } from 'lattice';
 import Immutable from 'immutable';
 
 import NewParticipantsTableRow from './NewParticipantsTableRow';
 
-import { SENTENCE_TERM_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { ENTITY_KEY_ID, SENTENCE_TERM_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { getEntityProperties } from '../../utils/DataUtils';
 import {
   TableWrapper,
   TableBanner,
@@ -17,7 +17,6 @@ import {
   HeaderElement,
 } from './TableStyledComponents';
 
-const { OPENLATTICE_ID_FQN } = Constants;
 const { DATETIME_START } = SENTENCE_TERM_FQNS;
 
 const Headers = () => (
@@ -57,12 +56,13 @@ const NewParticipantsTable = ({
         <Headers />
         {
           people.map((person :Map) => {
-            const personId = person.getIn([OPENLATTICE_ID_FQN, 0], '');
-            const sentenceDate = sentenceTerms.getIn([personId, DATETIME_START.toString(), 0]);
-            const hours = hoursWorked.get(personId);
+            const { [ENTITY_KEY_ID]: personEntityKeyId } = getEntityProperties(person, [ENTITY_KEY_ID]);
+            const sentenceDate = sentenceTerms ? sentenceTerms
+              .getIn([personEntityKeyId, DATETIME_START.toString(), 0]) : '';
+            const hours = hoursWorked ? hoursWorked.get(personEntityKeyId) : '';
             return (
               <NewParticipantsTableRow
-                  key={personId}
+                  key={personEntityKeyId}
                   hours={hours}
                   person={person}
                   sentenceDate={sentenceDate}

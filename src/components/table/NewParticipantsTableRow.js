@@ -4,7 +4,6 @@
 
 import React from 'react';
 import Immutable from 'immutable';
-import { Constants } from 'lattice';
 import { DateTime } from 'luxon';
 
 import defaultUserIcon from '../../assets/svg/profile-placeholder-round.svg';
