@@ -33,17 +33,17 @@ function resetRequestState(actionType :string) {
 
 export {
   GET_ENROLLMENT_STATUSES,
-  getEnrollmentStatuses,
   GET_HOURS_WORKED,
-  getHoursWorked,
   GET_INFRACTIONS,
-  getInfractions,
   GET_PARTICIPANTS,
-  getParticipants,
   GET_SENTENCES,
-  getSentences,
   GET_SENTENCE_TERMS,
-  getSentenceTerms,
   RESET_REQUEST_STATE,
+  getEnrollmentStatuses,
+  getHoursWorked,
+  getInfractions,
+  getParticipants,
+  getSentenceTerms,
+  getSentences,
   resetRequestState,
 };
