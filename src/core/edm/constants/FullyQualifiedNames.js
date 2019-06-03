@@ -53,6 +53,7 @@ export const APP_TYPE_FQNS = {
 
 /* ol.diversionplan */
 export const DIVERSION_PLAN_FQNS = {
+  COMPLETED: new FullyQualifiedName('ol.completed'),
   CONCURRENT: new FullyQualifiedName('ol.concurrent'),
   CONSECUTIVE: new FullyQualifiedName('ol.consecutive'),
   NAME: new FullyQualifiedName('ol.name'),
@@ -103,10 +104,6 @@ export const PEOPLE_FQNS = {
 /* j.sentence */
 export const SENTENCE_FQNS = {
   CONCURRENT_CONSECUTIVE: new FullyQualifiedName('justice.concurrentconsecutive'),
-  INCARCERATION_DAYS: new FullyQualifiedName('justice.incarcerationdays'),
-  INCARCERATION_MONTHS: new FullyQualifiedName('justice.incarcerationmonths'),
-  INCARCERATION_START_DATE: new FullyQualifiedName('justice.incarcerationstartdate'),
-  INCARCERATION_YEARS: new FullyQualifiedName('justice.incarcerationyears'),
   SENTENCE_CONDITIONS: new FullyQualifiedName('justice.sentenceconditions'),
 };
 
