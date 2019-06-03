@@ -8,9 +8,11 @@ import Immutable from 'immutable';
 
 import PendingReviewParticipantsTableRow from './PendingReviewParticipantsTableRow';
 
+import { SENTENCE_TERM_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { OL } from '../../utils/constants/Colors';
 
 const { OPENLATTICE_ID_FQN } = Constants;
+const { DATETIME_START } = SENTENCE_TERM_FQNS;
 
 const TableWrapper = styled.div`
   width: 100%;
@@ -76,15 +78,19 @@ const Headers = () => (
 
 type Props = {
   handleSelect :(person :Immutable.Map, entityKeyId :string, personId :string) => void;
+  hoursWorked :Map;
   people :Immutable.List<*, *>;
   selectedPersonId :string;
   small :boolean;
+  sentenceTerms :Map;
   totalParticipants :number;
 };
 
 const PendingReviewParticipantsTable = ({
   handleSelect,
+  hoursWorked,
   people,
+  sentenceTerms,
   selectedPersonId,
   small,
   totalParticipants,
@@ -101,12 +107,16 @@ const PendingReviewParticipantsTable = ({
           people.map((person :Map, index :number) => {
             const personId = person.getIn([OPENLATTICE_ID_FQN, 0], '');
             const selected = personId === selectedPersonId;
+            const sentenceDate = sentenceTerms.getIn([personId, DATETIME_START.toString(), 0]);
+            const hours = hoursWorked.get(personId);
             return (
               <PendingReviewParticipantsTableRow
                   key={`${personId}-${index}`}
                   handleSelect={handleSelect}
+                  hours={hours}
                   person={person}
                   selected={selected}
+                  sentenceDate={sentenceDate}
                   small={small} />
             );
           })
