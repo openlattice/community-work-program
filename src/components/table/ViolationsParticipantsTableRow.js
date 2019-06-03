@@ -95,8 +95,8 @@ const ViolationsParticipantsTableRow = ({
   const name = `${formatValue(person.getIn([FIRST_NAME, 0]))} ${formatValue(person.getIn([LAST_NAME, 0]))}`;
   const numberViolations = formatNumericalValue(violationsCount);
 
-  const worked = hours.get('worked');
-  const required = hours.get('required');
+  const worked = hours ? hours.get('worked') : 0;
+  const required = hours ? hours.get('required') : 0;
   const hoursServed = `${formatNumericalValue(worked)} / ${formatNumericalValue(required)}`;
 
   return (
