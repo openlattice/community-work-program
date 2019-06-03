@@ -112,6 +112,7 @@ export const SENTENCE_FQNS = {
 
 /* ol.individualactivityplan */
 export const WORKSITE_PLAN_FQNS = {
+  HOURS_WORKED: new FullyQualifiedName('ol.hoursworked'),
   REQUIRED_HOURS: new FullyQualifiedName('ol.requiredhours'),
 };
 

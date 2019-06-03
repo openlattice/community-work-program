@@ -25,6 +25,8 @@ import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../utils/Errors';
 import {
   GET_ENROLLMENT_STATUSES,
   getEnrollmentStatuses,
+  GET_HOURS_WORKED,
+  getHoursWorked,
   GET_INFRACTIONS,
   getInfractions,
   GET_PARTICIPANTS,
@@ -36,10 +38,11 @@ import { getEntitySetIdFromApp, getPropertyTypeIdFromApp } from '../../utils/App
 import { STATE } from '../../utils/constants/ReduxStateConsts';
 import {
   APP_TYPE_FQNS,
+  DIVERSION_PLAN_FQNS,
   ENROLLMENT_STATUS_FQNS,
-  HAS_FQNS,
   INFRACTION_FQNS,
-  SENTENCE_FQNS
+  SENTENCE_FQNS,
+  WORKSITE_PLAN_FQNS,
 } from '../../core/edm/constants/FullyQualifiedNames';
 import { isDefined } from '../../utils/LangUtils';
 import { INFRACTIONS_CONSTS } from '../../core/edm/constants/DataModelConsts';
@@ -51,17 +54,20 @@ const { searchEntityNeighborsWithFilterWorker, searchEntitySetDataWorker } = Sea
 const { OPENLATTICE_ID_FQN } = Constants;
 
 const {
+  DIVERSION_PLAN,
   ENROLLMENT_STATUS,
   HAS,
   INFRACTIONS,
   MANUAL_SENTENCES,
   PEOPLE,
   SENTENCES,
+  WORKSITE_PLAN,
 } = APP_TYPE_FQNS;
 const { STATUS } = ENROLLMENT_STATUS_FQNS;
 const { SENTENCE_CONDITIONS } = SENTENCE_FQNS;
 const { TYPE } = INFRACTION_FQNS;
-
+const { COMPLETED } = DIVERSION_PLAN_FQNS;
+const { HOURS_WORKED, REQUIRED_HOURS } = WORKSITE_PLAN_FQNS;
 const getAppFromState = state => state.get(STATE.APP, Map());
 
 const LOG = new Logger('StudySagas');
@@ -91,7 +97,6 @@ function* getEnrollmentStatusesWorker(action :SequenceAction) :Generator<*, *, *
     const participantEKIDs :string[] = participants
       .map((participant :Map) => participant.getIn([OPENLATTICE_ID_FQN, 0]))
       .toJS();
-    console.log('participantEKIDs: ', participantEKIDs);
     const app = yield select(getAppFromState);
     const enrollmentStatusESID :string = getEntitySetIdFromApp(app, ENROLLMENT_STATUS.toString());
 
@@ -111,7 +116,6 @@ function* getEnrollmentStatusesWorker(action :SequenceAction) :Generator<*, *, *
       throw response.error;
     }
     let enrollmentMap :Map = fromJS(response.data).map((status :Map) => status.getIn([0, 'neighborDetails']));
-    console.log('first enrollmentMap ', enrollmentMap.toJS());
 
     /*
      * 3. Find participants whose enrollment status is "planned".
@@ -123,10 +127,8 @@ function* getEnrollmentStatusesWorker(action :SequenceAction) :Generator<*, *, *
     const hasESID :string = getEntitySetIdFromApp(app, HAS.toString());
     const participantsWithoutEnrollmentStatus :string[] = participantEKIDs
       .filter(ekid => !isDefined(enrollmentMap.get(ekid)));
-    console.log('participantsWithoutEnrollmentStatus: ', participantsWithoutEnrollmentStatus);
 
     const statusTypeId = getPropertyTypeIdFromApp(app, ENROLLMENT_STATUS.toString(), STATUS.toString());
-    console.log('statusTypeId: ', statusTypeId);
 
     response = yield all(participantsWithoutEnrollmentStatus.map((ekid :string) => {
       const enrollment = {
@@ -145,14 +147,11 @@ function* getEnrollmentStatusesWorker(action :SequenceAction) :Generator<*, *, *
           }]
         }
       };
-      console.log('enrollment: ', enrollment);
       return call(createEntityAndAssociationDataWorker, createEntityAndAssociationData(enrollment));
     }));
     if (response.error) {
       throw response.error;
     }
-
-    console.log('response from createEntityAndAssociationData ', response);
 
     response = yield call(
       searchEntityNeighborsWithFilterWorker,
@@ -163,11 +162,10 @@ function* getEnrollmentStatusesWorker(action :SequenceAction) :Generator<*, *, *
     }
 
     enrollmentMap = fromJS(response.data).map((status :Map) => status.getIn([0, 'neighborDetails']));
-    console.log('second enrollmentMap ', enrollmentMap.toJS());
 
-    const newParticipants = participantsWithoutEnrollmentStatus
-      .map((ekid :string) => participants.getIn([OPENLATTICE_ID_FQN, 0]) === ekid);
-    console.log('newParticipants: ', newParticipants);
+    // const newParticipants = participantsWithoutEnrollmentStatus
+    //   .map((ekid :string) => participants.getIn([OPENLATTICE_ID_FQN, 0]) === ekid);
+    // console.log('newParticipants: ', newParticipants);
 
     yield put(getEnrollmentStatuses.success(id, enrollmentMap));
   }
@@ -183,6 +181,98 @@ function* getEnrollmentStatusesWorker(action :SequenceAction) :Generator<*, *, *
 function* getEnrollmentStatusesWatcher() :Generator<*, *, *> {
 
   yield takeEvery(GET_ENROLLMENT_STATUSES, getEnrollmentStatusesWorker);
+}
+
+
+/*
+ *
+ * ParticipantsActions.getHoursWorked()
+ *
+ */
+
+function* getHoursWorkedWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+  if (value === null || value === undefined) {
+    yield put(getHoursWorked.failure(id, ERR_ACTION_VALUE_NOT_DEFINED));
+    return;
+  }
+  let response :Object = {};
+
+  try {
+    yield put(getHoursWorked.request(id));
+    const { participants, peopleESID } = value;
+    const participantEKIDs = participants.map((participant :Map) => participant.getIn([OPENLATTICE_ID_FQN, 0])).toJS();
+
+    /*
+     * 1. Get diversion plans of participants given.
+     */
+    const app = yield select(getAppFromState);
+    const diversionPlanESID :string = getEntitySetIdFromApp(app, DIVERSION_PLAN.toString());
+
+
+    let searchFilter = {
+      entityKeyIds: participantEKIDs,
+      destinationEntitySetIds: [diversionPlanESID],
+    };
+    response = yield call(
+      searchEntityNeighborsWithFilterWorker,
+      searchEntityNeighborsWithFilter({ entitySetId: peopleESID, filter: searchFilter })
+    );
+    if (response.error) {
+      throw response.error;
+    }
+    const diversionPlansByParticipant = fromJS(response.data)
+      .map((planArray :List) => planArray.map((plan :Map) => plan
+        .get('neighborDetails')));
+    const activeDiversionPlans = diversionPlansByParticipant
+      .filter((planArray :List) => planArray
+        .filter((plan :Map) => !plan.getIn([COMPLETED, 0])));
+    const activeDiversionPlanEKIDs = activeDiversionPlans.map((plans :List) => plans
+      .map((plan :Map) => plan.getIn([OPENLATTICE_ID_FQN, 0])))
+      .valueSeq().toJS().flat();
+
+    const worksitePlanESID :string = getEntitySetIdFromApp(app, WORKSITE_PLAN.toString());
+    searchFilter = {
+      entityKeyIds: activeDiversionPlanEKIDs,
+      destinationEntitySetIds: [worksitePlanESID],
+      sourceEntitySetIds: [peopleESID],
+    };
+    response = yield call(
+      searchEntityNeighborsWithFilterWorker,
+      searchEntityNeighborsWithFilter({ entitySetId: diversionPlanESID, filter: searchFilter })
+    );
+    if (response.error) {
+      throw response.error;
+    }
+    const diversionPlanNeighbors = fromJS(response.data);
+
+    let hoursWorkedMap :Map = Map();
+    diversionPlanNeighbors.forEach((plan :Map) => {
+      const personEKID :string = plan.find((neighbor :Map) => neighbor
+        .getIn(['neighborEntitySet', 'name']).includes(PEOPLE.toString().split('.')[1]))
+        .getIn(['neighborDetails', OPENLATTICE_ID_FQN, 0]);
+      const worksitePlan :Map = plan.find((neighbor :Map) => neighbor
+        .getIn(['neighborEntitySet', 'name']).includes(WORKSITE_PLAN.toString().split('.')[1]));
+      const hoursWorked :number = worksitePlan.getIn(['neighborDetails', HOURS_WORKED, 0]);
+      const reqHours :number = worksitePlan.getIn(['neighborDetails', REQUIRED_HOURS, 0]);
+      hoursWorkedMap = hoursWorkedMap.set(personEKID, Map({ worked: hoursWorked, required: reqHours }));
+    });
+
+    yield put(getHoursWorked.success(id, hoursWorkedMap));
+  }
+  catch (error) {
+    LOG.error('caught exception in getHoursWorkedWorker()', error);
+    yield put(getHoursWorked.failure(id, error));
+  }
+  finally {
+    yield put(getHoursWorked.finally(id));
+  }
+}
+
+function* getHoursWorkedWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(GET_HOURS_WORKED, getHoursWorkedWorker);
 }
 
 /*
@@ -225,8 +315,6 @@ function* getInfractionsWorker(action :SequenceAction) :Generator<*, *, *> {
       .map((participant :Map) => participant
         .map((infraction :Map) => infraction.get('neighborDetails')));
 
-    console.log('infractionsMap: ', infractionsMap.toJS());
-
     const infractionCountMap :Map = infractionsMap.map((infractions :List) => {
       const infractionCount = { warnings: 0, violations: 0 };
       infractions.forEach((infraction :Map) => {
@@ -239,7 +327,6 @@ function* getInfractionsWorker(action :SequenceAction) :Generator<*, *, *> {
       });
       return fromJS(infractionCount);
     });
-    console.log('infractionCountMap: ', infractionCountMap.toJS());
 
     yield put(getInfractions.success(id, { infractionCountMap, infractionsMap }));
   }
@@ -332,6 +419,7 @@ function* getParticipantsWorker(action :SequenceAction) :Generator<*, *, *> {
     if (participants.count() > 0) {
       yield call(getEnrollmentStatusesWorker, getEnrollmentStatuses({ participants, peopleESID }));
       yield call(getInfractionsWorker, getInfractions({ participants, peopleESID }));
+      yield call(getHoursWorkedWorker, getHoursWorked({ participants, peopleESID }));
     }
 
     yield put(getParticipants.success(id, participants));
@@ -343,8 +431,6 @@ function* getParticipantsWorker(action :SequenceAction) :Generator<*, *, *> {
   finally {
     yield put(getParticipants.finally(id));
   }
-
-  return participants;
 }
 
 function* getParticipantsWatcher() :Generator<*, *, *> {
@@ -421,6 +507,8 @@ function* getSentencesWatcher() :Generator<*, *, *> {
 export {
   getEnrollmentStatusesWatcher,
   getEnrollmentStatusesWorker,
+  getHoursWorkedWatcher,
+  getHoursWorkedWorker,
   getInfractionsWatcher,
   getInfractionsWorker,
   getParticipantsWatcher,

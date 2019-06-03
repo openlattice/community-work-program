@@ -8,6 +8,9 @@ import type { RequestSequence } from 'redux-reqseq';
 const GET_ENROLLMENT_STATUSES :'GET_ENROLLMENT_STATUSES' = 'GET_ENROLLMENT_STATUSES';
 const getEnrollmentStatuses :RequestSequence = newRequestSequence(GET_ENROLLMENT_STATUSES);
 
+const GET_HOURS_WORKED :'GET_HOURS_WORKED' = 'GET_HOURS_WORKED';
+const getHoursWorked :RequestSequence = newRequestSequence(GET_HOURS_WORKED);
+
 const GET_INFRACTIONS :'GET_INFRACTIONS' = 'GET_INFRACTIONS';
 const getInfractions :RequestSequence = newRequestSequence(GET_INFRACTIONS);
 
@@ -28,6 +31,8 @@ function resetRequestState(actionType :string) {
 export {
   GET_ENROLLMENT_STATUSES,
   getEnrollmentStatuses,
+  GET_HOURS_WORKED,
+  getHoursWorked,
   GET_INFRACTIONS,
   getInfractions,
   GET_PARTICIPANTS,

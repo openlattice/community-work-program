@@ -9,6 +9,7 @@ import type { SequenceAction } from 'redux-reqseq';
 
 import {
   getEnrollmentStatuses,
+  getHoursWorked,
   getInfractions,
   getParticipants,
   getSentences,
@@ -21,9 +22,11 @@ const {
   ENROLLMENT_BY_PARTICIPANT,
   ERRORS,
   GET_ENROLLMENT_STATUSES,
+  GET_HOURS_WORKED,
   GET_INFRACTIONS,
   GET_PARTICIPANTS,
   GET_SENTENCES,
+  HOURS_WORKED,
   INFRACTIONS_BY_PARTICIPANT,
   INFRACTION_COUNTS_BY_PARTICIPANT,
   PARTICIPANTS,
@@ -34,6 +37,9 @@ const {
 const INITIAL_STATE :Map<*, *> = fromJS({
   [ACTIONS]: {
     [GET_ENROLLMENT_STATUSES]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [GET_HOURS_WORKED]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [GET_INFRACTIONS]: {
@@ -49,10 +55,12 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [ENROLLMENT_BY_PARTICIPANT]: Map(),
   [ERRORS]: {
     [GET_ENROLLMENT_STATUSES]: Map(),
+    [GET_HOURS_WORKED]: Map(),
     [GET_INFRACTIONS]: Map(),
     [GET_PARTICIPANTS]: Map(),
     [GET_SENTENCES]: Map(),
   },
+  [HOURS_WORKED]: Map(),
   [INFRACTIONS_BY_PARTICIPANT]: Map(),
   [INFRACTION_COUNTS_BY_PARTICIPANT]: Map(),
   [PARTICIPANTS]: List(),
@@ -245,6 +253,50 @@ export default function participantsReducer(state :Map<*, *> = INITIAL_STATE, ac
         FINALLY: () => {
           return state
             .deleteIn([ACTIONS, GET_INFRACTIONS, seqAction.id]);
+        },
+      });
+    }
+
+    case getHoursWorked.case(action.type): {
+      const seqAction :SequenceAction = (action :any);
+      return getHoursWorked.reducer(state, action, {
+
+        REQUEST: () => {
+          return state
+            .setIn([ACTIONS, GET_HOURS_WORKED, seqAction.id], fromJS(seqAction))
+            .setIn([ACTIONS, GET_HOURS_WORKED, REQUEST_STATE], RequestStates.PENDING);
+        },
+        SUCCESS: () => {
+
+          if (!state.hasIn([ACTIONS, GET_HOURS_WORKED, seqAction.id])) {
+            return state;
+          }
+
+          const { value } = seqAction;
+          if (value === null || value === undefined) {
+            return state;
+          }
+
+          return state
+            .set(HOURS_WORKED, value)
+            .setIn([ACTIONS, GET_HOURS_WORKED, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => {
+
+          const error = {};
+          const { value: axiosError } = seqAction;
+          if (axiosError && axiosError.response && isNumber(axiosError.response.status)) {
+            error.status = axiosError.response.status;
+          }
+
+          return state
+            .set(HOURS_WORKED, Map())
+            .setIn([ERRORS, GET_HOURS_WORKED], error)
+            .setIn([ACTIONS, GET_HOURS_WORKED, REQUEST_STATE], RequestStates.FAILURE);
+        },
+        FINALLY: () => {
+          return state
+            .deleteIn([ACTIONS, GET_HOURS_WORKED, seqAction.id]);
         },
       });
     }
