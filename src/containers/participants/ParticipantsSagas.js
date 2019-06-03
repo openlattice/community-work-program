@@ -229,8 +229,12 @@ function* getHoursWorkedWorker(action :SequenceAction) :Generator<*, *, *> {
       .filter((planArray :List) => planArray
         .filter((plan :Map) => !plan.getIn([COMPLETED, 0])));
     const activeDiversionPlanEKIDs = activeDiversionPlans.map((plans :List) => plans
-      .map((plan :Map) => plan.getIn([OPENLATTICE_ID_FQN, 0])))
-      .valueSeq().toJS().flat();
+      .map(
+        (plan :Map) => plan.getIn([OPENLATTICE_ID_FQN, 0])
+      ))
+      .valueSeq()
+      .toJS()
+      .flat();
 
     const worksitePlanESID :UUID = getEntitySetIdFromApp(app, WORKSITE_PLAN.toString());
     searchFilter = {
