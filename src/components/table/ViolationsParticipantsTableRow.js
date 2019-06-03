@@ -3,16 +3,19 @@
  */
 
 import React from 'react';
-import styled from 'styled-components';
 import Immutable from 'immutable';
 import { Constants } from 'lattice';
 
 import defaultUserIcon from '../../assets/svg/profile-placeholder-round.svg';
-import { PersonPicture, PersonPhoto } from '../picture/PersonPicture';
 import { formatValue, formatNumericalValue } from '../../utils/FormattingUtils';
-import { OL } from '../../utils/constants/Colors';
+import { PersonPicture } from '../picture/PersonPicture';
 import { PEOPLE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { HOURS_CONSTS } from '../../core/edm/constants/DataModelConsts';
+import {
+  Cell,
+  Row,
+  StyledPersonPhoto,
+} from './TableStyledComponents';
 
 const {
   FIRST_NAME,
@@ -23,47 +26,6 @@ const {
 const { REQUIRED, WORKED } = HOURS_CONSTS;
 const { OPENLATTICE_ID_FQN } = Constants;
 
-const Cell = styled.td`
-  padding: 7px 0;
-  font-family: 'Open Sans', sans-serif;
-  font-size: ${props => (props.small ? '12' : '14')}px;
-  text-align: left;
-  color: ${OL.GREY02};
-`;
-const StyledPersonPhoto = styled(PersonPhoto)`
-  width: ${props => (props.small ? 30 : 36)}px;
-  ${props => (props.small
-    ? (
-      `min-width: 30px;
-        height: 30px;
-        display: flex;
-        justify-content: center;
-        align-items: center;`
-    )
-    : ''
-  )}
-`;
-
-const Row = styled.tr`
-  padding: 7px 30px;
-  border-bottom: 1px solid ${OL.GREY11};
-  ${Cell}:first-child {
-    padding-left: 30px;
-  }
-  ${Cell}:last-child {
-    padding-right: 30px;
-  }
-  &:hover {
-    cursor: pointer;
-    background: ${OL.GREY14};
-  }
-  &:active {
-    background-color: ${OL.PURPLE06};
-  }
-  :last-of-type {
-    border: none;
-  }
-`;
 
 type Props = {
   hours :Map;
