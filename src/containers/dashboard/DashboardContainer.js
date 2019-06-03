@@ -48,6 +48,7 @@ const RightWrapper = styled.div`
 type Props = {
   enrollmentByParticipant :Map;
   getParticipantsRequestState :RequestState;
+  hoursWorked :Map;
   infractionsByParticipant :Map;
   infractionCount :Map;
   participants :List;
@@ -91,6 +92,19 @@ class DashboardContainer extends Component<Props, State> {
   }
 
   getParticipantsWithHoursComplete = () => {
+    const { hoursWorked, participants } = this.props;
+    const participantsWithHoursComplete :Map = hoursWorked
+      .filter((hours :Map) => hours.get('worked') === hours.get('required'));
+
+    let pendingCompletionReview :List = List();
+    participantsWithHoursComplete.forEach((hours :Map, ekid :string) => {
+      const participant :Map = participants.find((person :Map) => person.getIn([OPENLATTICE_ID_FQN, 0]) === ekid);
+      pendingCompletionReview = pendingCompletionReview.push(participant);
+    });
+    console.log('pendingCompletionReview: ', pendingCompletionReview.toJS());
+    this.setState({
+      pendingCompletionReview,
+    });
   }
 
   getParticipantsWithViolations = () => {
@@ -109,6 +123,7 @@ class DashboardContainer extends Component<Props, State> {
   render() {
     const {
       getParticipantsRequestState,
+      hoursWorked,
       sentencesByParticipant,
     } = this.props;
     const {
@@ -139,12 +154,14 @@ class DashboardContainer extends Component<Props, State> {
           <RightWrapper>
             <PendingReviewParticipantsTable
                 handleSelect={() => {}}
+                hoursWorked={hoursWorked}
                 people={pendingCompletionReview}
                 selectedPersonId=""
                 small
                 totalParticipants={pendingCompletionReview.count()} />
             <ViolationsParticipantsTable
                 handleSelect={() => {}}
+                hoursWorked={hoursWorked}
                 people={violationsWatch}
                 selectedPersonId=""
                 small

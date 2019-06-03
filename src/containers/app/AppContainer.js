@@ -97,7 +97,6 @@ class AppContainer extends Component<Props> {
         const peopleEntitySetId = app.getIn(
           [APP_TYPE_FQNS.PEOPLE.toString(), APP.ENTITY_SETS_BY_ORG, selectedOrgId]
         );
-        console.log('peopleEntitySetId: ', peopleEntitySetId);
         if (peopleEntitySetId) {
           actions.getSentences();
         }
@@ -124,6 +123,7 @@ class AppContainer extends Component<Props> {
     }
 
     const enrollment = people.get(PEOPLE.ENROLLMENT_BY_PARTICIPANT);
+    const hoursWorked = people.get(PEOPLE.HOURS_WORKED);
     const infractions = people.get(PEOPLE.INFRACTIONS_BY_PARTICIPANT);
     const infractionCount = people.get(PEOPLE.INFRACTION_COUNTS_BY_PARTICIPANT);
     const sentences = people.get(PEOPLE.SENTENCES_BY_PARTICIPANT);
@@ -135,6 +135,7 @@ class AppContainer extends Component<Props> {
               <DashboardContainer
                   enrollmentByParticipant={enrollment}
                   getParticipantsRequestState={getParticipantsRequestState}
+                  hoursWorked={hoursWorked}
                   infractionsByParticipant={infractions}
                   infractionCount={infractionCount}
                   participants={participants}

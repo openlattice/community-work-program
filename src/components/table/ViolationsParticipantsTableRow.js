@@ -10,7 +10,6 @@ import { Constants } from 'lattice';
 import defaultUserIcon from '../../assets/svg/profile-placeholder-round.svg';
 import { PersonPicture, PersonPhoto } from '../picture/PersonPicture';
 import { formatValue, formatNumericalValue } from '../../utils/FormattingUtils';
-import { formatAsDate } from '../../utils/DateTimeUtils';
 import { OL } from '../../utils/constants/Colors';
 import { PEOPLE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 
@@ -66,6 +65,7 @@ const Row = styled.tr`
 
 type Props = {
   handleSelect :(person :Immutable.Map, entityKeyId :string, personId :string) => void;
+  hours :Map;
   person :Immutable.Map<*, *>,
   selected? :boolean,
   small? :boolean,
@@ -74,6 +74,7 @@ type Props = {
 
 const ViolationsParticipantsTableRow = ({
   handleSelect,
+  hours,
   person,
   selected,
   small,
@@ -91,11 +92,12 @@ const ViolationsParticipantsTableRow = ({
       </StyledPersonPhoto>
     ) : <PersonPicture small={small} src={defaultUserIcon} alt="" />;
 
-  /* BASED ON DUMMY DATA */
   const name = `${formatValue(person.getIn([FIRST_NAME, 0]))} ${formatValue(person.getIn([LAST_NAME, 0]))}`;
   const numberViolations = formatNumericalValue(violationsCount);
-  // const hoursServed = `${formatNumericalValue(person.get('hoursServed'))}
-  //   / ${formatNumericalValue(person.get('requiredHours'))}`;
+
+  const worked = hours.get('worked');
+  const required = hours.get('required');
+  const hoursServed = `${formatNumericalValue(worked)} / ${formatNumericalValue(required)}`;
 
   return (
     <Row
@@ -108,7 +110,7 @@ const ViolationsParticipantsTableRow = ({
       <Cell small={small}>{ photo }</Cell>
       <Cell small={small}>{ name }</Cell>
       <Cell small={small}>{ numberViolations }</Cell>
-      <Cell small={small}></Cell>
+      <Cell small={small}>{ hoursServed }</Cell>
     </Row>
   );
 };
