@@ -40,7 +40,7 @@ const ViolationsParticipantsTableRow = ({
   violationsCount,
 } :Props) => {
 
-  let photo :string = person.getIn([MUGSHOT, 0]) || person.getIn([PICTURE, 0]);
+  let photo = person ? person.getIn([MUGSHOT, 0]) || person.getIn([PICTURE, 0]) : '';
   photo = photo
     ? (
       <StyledPersonPhoto small={small}>
