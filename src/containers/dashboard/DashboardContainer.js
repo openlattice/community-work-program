@@ -18,6 +18,8 @@ import {
 import { GET_PARTICIPANTS } from '../participants/ParticipantsActions';
 
 const { OPENLATTICE_ID_FQN } = Constants;
+const VIOLATIONS = 'violations';
+
 /* styled components */
 const DashboardWrapper = styled.div`
   display: flex;
@@ -94,11 +96,10 @@ class DashboardContainer extends Component<Props, State> {
   getParticipantsWithViolations = () => {
     const { infractionCount, participants } = this.props;
 
-    const violationMap :Map = infractionCount.map((count :Map) => count.get('violations'));
-    console.log('violationMap: ', violationMap);
+    const violationMap :Map = infractionCount.map((count :Map) => count.get(VIOLATIONS));
     const violationsWatch :List = participants.filter((participant :Map) => violationMap
       .get(participant.getIn([OPENLATTICE_ID_FQN, 0])) > 0);
-    console.log('violationsWatch: ', violationsWatch);
+
     this.setState({
       violationMap,
       violationsWatch,
@@ -107,17 +108,15 @@ class DashboardContainer extends Component<Props, State> {
 
   render() {
     const {
+      getParticipantsRequestState,
+      sentencesByParticipant,
+    } = this.props;
+    const {
       newParticipants,
       pendingCompletionReview,
       violationMap,
       violationsWatch,
     } = this.state;
-    const {
-      getParticipantsRequestState,
-      infractionsByParticipant,
-      participants,
-      sentencesByParticipant,
-    } = this.props;
 
     if (getParticipantsRequestState === RequestStates.PENDING) {
       return (
