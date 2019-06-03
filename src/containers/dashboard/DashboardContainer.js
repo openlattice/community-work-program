@@ -80,9 +80,12 @@ class DashboardContainer extends Component<Props, State> {
   }
 
   componentWillReceiveProps() {
-    this.getNewParticipants();
-    this.getParticipantsWithHoursComplete();
-    this.getParticipantsWithViolations();
+    const { participants } = this.props;
+    if (participants.count() > 0) {
+      this.getNewParticipants();
+      this.getParticipantsWithHoursComplete();
+      this.getParticipantsWithViolations();
+    }
   }
 
   componentDidUpdate() {
