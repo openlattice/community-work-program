@@ -185,26 +185,16 @@ const mapStateToProps = (state :Map<*, *>) => {
   };
 };
 
-function mapDispatchToProps(dispatch :Function) :Object {
-  const actions :{ [string] :Function } = {};
-
-  Object.keys(AppActions).forEach((action :string) => {
-    actions[action] = AppActions[action];
-  });
-
-  Object.keys(ParticipantsActions).forEach((action :string) => {
-    actions[action] = ParticipantsActions[action];
-  });
-
-  actions.logout = logout;
-  actions.getAllPropertyTypes = getAllPropertyTypes;
-
-  return {
-    actions: {
-      ...bindActionCreators(actions, dispatch)
-    }
-  };
-}
+const mapDispatchToProps = dispatch => ({
+  actions: bindActionCreators({
+    getAllPropertyTypes,
+    getSentences: ParticipantsActions.getSentences,
+    initializeApplication: AppActions.initializeApplication,
+    loadApp: AppActions.loadApp,
+    logout,
+    resetRequestState: ParticipantsActions.resetRequestState,
+  }, dispatch)
+});
 
 // $FlowFixMe
 export default connect(mapStateToProps, mapDispatchToProps)(AppContainer);
