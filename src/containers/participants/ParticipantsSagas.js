@@ -48,7 +48,12 @@ import {
   WORKSITE_PLAN_FQNS,
 } from '../../core/edm/constants/FullyQualifiedNames';
 import { isDefined } from '../../utils/LangUtils';
-import { ENROLLMENT_STATUSES, INFRACTIONS_CONSTS } from '../../core/edm/constants/DataModelConsts';
+import {
+  ENROLLMENT_STATUSES,
+  INFRACTIONS_CONSTS,
+  NEIGHBOR_DETAILS,
+  NEIGHBOR_ENTITY_SET,
+} from '../../core/edm/constants/DataModelConsts';
 
 const { createEntityAndAssociationData, getEntitySetData } = DataApiActions;
 const { createEntityAndAssociationDataWorker, getEntitySetDataWorker } = DataApiSagas;
@@ -120,7 +125,7 @@ function* getEnrollmentStatusesWorker(action :SequenceAction) :Generator<*, *, *
     if (response.error) {
       throw response.error;
     }
-    let enrollmentMap :Map = fromJS(response.data).map((status :Map) => status.getIn([0, 'neighborDetails']));
+    let enrollmentMap :Map = fromJS(response.data).map((status :Map) => status.getIn([0, NEIGHBOR_DETAILS]));
 
     /*
      * 3. For each participant without an enrollment status, create one.
@@ -162,7 +167,7 @@ function* getEnrollmentStatusesWorker(action :SequenceAction) :Generator<*, *, *
       throw response.error;
     }
 
-    enrollmentMap = fromJS(response.data).map((status :Map) => status.getIn([0, 'neighborDetails']));
+    enrollmentMap = fromJS(response.data).map((status :Map) => status.getIn([0, NEIGHBOR_DETAILS]));
 
     // const newParticipants = participantsWithoutEnrollmentStatus
     //   .map((ekid :string) => participants.getIn([OPENLATTICE_ID_FQN, 0]) === ekid);
@@ -225,7 +230,7 @@ function* getHoursWorkedWorker(action :SequenceAction) :Generator<*, *, *> {
     }
     const diversionPlansByParticipant = fromJS(response.data)
       .map((planArray :List) => planArray.map((plan :Map) => plan
-        .get('neighborDetails')));
+        .get(NEIGHBOR_DETAILS)));
     const activeDiversionPlans = diversionPlansByParticipant
       .filter((planArray :List) => planArray
         .filter((plan :Map) => !plan.getIn([COMPLETED, 0])));
@@ -251,12 +256,12 @@ function* getHoursWorkedWorker(action :SequenceAction) :Generator<*, *, *> {
     let hoursWorkedMap :Map = Map();
     diversionPlanNeighbors.forEach((plan :Map) => {
       const personEKID :string = plan.find((neighbor :Map) => neighbor
-        .getIn(['neighborEntitySet', 'name']).includes(PEOPLE.toString().split('.')[1]))
-        .getIn(['neighborDetails', OPENLATTICE_ID_FQN, 0]);
+        .getIn([NEIGHBOR_ENTITY_SET, 'name']).includes(PEOPLE.toString().split('.')[1]))
+        .getIn([NEIGHBOR_DETAILS, OPENLATTICE_ID_FQN, 0]);
       const worksitePlan :Map = plan.find((neighbor :Map) => neighbor
-        .getIn(['neighborEntitySet', 'name']).includes(WORKSITE_PLAN.toString().split('.')[1]));
-      const hoursWorked :number = worksitePlan.getIn(['neighborDetails', HOURS_WORKED, 0]);
-      const reqHours :number = worksitePlan.getIn(['neighborDetails', REQUIRED_HOURS, 0]);
+        .getIn([NEIGHBOR_ENTITY_SET, 'name']).includes(WORKSITE_PLAN.toString().split('.')[1]));
+      const hoursWorked :number = worksitePlan.getIn([NEIGHBOR_DETAILS, HOURS_WORKED, 0]);
+      const reqHours :number = worksitePlan.getIn([NEIGHBOR_DETAILS, REQUIRED_HOURS, 0]);
       hoursWorkedMap = hoursWorkedMap.set(personEKID, Map({ worked: hoursWorked, required: reqHours }));
     });
 
@@ -314,7 +319,7 @@ function* getInfractionsWorker(action :SequenceAction) :Generator<*, *, *> {
 
     const infractionsMap :Map = fromJS(response.data)
       .map((participant :Map) => participant
-        .map((infraction :Map) => infraction.get('neighborDetails')));
+        .map((infraction :Map) => infraction.get(NEIGHBOR_DETAILS)));
 
     const infractionCountMap :Map = infractionsMap.map((infractions :List) => {
       const infractionCount = { warnings: 0, violations: 0 };
@@ -380,7 +385,7 @@ function* getSentenceTermsWorker(action :SequenceAction) :Generator<*, *, *> {
     }
     const sentenceTermsMap :Map = fromJS(response.data)
       .map((terms :List) => terms
-        .map((term :Map) => term.get('neighborDetails'))
+        .map((term :Map) => term.get(NEIGHBOR_DETAILS))
         .sort((term1 :Map, term2 :Map) => term1.getIn([DATETIME_START, 0]) - term2.getIn([DATETIME_START, 0]))
         .last());
 
@@ -444,7 +449,7 @@ function* getParticipantsWorker(action :SequenceAction) :Generator<*, *, *> {
 
       participants = fromJS(response.data).toIndexedSeq()
         .map(personList => personList.get(0))
-        .map(person => person.get('neighborDetails'))
+        .map(person => person.get(NEIGHBOR_DETAILS))
         .toList();
 
       const manualSentencesEKIDs :string[] = sentences
@@ -466,7 +471,7 @@ function* getParticipantsWorker(action :SequenceAction) :Generator<*, *, *> {
       }
       const moreParticipants = fromJS(response.data).toIndexedSeq()
         .map(personList => personList.get(0))
-        .map(person => person.get('neighborDetails'))
+        .map(person => person.get(NEIGHBOR_DETAILS))
         .toList();
 
       participants = participants.concat(moreParticipants);
