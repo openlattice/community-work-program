@@ -122,11 +122,11 @@ class AppContainer extends Component<Props> {
       );
     }
 
-    const enrollment = people.get(PEOPLE.ENROLLMENT_BY_PARTICIPANT);
-    const hoursWorked = people.get(PEOPLE.HOURS_WORKED);
-    const infractions = people.get(PEOPLE.INFRACTIONS_BY_PARTICIPANT);
-    const infractionCount = people.get(PEOPLE.INFRACTION_COUNTS_BY_PARTICIPANT);
-    const sentenceTermsByParticipant = people.get(PEOPLE.SENTENCE_TERMS_BY_PARTICIPANT);
+    const enrollment :Map = people ? people.get(PEOPLE.ENROLLMENT_BY_PARTICIPANT) : Map();
+    const hoursWorked :Map = people ? people.get(PEOPLE.HOURS_WORKED) : Map();
+    const infractions :Map = people ? people.get(PEOPLE.INFRACTIONS_BY_PARTICIPANT) : Map();
+    const infractionCount :Map = people ? people.get(PEOPLE.INFRACTION_COUNTS_BY_PARTICIPANT) : Map();
+    const sentenceTermsByParticipant :Map = people ? people.get(PEOPLE.SENTENCE_TERMS_BY_PARTICIPANT) : Map();
     return (
       <Switch>
         <Route
