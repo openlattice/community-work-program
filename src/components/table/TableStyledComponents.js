@@ -25,7 +25,7 @@ export const TableBanner = styled.tr`
 
 export const TotalParticipants = styled.div`
   width: 30px;
-  height: 20px;;
+  height: 20px;
   border-radius: 10px;
   background-color: ${OL.PURPLE03};
   color: ${OL.WHITE};

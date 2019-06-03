@@ -2,6 +2,7 @@
  * @flow
  */
 import React from 'react';
+import styled from 'styled-components';
 import { Map, List } from 'immutable';
 
 import ViolationsParticipantsTableRow from './ViolationsParticipantsTableRow';
@@ -16,6 +17,10 @@ import {
   HeaderRow,
   HeaderElement,
 } from './TableStyledComponents';
+
+const ViolationsTableWrapper = styled(TableWrapper)`
+  margin-top: 30px;
+`;
 
 const Headers = () => (
   <>
@@ -43,7 +48,7 @@ const ViolationsParticipantsTable = ({
   totalParticipants,
   violations,
 } :Props) => (
-  <TableWrapper>
+  <ViolationsTableWrapper>
     <TableBanner>
       Violations Watch
       <TotalParticipants>{totalParticipants}</TotalParticipants>
@@ -68,7 +73,7 @@ const ViolationsParticipantsTable = ({
         }
       </tbody>
     </Table>
-  </TableWrapper>
+  </ViolationsTableWrapper>
 );
 
 export default ViolationsParticipantsTable;

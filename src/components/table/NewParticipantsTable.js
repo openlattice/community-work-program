@@ -2,6 +2,7 @@
  * @flow
  */
 import React from 'react';
+import styled from 'styled-components';
 import { Map, List } from 'immutable';
 
 import NewParticipantsTableRow from './NewParticipantsTableRow';
@@ -18,6 +19,12 @@ import {
 } from './TableStyledComponents';
 
 const { DATETIME_START } = SENTENCE_TERM_FQNS;
+
+const NewParticipantsTableWrapper = styled(TableWrapper)`
+  width: 600px;
+  margin-bottom: 30px;
+  align-self: start;
+`;
 
 const Headers = () => (
   <>
@@ -46,7 +53,7 @@ const NewParticipantsTable = ({
   small,
   totalParticipants,
 } :Props) => (
-  <TableWrapper>
+  <NewParticipantsTableWrapper>
     <TableBanner>
       New Participants
       <TotalParticipants>{totalParticipants}</TotalParticipants>
@@ -72,7 +79,7 @@ const NewParticipantsTable = ({
         }
       </tbody>
     </Table>
-  </TableWrapper>
+  </NewParticipantsTableWrapper>
 );
 
 export default NewParticipantsTable;
