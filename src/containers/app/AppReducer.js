@@ -6,6 +6,7 @@ import { Models } from 'lattice';
 import { AccountUtils } from 'lattice-auth';
 import isNumber from 'lodash/isNumber';
 import { Map, fromJS } from 'immutable';
+import { RequestStates } from 'redux-reqseq';
 import type { SequenceAction } from 'redux-reqseq';
 
 import { APP } from '../../utils/constants/ReduxStateConsts';
