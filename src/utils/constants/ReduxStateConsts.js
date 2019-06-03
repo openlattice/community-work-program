@@ -34,11 +34,13 @@ export const PEOPLE = {
   GET_HOURS_WORKED: 'getHoursWorked',
   GET_INFRACTIONS: 'getInfractions',
   GET_PARTICIPANTS: 'getParticipants',
+  GET_SENTENCE_TERMS: 'getSentenceTerms',
   GET_SENTENCES: 'getSentences',
   HOURS_WORKED: 'hoursWorked',
   INFRACTIONS_BY_PARTICIPANT: 'infractionsByParticipant',
   INFRACTION_COUNTS_BY_PARTICIPANT: 'infractionCountsByParticipant',
   PARTICIPANTS: 'participants',
   REQUEST_STATE: 'requestState',
+  SENTENCE_TERMS_BY_PARTICIPANT: 'sentenceTermsByParticipant',
   SENTENCES: 'sentences',
 };

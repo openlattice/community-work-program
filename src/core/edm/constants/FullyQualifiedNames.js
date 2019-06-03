@@ -107,6 +107,11 @@ export const SENTENCE_FQNS = {
   SENTENCE_CONDITIONS: new FullyQualifiedName('justice.sentenceconditions'),
 };
 
+/* ol.sentenceterm */
+export const SENTENCE_TERM_FQNS = {
+  DATETIME_START: new FullyQualifiedName('ol.datetimestart'),
+};
+
 /* ol.individualactivityplan */
 export const WORKSITE_PLAN_FQNS = {
   HOURS_WORKED: new FullyQualifiedName('ol.hoursworked'),
