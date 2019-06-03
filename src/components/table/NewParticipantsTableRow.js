@@ -26,8 +26,6 @@ const {
   PICTURE
 } = PEOPLE_FQNS;
 const { REQUIRED } = HOURS_CONSTS;
-const { OPENLATTICE_ID_FQN } = Constants;
-
 
 type Props = {
   hours :Map;
@@ -44,9 +42,6 @@ const TableRow = ({
   sentenceDate,
   small
 } :Props) => {
-
-  const entityKeyId :string = person.getIn([OPENLATTICE_ID_FQN, 0], '');
-  const personId :string = '';
 
   let photo :string = person.getIn([MUGSHOT, 0]) || person.getIn([PICTURE, 0]);
   photo = photo
