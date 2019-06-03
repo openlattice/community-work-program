@@ -2,8 +2,7 @@
  * @flow
  */
 import React from 'react';
-import { Constants } from 'lattice';
-import Immutable from 'immutable';
+import { Map, List } from 'immutable';
 
 import PendingReviewParticipantsTableRow from './PendingReviewParticipantsTableRow';
 
@@ -33,7 +32,7 @@ const Headers = () => (
 
 type Props = {
   hoursWorked :Map;
-  people :List<*, *>;
+  people :List;
   sentenceTerms :Map;
   small :boolean;
   totalParticipants :number;

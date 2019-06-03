@@ -30,7 +30,7 @@ const Headers = () => (
 
 type Props = {
   hoursWorked :Map;
-  people :List<*, *>;
+  people :List;
   small :boolean;
   totalParticipants :number;
   violations :Map;

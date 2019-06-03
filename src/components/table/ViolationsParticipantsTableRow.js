@@ -3,7 +3,7 @@
  */
 
 import React from 'react';
-import Immutable from 'immutable';
+import { Map } from 'immutable';
 
 import defaultUserIcon from '../../assets/svg/profile-placeholder-round.svg';
 import { formatValue, formatNumericalValue } from '../../utils/FormattingUtils';

@@ -2,7 +2,7 @@
  * @flow
  */
 import React from 'react';
-import Immutable from 'immutable';
+import { Map, List } from 'immutable';
 
 import NewParticipantsTableRow from './NewParticipantsTableRow';
 
@@ -33,7 +33,7 @@ const Headers = () => (
 
 type Props = {
   hoursWorked :Map;
-  people :List<*, *>;
+  people :List;
   sentenceTerms :Map;
   small :boolean;
   totalParticipants :number;

@@ -3,7 +3,7 @@
  */
 
 import React from 'react';
-import Immutable from 'immutable';
+import { Map } from 'immutable';
 import { DateTime } from 'luxon';
 
 import defaultUserIcon from '../../assets/svg/profile-placeholder-round.svg';
@@ -31,7 +31,7 @@ const { OPENLATTICE_ID_FQN } = Constants;
 
 type Props = {
   hours :Map;
-  person :Map<*, *>;
+  person :Map;
   selected? :boolean;
   sentenceDate :string;
   small? :boolean;
