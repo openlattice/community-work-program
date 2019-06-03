@@ -2,9 +2,12 @@
  * @flow
  */
 
-import { Models } from 'lattice';
+import { Constants, Models } from 'lattice';
 
 const { FullyQualifiedName } = Models;
+
+const { OPENLATTICE_ID_FQN } = Constants;
+export const ENTITY_KEY_ID = OPENLATTICE_ID_FQN;
 
 export const APP_TYPE_FQNS = {
   APP_SETTINGS: new FullyQualifiedName('app.settings'),
