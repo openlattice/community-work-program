@@ -16,8 +16,10 @@ import {
   DASHBOARD_WIDTH,
 } from '../../core/style/Sizes';
 import { GET_PARTICIPANTS } from '../participants/ParticipantsActions';
+import { ENROLLMENT_STATUS_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 
 const { OPENLATTICE_ID_FQN } = Constants;
+const { STATUS } = ENROLLMENT_STATUS_FQNS;
 const VIOLATIONS = 'violations';
 
 /* styled components */
@@ -89,6 +91,15 @@ class DashboardContainer extends Component<Props, State> {
 
   getNewParticipants = () => {
     const { enrollmentByParticipant, participants } = this.props;
+    const newParticipants = enrollmentByParticipant.filter((enrollment :Map) => enrollment
+      .getIn([STATUS.toString(), 0]) === 'planned')
+      .keySeq()
+      .toList()
+      .map((ekid :string) => participants.find((participant :Map) => participant
+        .getIn([OPENLATTICE_ID_FQN, 0]) === ekid));
+    this.setState({
+      newParticipants,
+    });
   }
 
   getParticipantsWithHoursComplete = () => {
@@ -101,7 +112,6 @@ class DashboardContainer extends Component<Props, State> {
       const participant :Map = participants.find((person :Map) => person.getIn([OPENLATTICE_ID_FQN, 0]) === ekid);
       pendingCompletionReview = pendingCompletionReview.push(participant);
     });
-
     this.setState({
       pendingCompletionReview,
     });
@@ -113,7 +123,6 @@ class DashboardContainer extends Component<Props, State> {
     const violationMap :Map = infractionCount.map((count :Map) => count.get(VIOLATIONS));
     const violationsWatch :List = participants.filter((participant :Map) => violationMap
       .get(participant.getIn([OPENLATTICE_ID_FQN, 0])) > 0);
-
     this.setState({
       violationMap,
       violationsWatch,
@@ -146,19 +155,20 @@ class DashboardContainer extends Component<Props, State> {
         <DashboardBody>
           <NewParticipantsTable
               handleSelect={() => {}}
+              hoursWorked={hoursWorked}
               people={newParticipants}
-              sentenceTerms={sentenceTerms}
               selectedPersonId=""
               small
+              sentenceTerms={sentenceTerms}
               totalParticipants={newParticipants.count()} />
           <RightWrapper>
             <PendingReviewParticipantsTable
                 handleSelect={() => {}}
                 hoursWorked={hoursWorked}
                 people={pendingCompletionReview}
-                sentenceTerms={sentenceTerms}
                 selectedPersonId=""
                 small
+                sentenceTerms={sentenceTerms}
                 totalParticipants={pendingCompletionReview.count()} />
             <ViolationsParticipantsTable
                 handleSelect={() => {}}
