@@ -13,7 +13,14 @@ import { PersonPicture, PersonPhoto } from '../picture/PersonPicture';
 import { formatValue, formatNumericalValue } from '../../utils/FormattingUtils';
 import { formatAsDate } from '../../utils/DateTimeUtils';
 import { OL } from '../../utils/constants/Colors';
+import { PEOPLE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 
+const {
+  FIRST_NAME,
+  LAST_NAME,
+  MUGSHOT,
+  PICTURE
+} = PEOPLE_FQNS;
 const { OPENLATTICE_ID_FQN } = Constants;
 
 const Cell = styled.td`
@@ -60,23 +67,26 @@ const Row = styled.tr`
 
 type Props = {
   handleSelect :(person :Immutable.Map, entityKeyId :string, personId :string) => void;
+  hours :Map;
   person :Immutable.Map<*, *>,
   selected? :boolean,
+  sentenceDate :string;
   small? :boolean,
 };
 
 const TableRow = ({
   handleSelect,
+  hours,
   person,
   selected,
+  sentenceDate,
   small
 } :Props) => {
 
   const entityKeyId :string = person.getIn([OPENLATTICE_ID_FQN, 0], '');
   const personId :string = '';
 
-  // let photo :string = person.getIn([MUGSHOT, 0]) || person.getIn([PICTURE, 0]);
-  let photo;
+  let photo :string = person.getIn([MUGSHOT, 0]) || person.getIn([PICTURE, 0]);
   photo = photo
     ? (
       <StyledPersonPhoto small={small}>
@@ -84,12 +94,10 @@ const TableRow = ({
       </StyledPersonPhoto>
     ) : <PersonPicture small={small} src={defaultUserIcon} alt="" />;
 
-  /* BASED ON DUMMY DATA */
-  const name = formatValue(person.get('name'));
-  const sentenceDate = person.get('sentenceDate')
-    ? formatAsDate(new Date(person.get('sentenceDate')).toISOString()) : '';
-  const enrollmentDeadline = DateTime.fromISO(person.get('sentenceDate')).plus({ weeks: 2 }).toLocaleString();
-  const requiredHours = formatNumericalValue(person.get('requiredHours'));
+  const name = `${formatValue(person.getIn([FIRST_NAME, 0]))} ${formatValue(person.getIn([LAST_NAME, 0]))}`;
+  const sentenceDateDisplay = formatAsDate(sentenceDate);
+  const enrollmentDeadline = DateTime.fromISO(sentenceDate).plus({ weeks: 2 }).toLocaleString();
+  const requiredHours = formatNumericalValue(hours.get('required'));
 
   return (
     <Row
@@ -101,7 +109,7 @@ const TableRow = ({
         }}>
       <Cell small={small}>{ photo }</Cell>
       <Cell small={small}>{ name }</Cell>
-      <Cell small={small}>{ sentenceDate }</Cell>
+      <Cell small={small}>{ sentenceDateDisplay }</Cell>
       <Cell small={small}>{ enrollmentDeadline }</Cell>
       <Cell small={small}>{ requiredHours }</Cell>
     </Row>
