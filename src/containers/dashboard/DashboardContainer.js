@@ -52,7 +52,6 @@ type Props = {
   enrollmentByParticipant :Map;
   getParticipantsRequestState :RequestState;
   hoursWorked :Map;
-  infractionsByParticipant :Map;
   infractionCount :Map;
   participants :List;
   sentenceTerms :Map;
