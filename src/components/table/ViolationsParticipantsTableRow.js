@@ -6,22 +6,18 @@ import React from 'react';
 import { Map } from 'immutable';
 
 import defaultUserIcon from '../../assets/svg/profile-placeholder-round.svg';
-import { formatValue, formatNumericalValue } from '../../utils/FormattingUtils';
 import { PersonPicture } from '../picture/PersonPicture';
+import { formatNumericalValue } from '../../utils/FormattingUtils';
 import { PEOPLE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { HOURS_CONSTS } from '../../core/edm/constants/DataModelConsts';
+import { getPersonName } from '../../utils/PeopleUtils';
 import {
   Cell,
   Row,
   StyledPersonPhoto,
 } from './TableStyledComponents';
 
-const {
-  FIRST_NAME,
-  LAST_NAME,
-  MUGSHOT,
-  PICTURE
-} = PEOPLE_FQNS;
+const { MUGSHOT, PICTURE } = PEOPLE_FQNS;
 const { REQUIRED, WORKED } = HOURS_CONSTS;
 
 type Props = {
@@ -48,7 +44,7 @@ const ViolationsParticipantsTableRow = ({
       </StyledPersonPhoto>
     ) : <PersonPicture small={small} src={defaultUserIcon} alt="" />;
 
-  const name = `${formatValue(person.getIn([FIRST_NAME, 0]))} ${formatValue(person.getIn([LAST_NAME, 0]))}`;
+  const name = person ? getPersonName(person) : '';
   const numberViolations = formatNumericalValue(violationsCount);
   const hoursServed = hours ? `${formatNumericalValue(
     hours.get(WORKED)

@@ -7,24 +7,20 @@ import { Map } from 'immutable';
 import { DateTime } from 'luxon';
 
 import defaultUserIcon from '../../assets/svg/profile-placeholder-round.svg';
-import { formatValue, formatNumericalValue } from '../../utils/FormattingUtils';
 
 import { PersonPicture } from '../picture/PersonPicture';
+import { formatNumericalValue } from '../../utils/FormattingUtils';
 import { formatAsDate } from '../../utils/DateTimeUtils';
 import { PEOPLE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { HOURS_CONSTS } from '../../core/edm/constants/DataModelConsts';
+import { getPersonName } from '../../utils/PeopleUtils';
 import {
   Cell,
   Row,
   StyledPersonPhoto,
 } from './TableStyledComponents';
 
-const {
-  FIRST_NAME,
-  LAST_NAME,
-  MUGSHOT,
-  PICTURE
-} = PEOPLE_FQNS;
+const { MUGSHOT, PICTURE } = PEOPLE_FQNS;
 const { REQUIRED } = HOURS_CONSTS;
 
 type Props = {
@@ -50,11 +46,10 @@ const TableRow = ({
         <PersonPicture src={photo} alt="" />
       </StyledPersonPhoto>
     ) : <PersonPicture small={small} src={defaultUserIcon} alt="" />;
-
-  const name = `${formatValue(person.getIn([FIRST_NAME, 0]))} ${formatValue(person.getIn([LAST_NAME, 0]))}`;
-  const sentenceDateDisplay = formatAsDate(sentenceDate);
-  const enrollmentDeadline = DateTime.fromISO(sentenceDate).plus({ weeks: 2 }).toLocaleString();
-  const requiredHours = formatNumericalValue(hours.get(REQUIRED));
+  const name = person ? getPersonName(person) : '';
+  const sentenceDateDisplay = sentenceDate ? formatAsDate(sentenceDate) : '';
+  const enrollmentDeadline = sentenceDate ? DateTime.fromISO(sentenceDate).plus({ weeks: 2 }).toLocaleString() : '';
+  const requiredHours = hours ? formatNumericalValue(hours.get(REQUIRED)) : '';
 
   return (
     <Row active={selected}>
