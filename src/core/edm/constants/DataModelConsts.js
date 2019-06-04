@@ -11,8 +11,9 @@ export const ORG_IDS = {
   OL_DEMO_ORG: '1d5aa1f4-4d22-46a5-97cd-dcc6820e7ff8',
 };
 
-/* Neighbors Constants */
+/* EDM Constants */
 
+export const TYPE_IDS_BY_FQNS = 'typeIdsByFqn';
 export const NEIGHBOR_DETAILS = 'neighborDetails';
 export const NEIGHBOR_ENTITY_SET = 'neighborEntitySet';
 

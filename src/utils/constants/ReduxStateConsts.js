@@ -1,5 +1,6 @@
 export const STATE = {
   APP: 'app',
+  EDM: 'edm',
   PEOPLE: 'people',
 };
 
