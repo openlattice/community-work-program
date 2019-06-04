@@ -23,19 +23,19 @@ import Logger from '../../utils/Logger';
 import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../utils/Errors';
 import {
   GET_ENROLLMENT_STATUSES,
-  getEnrollmentStatuses,
   GET_HOURS_WORKED,
-  getHoursWorked,
   GET_INFRACTIONS,
-  getInfractions,
   GET_PARTICIPANTS,
-  getParticipants,
   GET_SENTENCES,
-  getSentences,
   GET_SENTENCE_TERMS,
+  getEnrollmentStatuses,
+  getHoursWorked,
+  getInfractions,
+  getParticipants,
   getSentenceTerms,
+  getSentences,
 } from './ParticipantsActions';
-import { getEntitySetIdFromApp, getPropertyTypeIdFromApp } from '../../utils/AppUtils';
+import { getEntitySetIdFromApp, getPropertyTypeIdFromEdm } from '../../utils/DataUtils';
 import { STATE } from '../../utils/constants/ReduxStateConsts';
 import {
   APP_TYPE_FQNS,
@@ -77,7 +77,9 @@ const { TYPE } = INFRACTION_FQNS;
 const { COMPLETED } = DIVERSION_PLAN_FQNS;
 const { HOURS_WORKED, REQUIRED_HOURS } = WORKSITE_PLAN_FQNS;
 const { DATETIME_START } = SENTENCE_TERM_FQNS;
+
 const getAppFromState = state => state.get(STATE.APP, Map());
+const getEdmFromState = state => state.get(STATE.EDM, Map());
 
 const LOG = new Logger('StudySagas');
 
@@ -107,7 +109,7 @@ function* getEnrollmentStatusesWorker(action :SequenceAction) :Generator<*, *, *
       .map((participant :Map) => participant.getIn([OPENLATTICE_ID_FQN, 0]))
       .toJS();
     const app = yield select(getAppFromState);
-    const enrollmentStatusESID :UUID = getEntitySetIdFromApp(app, ENROLLMENT_STATUS.toString());
+    const enrollmentStatusESID :UUID = getEntitySetIdFromApp(app, ENROLLMENT_STATUS);
 
     /*
      * 2. Find enrollment statuses for all participants, if any.
@@ -129,11 +131,12 @@ function* getEnrollmentStatusesWorker(action :SequenceAction) :Generator<*, *, *
     /*
      * 3. For each participant without an enrollment status, create one.
      */
-    const hasESID :UUID = getEntitySetIdFromApp(app, HAS.toString());
+    const hasESID :UUID = getEntitySetIdFromApp(app, HAS);
     const participantsWithoutEnrollmentStatus :UUID[] = participantEKIDs
       .filter(ekid => !isDefined(enrollmentMap.get(ekid)));
 
-    const statusTypeId = getPropertyTypeIdFromApp(app, ENROLLMENT_STATUS.toString(), STATUS.toString());
+    const edm = yield select(getEdmFromState);
+    const statusPTID = getPropertyTypeIdFromEdm(edm, STATUS);
 
     response = yield all(participantsWithoutEnrollmentStatus.map((ekid :UUID) => {
       const enrollment = {
@@ -148,7 +151,7 @@ function* getEnrollmentStatusesWorker(action :SequenceAction) :Generator<*, *, *
         },
         entities: {
           [enrollmentStatusESID]: [{
-            [statusTypeId]: [ENROLLMENT_STATUSES.PLANNED]
+            [statusPTID]: [ENROLLMENT_STATUSES.PLANNED]
           }]
         }
       };
@@ -208,7 +211,7 @@ function* getHoursWorkedWorker(action :SequenceAction) :Generator<*, *, *> {
      * 1. Get diversion plans of participants given.
      */
     const app = yield select(getAppFromState);
-    const diversionPlanESID :UUID = getEntitySetIdFromApp(app, DIVERSION_PLAN.toString());
+    const diversionPlanESID :UUID = getEntitySetIdFromApp(app, DIVERSION_PLAN);
 
 
     let searchFilter = {
@@ -236,7 +239,7 @@ function* getHoursWorkedWorker(action :SequenceAction) :Generator<*, *, *> {
       .toJS()
       .flat();
 
-    const worksitePlanESID :UUID = getEntitySetIdFromApp(app, WORKSITE_PLAN.toString());
+    const worksitePlanESID :UUID = getEntitySetIdFromApp(app, WORKSITE_PLAN);
     searchFilter = {
       entityKeyIds: activeDiversionPlanEKIDs,
       destinationEntitySetIds: [worksitePlanESID],
@@ -301,7 +304,7 @@ function* getInfractionsWorker(action :SequenceAction) :Generator<*, *, *> {
     const participantEKIDs :UUID[] = participants
       .map((participant :Map) => participant.getIn([OPENLATTICE_ID_FQN, 0])).toJS();
     const app = yield select(getAppFromState);
-    const infractionsESID :UUID = getEntitySetIdFromApp(app, INFRACTIONS.toString());
+    const infractionsESID :UUID = getEntitySetIdFromApp(app, INFRACTIONS);
 
     const searchFilter = {
       entityKeyIds: participantEKIDs,
@@ -370,7 +373,7 @@ function* getSentenceTermsWorker(action :SequenceAction) :Generator<*, *, *> {
     const app = yield select(getAppFromState);
     const participantEKIDs :UUID[] = participants
       .map((participant :Map) => participant.getIn([OPENLATTICE_ID_FQN, 0])).toJS();
-    const sentenceTermESID :UUID = getEntitySetIdFromApp(app, SENTENCE_TERM.toString());
+    const sentenceTermESID :UUID = getEntitySetIdFromApp(app, SENTENCE_TERM);
     const searchFilter = {
       entityKeyIds: participantEKIDs,
       destinationEntitySetIds: [sentenceTermESID],
@@ -425,7 +428,7 @@ function* getParticipantsWorker(action :SequenceAction) :Generator<*, *, *> {
     yield put(getParticipants.request(id));
     const { manualSentenceESID, sentences, sentenceESID } = value;
     const app = yield select(getAppFromState);
-    const peopleESID = getEntitySetIdFromApp(app, PEOPLE.toString());
+    const peopleESID = getEntitySetIdFromApp(app, PEOPLE);
 
     if (sentences.count() > 0) {
 
@@ -517,10 +520,9 @@ function* getSentencesWorker(action :SequenceAction) :Generator<*, *, *> {
      * 1. Do advanced search for integrated sentences with sentences conditions that include "community service".
      */
     const app = yield select(getAppFromState);
-    const sentenceESID :UUID = getEntitySetIdFromApp(app, SENTENCES.toString());
-    const sentenceConditionsPTID :UUID = getPropertyTypeIdFromApp(
-      app, SENTENCES.toString(), SENTENCE_CONDITIONS.toString()
-    );
+    const edm = yield select(getEdmFromState);
+    const sentenceESID :UUID = getEntitySetIdFromApp(app, SENTENCES);
+    const sentenceConditionsPTID :UUID = getPropertyTypeIdFromEdm(edm, SENTENCE_CONDITIONS);
     const searchOptions = {
       searchFields: [{
         searchTerm: '*COMMUNITY SERVICE*',
@@ -539,7 +541,7 @@ function* getSentencesWorker(action :SequenceAction) :Generator<*, *, *> {
      * 2. Get all manually created sentences.
      */
 
-    const manualSentenceESID :UUID = getEntitySetIdFromApp(app, MANUAL_SENTENCES.toString());
+    const manualSentenceESID :UUID = getEntitySetIdFromApp(app, MANUAL_SENTENCES);
     response = yield call(getEntitySetDataWorker, getEntitySetData({ entitySetId: manualSentenceESID }));
     if (response.error) {
       throw response.error;
