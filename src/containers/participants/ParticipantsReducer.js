@@ -82,7 +82,7 @@ export default function participantsReducer(state :Map<*, *> = INITIAL_STATE, ac
     case RESET_REQUEST_STATE: {
       const { actionType } = action;
       if (state.has(actionType)) {
-        return state.setIn([actionType, 'requestState'], RequestStates.STANDBY);
+        return state.setIn([actionType, REQUEST_STATE], RequestStates.STANDBY);
       }
       return state;
     }
