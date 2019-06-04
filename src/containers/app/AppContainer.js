@@ -10,7 +10,6 @@ import { AuthActions } from 'lattice-auth';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { Redirect, Route, Switch } from 'react-router-dom';
-import { EntityDataModelApiActions } from 'lattice-sagas';
 import { RequestStates } from 'redux-reqseq';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
@@ -31,7 +30,6 @@ import { APP, STATE, PEOPLE } from '../../utils/constants/ReduxStateConsts';
 import { APP_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { OL } from '../../core/style/Colors';
 
-const { getAllPropertyTypes } = EntityDataModelApiActions;
 const { logout } = AuthActions;
 
 const AppContainerWrapper = styled.div`
@@ -61,9 +59,8 @@ const AppContentInnerWrapper = styled.div`
 
 type Props = {
   actions:{
-    getAllPropertyTypes :RequestSequence;
     getSentences :RequestSequence;
-    loadApp :RequestSequence;
+    initializeApplication :RequestSequence;
     logout :() => void;
     resetRequestState :(actionType :string) => void;
   },
@@ -82,8 +79,7 @@ class AppContainer extends Component<Props> {
 
     const { actions } = this.props;
 
-    actions.loadApp();
-    actions.getAllPropertyTypes();
+    actions.initializeApplication();
   }
 
   componentDidUpdate(prevProps :Props) {
@@ -94,7 +90,7 @@ class AppContainer extends Component<Props> {
       nextOrg.keySeq().forEach((id) => {
         const selectedOrgId :UUID = id;
         const peopleEntitySetId :UUID = app.getIn(
-          [APP_TYPE_FQNS.PEOPLE.toString(), APP.ENTITY_SETS_BY_ORG, selectedOrgId]
+          [APP_TYPE_FQNS.PEOPLE, APP.ENTITY_SETS_BY_ORG, selectedOrgId]
         );
         if (peopleEntitySetId) {
           actions.getSentences();
@@ -196,10 +192,8 @@ const mapStateToProps = (state :Map<*, *>) => {
 
 const mapDispatchToProps = dispatch => ({
   actions: bindActionCreators({
-    getAllPropertyTypes,
     getSentences: ParticipantsActions.getSentences,
     initializeApplication: AppActions.initializeApplication,
-    loadApp: AppActions.loadApp,
     logout,
     resetRequestState: ParticipantsActions.resetRequestState,
   }, dispatch)
