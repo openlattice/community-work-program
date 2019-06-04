@@ -17,6 +17,7 @@ export const APP = {
   ORGS: 'organizations',
   PRIMARY_KEYS: 'primaryKeys',
   PROPERTY_TYPES: 'propertyTypes',
+  REQUEST_STATE: 'requestState',
   SELECTED_ORG_ID: 'selectedOrganizationId',
   SELECTED_ORG_TITLE: 'selectedOrganizationTitle',
   APP_SETTINGS_ID: 'appSettingsEntitySetId',

@@ -58,6 +58,11 @@ const AppContentInnerWrapper = styled.div`
   position: relative;
 `;
 
+const ErrorMessage = styled.div`
+  padding-top: 20px;
+  text-align: center;
+`;
+
 type Props = {
   actions:{
     getAllPropertyTypes :RequestSequence;
@@ -68,8 +73,8 @@ type Props = {
   },
   app :Map<*, *>,
   appSettingsByOrgId :Map<*, *>,
+  getAppRequestState :RequestState;
   getParticipantsRequestState :RequestState;
-  isLoadingApp :boolean;
   participants :List;
   people :Map;
   selectedOrganizationSettings :Map<*, *>,
@@ -133,15 +138,23 @@ class AppContainer extends Component<Props> {
   renderAppContent = () => {
 
     const {
+      getAppRequestState,
       getParticipantsRequestState,
-      isLoadingApp,
     } = this.props;
 
-    if (isLoadingApp || getParticipantsRequestState === RequestStates.PENDING) {
+    if (getAppRequestState === RequestStates.PENDING || getParticipantsRequestState === RequestStates.PENDING) {
       return (
         <LogoLoader
             loadingText="Please wait..."
             size={60} />
+      );
+    }
+
+    if (getAppRequestState === RequestStates.FAILURE || getParticipantsRequestState === RequestStates.FAILURE) {
+      return (
+        <ErrorMessage>
+          Sorry, something went wrong. Please try refreshing the page, or contact support if the problem persists.
+        </ErrorMessage>
       );
     }
 
@@ -175,10 +188,10 @@ const mapStateToProps = (state :Map<*, *>) => {
   const people = state.get(STATE.PEOPLE);
   return {
     app,
-    [APP.LOADING]: app.get(APP.LOADING),
     [APP.SELECTED_ORG_ID]: app.get(APP.APP_SETTINGS_ID),
     [APP.SETTINGS_BY_ORG_ID]: app.get(APP.SETTINGS_BY_ORG_ID),
     [APP.SELECTED_ORG_SETTINGS]: app.get(APP.SELECTED_ORG_SETTINGS),
+    getAppRequestState: app.getIn([APP.ACTIONS, APP.LOAD_APP, APP.REQUEST_STATE]),
     getParticipantsRequestState: people.getIn([PEOPLE.ACTIONS, PEOPLE.GET_PARTICIPANTS, PEOPLE.REQUEST_STATE]),
     people,
     [PEOPLE.PARTICIPANTS]: people.get(PEOPLE.PARTICIPANTS),
