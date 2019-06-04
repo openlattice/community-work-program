@@ -5,9 +5,25 @@ import { Map } from 'immutable';
 import { Models } from 'lattice';
 
 import { isDefined } from './LangUtils';
-import { NEIGHBOR_DETAILS } from '../core/edm/constants/DataModelConsts';
+import { NEIGHBOR_DETAILS, TYPE_IDS_BY_FQNS } from '../core/edm/constants/DataModelConsts';
+import { APP } from './constants/ReduxStateConsts';
 
 const { FullyQualifiedName } = Models;
+
+export const getEntitySetIdFromApp = (app :Object | Map, fqn :FullyQualifiedName) => {
+
+  const orgId = app.get(APP.SELECTED_ORG_ID);
+  return app.getIn([
+    fqn,
+    APP.ENTITY_SETS_BY_ORG,
+    orgId
+  ]);
+};
+
+export const getPropertyTypeIdFromEdm = (
+  edm :Object | Map, propertyFqn :FullyQualifiedName
+) => edm.getIn([TYPE_IDS_BY_FQNS, propertyFqn]);
+
 
 export const getFirstNeighborValue = (
   neighborObj :Map,
