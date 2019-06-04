@@ -2,6 +2,7 @@
 import React, { Component } from 'react';
 import styled from 'styled-components';
 import { List, Map } from 'immutable';
+import { connect } from 'react-redux';
 import { RequestStates } from 'redux-reqseq';
 import type { RequestState } from 'redux-reqseq';
 
@@ -11,18 +12,25 @@ import ViolationsParticipantsTable from '../../components/table/ViolationsPartic
 import LogoLoader from '../../components/LogoLoader';
 
 import { getEntityProperties } from '../../utils/DataUtils';
+import { ErrorMessage } from '../../components/Layout';
 import {
   APP_CONTENT_PADDING,
   DASHBOARD_WIDTH,
 } from '../../core/style/Sizes';
-import { GET_PARTICIPANTS } from '../participants/ParticipantsActions';
 import { ENROLLMENT_STATUSES, HOURS_CONSTS } from '../../core/edm/constants/DataModelConsts';
 import { ENROLLMENT_STATUS_FQNS, ENTITY_KEY_ID } from '../../core/edm/constants/FullyQualifiedNames';
-import { ErrorMessage } from '../../components/Layout';
+import { PEOPLE, STATE } from '../../utils/constants/ReduxStateConsts';
 
 const { STATUS } = ENROLLMENT_STATUS_FQNS;
 const { REQUIRED, WORKED } = HOURS_CONSTS;
 const VIOLATIONS = 'violations';
+const {
+  ENROLLMENT_BY_PARTICIPANT,
+  HOURS_WORKED,
+  INFRACTION_COUNTS_BY_PARTICIPANT,
+  PARTICIPANTS,
+  SENTENCE_TERMS_BY_PARTICIPANT,
+} = PEOPLE;
 
 /* styled components */
 const DashboardWrapper = styled.div`
@@ -51,12 +59,11 @@ const RightWrapper = styled.div`
 
 type Props = {
   enrollmentByParticipant :Map;
-  getParticipantsRequestState :RequestState;
+  getSentencesRequestState :RequestState;
   hoursWorked :Map;
-  infractionCount :Map;
+  infractionCountsByParticipant :Map;
   participants :List;
-  sentenceTerms :Map;
-  resetRequestState :(actionType :string) => void;
+  sentenceTermsByParticipant :Map;
 };
 
 type State = {
@@ -79,18 +86,13 @@ class DashboardContainer extends Component<Props, State> {
     };
   }
 
-  componentWillReceiveProps() {
+  componentDidUpdate(prevProps :Props) {
     const { participants } = this.props;
-    if (participants.count() > 0) {
+    if (prevProps.participants.count() !== participants.count()) {
       this.getNewParticipants();
       this.getParticipantsWithHoursComplete();
       this.getParticipantsWithViolations();
     }
-  }
-
-  componentDidUpdate() {
-    const { resetRequestState } = this.props;
-    resetRequestState(GET_PARTICIPANTS);
   }
 
   getNewParticipants = () => {
@@ -138,8 +140,8 @@ class DashboardContainer extends Component<Props, State> {
 
   getParticipantsWithViolations = () => {
 
-    const { infractionCount, participants } = this.props;
-    const violationMap :Map = infractionCount.map((count :Map) => count.get(VIOLATIONS));
+    const { infractionCountsByParticipant, participants } = this.props;
+    const violationMap :Map = infractionCountsByParticipant.map((count :Map) => count.get(VIOLATIONS));
     const violationsWatch :List = participants.filter((participant :Map) => {
       const { [ENTITY_KEY_ID]: personEntityKeyId } :UUID = getEntityProperties(participant, [ENTITY_KEY_ID]);
       return violationMap.get(personEntityKeyId) > 0;
@@ -152,9 +154,9 @@ class DashboardContainer extends Component<Props, State> {
 
   render() {
     const {
-      getParticipantsRequestState,
+      getSentencesRequestState,
       hoursWorked,
-      sentenceTerms,
+      sentenceTermsByParticipant,
     } = this.props;
     const {
       newParticipants,
@@ -163,7 +165,8 @@ class DashboardContainer extends Component<Props, State> {
       violationsWatch,
     } = this.state;
 
-    if (getParticipantsRequestState === RequestStates.PENDING) {
+    if (getSentencesRequestState === RequestStates.PENDING
+        || getSentencesRequestState === RequestStates.STANDBY) {
       return (
         <LogoLoader
             loadingText="Please wait..."
@@ -171,7 +174,7 @@ class DashboardContainer extends Component<Props, State> {
       );
     }
 
-    if (getParticipantsRequestState === RequestStates.FAILURE) {
+    if (getSentencesRequestState === RequestStates.FAILURE) {
       return (
         <ErrorMessage>
           Sorry, something went wrong. Please try refreshing the page, or contact support if the problem persists.
@@ -186,14 +189,14 @@ class DashboardContainer extends Component<Props, State> {
               hoursWorked={hoursWorked}
               people={newParticipants}
               small
-              sentenceTerms={sentenceTerms}
+              sentenceTerms={sentenceTermsByParticipant}
               totalParticipants={newParticipants.count()} />
           <RightWrapper>
             <PendingReviewParticipantsTable
                 hoursWorked={hoursWorked}
                 people={pendingCompletionReview}
                 small
-                sentenceTerms={sentenceTerms}
+                sentenceTerms={sentenceTermsByParticipant}
                 totalParticipants={pendingCompletionReview.count()} />
             <ViolationsParticipantsTable
                 hoursWorked={hoursWorked}
@@ -208,4 +211,17 @@ class DashboardContainer extends Component<Props, State> {
   }
 }
 
-export default DashboardContainer;
+const mapStateToProps = (state :Map<*, *>) => {
+  const people = state.get(STATE.PEOPLE);
+  return {
+    [ENROLLMENT_BY_PARTICIPANT]: people.get(ENROLLMENT_BY_PARTICIPANT),
+    getSentencesRequestState: people.getIn([PEOPLE.ACTIONS, PEOPLE.GET_SENTENCES, PEOPLE.REQUEST_STATE]),
+    [HOURS_WORKED]: people.get(HOURS_WORKED),
+    [INFRACTION_COUNTS_BY_PARTICIPANT]: people.get(INFRACTION_COUNTS_BY_PARTICIPANT),
+    [PARTICIPANTS]: people.get(PARTICIPANTS),
+    [SENTENCE_TERMS_BY_PARTICIPANT]: people.get(SENTENCE_TERMS_BY_PARTICIPANT),
+  };
+};
+
+// $FlowFixMe
+export default connect(mapStateToProps)(DashboardContainer);
