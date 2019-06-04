@@ -54,24 +54,22 @@ const ViolationsParticipantsTable = ({
       <TotalParticipants>{totalParticipants}</TotalParticipants>
     </TableBanner>
     <Table>
-      <tbody>
-        <Headers />
-        {
-          people.map((person :Map) => {
-            const { [ENTITY_KEY_ID]: personEntityKeyId } :UUID = getEntityProperties(person, [ENTITY_KEY_ID]);
-            const violationsCount = violations ? violations.get(personEntityKeyId) : 0;
-            const hours = hoursWorked.get(personEntityKeyId);
-            return (
-              <ViolationsParticipantsTableRow
-                  key={personEntityKeyId}
-                  hours={hours}
-                  person={person}
-                  small={small}
-                  violationsCount={violationsCount} />
-            );
-          })
-        }
-      </tbody>
+      <Headers />
+      {
+        people.map((person :Map) => {
+          const { [ENTITY_KEY_ID]: personEntityKeyId } :UUID = getEntityProperties(person, [ENTITY_KEY_ID]);
+          const violationsCount = violations ? violations.get(personEntityKeyId) : 0;
+          const hours = hoursWorked.get(personEntityKeyId);
+          return (
+            <ViolationsParticipantsTableRow
+                key={personEntityKeyId}
+                hours={hours}
+                person={person}
+                small={small}
+                violationsCount={violationsCount} />
+          );
+        })
+      }
     </Table>
   </ViolationsTableWrapper>
 );

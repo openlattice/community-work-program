@@ -13,7 +13,7 @@ export const TableWrapper = styled.div`
   border-radius: 5px;
 `;
 
-export const TableBanner = styled.tr`
+export const TableBanner = styled.div`
   width: 100%;
   font-size: 24px;
   color: ${OL.BLACK};
@@ -37,16 +37,14 @@ export const TotalParticipants = styled.div`
   align-items: center;
 `;
 
-export const Table = styled.table`
+export const Table = styled.div`
   width: 100%;
   border-collapse: collapse;
+  display: table;
 `;
 
-export const HeaderRow = styled.tr`
-  border-bottom: 1px solid ${OL.BLACK};
-`;
-
-export const HeaderElement = styled.th`
+export const HeaderElement = styled.span`
+  display: table-cell;
   font-size: 10px;
   font-weight: 600;
   font-family: 'Open Sans', sans-serif;
@@ -57,31 +55,25 @@ export const HeaderElement = styled.th`
   text-align: left;
 `;
 
+export const HeaderRow = styled.div`
+  display: table-row;
+  border-bottom: 1px solid ${OL.BLACK};
+`;
+
 /* Table Row Styles */
 
-export const Cell = styled.td`
+export const Cell = styled.span`
+  display: table-cell;
   padding: 7px 0;
   font-family: 'Open Sans', sans-serif;
   font-size: ${props => (props.small ? '12' : '14')}px;
   text-align: left;
+  vertical-align: middle;
   color: ${OL.GREY02};
 `;
 
-export const StyledPersonPhoto = styled(PersonPhoto)`
-  width: ${props => (props.small ? 30 : 36)}px;
-  ${props => (props.small
-    ? (
-      `min-width: 30px;
-        height: 30px;
-        display: flex;
-        justify-content: center;
-        align-items: center;`
-    )
-    : ''
-  )}
-`;
-
-export const Row = styled.tr`
+export const Row = styled.div`
+  display: table-row;
   padding: 7px 30px;
   border-bottom: 1px solid ${OL.GREY11};
   ${Cell}:first-child {
@@ -100,4 +92,18 @@ export const Row = styled.tr`
   :last-of-type {
     border: none;
   }
+`;
+
+export const StyledPersonPhoto = styled(PersonPhoto)`
+  width: ${props => (props.small ? 30 : 36)}px;
+  ${props => (props.small
+    ? (
+      `min-width: 30px;
+        height: 30px;
+        display: flex;
+        justify-content: center;
+        align-items: center;`
+    )
+    : ''
+  )}
 `;

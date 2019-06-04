@@ -51,24 +51,22 @@ const PendingReviewParticipantsTable = ({
       <TotalParticipants>{totalParticipants}</TotalParticipants>
     </TableBanner>
     <Table>
-      <tbody>
-        <Headers />
-        {
-          people.map((person :Map) => {
-            const { [ENTITY_KEY_ID]: personEntityKeyId } :UUID = getEntityProperties(person, [ENTITY_KEY_ID]);
-            const sentenceDate = sentenceTerms.getIn([personEntityKeyId, DATETIME_START.toString(), 0]);
-            const hours = hoursWorked.get(personEntityKeyId);
-            return (
-              <PendingReviewParticipantsTableRow
-                  key={personEntityKeyId}
-                  hours={hours}
-                  person={person}
-                  sentenceDate={sentenceDate}
-                  small={small} />
-            );
-          })
-        }
-      </tbody>
+      <Headers />
+      {
+        people.map((person :Map) => {
+          const { [ENTITY_KEY_ID]: personEntityKeyId } :UUID = getEntityProperties(person, [ENTITY_KEY_ID]);
+          const sentenceDate = sentenceTerms.getIn([personEntityKeyId, DATETIME_START.toString(), 0]);
+          const hours = hoursWorked.get(personEntityKeyId);
+          return (
+            <PendingReviewParticipantsTableRow
+                key={personEntityKeyId}
+                hours={hours}
+                person={person}
+                sentenceDate={sentenceDate}
+                small={small} />
+          );
+        })
+      }
     </Table>
   </TableWrapper>
 );
