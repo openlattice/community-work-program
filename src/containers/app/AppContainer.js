@@ -10,7 +10,8 @@ import { bindActionCreators } from 'redux';
 import { List, Map } from 'immutable';
 import { connect } from 'react-redux';
 import { Redirect, Route, Switch } from 'react-router-dom';
-import { EntityDataModelApiActions } from 'lattice-sagas';
+import { RequestStates } from 'redux-reqseq';
+import type { RequestSequence, RequestState } from 'redux-reqseq';
 
 import AppHeaderContainer from './AppHeaderContainer';
 import Spinner from '../../components/spinner/Spinner';
@@ -24,12 +25,11 @@ import {
   APP_CONTAINER_WIDTH,
 } from '../../core/style/Sizes';
 import { APP, STATE, PEOPLE } from '../../utils/constants/ReduxStateConsts';
-import { APP_TYPE_FQN_STRINGS } from '../../core/edm/constants/FQNsToString';
+import { APP_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 
 // TODO: this should come from lattice-ui-kit, maybe after the next release. current version v0.1.1
 const APP_CONTENT_BG :string = '#f8f8fb';
 
-const { getAllPropertyTypes } = EntityDataModelApiActions;
 const { logout } = AuthActions;
 
 const AppContainerWrapper = styled.div`
@@ -62,9 +62,8 @@ type Props = {
   appSettingsByOrgId :Map<*, *>,
   selectedOrganizationSettings :Map<*, *>,
   actions:{
-    getAllPropertyTypes :RequestSequence;
-    getParticipants :RequestSequence;
-    loadApp :RequestSequence;
+    getSentences :RequestSequence;
+    initializeApplication :RequestSequence;
     logout :() => void;
   },
   isLoadingApp :boolean;
@@ -78,8 +77,7 @@ class AppContainer extends Component<Props> {
 
     const { actions } = this.props;
 
-    actions.loadApp();
-    actions.getAllPropertyTypes();
+    actions.initializeApplication();
   }
 
   componentDidUpdate(prevProps :Props) {
@@ -88,15 +86,13 @@ class AppContainer extends Component<Props> {
     const prevOrg = prevProps.app.get(APP.ORGS);
     if (prevOrg.size !== nextOrg.size) {
       nextOrg.keySeq().forEach((id) => {
-        const selectedOrgId :string = id;
-        const peopleEntitySetId = app.getIn(
-          [APP_TYPE_FQN_STRINGS.PEOPLE, APP.ENTITY_SETS_BY_ORG, selectedOrgId]
+        const selectedOrgId :UUID = id;
+        const peopleEntitySetId :UUID = app.getIn(
+          [APP_TYPE_FQNS.PEOPLE, APP.ENTITY_SETS_BY_ORG, selectedOrgId]
         );
 
         if (peopleEntitySetId) {
-          actions.getParticipants({
-            peopleEntitySetId
-          });
+          actions.getSentences();
         }
       });
     }
@@ -150,26 +146,14 @@ const mapStateToProps = (state :Map<*, *>) => {
   };
 };
 
-function mapDispatchToProps(dispatch :Function) :Object {
-  const actions :{ [string] :Function } = {};
-
-  Object.keys(AppActions).forEach((action :string) => {
-    actions[action] = AppActions[action];
-  });
-
-  Object.keys(ParticipantsActions).forEach((action :string) => {
-    actions[action] = ParticipantsActions[action];
-  });
-
-  actions.logout = logout;
-  actions.getAllPropertyTypes = getAllPropertyTypes;
-
-  return {
-    actions: {
-      ...bindActionCreators(actions, dispatch)
-    }
-  };
-}
+const mapDispatchToProps = dispatch => ({
+  actions: bindActionCreators({
+    getSentences: ParticipantsActions.getSentences,
+    initializeApplication: AppActions.initializeApplication,
+    logout,
+    resetRequestState: AppActions.resetRequestState,
+  }, dispatch)
+});
 
 // $FlowFixMe
 export default connect(mapStateToProps, mapDispatchToProps)(AppContainer);

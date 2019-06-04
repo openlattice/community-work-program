@@ -22,8 +22,6 @@ import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../utils/Errors';
 import {
   INITIALIZE_APPLICATION,
   initializeApplication,
-  LOAD_APP,
-  loadApp,
 } from './AppActions';
 import {
   getEntitySetIds,
@@ -36,9 +34,7 @@ import {
 import { APP_NAME } from '../../core/edm/constants/DataModelConsts';
 import { APP_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 
-let { APP_SETTINGS } = APP_TYPE_FQNS;
-APP_SETTINGS = APP_SETTINGS.toString();
-
+const { APP_SETTINGS } = APP_TYPE_FQNS;
 const { SecurableTypes } = Types;
 const { getEntityDataModelProjection } = EntityDataModelApiActions;
 const { getEntityDataModelProjectionWorker } = EntityDataModelApiSagas;
@@ -49,13 +45,28 @@ const LOG = new Logger('AppSagas');
 
 /*
  *
- * AppActions.loadAppWorker()
+ * AppActions.initializeApplication()
  *
  */
-function* loadAppWorker(action :SequenceAction) :Generator<*, *, *> {
+
+function* initializeApplicationWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+  if (value === null || value === undefined) {
+    yield put(initializeApplication.failure(id, ERR_ACTION_VALUE_NOT_DEFINED));
+    return;
+  }
 
   try {
-    yield put(loadApp.request(action.id));
+    yield put(initializeApplication.request(action.id));
+
+    // we need to wait for these to complete before proceeding
+    yield all([
+      // TODO: we should have a saga that runs these on a schedule to refresh the data
+      call(getEntitySetIdsWorker, getEntitySetIds()),
+      call(getEntityDataModelTypesWorker, getEntityDataModelTypes()),
+    ]);
+
     let appSettingsByOrgId :OrderedMap<*, *> = OrderedMap();
     /*
      * 1. load App
@@ -90,7 +101,7 @@ function* loadAppWorker(action :SequenceAction) :Generator<*, *, *> {
     }));
     response = yield call(getEntityDataModelProjectionWorker, getEntityDataModelProjection(projection));
     if (response.error) {
-      console.error(response.error);
+      LOG.error(response.error);
       throw response.error;
     }
 
@@ -124,53 +135,13 @@ function* loadAppWorker(action :SequenceAction) :Generator<*, *, *> {
       });
     }
 
-    yield put(loadApp.success(action.id, {
+    yield put(initializeApplication.success(action.id, {
       app,
       appConfigs,
       appSettingsByOrgId,
       appTypes,
       edm
     }));
-
-  }
-  catch (error) {
-    console.error(error);
-    yield put(loadApp.failure(action.id, error));
-  }
-  finally {
-    yield put(loadApp.finally(action.id));
-  }
-}
-
-function* loadAppWatcher() :Generator<*, *, *> {
-  yield takeEvery(LOAD_APP, loadAppWorker);
-}
-
-/*
- *
- * AppActions.initializeApplication()
- *
- */
-
-function* initializeApplicationWorker(action :SequenceAction) :Generator<*, *, *> {
-
-  const { id, value } = action;
-  if (value === null || value === undefined) {
-    yield put(initializeApplication.failure(id, ERR_ACTION_VALUE_NOT_DEFINED));
-    return;
-  }
-
-  try {
-    yield put(initializeApplication.request(action.id));
-
-    // we need to wait for these to complete before proceeding
-    yield all([
-      // TODO: we should have a saga that runs these on a schedule to refresh the data
-      call(getEntitySetIdsWorker, getEntitySetIds()),
-      call(getEntityDataModelTypesWorker, getEntityDataModelTypes()),
-    ]);
-
-    yield put(initializeApplication.success(action.id));
   }
   catch (error) {
     LOG.error('caught exception in initializeApplicationWorker()', error);
@@ -189,6 +160,4 @@ function* initializeApplicationWatcher() :Generator<*, *, *> {
 export {
   initializeApplicationWatcher,
   initializeApplicationWorker,
-  loadAppWorker,
-  loadAppWatcher,
 };
