@@ -100,7 +100,9 @@ class DashboardContainer extends Component<Props, State> {
 
       const newParticipants = enrollmentByParticipant.filter((enrollment :Map) => {
         const { [STATUS]: status } = getEntityProperties(enrollment, [STATUS]);
-        return status === ENROLLMENT_STATUSES.PLANNED;
+        const planned :boolean = status === ENROLLMENT_STATUSES.PLANNED;
+        const noStatus :boolean = enrollment.count() === 0;
+        return (planned || noStatus);
       })
         .keySeq()
         .toList()

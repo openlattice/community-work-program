@@ -4,7 +4,6 @@
 
 import { List, Map, fromJS } from 'immutable';
 import {
-  all,
   call,
   put,
   select,
@@ -40,7 +39,6 @@ import { STATE } from '../../utils/constants/ReduxStateConsts';
 import {
   APP_TYPE_FQNS,
   DIVERSION_PLAN_FQNS,
-  ENROLLMENT_STATUS_FQNS,
   INFRACTION_FQNS,
   SENTENCE_FQNS,
   SENTENCE_TERM_FQNS,
@@ -48,14 +46,13 @@ import {
 } from '../../core/edm/constants/FullyQualifiedNames';
 import { isDefined } from '../../utils/LangUtils';
 import {
-  ENROLLMENT_STATUSES,
   INFRACTIONS_CONSTS,
   NEIGHBOR_DETAILS,
   NEIGHBOR_ENTITY_SET,
 } from '../../core/edm/constants/DataModelConsts';
 
-const { createEntityAndAssociationData, getEntitySetData } = DataApiActions;
-const { createEntityAndAssociationDataWorker, getEntitySetDataWorker } = DataApiSagas;
+const { getEntitySetData } = DataApiActions;
+const { getEntitySetDataWorker } = DataApiSagas;
 const { searchEntityNeighborsWithFilter, searchEntitySetData } = SearchApiActions;
 const { searchEntityNeighborsWithFilterWorker, searchEntitySetDataWorker } = SearchApiSagas;
 const { OPENLATTICE_ID_FQN } = Constants;
@@ -63,7 +60,6 @@ const { OPENLATTICE_ID_FQN } = Constants;
 const {
   DIVERSION_PLAN,
   ENROLLMENT_STATUS,
-  HAS,
   INFRACTIONS,
   MANUAL_SENTENCES,
   PEOPLE,
@@ -71,7 +67,6 @@ const {
   SENTENCES,
   WORKSITE_PLAN,
 } = APP_TYPE_FQNS;
-const { STATUS } = ENROLLMENT_STATUS_FQNS;
 const { SENTENCE_CONDITIONS } = SENTENCE_FQNS;
 const { TYPE } = INFRACTION_FQNS;
 const { COMPLETED } = DIVERSION_PLAN_FQNS;
@@ -128,47 +123,11 @@ function* getEnrollmentStatusesWorker(action :SequenceAction) :Generator<*, *, *
     }
     let enrollmentMap :Map = fromJS(response.data).map((status :Map) => status.getIn([0, NEIGHBOR_DETAILS]));
 
-    /*
-     * 3. For each participant without an enrollment status, create one.
-     */
-    const hasESID :UUID = getEntitySetIdFromApp(app, HAS);
     const participantsWithoutEnrollmentStatus :UUID[] = participantEKIDs
       .filter(ekid => !isDefined(enrollmentMap.get(ekid)));
-
-    const edm = yield select(getEdmFromState);
-    const statusPTID = getPropertyTypeIdFromEdm(edm, STATUS);
-
-    response = yield all(participantsWithoutEnrollmentStatus.map((ekid :UUID) => {
-      const enrollment = {
-        associations: {
-          [hasESID]: [{
-            data: {},
-            srcEntityKeyId: ekid,
-            srcEntitySetId: peopleESID,
-            dstEntityIndex: 0,
-            dstEntitySetId: enrollmentStatusESID,
-          }]
-        },
-        entities: {
-          [enrollmentStatusESID]: [{
-            [statusPTID]: [ENROLLMENT_STATUSES.PLANNED]
-          }]
-        }
-      };
-      return call(createEntityAndAssociationDataWorker, createEntityAndAssociationData(enrollment));
-    }));
-    if (response.error) {
-      throw response.error;
-    }
-
-    response = yield call(
-      searchEntityNeighborsWithFilterWorker,
-      searchEntityNeighborsWithFilter({ entitySetId: peopleESID, filter: searchFilter })
-    );
-    if (response.error) {
-      throw response.error;
-    }
-    enrollmentMap = fromJS(response.data).map((status :Map) => status.getIn([0, NEIGHBOR_DETAILS]));
+    participantsWithoutEnrollmentStatus.forEach((ekid :string) => {
+      enrollmentMap = enrollmentMap.set(ekid, Map());
+    });
 
     yield put(getEnrollmentStatuses.success(id, enrollmentMap));
   }

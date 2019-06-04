@@ -38,7 +38,7 @@ export const getFirstNeighborValue = (
 export const getEntityProperties = (entityObj :Map, propertyList :string[]) => {
 
   let returnPropertyFields = Map();
-  if (propertyList.length && isDefined(entityObj)) {
+  if (propertyList.length && isDefined(entityObj) && entityObj.count() > 0) {
     propertyList.forEach((propertyType) => {
       const backUpValue = entityObj.get(propertyType, '');
       const property = getFirstNeighborValue(entityObj, propertyType, backUpValue);
