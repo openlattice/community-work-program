@@ -18,6 +18,7 @@ import {
 import { GET_PARTICIPANTS } from '../participants/ParticipantsActions';
 import { ENROLLMENT_STATUSES, HOURS_CONSTS } from '../../core/edm/constants/DataModelConsts';
 import { ENROLLMENT_STATUS_FQNS, ENTITY_KEY_ID } from '../../core/edm/constants/FullyQualifiedNames';
+import { ErrorMessage } from '../../components/Layout';
 
 const { STATUS } = ENROLLMENT_STATUS_FQNS;
 const { REQUIRED, WORKED } = HOURS_CONSTS;
@@ -165,6 +166,14 @@ class DashboardContainer extends Component<Props, State> {
         <LogoLoader
             loadingText="Please wait..."
             size={60} />
+      );
+    }
+
+    if (getParticipantsRequestState === RequestStates.FAILURE) {
+      return (
+        <ErrorMessage>
+          Sorry, something went wrong. Please try refreshing the page, or contact support if the problem persists.
+        </ErrorMessage>
       );
     }
 

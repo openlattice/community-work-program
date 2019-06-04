@@ -23,6 +23,7 @@ import * as AppActions from './AppActions';
 import * as ParticipantsActions from '../participants/ParticipantsActions';
 import * as Routes from '../../core/router/Routes';
 
+import { ErrorMessage } from '../../components/Layout';
 import {
   APP_CONTAINER_WIDTH,
 } from '../../core/style/Sizes';
@@ -56,11 +57,6 @@ const AppContentInnerWrapper = styled.div`
   flex-direction: column;
   justify-content: flex-start;
   position: relative;
-`;
-
-const ErrorMessage = styled.div`
-  padding-top: 20px;
-  text-align: center;
 `;
 
 type Props = {
