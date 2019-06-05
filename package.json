@@ -21,7 +21,7 @@
   "bugs": {
     "url": "https://github.com/Lattice-Works/Community-Work-Program/issues"
   },
-  "license": "GPL-3.0",
+  "license": "UNLICENSED",
   "dependencies": {
     "@atlaskit/datetime-picker": "7.0.2",
     "@babel/polyfill": "~7.2.0",
@@ -36,10 +36,10 @@
     "date-fns": "~1.30.0",
     "history": "~4.7.2",
     "immutable": "4.0.0-rc.9",
-    "lattice": "0.54.2",
-    "lattice-auth": "0.13.0",
-    "lattice-sagas": "0.15.0",
-    "lattice-ui-kit": "0.2.1",
+    "lattice": "0.60.0",
+    "lattice-auth": "0.15.0",
+    "lattice-sagas": "0.21.0",
+    "lattice-ui-kit": "0.4.0",
     "lodash": "~4.17.10",
     "loglevel": "~1.6.0",
     "luxon": "~1.8.1",
@@ -52,7 +52,7 @@
     "react-select": "~2.4.3",
     "redux": "~4.0.0",
     "redux-immutable": "4.0.0",
-    "redux-reqseq": "0.2.1",
+    "redux-reqseq": "0.5.0",
     "styled-components": "~4.1.0"
   },
   "devDependencies": {
