@@ -7,10 +7,12 @@ import { PersonPhoto } from '../picture/PersonPicture';
 /* Table Styles */
 
 export const TableWrapper = styled.div`
-  width: 100%;
+  width: 600px;
   background-color: ${OL.WHITE};
   border: 1px solid ${OL.GREY11};
   border-radius: 5px;
+  margin-bottom: 30px;
+  align-self: start;
 `;
 
 export const TableBanner = styled.div`
@@ -23,7 +25,7 @@ export const TableBanner = styled.div`
   font-weight: 600;
 `;
 
-export const TotalParticipants = styled.div`
+export const TotalTableItems = styled.div`
   width: 30px;
   height: 20px;
   border-radius: 10px;

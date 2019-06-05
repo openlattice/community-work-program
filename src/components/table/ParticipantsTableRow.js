@@ -3,7 +3,7 @@
  */
 
 import React from 'react';
-import { Map } from 'immutable';
+import { List, Map } from 'immutable';
 import { DateTime } from 'luxon';
 
 import defaultUserIcon from '../../assets/svg/profile-placeholder-round.svg';
@@ -12,7 +12,6 @@ import { PersonPicture } from '../picture/PersonPicture';
 import { formatNumericalValue } from '../../utils/FormattingUtils';
 import { formatAsDate } from '../../utils/DateTimeUtils';
 import { PEOPLE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
-import { HOURS_CONSTS } from '../../core/edm/constants/DataModelConsts';
 import { getPersonName } from '../../utils/PeopleUtils';
 import {
   Cell,
@@ -21,22 +20,27 @@ import {
 } from './TableStyledComponents';
 
 const { MUGSHOT, PICTURE } = PEOPLE_FQNS;
-const { REQUIRED } = HOURS_CONSTS;
 
 type Props = {
-  hours :Map;
+  hoursRequired :number;
+  hoursWorked :number | void;
+  includeDeadline ? :boolean;
   person :Map;
   selected? :boolean;
   sentenceDate :string;
   small? :boolean;
+  violationsCount :number;
 };
 
 const TableRow = ({
-  hours,
+  hoursRequired,
+  hoursWorked,
+  includeDeadline,
   person,
   selected,
   sentenceDate,
-  small
+  small,
+  violationsCount,
 } :Props) => {
 
   let photo = person ? person.getIn([MUGSHOT, 0]) || person.getIn([PICTURE, 0]) : '';
@@ -46,23 +50,32 @@ const TableRow = ({
         <PersonPicture src={photo} alt="" />
       </StyledPersonPhoto>
     ) : <PersonPicture small={small} src={defaultUserIcon} alt="" />;
-  const name = person ? getPersonName(person) : '';
-  const sentenceDateDisplay = sentenceDate ? formatAsDate(sentenceDate) : '';
-  const enrollmentDeadline = sentenceDate ? DateTime.fromISO(sentenceDate).plus({ weeks: 2 }).toLocaleString() : '';
-  const requiredHours = hours ? formatNumericalValue(hours.get(REQUIRED)) : '';
+
+  let cellData :List = List();
+  cellData = person ? cellData.push(getPersonName(person)) : cellData;
+  cellData = sentenceDate ? cellData.push(formatAsDate(sentenceDate)) : cellData;
+  cellData = (sentenceDate && includeDeadline) ? cellData
+    .push(DateTime.fromISO(sentenceDate).plus({ weeks: 2 }).toLocaleString())
+    : cellData;
+  cellData = violationsCount ? cellData.push(formatNumericalValue(violationsCount)) : cellData;
+  cellData = (hoursWorked && hoursRequired) ? cellData
+    .push(`${formatNumericalValue(hoursWorked)} / ${(formatNumericalValue(hoursRequired))}`) : cellData;
+  cellData = (hoursRequired && !hoursWorked) ? cellData.push(formatNumericalValue(hoursRequired)) : cellData;
 
   return (
     <Row active={selected}>
       <Cell small={small}>{ photo }</Cell>
-      <Cell small={small}>{ name }</Cell>
-      <Cell small={small}>{ sentenceDateDisplay }</Cell>
-      <Cell small={small}>{ enrollmentDeadline }</Cell>
-      <Cell small={small}>{ requiredHours }</Cell>
+      {
+        cellData.map(field => (
+          <Cell key={field} small={small}>{ field }</Cell>
+        ))
+      }
     </Row>
   );
 };
 
 TableRow.defaultProps = {
+  includeDeadline: false,
   selected: false,
   small: false
 };

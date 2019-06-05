@@ -6,9 +6,7 @@ import { connect } from 'react-redux';
 import { RequestStates } from 'redux-reqseq';
 import type { RequestState } from 'redux-reqseq';
 
-import NewParticipantsTable from '../../components/table/NewParticipantsTable';
-import PendingReviewParticipantsTable from '../../components/table/PendingReviewParticipantsTable';
-import ViolationsParticipantsTable from '../../components/table/ViolationsParticipantsTable';
+import ParticipantsTable from '../../components/table/ParticipantsTable';
 import LogoLoader from '../../components/LogoLoader';
 
 import { getEntityProperties } from '../../utils/DataUtils';
@@ -20,7 +18,13 @@ import {
 import { ENROLLMENT_STATUSES, HOURS_CONSTS } from '../../core/edm/constants/DataModelConsts';
 import { ENROLLMENT_STATUS_FQNS, ENTITY_KEY_ID } from '../../core/edm/constants/FullyQualifiedNames';
 import { PEOPLE, STATE } from '../../utils/constants/ReduxStateConsts';
+import {
+  newParticipantsColumns,
+  pendingCompletionColumns,
+  violationsWatchColumns,
+} from '../../utils/constants/UIConsts';
 
+/* constants */
 const { STATUS } = ENROLLMENT_STATUS_FQNS;
 const { REQUIRED, WORKED } = HOURS_CONSTS;
 const VIOLATIONS = 'violations';
@@ -44,6 +48,7 @@ const DashboardWrapper = styled.div`
 `;
 
 const DashboardBody = styled.div`
+  width: 100%;
   display: flex;
   flex-direction: row;
   justify-content: space-between;
@@ -185,24 +190,34 @@ class DashboardContainer extends Component<Props, State> {
     return (
       <DashboardWrapper>
         <DashboardBody>
-          <NewParticipantsTable
-              hoursWorked={hoursWorked}
+          <ParticipantsTable
+              bannerText="New Participants"
+              columnHeaders={newParticipantsColumns}
+              hours={hoursWorked}
+              includeDeadline
+              onlyReqHours
               people={newParticipants}
               small
               sentenceTerms={sentenceTermsByParticipant}
-              totalParticipants={newParticipants.count()} />
+              totalTableItems={newParticipants.count()} />
           <RightWrapper>
-            <PendingReviewParticipantsTable
-                hoursWorked={hoursWorked}
+            <ParticipantsTable
+                bannerText="Pending Completion Review"
+                columnHeaders={pendingCompletionColumns}
+                hours={hoursWorked}
+                onlyReqHours
                 people={pendingCompletionReview}
                 small
                 sentenceTerms={sentenceTermsByParticipant}
-                totalParticipants={pendingCompletionReview.count()} />
-            <ViolationsParticipantsTable
-                hoursWorked={hoursWorked}
+                totalTableItems={pendingCompletionReview.count()} />
+            <ParticipantsTable
+                bannerText="Violations Watch"
+                columnHeaders={violationsWatchColumns}
+                hours={hoursWorked}
+                onlyReqHours={false}
                 people={violationsWatch}
                 small
-                totalParticipants={violationsWatch.count()}
+                totalTableItems={violationsWatch.count()}
                 violations={violationMap} />
           </RightWrapper>
         </DashboardBody>
