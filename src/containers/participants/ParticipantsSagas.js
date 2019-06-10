@@ -34,7 +34,7 @@ import {
   getSentenceTerms,
   getSentences,
 } from './ParticipantsActions';
-import { getEntityProperties, getEntitySetIdFromApp, getPropertyTypeIdFromEdm } from '../../utils/DataUtils';
+import { getEntityProperties, getFirstNeighborValue, getEntitySetIdFromApp, getPropertyTypeIdFromEdm } from '../../utils/DataUtils';
 import { STATE } from '../../utils/constants/ReduxStateConsts';
 import {
   APP_TYPE_FQNS,
@@ -237,8 +237,8 @@ function* getHoursWorkedWorker(action :SequenceAction) :Generator<*, *, *> {
         .getIn([NEIGHBOR_DETAILS, OPENLATTICE_ID_FQN, 0]);
       const worksitePlan :Map = plan.find((neighbor :Map) => neighbor
         .getIn([NEIGHBOR_ENTITY_SET, 'name']).includes(WORKSITE_PLAN.toString().split('.')[1]));
-      const hoursWorked :number = worksitePlan ? worksitePlan.getIn([NEIGHBOR_DETAILS, HOURS_WORKED, 0]) : 0;
-      const reqHours :number = worksitePlan.getIn([NEIGHBOR_DETAILS, REQUIRED_HOURS, 0]);
+      const hoursWorked :number = worksitePlan ? getFirstNeighborValue(worksitePlan, HOURS_WORKED) : 0;
+      const reqHours :number = getFirstNeighborValue(worksitePlan, REQUIRED_HOURS);
       hoursWorkedMap = hoursWorkedMap.set(personEKID, Map({ worked: hoursWorked, required: reqHours }));
     });
 
