@@ -105,12 +105,13 @@ class DashboardContainer extends Component<Props, State> {
     const { enrollmentByParticipant, participants } = this.props;
     if (enrollmentByParticipant.count() > 0 && participants.count() > 0) {
 
-      const newParticipants = enrollmentByParticipant.filter((enrollment :Map) => {
-        const { [STATUS]: status } = getEntityProperties(enrollment, [STATUS]);
-        const planned :boolean = status === ENROLLMENT_STATUSES.PLANNED;
-        const noStatus :boolean = enrollment.count() === 0;
-        return (planned || noStatus);
-      })
+      const newParticipants = enrollmentByParticipant.filter(((enrollmentStatuses :List) => enrollmentStatuses
+        .map((enrollment :Map) => {
+          const { [STATUS]: status } = getEntityProperties(enrollment, [STATUS]);
+          const planned :boolean = status === ENROLLMENT_STATUSES.PLANNED;
+          const noStatus :boolean = enrollment.count() === 0;
+          return (planned || noStatus);
+        })))
         .keySeq()
         .toList()
         .map((ekid :UUID) => participants
@@ -118,6 +119,7 @@ class DashboardContainer extends Component<Props, State> {
             const { [ENTITY_KEY_ID]: personEntityKeyId } :UUID = getEntityProperties(participant, [ENTITY_KEY_ID]);
             return personEntityKeyId === ekid;
           }));
+
       this.setState({
         newParticipants,
       });
@@ -138,6 +140,7 @@ class DashboardContainer extends Component<Props, State> {
       });
       pendingCompletionReview = pendingCompletionReview.push(participant);
     });
+
     this.setState({
       pendingCompletionReview,
     });
@@ -149,8 +152,9 @@ class DashboardContainer extends Component<Props, State> {
     const violationMap :Map = infractionCountsByParticipant.map((count :Map) => count.get(VIOLATIONS));
     const violationsWatch :List = participants.filter((participant :Map) => {
       const { [ENTITY_KEY_ID]: personEntityKeyId } :UUID = getEntityProperties(participant, [ENTITY_KEY_ID]);
-      return violationMap.get(personEntityKeyId) > 0;
+      return violationMap.get(personEntityKeyId, List()) > 0;
     });
+
     this.setState({
       violationMap,
       violationsWatch,

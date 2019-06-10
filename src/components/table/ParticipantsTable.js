@@ -80,11 +80,10 @@ const ParticipantsTable = ({
           const violationsCount = (isDefined(violations) && violations.count() > 0) ? violations
             .get(personEntityKeyId) : 0;
 
-          const personHours = (isDefined(hours) && hours.count() > 0) ? hours.get(personEntityKeyId) : '';
+          const personHours = (isDefined(hours) && hours.count() > 0) ? hours.get(personEntityKeyId) : Map();
           const required = (isDefined(personHours) && personHours.count() > 0) ? personHours.get(REQUIRED) : 0;
           const hoursWorked = (isDefined(personHours) && personHours.count() > 0) ? personHours.get(WORKED) : 0;
           const worked = onlyReqHours ? undefined : hoursWorked;
-
 
           return (
             <ParticipantsTableRow
