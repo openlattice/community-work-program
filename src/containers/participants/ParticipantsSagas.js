@@ -130,14 +130,19 @@ function* getEnrollmentStatusesWorker(action :SequenceAction) :Generator<*, *, *
     if (response.error) {
       throw response.error;
     }
-    let enrollmentMap :Map = fromJS(response.data).map((statuses :List) => statuses.map((status :Map) => {
-      const { [NEIGHBOR_DETAILS]: neighborDetails } = getEntityProperties(status, [NEIGHBOR_DETAILS]);
-      return fromJS(neighborDetails);
-    }));
+    let enrollmentMap :Map = fromJS(response.data)
+      .map((statuses :List) => statuses
+        .map((status :Map) => {
+          const { [NEIGHBOR_DETAILS]: neighborDetails } = getEntityProperties(status, [NEIGHBOR_DETAILS]);
+          return fromJS(neighborDetails);
+        }));
+    /*
+     * 3. If no enrollment status for a person exists, set enrollment to empty List().
+     */
     const participantsWithoutEnrollmentStatus :UUID[] = participantEKIDs
       .filter(ekid => !isDefined(enrollmentMap.get(ekid)));
     participantsWithoutEnrollmentStatus.forEach((ekid :string) => {
-      enrollmentMap = enrollmentMap.set(ekid, Map());
+      enrollmentMap = enrollmentMap.set(ekid, List());
     });
 
     yield put(getEnrollmentStatuses.success(id, enrollmentMap));
