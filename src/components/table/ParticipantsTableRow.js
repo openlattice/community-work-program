@@ -24,21 +24,24 @@ import {
 const { DOB, MUGSHOT, PICTURE } = PEOPLE_FQNS;
 
 type Props = {
+  ageRequired :boolean;
   handleSelect :(personEKID :string) => void;
   hoursRequired :number;
   hoursWorked :number | void;
   includeDeadline ? :boolean;
   person :Map;
   selected? :boolean;
-  sentenceDate? :string;
+  sentenceDate? :string | void;
+  sentenceEndDate? :string | void;
   small? :boolean;
-  startDate? :string;
-  status? :string;
-  violationsCount :number;
-  warningsCount :number;
+  startDate? :string | void;
+  status? :string | void;
+  violationsCount :number | void;
+  warningsCount :number | void;
 };
 
 const TableRow = ({
+  ageRequired,
   handleSelect,
   hoursRequired,
   hoursWorked,
@@ -46,6 +49,7 @@ const TableRow = ({
   person,
   selected,
   sentenceDate,
+  sentenceEndDate,
   small,
   startDate,
   status,
@@ -62,22 +66,17 @@ const TableRow = ({
         <PersonPicture src={photo} alt="" />
       </StyledPersonPhoto>
     ) : <PersonPicture small={small} src={defaultUserIcon} alt="" />;
-  let newStatus = '';
-  if (status === 'planned') {
-    newStatus = 'Awaiting enrollment';
-  }
+
   let cellData :List = List();
   cellData = person ? cellData.push(getPersonName(person)) : cellData;
-  cellData = person ? cellData.push(formatNumericalValue(calculateAge(dateOfBirth))) : cellData;
-  cellData = person ? cellData.push(formatAsDate(startDate)) : cellData;
-  cellData = sentenceDate ? cellData.push(formatAsDate(sentenceDate)) : cellData;
+  cellData = (person && ageRequired) ? cellData.push(formatNumericalValue(calculateAge(dateOfBirth))) : cellData;
+  cellData = (person && isDefined(startDate)) ? cellData.push(formatAsDate(startDate)) : cellData;
+  cellData = isDefined(sentenceDate) ? cellData.push(formatAsDate(sentenceDate)) : cellData;
   cellData = (sentenceDate && includeDeadline)
-    ? cellData.push(DateTime.fromISO(sentenceDate).plus({ weeks: 2 }).toLocaleString())
+    ? cellData.push(DateTime.fromISO(sentenceDate).plus({ hours: 48 }).toLocaleString())
     : cellData;
-  cellData = sentenceDate
-    ? cellData.push(DateTime.fromISO(sentenceDate).plus({ days: 90 }).toLocaleString())
-    : cellData;
-  cellData = isDefined(newStatus) ? cellData.push(newStatus) : cellData;
+  cellData = isDefined(sentenceEndDate) ? cellData.push(formatAsDate(sentenceEndDate)) : cellData;
+  cellData = isDefined(status) ? cellData.push(status) : cellData;
   cellData = isDefined(warningsCount) ? cellData.push(formatNumericalValue(warningsCount)) : cellData;
   cellData = isDefined(violationsCount) ? cellData.push(formatNumericalValue(violationsCount)) : cellData;
   cellData = (hoursWorked && hoursRequired)
@@ -105,11 +104,12 @@ const TableRow = ({
 
 TableRow.defaultProps = {
   includeDeadline: false,
-  sentenceDate: '',
+  sentenceDate: undefined,
+  sentenceEndDate: undefined,
   selected: false,
   small: false,
-  startDate: '',
-  status: ''
+  startDate: undefined,
+  status: undefined
 };
 
 export default TableRow;

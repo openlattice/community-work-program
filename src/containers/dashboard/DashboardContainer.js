@@ -2,21 +2,28 @@
 import React, { Component } from 'react';
 import styled from 'styled-components';
 import { List, Map } from 'immutable';
+import { DateTime } from 'luxon';
 import { connect } from 'react-redux';
 import { RequestStates } from 'redux-reqseq';
 import type { RequestState } from 'redux-reqseq';
+import type { RouterHistory } from 'react-router';
 
 import ParticipantsTable from '../../components/table/ParticipantsTable';
 import LogoLoader from '../../components/LogoLoader';
 
 import { getEntityProperties } from '../../utils/DataUtils';
 import { ErrorMessage } from '../../components/Layout';
+import { PARTICIPANT_PROFILE } from '../../core/router/Routes';
 import {
   APP_CONTENT_PADDING,
   DASHBOARD_WIDTH,
 } from '../../core/style/Sizes';
 import { ENROLLMENT_STATUSES, HOURS_CONSTS } from '../../core/edm/constants/DataModelConsts';
-import { ENROLLMENT_STATUS_FQNS, ENTITY_KEY_ID } from '../../core/edm/constants/FullyQualifiedNames';
+import {
+  ENROLLMENT_STATUS_FQNS,
+  ENTITY_KEY_ID,
+  SENTENCE_TERM_FQNS
+} from '../../core/edm/constants/FullyQualifiedNames';
 import { PEOPLE, STATE } from '../../utils/constants/ReduxStateConsts';
 import {
   newParticipantsColumns,
@@ -35,7 +42,7 @@ const {
   PARTICIPANTS,
   SENTENCE_TERMS_BY_PARTICIPANT,
 } = PEOPLE;
-
+const { DATETIME_START } = SENTENCE_TERM_FQNS;
 /* styled components */
 const DashboardWrapper = styled.div`
   display: flex;
@@ -65,6 +72,7 @@ const RightWrapper = styled.div`
 type Props = {
   enrollmentByParticipant :Map;
   getSentencesRequestState :RequestState;
+  history :RouterHistory,
   hoursWorked :Map;
   infractionCountsByParticipant :Map;
   participants :List;
@@ -168,6 +176,11 @@ class DashboardContainer extends Component<Props, State> {
     });
   }
 
+  handleOnSelectPerson = (personEKID :string) => {
+    const { history } = this.props;
+    history.push(PARTICIPANT_PROFILE.replace(':subjectId', personEKID));
+  }
+
   render() {
     const {
       getSentencesRequestState,
@@ -202,10 +215,13 @@ class DashboardContainer extends Component<Props, State> {
       <DashboardWrapper>
         <DashboardBody>
           <ParticipantsTable
+              ageRequired={false}
               bannerText="New Participants"
               columnHeaders={newParticipantsColumns}
+              handleSelect={this.handleOnSelectPerson}
               hours={hoursWorked}
               includeDeadline
+              includeSentenceEndDate={false}
               onlyReqHours
               people={newParticipants}
               small
@@ -213,18 +229,24 @@ class DashboardContainer extends Component<Props, State> {
               totalTableItems={newParticipants.count()} />
           <RightWrapper>
             <ParticipantsTable
+                ageRequired={false}
                 bannerText="Pending Completion Review"
                 columnHeaders={pendingCompletionColumns}
+                handleSelect={this.handleOnSelectPerson}
                 hours={hoursWorked}
+                includeSentenceEndDate={false}
                 onlyReqHours
                 people={pendingCompletionReview}
                 small
                 sentenceTerms={sentenceTermsByParticipant}
                 totalTableItems={pendingCompletionReview.count()} />
             <ParticipantsTable
+                ageRequired={false}
                 bannerText="Violations Watch"
                 columnHeaders={violationsWatchColumns}
+                handleSelect={this.handleOnSelectPerson}
                 hours={hoursWorked}
+                includeSentenceEndDate={false}
                 onlyReqHours={false}
                 people={violationsWatch}
                 small
