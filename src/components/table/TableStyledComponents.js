@@ -52,7 +52,7 @@ export const HeaderElement = styled.span`
   font-family: 'Open Sans', sans-serif;
   color: ${OL.BLACK};
   text-transform: uppercase;
-  padding: 12px 0;
+  padding: 12px 30px 12px 0;
   border-bottom: 1px solid ${OL.BLACK};
   text-align: left;
 `;
@@ -66,7 +66,7 @@ export const HeaderRow = styled.div`
 
 export const Cell = styled.span`
   display: table-cell;
-  padding: 7px 0;
+  padding: 7px 30px 7px 0;
   font-family: 'Open Sans', sans-serif;
   font-size: ${props => (props.small ? '12' : '14')}px;
   text-align: left;
