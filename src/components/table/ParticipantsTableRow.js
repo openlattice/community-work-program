@@ -1,98 +1,57 @@
+
 /*
  * @flow
  */
 
 import React from 'react';
-import styled from 'styled-components';
-import Immutable from 'immutable';
-import { Constants } from 'lattice';
+import { List, Map } from 'immutable';
+import { DateTime } from 'luxon';
 
 import defaultUserIcon from '../../assets/svg/profile-placeholder-round.svg';
-import { PersonPicture, PersonPhoto } from '../picture/PersonPicture';
-import { formatValue, formatNumericalValue } from '../../utils/FormattingUtils';
-import { formatAsDate } from '../../utils/DateTimeUtils';
-import { OL } from '../../utils/constants/Colors';
 
-const { OPENLATTICE_ID_FQN } = Constants;
+import { PersonPicture } from '../picture/PersonPicture';
+import { formatNumericalValue } from '../../utils/FormattingUtils';
+import { calculateAge, formatAsDate } from '../../utils/DateTimeUtils';
+import { ENTITY_KEY_ID, PEOPLE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { getPersonName } from '../../utils/PeopleUtils';
+import { getEntityProperties } from '../../utils/DataUtils';
+import {
+  Cell,
+  Row,
+  StyledPersonPhoto,
+} from './TableStyledComponents';
 
-const Cell = styled.td`
-  padding: 7px 10px;
-  font-family: 'Open Sans', sans-serif;
-  font-size: ${props => (props.small ? '12' : '14')}px;
-  text-align: left;
-  color: ${(props) => {
-    if (props.status === 'Active') {
-      return `${OL.GREEN02};`;
-    }
-    if (props.status === 'Completed') {
-      return `${OL.BLUE02};`;
-    }
-    if (props.status === 'Active — noncompliant') {
-      return `${OL.YELLOW01};`;
-    }
-    if (props.status === 'Removed — noncompliant') {
-      return `${OL.RED01};`;
-    }
-    if (props.status === 'Awaiting enrollment') {
-      return `${OL.PURPLE03};`;
-    }
-    return `${OL.GREY01};`;
-  }}
-`;
-const StyledPersonPhoto = styled(PersonPhoto)`
-  width: ${props => (props.small ? 30 : 36)}px;
-  ${props => (props.small
-    ? (
-      `min-width: 30px;
-        height: 30px;
-        display: flex;
-        justify-content: center;
-        align-items: center;`
-    )
-    : ''
-  )}
-`;
-
-const Row = styled.tr`
-  padding: 7px 30px;
-  border-bottom: 1px solid ${OL.GREY11};
-  ${Cell}:first-child {
-    padding-left: 30px;
-  }
-  ${Cell}:last-child {
-    padding-right: 30px;
-  }
-  :last-of-type {
-    border-bottom: none;
-  }
-  &:hover {
-    cursor: pointer;
-    background: ${OL.GREY14};
-  }
-  &:active {
-    background-color: ${OL.PURPLE06};
-  }
-`;
+const { DOB, MUGSHOT, PICTURE } = PEOPLE_FQNS;
 
 type Props = {
-  handleSelect :(person :Immutable.Map, entityKeyId :string, personId :string) => void;
-  person :Immutable.Map<*, *>,
-  selected? :boolean,
-  small? :boolean,
+  handleSelect :(personEKID :string) => void;
+  hoursRequired :number;
+  hoursWorked :number | void;
+  includeDeadline ? :boolean;
+  person :Map;
+  selected? :boolean;
+  sentenceDate :string;
+  small? :boolean;
+  violationsCount :number;
+  warningsCount :number;
 };
 
 const TableRow = ({
   handleSelect,
+  hoursRequired,
+  hoursWorked,
+  includeDeadline,
   person,
   selected,
-  small
+  sentenceDate,
+  small,
+  violationsCount,
+  warningsCount,
 } :Props) => {
 
-  const entityKeyId :string = person.getIn([OPENLATTICE_ID_FQN, 0], '');
-  const personId :string = '';
+  const { [ENTITY_KEY_ID]: personEKID, [DOB]: dateOfBirth } = getEntityProperties(person, [ENTITY_KEY_ID, DOB]);
 
-  // let photo :string = person.getIn([MUGSHOT, 0]) || person.getIn([PICTURE, 0]);
-  let photo;
+  let photo = person ? person.getIn([MUGSHOT, 0]) || person.getIn([PICTURE, 0]) : '';
   photo = photo
     ? (
       <StyledPersonPhoto small={small}>
@@ -100,45 +59,40 @@ const TableRow = ({
       </StyledPersonPhoto>
     ) : <PersonPicture small={small} src={defaultUserIcon} alt="" />;
 
-  /* BASED ON DUMMY DATA */
-  const name = formatValue(person.get('name'));
-  const age = formatNumericalValue(person.get('age'));
-  const typeOfCourt = formatValue(person.get('typeOfCourt'));
-  const startDate = person.get('startDate') ? formatAsDate(new Date(person.get('startDate')).toISOString()) : '';
-  const sentenceDate = person.get('sentenceDate')
-    ? formatAsDate(new Date(person.get('sentenceDate')).toISOString()) : '';
-  const sentenceEndDate = person.get('sentenceEndDate')
-    ? formatAsDate(new Date(person.get('sentenceEndDate')).toISOString()) : '';
-  const hoursServed = `${formatValue(person.get('hoursServed'))} / ${formatValue(person.get('requiredHours'))}`;
-  const numberOfWarnings = formatNumericalValue(person.get('numberOfWarnings'));
-  const numberOfViolations = formatNumericalValue(person.get('numberOfViolations'));
-  const status = formatValue(person.get('status'));
+  let cellData :List = List();
+  cellData = person ? cellData.push(getPersonName(person)) : cellData;
+  cellData = person ? cellData
+    .push(calculateAge(dateOfBirth)) : cellData;
+  // find start date from enrollment status -> "effective date"
+  cellData = sentenceDate ? cellData.push(formatAsDate(sentenceDate)) : cellData;
+  cellData = (sentenceDate && includeDeadline)
+    ? cellData.push(DateTime.fromISO(sentenceDate).plus({ weeks: 2 }).toLocaleString())
+    : cellData;
+  cellData = sentenceDate
+    ? cellData.push(DateTime.fromISO(sentenceDate).plus({ days: 90 }).toLocaleString())
+    : cellData;
+  // find status from diversion plan and/or enrollment status
+  cellData = warningsCount ? cellData.push(formatNumericalValue(warningsCount)) : cellData;
+  cellData = violationsCount ? cellData.push(formatNumericalValue(violationsCount)) : cellData;
+  cellData = (hoursWorked && hoursRequired) ? cellData
+    .push(`${formatNumericalValue(hoursWorked)} / ${(formatNumericalValue(hoursRequired))}`) : cellData;
+  cellData = (hoursRequired && !hoursWorked) ? cellData.push(formatNumericalValue(hoursRequired)) : cellData;
+
+  // const typeOfCourt = formatValue(person.get('typeOfCourt'));
 
   return (
-    <Row
-        active={selected}
-        onClick={() => {
-          if (handleSelect) {
-            handleSelect(person, entityKeyId, personId);
-          }
-        }}>
-      <Cell small={small}>{ photo }</Cell>
-      <Cell small={small}>{ name }</Cell>
-      <Cell small={small}>{ age }</Cell>
-      <Cell small={small}>{ typeOfCourt }</Cell>
-      <Cell small={small}>{ startDate }</Cell>
-      <Cell small={small}>{ sentenceDate }</Cell>
-      <Cell small={small}>{ sentenceEndDate }</Cell>
-      <Cell small={small} status={status}>{ status }</Cell>
-      <Cell small={small}>{ hoursServed }</Cell>
-      <Cell small={small}>{ numberOfWarnings }</Cell>
-      <Cell small={small}>{ numberOfViolations }</Cell>
+    <Row active={selected} onClick={() => { handleSelect(personEKID) }}>
+      {
+        cellData.map(field => (
+          <Cell key={field} small={small}>{ field }</Cell>
+        ))
+      }
     </Row>
   );
 };
 
 TableRow.defaultProps = {
-  handleSelect: () => {},
+  includeDeadline: false,
   selected: false,
   small: false
 };

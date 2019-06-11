@@ -2,107 +2,122 @@
  * @flow
  */
 import React from 'react';
-import styled from 'styled-components';
-import { Constants } from 'lattice';
-import Immutable from 'immutable';
+import { Map, List } from 'immutable';
 
 import ParticipantsTableRow from './ParticipantsTableRow';
 
-import { OL } from '../../utils/constants/Colors';
+import { getEntityProperties } from '../../utils/DataUtils';
+import { isDefined } from '../../utils/LangUtils';
+import {
+  TableWrapper,
+  TableBanner,
+  TotalTableItems,
+  Table,
+  HeaderRow,
+  HeaderElement,
+} from './TableStyledComponents';
+import { ENTITY_KEY_ID, SENTENCE_TERM_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { HOURS_CONSTS } from '../../core/edm/constants/DataModelConsts';
 
-const { OPENLATTICE_ID_FQN } = Constants;
+const { DATETIME_START } = SENTENCE_TERM_FQNS;
+const { REQUIRED, WORKED } = HOURS_CONSTS;
 
-const TableWrapper = styled.div`
-  width: 100%;
-  margin-bottom: 15px;
-  background-color: ${OL.WHITE};
-  border: 1px solid ${OL.GREY11};
-  border-radius: 5px;
-`;
+type HeaderProps = {
+  columnHeaders :string[];
+};
 
-const TableBanner = styled.tr`
-  width: 100%;
-  font-size: 24px;
-  color: ${OL.BLACK};
-  padding: 40px 60px;
-  display: flex;
-`;
-
-const Table = styled.table`
-  width: 100%;
-  border-collapse: collapse;
-`;
-
-const HeaderRow = styled.tr`
-  border-bottom: 1px solid ${OL.BLACK};
-`;
-
-const HeaderElement = styled.th`
-  font-size: 10px;
-  font-weight: 600;
-  font-family: 'Open Sans', sans-serif;
-  color: ${OL.BLACK};
-  text-transform: uppercase;
-  padding: 12px 10px;
-  border-bottom: 1px solid ${OL.BLACK};
-  text-align: left;
-`;
-
-const Headers = () => (
+const Headers = ({ columnHeaders } :HeaderProps) => (
   <>
     <HeaderRow>
       <HeaderElement />
-      <HeaderElement>NAME</HeaderElement>
-      <HeaderElement>AGE</HeaderElement>
-      <HeaderElement>COURT TYPE</HeaderElement>
-      <HeaderElement>START DATE</HeaderElement>
-      <HeaderElement>SENT. DATE</HeaderElement>
-      <HeaderElement>SENT. END DATE</HeaderElement>
-      <HeaderElement>STATUS</HeaderElement>
-      <HeaderElement>HRS. SERVED</HeaderElement>
-      <HeaderElement># OF WARN.</HeaderElement>
-      <HeaderElement># OF VIO.</HeaderElement>
+      {
+        columnHeaders.map(header => (
+          <HeaderElement key={header}>{ header }</HeaderElement>
+        ))
+      }
     </HeaderRow>
   </>
 );
 
 type Props = {
-  handleSelect :(person :Immutable.Map, entityKeyId :string, personId :string) => void;
-  people :Immutable.List<*, *>;
-  selectedPersonId :string;
+  bannerText :string;
+  columnHeaders :string[];
+  handleSelect :(personEKID :string) => void;
+  hours ? :Map;
+  includeDeadline ? :boolean;
+  onlyReqHours :boolean;
+  people :List;
+  sentenceTerms ? :Map;
   small :boolean;
-  totalParticipants :number;
+  styles :Object;
+  totalTableItems :number;
+  violations ? :Map;
+  warnings ? :Map;
 };
 
 const ParticipantsTable = ({
+  bannerText,
+  columnHeaders,
   handleSelect,
+  hours,
+  includeDeadline,
+  onlyReqHours,
   people,
-  selectedPersonId,
+  sentenceTerms,
   small,
-  totalParticipants,
+  styles,
+  totalTableItems,
+  violations,
+  warnings,
 } :Props) => (
-  <TableWrapper>
-    <TableBanner>{totalParticipants.toString().concat(' Participants')}</TableBanner>
+  <TableWrapper align={styles.align} width={styles.width}>
+    <TableBanner>
+      { bannerText }
+      <TotalTableItems>{ totalTableItems }</TotalTableItems>
+    </TableBanner>
     <Table>
-      <tbody>
-        <Headers />
-        {
-          people.map((person :Map, index :number) => {
-            const personId = person.getIn([OPENLATTICE_ID_FQN, 0], '');
-            const selected = personId === selectedPersonId;
-            return (
-              <ParticipantsTableRow
-                  key={`${personId}-${index}`}
-                  handleSelect={handleSelect}
-                  person={person}
-                  selected={selected}
-                  small={small} />
-            );
-          })
-        }
-      </tbody>
+      <Headers columnHeaders={columnHeaders} />
+      {
+        people.map((person :Map) => {
+
+          const { [ENTITY_KEY_ID]: personEntityKeyId } :UUID = getEntityProperties(person, [ENTITY_KEY_ID]);
+          const sentenceDate = (isDefined(sentenceTerms) && sentenceTerms.count() > 0) ? sentenceTerms
+            .getIn([personEntityKeyId, DATETIME_START, 0]) : '';
+          const violationsCount = (isDefined(violations) && violations.count() > 0) ? violations
+            .get(personEntityKeyId) : 0;
+          const warningsCount = (isDefined(warnings) && warnings.count() > 0) ? warnings
+            .get(personEntityKeyId) : 0;
+
+          const personHours = (isDefined(hours) && hours.count() > 0) ? hours.get(personEntityKeyId) : Map();
+          const required = (isDefined(personHours) && personHours.count() > 0) ? personHours.get(REQUIRED) : 0;
+          const hoursWorked = (isDefined(personHours) && personHours.count() > 0) ? personHours.get(WORKED) : 0;
+          const worked = onlyReqHours ? undefined : hoursWorked;
+
+          return (
+            <ParticipantsTableRow
+                key={personEntityKeyId}
+                handleSelect={handleSelect}
+                hoursRequired={required}
+                hoursWorked={worked}
+                includeDeadline={includeDeadline}
+                person={person}
+                sentenceDate={sentenceDate}
+                small={small}
+                violationsCount={violationsCount}
+                warningsCount={warningsCount} />
+          );
+        })
+      }
     </Table>
   </TableWrapper>
 );
+
+ParticipantsTable.defaultProps = {
+  hours: Map(),
+  includeDeadline: false,
+  sentenceTerms: Map(),
+  violations: Map(),
+  warnings: Map(),
+};
 
 export default ParticipantsTable;
