@@ -34,10 +34,16 @@ import {
   getSentenceTerms,
   getSentences,
 } from './ParticipantsActions';
-import { getEntitySetIdFromApp, getPropertyTypeIdFromEdm } from '../../utils/DataUtils';
+import {
+  getEntityProperties,
+  getEntitySetIdFromApp,
+  getFirstNeighborValue,
+  getPropertyTypeIdFromEdm
+} from '../../utils/DataUtils';
 import { STATE } from '../../utils/constants/ReduxStateConsts';
 import {
   APP_TYPE_FQNS,
+  ENTITY_KEY_ID,
   DIVERSION_PLAN_FQNS,
   INFRACTION_FQNS,
   SENTENCE_FQNS,
@@ -101,7 +107,10 @@ function* getEnrollmentStatusesWorker(action :SequenceAction) :Generator<*, *, *
      */
     const { participants, peopleESID } = value;
     const participantEKIDs :UUID[] = participants
-      .map((participant :Map) => participant.getIn([OPENLATTICE_ID_FQN, 0]))
+      .map((participant :Map) => {
+        const { [ENTITY_KEY_ID]: personEKID } = getEntityProperties(participant, [ENTITY_KEY_ID]);
+        return personEKID;
+      })
       .toJS();
     const app = yield select(getAppFromState);
     const enrollmentStatusESID :UUID = getEntitySetIdFromApp(app, ENROLLMENT_STATUS);
@@ -121,8 +130,10 @@ function* getEnrollmentStatusesWorker(action :SequenceAction) :Generator<*, *, *
     if (response.error) {
       throw response.error;
     }
-    let enrollmentMap :Map = fromJS(response.data).map((status :Map) => status.getIn([0, NEIGHBOR_DETAILS]));
-
+    let enrollmentMap :Map = fromJS(response.data).map((statuses :List) => statuses.map((status :Map) => {
+      const { [NEIGHBOR_DETAILS]: neighborDetails } = getEntityProperties(status, [NEIGHBOR_DETAILS]);
+      return fromJS(neighborDetails);
+    }));
     const participantsWithoutEnrollmentStatus :UUID[] = participantEKIDs
       .filter(ekid => !isDefined(enrollmentMap.get(ekid)));
     participantsWithoutEnrollmentStatus.forEach((ekid :string) => {
@@ -164,7 +175,12 @@ function* getHoursWorkedWorker(action :SequenceAction) :Generator<*, *, *> {
   try {
     yield put(getHoursWorked.request(id));
     const { participants, peopleESID } = value;
-    const participantEKIDs = participants.map((participant :Map) => participant.getIn([OPENLATTICE_ID_FQN, 0])).toJS();
+    const participantEKIDs :UUID[] = participants
+      .map((participant :Map) => {
+        const { [ENTITY_KEY_ID]: personEKID } = getEntityProperties(participant, [ENTITY_KEY_ID]);
+        return personEKID;
+      })
+      .toJS();
 
     /*
      * 1. Get diversion plans of participants given.
@@ -185,15 +201,21 @@ function* getHoursWorkedWorker(action :SequenceAction) :Generator<*, *, *> {
       throw response.error;
     }
     const diversionPlansByParticipant = fromJS(response.data)
-      .map((planArray :List) => planArray.map((plan :Map) => plan
-        .get(NEIGHBOR_DETAILS)));
+      .map((planArray :List) => planArray.map((plan :Map) => {
+        const { [NEIGHBOR_DETAILS]: neighborDetails } = getEntityProperties(plan, [NEIGHBOR_DETAILS]);
+        return fromJS(neighborDetails);
+      }));
     const activeDiversionPlans = diversionPlansByParticipant
       .filter((planArray :List) => planArray
-        .filter((plan :Map) => !plan.getIn([COMPLETED, 0])));
+        .filter((plan :Map) => {
+          const { [COMPLETED]: completed } = getEntityProperties(plan, [COMPLETED]);
+          return fromJS(!completed);
+        }));
     const activeDiversionPlanEKIDs = activeDiversionPlans.map((plans :List) => plans
-      .map(
-        (plan :Map) => plan.getIn([OPENLATTICE_ID_FQN, 0])
-      ))
+      .map((plan :Map) => {
+        const { [ENTITY_KEY_ID]: planEntityKeyId } = getEntityProperties(plan, [ENTITY_KEY_ID]);
+        return planEntityKeyId;
+      }))
       .valueSeq()
       .toJS()
       .flat();
@@ -220,8 +242,8 @@ function* getHoursWorkedWorker(action :SequenceAction) :Generator<*, *, *> {
         .getIn([NEIGHBOR_DETAILS, OPENLATTICE_ID_FQN, 0]);
       const worksitePlan :Map = plan.find((neighbor :Map) => neighbor
         .getIn([NEIGHBOR_ENTITY_SET, 'name']).includes(WORKSITE_PLAN.toString().split('.')[1]));
-      const hoursWorked :number = worksitePlan.getIn([NEIGHBOR_DETAILS, HOURS_WORKED, 0]);
-      const reqHours :number = worksitePlan.getIn([NEIGHBOR_DETAILS, REQUIRED_HOURS, 0]);
+      const hoursWorked :number = worksitePlan ? getFirstNeighborValue(worksitePlan, HOURS_WORKED) : 0;
+      const reqHours :number = getFirstNeighborValue(worksitePlan, REQUIRED_HOURS);
       hoursWorkedMap = hoursWorkedMap.set(personEKID, Map({ worked: hoursWorked, required: reqHours }));
     });
 
@@ -261,7 +283,11 @@ function* getInfractionsWorker(action :SequenceAction) :Generator<*, *, *> {
     const { participants, peopleESID } = value;
 
     const participantEKIDs :UUID[] = participants
-      .map((participant :Map) => participant.getIn([OPENLATTICE_ID_FQN, 0])).toJS();
+      .map((participant :Map) => {
+        const { [ENTITY_KEY_ID]: personEKID } = getEntityProperties(participant, [ENTITY_KEY_ID]);
+        return personEKID;
+      })
+      .toJS();
     const app = yield select(getAppFromState);
     const infractionsESID :UUID = getEntitySetIdFromApp(app, INFRACTIONS);
 
@@ -285,10 +311,11 @@ function* getInfractionsWorker(action :SequenceAction) :Generator<*, *, *> {
     const infractionCountMap :Map = infractionsMap.map((infractions :List) => {
       const infractionCount = { warnings: 0, violations: 0 };
       infractions.forEach((infraction :Map) => {
-        if (infraction.getIn([TYPE, 0]) === INFRACTIONS_CONSTS.WARNING) {
+        const { [TYPE]: type } = getEntityProperties(infraction, [TYPE]);
+        if (type === INFRACTIONS_CONSTS.WARNING) {
           infractionCount.warnings += 1;
         }
-        if (infraction.getIn([TYPE, 0]) === INFRACTIONS_CONSTS.VIOLATION) {
+        if (type === INFRACTIONS_CONSTS.VIOLATION) {
           infractionCount.violations += 1;
         }
       });
@@ -331,7 +358,11 @@ function* getSentenceTermsWorker(action :SequenceAction) :Generator<*, *, *> {
 
     const app = yield select(getAppFromState);
     const participantEKIDs :UUID[] = participants
-      .map((participant :Map) => participant.getIn([OPENLATTICE_ID_FQN, 0])).toJS();
+      .map((participant :Map) => {
+        const { [ENTITY_KEY_ID]: personEKID } = getEntityProperties(participant, [ENTITY_KEY_ID]);
+        return personEKID;
+      })
+      .toJS();
     const sentenceTermESID :UUID = getEntitySetIdFromApp(app, SENTENCE_TERM);
     const searchFilter = {
       entityKeyIds: participantEKIDs,
@@ -347,7 +378,10 @@ function* getSentenceTermsWorker(action :SequenceAction) :Generator<*, *, *> {
     }
     const sentenceTermsMap :Map = fromJS(response.data)
       .map((terms :List) => terms
-        .map((term :Map) => term.get(NEIGHBOR_DETAILS))
+        .map((term :Map) => {
+          const { [NEIGHBOR_DETAILS]: neighborDetails } = getEntityProperties(term, [NEIGHBOR_DETAILS]);
+          return fromJS(neighborDetails);
+        })
         .sort((term1 :Map, term2 :Map) => term1.getIn([DATETIME_START, 0]) - term2.getIn([DATETIME_START, 0]))
         .last());
 
@@ -392,8 +426,10 @@ function* getParticipantsWorker(action :SequenceAction) :Generator<*, *, *> {
     if (sentences.count() > 0) {
 
       const integratedSentencesEKIDs :UUID[] = sentences
-        .map((sentence :Map) => sentence
-          .getIn([OPENLATTICE_ID_FQN, 0]))
+        .map((sentence :Map) => {
+          const { [ENTITY_KEY_ID]: sentenceEKID } = getEntityProperties(sentence, [ENTITY_KEY_ID]);
+          return sentenceEKID;
+        })
         .toJS();
 
       let searchFilter = {
@@ -411,12 +447,17 @@ function* getParticipantsWorker(action :SequenceAction) :Generator<*, *, *> {
 
       participants = fromJS(response.data).toIndexedSeq()
         .map(personList => personList.get(0))
-        .map(person => person.get(NEIGHBOR_DETAILS))
+        .map((person :Map) => {
+          const { [NEIGHBOR_DETAILS]: neighborDetails } = getEntityProperties(person, [NEIGHBOR_DETAILS]);
+          return fromJS(neighborDetails);
+        })
         .toList();
 
       const manualSentencesEKIDs :UUID[] = sentences
-        .map((sentence :Map) => sentence
-          .getIn([OPENLATTICE_ID_FQN, 0]))
+        .map((sentence :Map) => {
+          const { [ENTITY_KEY_ID]: sentenceEKID } = getEntityProperties(sentence, [ENTITY_KEY_ID]);
+          return sentenceEKID;
+        })
         .toJS();
 
       searchFilter = {
@@ -433,7 +474,10 @@ function* getParticipantsWorker(action :SequenceAction) :Generator<*, *, *> {
       }
       const moreParticipants = fromJS(response.data).toIndexedSeq()
         .map(personList => personList.get(0))
-        .map(person => person.get(NEIGHBOR_DETAILS))
+        .map((person :Map) => {
+          const { [NEIGHBOR_DETAILS]: neighborDetails } = getEntityProperties(person, [NEIGHBOR_DETAILS]);
+          return fromJS(neighborDetails);
+        })
         .toList();
 
       participants = participants.concat(moreParticipants);

@@ -5,30 +5,27 @@
 import React, { Component } from 'react';
 
 import styled from 'styled-components';
+import { Map } from 'immutable';
 import { AuthActions } from 'lattice-auth';
 import { bindActionCreators } from 'redux';
-import { List, Map } from 'immutable';
 import { connect } from 'react-redux';
 import { Redirect, Route, Switch } from 'react-router-dom';
-import { RequestStates } from 'redux-reqseq';
-import type { RequestSequence, RequestState } from 'redux-reqseq';
+import type { RequestSequence } from 'redux-reqseq';
 
 import AppHeaderContainer from './AppHeaderContainer';
-import Spinner from '../../components/spinner/Spinner';
-import Dashboard from '../dashboard/Dashboard';
-import ParticipantsSearchContainer from '../participants/ParticipantsSearchContainer';
+import DashboardContainer from '../dashboard/DashboardContainer';
+import ParticipantsContainer from '../participants/ParticipantsSearchContainer';
 import Worksites from '../worksites/Worksites';
 import * as AppActions from './AppActions';
 import * as ParticipantsActions from '../participants/ParticipantsActions';
 import * as Routes from '../../core/router/Routes';
+
 import {
   APP_CONTAINER_WIDTH,
 } from '../../core/style/Sizes';
-import { APP, STATE, PEOPLE } from '../../utils/constants/ReduxStateConsts';
+import { APP, STATE } from '../../utils/constants/ReduxStateConsts';
 import { APP_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
-
-// TODO: this should come from lattice-ui-kit, maybe after the next release. current version v0.1.1
-const APP_CONTENT_BG :string = '#f8f8fb';
+import { OL } from '../../core/style/Colors';
 
 const { logout } = AuthActions;
 
@@ -42,7 +39,7 @@ const AppContainerWrapper = styled.div`
 `;
 
 const AppContentOuterWrapper = styled.main`
-  background-color: ${APP_CONTENT_BG};
+  background-color: ${OL.GREY38};
   display: flex;
   flex: 1 0 auto;
   justify-content: center;
@@ -58,17 +55,13 @@ const AppContentInnerWrapper = styled.div`
 `;
 
 type Props = {
-  app :Map<*, *>,
-  appSettingsByOrgId :Map<*, *>,
-  selectedOrganizationSettings :Map<*, *>,
   actions:{
     getSentences :RequestSequence;
     initializeApplication :RequestSequence;
     logout :() => void;
+    resetRequestState :(actionType :string) => void;
   },
-  isLoadingApp :boolean;
-  participants :List;
-  people :Map;
+  app :Map<*, *>,
 };
 
 class AppContainer extends Component<Props> {
@@ -90,7 +83,6 @@ class AppContainer extends Component<Props> {
         const peopleEntitySetId :UUID = app.getIn(
           [APP_TYPE_FQNS.PEOPLE, APP.ENTITY_SETS_BY_ORG, selectedOrgId]
         );
-
         if (peopleEntitySetId) {
           actions.getSentences();
         }
@@ -98,24 +90,14 @@ class AppContainer extends Component<Props> {
     }
   }
 
-  renderAppContent = () => {
-
-    const { isLoadingApp } = this.props;
-    if (isLoadingApp) {
-      return (
-        <Spinner />
-      );
-    }
-
-    return (
-      <Switch>
-        <Route exact strict path={Routes.DASHBOARD} component={Dashboard} />
-        <Route path={Routes.PARTICIPANTS} component={ParticipantsSearchContainer} />
-        <Route path={Routes.WORKSITES} component={Worksites} />
-        <Redirect to={Routes.DASHBOARD} />
-      </Switch>
-    );
-  }
+  renderAppContent = () => (
+    <Switch>
+      <Route exact strict path={Routes.DASHBOARD} component={DashboardContainer} />
+      <Route path={Routes.PARTICIPANTS} component={ParticipantsContainer} />
+      <Route path={Routes.WORKSITES} component={Worksites} />
+      <Redirect to={Routes.DASHBOARD} />
+    </Switch>
+  );
 
   render() {
 
@@ -134,15 +116,8 @@ class AppContainer extends Component<Props> {
 
 const mapStateToProps = (state :Map<*, *>) => {
   const app = state.get(STATE.APP);
-  const people = state.get(STATE.PEOPLE);
   return {
     app,
-    [APP.LOADING]: app.get(APP.LOADING),
-    [APP.SELECTED_ORG_ID]: app.get(APP.APP_SETTINGS_ID),
-    [APP.SETTINGS_BY_ORG_ID]: app.get(APP.SETTINGS_BY_ORG_ID),
-    [APP.SELECTED_ORG_SETTINGS]: app.get(APP.SELECTED_ORG_SETTINGS),
-    people,
-    [PEOPLE.PARTICIPANTS]: people.get(PEOPLE.PARTICIPANTS),
   };
 };
 
@@ -151,7 +126,7 @@ const mapDispatchToProps = dispatch => ({
     getSentences: ParticipantsActions.getSentences,
     initializeApplication: AppActions.initializeApplication,
     logout,
-    resetRequestState: AppActions.resetRequestState,
+    resetRequestState: ParticipantsActions.resetRequestState,
   }, dispatch)
 });
 

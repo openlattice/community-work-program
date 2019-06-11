@@ -2,7 +2,15 @@
  * @flow
  */
 
-import { DateTime } from 'luxon';
+import { DateTime, Duration } from 'luxon';
+import { Map } from 'immutable';
+import { SENTENCE_FQNS } from '../core/edm/constants/FullyQualifiedNames';
+
+const {
+  INCARCERATION_YEARS,
+  INCARCERATION_MONTHS,
+  INCARCERATION_DAYS
+} = SENTENCE_FQNS;
 
 const DATE_MDY_SLASH_FORMAT :string = 'MM/DD/YYYY';
 const ISO_DATE_FORMAT :string = 'YYYY-MM-DD';
@@ -57,12 +65,23 @@ function calculateAge(value :string) :number {
   return -1;
 }
 
+function convertSentenceToHours(sentence :Map) :number {
+
+  const duration = Duration.fromObject({
+    years: sentence.getIn([INCARCERATION_YEARS, 0]),
+    months: sentence.getIn([INCARCERATION_MONTHS, 0]),
+    days: sentence.getIn([INCARCERATION_DAYS, 0]),
+  });
+  return duration.toFormat('h');
+}
+
 export {
   DATE_MDY_SLASH_FORMAT,
   ISO_DATE_FORMAT,
   ISO_TIME_HMS_FORMAT,
   TIME_HM_FORMAT,
   calculateAge,
+  convertSentenceToHours,
   formatAsDate,
   formatAsISODate,
   formatAsISOTime,
