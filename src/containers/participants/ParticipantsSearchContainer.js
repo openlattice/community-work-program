@@ -5,6 +5,7 @@ import { List, Map } from 'immutable';
 import { connect } from 'react-redux';
 import { RequestStates } from 'redux-reqseq';
 import type { RequestState } from 'redux-reqseq';
+import type { RouterHistory } from 'react-router';
 
 import ParticipantsTable from '../../components/table/ParticipantsTable';
 import LogoLoader from '../../components/LogoLoader';
@@ -64,7 +65,7 @@ const ParticipantSearchInnerWrapper = styled.div`
 type Props = {
   enrollmentByParticipant :Map;
   getSentencesRequestState :RequestState;
-  history :string[],
+  history :RouterHistory,
   hoursWorked :Map;
   infractionCountsByParticipant :Map;
   participants :List;
