@@ -102,23 +102,30 @@ class DashboardContainer extends Component<Props, State> {
 
   getNewParticipants = () => {
 
-    const { enrollmentByParticipant, participants } = this.props;
+    const { enrollmentByParticipant, participants, sentenceTermsByParticipant } = this.props;
     if (enrollmentByParticipant.count() > 0 && participants.count() > 0) {
 
-      const newParticipants = enrollmentByParticipant.filter(((enrollmentStatuses :List) => enrollmentStatuses
-        .map((enrollment :Map) => {
-          const { [STATUS]: status } = getEntityProperties(enrollment, [STATUS]);
-          const planned :boolean = status === ENROLLMENT_STATUSES.PLANNED;
-          const noStatus :boolean = enrollment.count() === 0;
-          return (planned || noStatus);
-        })))
-        .keySeq()
-        .toList()
-        .map((ekid :UUID) => participants
-          .find((participant :Map) => {
-            const { [ENTITY_KEY_ID]: personEntityKeyId } :UUID = getEntityProperties(participant, [ENTITY_KEY_ID]);
-            return personEntityKeyId === ekid;
-          }));
+      const newParticipants = participants.filter((participant :Map) => {
+        const { [ENTITY_KEY_ID]: personEntityKeyId } :UUID = getEntityProperties(participant, [ENTITY_KEY_ID]);
+        if (enrollmentByParticipant.get(personEntityKeyId).count() === 0) { // if no existing worksite enrollments
+          return participant;
+        }
+
+        const isAwaitingEnrollment :boolean = enrollmentByParticipant.get(personEntityKeyId)
+          .filter((enrollmentStatus :Map) => {
+            const { [STATUS]: status } = getEntityProperties(enrollmentStatus, [STATUS]);
+            return status === ENROLLMENT_STATUSES.AWAITING_ENROLLMENT;
+          })
+          .count() > 0;
+        const hasActiveSentence :boolean = DateTime.fromISO(
+          sentenceTermsByParticipant.getIn([personEntityKeyId, DATETIME_START, 0])
+        ).diff(DateTime.local(), 'days') < 90;
+
+        if (!isAwaitingEnrollment && hasActiveSentence) { // if person did CWP previously
+          return participant;
+        }
+        return isAwaitingEnrollment;
+      });
 
       this.setState({
         newParticipants,
