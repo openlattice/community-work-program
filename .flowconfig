@@ -19,3 +19,4 @@
 ./config/flow
 ./node_modules/lattice/config/flow/
 ./node_modules/redux-reqseq/config/flow/
+./src/types.js.flow

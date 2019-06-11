@@ -192,3 +192,10 @@ export const FooterCell = styled.span`
   text-align: left;
   color: ${OL.GREY15};
 `;
+
+/* Messages */
+
+export const ErrorMessage = styled.div`
+  padding-top: 20px;
+  text-align: center;
+`;
