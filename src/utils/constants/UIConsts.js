@@ -1,6 +1,6 @@
 // @flow
 
-/* Dashboard */
+/* Participants */
 
 export const allParticipantsColumns = [
   'NAME',
@@ -8,6 +8,7 @@ export const allParticipantsColumns = [
   'START DATE',
   'SENT. DATE',
   'SENT. END DATE',
+  'STATUS',
   '# OF WARN.',
   '# OF VIO.',
   'HRS. SERVED'

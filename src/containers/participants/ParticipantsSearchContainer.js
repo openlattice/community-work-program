@@ -21,6 +21,7 @@ import { INFRACTIONS_CONSTS } from '../../core/edm/constants/DataModelConsts';
  * constants
  */
 const {
+  ENROLLMENT_BY_PARTICIPANT,
   HOURS_WORKED,
   INFRACTION_COUNTS_BY_PARTICIPANT,
   PARTICIPANTS,
@@ -61,6 +62,7 @@ const ParticipantSearchInnerWrapper = styled.div`
  */
 
 type Props = {
+  enrollmentByParticipant :Map;
   getSentencesRequestState :RequestState;
   history :string[],
   hoursWorked :Map;
@@ -205,6 +207,7 @@ class ParticipantsSearchContainer extends Component<Props, State> {
 
   render() {
     const {
+      enrollmentByParticipant,
       getSentencesRequestState,
       hoursWorked,
       infractionCountsByParticipant,
@@ -241,6 +244,7 @@ class ParticipantsSearchContainer extends Component<Props, State> {
           <ParticipantsTable
               bannerText="All Participants"
               columnHeaders={allParticipantsColumns}
+              enrollment={enrollmentByParticipant}
               handleSelect={this.handleOnSelectPerson}
               hours={hoursWorked}
               includeDeadline={false}
@@ -261,6 +265,7 @@ class ParticipantsSearchContainer extends Component<Props, State> {
 const mapStateToProps = (state :Map<*, *>) => {
   const people = state.get(STATE.PEOPLE);
   return {
+    [ENROLLMENT_BY_PARTICIPANT]: people.get(ENROLLMENT_BY_PARTICIPANT),
     getSentencesRequestState: people.getIn([PEOPLE.ACTIONS, PEOPLE.GET_SENTENCES, PEOPLE.REQUEST_STATE]),
     [HOURS_WORKED]: people.get(HOURS_WORKED),
     [INFRACTION_COUNTS_BY_PARTICIPANT]: people.get(INFRACTION_COUNTS_BY_PARTICIPANT),

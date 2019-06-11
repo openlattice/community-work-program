@@ -15,6 +15,7 @@ import { calculateAge, formatAsDate } from '../../utils/DateTimeUtils';
 import { ENTITY_KEY_ID, PEOPLE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { getPersonName } from '../../utils/PeopleUtils';
 import { getEntityProperties } from '../../utils/DataUtils';
+import { isDefined } from '../../utils/LangUtils';
 import {
   Cell,
   Row,
@@ -30,8 +31,10 @@ type Props = {
   includeDeadline ? :boolean;
   person :Map;
   selected? :boolean;
-  sentenceDate :string;
+  sentenceDate? :string;
   small? :boolean;
+  startDate? :string;
+  status? :string;
   violationsCount :number;
   warningsCount :number;
 };
@@ -45,6 +48,8 @@ const TableRow = ({
   selected,
   sentenceDate,
   small,
+  startDate,
+  status,
   violationsCount,
   warningsCount,
 } :Props) => {
@@ -58,12 +63,14 @@ const TableRow = ({
         <PersonPicture src={photo} alt="" />
       </StyledPersonPhoto>
     ) : <PersonPicture small={small} src={defaultUserIcon} alt="" />;
-
+  let newStatus = '';
+  if (status === 'planned') {
+    newStatus = 'Awaiting enrollment';
+  }
   let cellData :List = List();
   cellData = person ? cellData.push(getPersonName(person)) : cellData;
-  cellData = person ? cellData
-    .push(calculateAge(dateOfBirth)) : cellData;
-  // find start date from enrollment status -> "effective date"
+  cellData = person ? cellData.push(formatNumericalValue(calculateAge(dateOfBirth))) : cellData;
+  cellData = person ? cellData.push(formatAsDate(startDate)) : cellData;
   cellData = sentenceDate ? cellData.push(formatAsDate(sentenceDate)) : cellData;
   cellData = (sentenceDate && includeDeadline)
     ? cellData.push(DateTime.fromISO(sentenceDate).plus({ weeks: 2 }).toLocaleString())
@@ -71,20 +78,26 @@ const TableRow = ({
   cellData = sentenceDate
     ? cellData.push(DateTime.fromISO(sentenceDate).plus({ days: 90 }).toLocaleString())
     : cellData;
-  // find status from diversion plan and/or enrollment status
-  cellData = warningsCount ? cellData.push(formatNumericalValue(warningsCount)) : cellData;
-  cellData = violationsCount ? cellData.push(formatNumericalValue(violationsCount)) : cellData;
-  cellData = (hoursWorked && hoursRequired) ? cellData
-    .push(`${formatNumericalValue(hoursWorked)} / ${(formatNumericalValue(hoursRequired))}`) : cellData;
-  cellData = (hoursRequired && !hoursWorked) ? cellData.push(formatNumericalValue(hoursRequired)) : cellData;
+  cellData = isDefined(newStatus) ? cellData.push(newStatus) : cellData;
+  cellData = isDefined(warningsCount) ? cellData.push(formatNumericalValue(warningsCount)) : cellData;
+  cellData = isDefined(violationsCount) ? cellData.push(formatNumericalValue(violationsCount)) : cellData;
+  cellData = (hoursWorked && hoursRequired)
+    ? cellData.push(`${formatNumericalValue(hoursWorked)} / ${(formatNumericalValue(hoursRequired))}`)
+    : cellData;
+  cellData = (hoursRequired && !isDefined(hoursWorked)) ? cellData.push(formatNumericalValue(hoursRequired)) : cellData;
 
   // const typeOfCourt = formatValue(person.get('typeOfCourt'));
 
   return (
-    <Row active={selected} onClick={() => { handleSelect(personEKID) }}>
+    <Row
+        active={selected}
+        onClick={() => {
+          handleSelect(personEKID);
+        }}>
+      <Cell small={small}>{ photo }</Cell>
       {
-        cellData.map(field => (
-          <Cell key={field} small={small}>{ field }</Cell>
+        cellData.map((field :string, index :number) => (
+          <Cell key={`${index}-${field}`} small={small}>{ field }</Cell>
         ))
       }
     </Row>
@@ -93,8 +106,11 @@ const TableRow = ({
 
 TableRow.defaultProps = {
   includeDeadline: false,
+  sentenceDate: '',
   selected: false,
-  small: false
+  small: false,
+  startDate: '',
+  status: ''
 };
 
 export default TableRow;
