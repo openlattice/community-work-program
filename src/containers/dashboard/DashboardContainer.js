@@ -99,6 +99,15 @@ class DashboardContainer extends Component<Props, State> {
     };
   }
 
+  componentDidMount() {
+    const { participants } = this.props;
+    if (participants.count() > 0) {
+      this.getNewParticipants();
+      this.getParticipantsWithHoursComplete();
+      this.getParticipantsWithViolations();
+    }
+  }
+
   componentDidUpdate(prevProps :Props) {
     const { participants } = this.props;
     if (prevProps.participants.count() !== participants.count()) {
@@ -125,7 +134,8 @@ class DashboardContainer extends Component<Props, State> {
           sentenceTermsByParticipant.getIn([personEntityKeyId, DATETIME_START, 0])
         ).diff(DateTime.local(), 'days') < 90;
 
-        if (!isAwaitingEnrollment && hasActiveSentence) { // if person did CWP previously
+        // if person was enrolled in CWP previously
+        if (!isAwaitingEnrollment && hasActiveSentence) {
           return participant;
         }
         return isAwaitingEnrollment;
