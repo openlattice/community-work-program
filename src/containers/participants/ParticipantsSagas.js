@@ -3,6 +3,7 @@
  */
 
 import { List, Map, fromJS } from 'immutable';
+import { DateTime } from 'luxon';
 import {
   call,
   put,
@@ -53,6 +54,7 @@ import {
 } from '../../core/edm/constants/FullyQualifiedNames';
 import { isDefined } from '../../utils/LangUtils';
 import {
+  ENROLLMENT_STATUSES,
   INFRACTIONS_CONSTS,
   NEIGHBOR_DETAILS,
   NEIGHBOR_ENTITY_SET,
@@ -79,6 +81,7 @@ const { TYPE } = INFRACTION_FQNS;
 const { COMPLETED } = DIVERSION_PLAN_FQNS;
 const { HOURS_WORKED, REQUIRED_HOURS } = WORKSITE_PLAN_FQNS;
 const { DATETIME_START } = SENTENCE_TERM_FQNS;
+const { EFFECTIVE_DATE, STATUS } = ENROLLMENT_STATUS_FQNS;
 
 const getAppFromState = state => state.get(STATE.APP, Map());
 const getEdmFromState = state => state.get(STATE.EDM, Map());
@@ -143,7 +146,34 @@ function* getEnrollmentStatusesWorker(action :SequenceAction) :Generator<*, *, *
     const participantsWithoutEnrollmentStatus :UUID[] = participantEKIDs
       .filter(ekid => !isDefined(enrollmentMap.get(ekid)));
     participantsWithoutEnrollmentStatus.forEach((ekid :string) => {
-      enrollmentMap = enrollmentMap.set(ekid, List());
+      enrollmentMap = enrollmentMap.set(ekid, Map());
+    });
+
+    /*
+     * 4. Get most current enrollment status for each participant.
+     */
+    enrollmentMap.forEach((personStatusList :List | Map, personEKID :UUID) => {
+
+      if (personStatusList.count() !== 0) {
+
+        const awaitingEnrollmentStatus = personStatusList.find((status :Map) => status
+          .getIn([STATUS, 0]) === ENROLLMENT_STATUSES.AWAITING_ENROLLMENT);
+        if (isDefined(awaitingEnrollmentStatus)) {
+          enrollmentMap = enrollmentMap.set(personEKID, awaitingEnrollmentStatus);
+        }
+        else {
+          // find status with most recent effective date
+          const mostRecentStatus = personStatusList.sort((statusA :Map, statusB :Map) => {
+            const dateA = DateTime.fromISO(statusA.getIn([EFFECTIVE_DATE, 0]));
+            const dateB = DateTime.fromISO(statusB.getIn([EFFECTIVE_DATE, 0]));
+            if (dateA.toISO() === dateB.toISO()) {
+              return 0;
+            }
+            return dateA < dateB ? -1 : 1;
+          });
+          enrollmentMap = enrollmentMap.set(personEKID, mostRecentStatus.last());
+        }
+      }
     });
 
     yield put(getEnrollmentStatuses.success(id, enrollmentMap));
