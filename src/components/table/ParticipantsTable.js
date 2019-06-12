@@ -49,12 +49,11 @@ type Props = {
   ageRequired :boolean;
   bannerText :string;
   columnHeaders :string[];
-  enrollment ? :Map;
+  datesToInclude :Object;
+  enrollment ? :Map | void;
   handleSelect :(personEKID :string) => void;
   hours ? :Map;
-  includeDeadline ? :boolean;
-  includeSentenceEndDate ? :boolean;
-  onlyReqHours :boolean;
+  hoursToInclude :Object;
   people :List;
   sentenceTerms ? :Map;
   small :boolean;
@@ -68,12 +67,11 @@ const ParticipantsTable = ({
   ageRequired,
   bannerText,
   columnHeaders,
+  datesToInclude,
   enrollment,
   handleSelect,
   hours,
-  includeDeadline,
-  includeSentenceEndDate,
-  onlyReqHours,
+  hoursToInclude,
   people,
   sentenceTerms,
   small,
@@ -92,44 +90,93 @@ const ParticipantsTable = ({
       {
         people.map((person :Map) => {
 
+          const {
+            deadline,
+            sentence,
+            sentenceEnd,
+            start
+          } = datesToInclude;
+          const { requiredHours, workedHours } = hoursToInclude;
           const { [ENTITY_KEY_ID]: personEntityKeyId } :UUID = getEntityProperties(person, [ENTITY_KEY_ID]);
-          const sentenceDate = (isDefined(sentenceTerms) && sentenceTerms.count() > 0)
-            ? sentenceTerms.getIn([personEntityKeyId, DATETIME_START, 0])
+
+          // Infractions
+          // if violations and/or warnings (all participants) is defined, then we need to include violations count
+          // if person not included in violations and/or warnings, but either is required, then return 0
+          const violationsCount = isDefined(violations)
+            ? violations.get(personEntityKeyId, 0)
             : undefined;
-          const violationsCount = (isDefined(violations) && isDefined(violations.get(personEntityKeyId)))
-            ? violations.get(personEntityKeyId)
-            : undefined;
-          const warningsCount = (isDefined(warnings) && isDefined(warnings.get(personEntityKeyId)))
-            ? warnings.get(personEntityKeyId)
-            : undefined;
-          const enrollmentStatus = (isDefined(enrollment) && enrollment.count() > 0)
-            ? enrollment.getIn([personEntityKeyId, STATUS, 0])
-            : undefined;
-          const effectiveDate = (isDefined(enrollment) && enrollment.count() > 0)
-            ? enrollment.getIn([personEntityKeyId, EFFECTIVE_DATE, 0], '')
-            : undefined;
-          const sentenceEndDate = (includeSentenceEndDate && isDefined(sentenceDate))
-            ? DateTime.fromISO(sentenceDate).plus({ days: 90 }).toLocaleString()
+          const warningsCount = isDefined(warnings)
+            ? warnings.get(personEntityKeyId, 0)
             : undefined;
 
-          const personHours = (isDefined(hours) && hours.count() > 0) ? hours.get(personEntityKeyId) : Map();
-          const required = (isDefined(personHours) && personHours.count() > 0) ? personHours.get(REQUIRED) : 0;
-          const hoursWorked = (isDefined(personHours) && personHours.count() > 0) ? personHours.get(WORKED) : 0;
-          const worked = onlyReqHours ? undefined : hoursWorked;
+          // Dates
+          // if sentenceTerms is defined and we need to include sentenceData:
+          // get sentenceDate from sentenceTerms, and if doesn't exist, return empty ''
+          const sentenceDate = (isDefined(sentenceTerms) && sentence)
+            ? sentenceTerms.getIn([personEntityKeyId, DATETIME_START, 0], '')
+            : undefined;
+          // can only provide a valid sentenceEndDate if we have a valid sentenceDate
+          // need to provide empty '' if sentenceEnd required but we don't have valid sentenceDate
+          let sentenceEndDate;
+          if (DateTime.fromISO(sentenceDate).isValid && sentenceEnd) {
+            sentenceEndDate = DateTime.fromISO(sentenceDate).plus({ days: 90 }).toLocaleString();
+          }
+          if (!DateTime.fromISO(sentenceDate).isValid && sentenceEnd) {
+            sentenceEndDate = '';
+          }
+          // can only provide a valid deadline date if we have a valid Sentence Date
+          // need to provide empty '' if deadline required but we don't have valid sentenceDate
+          let enrollmentDeadline;
+          if (DateTime.fromISO(sentenceDate).isValid && deadline) {
+            enrollmentDeadline = DateTime.fromISO(sentenceDate).plus({ hours: 48 }).toLocaleString();
+          }
+          if (!DateTime.fromISO(sentenceDate).isValid && deadline) {
+            enrollmentDeadline = '';
+          }
+          // we only have a start date if enrollment status has valid effective date
+          // pass empty '' if startDate required but no effective date
+          const startDate = (isDefined(enrollment) && start)
+            ? enrollment.getIn([personEntityKeyId, EFFECTIVE_DATE, 0], '')
+            : undefined;
+
+          const dates = {
+            enrollmentDeadline,
+            sentenceDate,
+            sentenceEndDate,
+            startDate,
+          };
+
+          // Status
+          // we can get enrollment status from enrollment or from absence of enrollment
+          // need to pass empty '' if status is required
+          const enrollmentStatus = (isDefined(enrollment) ||
+            (isDefined(enrollment) && enrollment.get(personEntityKeyId).count() === 0))
+            ? enrollment.getIn([personEntityKeyId, STATUS, 0], 'Awaiting enrollment')
+            : undefined;
+
+          // Hours
+          // we get both required and worked hours in the same Object
+          // for each, we need to pass an empty '' if they're not defined/found
+          // required hours are always included
+          const individualPersonHours = (isDefined(hours) && hours.count() > 0) ? hours.get(personEntityKeyId) : Map();
+          const required = (isDefined(individualPersonHours) && requiredHours)
+            ? individualPersonHours.get(REQUIRED, '')
+            : '';
+          const worked = (isDefined(individualPersonHours) && workedHours)
+            ? individualPersonHours.get(WORKED, '')
+            : undefined;
+
           return (
             <ParticipantsTableRow
                 ageRequired={ageRequired}
+                dates={dates}
                 key={personEntityKeyId}
                 handleSelect={handleSelect}
                 hoursRequired={required}
                 hoursWorked={worked}
-                includeDeadline={includeDeadline}
                 person={person}
-                sentenceDate={sentenceDate}
-                sentenceEndDate={sentenceEndDate}
-                small={small}
-                startDate={effectiveDate}
                 status={enrollmentStatus}
+                small={small}
                 violationsCount={violationsCount}
                 warningsCount={warningsCount} />
           );
@@ -140,14 +187,12 @@ const ParticipantsTable = ({
 );
 
 ParticipantsTable.defaultProps = {
-  enrollment: Map(),
+  enrollment: undefined,
   hours: Map(),
-  includeDeadline: false,
-  includeSentenceEndDate: false,
   sentenceTerms: Map(),
   styles: {},
-  violations: Map(),
-  warnings: Map(),
+  violations: undefined,
+  warnings: undefined,
 };
 
 export default ParticipantsTable;

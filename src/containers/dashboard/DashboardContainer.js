@@ -120,11 +120,7 @@ class DashboardContainer extends Component<Props, State> {
         }
 
         const isAwaitingEnrollment :boolean = enrollmentByParticipant.get(personEntityKeyId)
-          .filter((enrollmentStatus :Map) => {
-            const { [STATUS]: status } = getEntityProperties(enrollmentStatus, [STATUS]);
-            return status === ENROLLMENT_STATUSES.AWAITING_ENROLLMENT;
-          })
-          .count() > 0;
+          .getIn([STATUS, 0]) === ENROLLMENT_STATUSES.AWAITING_ENROLLMENT;
         const hasActiveSentence :boolean = DateTime.fromISO(
           sentenceTermsByParticipant.getIn([personEntityKeyId, DATETIME_START, 0])
         ).diff(DateTime.local(), 'days') < 90;
@@ -218,11 +214,15 @@ class DashboardContainer extends Component<Props, State> {
               ageRequired={false}
               bannerText="New Participants"
               columnHeaders={newParticipantsColumns}
+              datesToInclude={{
+                deadline: true,
+                sentence: true,
+                sentenceEnd: false,
+                start: false
+              }}
               handleSelect={this.handleOnSelectPerson}
               hours={hoursWorked}
-              includeDeadline
-              includeSentenceEndDate={false}
-              onlyReqHours
+              hoursToInclude={{ requiredHours: true, workedHours: false }}
               people={newParticipants}
               small
               sentenceTerms={sentenceTermsByParticipant}
@@ -232,10 +232,15 @@ class DashboardContainer extends Component<Props, State> {
                 ageRequired={false}
                 bannerText="Pending Completion Review"
                 columnHeaders={pendingCompletionColumns}
+                datesToInclude={{
+                  deadline: false,
+                  sentence: true,
+                  sentenceEnd: false,
+                  start: false
+                }}
                 handleSelect={this.handleOnSelectPerson}
                 hours={hoursWorked}
-                includeSentenceEndDate={false}
-                onlyReqHours
+                hoursToInclude={{ requiredHours: true, workedHours: false }}
                 people={pendingCompletionReview}
                 small
                 sentenceTerms={sentenceTermsByParticipant}
@@ -244,10 +249,15 @@ class DashboardContainer extends Component<Props, State> {
                 ageRequired={false}
                 bannerText="Violations Watch"
                 columnHeaders={violationsWatchColumns}
+                datesToInclude={{
+                  deadline: false,
+                  sentence: false,
+                  sentenceEnd: false,
+                  start: false
+                }}
                 handleSelect={this.handleOnSelectPerson}
                 hours={hoursWorked}
-                includeSentenceEndDate={false}
-                onlyReqHours={false}
+                hoursToInclude={{ requiredHours: true, workedHours: true }}
                 people={violationsWatch}
                 small
                 totalTableItems={violationsWatch.count()}

@@ -53,7 +53,7 @@ const ParticipantSearchInnerWrapper = styled.div`
   align-items: center;
   flex-direction: column;
   margin-top: 30px;
-  width: ${SEARCH_CONTAINER_WIDTH}px;
+  min-width: ${SEARCH_CONTAINER_WIDTH}px;
   position: relative;
   align-self: center;
 `;
@@ -243,13 +243,19 @@ class ParticipantsSearchContainer extends Component<Props, State> {
             search={this.searchParticipantList} />
         <ParticipantSearchInnerWrapper>
           <ParticipantsTable
+              ageRequired
               bannerText="All Participants"
               columnHeaders={allParticipantsColumns}
+              datesToInclude={{
+                deadline: false,
+                sentence: true,
+                sentenceEnd: true,
+                start: true
+              }}
               enrollment={enrollmentByParticipant}
               handleSelect={this.handleOnSelectPerson}
               hours={hoursWorked}
-              includeDeadline={false}
-              onlyReqHours={false}
+              hoursToInclude={{ requiredHours: true, workedHours: true }}
               people={peopleToRender}
               sentenceTerms={sentenceTermsByParticipant}
               small
