@@ -93,7 +93,7 @@ class AppContainer extends Component<Props> {
   renderAppContent = () => (
     <Switch>
       <Route exact strict path={Routes.DASHBOARD} component={DashboardContainer} />
-      <Route path={Routes.PARTICIPANTS} component={ParticipantsContainer} />
+      <Route exact strict path={Routes.PARTICIPANTS} component={ParticipantsContainer} />
       <Route path={Routes.WORKSITES} component={Worksites} />
       <Redirect to={Routes.DASHBOARD} />
     </Switch>
