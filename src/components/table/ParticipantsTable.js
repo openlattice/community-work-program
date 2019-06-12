@@ -49,6 +49,7 @@ type Props = {
   ageRequired :boolean;
   bannerText :string;
   columnHeaders :string[];
+  courtType ? :string | void;
   datesToInclude :Object;
   enrollment ? :Map | void;
   handleSelect :(personEKID :string) => void;
@@ -67,6 +68,7 @@ const ParticipantsTable = ({
   ageRequired,
   bannerText,
   columnHeaders,
+  courtType,
   datesToInclude,
   enrollment,
   handleSelect,
@@ -166,9 +168,13 @@ const ParticipantsTable = ({
             ? individualPersonHours.get(WORKED, '')
             : undefined;
 
+          // Court type
+          // more information is needed on this, but it should be a field type in All Participants table
+
           return (
             <ParticipantsTableRow
                 ageRequired={ageRequired}
+                courtType={courtType}
                 dates={dates}
                 key={personEntityKeyId}
                 handleSelect={handleSelect}
@@ -187,6 +193,7 @@ const ParticipantsTable = ({
 );
 
 ParticipantsTable.defaultProps = {
+  courtType: undefined,
   enrollment: undefined,
   hours: Map(),
   sentenceTerms: Map(),

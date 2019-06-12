@@ -16,5 +16,6 @@ export const allParticipantsColumns = [
   'STATUS',
   '# OF WARN.',
   '# OF VIO.',
-  'HRS. SERVED'
+  'HRS. SERVED',
+  'COURT TYPE'
 ];

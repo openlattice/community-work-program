@@ -246,6 +246,7 @@ class ParticipantsSearchContainer extends Component<Props, State> {
               ageRequired
               bannerText="All Participants"
               columnHeaders={allParticipantsColumns}
+              courtType=""
               datesToInclude={{
                 deadline: false,
                 sentence: true,

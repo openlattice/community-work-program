@@ -24,6 +24,7 @@ const { DOB, MUGSHOT, PICTURE } = PEOPLE_FQNS;
 
 type Props = {
   ageRequired :boolean;
+  courtType :string | void;
   dates :Object;
   handleSelect :(personEKID :string) => void;
   hoursRequired :number | string;
@@ -38,6 +39,7 @@ type Props = {
 
 const TableRow = ({
   ageRequired,
+  courtType,
   dates,
   handleSelect,
   hoursRequired,
@@ -82,8 +84,8 @@ const TableRow = ({
   cellData = (!isDefined(hoursWorked) && isDefined(hoursRequired))
     ? cellData.push(formatNumericalValue(hoursRequired))
     : cellData;
+  cellData = isDefined(courtType) ? cellData.push(courtType) : cellData;
 
-  // const typeOfCourt = formatValue(person.get('typeOfCourt'));
 
   return (
     <Row
