@@ -8,7 +8,7 @@ import { List, Map } from 'immutable';
 import { faTimes } from '@fortawesome/pro-regular-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
-import { OL } from '../../utils/constants/Colors';
+import { OL } from '../../core/style/Colors';
 import downArrowIcon from '../../assets/svg/down-arrow.svg';
 
 /*
