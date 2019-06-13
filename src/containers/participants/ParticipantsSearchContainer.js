@@ -123,21 +123,28 @@ class ParticipantsSearchContainer extends Component<Props, State> {
   }
 
   handleOnFilter = (clickedProperty :Map, peopleToFilter :List) => {
-    const { participants } = this.props;
+    const { enrollmentByParticipant, participants } = this.props;
     this.setState({ selectedFilterOption: clickedProperty });
 
     const peopleList :List = isDefined(peopleToFilter) ? peopleToFilter : participants;
-    const filter :string = clickedProperty.get('filter').toLowerCase(); // dropdown/property name
-    const property :string = clickedProperty.get('label').toLowerCase(); // value
+    const filter :string = clickedProperty.get('filter').toLowerCase();
+    let property :string = clickedProperty.get('label').toUpperCase();
+    property = property.split(' ').length > 1 ? property.split(' ').join('_') : property;
+    let filteredPeople :List = List();
 
     if (property === ALL) {
       this.setState({ peopleToRender: participants });
       return peopleList;
     }
-
-    const filteredPeople = peopleList.filter((participant :Map) => (
-      participant.get(filter).toLowerCase() === property.toLowerCase()
-    ));
+    if (filter === FILTERS.STATUS) {
+      filteredPeople = peopleList.filter((person :Map) => {
+        const statusTypeToInclude = ENROLLMENT_STATUSES[property];
+        const { [ENTITY_KEY_ID]: personEKID } :UUID = getEntityProperties(person, [ENTITY_KEY_ID]);
+        let { [STATUS]: status } :string = getEntityProperties(enrollmentByParticipant.get(personEKID), [STATUS]);
+        status = !isDefined(status) ? ENROLLMENT_STATUSES.AWAITING_ENROLLMENT : status;
+        return status === statusTypeToInclude;
+      });
+    }
 
     this.setState({ peopleToRender: filteredPeople });
     return filteredPeople;
@@ -154,21 +161,21 @@ class ParticipantsSearchContainer extends Component<Props, State> {
 
     const column = clickedColumnHeader.get('label').toLowerCase();
     const peopleList :List = isDefined(peopleToSort) ? peopleToSort : participants;
-    let sortedPeople = List();
+    let sortedPeople :List = List();
 
-    if (column === sortableParticipantColumns.name) {
+    if (column === SORTABLE_PARTICIPANT_COLUMNS.NAME) {
       sortedPeople = this.sortByName(peopleList);
     }
-    if (column === sortableParticipantColumns.startDate) {
+    if (column === SORTABLE_PARTICIPANT_COLUMNS.START_DATE) {
       sortedPeople = this.sortByStartDate(peopleList);
     }
-    if (column === sortableParticipantColumns.sentEndDate) {
+    if (column === SORTABLE_PARTICIPANT_COLUMNS.SENT_END_DATE) {
       sortedPeople = this.sortBySentEndDate(peopleList);
     }
-    if (column === sortableParticipantColumns.status) {
+    if (column === SORTABLE_PARTICIPANT_COLUMNS.STATUS) {
       sortedPeople = this.sortByStatus(peopleList);
     }
-    if (column === sortableParticipantColumns.courtType) {
+    if (column === SORTABLE_PARTICIPANT_COLUMNS.COURT_TYPE) {
       // TODO: take care of this later, when data model accomodates court type
       sortedPeople = peopleList;
     }

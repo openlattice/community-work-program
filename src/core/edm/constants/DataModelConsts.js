@@ -21,11 +21,11 @@ export const NEIGHBOR_ENTITY_SET = 'neighborEntitySet';
 
 export const ENROLLMENT_STATUSES = {
   ACTIVE: 'Active',
-  ACTIVE_NONCOMPLIANT: 'Active — noncompliant',
+  ACTIVE_NONCOMPLIANT: 'Active noncompliant',
   AWAITING_ENROLLMENT: 'Awaiting enrollment',
   CLOSED: 'Closed',
   COMPLETED: 'Completed',
-  REMOVED: 'Removed — noncompliant'
+  REMOVED_NONCOMPLIANT: 'Removed noncompliant'
 };
 
 export const HOURS_CONSTS = {
