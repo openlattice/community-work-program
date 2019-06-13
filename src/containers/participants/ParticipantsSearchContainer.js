@@ -14,10 +14,16 @@ import LogoLoader from '../../components/LogoLoader';
 import { ToolBar } from '../../components/controls/index';
 import { PARTICIPANT_PROFILE } from '../../core/router/Routes';
 import { SEARCH_CONTAINER_WIDTH } from '../../core/style/Sizes';
-import { sortDropdown, statusFilterDropdown } from './ParticipantsConstants';
 import { isDefined } from '../../utils/LangUtils';
 import { getEntityProperties } from '../../utils/DataUtils';
-import { allParticipantsColumns, sortableParticipantColumns } from '../../utils/constants/UIConsts';
+import {
+  ALL,
+  ALL_PARTICIPANTS_COLUMNS,
+  FILTERS,
+  sortDropdown,
+  SORTABLE_PARTICIPANT_COLUMNS,
+  statusFilterDropdown
+} from '../../utils/constants/UIConsts';
 import { PEOPLE, STATE } from '../../utils/constants/ReduxStateConsts';
 import { ENROLLMENT_STATUSES, INFRACTIONS_CONSTS } from '../../core/edm/constants/DataModelConsts';
 import {
@@ -124,7 +130,7 @@ class ParticipantsSearchContainer extends Component<Props, State> {
     const filter :string = clickedProperty.get('filter').toLowerCase(); // dropdown/property name
     const property :string = clickedProperty.get('label').toLowerCase(); // value
 
-    if (property === 'all') {
+    if (property === ALL) {
       this.setState({ peopleToRender: participants });
       return peopleList;
     }
@@ -315,7 +321,7 @@ class ParticipantsSearchContainer extends Component<Props, State> {
           <ParticipantsTable
               ageRequired
               bannerText="All Participants"
-              columnHeaders={allParticipantsColumns}
+              columnHeaders={ALL_PARTICIPANTS_COLUMNS}
               courtType=""
               datesToInclude={{
                 deadline: false,

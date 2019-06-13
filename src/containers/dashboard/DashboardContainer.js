@@ -26,9 +26,9 @@ import {
 } from '../../core/edm/constants/FullyQualifiedNames';
 import { PEOPLE, STATE } from '../../utils/constants/ReduxStateConsts';
 import {
-  newParticipantsColumns,
-  pendingCompletionColumns,
-  violationsWatchColumns,
+  NEW_PARTICIPANTS_COLUMNS,
+  PENDING_PARTICIPANTS_COLUMNS,
+  VIOLATIONS_WATCH_COLUMNS,
 } from '../../utils/constants/UIConsts';
 
 /* constants */
@@ -223,7 +223,7 @@ class DashboardContainer extends Component<Props, State> {
           <ParticipantsTable
               ageRequired={false}
               bannerText="New Participants"
-              columnHeaders={newParticipantsColumns}
+              columnHeaders={NEW_PARTICIPANTS_COLUMNS}
               datesToInclude={{
                 deadline: true,
                 sentence: true,
@@ -241,7 +241,7 @@ class DashboardContainer extends Component<Props, State> {
             <ParticipantsTable
                 ageRequired={false}
                 bannerText="Pending Completion Review"
-                columnHeaders={pendingCompletionColumns}
+                columnHeaders={PENDING_PARTICIPANTS_COLUMNS}
                 datesToInclude={{
                   deadline: false,
                   sentence: true,
@@ -258,7 +258,7 @@ class DashboardContainer extends Component<Props, State> {
             <ParticipantsTable
                 ageRequired={false}
                 bannerText="Violations Watch"
-                columnHeaders={violationsWatchColumns}
+                columnHeaders={VIOLATIONS_WATCH_COLUMNS}
                 datesToInclude={{
                   deadline: false,
                   sentence: false,
