@@ -71,7 +71,7 @@ const TableRow = ({
     <Row
         active={selected}
         onClick={() => {
-          handleSelect(personEKID);
+          handleSelect(person);
         }}>
       <Cell small={small}>{ photo }</Cell>
       {

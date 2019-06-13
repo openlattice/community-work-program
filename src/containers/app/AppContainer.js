@@ -13,8 +13,7 @@ import { Redirect, Route, Switch } from 'react-router-dom';
 import type { RequestSequence } from 'redux-reqseq';
 
 import AppHeaderContainer from './AppHeaderContainer';
-import DashboardContainer from '../dashboard/DashboardContainer';
-import ParticipantsContainer from '../participants/ParticipantsSearchContainer';
+import ParticipantsRouter from '../participants/ParticipantsRouter';
 import Worksites from '../worksites/Worksites';
 import * as AppActions from './AppActions';
 import * as ParticipantsActions from '../participants/ParticipantsActions';
@@ -90,10 +89,13 @@ class AppContainer extends Component<Props> {
     }
   }
 
+  renderParticipantsContent = () => (
+    <ParticipantsRouter />
+  );
+
   renderAppContent = () => (
     <Switch>
-      <Route exact strict path={Routes.DASHBOARD} component={DashboardContainer} />
-      <Route path={Routes.PARTICIPANTS} component={ParticipantsContainer} />
+      { this.renderParticipantsContent() }
       <Route path={Routes.WORKSITES} component={Worksites} />
       <Redirect to={Routes.DASHBOARD} />
     </Switch>

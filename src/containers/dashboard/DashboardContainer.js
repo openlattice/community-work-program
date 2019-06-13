@@ -164,8 +164,9 @@ class DashboardContainer extends Component<Props, State> {
     });
   }
 
-  handleOnSelectPerson = (personEKID :string) => {
+  handleOnSelectPerson = (person :Map) => {
     const { history } = this.props;
+    const { [ENTITY_KEY_ID]: personEKID } = getEntityProperties(person, [ENTITY_KEY_ID]);
     history.push(PARTICIPANT_PROFILE.replace(':subjectId', personEKID));
   }
 
