@@ -19,3 +19,11 @@ export const allParticipantsColumns = [
   'HRS. SERVED',
   'COURT TYPE'
 ];
+
+export const sortableParticipantColumns = {
+  courtType: 'court type',
+  name: 'name',
+  sentEndDate: 'sent. end date',
+  startDate: 'start date',
+  status: 'status',
+};

@@ -11,13 +11,13 @@ import type { RouterHistory } from 'react-router';
 import ParticipantsTable from '../../components/table/ParticipantsTable';
 import LogoLoader from '../../components/LogoLoader';
 
-import { getEntityProperties } from '../../utils/DataUtils';
 import { ErrorMessage } from '../../components/Layout';
 import { PARTICIPANT_PROFILE } from '../../core/router/Routes';
 import {
   APP_CONTENT_PADDING,
   DASHBOARD_WIDTH,
 } from '../../core/style/Sizes';
+import { getEntityProperties } from '../../utils/DataUtils';
 import { ENROLLMENT_STATUSES, HOURS_CONSTS } from '../../core/edm/constants/DataModelConsts';
 import {
   ENROLLMENT_STATUS_FQNS,

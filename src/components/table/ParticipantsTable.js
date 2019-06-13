@@ -169,7 +169,7 @@ const ParticipantsTable = ({
             : undefined;
 
           // Court type
-          // more information is needed on this, but it should be a field type in All Participants table
+          // TODO: more information is needed on this—for now just an empty column in All Participants table
 
           return (
             <ParticipantsTableRow
