@@ -11,8 +11,9 @@ import defaultUserIcon from '../../assets/svg/profile-placeholder-round.svg';
 import { PersonPicture } from '../picture/PersonPicture';
 import { formatNumericalValue } from '../../utils/FormattingUtils';
 import { formatAsDate } from '../../utils/DateTimeUtils';
-import { PEOPLE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { ENTITY_KEY_ID, PEOPLE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { getPersonName } from '../../utils/PeopleUtils';
+import { getEntityProperties } from '../../utils/DataUtils';
 import {
   Cell,
   Row,
@@ -22,6 +23,7 @@ import {
 const { MUGSHOT, PICTURE } = PEOPLE_FQNS;
 
 type Props = {
+  handleSelect :(personEKID :string) => void;
   hoursRequired :number;
   hoursWorked :number | void;
   includeDeadline ? :boolean;
@@ -33,6 +35,7 @@ type Props = {
 };
 
 const TableRow = ({
+  handleSelect,
   hoursRequired,
   hoursWorked,
   includeDeadline,
@@ -42,6 +45,8 @@ const TableRow = ({
   small,
   violationsCount,
 } :Props) => {
+
+  const { [ENTITY_KEY_ID]: personEKID } = getEntityProperties(person, [ENTITY_KEY_ID]);
 
   let photo = person ? person.getIn([MUGSHOT, 0]) || person.getIn([PICTURE, 0]) : '';
   photo = photo
@@ -63,7 +68,11 @@ const TableRow = ({
   cellData = (hoursRequired && !hoursWorked) ? cellData.push(formatNumericalValue(hoursRequired)) : cellData;
 
   return (
-    <Row active={selected}>
+    <Row
+        active={selected}
+        onClick={() => {
+          handleSelect(personEKID);
+        }}>
       <Cell small={small}>{ photo }</Cell>
       {
         cellData.map(field => (

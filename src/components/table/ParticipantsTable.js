@@ -42,6 +42,7 @@ const Headers = ({ columnHeaders } :HeaderProps) => (
 type Props = {
   bannerText :string;
   columnHeaders :string[];
+  handleSelect :(personEKID :string) => void;
   hours ? :Map;
   includeDeadline ? :boolean;
   onlyReqHours :boolean;
@@ -55,6 +56,7 @@ type Props = {
 const ParticipantsTable = ({
   bannerText,
   columnHeaders,
+  handleSelect,
   hours,
   includeDeadline,
   onlyReqHours,
@@ -88,6 +90,7 @@ const ParticipantsTable = ({
           return (
             <ParticipantsTableRow
                 key={personEntityKeyId}
+                handleSelect={handleSelect}
                 hoursRequired={required}
                 hoursWorked={worked}
                 includeDeadline={includeDeadline}

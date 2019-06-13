@@ -5,6 +5,7 @@ import { List, Map } from 'immutable';
 import { connect } from 'react-redux';
 import { RequestStates } from 'redux-reqseq';
 import type { RequestState } from 'redux-reqseq';
+import type { RouterHistory } from 'react-router';
 
 import ParticipantsTable from '../../components/table/ParticipantsTable';
 import LogoLoader from '../../components/LogoLoader';
@@ -15,6 +16,7 @@ import {
   APP_CONTENT_PADDING,
   DASHBOARD_WIDTH,
 } from '../../core/style/Sizes';
+import { PARTICIPANT_PROFILE } from '../../core/router/Routes';
 import { ENROLLMENT_STATUSES, HOURS_CONSTS } from '../../core/edm/constants/DataModelConsts';
 import { ENROLLMENT_STATUS_FQNS, ENTITY_KEY_ID } from '../../core/edm/constants/FullyQualifiedNames';
 import { PEOPLE, STATE } from '../../utils/constants/ReduxStateConsts';
@@ -65,6 +67,7 @@ const RightWrapper = styled.div`
 type Props = {
   enrollmentByParticipant :Map;
   getSentencesRequestState :RequestState;
+  history :RouterHistory;
   hoursWorked :Map;
   infractionCountsByParticipant :Map;
   participants :List;
@@ -161,6 +164,11 @@ class DashboardContainer extends Component<Props, State> {
     });
   }
 
+  handleOnSelectPerson = (personEKID :string) => {
+    const { history } = this.props;
+    history.push(PARTICIPANT_PROFILE.replace(':subjectId', personEKID));
+  }
+
   render() {
     const {
       getSentencesRequestState,
@@ -197,6 +205,7 @@ class DashboardContainer extends Component<Props, State> {
           <ParticipantsTable
               bannerText="New Participants"
               columnHeaders={newParticipantsColumns}
+              handleSelect={this.handleOnSelectPerson}
               hours={hoursWorked}
               includeDeadline
               onlyReqHours
@@ -208,6 +217,7 @@ class DashboardContainer extends Component<Props, State> {
             <ParticipantsTable
                 bannerText="Pending Completion Review"
                 columnHeaders={pendingCompletionColumns}
+                handleSelect={this.handleOnSelectPerson}
                 hours={hoursWorked}
                 onlyReqHours
                 people={pendingCompletionReview}
@@ -217,6 +227,7 @@ class DashboardContainer extends Component<Props, State> {
             <ParticipantsTable
                 bannerText="Violations Watch"
                 columnHeaders={violationsWatchColumns}
+                handleSelect={this.handleOnSelectPerson}
                 hours={hoursWorked}
                 onlyReqHours={false}
                 people={violationsWatch}
