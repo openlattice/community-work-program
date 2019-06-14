@@ -2,8 +2,12 @@
 import React, { Component } from 'react';
 import styled from 'styled-components';
 import { Map } from 'immutable';
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
 import type { RouterHistory } from 'react-router';
+import type { RequestSequence } from 'redux-reqseq';
 
+import { getParticipant } from './ParticipantActions';
 import { OL } from '../../core/style/Colors';
 import { PARTICIPANT_PROFILE_WIDTH } from '../../core/style/Sizes';
 import { PARTICIPANTS } from '../../core/router/Routes';
@@ -12,6 +16,7 @@ import {
 } from '../../components/controls/index';
 import { getEntityProperties } from '../../utils/DataUtils';
 import { PEOPLE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { PERSON, STATE } from '../../utils/constants/ReduxStateConsts';
 
 const { FIRST_NAME, LAST_NAME } = PEOPLE_FQNS;
 const { PARTICIPANT } = PERSON;
@@ -49,7 +54,11 @@ const NameHeader = styled.div`
 `;
 
 type Props = {
+  actions:{
+    getParticipant :RequestSequence;
+  };
   history :RouterHistory;
+  participant :Map;
   personEKID :string;
 };
 
@@ -57,6 +66,12 @@ type State = {
 };
 
 class ParticipantProfile extends Component<Props, State> {
+
+  componentDidMount() {
+    const { actions, personEKID } = this.props;
+    actions.getParticipant({ personEKID });
+  }
+
   render() {
     const { history, participant } = this.props;
     const { [FIRST_NAME]: firstName, [LAST_NAME]: lastName } = getEntityProperties(
@@ -80,5 +95,18 @@ class ParticipantProfile extends Component<Props, State> {
   }
 }
 
+const mapStateToProps = (state :Map<*, *>) => {
+  const person = state.get(STATE.PERSON);
+  return {
+    [PARTICIPANT]: person.get(PARTICIPANT),
+  };
+};
 
+const mapDispatchToProps = dispatch => ({
+  actions: bindActionCreators({
+    getParticipant,
+  }, dispatch)
+});
 
+// $FlowFixMe
+export default connect(mapStateToProps, mapDispatchToProps)(ParticipantProfile);
