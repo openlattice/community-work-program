@@ -60,7 +60,6 @@ function* getParticipantWorker(action :SequenceAction) :Generator<*, *, *> {
       throw response.error;
     }
     participant = fromJS(response.data);
-    console.log('participant: ', participant);
 
     yield put(getParticipant.success(id, participant));
   }
