@@ -4,8 +4,8 @@
 
 import React from 'react';
 import { List, Map } from 'immutable';
-
-import defaultUserIcon from '../../assets/svg/profile-placeholder-round.svg';
+import { faUserCircle } from '@fortawesome/pro-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 import { PersonPicture } from '../picture/PersonPicture';
 import { formatNumericalValue } from '../../utils/FormattingUtils';
@@ -66,7 +66,7 @@ const TableRow = ({
       <StyledPersonPhoto small={small}>
         <PersonPicture src={photo} alt="" />
       </StyledPersonPhoto>
-    ) : <PersonPicture small={small} src={defaultUserIcon} alt="" />;
+    ) : <FontAwesomeIcon icon={faUserCircle} color="#D8D8D8" size="2x" />;
 
   let cellData :List = List();
   cellData = person ? cellData.push(getPersonName(person)) : cellData;

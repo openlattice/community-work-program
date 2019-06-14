@@ -1,10 +1,7 @@
 // @flow
 import React, { Component } from 'react';
 import styled from 'styled-components';
-
 import { StyledInput } from '../../components/controls/index';
-
-import searchIcon from '../../assets/svg/search-icon.svg';
 
 const FormattedInput = styled(StyledInput)`
   width: 250px;
@@ -44,7 +41,6 @@ class SearchContainer extends Component<Props, State> {
     const { searchedName } = this.state;
     return (
       <FormattedInput
-          icon={searchIcon}
           onChange={this.onChange}
           placeholder="Search name"
           value={searchedName} />
