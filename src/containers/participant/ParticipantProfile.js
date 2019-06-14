@@ -24,8 +24,8 @@ import {
 } from '../../components/controls/index';
 import { ButtonWrapper } from '../../components/Layout';
 import { getEntityProperties } from '../../utils/DataUtils';
-import { PEOPLE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
-import { PERSON, STATE } from '../../utils/constants/ReduxStateConsts';
+import { ENTITY_KEY_ID, PEOPLE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { PEOPLE, PERSON, STATE } from '../../utils/constants/ReduxStateConsts';
 
 const { FIRST_NAME, LAST_NAME } = PEOPLE_FQNS;
 const {
@@ -115,12 +115,15 @@ type Props = {
     getParticipant :RequestSequence;
   };
   getParticipantRequestState :RequestState;
+  getSentencesRequestState :RequestState;
   history :RouterHistory;
   participant :Map;
+  participants :List;
   personEKID :string;
 };
 
 type State = {
+  participant :Map;
 };
 
 // add in later:
@@ -134,19 +137,40 @@ type State = {
 
 class ParticipantProfile extends Component<Props, State> {
 
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      participant: Map(),
+    };
+  }
+
   componentDidMount() {
     const { actions, personEKID } = this.props;
     actions.getParticipant({ personEKID });
   }
 
+  componentDidUpdate(prevProps :Props) {
+    const { participants } = this.props;
+    const { personEKID } = this.props;
+
+    if (prevProps.participants.count() !== participants.count()) {
+      const participant = participants.find((p :Map) => p.getIn([ENTITY_KEY_ID, 0]) === personEKID);
+      this.setState({
+        participant,
+      });
+    }
+  }
+
   render() {
-    const { getParticipantRequestState, history, participant } = this.props;
+    const { getSentencesRequestState, history } = this.props;
+    const { participant } = this.state;
     const { [FIRST_NAME]: firstName, [LAST_NAME]: lastName } = getEntityProperties(
       participant, [FIRST_NAME, LAST_NAME]
     );
 
-    if (getParticipantRequestState === RequestStates.PENDING
-        || getParticipantRequestState === RequestStates.STANDBY) {
+    if (getSentencesRequestState === RequestStates.PENDING
+        || getSentencesRequestState === RequestStates.STANDBY) {
       return (
         <LogoLoader
             loadingText="Please wait..."
@@ -174,7 +198,7 @@ class ParticipantProfile extends Component<Props, State> {
           <BasicInfoWrapper>
             <GeneralInfo person={participant} />
             <InnerColumnWrapper>
-              <KeyDates person={participant} />
+              <KeyDates sentenceTerm={Map()} />
             </InnerColumnWrapper>
           </BasicInfoWrapper>
         </ProfileBody>
@@ -185,9 +209,12 @@ class ParticipantProfile extends Component<Props, State> {
 
 const mapStateToProps = (state :Map<*, *>) => {
   const person = state.get(STATE.PERSON);
+  const people = state.get(STATE.PEOPLE);
   return {
     getParticipantRequestState: person.getIn([ACTIONS, GET_PARTICIPANT, REQUEST_STATE]),
+    getSentencesRequestState: people.getIn([PEOPLE.ACTIONS, PEOPLE.GET_SENTENCES, PEOPLE.REQUEST_STATE]),
     [PARTICIPANT]: person.get(PARTICIPANT),
+    participants: people.get('participants'),
   };
 };
 
