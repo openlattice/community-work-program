@@ -1,6 +1,6 @@
 // @flow
 import React from 'react';
-import { Switch, Route } from 'react-router-dom';
+import { Switch, Route, withRouter } from 'react-router-dom';
 
 import DashboardContainer from '../dashboard/DashboardContainer';
 import ParticipantsSearchContainer from './ParticipantsSearchContainer';
@@ -15,4 +15,4 @@ const ParticipantsRouter = () => (
   </Switch>
 );
 
-export default ParticipantsRouter;
+export default withRouter(ParticipantsRouter);
