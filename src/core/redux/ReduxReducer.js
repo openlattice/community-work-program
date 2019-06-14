@@ -8,6 +8,7 @@ import { combineReducers } from 'redux-immutable';
 
 import appReducer from '../../containers/app/AppReducer';
 import edmReducer from '../edm/EDMReducer';
+import participantReducer from '../../containers/participant/ParticipantReducer';
 import participantsReducer from '../../containers/participants/ParticipantsReducer';
 
 export default function reduxReducer(routerHistory :any) {
@@ -17,6 +18,7 @@ export default function reduxReducer(routerHistory :any) {
     auth: AuthReducer,
     edm: edmReducer,
     people: participantsReducer,
+    person: participantReducer,
     router: connectRouter(routerHistory),
   });
 }

@@ -2,6 +2,7 @@ export const STATE = {
   APP: 'app',
   EDM: 'edm',
   PEOPLE: 'people',
+  PERSON: 'person',
 };
 
 /* App */
@@ -45,4 +46,14 @@ export const PEOPLE = {
   REQUEST_STATE: 'requestState',
   SENTENCE_TERMS_BY_PARTICIPANT: 'sentenceTermsByParticipant',
   SENTENCES: 'sentences',
+};
+
+/* Person */
+
+export const PERSON = {
+  ACTIONS: 'actions',
+  ERRORS: 'errors',
+  GET_PARTICIPANT: 'getParticipant',
+  PARTICIPANT: 'participant',
+  REQUEST_STATE: 'requestState',
 };
