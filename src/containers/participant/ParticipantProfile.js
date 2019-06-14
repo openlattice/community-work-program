@@ -4,8 +4,11 @@ import styled from 'styled-components';
 import { Map } from 'immutable';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
+import { RequestStates } from 'redux-reqseq';
 import type { RouterHistory } from 'react-router';
-import type { RequestSequence } from 'redux-reqseq';
+import type { RequestSequence, RequestState } from 'redux-reqseq';
+
+import LogoLoader from '../../components/LogoLoader';
 
 import { getParticipant } from './ParticipantActions';
 import { OL } from '../../core/style/Colors';
@@ -19,7 +22,12 @@ import { PEOPLE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { PERSON, STATE } from '../../utils/constants/ReduxStateConsts';
 
 const { FIRST_NAME, LAST_NAME } = PEOPLE_FQNS;
-const { PARTICIPANT } = PERSON;
+const {
+  ACTIONS,
+  GET_PARTICIPANT,
+  REQUEST_STATE,
+  PARTICIPANT
+} = PERSON;
 
 const ProfileWrapper = styled.div`
   display: flex;
@@ -57,6 +65,7 @@ type Props = {
   actions:{
     getParticipant :RequestSequence;
   };
+  getParticipantRequestState :RequestState;
   history :RouterHistory;
   participant :Map;
   personEKID :string;
@@ -73,10 +82,20 @@ class ParticipantProfile extends Component<Props, State> {
   }
 
   render() {
-    const { history, participant } = this.props;
+    const { getParticipantRequestState, history, participant } = this.props;
     const { [FIRST_NAME]: firstName, [LAST_NAME]: lastName } = getEntityProperties(
       participant, [FIRST_NAME, LAST_NAME]
     );
+
+    if (getParticipantRequestState === RequestStates.PENDING
+        || getParticipantRequestState === RequestStates.STANDBY) {
+      return (
+        <LogoLoader
+            loadingText="Please wait..."
+            size={60} />
+      );
+    }
+
     return (
       <ProfileWrapper>
         <ProfileBody>
@@ -98,6 +117,7 @@ class ParticipantProfile extends Component<Props, State> {
 const mapStateToProps = (state :Map<*, *>) => {
   const person = state.get(STATE.PERSON);
   return {
+    getParticipantRequestState: person.getIn([ACTIONS, GET_PARTICIPANT, REQUEST_STATE]),
     [PARTICIPANT]: person.get(PARTICIPANT),
   };
 };
