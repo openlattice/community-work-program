@@ -1,9 +1,9 @@
 // @flow
 import React, { Component } from 'react';
 import styled from 'styled-components';
-import { StyledInput } from '../../components/controls/index';
+import { Input } from 'lattice-ui-kit';
 
-const FormattedInput = styled(StyledInput)`
+const FormattedInput = styled(Input)`
   width: 250px;
   margin: 10px;
   padding: 0 20px;
