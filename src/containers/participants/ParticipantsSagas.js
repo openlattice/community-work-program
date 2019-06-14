@@ -34,7 +34,12 @@ import {
   getSentenceTerms,
   getSentences,
 } from './ParticipantsActions';
-import { getEntityProperties, getFirstNeighborValue, getEntitySetIdFromApp, getPropertyTypeIdFromEdm } from '../../utils/DataUtils';
+import {
+  getEntityProperties,
+  getFirstNeighborValue,
+  getEntitySetIdFromApp,
+  getPropertyTypeIdFromEdm
+} from '../../utils/DataUtils';
 import { STATE } from '../../utils/constants/ReduxStateConsts';
 import {
   APP_TYPE_FQNS,
@@ -77,7 +82,7 @@ const { DATETIME_START } = SENTENCE_TERM_FQNS;
 const getAppFromState = state => state.get(STATE.APP, Map());
 const getEdmFromState = state => state.get(STATE.EDM, Map());
 
-const LOG = new Logger('StudySagas');
+const LOG = new Logger('ParticipantsSagas');
 
 /*
  *
