@@ -20,9 +20,8 @@ import {
   ALL,
   ALL_PARTICIPANTS_COLUMNS,
   FILTERS,
-  sortDropdown,
   SORTABLE_PARTICIPANT_COLUMNS,
-  statusFilterDropdown
+  statusFilterDropdown,
 } from '../../utils/constants/UIConsts';
 import { PEOPLE, STATE } from '../../utils/constants/ReduxStateConsts';
 import { ENROLLMENT_STATUSES, INFRACTIONS_CONSTS } from '../../core/edm/constants/DataModelConsts';
@@ -49,11 +48,10 @@ const { FIRST_NAME, LAST_NAME } = PEOPLE_FQNS;
 const { DATETIME_START } = SENTENCE_TERM_FQNS;
 
 const dropdowns :List = List().withMutations((list :List) => {
-  list.set(0, sortDropdown);
-  list.set(1, statusFilterDropdown);
+  list.set(0, statusFilterDropdown);
 });
-const defaultFilterOption :Map = statusFilterDropdown.get('enums').find(option => option.get('default'));
-const defaultSortOption :Map = sortDropdown.get('enums').find(option => option.get('default'));
+const defaultFilterOption :Map = statusFilterDropdown.get('enums')
+  .find(obj => obj.value.toUpperCase() === ALL);
 
 /*
  * styled components
@@ -108,27 +106,28 @@ class ParticipantsSearchContainer extends Component<Props, State> {
     this.state = {
       peopleToRender: props.participants,
       selectedFilterOption: defaultFilterOption,
-      selectedSortOption: defaultSortOption,
+      selectedSortOption: SORTABLE_PARTICIPANT_COLUMNS.STATUS,
     };
+  }
+
+  componentDidMount() {
+    this.handleSortOnRender();
   }
 
   componentDidUpdate(prevProps :Props) {
     const { participants } = this.props;
     if (prevProps.participants.count() !== participants.count()) {
-      const peopleSortedByStatus = this.handleOnSort(defaultSortOption);
-      this.setState({
-        peopleToRender: peopleSortedByStatus,
-      });
+      this.handleSortOnRender();
     }
   }
 
-  handleOnFilter = (clickedProperty :Map, peopleToFilter :List) => {
+  handleOnFilter = (clickedProperty :Map, selectEvent :Object, peopleToFilter :List) => {
     const { enrollmentByParticipant, participants } = this.props;
     this.setState({ selectedFilterOption: clickedProperty });
 
     const peopleList :List = isDefined(peopleToFilter) ? peopleToFilter : participants;
-    const filter :string = clickedProperty.get('filter').toLowerCase();
-    let property :string = clickedProperty.get('label').toUpperCase();
+    const filter :string = clickedProperty.filter.toLowerCase();
+    let property :string = clickedProperty.label.toUpperCase();
     property = property.split(' ').length > 1 ? property.split(' ').join('_') : property;
     let filteredPeople :List = List();
 
@@ -155,11 +154,11 @@ class ParticipantsSearchContainer extends Component<Props, State> {
     history.push(PARTICIPANT_PROFILE.replace(':subjectId', personEKID));
   }
 
-  handleOnSort = (clickedColumnHeader :Map, peopleToSort :List) => {
+  handleOnSort = (clickedColumnHeader :Map, selectEvent :Object, peopleToSort :List) => {
     const { participants } = this.props;
     this.setState({ selectedSortOption: clickedColumnHeader });
 
-    const column = clickedColumnHeader.get('label').toLowerCase();
+    const column = clickedColumnHeader.toLowerCase();
     const peopleList :List = isDefined(peopleToSort) ? peopleToSort : participants;
     let sortedPeople :List = List();
 
@@ -175,13 +174,20 @@ class ParticipantsSearchContainer extends Component<Props, State> {
     if (column === SORTABLE_PARTICIPANT_COLUMNS.STATUS) {
       sortedPeople = this.sortByStatus(peopleList);
     }
-    if (column === SORTABLE_PARTICIPANT_COLUMNS.COURT_TYPE) {
-      // TODO: take care of this later, when data model accomodates court type
-      sortedPeople = peopleList;
+    if (Object.values(SORTABLE_PARTICIPANT_COLUMNS).indexOf(column) === -1) {
+      // TODO: sort by court type when the data model accomodates court type
+      return;
     }
 
     this.setState({ peopleToRender: sortedPeople });
     return sortedPeople;
+  }
+
+  handleSortOnRender = () => {
+    const peopleSortedByStatus = this.handleOnSort(SORTABLE_PARTICIPANT_COLUMNS.STATUS.toUpperCase());
+    this.setState({
+      peopleToRender: peopleSortedByStatus,
+    });
   }
 
   searchParticipantList = (input :string) => {
@@ -200,16 +206,23 @@ class ParticipantsSearchContainer extends Component<Props, State> {
     });
 
     // preserve any filters or sorting that was selected before search
-    const sortedSearchedPeople = this.handleOnSort(selectedSortOption, matches);
-    const fullyProcessedPeople = this.handleOnFilter(selectedFilterOption, sortedSearchedPeople);
+    const sortedSearchedPeople = this.handleOnSort(selectedSortOption, null, matches);
+    const fullyProcessedPeople = this.handleOnFilter(selectedFilterOption, null, sortedSearchedPeople);
     this.setState({ peopleToRender: fullyProcessedPeople });
 
   }
 
   sortByName = (people :List) => {
     const sortedByName :List = people.sort((personA, personB) => {
-      const { [LAST_NAME]: lastNameA } :string = getEntityProperties(personA, [LAST_NAME]);
-      const { [LAST_NAME]: lastNameB } :string = getEntityProperties(personB, [LAST_NAME]);
+      const { [FIRST_NAME]: firstNameA, [LAST_NAME]: lastNameA } :string = getEntityProperties(
+        personA, [FIRST_NAME, LAST_NAME]
+      );
+      const { [FIRST_NAME]: firstNameB, [LAST_NAME]: lastNameB } :string = getEntityProperties(
+        personB, [FIRST_NAME, LAST_NAME]
+      );
+      if (lastNameA === lastNameB) {
+        return firstNameA.localeCompare(firstNameB, undefined, { sensitivity: 'base' });
+      }
       return lastNameA.localeCompare(lastNameB, undefined, { sensitivity: 'base' });
     });
     return sortedByName;
@@ -297,7 +310,7 @@ class ParticipantsSearchContainer extends Component<Props, State> {
       infractionCountsByParticipant,
       sentenceTermsByParticipant
     } = this.props;
-    const { peopleToRender } = this.state;
+    const { peopleToRender, selectedSortOption } = this.state;
     const onSelectFunctions = Map().withMutations((map :Map) => {
       map.set('Sort by', this.handleOnSort);
       map.set('Status', this.handleOnFilter);
@@ -341,8 +354,10 @@ class ParticipantsSearchContainer extends Component<Props, State> {
               hours={hoursWorked}
               hoursToInclude={{ requiredHours: true, workedHours: true }}
               people={peopleToRender}
+              selectedSortOption={selectedSortOption}
               sentenceTerms={sentenceTermsByParticipant}
               small
+              sortByColumn={this.handleOnSort}
               styles={extraStyles}
               totalTableItems={peopleToRender.count()}
               violations={violationMap}
