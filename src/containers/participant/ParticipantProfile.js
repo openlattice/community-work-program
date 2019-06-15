@@ -17,7 +17,7 @@ import LogoLoader from '../../components/LogoLoader';
 import { getParticipant } from './ParticipantActions';
 import { OL } from '../../core/style/Colors';
 import { PARTICIPANT_PROFILE_WIDTH } from '../../core/style/Sizes';
-import { PARTICIPANTS } from '../../core/router/Routes';
+import * as Routes from '../../core/router/Routes';
 import {
   BackNavButton,
   PrimaryButton,
@@ -34,6 +34,10 @@ const {
   REQUEST_STATE,
   PARTICIPANT
 } = PERSON;
+const {
+  PARTICIPANTS,
+  SENTENCE_TERMS_BY_PARTICIPANT,
+} = PEOPLE;
 
 const ProfileWrapper = styled.div`
   display: flex;
@@ -120,10 +124,12 @@ type Props = {
   participant :Map;
   participants :List;
   personEKID :string;
+  sentenceTermsByParticipant :Map;
 };
 
 type State = {
   participant :Map;
+  sentenceTerm :Map;
 };
 
 // add in later:
@@ -142,29 +148,36 @@ class ParticipantProfile extends Component<Props, State> {
 
     this.state = {
       participant: Map(),
+      sentenceTerm: Map(),
     };
   }
 
   componentDidMount() {
     const { actions, personEKID } = this.props;
     actions.getParticipant({ personEKID });
+    this.renderParticipant();
   }
 
   componentDidUpdate(prevProps :Props) {
     const { participants } = this.props;
-    const { personEKID } = this.props;
-
     if (prevProps.participants.count() !== participants.count()) {
-      const participant = participants.find((p :Map) => p.getIn([ENTITY_KEY_ID, 0]) === personEKID);
-      this.setState({
-        participant,
-      });
+      this.renderParticipant();
     }
+  }
+
+  renderParticipant = () => {
+    const { participants, personEKID, sentenceTermsByParticipant } = this.props;
+    const participant = participants.find((p :Map) => p.getIn([ENTITY_KEY_ID, 0]) === personEKID);
+    const sentenceTerm = sentenceTermsByParticipant.get(personEKID);
+    this.setState({
+      participant,
+      sentenceTerm,
+    });
   }
 
   render() {
     const { getSentencesRequestState, history } = this.props;
-    const { participant } = this.state;
+    const { participant, sentenceTerm } = this.state;
     const { [FIRST_NAME]: firstName, [LAST_NAME]: lastName } = getEntityProperties(
       participant, [FIRST_NAME, LAST_NAME]
     );
@@ -183,7 +196,7 @@ class ParticipantProfile extends Component<Props, State> {
         <ProfileBody>
           <BackNavButton
               onClick={() => {
-                history.push(PARTICIPANTS);
+                history.push(Routes.PARTICIPANTS);
               }}>
             Back to Participants
           </BackNavButton>
@@ -198,7 +211,7 @@ class ParticipantProfile extends Component<Props, State> {
           <BasicInfoWrapper>
             <GeneralInfo person={participant} />
             <InnerColumnWrapper>
-              <KeyDates sentenceTerm={Map()} />
+              <KeyDates sentenceTerm={sentenceTerm} />
             </InnerColumnWrapper>
           </BasicInfoWrapper>
         </ProfileBody>
@@ -214,7 +227,8 @@ const mapStateToProps = (state :Map<*, *>) => {
     getParticipantRequestState: person.getIn([ACTIONS, GET_PARTICIPANT, REQUEST_STATE]),
     getSentencesRequestState: people.getIn([PEOPLE.ACTIONS, PEOPLE.GET_SENTENCES, PEOPLE.REQUEST_STATE]),
     [PARTICIPANT]: person.get(PARTICIPANT),
-    participants: people.get('participants'),
+    [PARTICIPANTS]: people.get(PARTICIPANTS),
+    [SENTENCE_TERMS_BY_PARTICIPANT]: people.get(SENTENCE_TERMS_BY_PARTICIPANT),
   };
 };
 

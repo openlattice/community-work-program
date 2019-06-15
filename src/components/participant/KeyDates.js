@@ -56,11 +56,11 @@ const KeyDates = ({ sentenceTerm } :Props) => {
 
   const { [DATETIME_START]: sentDate } = getEntityProperties(sentenceTerm, [DATETIME_START]);
   const sentenceDate = sentDate ? formatAsDate(sentDate) : '';
-  const enrollmentDeadline = DateTime.fromISO(sentenceDate).isValid
-    ? DateTime.fromISO(sentenceDate).plus({ hours: 48 }).toLocaleString()
+  const enrollmentDeadline = DateTime.fromISO(sentDate).isValid
+    ? DateTime.fromISO(sentDate).plus({ hours: 48 }).toLocaleString()
     : '';
-  const sentenceEndDate = DateTime.fromISO(sentenceDate).isValid
-    ? DateTime.fromISO(sentenceDate).plus({ days: 90 }).toLocaleString()
+  const sentenceEndDate = DateTime.fromISO(sentDate).isValid
+    ? DateTime.fromISO(sentDate).plus({ days: 90 }).toLocaleString()
     : '';
   return (
     <DatesWrapper>
