@@ -3,6 +3,7 @@ import styled from 'styled-components';
 
 import { OL } from '../../core/style/Colors';
 import { PersonPhoto } from '../picture/PersonPicture';
+import { ENROLLMENT_STATUSES } from '../../core/edm/constants/DataModelConsts';
 
 /* Table Styles */
 
@@ -50,11 +51,17 @@ export const HeaderElement = styled.span`
   font-size: 10px;
   font-weight: 600;
   font-family: 'Open Sans', sans-serif;
-  color: ${OL.BLACK};
+  color: ${props => (props.selected ? OL.PURPLE02 : OL.BLACK)};
   text-transform: uppercase;
   padding: 12px 30px 12px 0;
   border-bottom: 1px solid ${OL.BLACK};
   text-align: left;
+  &:hover {
+    cursor: pointer;
+  }
+  &:active {
+    color: ${OL.PURPLE03};
+  }
 `;
 
 export const HeaderRow = styled.div`
@@ -72,20 +79,20 @@ export const Cell = styled.span`
   text-align: left;
   vertical-align: middle;
   color: ${(props) => {
-    if (props.status === 'Active') {
+    if (props.status === ENROLLMENT_STATUSES.ACTIVE) {
       return `${OL.GREEN02};`;
     }
-    if (props.status === 'Completed') {
-      return `${OL.BLUE02};`;
+    if (props.status === ENROLLMENT_STATUSES.COMPLETED) {
+      return `${OL.BLUE01};`;
     }
-    if (props.status === 'Active — noncompliant') {
+    if (props.status === ENROLLMENT_STATUSES.ACTIVE_NONCOMPLIANT) {
       return `${OL.YELLOW01};`;
     }
-    if (props.status === 'Removed — noncompliant') {
+    if (props.status === ENROLLMENT_STATUSES.REMOVED_NONCOMPLIANT) {
       return `${OL.RED01};`;
     }
-    if (props.status === 'Awaiting enrollment') {
-      return `${OL.PURPLE03};`;
+    if (props.status === ENROLLMENT_STATUSES.AWAITING_ENROLLMENT) {
+      return `${OL.PINK01};`;
     }
     return `${OL.GREY02};`;
   }}

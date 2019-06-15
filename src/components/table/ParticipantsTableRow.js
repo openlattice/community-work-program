@@ -86,7 +86,6 @@ const TableRow = ({
     : cellData;
   cellData = isDefined(courtType) ? cellData.push(courtType) : cellData;
 
-
   return (
     <Row
         active={selected}
@@ -96,7 +95,7 @@ const TableRow = ({
       <Cell small={small}>{ photo }</Cell>
       {
         cellData.map((field :string, index :number) => (
-          <Cell key={`${index}-${field}`} small={small}>{ field }</Cell>
+          <Cell key={`${index}-${field}`} small={small} status={field}>{ field }</Cell>
         ))
       }
     </Row>
