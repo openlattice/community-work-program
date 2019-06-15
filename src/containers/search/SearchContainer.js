@@ -7,7 +7,7 @@ const FormattedInput = styled(Input)`
   width: 250px;
   margin: 10px;
   padding: 0 20px;
-  height: 35px;
+  height: 40px;
 `;
 
 type Props = {
