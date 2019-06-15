@@ -317,10 +317,6 @@ class ParticipantsSearchContainer extends Component<Props, State> {
     });
     const warningMap :Map = infractionCountsByParticipant.map((count :Map) => count.get(`${WARNING}s`));
     const violationMap :Map = infractionCountsByParticipant.map((count :Map) => count.get(`${VIOLATION}s`));
-    const extraStyles = {
-      align: 'center',
-      width: 'inherit'
-    };
 
     if (getSentencesRequestState === RequestStates.PENDING
         || getSentencesRequestState === RequestStates.STANDBY) {

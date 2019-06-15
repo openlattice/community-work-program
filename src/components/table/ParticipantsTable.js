@@ -76,7 +76,6 @@ type Props = {
   setWidth ? :boolean;
   small :boolean;
   sortByColumn ? :(header :string) => void;
-  styles ? :Object;
   totalTableItems :number;
   violations ? :Map;
   warnings ? :Map;
@@ -222,7 +221,6 @@ ParticipantsTable.defaultProps = {
   sentenceTerms: Map(),
   setWidth: false,
   sortByColumn: () => {},
-  styles: {},
   violations: undefined,
   warnings: undefined,
 };
