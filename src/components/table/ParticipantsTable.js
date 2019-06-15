@@ -23,6 +23,7 @@ import {
   SENTENCE_TERM_FQNS
 } from '../../core/edm/constants/FullyQualifiedNames';
 import { HOURS_CONSTS } from '../../core/edm/constants/DataModelConsts';
+import { SORTABLE_PARTICIPANT_COLUMNS } from '../../utils/constants/UIConsts';
 
 const { EFFECTIVE_DATE, STATUS } = ENROLLMENT_STATUS_FQNS;
 const { REQUIRED, WORKED } = HOURS_CONSTS;
@@ -30,20 +31,33 @@ const { DATETIME_START } = SENTENCE_TERM_FQNS;
 
 type HeaderProps = {
   columnHeaders :string[];
+  selected ? :string;
+  sort ? :(header :string) => void;
 };
 
-const Headers = ({ columnHeaders } :HeaderProps) => (
+const Headers = ({ columnHeaders, selected, sort } :HeaderProps) => (
   <>
     <HeaderRow>
       <HeaderElement />
       {
         columnHeaders.map(header => (
-          <HeaderElement key={header}>{ header }</HeaderElement>
+          <HeaderElement
+              key={header}
+              onClick={() => sort(header)}
+              selected={selected === header && Object.values(SORTABLE_PARTICIPANT_COLUMNS)
+                .indexOf(selected.toLowerCase()) !== -1}>
+            { header }
+          </HeaderElement>
         ))
       }
     </HeaderRow>
   </>
 );
+
+Headers.defaultProps = {
+  selected: '',
+  sort: () => {}
+};
 
 type Props = {
   ageRequired :boolean;
@@ -56,8 +70,10 @@ type Props = {
   hours ? :Map;
   hoursToInclude :Object;
   people :List;
+  selectedSortOption ? :string;
   sentenceTerms ? :Map;
   small :boolean;
+  sortByColumn ? :(header :string) => void;
   styles ? :Object;
   totalTableItems :number;
   violations ? :Map;
@@ -75,8 +91,10 @@ const ParticipantsTable = ({
   hours,
   hoursToInclude,
   people,
+  selectedSortOption,
   sentenceTerms,
   small,
+  sortByColumn,
   styles,
   totalTableItems,
   violations,
@@ -88,7 +106,7 @@ const ParticipantsTable = ({
       <TotalTableItems>{ totalTableItems }</TotalTableItems>
     </TableBanner>
     <Table>
-      <Headers columnHeaders={columnHeaders} />
+      <Headers columnHeaders={columnHeaders} selected={selectedSortOption} sort={sortByColumn} />
       {
         people.map((person :Map) => {
 
@@ -196,7 +214,9 @@ ParticipantsTable.defaultProps = {
   courtType: undefined,
   enrollment: undefined,
   hours: Map(),
+  selectedSortOption: '',
   sentenceTerms: Map(),
+  sortByColumn: () => {},
   styles: {},
   violations: undefined,
   warnings: undefined,
