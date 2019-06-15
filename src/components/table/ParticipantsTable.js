@@ -61,6 +61,7 @@ Headers.defaultProps = {
 
 type Props = {
   ageRequired :boolean;
+  alignCenter ? :boolean;
   bannerText :string;
   columnHeaders :string[];
   courtType ? :string | void;
@@ -72,6 +73,7 @@ type Props = {
   people :List;
   selectedSortOption ? :string;
   sentenceTerms ? :Map;
+  setWidth ? :boolean;
   small :boolean;
   sortByColumn ? :(header :string) => void;
   styles ? :Object;
@@ -82,6 +84,7 @@ type Props = {
 
 const ParticipantsTable = ({
   ageRequired,
+  alignCenter,
   bannerText,
   columnHeaders,
   courtType,
@@ -93,14 +96,14 @@ const ParticipantsTable = ({
   people,
   selectedSortOption,
   sentenceTerms,
+  setWidth,
   small,
   sortByColumn,
-  styles,
   totalTableItems,
   violations,
   warnings,
 } :Props) => (
-  <TableWrapper align={styles ? styles.align : 'start'} width={styles ? styles.width : '600'}>
+  <TableWrapper alignCenter={alignCenter} setWidth={setWidth}>
     <TableBanner>
       { bannerText }
       <TotalTableItems>{ totalTableItems }</TotalTableItems>
@@ -211,11 +214,13 @@ const ParticipantsTable = ({
 );
 
 ParticipantsTable.defaultProps = {
+  alignCenter: false,
   courtType: undefined,
   enrollment: undefined,
   hours: Map(),
   selectedSortOption: '',
   sentenceTerms: Map(),
+  setWidth: false,
   sortByColumn: () => {},
   styles: {},
   violations: undefined,

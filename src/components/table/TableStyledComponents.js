@@ -8,12 +8,12 @@ import { ENROLLMENT_STATUSES } from '../../core/edm/constants/DataModelConsts';
 /* Table Styles */
 
 export const TableWrapper = styled.div`
-  width: ${props => (props.width ? props.width : '600')}px;
+  width: ${props => (props.setWidth ? '600' : 'inherit')}px;
   background-color: ${OL.WHITE};
   border: 1px solid ${OL.GREY11};
   border-radius: 5px;
   margin-bottom: 30px;
-  align-self: ${props => (props.align ? props.align : 'start')};
+  align-self: ${props => (props.alignCenter ? 'center' : 'start')};
 `;
 
 export const TableBanner = styled.div`

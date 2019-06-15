@@ -340,6 +340,7 @@ class ParticipantsSearchContainer extends Component<Props, State> {
         <ParticipantSearchInnerWrapper>
           <ParticipantsTable
               ageRequired
+              alignCenter
               bannerText="All Participants"
               columnHeaders={ALL_PARTICIPANTS_COLUMNS}
               courtType=""
@@ -356,9 +357,9 @@ class ParticipantsSearchContainer extends Component<Props, State> {
               people={peopleToRender}
               selectedSortOption={selectedSortOption}
               sentenceTerms={sentenceTermsByParticipant}
+              setWidth={false}
               small
               sortByColumn={this.handleOnSort}
-              styles={extraStyles}
               totalTableItems={peopleToRender.count()}
               violations={violationMap}
               warnings={warningMap} />

@@ -234,6 +234,7 @@ class DashboardContainer extends Component<Props, State> {
               hours={hoursWorked}
               hoursToInclude={{ requiredHours: true, workedHours: false }}
               people={newParticipants}
+              setWidth
               small
               sentenceTerms={sentenceTermsByParticipant}
               totalTableItems={newParticipants.count()} />
@@ -252,6 +253,7 @@ class DashboardContainer extends Component<Props, State> {
                 hours={hoursWorked}
                 hoursToInclude={{ requiredHours: true, workedHours: false }}
                 people={pendingCompletionReview}
+                setWidth
                 small
                 sentenceTerms={sentenceTermsByParticipant}
                 totalTableItems={pendingCompletionReview.count()} />
@@ -269,6 +271,7 @@ class DashboardContainer extends Component<Props, State> {
                 hours={hoursWorked}
                 hoursToInclude={{ requiredHours: true, workedHours: true }}
                 people={violationsWatch}
+                setWidth
                 small
                 totalTableItems={violationsWatch.count()}
                 violations={violationMap} />
