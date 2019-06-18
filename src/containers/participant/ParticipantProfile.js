@@ -37,6 +37,7 @@ const {
 } = PERSON;
 const {
   ENROLLMENT_BY_PARTICIPANT,
+  INFRACTION_COUNTS_BY_PARTICIPANT,
   PARTICIPANTS,
   SENTENCE_TERMS_BY_PARTICIPANT,
 } = PEOPLE;
@@ -124,6 +125,7 @@ type Props = {
   // getParticipantRequestState :RequestState;
   getSentencesRequestState :RequestState;
   history :RouterHistory;
+  infractionCountsByParticipant :Map;
   // participant :Map;
   participants :List;
   personEKID :string;
@@ -132,18 +134,10 @@ type Props = {
 
 type State = {
   enrollmentStatus :string,
+  infractionCounts :Map;
   participant :Map;
   sentenceTerm :Map;
 };
-
-// add in later:
-// <InnerColumnWrapper>
-//   <KeyDates person={participant} />
-//   <InnerRowWrapper>
-//     <CaseInfo />
-//     <InfractionsDisplay />
-//   </InnerRowWrapper>
-// </InnerColumnWrapper>
 
 class ParticipantProfile extends Component<Props, State> {
 
@@ -152,6 +146,7 @@ class ParticipantProfile extends Component<Props, State> {
 
     this.state = {
       enrollmentStatus: '',
+      infractionCounts: Map(),
       participant: Map(),
       sentenceTerm: Map(),
     };
@@ -173,6 +168,7 @@ class ParticipantProfile extends Component<Props, State> {
   renderParticipant = () => {
     const {
       enrollmentByParticipant,
+      infractionCountsByParticipant,
       participants,
       personEKID,
       sentenceTermsByParticipant
@@ -180,8 +176,10 @@ class ParticipantProfile extends Component<Props, State> {
     const participant = participants.find((p :Map) => p.getIn([ENTITY_KEY_ID, 0]) === personEKID);
     const sentenceTerm = sentenceTermsByParticipant.get(personEKID);
     const enrollmentStatus = enrollmentByParticipant.getIn([personEKID, STATUS, 0], 'Awaiting enrollment');
+    const infractionCounts = infractionCountsByParticipant.get(personEKID, Map());
     this.setState({
       enrollmentStatus,
+      infractionCounts,
       participant,
       sentenceTerm,
     });
@@ -189,7 +187,12 @@ class ParticipantProfile extends Component<Props, State> {
 
   render() {
     const { getSentencesRequestState, history } = this.props;
-    const { enrollmentStatus, participant, sentenceTerm } = this.state;
+    const {
+      enrollmentStatus,
+      infractionCounts,
+      participant,
+      sentenceTerm
+    } = this.state;
     const { [FIRST_NAME]: firstName, [LAST_NAME]: lastName } = getEntityProperties(
       participant, [FIRST_NAME, LAST_NAME]
     );
@@ -224,6 +227,9 @@ class ParticipantProfile extends Component<Props, State> {
             <GeneralInfo person={participant} status={enrollmentStatus} />
             <InnerColumnWrapper>
               <KeyDates sentenceTerm={sentenceTerm} />
+              <InnerRowWrapper>
+                <InfractionsDisplay infractions={infractionCounts} />
+              </InnerRowWrapper>
             </InnerColumnWrapper>
           </BasicInfoWrapper>
         </ProfileBody>
@@ -239,6 +245,7 @@ const mapStateToProps = (state :Map<*, *>) => {
     [ENROLLMENT_BY_PARTICIPANT]: people.get(ENROLLMENT_BY_PARTICIPANT),
     // getParticipantRequestState: person.getIn([ACTIONS, GET_PARTICIPANT, REQUEST_STATE]),
     getSentencesRequestState: people.getIn([PEOPLE.ACTIONS, PEOPLE.GET_SENTENCES, PEOPLE.REQUEST_STATE]),
+    [INFRACTION_COUNTS_BY_PARTICIPANT]: people.get(INFRACTION_COUNTS_BY_PARTICIPANT),
     // [PARTICIPANT]: person.get(PARTICIPANT),
     [PARTICIPANTS]: people.get(PARTICIPANTS),
     [SENTENCE_TERMS_BY_PARTICIPANT]: people.get(SENTENCE_TERMS_BY_PARTICIPANT),

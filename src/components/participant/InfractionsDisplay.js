@@ -1,7 +1,10 @@
 // @flow
 import React from 'react';
 import styled from 'styled-components';
+import { Map } from 'immutable';
 
+import { formatNumericalValue } from '../../utils/FormattingUtils';
+import { INFRACTIONS_CONSTS } from '../../core/edm/constants/DataModelConsts';
 import { OL } from '../../core/style/Colors';
 
 const ViolationsWrapper = styled.div`
@@ -41,17 +44,25 @@ const Number = styled.div`
   margin: 8px 30px;
 `;
 
-const InfractionsDisplay = () => (
-  <ViolationsWrapper>
-    <InfoBlock>
-      <Header># Warnings</Header>
-      <Number>2</Number>
-    </InfoBlock>
-    <InfoBlock>
-      <Header># Violations</Header>
-      <Number>0</Number>
-    </InfoBlock>
-  </ViolationsWrapper>
-);
+type Props = {
+  infractions :Map;
+};
+
+const InfractionsDisplay = ({ infractions } :Props) => {
+  const warnings = formatNumericalValue(infractions.get(`${INFRACTIONS_CONSTS.WARNING}s`, 0));
+  const violations = formatNumericalValue(infractions.get(`${INFRACTIONS_CONSTS.VIOLATION}s`, 0));
+  return (
+    <ViolationsWrapper>
+      <InfoBlock>
+        <Header># Warnings</Header>
+        <Number>{ warnings }</Number>
+      </InfoBlock>
+      <InfoBlock>
+        <Header># Violations</Header>
+        <Number>{ violations }</Number>
+      </InfoBlock>
+    </ViolationsWrapper>
+  );
+}
 
 export default InfractionsDisplay;
