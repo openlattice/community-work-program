@@ -2,7 +2,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import { Map } from 'immutable';
-import { faPenSquare, faUserCircle } from '@fortawesome/pro-solid-svg-icons';
+import { faEdit, faUserCircle } from '@fortawesome/pro-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { withRouter } from 'react-router-dom';
 
@@ -14,7 +14,7 @@ import { getEntityProperties } from '../../utils/DataUtils';
 import { PEOPLE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { ENROLLMENT_STATUSES } from '../../core/edm/constants/DataModelConsts';
 
-const { DOB } = PEOPLE_FQNS;
+const { DOB, MUGSHOT } = PEOPLE_FQNS;
 
 const InfoWrapper = styled.div`
   display: flex;
@@ -98,21 +98,17 @@ type Props = {
   status :string;
 };
 
-// <ButtonWrapper>
-//   <FontAwesomeIcon icon={faPenSquare} size="lg" color={OL.GREY04} />
-// </ButtonWrapper>
-
 const GeneralInfo = ({ person, status } :Props) => {
 
-  const { [DOB]: dateOfBirth } = getEntityProperties(person, [DOB]);
+  const { [DOB]: dateOfBirth, [MUGSHOT]: mugshot } = getEntityProperties(person, [DOB, MUGSHOT]);
   const dob = formatAsDate(dateOfBirth);
   return (
     <InfoWrapper>
       {
-        person && person.get('mugshot')
+        person && mugshot
           ? (
             <StyledPersonPhoto>
-              <PersonPicture src={person.get('mugshot')} alt="" />
+              <PersonPicture src={mugshot} alt="" />
             </StyledPersonPhoto>
           )
           : (
@@ -143,6 +139,9 @@ const GeneralInfo = ({ person, status } :Props) => {
       <InfoRow>
         <Title>Email</Title>
         <EmailWrapper>
+          <ButtonWrapper>
+            <FontAwesomeIcon icon={faEdit} color={OL.GREY04} />
+          </ButtonWrapper>
         </EmailWrapper>
       </InfoRow>
     </InfoWrapper>
