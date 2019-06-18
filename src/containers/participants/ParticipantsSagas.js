@@ -416,6 +416,7 @@ function* getParticipantsWorker(action :SequenceAction) :Generator<*, *, *> {
   }
   let response :Object = {};
   let participants :List = List();
+  let participantSentenceEKIDMap :Map = Map();
 
   try {
     yield put(getParticipants.request(id));
@@ -445,6 +446,7 @@ function* getParticipantsWorker(action :SequenceAction) :Generator<*, *, *> {
         throw response.error;
       }
 
+      // get list of participants
       participants = fromJS(response.data).toIndexedSeq()
         .map(personList => personList.get(0))
         .map((person :Map) => {
@@ -452,6 +454,19 @@ function* getParticipantsWorker(action :SequenceAction) :Generator<*, *, *> {
           return fromJS(neighborDetails);
         })
         .toList();
+
+      // create map of participantEKIDs to sentenceEKIDs for easy lookup
+      participantSentenceEKIDMap = fromJS(response.data)
+        .map(personList => personList.get(0))
+        .map((person :Map) => {
+          const { [NEIGHBOR_DETAILS]: neighborDetails } = getEntityProperties(person, [NEIGHBOR_DETAILS]);
+          return fromJS(neighborDetails);
+        })
+        .map((person :Map) => {
+          const { [ENTITY_KEY_ID]: personEKID } = getEntityProperties(person, [ENTITY_KEY_ID]);
+          return personEKID;
+        })
+        .flip();
 
       const manualSentencesEKIDs :UUID[] = sentences
         .map((sentence :Map) => {
@@ -472,6 +487,7 @@ function* getParticipantsWorker(action :SequenceAction) :Generator<*, *, *> {
       if (response.error) {
         throw response.error;
       }
+      // add new participants to participants list
       const moreParticipants = fromJS(response.data).toIndexedSeq()
         .map(personList => personList.get(0))
         .map((person :Map) => {
@@ -479,8 +495,23 @@ function* getParticipantsWorker(action :SequenceAction) :Generator<*, *, *> {
           return fromJS(neighborDetails);
         })
         .toList();
-
       participants = participants.concat(moreParticipants);
+
+      // add new participant/sentence EKIDs to map
+      participantSentenceEKIDMap = participantSentenceEKIDMap.merge(
+        fromJS(response.data)
+          .map(personList => personList.get(0))
+          .map((person :Map) => {
+            const { [NEIGHBOR_DETAILS]: neighborDetails } = getEntityProperties(person, [NEIGHBOR_DETAILS]);
+            return fromJS(neighborDetails);
+          })
+          .map((person :Map) => {
+            const { [ENTITY_KEY_ID]: personEKID } = getEntityProperties(person, [ENTITY_KEY_ID]);
+            return personEKID;
+          })
+          .flip()
+      );
+
     }
 
     if (participants.count() > 0) {
@@ -490,7 +521,7 @@ function* getParticipantsWorker(action :SequenceAction) :Generator<*, *, *> {
       yield call(getHoursWorkedWorker, getHoursWorked({ participants, peopleESID }));
     }
 
-    yield put(getParticipants.success(id, participants));
+    yield put(getParticipants.success(id, { participants, participantSentenceEKIDMap }));
   }
   catch (error) {
     LOG.error('caught exception in getParticipantsWorker()', error);
@@ -555,9 +586,9 @@ function* getSentencesWorker(action :SequenceAction) :Generator<*, *, *> {
      * 3. Call getParticipants for all participants associated with sentences found.
      */
 
-    yield call(getParticipantsWorker, getParticipants({ manualSentenceESID, sentences, sentenceESID }));
+    yield call(getParticipantsWorker, getParticipants({ manualSentenceESID, sentenceESID, sentences }));
 
-    yield put(getSentences.success(id, sentences));
+    yield put(getSentences.success(id));
   }
   catch (error) {
     LOG.error('caught exception in getSentencesWorker()', error);

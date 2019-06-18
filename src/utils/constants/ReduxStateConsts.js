@@ -45,7 +45,7 @@ export const PEOPLE = {
   PARTICIPANTS: 'participants',
   REQUEST_STATE: 'requestState',
   SENTENCE_TERMS_BY_PARTICIPANT: 'sentenceTermsByParticipant',
-  SENTENCES: 'sentences',
+  SENTENCE_EKIDS: 'sentenceEKIDs',
 };
 
 /* Person */
