@@ -9,7 +9,7 @@ import { Map } from 'immutable';
 import { AuthActions } from 'lattice-auth';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
-import { Redirect, Route, Switch } from 'react-router-dom';
+import { Redirect, Route, Switch, withRouter } from 'react-router-dom';
 import type { RequestSequence } from 'redux-reqseq';
 
 import AppHeaderContainer from './AppHeaderContainer';
@@ -97,7 +97,6 @@ class AppContainer extends Component<Props> {
     <Switch>
       { this.renderParticipantsContent() }
       <Route path={Routes.WORKSITES} component={Worksites} />
-      <Redirect to={Routes.DASHBOARD} />
     </Switch>
   );
 
@@ -133,4 +132,4 @@ const mapDispatchToProps = dispatch => ({
 });
 
 // $FlowFixMe
-export default connect(mapStateToProps, mapDispatchToProps)(AppContainer);
+export default withRouter(connect(mapStateToProps, mapDispatchToProps)(AppContainer));
