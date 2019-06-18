@@ -6,8 +6,6 @@ import { Input } from 'lattice-ui-kit';
 const FormattedInput = styled(Input)`
   width: 250px;
   margin: 10px;
-  padding: 0 20px;
-  height: 40px;
 `;
 
 type Props = {
