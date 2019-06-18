@@ -12,6 +12,7 @@ import { ButtonWrapper } from '../Layout';
 import { formatAsDate } from '../../utils/DateTimeUtils';
 import { getEntityProperties } from '../../utils/DataUtils';
 import { PEOPLE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { ENROLLMENT_STATUSES } from '../../core/edm/constants/DataModelConsts';
 
 const { DOB } = PEOPLE_FQNS;
 
@@ -67,22 +68,22 @@ const Value = styled.div`
   width: 60%;
   font-weight: ${props => props.fontWeight};
   color: ${(props) => {
-    if (props.status === 'Active') {
+    if (props.status === ENROLLMENT_STATUSES.ACTIVE) {
       return `${OL.GREEN02};`;
     }
-    if (props.status === 'Completed') {
-      return `${OL.BLUE02};`;
+    if (props.status === ENROLLMENT_STATUSES.COMPLETED) {
+      return `${OL.BLUE01};`;
     }
-    if (props.status === 'Active – noncompliant') {
+    if (props.status === ENROLLMENT_STATUSES.ACTIVE_NONCOMPLIANT) {
       return `${OL.YELLOW01};`;
     }
-    if (props.status === 'Removed – noncompliant') {
+    if (props.status === ENROLLMENT_STATUSES.REMOVED_NONCOMPLIANT) {
       return `${OL.RED01};`;
     }
-    if (props.status === 'Awaiting enrollment') {
-      return `${OL.PURPLE03};`;
+    if (props.status === ENROLLMENT_STATUSES.AWAITING_ENROLLMENT) {
+      return `${OL.PINK01};`;
     }
-    return `${OL.GREY01};`;
+    return `${OL.GREY02};`;
   }}
 `;
 
@@ -94,13 +95,14 @@ const EmailWrapper = styled(Value)`
 
 type Props = {
   person :Map;
+  status :string;
 };
 
 // <ButtonWrapper>
 //   <FontAwesomeIcon icon={faPenSquare} size="lg" color={OL.GREY04} />
 // </ButtonWrapper>
 
-const GeneralInfo = ({ person } :Props) => {
+const GeneralInfo = ({ person, status } :Props) => {
 
   const { [DOB]: dateOfBirth } = getEntityProperties(person, [DOB]);
   const dob = formatAsDate(dateOfBirth);
@@ -122,14 +124,13 @@ const GeneralInfo = ({ person } :Props) => {
       <InfoRow>
         <Title>Status</Title>
         <Value
-            status={person.get('status')}
-            fontWeight={600}>
-          {person.get('status')}
+            status={status}>
+          { status }
         </Value>
       </InfoRow>
       <InfoRow>
         <Title>Date of Birth</Title>
-        <Value>{dob}</Value>
+        <Value>{ dob }</Value>
       </InfoRow>
       <InfoRow>
         <Title>Phone #</Title>

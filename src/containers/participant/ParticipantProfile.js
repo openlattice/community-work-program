@@ -1,7 +1,7 @@
 // @flow
 import React, { Component } from 'react';
 import styled from 'styled-components';
-import { Map } from 'immutable';
+import { List, Map } from 'immutable';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { RequestStates } from 'redux-reqseq';
@@ -24,9 +24,10 @@ import {
 } from '../../components/controls/index';
 import { ButtonWrapper } from '../../components/Layout';
 import { getEntityProperties } from '../../utils/DataUtils';
-import { ENTITY_KEY_ID, PEOPLE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { ENROLLMENT_STATUS_FQNS, ENTITY_KEY_ID, PEOPLE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { PEOPLE, PERSON, STATE } from '../../utils/constants/ReduxStateConsts';
 
+const { STATUS } = ENROLLMENT_STATUS_FQNS;
 const { FIRST_NAME, LAST_NAME } = PEOPLE_FQNS;
 const {
   ACTIONS,
@@ -35,6 +36,7 @@ const {
   PARTICIPANT
 } = PERSON;
 const {
+  ENROLLMENT_BY_PARTICIPANT,
   PARTICIPANTS,
   SENTENCE_TERMS_BY_PARTICIPANT,
 } = PEOPLE;
@@ -118,16 +120,18 @@ type Props = {
   actions:{
     getParticipant :RequestSequence;
   };
-  getParticipantRequestState :RequestState;
+  enrollmentByParticipant :Map;
+  // getParticipantRequestState :RequestState;
   getSentencesRequestState :RequestState;
   history :RouterHistory;
-  participant :Map;
+  // participant :Map;
   participants :List;
   personEKID :string;
   sentenceTermsByParticipant :Map;
 };
 
 type State = {
+  enrollmentStatus :string,
   participant :Map;
   sentenceTerm :Map;
 };
@@ -147,6 +151,7 @@ class ParticipantProfile extends Component<Props, State> {
     super(props);
 
     this.state = {
+      enrollmentStatus: '',
       participant: Map(),
       sentenceTerm: Map(),
     };
@@ -166,10 +171,17 @@ class ParticipantProfile extends Component<Props, State> {
   }
 
   renderParticipant = () => {
-    const { participants, personEKID, sentenceTermsByParticipant } = this.props;
+    const {
+      enrollmentByParticipant,
+      participants,
+      personEKID,
+      sentenceTermsByParticipant
+    } = this.props;
     const participant = participants.find((p :Map) => p.getIn([ENTITY_KEY_ID, 0]) === personEKID);
     const sentenceTerm = sentenceTermsByParticipant.get(personEKID);
+    const enrollmentStatus = enrollmentByParticipant.getIn([personEKID, STATUS, 0], 'Awaiting enrollment');
     this.setState({
+      enrollmentStatus,
       participant,
       sentenceTerm,
     });
@@ -177,7 +189,7 @@ class ParticipantProfile extends Component<Props, State> {
 
   render() {
     const { getSentencesRequestState, history } = this.props;
-    const { participant, sentenceTerm } = this.state;
+    const { enrollmentStatus, participant, sentenceTerm } = this.state;
     const { [FIRST_NAME]: firstName, [LAST_NAME]: lastName } = getEntityProperties(
       participant, [FIRST_NAME, LAST_NAME]
     );
@@ -209,7 +221,7 @@ class ParticipantProfile extends Component<Props, State> {
             </ButtonWrapper>
           </NameRowWrapper>
           <BasicInfoWrapper>
-            <GeneralInfo person={participant} />
+            <GeneralInfo person={participant} status={enrollmentStatus} />
             <InnerColumnWrapper>
               <KeyDates sentenceTerm={sentenceTerm} />
             </InnerColumnWrapper>
@@ -221,12 +233,13 @@ class ParticipantProfile extends Component<Props, State> {
 }
 
 const mapStateToProps = (state :Map<*, *>) => {
-  const person = state.get(STATE.PERSON);
+  // const person = state.get(STATE.PERSON);
   const people = state.get(STATE.PEOPLE);
   return {
-    getParticipantRequestState: person.getIn([ACTIONS, GET_PARTICIPANT, REQUEST_STATE]),
+    [ENROLLMENT_BY_PARTICIPANT]: people.get(ENROLLMENT_BY_PARTICIPANT),
+    // getParticipantRequestState: person.getIn([ACTIONS, GET_PARTICIPANT, REQUEST_STATE]),
     getSentencesRequestState: people.getIn([PEOPLE.ACTIONS, PEOPLE.GET_SENTENCES, PEOPLE.REQUEST_STATE]),
-    [PARTICIPANT]: person.get(PARTICIPANT),
+    // [PARTICIPANT]: person.get(PARTICIPANT),
     [PARTICIPANTS]: people.get(PARTICIPANTS),
     [SENTENCE_TERMS_BY_PARTICIPANT]: people.get(SENTENCE_TERMS_BY_PARTICIPANT),
   };

@@ -20,12 +20,12 @@ export const NEIGHBOR_ENTITY_SET = 'neighborEntitySet';
 /* Miscellaneous Constants */
 
 export const ENROLLMENT_STATUSES = {
-  ACTIVE: 'active',
-  CANCELLED: 'cancelled',
-  FINISHED: 'finished',
-  ON_HOLD: 'on hold',
-  PLANNED: 'planned',
-  WAITLIST: 'waitlist'
+  ACTIVE: 'Active',
+  ACTIVE_NONCOMPLIANT: 'Active noncompliant',
+  AWAITING_ENROLLMENT: 'Awaiting enrollment',
+  CLOSED: 'Closed',
+  COMPLETED: 'Completed',
+  REMOVED_NONCOMPLIANT: 'Removed noncompliant'
 };
 
 export const HOURS_CONSTS = {
