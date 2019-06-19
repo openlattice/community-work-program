@@ -14,7 +14,7 @@ import CaseInfo from '../../components/participant/CaseInfo';
 import InfractionsDisplay from '../../components/participant/InfractionsDisplay';
 import LogoLoader from '../../components/LogoLoader';
 
-import { getCaseInfo } from './ParticipantActions';
+import { getCaseInfo, getContactInfo } from './ParticipantActions';
 import { OL } from '../../core/style/Colors';
 import { PARTICIPANT_PROFILE_WIDTH } from '../../core/style/Sizes';
 import * as Routes from '../../core/router/Routes';
@@ -38,7 +38,7 @@ const {
   SENTENCE_TERMS_BY_PARTICIPANT,
   SENTENCE_EKIDS,
 } = PEOPLE;
-const { CASE_NUMBER } = PERSON;
+const { CASE_NUMBER, EMAIL, PHONE } = PERSON;
 
 const ProfileWrapper = styled.div`
   display: flex;
@@ -94,32 +94,13 @@ const InnerRowWrapper = styled.div`
   width: 100%;
 `;
 
-const ModalBodyWrapper = styled.div`
-  width: 400px;
-  height: 110px;
-  display: grid;
-`;
-
-const ActionWrapper = styled.div`
-  position: fixed;
-  width: 400px;
-  margin-top: 85px;
-  margin-bottom: 20px;
-  z-index: 200;
-`;
-
-const ModalText = styled.div`
-  font-size: 14px;
-  color: ${OL.GREY02};
-  margin: 5px 0;
-  display: block;
-`;
-
 type Props = {
   actions:{
     getCaseInfo :RequestSequence;
+    getContactInfo :RequestSequence;
   };
   caseNumber :string;
+  email :string;
   enrollmentByParticipant :Map;
   getSentencesRequestState :RequestState;
   history :RouterHistory;
@@ -127,6 +108,7 @@ type Props = {
   infractionCountsByParticipant :Map;
   participants :List;
   personEKID :string;
+  phone :string;
   sentenceEKIDs :Map;
   sentenceTermsByParticipant :Map;
 };
@@ -190,11 +172,18 @@ class ParticipantProfile extends Component<Props, State> {
     if (sentenceEKIDs.count() > 0) {
       const sentenceIDs = sentenceEKIDs.get(personEKID, Map()).toJS();
       actions.getCaseInfo({ sentenceIDs });
+      actions.getContactInfo({ personEKID });
     }
   }
 
   render() {
-    const { caseNumber, getSentencesRequestState, history } = this.props;
+    const {
+      caseNumber,
+      email,
+      getSentencesRequestState,
+      history,
+      phone,
+    } = this.props;
     const {
       enrollmentStatus,
       infractionCounts,
@@ -233,7 +222,11 @@ class ParticipantProfile extends Component<Props, State> {
             </ButtonWrapper>
           </NameRowWrapper>
           <BasicInfoWrapper>
-            <GeneralInfo person={participant} status={enrollmentStatus} />
+            <GeneralInfo
+                email={email}
+                person={participant}
+                phone={phone}
+                status={enrollmentStatus} />
             <InnerColumnWrapper>
               <KeyDates sentenceTerm={sentenceTerm} />
               <InnerRowWrapper>
@@ -253,11 +246,13 @@ const mapStateToProps = (state :Map<*, *>) => {
   const person = state.get(STATE.PERSON);
   return {
     [CASE_NUMBER]: person.get(CASE_NUMBER),
+    [EMAIL]: person.get(EMAIL),
     [ENROLLMENT_BY_PARTICIPANT]: people.get(ENROLLMENT_BY_PARTICIPANT),
     getSentencesRequestState: people.getIn([PEOPLE.ACTIONS, PEOPLE.GET_SENTENCES, PEOPLE.REQUEST_STATE]),
     [HOURS_WORKED]: people.get(HOURS_WORKED),
     [INFRACTION_COUNTS_BY_PARTICIPANT]: people.get(INFRACTION_COUNTS_BY_PARTICIPANT),
     [PARTICIPANTS]: people.get(PARTICIPANTS),
+    [PHONE]: person.get(PHONE),
     [SENTENCE_EKIDS]: people.get(SENTENCE_EKIDS),
     [SENTENCE_TERMS_BY_PARTICIPANT]: people.get(SENTENCE_TERMS_BY_PARTICIPANT),
   };
@@ -266,6 +261,7 @@ const mapStateToProps = (state :Map<*, *>) => {
 const mapDispatchToProps = dispatch => ({
   actions: bindActionCreators({
     getCaseInfo,
+    getContactInfo,
   }, dispatch)
 });
 
