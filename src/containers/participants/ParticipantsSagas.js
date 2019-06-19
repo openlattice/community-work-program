@@ -4,6 +4,7 @@
 
 import { List, Map, fromJS } from 'immutable';
 import {
+  all,
   call,
   put,
   select,
@@ -205,17 +206,17 @@ function* getHoursWorkedWorker(action :SequenceAction) :Generator<*, *, *> {
         const { [NEIGHBOR_DETAILS]: neighborDetails } = getEntityProperties(plan, [NEIGHBOR_DETAILS]);
         return fromJS(neighborDetails);
       }));
-    const activeDiversionPlans = diversionPlansByParticipant
+    const activeDiversionPlanEKIDs = diversionPlansByParticipant
       .filter((planArray :List) => planArray
         .filter((plan :Map) => {
           const { [COMPLETED]: completed } = getEntityProperties(plan, [COMPLETED]);
           return fromJS(!completed);
-        }));
-    const activeDiversionPlanEKIDs = activeDiversionPlans.map((plans :List) => plans
-      .map((plan :Map) => {
-        const { [ENTITY_KEY_ID]: planEntityKeyId } = getEntityProperties(plan, [ENTITY_KEY_ID]);
-        return planEntityKeyId;
-      }))
+        }))
+      .map((plans :List) => plans
+        .map((plan :Map) => {
+          const { [ENTITY_KEY_ID]: planEntityKeyId } = getEntityProperties(plan, [ENTITY_KEY_ID]);
+          return planEntityKeyId;
+        }))
       .valueSeq()
       .toJS()
       .flat();
@@ -414,7 +415,6 @@ function* getParticipantsWorker(action :SequenceAction) :Generator<*, *, *> {
     yield put(getParticipants.failure(id, ERR_ACTION_VALUE_NOT_DEFINED));
     return;
   }
-  let response :Object = {};
   let participants :List = List();
   let participantSentenceEKIDMap :Map = Map();
 
@@ -432,31 +432,59 @@ function* getParticipantsWorker(action :SequenceAction) :Generator<*, *, *> {
           return sentenceEKID;
         })
         .toJS();
+      const manualSentencesEKIDs :UUID[] = sentences
+        .map((sentence :Map) => {
+          const { [ENTITY_KEY_ID]: sentenceEKID } = getEntityProperties(sentence, [ENTITY_KEY_ID]);
+          return sentenceEKID;
+        })
+        .toJS();
 
-      let searchFilter = {
+      const integratedSearchFilter = {
         entityKeyIds: integratedSentencesEKIDs,
         destinationEntitySetIds: [],
         sourceEntitySetIds: [peopleESID],
       };
-      response = yield call(
-        searchEntityNeighborsWithFilterWorker,
-        searchEntityNeighborsWithFilter({ entitySetId: sentenceESID, filter: searchFilter })
-      );
-      if (response.error) {
-        throw response.error;
-      }
+      const manualSearchFilter = {
+        entityKeyIds: manualSentencesEKIDs,
+        destinationEntitySetIds: [],
+        sourceEntitySetIds: [peopleESID],
+      };
 
-      // get list of participants
-      participants = fromJS(response.data).toIndexedSeq()
+      const [integrated, manual] = yield all([
+        call(
+          searchEntityNeighborsWithFilterWorker,
+          searchEntityNeighborsWithFilter({ entitySetId: sentenceESID, filter: integratedSearchFilter })
+        ),
+        call(
+          searchEntityNeighborsWithFilterWorker,
+          searchEntityNeighborsWithFilter({ entitySetId: manualSentenceESID, filter: manualSearchFilter })
+        )
+      ]);
+      if (integrated.error) {
+        throw integrated.error;
+      }
+      if (manual.error) {
+        throw manual.error;
+      }
+      // get participants from each request result
+      participants = fromJS(integrated.data).toIndexedSeq()
         .map(personList => personList.get(0))
         .map((person :Map) => {
           const { [NEIGHBOR_DETAILS]: neighborDetails } = getEntityProperties(person, [NEIGHBOR_DETAILS]);
           return fromJS(neighborDetails);
         })
         .toList();
+      const moreParticipants = fromJS(manual.data).toIndexedSeq()
+        .map(personList => personList.get(0))
+        .map((person :Map) => {
+          const { [NEIGHBOR_DETAILS]: neighborDetails } = getEntityProperties(person, [NEIGHBOR_DETAILS]);
+          return fromJS(neighborDetails);
+        })
+        .toList();
+      participants = participants.concat(moreParticipants);
 
       // create map of participantEKIDs to sentenceEKIDs for easy lookup, preserving ESID
-      participantSentenceEKIDMap = fromJS(response.data)
+      participantSentenceEKIDMap = fromJS(integrated.data)
         .map(personList => personList.get(0))
         .map((person :Map) => {
           const { [NEIGHBOR_DETAILS]: neighborDetails } = getEntityProperties(person, [NEIGHBOR_DETAILS]);
@@ -468,39 +496,8 @@ function* getParticipantsWorker(action :SequenceAction) :Generator<*, *, *> {
         })
         .flip()
         .map((sentence :string) => Map({ ekid: sentence, esid: sentenceESID }));
-
-      const manualSentencesEKIDs :UUID[] = sentences
-        .map((sentence :Map) => {
-          const { [ENTITY_KEY_ID]: sentenceEKID } = getEntityProperties(sentence, [ENTITY_KEY_ID]);
-          return sentenceEKID;
-        })
-        .toJS();
-
-      searchFilter = {
-        entityKeyIds: manualSentencesEKIDs,
-        destinationEntitySetIds: [],
-        sourceEntitySetIds: [peopleESID],
-      };
-      response = yield call(
-        searchEntityNeighborsWithFilterWorker,
-        searchEntityNeighborsWithFilter({ entitySetId: manualSentenceESID, filter: searchFilter })
-      );
-      if (response.error) {
-        throw response.error;
-      }
-      // add new participants to participants list
-      const moreParticipants = fromJS(response.data).toIndexedSeq()
-        .map(personList => personList.get(0))
-        .map((person :Map) => {
-          const { [NEIGHBOR_DETAILS]: neighborDetails } = getEntityProperties(person, [NEIGHBOR_DETAILS]);
-          return fromJS(neighborDetails);
-        })
-        .toList();
-      participants = participants.concat(moreParticipants);
-
-      // add new participant/sentence EKIDs to map
       participantSentenceEKIDMap = participantSentenceEKIDMap.merge(
-        fromJS(response.data)
+        fromJS(manual.data)
           .map(personList => personList.get(0))
           .map((person :Map) => {
             const { [NEIGHBOR_DETAILS]: neighborDetails } = getEntityProperties(person, [NEIGHBOR_DETAILS]);
@@ -513,14 +510,15 @@ function* getParticipantsWorker(action :SequenceAction) :Generator<*, *, *> {
           .flip()
           .map((sentence :string) => Map({ ekid: sentence, esid: manualSentenceESID }))
       );
-
     }
 
     if (participants.count() > 0) {
-      yield call(getSentenceTermsWorker, getSentenceTerms({ participants, peopleESID }));
-      yield call(getEnrollmentStatusesWorker, getEnrollmentStatuses({ participants, peopleESID }));
-      yield call(getInfractionsWorker, getInfractions({ participants, peopleESID }));
-      yield call(getHoursWorkedWorker, getHoursWorked({ participants, peopleESID }));
+      yield all([
+        call(getSentenceTermsWorker, getSentenceTerms({ participants, peopleESID })),
+        call(getEnrollmentStatusesWorker, getEnrollmentStatuses({ participants, peopleESID })),
+        call(getInfractionsWorker, getInfractions({ participants, peopleESID })),
+        call(getHoursWorkedWorker, getHoursWorked({ participants, peopleESID }))
+      ]);
     }
 
     yield put(getParticipants.success(id, { participants, participantSentenceEKIDMap }));
