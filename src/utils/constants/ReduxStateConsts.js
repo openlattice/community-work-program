@@ -53,9 +53,12 @@ export const PEOPLE = {
 export const PERSON = {
   ACTIONS: 'actions',
   CASE_NUMBER: 'caseNumber',
+  EMAIL: 'email',
   ERRORS: 'errors',
   GET_CASE_INFO: 'getCaseInfo',
+  GET_CONTACT_INFO: 'getContactInfo',
   GET_PARTICIPANT: 'getParticipant',
   PARTICIPANT: 'participant',
+  PHONE: 'phone',
   REQUEST_STATE: 'requestState',
 };
