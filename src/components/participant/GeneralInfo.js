@@ -87,12 +87,6 @@ const Value = styled.div`
   }}
 `;
 
-const EmailWrapper = styled(Value)`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-`;
-
 type Props = {
   email :string;
   person :Map;
