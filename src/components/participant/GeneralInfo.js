@@ -2,13 +2,15 @@
 import React from 'react';
 import styled from 'styled-components';
 import { Map } from 'immutable';
-import { faEdit, faUserCircle } from '@fortawesome/pro-solid-svg-icons';
+import { Spinner } from 'lattice-ui-kit';
+import { faUserCircle } from '@fortawesome/pro-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { withRouter } from 'react-router-dom';
+import { RequestStates } from 'redux-reqseq';
+import type { RequestState } from 'redux-reqseq';
 
 import { OL } from '../../core/style/Colors';
 import { PersonPhoto, PersonPicture } from '../picture/PersonPicture';
-import { ButtonWrapper } from '../Layout';
 import { formatAsDate } from '../../utils/DateTimeUtils';
 import { getEntityProperties } from '../../utils/DataUtils';
 import { PEOPLE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
@@ -63,6 +65,13 @@ const Title = styled.div`
   width: 40%;
 `;
 
+const ValueWrapper = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+`;
+
 const Value = styled.div`
   text-align: left;
   width: 60%;
@@ -88,6 +97,7 @@ const Value = styled.div`
 `;
 
 type Props = {
+  contactRequestState :RequestState;
   email :string;
   person :Map;
   phone :string;
@@ -95,12 +105,15 @@ type Props = {
 };
 
 const GeneralInfo = ({
+  contactRequestState,
   email,
   person,
   phone,
   status
 } :Props) => {
 
+  const contactRequestLoading = (contactRequestState === RequestStates.PENDING
+      || contactRequestState === RequestStates.STANDBY);
   const { [DOB]: dateOfBirth, [MUGSHOT]: mugshot } = getEntityProperties(person, [DOB, MUGSHOT]);
   const dob = formatAsDate(dateOfBirth);
   return (
@@ -131,7 +144,11 @@ const GeneralInfo = ({
       </InfoRow>
       <InfoRow>
         <Title>Phone #</Title>
-        <Value>{ phone }</Value>
+        <ValueWrapper>
+          {
+            contactRequestLoading ? <Spinner /> : <Value>{ phone }</Value>
+          }
+        </ValueWrapper>
       </InfoRow>
       <InfoRow>
         <Title>Address</Title>
@@ -139,7 +156,11 @@ const GeneralInfo = ({
       </InfoRow>
       <InfoRow>
         <Title>Email</Title>
-        <Value>{ email }</Value>
+        <ValueWrapper>
+          {
+            contactRequestLoading ? <Spinner /> : <Value>{ email }</Value>
+          }
+        </ValueWrapper>
       </InfoRow>
     </InfoWrapper>
   );

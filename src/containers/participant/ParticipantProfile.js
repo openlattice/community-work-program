@@ -102,6 +102,7 @@ type Props = {
   caseNumber :string;
   email :string;
   enrollmentByParticipant :Map;
+  getContactInfoRequestState :RequestState;
   getSentencesRequestState :RequestState;
   history :RouterHistory;
   hoursWorked :Map;
@@ -180,6 +181,7 @@ class ParticipantProfile extends Component<Props, State> {
     const {
       caseNumber,
       email,
+      getContactInfoRequestState,
       getSentencesRequestState,
       history,
       phone,
@@ -223,6 +225,7 @@ class ParticipantProfile extends Component<Props, State> {
           </NameRowWrapper>
           <BasicInfoWrapper>
             <GeneralInfo
+                contactRequestState={getContactInfoRequestState}
                 email={email}
                 person={participant}
                 phone={phone}
@@ -248,6 +251,7 @@ const mapStateToProps = (state :Map<*, *>) => {
     [CASE_NUMBER]: person.get(CASE_NUMBER),
     [EMAIL]: person.get(EMAIL),
     [ENROLLMENT_BY_PARTICIPANT]: people.get(ENROLLMENT_BY_PARTICIPANT),
+    getContactInfoRequestState: person.getIn([PERSON.ACTIONS, PERSON.GET_CONTACT_INFO, PERSON.REQUEST_STATE]),
     getSentencesRequestState: people.getIn([PEOPLE.ACTIONS, PEOPLE.GET_SENTENCES, PEOPLE.REQUEST_STATE]),
     [HOURS_WORKED]: people.get(HOURS_WORKED),
     [INFRACTION_COUNTS_BY_PARTICIPANT]: people.get(INFRACTION_COUNTS_BY_PARTICIPANT),
