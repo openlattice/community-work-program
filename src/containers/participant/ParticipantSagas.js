@@ -234,7 +234,7 @@ function* getContactInfoWorker(action :SequenceAction) :Generator<*, *, *> {
       .getIn([0, PHONE_NUMBER, 0]);
 
     if (isDefined(phone)) {
-      contactInfo.phone = formatPhoneNumber(phone);
+      contactInfo.phone = phone;
     }
 
     yield put(getContactInfo.success(id, contactInfo));
