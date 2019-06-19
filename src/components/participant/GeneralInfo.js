@@ -69,12 +69,12 @@ const ValueWrapper = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 100%;
+  width: 60%;
 `;
 
 const Value = styled.div`
   text-align: left;
-  width: 60%;
+  width: ${props => (props.hasSpinner ? '100%' : '60%')};
   font-weight: ${props => props.fontWeight};
   color: ${(props) => {
     if (props.status === ENROLLMENT_STATUSES.ACTIVE) {
@@ -146,7 +146,7 @@ const GeneralInfo = ({
         <Title>Phone #</Title>
         <ValueWrapper>
           {
-            contactRequestLoading ? <Spinner /> : <Value>{ phone }</Value>
+            contactRequestLoading ? <Spinner /> : <Value hasSpinner>{ phone }</Value>
           }
         </ValueWrapper>
       </InfoRow>
@@ -158,7 +158,7 @@ const GeneralInfo = ({
         <Title>Email</Title>
         <ValueWrapper>
           {
-            contactRequestLoading ? <Spinner /> : <Value>{ email }</Value>
+            contactRequestLoading ? <Spinner /> : <Value hasSpinner>{ email }</Value>
           }
         </ValueWrapper>
       </InfoRow>
