@@ -60,6 +60,14 @@ export const CASE_FQNS = {
   CASE_NUMBER_TEXT: new FullyQualifiedName('j.CaseNumberText'),
 };
 
+/* ol.contactinformation */
+export const CONTACT_INFO_FQNS = {
+  CELL_PHONE: new FullyQualifiedName('contact.cellphone'),
+  EMAIL: new FullyQualifiedName('staff.email'),
+  PHONE_NUMBER: new FullyQualifiedName('contact.phonenumber'),
+  PREFERRED: new FullyQualifiedName('ol.preferred'),
+};
+
 /* ol.diversionplan */
 export const DIVERSION_PLAN_FQNS = {
   COMPLETED: new FullyQualifiedName('ol.completed'),
