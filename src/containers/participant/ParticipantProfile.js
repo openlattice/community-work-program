@@ -14,7 +14,7 @@ import CaseInfo from '../../components/participant/CaseInfo';
 import InfractionsDisplay from '../../components/participant/InfractionsDisplay';
 import LogoLoader from '../../components/LogoLoader';
 
-import { getCaseInfo, getParticipant } from './ParticipantActions';
+import { getCaseInfo } from './ParticipantActions';
 import { OL } from '../../core/style/Colors';
 import { PARTICIPANT_PROFILE_WIDTH } from '../../core/style/Sizes';
 import * as Routes from '../../core/router/Routes';
