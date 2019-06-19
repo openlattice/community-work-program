@@ -1,9 +1,10 @@
 // @flow
 import React from 'react';
 import styled from 'styled-components';
-import { faPenSquare } from '@fortawesome/pro-solid-svg-icons';
+import { faEdit } from '@fortawesome/pro-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
+import { formatNumericalValue } from '../../utils/FormattingUtils';
 import { ButtonWrapper } from '../Layout';
 import { OL } from '../../core/style/Colors';
 
@@ -47,20 +48,26 @@ const NumberWrapper = styled.span`
 `;
 
 type Props = {
-  edit :() => void;
+  caseNumber :string;
+  hours :number;
 };
 
-const CaseInfo = ({ edit } :Props) => (
+const CaseInfo = ({ caseNumber, hours } :Props) => (
   <CaseInfoWrapper>
     <Header>Case Number</Header>
     <NumberWrapper>
-      <Number>1234567890123456</Number>
-      <ButtonWrapper onClick={edit}>
-        <FontAwesomeIcon icon={faPenSquare} size="lg" color={OL.GREY04} />
+      <Number>{ caseNumber }</Number>
+      <ButtonWrapper>
+        <FontAwesomeIcon icon={faEdit} color={OL.GREY04} />
       </ButtonWrapper>
     </NumberWrapper>
     <Header>Required Hours</Header>
-    <Number>100</Number>
+    <NumberWrapper>
+      <Number>{ formatNumericalValue(hours) }</Number>
+      <ButtonWrapper>
+        <FontAwesomeIcon icon={faEdit} color={OL.GREY04} />
+      </ButtonWrapper>
+    </NumberWrapper>
   </CaseInfoWrapper>
 );
 

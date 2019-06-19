@@ -26,11 +26,13 @@ import { ButtonWrapper } from '../../components/Layout';
 import { getEntityProperties } from '../../utils/DataUtils';
 import { ENROLLMENT_STATUS_FQNS, ENTITY_KEY_ID, PEOPLE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { PEOPLE, PERSON, STATE } from '../../utils/constants/ReduxStateConsts';
+import { HOURS_CONSTS } from '../../core/edm/constants/DataModelConsts';
 
 const { STATUS } = ENROLLMENT_STATUS_FQNS;
 const { FIRST_NAME, LAST_NAME } = PEOPLE_FQNS;
 const {
   ENROLLMENT_BY_PARTICIPANT,
+  HOURS_WORKED,
   INFRACTION_COUNTS_BY_PARTICIPANT,
   PARTICIPANTS,
   SENTENCE_TERMS_BY_PARTICIPANT,
@@ -121,6 +123,7 @@ type Props = {
   enrollmentByParticipant :Map;
   getSentencesRequestState :RequestState;
   history :RouterHistory;
+  hoursWorked :Map;
   infractionCountsByParticipant :Map;
   participants :List;
   personEKID :string;
@@ -132,6 +135,7 @@ type State = {
   enrollmentStatus :string,
   infractionCounts :Map;
   participant :Map;
+  requiredHours :number;
   sentenceTerm :Map;
 };
 
@@ -144,6 +148,7 @@ class ParticipantProfile extends Component<Props, State> {
       enrollmentStatus: '',
       infractionCounts: Map(),
       participant: Map(),
+      requiredHours: 0,
       sentenceTerm: Map(),
     };
   }
@@ -153,7 +158,7 @@ class ParticipantProfile extends Component<Props, State> {
   }
 
   componentDidUpdate(prevProps :Props) {
-    const { actions, participants } = this.props;
+    const { participants } = this.props;
     if (prevProps.participants.count() !== participants.count()) {
       this.renderParticipant();
     }
@@ -163,6 +168,7 @@ class ParticipantProfile extends Component<Props, State> {
     const {
       actions,
       enrollmentByParticipant,
+      hoursWorked,
       infractionCountsByParticipant,
       participants,
       personEKID,
@@ -173,10 +179,12 @@ class ParticipantProfile extends Component<Props, State> {
     const sentenceTerm = sentenceTermsByParticipant.get(personEKID);
     const enrollmentStatus = enrollmentByParticipant.getIn([personEKID, STATUS, 0], 'Awaiting enrollment');
     const infractionCounts = infractionCountsByParticipant.get(personEKID, Map());
+    const requiredHours = hoursWorked.getIn([personEKID, HOURS_CONSTS.REQUIRED], 0);
     this.setState({
       enrollmentStatus,
       infractionCounts,
       participant,
+      requiredHours,
       sentenceTerm,
     });
     if (sentenceEKIDs.count() > 0) {
@@ -191,6 +199,7 @@ class ParticipantProfile extends Component<Props, State> {
       enrollmentStatus,
       infractionCounts,
       participant,
+      requiredHours,
       sentenceTerm
     } = this.state;
     const { [FIRST_NAME]: firstName, [LAST_NAME]: lastName } = getEntityProperties(
@@ -228,7 +237,7 @@ class ParticipantProfile extends Component<Props, State> {
             <InnerColumnWrapper>
               <KeyDates sentenceTerm={sentenceTerm} />
               <InnerRowWrapper>
-                <CaseInfo caseNumber={caseNumber} />
+                <CaseInfo caseNumber={caseNumber} hours={requiredHours} />
                 <InfractionsDisplay infractions={infractionCounts} />
               </InnerRowWrapper>
             </InnerColumnWrapper>
@@ -246,6 +255,7 @@ const mapStateToProps = (state :Map<*, *>) => {
     [CASE_NUMBER]: person.get(CASE_NUMBER),
     [ENROLLMENT_BY_PARTICIPANT]: people.get(ENROLLMENT_BY_PARTICIPANT),
     getSentencesRequestState: people.getIn([PEOPLE.ACTIONS, PEOPLE.GET_SENTENCES, PEOPLE.REQUEST_STATE]),
+    [HOURS_WORKED]: people.get(HOURS_WORKED),
     [INFRACTION_COUNTS_BY_PARTICIPANT]: people.get(INFRACTION_COUNTS_BY_PARTICIPANT),
     [PARTICIPANTS]: people.get(PARTICIPANTS),
     [SENTENCE_EKIDS]: people.get(SENTENCE_EKIDS),
