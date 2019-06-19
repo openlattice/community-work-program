@@ -94,11 +94,18 @@ const EmailWrapper = styled(Value)`
 `;
 
 type Props = {
+  email :string;
   person :Map;
+  phone :string;
   status :string;
 };
 
-const GeneralInfo = ({ person, status } :Props) => {
+const GeneralInfo = ({
+  email,
+  person,
+  phone,
+  status
+} :Props) => {
 
   const { [DOB]: dateOfBirth, [MUGSHOT]: mugshot } = getEntityProperties(person, [DOB, MUGSHOT]);
   const dob = formatAsDate(dateOfBirth);
@@ -130,7 +137,7 @@ const GeneralInfo = ({ person, status } :Props) => {
       </InfoRow>
       <InfoRow>
         <Title>Phone #</Title>
-        <Value></Value>
+        <Value>{ phone }</Value>
       </InfoRow>
       <InfoRow>
         <Title>Address</Title>
@@ -138,11 +145,7 @@ const GeneralInfo = ({ person, status } :Props) => {
       </InfoRow>
       <InfoRow>
         <Title>Email</Title>
-        <EmailWrapper>
-          <ButtonWrapper>
-            <FontAwesomeIcon icon={faEdit} color={OL.GREY04} />
-          </ButtonWrapper>
-        </EmailWrapper>
+        <Value>{ email }</Value>
       </InfoRow>
     </InfoWrapper>
   );
