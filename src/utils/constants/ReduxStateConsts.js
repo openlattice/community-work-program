@@ -52,7 +52,9 @@ export const PEOPLE = {
 
 export const PERSON = {
   ACTIONS: 'actions',
+  CASE_NUMBER: 'caseNumber',
   ERRORS: 'errors',
+  GET_CASE_INFO: 'getCaseInfo',
   GET_PARTICIPANT: 'getParticipant',
   PARTICIPANT: 'participant',
   REQUEST_STATE: 'requestState',

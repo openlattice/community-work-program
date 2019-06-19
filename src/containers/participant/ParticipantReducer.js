@@ -1,17 +1,20 @@
 // @flow
 import isNumber from 'lodash/isNumber';
-import { Map, fromJS } from 'immutable';
+import { List, Map, fromJS } from 'immutable';
 import { RequestStates } from 'redux-reqseq';
 import type { SequenceAction } from 'redux-reqseq';
 
 import {
+  getCaseInfo,
   getParticipant
 } from './ParticipantActions';
 import { PERSON } from '../../utils/constants/ReduxStateConsts';
 
 const {
   ACTIONS,
+  CASE_NUMBER,
   ERRORS,
+  GET_CASE_INFO,
   GET_PARTICIPANT,
   PARTICIPANT,
   REQUEST_STATE,
@@ -19,11 +22,16 @@ const {
 
 const INITIAL_STATE :Map<*, *> = fromJS({
   [ACTIONS]: {
+    [GET_CASE_INFO]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
     [GET_PARTICIPANT]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
   },
+  [CASE_NUMBER]: List(),
   [ERRORS]: {
+    [GET_CASE_INFO]: Map(),
     [GET_PARTICIPANT]: Map(),
   },
   [PARTICIPANT]: Map(),
@@ -71,6 +79,47 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
             .setIn([ACTIONS, GET_PARTICIPANT, REQUEST_STATE], RequestStates.FAILURE);
         },
         FINALLY: () => state.deleteIn([ACTIONS, GET_PARTICIPANT, seqAction.id])
+      });
+    }
+
+    case getCaseInfo.case(action.type): {
+
+      const seqAction :SequenceAction = (action :any);
+
+      return getCaseInfo.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, GET_CASE_INFO, seqAction.id], fromJS(seqAction))
+          .setIn([ACTIONS, GET_CASE_INFO, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+
+          if (!state.hasIn([ACTIONS, GET_CASE_INFO, seqAction.id])) {
+            return state;
+          }
+
+          const { value } = seqAction;
+          if (value === null || value === undefined) {
+            return state;
+          }
+
+          return state
+            .set(CASE_NUMBER, value)
+            .setIn([ACTIONS, GET_CASE_INFO, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => {
+
+          const error = {};
+          const { value: axiosError } = seqAction;
+          if (axiosError && axiosError.response && isNumber(axiosError.response.status)) {
+            error.status = axiosError.response.status;
+          }
+
+          return state
+            .set(CASE_NUMBER, List())
+            .setIn([ERRORS, GET_CASE_INFO], error)
+            .setIn([ACTIONS, GET_CASE_INFO, REQUEST_STATE], RequestStates.FAILURE);
+        },
+        FINALLY: () => state.deleteIn([ACTIONS, GET_CASE_INFO, seqAction.id])
       });
     }
 

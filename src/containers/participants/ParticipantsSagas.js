@@ -455,7 +455,7 @@ function* getParticipantsWorker(action :SequenceAction) :Generator<*, *, *> {
         })
         .toList();
 
-      // create map of participantEKIDs to sentenceEKIDs for easy lookup
+      // create map of participantEKIDs to sentenceEKIDs for easy lookup, preserving ESID
       participantSentenceEKIDMap = fromJS(response.data)
         .map(personList => personList.get(0))
         .map((person :Map) => {
@@ -466,7 +466,8 @@ function* getParticipantsWorker(action :SequenceAction) :Generator<*, *, *> {
           const { [ENTITY_KEY_ID]: personEKID } = getEntityProperties(person, [ENTITY_KEY_ID]);
           return personEKID;
         })
-        .flip();
+        .flip()
+        .map((sentence :string) => Map({ ekid: sentence, esid: sentenceESID }));
 
       const manualSentencesEKIDs :UUID[] = sentences
         .map((sentence :Map) => {
@@ -510,6 +511,7 @@ function* getParticipantsWorker(action :SequenceAction) :Generator<*, *, *> {
             return personEKID;
           })
           .flip()
+          .map((sentence :string) => Map({ ekid: sentence, esid: manualSentenceESID }))
       );
 
     }
