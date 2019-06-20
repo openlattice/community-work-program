@@ -60,31 +60,37 @@ const TableRow = ({
     startDate,
   } = dates;
 
-  let photo = person ? person.getIn([MUGSHOT, 0]) || person.getIn([PICTURE, 0]) : '';
-  photo = photo
-    ? (
-      <StyledPersonPhoto small={small}>
-        <PersonPicture src={photo} alt="" />
-      </StyledPersonPhoto>
-    ) : <FontAwesomeIcon icon={faUserCircle} color="#D8D8D8" size="2x" />;
-
+  let photo = '';
   let cellData :List = List();
-  cellData = person ? cellData.push(getPersonName(person)) : cellData;
-  cellData = (person && ageRequired) ? cellData.push(formatNumericalValue(calculateAge(dateOfBirth))) : cellData;
-  cellData = (person && isDefined(startDate)) ? cellData.push(formatAsDate(startDate)) : cellData;
-  cellData = (person && isDefined(sentenceDate)) ? cellData.push(formatAsDate(sentenceDate)) : cellData;
-  cellData = (person && isDefined(enrollmentDeadline)) ? cellData.push(enrollmentDeadline) : cellData;
-  cellData = (person && isDefined(sentenceEndDate)) ? cellData.push(sentenceEndDate) : cellData;
-  cellData = isDefined(status) ? cellData.push(status) : cellData;
-  cellData = isDefined(warningsCount) ? cellData.push(formatNumericalValue(warningsCount)) : cellData;
-  cellData = isDefined(violationsCount) ? cellData.push(formatNumericalValue(violationsCount)) : cellData;
-  cellData = (isDefined(hoursWorked) && isDefined(hoursRequired))
-    ? cellData.push(`${formatNumericalValue(hoursWorked)} / ${(formatNumericalValue(hoursRequired))}`)
-    : cellData;
-  cellData = (!isDefined(hoursWorked) && isDefined(hoursRequired))
-    ? cellData.push(formatNumericalValue(hoursRequired))
-    : cellData;
-  cellData = isDefined(courtType) ? cellData.push(courtType) : cellData;
+
+  if (isDefined(person)) {
+
+    photo = person.getIn([MUGSHOT, 0]) || person.getIn([PICTURE, 0]);
+    photo = photo
+      ? (
+        <StyledPersonPhoto small={small}>
+          <PersonPicture src={photo} alt="" />
+        </StyledPersonPhoto>
+      ) : <FontAwesomeIcon icon={faUserCircle} color="#D8D8D8" size="2x" />;
+
+    cellData = List().withMutations((list :List) => {
+      list.push(getPersonName(person));
+      if (ageRequired) list.push(formatNumericalValue(calculateAge(dateOfBirth)));
+      if (isDefined(startDate)) list.push(formatAsDate(startDate));
+      if (isDefined(sentenceDate)) list.push(formatAsDate(sentenceDate));
+      if (isDefined(enrollmentDeadline)) list.push(enrollmentDeadline);
+      if (isDefined(sentenceEndDate)) list.push(sentenceEndDate);
+      if (isDefined(status)) list.push(status);
+      if (isDefined(warningsCount)) list.push(formatNumericalValue(warningsCount));
+      if (isDefined(violationsCount)) list.push(formatNumericalValue(violationsCount));
+      if (isDefined(hoursWorked) && isDefined(hoursRequired)) {
+        list.push(`${formatNumericalValue(hoursWorked)} / ${(formatNumericalValue(hoursRequired))}`);
+      }
+      if (!isDefined(hoursWorked) && isDefined(hoursRequired)) list.push(formatNumericalValue(hoursRequired));
+      if (isDefined(courtType)) list.push(courtType);
+      return list;
+    });
+  }
 
   return (
     <Row

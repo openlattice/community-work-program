@@ -1,11 +1,11 @@
 /*
  * @flow
  */
-import { Map } from 'immutable';
+import { isImmutable, Map } from 'immutable';
 import { Models } from 'lattice';
 
-import { isDefined } from './LangUtils';
 import { NEIGHBOR_DETAILS, TYPE_IDS_BY_FQNS } from '../core/edm/constants/DataModelConsts';
+import { ENTITY_KEY_ID } from '../core/edm/constants/FullyQualifiedNames';
 import { APP } from './constants/ReduxStateConsts';
 
 const { FullyQualifiedName } = Models;
@@ -37,13 +37,29 @@ export const getFirstNeighborValue = (
 
 export const getEntityProperties = (entityObj :Map, propertyList :string[]) => {
 
-  let returnPropertyFields = Map();
-  if (propertyList.length && isDefined(entityObj) && entityObj.count() > 0) {
+  const returnPropertyFields = {};
+  if (propertyList.length && isImmutable(entityObj) && entityObj.count() > 0) {
     propertyList.forEach((propertyType) => {
       const backUpValue = entityObj.get(propertyType, '');
       const property = getFirstNeighborValue(entityObj, propertyType, backUpValue);
-      returnPropertyFields = returnPropertyFields.set(propertyType, property);
+      returnPropertyFields[propertyType] = property;
     });
   }
-  return returnPropertyFields.toJS();
+  return returnPropertyFields;
+};
+
+export const getNeighborDetails = (neighborObj :Map) :Map => {
+  let neighborDetails :Map = Map();
+  if (isImmutable(neighborObj)) {
+    neighborDetails = neighborObj.get(NEIGHBOR_DETAILS);
+  }
+  return neighborDetails;
+};
+
+export const getEntityKeyId = (entityObj :Map) :string => {
+  if (isImmutable(entityObj)) {
+    const { [ENTITY_KEY_ID]: entityKeyId } = getEntityProperties(entityObj, [ENTITY_KEY_ID]);
+    return entityKeyId;
+  }
+  return '';
 };

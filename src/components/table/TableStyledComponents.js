@@ -3,7 +3,7 @@ import styled from 'styled-components';
 
 import { OL } from '../../core/style/Colors';
 import { PersonPhoto } from '../picture/PersonPicture';
-import { ENROLLMENT_STATUSES } from '../../core/edm/constants/DataModelConsts';
+import { getColorForStatus } from '../../utils/StyleUtils';
 
 /* Table Styles */
 
@@ -78,24 +78,7 @@ export const Cell = styled.span`
   font-size: ${props => (props.small ? '12' : '14')}px;
   text-align: left;
   vertical-align: middle;
-  color: ${(props) => {
-    if (props.status === ENROLLMENT_STATUSES.ACTIVE) {
-      return `${OL.GREEN02};`;
-    }
-    if (props.status === ENROLLMENT_STATUSES.COMPLETED) {
-      return `${OL.BLUE01};`;
-    }
-    if (props.status === ENROLLMENT_STATUSES.ACTIVE_NONCOMPLIANT) {
-      return `${OL.YELLOW01};`;
-    }
-    if (props.status === ENROLLMENT_STATUSES.REMOVED_NONCOMPLIANT) {
-      return `${OL.RED01};`;
-    }
-    if (props.status === ENROLLMENT_STATUSES.AWAITING_ENROLLMENT) {
-      return `${OL.PINK01};`;
-    }
-    return `${OL.GREY02};`;
-  }}
+  color: ${(props => getColorForStatus(props.status))}
 `;
 
 export const Row = styled.div`

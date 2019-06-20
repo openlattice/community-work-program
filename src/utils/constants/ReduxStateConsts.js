@@ -13,6 +13,7 @@ export const APP = {
   APP_TYPES: 'appTypes',
   ENTITY_SETS_BY_ORG: 'entitySetsByOrganization',
   FQN_TO_ID: 'fqnsToEntitySetIds',
+  INITIALIZE_APPLICATION: 'initializeApplication',
   ERRORS: 'errors',
   LOADING: 'isLoadingApp',
   LOAD_APP: 'loadApp',

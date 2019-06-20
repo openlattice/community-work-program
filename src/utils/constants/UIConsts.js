@@ -3,13 +3,13 @@ import { Map } from 'immutable';
 
 import { ENROLLMENT_STATUSES } from '../../core/edm/constants/DataModelConsts';
 
-/* Dashboard */
+/* DASHBOARD */
 
 export const NEW_PARTICIPANTS_COLUMNS = ['NAME', 'SENT. DATE', 'ENROLL. DEADLINE', 'REQ. HRS.'];
 export const PENDING_PARTICIPANTS_COLUMNS = ['NAME', 'SENT. DATE', 'REQ. HRS.'];
 export const VIOLATIONS_WATCH_COLUMNS = ['NAME', '# OF VIO.', 'HRS. SERVED'];
 
-/* Participants */
+/* PARTICIPANTS */
 
 export const ALL_PARTICIPANTS_COLUMNS = [
   'NAME',

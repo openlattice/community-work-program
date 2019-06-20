@@ -22,7 +22,7 @@ import {
   ENTITY_KEY_ID,
   SENTENCE_TERM_FQNS
 } from '../../core/edm/constants/FullyQualifiedNames';
-import { HOURS_CONSTS } from '../../core/edm/constants/DataModelConsts';
+import { ENROLLMENT_STATUSES, HOURS_CONSTS } from '../../core/edm/constants/DataModelConsts';
 import { SORTABLE_PARTICIPANT_COLUMNS } from '../../utils/constants/UIConsts';
 
 const { EFFECTIVE_DATE, STATUS } = ENROLLMENT_STATUS_FQNS;
@@ -64,12 +64,11 @@ type Props = {
   alignCenter ? :boolean;
   bannerText :string;
   columnHeaders :string[];
-  courtType ? :string | void;
-  datesToInclude :Object;
-  enrollment ? :Map | void;
+  config :Object;
+  courtType ? :string;
+  enrollment ? :Map;
   handleSelect :(personEKID :string) => void;
   hours ? :Map;
-  hoursToInclude :Object;
   people :List;
   selectedSortOption ? :string;
   sentenceTerms ? :Map;
@@ -86,12 +85,11 @@ const ParticipantsTable = ({
   alignCenter,
   bannerText,
   columnHeaders,
+  config,
   courtType,
-  datesToInclude,
   enrollment,
   handleSelect,
   hours,
-  hoursToInclude,
   people,
   selectedSortOption,
   sentenceTerms,
@@ -113,12 +111,13 @@ const ParticipantsTable = ({
         people.map((person :Map) => {
 
           const {
-            deadline,
-            sentence,
-            sentenceEnd,
-            start
-          } = datesToInclude;
-          const { requiredHours, workedHours } = hoursToInclude;
+            includeDeadline,
+            includeRequiredHours,
+            includeSentenceDate,
+            includeSentenceEndDate,
+            includeStartDate,
+            includeWorkedHours,
+          } = config;
           const { [ENTITY_KEY_ID]: personEntityKeyId } :UUID = getEntityProperties(person, [ENTITY_KEY_ID]);
 
           // Infractions
@@ -134,30 +133,31 @@ const ParticipantsTable = ({
           // Dates
           // if sentenceTerms is defined and we need to include sentenceData:
           // get sentenceDate from sentenceTerms, and if doesn't exist, return empty ''
-          const sentenceDate = (isDefined(sentenceTerms) && sentence)
+          const sentenceDate = (isDefined(sentenceTerms) && includeSentenceDate)
             ? sentenceTerms.getIn([personEntityKeyId, DATETIME_START, 0], '')
             : undefined;
           // can only provide a valid sentenceEndDate if we have a valid sentenceDate
           // need to provide empty '' if sentenceEnd required but we don't have valid sentenceDate
+          const sentenceDateObj = DateTime.fromISO(sentenceDate);
           let sentenceEndDate;
-          if (DateTime.fromISO(sentenceDate).isValid && sentenceEnd) {
-            sentenceEndDate = DateTime.fromISO(sentenceDate).plus({ days: 90 }).toLocaleString();
+          if (sentenceDateObj.isValid && includeSentenceEndDate) {
+            sentenceEndDate = sentenceDateObj.plus({ days: 90 }).toLocaleString();
           }
-          if (!DateTime.fromISO(sentenceDate).isValid && sentenceEnd) {
+          if (!sentenceDateObj.isValid && includeSentenceEndDate) {
             sentenceEndDate = '';
           }
           // can only provide a valid deadline date if we have a valid Sentence Date
           // need to provide empty '' if deadline required but we don't have valid sentenceDate
           let enrollmentDeadline;
-          if (DateTime.fromISO(sentenceDate).isValid && deadline) {
-            enrollmentDeadline = DateTime.fromISO(sentenceDate).plus({ hours: 48 }).toLocaleString();
+          if (sentenceDateObj.isValid && includeDeadline) {
+            enrollmentDeadline = sentenceDateObj.plus({ hours: 48 }).toLocaleString();
           }
-          if (!DateTime.fromISO(sentenceDate).isValid && deadline) {
+          if (!sentenceDateObj.isValid && includeDeadline) {
             enrollmentDeadline = '';
           }
           // we only have a start date if enrollment status has valid effective date
           // pass empty '' if startDate required but no effective date
-          const startDate = (isDefined(enrollment) && start)
+          const startDate = (isDefined(enrollment) && includeStartDate)
             ? enrollment.getIn([personEntityKeyId, EFFECTIVE_DATE, 0], '')
             : undefined;
 
@@ -173,7 +173,7 @@ const ParticipantsTable = ({
           // need to pass empty '' if status is required
           const enrollmentStatus = (isDefined(enrollment) ||
             (isDefined(enrollment) && enrollment.get(personEntityKeyId).count() === 0))
-            ? enrollment.getIn([personEntityKeyId, STATUS, 0], 'Awaiting enrollment')
+            ? enrollment.getIn([personEntityKeyId, STATUS, 0], ENROLLMENT_STATUSES.AWAITING_ENROLLMENT)
             : undefined;
 
           // Hours
@@ -181,10 +181,11 @@ const ParticipantsTable = ({
           // for each, we need to pass an empty '' if they're not defined/found
           // required hours are always included
           const individualPersonHours = (isDefined(hours) && hours.count() > 0) ? hours.get(personEntityKeyId) : Map();
-          const required = (isDefined(individualPersonHours) && requiredHours)
+          const individualHasHours = isDefined(individualPersonHours);
+          const required = (individualHasHours && includeRequiredHours)
             ? individualPersonHours.get(REQUIRED, '')
             : '';
-          const worked = (isDefined(individualPersonHours) && workedHours)
+          const worked = (individualHasHours && includeWorkedHours)
             ? individualPersonHours.get(WORKED, '')
             : undefined;
 

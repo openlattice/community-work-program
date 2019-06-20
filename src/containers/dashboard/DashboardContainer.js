@@ -3,28 +3,25 @@ import React, { Component } from 'react';
 import styled from 'styled-components';
 import { List, Map } from 'immutable';
 import { DateTime } from 'luxon';
+import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { RequestStates } from 'redux-reqseq';
-import type { RequestState } from 'redux-reqseq';
-import type { RouterHistory } from 'react-router';
+import type { RequestSequence, RequestState } from 'redux-reqseq';
 
 import ParticipantsTable from '../../components/table/ParticipantsTable';
 import LogoLoader from '../../components/LogoLoader';
 
 import { ErrorMessage } from '../../components/Layout';
+import { goToRoute } from '../../core/router/RoutingActions';
 import { PARTICIPANT_PROFILE } from '../../core/router/Routes';
 import {
   APP_CONTENT_PADDING,
   DASHBOARD_WIDTH,
 } from '../../core/style/Sizes';
-import { getEntityProperties } from '../../utils/DataUtils';
+import { getEntityKeyId } from '../../utils/DataUtils';
 import { ENROLLMENT_STATUSES, HOURS_CONSTS } from '../../core/edm/constants/DataModelConsts';
-import {
-  ENROLLMENT_STATUS_FQNS,
-  ENTITY_KEY_ID,
-  SENTENCE_TERM_FQNS
-} from '../../core/edm/constants/FullyQualifiedNames';
-import { PEOPLE, STATE } from '../../utils/constants/ReduxStateConsts';
+import { ENROLLMENT_STATUS_FQNS, SENTENCE_TERM_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { APP, PEOPLE, STATE } from '../../utils/constants/ReduxStateConsts';
 import {
   NEW_PARTICIPANTS_COLUMNS,
   PENDING_PARTICIPANTS_COLUMNS,
@@ -70,9 +67,12 @@ const RightWrapper = styled.div`
 `;
 
 type Props = {
+  actions:{
+    goToRoute :RequestSequence;
+  };
   enrollmentByParticipant :Map;
+  getInitializeAppRequestState :RequestState;
   getSentencesRequestState :RequestState;
-  history :RouterHistory,
   hoursWorked :Map;
   infractionCountsByParticipant :Map;
   participants :List;
@@ -102,36 +102,41 @@ class DashboardContainer extends Component<Props, State> {
   componentDidMount() {
     const { participants } = this.props;
     if (participants.count() > 0) {
-      this.getNewParticipants();
-      this.getParticipantsWithHoursComplete();
-      this.getParticipantsWithViolations();
+      this.setNewParticipants();
+      this.setParticipantsWithHoursComplete();
+      this.setParticipantsWithViolations();
     }
   }
 
   componentDidUpdate(prevProps :Props) {
     const { participants } = this.props;
     if (prevProps.participants.count() !== participants.count()) {
-      this.getNewParticipants();
-      this.getParticipantsWithHoursComplete();
-      this.getParticipantsWithViolations();
+      this.setNewParticipants();
+      this.setParticipantsWithHoursComplete();
+      this.setParticipantsWithViolations();
     }
   }
 
-  getNewParticipants = () => {
+  handleOnSelectPerson = (personEKID :string) => {
+    const { actions } = this.props;
+    actions.goToRoute(PARTICIPANT_PROFILE.replace(':subjectId', personEKID));
+  }
+
+  setNewParticipants = () => {
 
     const { enrollmentByParticipant, participants, sentenceTermsByParticipant } = this.props;
     if (enrollmentByParticipant.count() > 0 && participants.count() > 0) {
 
       const newParticipants = participants.filter((participant :Map) => {
-        const { [ENTITY_KEY_ID]: personEntityKeyId } :UUID = getEntityProperties(participant, [ENTITY_KEY_ID]);
-        if (enrollmentByParticipant.get(personEntityKeyId).count() === 0) { // if no existing worksite enrollments
-          return participant;
+        const personEKID :UUID = getEntityKeyId(participant);
+        if (enrollmentByParticipant.get(personEKID).count() === 0) { // if no existing worksite enrollments
+          return true;
         }
 
-        const isAwaitingEnrollment :boolean = enrollmentByParticipant.get(personEntityKeyId)
+        const isAwaitingEnrollment :boolean = enrollmentByParticipant.get(personEKID)
           .getIn([STATUS, 0]) === ENROLLMENT_STATUSES.AWAITING_ENROLLMENT;
         const hasActiveSentence :boolean = DateTime.fromISO(
-          sentenceTermsByParticipant.getIn([personEntityKeyId, DATETIME_START, 0])
+          sentenceTermsByParticipant.getIn([personEKID, DATETIME_START, 0])
         ).diff(DateTime.local(), 'days') < 90;
 
         // if person was enrolled in CWP previously
@@ -147,7 +152,7 @@ class DashboardContainer extends Component<Props, State> {
     }
   }
 
-  getParticipantsWithHoursComplete = () => {
+  setParticipantsWithHoursComplete = () => {
 
     const { hoursWorked, participants } = this.props;
     const participantsWithHoursComplete :Map = hoursWorked
@@ -156,8 +161,8 @@ class DashboardContainer extends Component<Props, State> {
     let pendingCompletionReview :List = List();
     participantsWithHoursComplete.forEach((hours :Map, ekid :UUID) => {
       const participant :Map = participants.find((person :Map) => {
-        const { [ENTITY_KEY_ID]: personEntityKeyId } :UUID = getEntityProperties(person, [ENTITY_KEY_ID]);
-        return personEntityKeyId === ekid;
+        const personEKID :UUID = getEntityKeyId(person);
+        return personEKID === ekid;
       });
       pendingCompletionReview = pendingCompletionReview.push(participant);
     });
@@ -167,13 +172,13 @@ class DashboardContainer extends Component<Props, State> {
     });
   }
 
-  getParticipantsWithViolations = () => {
+  setParticipantsWithViolations = () => {
 
     const { infractionCountsByParticipant, participants } = this.props;
     const violationMap :Map = infractionCountsByParticipant.map((count :Map) => count.get(VIOLATIONS));
     const violationsWatch :List = participants.filter((participant :Map) => {
-      const { [ENTITY_KEY_ID]: personEntityKeyId } :UUID = getEntityProperties(participant, [ENTITY_KEY_ID]);
-      return violationMap.get(personEntityKeyId);
+      const personEKID :UUID = getEntityKeyId(participant);
+      return violationMap.get(personEKID);
     });
 
     this.setState({
@@ -182,13 +187,9 @@ class DashboardContainer extends Component<Props, State> {
     });
   }
 
-  handleOnSelectPerson = (personEKID :string) => {
-    const { history } = this.props;
-    history.push(PARTICIPANT_PROFILE.replace(':subjectId', personEKID));
-  }
-
   render() {
     const {
+      getInitializeAppRequestState,
       getSentencesRequestState,
       hoursWorked,
       sentenceTermsByParticipant,
@@ -200,8 +201,7 @@ class DashboardContainer extends Component<Props, State> {
       violationsWatch,
     } = this.state;
 
-    if (getSentencesRequestState === RequestStates.PENDING
-        || getSentencesRequestState === RequestStates.STANDBY) {
+    if (getSentencesRequestState === RequestStates.PENDING || getInitializeAppRequestState === RequestStates.PENDING) {
       return (
         <LogoLoader
             loadingText="Please wait..."
@@ -224,15 +224,16 @@ class DashboardContainer extends Component<Props, State> {
               ageRequired={false}
               bannerText="New Participants"
               columnHeaders={NEW_PARTICIPANTS_COLUMNS}
-              datesToInclude={{
-                deadline: true,
-                sentence: true,
-                sentenceEnd: false,
-                start: false
+              config={{
+                includeDeadline: true,
+                includeRequiredHours: true,
+                includeSentenceDate: true,
+                includeSentenceEndDate: false,
+                includeStartDate: false,
+                includeWorkedHours: false
               }}
               handleSelect={this.handleOnSelectPerson}
               hours={hoursWorked}
-              hoursToInclude={{ requiredHours: true, workedHours: false }}
               people={newParticipants}
               setWidth
               small
@@ -243,15 +244,16 @@ class DashboardContainer extends Component<Props, State> {
                 ageRequired={false}
                 bannerText="Pending Completion Review"
                 columnHeaders={PENDING_PARTICIPANTS_COLUMNS}
-                datesToInclude={{
-                  deadline: false,
-                  sentence: true,
-                  sentenceEnd: false,
-                  start: false
+                config={{
+                  includeDeadline: false,
+                  includeRequiredHours: true,
+                  includeSentenceDate: true,
+                  includeSentenceEndDate: false,
+                  includeStartDate: false,
+                  includeWorkedHours: false
                 }}
                 handleSelect={this.handleOnSelectPerson}
                 hours={hoursWorked}
-                hoursToInclude={{ requiredHours: true, workedHours: false }}
                 people={pendingCompletionReview}
                 setWidth
                 small
@@ -261,15 +263,16 @@ class DashboardContainer extends Component<Props, State> {
                 ageRequired={false}
                 bannerText="Violations Watch"
                 columnHeaders={VIOLATIONS_WATCH_COLUMNS}
-                datesToInclude={{
-                  deadline: false,
-                  sentence: false,
-                  sentenceEnd: false,
-                  start: false
+                config={{
+                  includeDeadline: false,
+                  includeRequiredHours: true,
+                  includeSentenceDate: false,
+                  includeSentenceEndDate: false,
+                  includeStartDate: false,
+                  includeWorkedHours: true
                 }}
                 handleSelect={this.handleOnSelectPerson}
                 hours={hoursWorked}
-                hoursToInclude={{ requiredHours: true, workedHours: true }}
                 people={violationsWatch}
                 setWidth
                 small
@@ -283,9 +286,11 @@ class DashboardContainer extends Component<Props, State> {
 }
 
 const mapStateToProps = (state :Map<*, *>) => {
+  const app = state.get(STATE.APP);
   const people = state.get(STATE.PEOPLE);
   return {
     [ENROLLMENT_BY_PARTICIPANT]: people.get(ENROLLMENT_BY_PARTICIPANT),
+    getInitializeAppRequestState: app.getIn([APP.ACTIONS, APP.INITIALIZE_APPLICATION, APP.REQUEST_STATE]),
     getSentencesRequestState: people.getIn([PEOPLE.ACTIONS, PEOPLE.GET_SENTENCES, PEOPLE.REQUEST_STATE]),
     [HOURS_WORKED]: people.get(HOURS_WORKED),
     [INFRACTION_COUNTS_BY_PARTICIPANT]: people.get(INFRACTION_COUNTS_BY_PARTICIPANT),
@@ -294,5 +299,11 @@ const mapStateToProps = (state :Map<*, *>) => {
   };
 };
 
+const mapDispatchToProps = dispatch => ({
+  actions: bindActionCreators({
+    goToRoute,
+  }, dispatch)
+});
+
 // $FlowFixMe
-export default connect(mapStateToProps)(DashboardContainer);
+export default connect(mapStateToProps, mapDispatchToProps)(DashboardContainer);
