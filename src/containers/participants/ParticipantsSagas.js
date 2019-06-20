@@ -150,11 +150,14 @@ function* getEnrollmentStatusesWorker(action :SequenceAction) :Generator<*, *, *
 
       let newStatus :Map = Map();
       if (personStatusList.count() > 0) {
-        const awaitingEnrollmentStatus = personStatusList.find((status :Map) => status
+
+        // NOTE: if someone is signed up to work at multiple worksites, but they haven't yet started working,
+        // they could have multiple enrollmentstatus entities labeled 'Awaiting enrollment'
+        const hasAwaitingEnrollmentStatus = personStatusList.find((status :Map) => status
           .getIn([STATUS, 0]) === ENROLLMENT_STATUSES.AWAITING_ENROLLMENT);
 
-        if (isDefined(awaitingEnrollmentStatus)) {
-          newStatus = awaitingEnrollmentStatus;
+        if (isDefined(hasAwaitingEnrollmentStatus)) {
+          newStatus = hasAwaitingEnrollmentStatus;
         }
         else {
           // find status with most recent effective date
