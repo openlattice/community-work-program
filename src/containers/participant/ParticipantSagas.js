@@ -23,16 +23,22 @@ import {
   GET_CASE_INFO,
   GET_CONTACT_INFO,
   GET_PARTICIPANT,
+  GET_PARTICIPANT_ADDRESS,
   getCaseInfo,
   getContactInfo,
   getParticipant,
+  getParticipantAddress,
 } from './ParticipantActions';
 import { isDefined } from '../../utils/LangUtils';
 import { getEntityProperties, getEntitySetIdFromApp } from '../../utils/DataUtils';
 import { STATE } from '../../utils/constants/ReduxStateConsts';
-import { APP_TYPE_FQNS, CASE_FQNS, CONTACT_INFO_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import {
+  APP_TYPE_FQNS,
+  CASE_FQNS,
+  CONTACT_INFO_FQNS,
+  LOCATION_FQNS
+} from '../../core/edm/constants/FullyQualifiedNames';
 import { NEIGHBOR_DETAILS } from '../../core/edm/constants/DataModelConsts';
-import { formatPhoneNumber } from '../../utils/FormattingUtils';
 
 const { getEntityData } = DataApiActions;
 const { getEntityDataWorker } = DataApiSagas;
@@ -41,6 +47,7 @@ const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
 const {
   CONTACT_INFORMATION,
   COURT_PRETRIAL_CASES,
+  LOCATION,
   MANUAL_PRETRIAL_CASES,
   PEOPLE
 } = APP_TYPE_FQNS;
@@ -49,6 +56,7 @@ const {
   PHONE_NUMBER,
   PREFERRED,
 } = CONTACT_INFO_FQNS;
+const { UNPARSED_ADDRESS } = LOCATION_FQNS;
 
 const getAppFromState = state => state.get(STATE.APP, Map());
 
@@ -253,6 +261,65 @@ function* getContactInfoWatcher() :Generator<*, *, *> {
   yield takeEvery(GET_CONTACT_INFO, getContactInfoWorker);
 }
 
+/*
+ *
+ * ParticipantsActions.getParticipantAddress()
+ *
+ */
+
+function* getParticipantAddressWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+  if (value === null || value === undefined) {
+    yield put(getParticipantAddress.failure(id, ERR_ACTION_VALUE_NOT_DEFINED));
+    return;
+  }
+  let response :Object = {};
+  let address :string = '';
+
+  try {
+    yield put(getParticipantAddress.request(id));
+    const { personEKID } = value;
+    const app = yield select(getAppFromState);
+    const peopleESID = getEntitySetIdFromApp(app, PEOPLE);
+    const locationESID = getEntitySetIdFromApp(app, LOCATION);
+
+    const searchFilter :Object = {
+      entityKeyIds: [personEKID],
+      destinationEntitySetIds: [locationESID],
+      sourceEntitySetIds: [],
+    };
+    response = yield call(
+      searchEntityNeighborsWithFilterWorker,
+      searchEntityNeighborsWithFilter({ entitySetId: peopleESID, filter: searchFilter })
+    );
+    if (response.error) {
+      throw response.error;
+    }
+    // TODO: handle case of having multiple addresses for a person
+    address = fromJS(response.data[personEKID])
+      .map((locationNeighbor :Map) => {
+        const { [NEIGHBOR_DETAILS]: neighborDetails } = getEntityProperties(locationNeighbor, [NEIGHBOR_DETAILS]);
+        return fromJS(neighborDetails);
+      })
+      .getIn([0, UNPARSED_ADDRESS, 0]);
+
+    yield put(getParticipantAddress.success(id, address));
+  }
+  catch (error) {
+    LOG.error('caught exception in getParticipantAddressWorker()', error);
+    yield put(getParticipantAddress.failure(id, error));
+  }
+  finally {
+    yield put(getParticipantAddress.finally(id));
+  }
+}
+
+function* getParticipantAddressWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(GET_PARTICIPANT_ADDRESS, getParticipantAddressWorker);
+}
+
 export {
   getCaseInfoWatcher,
   getCaseInfoWorker,
@@ -260,4 +327,6 @@ export {
   getContactInfoWorker,
   getParticipantWatcher,
   getParticipantWorker,
+  getParticipantAddressWatcher,
+  getParticipantAddressWorker,
 };

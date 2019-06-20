@@ -7,18 +7,21 @@ import type { SequenceAction } from 'redux-reqseq';
 import {
   getCaseInfo,
   getContactInfo,
-  getParticipant
+  getParticipant,
+  getParticipantAddress,
 } from './ParticipantActions';
 import { PERSON } from '../../utils/constants/ReduxStateConsts';
 
 const {
   ACTIONS,
+  ADDRESS,
   CASE_NUMBER,
   EMAIL,
   ERRORS,
   GET_CASE_INFO,
   GET_CONTACT_INFO,
   GET_PARTICIPANT,
+  GET_PARTICIPANT_ADDRESS,
   PARTICIPANT,
   PHONE,
   REQUEST_STATE,
@@ -35,13 +38,18 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     [GET_PARTICIPANT]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
+    [GET_PARTICIPANT_ADDRESS]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
   },
+  [ADDRESS]: '',
   [CASE_NUMBER]: List(),
   [EMAIL]: '',
   [ERRORS]: {
     [GET_CASE_INFO]: Map(),
     [GET_CONTACT_INFO]: Map(),
     [GET_PARTICIPANT]: Map(),
+    [GET_PARTICIPANT_ADDRESS]: Map(),
   },
   [PARTICIPANT]: Map(),
   [PHONE]: '',
@@ -173,6 +181,47 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
             .setIn([ACTIONS, GET_CONTACT_INFO, REQUEST_STATE], RequestStates.FAILURE);
         },
         FINALLY: () => state.deleteIn([ACTIONS, GET_CONTACT_INFO, seqAction.id])
+      });
+    }
+
+    case getParticipantAddress.case(action.type): {
+
+      const seqAction :SequenceAction = (action :any);
+
+      return getParticipantAddress.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, GET_PARTICIPANT_ADDRESS, seqAction.id], fromJS(seqAction))
+          .setIn([ACTIONS, GET_PARTICIPANT_ADDRESS, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+
+          if (!state.hasIn([ACTIONS, GET_PARTICIPANT_ADDRESS, seqAction.id])) {
+            return state;
+          }
+
+          const { value } = seqAction;
+          if (value === null || value === undefined) {
+            return state;
+          }
+
+          return state
+            .set(ADDRESS, value)
+            .setIn([ACTIONS, GET_PARTICIPANT_ADDRESS, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => {
+
+          const error = {};
+          const { value: axiosError } = seqAction;
+          if (axiosError && axiosError.response && isNumber(axiosError.response.status)) {
+            error.status = axiosError.response.status;
+          }
+
+          return state
+            .set(ADDRESS, '')
+            .setIn([ERRORS, GET_PARTICIPANT_ADDRESS], error)
+            .setIn([ACTIONS, GET_PARTICIPANT_ADDRESS, REQUEST_STATE], RequestStates.FAILURE);
+        },
+        FINALLY: () => state.deleteIn([ACTIONS, GET_PARTICIPANT_ADDRESS, seqAction.id])
       });
     }
 
