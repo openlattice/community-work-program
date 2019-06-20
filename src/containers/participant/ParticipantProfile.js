@@ -2,6 +2,7 @@
 import React, { Component } from 'react';
 import styled from 'styled-components';
 import { List, Map } from 'immutable';
+import { Button } from 'lattice-ui-kit';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { RequestStates } from 'redux-reqseq';
@@ -229,9 +230,9 @@ class ParticipantProfile extends Component<Props, State> {
           <NameRowWrapper>
             <NameHeader>{ `${firstName} ${lastName}` }</NameHeader>
             <ButtonWrapper>
-              <PrimaryButton>
-                Enroll Participant
-              </PrimaryButton>
+              <Button>
+                Change Enrollment Status
+              </Button>
             </ButtonWrapper>
           </NameRowWrapper>
           <BasicInfoWrapper>
