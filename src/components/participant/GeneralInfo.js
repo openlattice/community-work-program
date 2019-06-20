@@ -97,6 +97,8 @@ const Value = styled.div`
 `;
 
 type Props = {
+  address :string;
+  addressRequestState :RequestState;
   contactRequestState :RequestState;
   email :string;
   person :Map;
@@ -105,6 +107,8 @@ type Props = {
 };
 
 const GeneralInfo = ({
+  address,
+  addressRequestState,
   contactRequestState,
   email,
   person,
@@ -112,6 +116,8 @@ const GeneralInfo = ({
   status
 } :Props) => {
 
+  const addressRequestLoading = (addressRequestState === RequestStates.PENDING
+    || addressRequestState === RequestStates.STANDBY);
   const contactRequestLoading = (contactRequestState === RequestStates.PENDING
       || contactRequestState === RequestStates.STANDBY);
   const { [DOB]: dateOfBirth, [MUGSHOT]: mugshot } = getEntityProperties(person, [DOB, MUGSHOT]);
@@ -152,7 +158,11 @@ const GeneralInfo = ({
       </InfoRow>
       <InfoRow>
         <Title>Address</Title>
-        <Value></Value>
+        <ValueWrapper>
+          {
+            addressRequestLoading ? <Spinner /> : <Value hasSpinner>{ address }</Value>
+          }
+        </ValueWrapper>
       </InfoRow>
       <InfoRow>
         <Title>Email</Title>

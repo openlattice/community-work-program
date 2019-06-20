@@ -14,7 +14,7 @@ import CaseInfo from '../../components/participant/CaseInfo';
 import InfractionsDisplay from '../../components/participant/InfractionsDisplay';
 import LogoLoader from '../../components/LogoLoader';
 
-import { getCaseInfo, getContactInfo } from './ParticipantActions';
+import { getCaseInfo, getContactInfo, getParticipantAddress } from './ParticipantActions';
 import { OL } from '../../core/style/Colors';
 import { PARTICIPANT_PROFILE_WIDTH } from '../../core/style/Sizes';
 import * as Routes from '../../core/router/Routes';
@@ -38,7 +38,12 @@ const {
   SENTENCE_TERMS_BY_PARTICIPANT,
   SENTENCE_EKIDS,
 } = PEOPLE;
-const { CASE_NUMBER, EMAIL, PHONE } = PERSON;
+const {
+  ADDRESS,
+  CASE_NUMBER,
+  EMAIL,
+  PHONE
+} = PERSON;
 
 const ProfileWrapper = styled.div`
   display: flex;
@@ -98,11 +103,14 @@ type Props = {
   actions:{
     getCaseInfo :RequestSequence;
     getContactInfo :RequestSequence;
+    getParticipantAddress :RequestSequence;
   };
+  address :string;
   caseNumber :string;
   email :string;
   enrollmentByParticipant :Map;
   getContactInfoRequestState :RequestState;
+  getAddressRequestState :RequestState;
   getSentencesRequestState :RequestState;
   history :RouterHistory;
   hoursWorked :Map;
@@ -174,14 +182,17 @@ class ParticipantProfile extends Component<Props, State> {
       const sentenceIDs = sentenceEKIDs.get(personEKID, Map()).toJS();
       actions.getCaseInfo({ sentenceIDs });
       actions.getContactInfo({ personEKID });
+      actions.getParticipantAddress({ personEKID });
     }
   }
 
   render() {
     const {
+      address,
       caseNumber,
       email,
       getContactInfoRequestState,
+      getAddressRequestState,
       getSentencesRequestState,
       history,
       phone,
@@ -225,6 +236,8 @@ class ParticipantProfile extends Component<Props, State> {
           </NameRowWrapper>
           <BasicInfoWrapper>
             <GeneralInfo
+                address={address}
+                addressRequestState={getAddressRequestState}
                 contactRequestState={getContactInfoRequestState}
                 email={email}
                 person={participant}
@@ -248,10 +261,12 @@ const mapStateToProps = (state :Map<*, *>) => {
   const people = state.get(STATE.PEOPLE);
   const person = state.get(STATE.PERSON);
   return {
+    [ADDRESS]: person.get(ADDRESS),
     [CASE_NUMBER]: person.get(CASE_NUMBER),
     [EMAIL]: person.get(EMAIL),
     [ENROLLMENT_BY_PARTICIPANT]: people.get(ENROLLMENT_BY_PARTICIPANT),
     getContactInfoRequestState: person.getIn([PERSON.ACTIONS, PERSON.GET_CONTACT_INFO, PERSON.REQUEST_STATE]),
+    getAddressRequestState: person.getIn([PERSON.ACTIONS, PERSON.GET_PARTICIPANT_ADDRESS, PERSON.REQUEST_STATE]),
     getSentencesRequestState: people.getIn([PEOPLE.ACTIONS, PEOPLE.GET_SENTENCES, PEOPLE.REQUEST_STATE]),
     [HOURS_WORKED]: people.get(HOURS_WORKED),
     [INFRACTION_COUNTS_BY_PARTICIPANT]: people.get(INFRACTION_COUNTS_BY_PARTICIPANT),
@@ -266,6 +281,7 @@ const mapDispatchToProps = dispatch => ({
   actions: bindActionCreators({
     getCaseInfo,
     getContactInfo,
+    getParticipantAddress,
   }, dispatch)
 });
 
