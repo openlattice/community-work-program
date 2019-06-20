@@ -1,11 +1,8 @@
 // @flow
 import React from 'react';
 import styled from 'styled-components';
-import { faEdit } from '@fortawesome/pro-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 import { formatNumericalValue } from '../../utils/FormattingUtils';
-import { ButtonWrapper } from '../Layout';
 import { OL } from '../../core/style/Colors';
 
 const CaseInfoWrapper = styled.div`
@@ -57,16 +54,10 @@ const CaseInfo = ({ caseNumber, hours } :Props) => (
     <Header>Case Number</Header>
     <NumberWrapper>
       <Number>{ caseNumber }</Number>
-      <ButtonWrapper>
-        <FontAwesomeIcon icon={faEdit} color={OL.GREY04} />
-      </ButtonWrapper>
     </NumberWrapper>
     <Header>Required Hours</Header>
     <NumberWrapper>
       <Number>{ formatNumericalValue(hours) }</Number>
-      <ButtonWrapper>
-        <FontAwesomeIcon icon={faEdit} color={OL.GREY04} />
-      </ButtonWrapper>
     </NumberWrapper>
   </CaseInfoWrapper>
 );

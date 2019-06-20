@@ -2,7 +2,7 @@
  * @flow
  */
 
-import { List, Map, fromJS } from 'immutable';
+import { Map, fromJS } from 'immutable';
 import {
   call,
   put,
