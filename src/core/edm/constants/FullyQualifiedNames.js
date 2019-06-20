@@ -93,6 +93,11 @@ export const INFRACTION_FQNS = {
   TYPE: new FullyQualifiedName('ol.type'),
 };
 
+/* ol.location */
+export const LOCATION_FQNS = {
+  UNPARSED_ADDRESS: new FullyQualifiedName('location.address'),
+};
+
 /* general.person */
 export const PEOPLE_FQNS = {
   FIRST_NAME: new FullyQualifiedName('nc.PersonGivenName'),
