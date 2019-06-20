@@ -52,12 +52,14 @@ export const PEOPLE = {
 
 export const PERSON = {
   ACTIONS: 'actions',
+  ADDRESS: 'address',
   CASE_NUMBER: 'caseNumber',
   EMAIL: 'email',
   ERRORS: 'errors',
   GET_CASE_INFO: 'getCaseInfo',
   GET_CONTACT_INFO: 'getContactInfo',
   GET_PARTICIPANT: 'getParticipant',
+  GET_PARTICIPANT_ADDRESS: 'getParticipantAddress',
   PARTICIPANT: 'participant',
   PHONE: 'phone',
   REQUEST_STATE: 'requestState',
