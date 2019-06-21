@@ -5,31 +5,23 @@ import { OL } from '../core/style/Colors';
 
 /* eslint-disable import/prefer-default-export */
 export const getColorForStatus = (status :string) :string => {
-
-  let color = `${OL.GREY02}`;
   switch (status) {
     case ENROLLMENT_STATUSES.ACTIVE: {
-      color = `${OL.GREEN02};`;
-      break;
+      return `${OL.GREEN02};`;
     }
     case ENROLLMENT_STATUSES.COMPLETED: {
-      color = `${OL.BLUE01};`;
-      break;
+      return `${OL.BLUE01};`;
     }
     case ENROLLMENT_STATUSES.ACTIVE_NONCOMPLIANT: {
-      color = `${OL.YELLOW01};`;
-      break;
+      return `${OL.YELLOW01};`;
     }
     case ENROLLMENT_STATUSES.REMOVED_NONCOMPLIANT: {
-      color = `${OL.RED01};`;
-      break;
+      return `${OL.RED01};`;
     }
     case ENROLLMENT_STATUSES.AWAITING_ENROLLMENT: {
-      color = `${OL.PINK01};`;
-      break;
+      return `${OL.PINK01};`;
     }
     default:
-      return color;
+      return `${OL.GREY02}`;
   }
-  return color;
 };

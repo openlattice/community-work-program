@@ -88,7 +88,6 @@ const TableRow = ({
       }
       if (!isDefined(hoursWorked) && isDefined(hoursRequired)) list.push(formatNumericalValue(hoursRequired));
       if (isDefined(courtType)) list.push(courtType);
-      return list;
     });
   }
 
