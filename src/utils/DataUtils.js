@@ -51,7 +51,7 @@ export const getEntityProperties = (entityObj :Map, propertyList :string[]) => {
 export const getNeighborDetails = (neighborObj :Map) :Map => {
   let neighborDetails :Map = Map();
   if (isImmutable(neighborObj)) {
-    neighborDetails = neighborObj.get(NEIGHBOR_DETAILS);
+    neighborDetails = neighborObj.get(NEIGHBOR_DETAILS, neighborObj);
   }
   return neighborDetails;
 };
