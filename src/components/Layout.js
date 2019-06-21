@@ -24,6 +24,7 @@ export const ContainerInnerWrapper = styled.div`
 export const ButtonWrapper = styled.div`
   display: flex;
   align-items: center;
+  margin-left: 15px;
   &:hover {
     cursor: pointer;
   }

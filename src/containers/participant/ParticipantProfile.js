@@ -19,10 +19,7 @@ import { getCaseInfo, getContactInfo, getParticipantAddress } from './Participan
 import { OL } from '../../core/style/Colors';
 import { PARTICIPANT_PROFILE_WIDTH } from '../../core/style/Sizes';
 import * as Routes from '../../core/router/Routes';
-import {
-  BackNavButton,
-  PrimaryButton,
-} from '../../components/controls/index';
+import { BackNavButton } from '../../components/controls/index';
 import { ButtonWrapper } from '../../components/Layout';
 import { getEntityProperties } from '../../utils/DataUtils';
 import { ENROLLMENT_STATUS_FQNS, ENTITY_KEY_ID, PEOPLE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
@@ -71,6 +68,11 @@ const NameRowWrapper = styled.div`
   width: 100%;
   display: flex;
   justify-content: space-between;
+  align-items: center;
+`;
+
+const ButtonsWrapper = styled.div`
+  display: flex;
   align-items: center;
 `;
 
@@ -229,11 +231,18 @@ class ParticipantProfile extends Component<Props, State> {
           </BackNavButton>
           <NameRowWrapper>
             <NameHeader>{ `${firstName} ${lastName}` }</NameHeader>
-            <ButtonWrapper>
-              <Button>
-                Change Enrollment Status
-              </Button>
-            </ButtonWrapper>
+            <ButtonsWrapper>
+              <ButtonWrapper>
+                <Button>
+                  Assign to Worksite
+                </Button>
+              </ButtonWrapper>
+              <ButtonWrapper>
+                <Button mode="primary">
+                  Enroll in CWP
+                </Button>
+              </ButtonWrapper>
+            </ButtonsWrapper>
           </NameRowWrapper>
           <BasicInfoWrapper>
             <GeneralInfo
