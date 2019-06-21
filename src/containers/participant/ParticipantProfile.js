@@ -6,7 +6,6 @@ import { Button } from 'lattice-ui-kit';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { RequestStates } from 'redux-reqseq';
-import type { RouterHistory } from 'react-router';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
 import GeneralInfo from '../../components/participant/GeneralInfo';
@@ -16,6 +15,7 @@ import InfractionsDisplay from '../../components/participant/InfractionsDisplay'
 import LogoLoader from '../../components/LogoLoader';
 
 import { getCaseInfo, getContactInfo, getParticipantAddress } from './ParticipantActions';
+import { goToRoute } from '../../core/router/RoutingActions';
 import { OL } from '../../core/style/Colors';
 import { PARTICIPANT_PROFILE_WIDTH } from '../../core/style/Sizes';
 import * as Routes from '../../core/router/Routes';
@@ -107,6 +107,7 @@ type Props = {
     getCaseInfo :RequestSequence;
     getContactInfo :RequestSequence;
     getParticipantAddress :RequestSequence;
+    goToRoute :RequestSequence;
   };
   address :string;
   caseNumber :string;
@@ -115,7 +116,6 @@ type Props = {
   getContactInfoRequestState :RequestState;
   getAddressRequestState :RequestState;
   getSentencesRequestState :RequestState;
-  history :RouterHistory;
   hoursWorked :Map;
   infractionCountsByParticipant :Map;
   participants :List;
@@ -191,13 +191,13 @@ class ParticipantProfile extends Component<Props, State> {
 
   render() {
     const {
+      actions,
       address,
       caseNumber,
       email,
       getContactInfoRequestState,
       getAddressRequestState,
       getSentencesRequestState,
-      history,
       phone,
     } = this.props;
     const {
@@ -225,7 +225,7 @@ class ParticipantProfile extends Component<Props, State> {
         <ProfileBody>
           <BackNavButton
               onClick={() => {
-                history.push(Routes.PARTICIPANTS);
+                actions.goToRoute(Routes.PARTICIPANTS);
               }}>
             Back to Participants
           </BackNavButton>
@@ -292,6 +292,7 @@ const mapDispatchToProps = dispatch => ({
     getCaseInfo,
     getContactInfo,
     getParticipantAddress,
+    goToRoute,
   }, dispatch)
 });
 
