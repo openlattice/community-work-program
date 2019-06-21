@@ -10,9 +10,11 @@ export const STATE = {
 export const APP = {
   ACTIONS: 'actions',
   APP: 'app',
+  APP_SETTINGS_ID: 'appSettingsEntitySetId',
   APP_TYPES: 'appTypes',
   ENTITY_SETS_BY_ORG: 'entitySetsByOrganization',
   FQN_TO_ID: 'fqnsToEntitySetIds',
+  INITIALIZE_APPLICATION: 'initializeApplication',
   ERRORS: 'errors',
   LOADING: 'isLoadingApp',
   LOAD_APP: 'loadApp',
@@ -22,7 +24,6 @@ export const APP = {
   REQUEST_STATE: 'requestState',
   SELECTED_ORG_ID: 'selectedOrganizationId',
   SELECTED_ORG_TITLE: 'selectedOrganizationTitle',
-  APP_SETTINGS_ID: 'appSettingsEntitySetId',
   SELECTED_ORG_SETTINGS: 'selectedOrganizationSettings',
   SETTINGS_BY_ORG_ID: 'appSettingsByOrgId'
 };
