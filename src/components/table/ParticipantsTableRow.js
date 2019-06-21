@@ -19,6 +19,7 @@ import {
   Row,
   StyledPersonPhoto,
 } from './TableStyledComponents';
+import { ENROLLMENT_STATUSES } from '../../core/edm/constants/DataModelConsts';
 
 const { DOB, MUGSHOT, PICTURE } = PEOPLE_FQNS;
 
@@ -99,9 +100,12 @@ const TableRow = ({
         }}>
       <Cell small={small}>{ photo }</Cell>
       {
-        cellData.map((field :string, index :number) => (
-          <Cell key={`${index}-${field}`} small={small} status={field}>{ field }</Cell>
-        ))
+        cellData.map((field :string, index :number) => {
+          const text = Object.values(ENROLLMENT_STATUSES).includes(field) ? field : 'default';
+          return (
+            <Cell key={`${index}-${field}`} small={small} status={text}>{ field }</Cell>
+          );
+        })
       }
     </Row>
   );

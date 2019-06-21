@@ -1,10 +1,12 @@
 // @flow
 import styled from 'styled-components';
+import { StyleUtils } from 'lattice-ui-kit';
 
-import { OL } from '../../core/style/Colors';
+import { ENROLLMENT_STATUS_COLORS, OL } from '../../core/style/Colors';
 import { PersonPhoto } from '../picture/PersonPicture';
-import { getColorForStatus } from '../../utils/StyleUtils';
+import { ENROLLMENT_STATUSES } from '../../core/edm/constants/DataModelConsts';
 
+const { getStyleVariation } = StyleUtils;
 /* Table Styles */
 
 export const TableWrapper = styled.div`
@@ -71,6 +73,15 @@ export const HeaderRow = styled.div`
 
 /* Table Row Styles */
 
+const statusColorVariation = getStyleVariation('status', {
+  default: `${OL.GREY02}`,
+  [ENROLLMENT_STATUSES.ACTIVE]: ENROLLMENT_STATUS_COLORS.ACTIVE,
+  [ENROLLMENT_STATUSES.ACTIVE_NONCOMPLIANT]: ENROLLMENT_STATUS_COLORS.ACTIVE_NONCOMPLIANT,
+  [ENROLLMENT_STATUSES.AWAITING_ENROLLMENT]: ENROLLMENT_STATUS_COLORS.AWAITING_ENROLLMENT,
+  [ENROLLMENT_STATUSES.COMPLETED]: ENROLLMENT_STATUS_COLORS.COMPLETED,
+  [ENROLLMENT_STATUSES.REMOVED_NONCOMPLIANT]: ENROLLMENT_STATUS_COLORS.REMOVED_NONCOMPLIANT,
+});
+
 export const Cell = styled.span`
   display: table-cell;
   padding: 7px 30px 7px 0;
@@ -78,7 +89,7 @@ export const Cell = styled.span`
   font-size: ${props => (props.small ? '12' : '14')}px;
   text-align: left;
   vertical-align: middle;
-  color: ${(props => getColorForStatus(props.status))}
+  color: ${statusColorVariation};
 `;
 
 export const Row = styled.div`
