@@ -22,11 +22,6 @@ import { getEntityKeyId } from '../../utils/DataUtils';
 import { ENROLLMENT_STATUSES, HOURS_CONSTS } from '../../core/edm/constants/DataModelConsts';
 import { ENROLLMENT_STATUS_FQNS, SENTENCE_TERM_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { APP, PEOPLE, STATE } from '../../utils/constants/ReduxStateConsts';
-import {
-  NEW_PARTICIPANTS_COLUMNS,
-  PENDING_PARTICIPANTS_COLUMNS,
-  VIOLATIONS_WATCH_COLUMNS,
-} from '../../utils/constants/UIConsts';
 
 /* constants */
 const { STATUS } = ENROLLMENT_STATUS_FQNS;
@@ -40,6 +35,11 @@ const {
   SENTENCE_TERMS_BY_PARTICIPANT,
 } = PEOPLE;
 const { DATETIME_START } = SENTENCE_TERM_FQNS;
+
+const NEW_PARTICIPANTS_COLUMNS = ['NAME', 'SENT. DATE', 'ENROLL. DEADLINE', 'REQ. HRS.'];
+const PENDING_PARTICIPANTS_COLUMNS = ['NAME', 'SENT. DATE', 'REQ. HRS.'];
+const VIOLATIONS_WATCH_COLUMNS = ['NAME', '# OF VIO.', 'HRS. SERVED'];
+
 /* styled components */
 const DashboardWrapper = styled.div`
   display: flex;

@@ -23,7 +23,7 @@ import {
   FILTERS,
   SORTABLE_PARTICIPANT_COLUMNS,
   statusFilterDropdown,
-} from '../../utils/constants/UIConsts';
+} from './ParticipantsConstants';
 import { APP, PEOPLE, STATE } from '../../utils/constants/ReduxStateConsts';
 import { ENROLLMENT_STATUSES, INFRACTIONS_CONSTS } from '../../core/edm/constants/DataModelConsts';
 import {
