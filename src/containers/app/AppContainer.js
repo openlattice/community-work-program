@@ -80,10 +80,10 @@ class AppContainer extends Component<Props> {
     if (prevOrg.size !== nextOrg.size) {
       nextOrg.keySeq().forEach((id) => {
         const selectedOrgId :UUID = id;
-        const peopleEntitySetId :UUID = app.getIn(
+        const peopleESID :UUID = app.getIn(
           [APP_TYPE_FQNS.PEOPLE, APP.ENTITY_SETS_BY_ORG, selectedOrgId]
         );
-        if (peopleEntitySetId) {
+        if (peopleESID) {
           actions.getSentences();
         }
       });
@@ -93,7 +93,7 @@ class AppContainer extends Component<Props> {
   renderAppContent = () => (
     <Switch>
       <Route exact strict path={Routes.DASHBOARD} component={DashboardContainer} />
-      <Route path={Routes.PARTICIPANTS} component={ParticipantsContainer} />
+      <Route exact strict path={Routes.PARTICIPANTS} component={ParticipantsContainer} />
       <Route path={Routes.WORKSITES} component={Worksites} />
       <Redirect to={Routes.DASHBOARD} />
     </Switch>

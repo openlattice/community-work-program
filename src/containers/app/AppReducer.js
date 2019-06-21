@@ -12,7 +12,6 @@ import { APP } from '../../utils/constants/ReduxStateConsts';
 import { isDefined } from '../../utils/LangUtils';
 import { APP_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import {
-  INITIALIZE_APPLICATION,
   RESET_REQUEST_STATE,
   initializeApplication,
 } from './AppActions';
@@ -24,6 +23,7 @@ const {
   ENTITY_SETS_BY_ORG,
   ERRORS,
   FQN_TO_ID,
+  INITIALIZE_APPLICATION,
   ORGS,
   REQUEST_STATE,
   SELECTED_ORG_ID,
@@ -35,7 +35,7 @@ const {
 const INITIAL_STATE :Map<*, *> = fromJS({
 
   [ACTIONS]: {
-    [INITIALIZE_APPLICATION]: {
+    [APP.INITIALIZE_APPLICATION]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     }
   },
@@ -44,7 +44,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [APP_TYPES]: Map(),
   [ENTITY_SETS_BY_ORG]: Map(),
   [ERRORS]: {
-    [INITIALIZE_APPLICATION]: Map(),
+    [APP.INITIALIZE_APPLICATION]: Map(),
   },
   [FQN_TO_ID]: Map(),
   [ORGS]: Map(),
@@ -71,7 +71,7 @@ export default function appReducer(state :Map<*, *> = INITIAL_STATE, action :Obj
       return initializeApplication.reducer(state, action, {
         REQUEST: () => state
           .setIn([ACTIONS, INITIALIZE_APPLICATION, seqAction.id], seqAction)
-          .set([ACTIONS, INITIALIZE_APPLICATION, REQUEST_STATE], RequestStates.PENDING)
+          .setIn([ACTIONS, INITIALIZE_APPLICATION, REQUEST_STATE], RequestStates.PENDING)
           .set(SELECTED_ORG_ID, ''),
         SUCCESS: () => {
           let entitySetsByOrgId = Map();
@@ -144,7 +144,7 @@ export default function appReducer(state :Map<*, *> = INITIAL_STATE, action :Obj
             .set(SELECTED_ORG_TITLE, selectedOrganizationTitle)
             .set(SETTINGS_BY_ORG_ID, appSettingsByOrgId)
             .set(SELECTED_ORG_SETTINGS, appSettings)
-            .set([ACTIONS, INITIALIZE_APPLICATION, REQUEST_STATE], RequestStates.SUCCESS);
+            .setIn([ACTIONS, INITIALIZE_APPLICATION, REQUEST_STATE], RequestStates.SUCCESS);
         },
         FAILURE: () => {
 

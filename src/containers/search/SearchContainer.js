@@ -1,16 +1,11 @@
 // @flow
 import React, { Component } from 'react';
 import styled from 'styled-components';
+import { Input } from 'lattice-ui-kit';
 
-import { StyledInput } from '../../components/controls/index';
-
-import searchIcon from '../../assets/svg/search-icon.svg';
-
-const FormattedInput = styled(StyledInput)`
+const FormattedInput = styled(Input)`
   width: 250px;
   margin: 10px;
-  padding: 0 20px;
-  height: 35px;
 `;
 
 type Props = {
@@ -44,7 +39,6 @@ class SearchContainer extends Component<Props, State> {
     const { searchedName } = this.state;
     return (
       <FormattedInput
-          icon={searchIcon}
           onChange={this.onChange}
           placeholder="Search name"
           value={searchedName} />
