@@ -23,7 +23,7 @@ import {
   SENTENCE_TERM_FQNS
 } from '../../core/edm/constants/FullyQualifiedNames';
 import { ENROLLMENT_STATUSES, HOURS_CONSTS } from '../../core/edm/constants/DataModelConsts';
-import { SORTABLE_PARTICIPANT_COLUMNS } from '../../utils/constants/UIConsts';
+import { SORTABLE_PARTICIPANT_COLUMNS } from '../../containers/participants/ParticipantsConstants';
 
 const { EFFECTIVE_DATE, STATUS } = ENROLLMENT_STATUS_FQNS;
 const { REQUIRED, WORKED } = HOURS_CONSTS;
