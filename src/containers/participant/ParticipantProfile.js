@@ -14,16 +14,7 @@ import CaseInfo from '../../components/participant/CaseInfo';
 import InfractionsDisplay from '../../components/participant/InfractionsDisplay';
 import LogoLoader from '../../components/LogoLoader';
 
-import {
-  getCaseInfo,
-  getContactInfo,
-  getEnrollmentStatus,
-  getParticipant,
-  getParticipantInfractions,
-  getParticipantAddress,
-  getRequiredHours,
-  getSentenceTerm,
-} from './ParticipantActions';
+import { getAllParticipantInfo } from './ParticipantActions';
 import { goToRoute } from '../../core/router/RoutingActions';
 import { OL } from '../../core/style/Colors';
 import { PARTICIPANT_PROFILE_WIDTH } from '../../core/style/Sizes';
@@ -42,8 +33,10 @@ const {
   CASE_NUMBER,
   EMAIL,
   ENROLLMENT_STATUS,
+  GET_ALL_PARTICIPANT_INFO,
   PARTICIPANT,
   PHONE,
+  REQUEST_STATE,
   REQUIRED_HOURS,
   SENTENCE_TERM,
   VIOLATIONS,
@@ -110,14 +103,7 @@ const InnerRowWrapper = styled.div`
 
 type Props = {
   actions:{
-    getCaseInfo :RequestSequence;
-    getContactInfo :RequestSequence;
-    getEnrollmentStatus :RequestSequence;
-    getParticipant :RequestSequence;
-    getParticipantAddress :RequestSequence;
-    getParticipantInfractions :RequestSequence;
-    getRequiredHours :RequestSequence;
-    getSentenceTerm :RequestSequence;
+    getAllParticipantInfo :RequestSequence;
     goToRoute :RequestSequence;
   };
   address :string;
@@ -125,11 +111,11 @@ type Props = {
   caseNumber :string;
   email :string;
   enrollmentStatus :Map;
+  getAllParticipantInfoRequestState :RequestState;
   getInitializeAppRequestState :RequestState;
   participant :Map;
   personEKID :string;
   phone :string;
-  requestStates :Map;
   requiredHours :number;
   sentenceTerm :Map;
   violations :List;
@@ -155,14 +141,7 @@ class ParticipantProfile extends Component<Props> {
 
   loadProfile = () => {
     const { actions, personEKID } = this.props;
-    actions.getCaseInfo({ personEKID });
-    actions.getContactInfo({ personEKID });
-    actions.getEnrollmentStatus({ personEKID });
-    actions.getParticipant({ personEKID });
-    actions.getParticipantAddress({ personEKID });
-    actions.getParticipantInfractions({ personEKID });
-    actions.getRequiredHours({ personEKID });
-    actions.getSentenceTerm({ personEKID });
+    actions.getAllParticipantInfo({ personEKID });
   }
 
   render() {
@@ -172,21 +151,18 @@ class ParticipantProfile extends Component<Props> {
       caseNumber,
       email,
       enrollmentStatus,
+      getAllParticipantInfoRequestState,
       getInitializeAppRequestState,
       participant,
       phone,
-      requestStates,
       requiredHours,
       sentenceTerm,
       violations,
       warnings,
     } = this.props;
 
-    const requestsPending :boolean = requestStates
-      .find((action :Map) => action.get(PERSON.REQUEST_STATE) === RequestStates.PENDING);
-
     if (getInitializeAppRequestState === RequestStates.PENDING
-        || requestsPending) {
+        || getAllParticipantInfoRequestState === RequestStates.PENDING) {
       return (
         <LogoLoader
             loadingText="Please wait..."
@@ -253,10 +229,10 @@ const mapStateToProps = (state :Map<*, *>) => {
     [CASE_NUMBER]: person.get(CASE_NUMBER),
     [EMAIL]: person.get(EMAIL),
     [ENROLLMENT_STATUS]: person.get(ENROLLMENT_STATUS),
+    getAllParticipantInfoRequestState: person.getIn([ACTIONS, GET_ALL_PARTICIPANT_INFO, REQUEST_STATE]),
     getInitializeAppRequestState: app.getIn([APP.ACTIONS, APP.INITIALIZE_APPLICATION, APP.REQUEST_STATE]),
     [PARTICIPANT]: person.get(PARTICIPANT),
     [PHONE]: person.get(PHONE),
-    requestStates: person.get(ACTIONS),
     [REQUIRED_HOURS]: person.get(REQUIRED_HOURS),
     [SENTENCE_TERM]: person.get(SENTENCE_TERM),
     [VIOLATIONS]: person.get(VIOLATIONS),
@@ -266,14 +242,7 @@ const mapStateToProps = (state :Map<*, *>) => {
 
 const mapDispatchToProps = dispatch => ({
   actions: bindActionCreators({
-    getCaseInfo,
-    getContactInfo,
-    getEnrollmentStatus,
-    getParticipant,
-    getParticipantAddress,
-    getParticipantInfractions,
-    getRequiredHours,
-    getSentenceTerm,
+    getAllParticipantInfo,
     goToRoute,
   }, dispatch)
 });

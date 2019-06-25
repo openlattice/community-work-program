@@ -5,6 +5,7 @@ import { RequestStates } from 'redux-reqseq';
 import type { SequenceAction } from 'redux-reqseq';
 
 import {
+  getAllParticipantInfo,
   getCaseInfo,
   getContactInfo,
   getEnrollmentStatus,
@@ -24,6 +25,7 @@ const {
   EMAIL,
   ENROLLMENT_STATUS,
   ERRORS,
+  GET_ALL_PARTICIPANT_INFO,
   GET_CASE_INFO,
   GET_CONTACT_INFO,
   GET_ENROLLMENT_STATUS,
@@ -43,6 +45,9 @@ const {
 
 const INITIAL_STATE :Map<*, *> = fromJS({
   [ACTIONS]: {
+    [GET_ALL_PARTICIPANT_INFO]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
     [GET_CASE_INFO]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
@@ -73,6 +78,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [EMAIL]: '',
   [ENROLLMENT_STATUS]: Map(),
   [ERRORS]: {
+    [GET_ALL_PARTICIPANT_INFO]: Map(),
     [GET_CASE_INFO]: Map(),
     [GET_CONTACT_INFO]: Map(),
     [GET_ENROLLMENT_STATUS]: Map(),
@@ -93,6 +99,43 @@ const INITIAL_STATE :Map<*, *> = fromJS({
 export default function participantReducer(state :Map<*, *> = INITIAL_STATE, action :SequenceAction) :Map<*, *> {
 
   switch (action.type) {
+
+    case getAllParticipantInfo.case(action.type): {
+
+      return getAllParticipantInfo.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, GET_ALL_PARTICIPANT_INFO, action.id], fromJS(action))
+          .setIn([ACTIONS, GET_ALL_PARTICIPANT_INFO, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+
+          if (!state.hasIn([ACTIONS, GET_ALL_PARTICIPANT_INFO, action.id])) {
+            return state;
+          }
+
+          const { value } = action;
+          if (value === null || value === undefined) {
+            return state;
+          }
+
+          return state
+            .setIn([ACTIONS, GET_ALL_PARTICIPANT_INFO, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => {
+
+          const error = {};
+          const { value: axiosError } = action;
+          if (axiosError && axiosError.response && isNumber(axiosError.response.status)) {
+            error.status = axiosError.response.status;
+          }
+
+          return state
+            .setIn([ERRORS, GET_ALL_PARTICIPANT_INFO], error)
+            .setIn([ACTIONS, GET_ALL_PARTICIPANT_INFO, REQUEST_STATE], RequestStates.FAILURE);
+        },
+        FINALLY: () => state.deleteIn([ACTIONS, GET_ALL_PARTICIPANT_INFO, action.id])
+      });
+    }
 
     case getCaseInfo.case(action.type): {
 

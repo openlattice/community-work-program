@@ -4,6 +4,7 @@
 
 import { List, Map, fromJS } from 'immutable';
 import {
+  all,
   call,
   put,
   select,
@@ -21,6 +22,7 @@ import type { SequenceAction } from 'redux-reqseq';
 import Logger from '../../utils/Logger';
 import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../utils/Errors';
 import {
+  GET_ALL_PARTICIPANT_INFO,
   GET_CASE_INFO,
   GET_CONTACT_INFO,
   GET_ENROLLMENT_STATUS,
@@ -29,6 +31,7 @@ import {
   GET_PARTICIPANT_INFRACTIONS,
   GET_REQUIRED_HOURS,
   GET_SENTENCE_TERM,
+  getAllParticipantInfo,
   getCaseInfo,
   getContactInfo,
   getEnrollmentStatus,
@@ -596,7 +599,54 @@ function* getSentenceTermWatcher() :Generator<*, *, *> {
   yield takeEvery(GET_SENTENCE_TERM, getSentenceTermWorker);
 }
 
+/*
+ *
+ * ParticipantsActions.getAllParticipantInfo()
+ *
+ */
+
+function* getAllParticipantInfoWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+  if (value === null || value === undefined) {
+    yield put(getAllParticipantInfo.failure(id, ERR_ACTION_VALUE_NOT_DEFINED));
+    return;
+  }
+
+  try {
+    yield put(getAllParticipantInfo.request(id));
+    const { personEKID } = value;
+
+    yield all([
+      call(getCaseInfoWorker, getCaseInfo({ personEKID })),
+      call(getContactInfoWorker, getContactInfo({ personEKID })),
+      call(getEnrollmentStatusWorker, getEnrollmentStatus({ personEKID })),
+      call(getParticipantAddressWorker, getParticipantAddress({ personEKID })),
+      call(getParticipantInfractionsWorker, getParticipantInfractions({ personEKID })),
+      call(getParticipantWorker, getParticipant({ personEKID })),
+      call(getRequiredHoursWorker, getRequiredHours({ personEKID })),
+      call(getSentenceTermWorker, getSentenceTerm({ personEKID })),
+    ]);
+
+    yield put(getAllParticipantInfo.success(id));
+  }
+  catch (error) {
+    LOG.error('caught exception in getAllParticipantInfoWorker()', error);
+    yield put(getAllParticipantInfo.failure(id, error));
+  }
+  finally {
+    yield put(getAllParticipantInfo.finally(id));
+  }
+}
+
+function* getAllParticipantInfoWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(GET_ALL_PARTICIPANT_INFO, getAllParticipantInfoWorker);
+}
+
 export {
+  getAllParticipantInfoWatcher,
+  getAllParticipantInfoWorker,
   getCaseInfoWatcher,
   getCaseInfoWorker,
   getContactInfoWatcher,

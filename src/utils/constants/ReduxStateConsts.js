@@ -58,6 +58,7 @@ export const PERSON = {
   EMAIL: 'email',
   ENROLLMENT_STATUS: 'enrollmentStatus',
   ERRORS: 'errors',
+  GET_ALL_PARTICIPANT_INFO: 'getAllParticipantInfo',
   GET_CASE_INFO: 'getCaseInfo',
   GET_CONTACT_INFO: 'getContactInfo',
   GET_ENROLLMENT_STATUS: 'getEnrollmentStatus',
