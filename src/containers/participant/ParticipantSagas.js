@@ -236,36 +236,24 @@ function* getContactInfoWorker(action :SequenceAction) :Generator<*, *, *> {
       throw response.error;
     }
     let email = '';
-    if (response.data[personEKID]) {
-      email = fromJS(response.data[personEKID])
-        .map((contactInfoNeighbor :Map) => getNeighborDetails(contactInfoNeighbor))
-        .filter((contact :Map) => {
-          const { [EMAIL]: emailFound, [PREFERRED]: preferred } = getEntityProperties(contact, [EMAIL, PREFERRED]);
-          return emailFound && preferred;
-        })
-        .getIn([0, EMAIL, 0]);
-    }
-
-    if (isDefined(email)) {
-      contactInfo.email = email;
-    }
     let phone = '';
     if (response.data[personEKID]) {
-      phone = fromJS(response.data[personEKID])
+      fromJS(response.data[personEKID])
         .map((contactInfoNeighbor :Map) => getNeighborDetails(contactInfoNeighbor))
-        .filter((contact :Map) => {
-          const { [PHONE_NUMBER]: phoneFound, [PREFERRED]: preferred } = getEntityProperties(
-            contact, [PHONE_NUMBER, PREFERRED]
+        .forEach((contact :Map) => {
+          const { [EMAIL]: emailFound, [PHONE_NUMBER]: phoneFound, [PREFERRED]: preferred } = getEntityProperties(
+            contact, [EMAIL, PHONE_NUMBER, PREFERRED]
           );
-          return phoneFound && preferred;
-        })
-        .getIn([0, PHONE_NUMBER, 0]);
+          if (phoneFound && preferred) {
+            phone = phoneFound;
+          }
+          if (emailFound && preferred) {
+            email = emailFound;
+          }
+        });
     }
-
-    if (isDefined(phone)) {
-      contactInfo.phone = phone;
-    }
-
+    contactInfo.email = email;
+    contactInfo.phone = phone;
     yield put(getContactInfo.success(id, contactInfo));
   }
   catch (error) {
