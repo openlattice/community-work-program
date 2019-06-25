@@ -433,7 +433,6 @@ function* getParticipantsWorker(action :SequenceAction) :Generator<*, *, *> {
     return;
   }
   let participants :List = List();
-  let participantSentenceEKIDMap :Map = Map();
 
   try {
     yield put(getParticipants.request(id));
@@ -479,31 +478,17 @@ function* getParticipantsWorker(action :SequenceAction) :Generator<*, *, *> {
         throw manual.error;
       }
       // get participants from each request result
-      participants = fromJS(integrated.data).toIndexedSeq()
+      const integratedImmutable = fromJS(integrated.data);
+      const manualImmutable = fromJS(manual.data);
+      participants = integratedImmutable.toIndexedSeq()
         .map(personList => personList.get(0))
         .map((person :Map) => getNeighborDetails(person))
         .toList();
-      const moreParticipants = fromJS(manual.data).toIndexedSeq()
+      const moreParticipants = manualImmutable.toIndexedSeq()
         .map(personList => personList.get(0))
         .map((person :Map) => getNeighborDetails(person))
         .toList();
       participants = participants.concat(moreParticipants);
-
-      // create map of participantEKIDs to sentenceEKIDs for easy lookup, preserving ESID
-      participantSentenceEKIDMap = fromJS(integrated.data)
-        .map(personList => personList.get(0))
-        .map((person :Map) => getNeighborDetails(person))
-        .map((person :Map) => getEntityKeyId(person))
-        .flip()
-        .map((sentence :string) => Map({ ekid: sentence, esid: sentenceESID }));
-      participantSentenceEKIDMap = participantSentenceEKIDMap.merge(
-        fromJS(manual.data)
-          .map(personList => personList.get(0))
-          .map((person :Map) => getNeighborDetails(person))
-          .map((person :Map) => getEntityKeyId(person))
-          .flip()
-          .map((sentence :string) => Map({ ekid: sentence, esid: manualSentenceESID }))
-      );
     }
 
     if (participants.count() > 0) {
@@ -516,7 +501,7 @@ function* getParticipantsWorker(action :SequenceAction) :Generator<*, *, *> {
       ]);
     }
 
-    yield put(getParticipants.success(id, { participants, participantSentenceEKIDMap }));
+    yield put(getParticipants.success(id, participants));
   }
   catch (error) {
     LOG.error('caught exception in getParticipantsWorker()', error);
