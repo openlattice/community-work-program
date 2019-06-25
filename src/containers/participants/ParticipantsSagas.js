@@ -333,14 +333,14 @@ function* getInfractionsWorker(action :SequenceAction) :Generator<*, *, *> {
         .map((infraction :Map) => getNeighborDetails(infraction)));
 
     const infractionCountMap :Map = infractionsMap.map((infractions :List) => {
-      const infractionCount = { warnings: 0, violations: 0 };
+      const infractionCount = { [INFRACTIONS_CONSTS.WARNING]: 0, [INFRACTIONS_CONSTS.VIOLATION]: 0 };
       infractions.forEach((infraction :Map) => {
         const { [TYPE]: type } = getEntityProperties(infraction, [TYPE]);
         if (type === INFRACTIONS_CONSTS.WARNING) {
-          infractionCount.warnings += 1;
+          infractionCount[INFRACTIONS_CONSTS.WARNING] += 1;
         }
         if (type === INFRACTIONS_CONSTS.VIOLATION) {
-          infractionCount.violations += 1;
+          infractionCount[INFRACTIONS_CONSTS.VIOLATION] += 1;
         }
       });
       return fromJS(infractionCount);
@@ -507,11 +507,12 @@ function* getParticipantsWorker(action :SequenceAction) :Generator<*, *, *> {
     }
 
     if (participants.count() > 0) {
+      const params = { participants, peopleESID };
       yield all([
-        call(getSentenceTermsWorker, getSentenceTerms({ participants, peopleESID })),
-        call(getEnrollmentStatusesWorker, getEnrollmentStatuses({ participants, peopleESID })),
-        call(getInfractionsWorker, getInfractions({ participants, peopleESID })),
-        call(getHoursWorkedWorker, getHoursWorked({ participants, peopleESID }))
+        call(getSentenceTermsWorker, getSentenceTerms(params)),
+        call(getEnrollmentStatusesWorker, getEnrollmentStatuses(params)),
+        call(getInfractionsWorker, getInfractions(params)),
+        call(getHoursWorkedWorker, getHoursWorked(params))
       ]);
     }
 
