@@ -195,8 +195,8 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
           }
 
           return state
-            .set(EMAIL, value.email)
-            .set(PHONE, value.phone)
+            .set(EMAIL, value.get('email'))
+            .set(PHONE, value.get('phone'))
             .setIn([ACTIONS, GET_CONTACT_INFO, REQUEST_STATE], RequestStates.SUCCESS);
         },
         FAILURE: () => {

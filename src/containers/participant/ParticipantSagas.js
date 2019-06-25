@@ -212,11 +212,14 @@ function* getContactInfoWorker(action :SequenceAction) :Generator<*, *, *> {
     return;
   }
   let response :Object = {};
-  const contactInfo :Object = {
-    email: '',
-    phone: ''
-  };
-
+  // const contactInfo :Object = {
+  //   email: '',
+  //   phone: ''
+  // };
+  let contactInfo :Map = Map().withMutations((map :Map) => {
+    map.set('email', '');
+    map.set('phone', '');
+  });
   try {
     yield put(getContactInfo.request(id));
     const { personEKID } = value;
@@ -255,8 +258,8 @@ function* getContactInfoWorker(action :SequenceAction) :Generator<*, *, *> {
           }
         });
     }
-    contactInfo.email = email;
-    contactInfo.phone = phone;
+    contactInfo = contactInfo.set('email', email);
+    contactInfo = contactInfo.set('phone', phone);
     yield put(getContactInfo.success(id, contactInfo));
   }
   catch (error) {
