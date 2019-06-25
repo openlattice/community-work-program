@@ -12,6 +12,7 @@ import ParticipantsTable from '../../components/table/ParticipantsTable';
 import LogoLoader from '../../components/LogoLoader';
 
 import { ToolBar } from '../../components/controls/index';
+import { getSentences } from './ParticipantsActions';
 import { goToRoute } from '../../core/router/RoutingActions';
 import { PARTICIPANT_PROFILE } from '../../core/router/Routes';
 import { SEARCH_CONTAINER_WIDTH } from '../../core/style/Sizes';
@@ -27,6 +28,7 @@ import {
 import { APP, PEOPLE, STATE } from '../../utils/constants/ReduxStateConsts';
 import { ENROLLMENT_STATUSES, INFRACTIONS_CONSTS } from '../../core/edm/constants/DataModelConsts';
 import {
+  APP_TYPE_FQNS,
   ENROLLMENT_STATUS_FQNS,
   PEOPLE_FQNS,
   SENTENCE_TERM_FQNS,
@@ -80,8 +82,10 @@ const ParticipantSearchInnerWrapper = styled.div`
 
 type Props = {
   actions:{
+    getSentences :RequestSequence;
     goToRoute :RequestSequence;
   };
+  app :Map;
   enrollmentByParticipant :Map;
   getInitializeAppRequestState :RequestState;
   getSentencesRequestState :RequestState;
@@ -114,11 +118,18 @@ class ParticipantsSearchContainer extends Component<Props, State> {
   }
 
   componentDidMount() {
+    const { actions, app } = this.props;
     this.handleOnSort(SORTABLE_PARTICIPANT_COLUMNS.STATUS.toUpperCase());
+    if (app.get(APP_TYPE_FQNS.PEOPLE)) {
+      actions.getSentences();
+    }
   }
 
   componentDidUpdate(prevProps :Props) {
-    const { participants } = this.props;
+    const { app, actions, participants } = this.props;
+    if (prevProps.app.count() !== app.count()) {
+      actions.getSentences();
+    }
     if (prevProps.participants.count() !== participants.count()) {
       this.handleOnSort(SORTABLE_PARTICIPANT_COLUMNS.STATUS.toUpperCase());
     }
@@ -306,8 +317,8 @@ class ParticipantsSearchContainer extends Component<Props, State> {
       map.set('Sort by', this.handleOnSort);
       map.set('Status', this.handleOnFilter);
     });
-    const warningMap :Map = infractionCountsByParticipant.map((count :Map) => count.get(`${WARNING}s`));
-    const violationMap :Map = infractionCountsByParticipant.map((count :Map) => count.get(`${VIOLATION}s`));
+    const warningMap :Map = infractionCountsByParticipant.map((count :Map) => count.get(WARNING));
+    const violationMap :Map = infractionCountsByParticipant.map((count :Map) => count.get(VIOLATION));
 
     if (getSentencesRequestState === RequestStates.PENDING || getInitializeAppRequestState === RequestStates.PENDING) {
       return (
@@ -360,6 +371,7 @@ const mapStateToProps = (state :Map<*, *>) => {
   const app = state.get(STATE.APP);
   const people = state.get(STATE.PEOPLE);
   return {
+    app,
     [ENROLLMENT_BY_PARTICIPANT]: people.get(ENROLLMENT_BY_PARTICIPANT),
     getInitializeAppRequestState: app.getIn([APP.ACTIONS, APP.INITIALIZE_APPLICATION, APP.REQUEST_STATE]),
     getSentencesRequestState: people.getIn([PEOPLE.ACTIONS, PEOPLE.GET_SENTENCES, PEOPLE.REQUEST_STATE]),
@@ -372,6 +384,7 @@ const mapStateToProps = (state :Map<*, *>) => {
 
 const mapDispatchToProps = dispatch => ({
   actions: bindActionCreators({
+    getSentences,
     goToRoute,
   }, dispatch)
 });
