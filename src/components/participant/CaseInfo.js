@@ -6,22 +6,22 @@ import { formatNumericalValue } from '../../utils/FormattingUtils';
 import { OL } from '../../core/style/Colors';
 
 const CaseInfoWrapper = styled.div`
+  align-items: center;
+  background-color: ${OL.WHITE};
+  border-radius: 5px;
+  border: 1px solid ${OL.GREY11};
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  width: 258px;
   height: 200px;
-  border: 1px solid ${OL.GREY11};
-  background-color: ${OL.WHITE};
+  justify-content: center;
   padding: 20px 0;
-  border-radius: 5px;
+  width: 258px;
 `;
 
 const Header = styled.div`
   color: ${OL.GREY02};
-  font-weight: 600;
   font-size: 16px;
+  font-weight: 600;
   margin: 8px;
 `;
 
@@ -33,10 +33,10 @@ const Number = styled.span`
 `;
 
 const NumberWrapper = styled.span`
-  display: flex;
-  justify-content: center;
   align-items: center;
   border-bottom: 1px solid ${OL.GREY08};
+  display: flex;
+  justify-content: center;
   padding-bottom: 15px;
   :last-of-type {
     border: none;

@@ -27,25 +27,25 @@ const statusColorVariation = getStyleVariation('status', {
 });
 
 const InfoWrapper = styled.div`
+  align-items: center;
+  background-color: ${OL.WHITE};
+  border-radius: 5px;
+  border: 1px solid ${OL.GREY11};
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  width: 400px;
   height: 400px;
-  border: 1px solid ${OL.GREY11};
-  background-color: ${OL.WHITE};
+  justify-content: center;
   padding: 30px;
-  border-radius: 5px;
+  width: 400px;
 `;
 
 const StyledPersonPhoto = styled(PersonPhoto)`
-  height: 100px;
-  width: 100px;
-  margin: 0 0 30px 0;
-  display: flex;
-  justify-content: center;
   align-items: center;
+  display: flex;
+  height: 100px;
+  justify-content: center;
+  margin: 0 0 30px 0;
+  width: 100px;
 `;
 
 const StyledPlaceholderPicture = styled.div`
@@ -53,14 +53,14 @@ const StyledPlaceholderPicture = styled.div`
 `;
 
 const InfoRow = styled.div`
-  display: flex;
-  justify-content: space-between;
   align-items: center;
+  border-bottom: 1px solid ${OL.GREY08};
+  display: flex;
+  font-size: 14px;
+  justify-content: space-between;
   margin: 8px 0;
   padding: 0 0 8px 0;
-  border-bottom: 1px solid ${OL.GREY08};
   width: 100%;
-  font-size: 14px;
   :last-of-type {
     border: none;
   }
@@ -74,10 +74,10 @@ const Title = styled.div`
 `;
 
 const Value = styled.div`
+  color: ${statusColorVariation};
+  font-weight: ${props => props.fontWeight};
   text-align: left;
   width: 60%;
-  font-weight: ${props => props.fontWeight};
-  color: ${statusColorVariation};
 `;
 
 type Props = {

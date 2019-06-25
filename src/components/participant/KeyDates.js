@@ -12,23 +12,23 @@ import { OL } from '../../core/style/Colors';
 const { DATETIME_START } = SENTENCE_TERM_FQNS;
 
 const DatesWrapper = styled.div`
-  display: flex;
-  justify-content: center;
   align-items: center;
-  width: 600px;
-  height: 175px;
-  border: 1px solid ${OL.GREY11};
   background-color: ${OL.WHITE};
-  padding: 70px 0;
   border-radius: 5px;
+  border: 1px solid ${OL.GREY11};
+  display: flex;
+  height: 175px;
+  justify-content: center;
+  padding: 70px 0;
+  width: 600px;
 `;
 
 const DateBlock = styled.div`
+  align-items: center;
+  border-right: 1px solid ${OL.GREY08};
   display: flex;
   flex-direction: column;
   justify-content: center;
-  align-items: center;
-  border-right: 1px solid ${OL.GREY08};
   :last-of-type {
     border: none;
   }
