@@ -66,7 +66,7 @@ class AppNavigationContainer extends Component<Props> {
       <NavigationContentWrapper>
         <NavLinkWrapper to={Routes.DASHBOARD}>Dashboard</NavLinkWrapper>
         <NavLinkWrapper to={Routes.PARTICIPANTS}>Participants</NavLinkWrapper>
-        <NavLinkWrapper to={Routes.WORKSITES}>Worksites</NavLinkWrapper>
+        <NavLinkWrapper to={Routes.WORKSITES}>Work Sites</NavLinkWrapper>
       </NavigationContentWrapper>
     );
   }
