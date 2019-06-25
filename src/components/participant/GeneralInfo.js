@@ -2,12 +2,10 @@
 import React from 'react';
 import styled from 'styled-components';
 import { Map } from 'immutable';
-import { StyleUtils, Spinner } from 'lattice-ui-kit';
+import { StyleUtils } from 'lattice-ui-kit';
 import { faUserCircle } from '@fortawesome/pro-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { withRouter } from 'react-router-dom';
-import { RequestStates } from 'redux-reqseq';
-import type { RequestState } from 'redux-reqseq';
 
 import { ENROLLMENT_STATUS_COLORS, OL } from '../../core/style/Colors';
 import { PersonPhoto, PersonPicture } from '../picture/PersonPicture';
@@ -75,24 +73,15 @@ const Title = styled.div`
   width: 40%;
 `;
 
-const ValueWrapper = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 60%;
-`;
-
 const Value = styled.div`
   text-align: left;
-  width: ${props => (props.hasSpinner ? '100%' : '60%')};
+  width: 60%;
   font-weight: ${props => props.fontWeight};
   color: ${statusColorVariation};
 `;
 
 type Props = {
   address :string;
-  addressRequestState :RequestState;
-  contactRequestState :RequestState;
   email :string;
   person :Map;
   phone :string;
@@ -101,18 +90,12 @@ type Props = {
 
 const GeneralInfo = ({
   address,
-  addressRequestState,
-  contactRequestState,
   email,
   person,
   phone,
   status
 } :Props) => {
 
-  const addressRequestLoading = (addressRequestState === RequestStates.PENDING
-    || addressRequestState === RequestStates.STANDBY);
-  const contactRequestLoading = (contactRequestState === RequestStates.PENDING
-      || contactRequestState === RequestStates.STANDBY);
   const { [DOB]: dateOfBirth, [MUGSHOT]: mugshot } = getEntityProperties(person, [DOB, MUGSHOT]);
   const dob = formatAsDate(dateOfBirth);
   return (
@@ -121,7 +104,7 @@ const GeneralInfo = ({
         person && mugshot
           ? (
             <StyledPersonPhoto>
-              <PersonPicture src={mugshot} alt="" />
+              <PersonPicture src={mugshot} />
             </StyledPersonPhoto>
           )
           : (
@@ -143,27 +126,15 @@ const GeneralInfo = ({
       </InfoRow>
       <InfoRow>
         <Title>Phone #</Title>
-        <ValueWrapper>
-          {
-            contactRequestLoading ? <Spinner /> : <Value hasSpinner>{ phone }</Value>
-          }
-        </ValueWrapper>
+        <Value>{ phone }</Value>
       </InfoRow>
       <InfoRow>
         <Title>Address</Title>
-        <ValueWrapper>
-          {
-            addressRequestLoading ? <Spinner /> : <Value hasSpinner>{ address }</Value>
-          }
-        </ValueWrapper>
+        <Value>{ address }</Value>
       </InfoRow>
       <InfoRow>
         <Title>Email</Title>
-        <ValueWrapper>
-          {
-            contactRequestLoading ? <Spinner /> : <Value hasSpinner>{ email }</Value>
-          }
-        </ValueWrapper>
+        <Value>{ email }</Value>
       </InfoRow>
     </InfoWrapper>
   );

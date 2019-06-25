@@ -1,10 +1,9 @@
 // @flow
 import React from 'react';
 import styled from 'styled-components';
-import { Map } from 'immutable';
+import { List } from 'immutable';
 
 import { formatNumericalValue } from '../../utils/FormattingUtils';
-import { INFRACTIONS_CONSTS } from '../../core/edm/constants/DataModelConsts';
 import { OL } from '../../core/style/Colors';
 
 const ViolationsWrapper = styled.div`
@@ -45,24 +44,25 @@ const Number = styled.div`
 `;
 
 type Props = {
-  infractions :Map;
+  violations :List;
+  warnings :List;
 };
 
-const InfractionsDisplay = ({ infractions } :Props) => {
-  const warnings = formatNumericalValue(infractions.get(`${INFRACTIONS_CONSTS.WARNING}s`, 0));
-  const violations = formatNumericalValue(infractions.get(`${INFRACTIONS_CONSTS.VIOLATION}s`, 0));
+const InfractionsDisplay = ({ violations, warnings } :Props) => {
+  const warningsCount = formatNumericalValue(warnings.count());
+  const violationsCount = formatNumericalValue(violations.count());
   return (
     <ViolationsWrapper>
       <InfoBlock>
         <Header># Warnings</Header>
-        <Number>{ warnings }</Number>
+        <Number>{ warningsCount }</Number>
       </InfoBlock>
       <InfoBlock>
         <Header># Violations</Header>
-        <Number>{ violations }</Number>
+        <Number>{ violationsCount }</Number>
       </InfoBlock>
     </ViolationsWrapper>
   );
-}
+};
 
 export default InfractionsDisplay;
