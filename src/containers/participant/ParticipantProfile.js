@@ -14,7 +14,16 @@ import CaseInfo from '../../components/participant/CaseInfo';
 import InfractionsDisplay from '../../components/participant/InfractionsDisplay';
 import LogoLoader from '../../components/LogoLoader';
 
-import { getCaseInfo, getContactInfo, getParticipantAddress } from './ParticipantActions';
+import {
+  getCaseInfo,
+  getContactInfo,
+  getEnrollmentStatus,
+  getParticipant,
+  getParticipantInfractions,
+  getParticipantAddress,
+  getRequiredHours,
+  getSentenceTerm,
+} from './ParticipantActions';
 import { goToRoute } from '../../core/router/RoutingActions';
 import { OL } from '../../core/style/Colors';
 import { PARTICIPANT_PROFILE_WIDTH } from '../../core/style/Sizes';
@@ -22,31 +31,28 @@ import * as Routes from '../../core/router/Routes';
 import { BackNavButton } from '../../components/controls/index';
 import { ButtonWrapper } from '../../components/Layout';
 import { getEntityProperties } from '../../utils/DataUtils';
-import { ENROLLMENT_STATUS_FQNS, ENTITY_KEY_ID, PEOPLE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
-import { PEOPLE, PERSON, STATE } from '../../utils/constants/ReduxStateConsts';
-import { HOURS_CONSTS } from '../../core/edm/constants/DataModelConsts';
+import { APP_TYPE_FQNS, ENROLLMENT_STATUS_FQNS, PEOPLE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { APP, PERSON, STATE } from '../../utils/constants/ReduxStateConsts';
 
 const { STATUS } = ENROLLMENT_STATUS_FQNS;
 const { FIRST_NAME, LAST_NAME } = PEOPLE_FQNS;
 const {
-  ENROLLMENT_BY_PARTICIPANT,
-  HOURS_WORKED,
-  INFRACTION_COUNTS_BY_PARTICIPANT,
-  PARTICIPANTS,
-  SENTENCE_TERMS_BY_PARTICIPANT,
-  SENTENCE_EKIDS,
-} = PEOPLE;
-const {
+  ACTIONS,
   ADDRESS,
   CASE_NUMBER,
   EMAIL,
-  PHONE
+  ENROLLMENT_STATUS,
+  PARTICIPANT,
+  PHONE,
+  REQUIRED_HOURS,
+  SENTENCE_TERM,
+  VIOLATIONS,
+  WARNINGS,
 } = PERSON;
 
 const ProfileWrapper = styled.div`
   display: flex;
   flex-direction: column;
-  /* justify-content: flex-start; */
   align-self: center;
   width: ${PARTICIPANT_PROFILE_WIDTH}px;
   margin-top: 30px;
@@ -106,87 +112,57 @@ type Props = {
   actions:{
     getCaseInfo :RequestSequence;
     getContactInfo :RequestSequence;
+    getEnrollmentStatus :RequestSequence;
+    getParticipant :RequestSequence;
     getParticipantAddress :RequestSequence;
+    getParticipantInfractions :RequestSequence;
+    getRequiredHours :RequestSequence;
+    getSentenceTerm :RequestSequence;
     goToRoute :RequestSequence;
   };
   address :string;
+  app :Map;
   caseNumber :string;
   email :string;
-  enrollmentByParticipant :Map;
-  getContactInfoRequestState :RequestState;
-  getAddressRequestState :RequestState;
-  getSentencesRequestState :RequestState;
-  hoursWorked :Map;
-  infractionCountsByParticipant :Map;
-  participants :List;
+  enrollmentStatus :Map;
+  getInitializeAppRequestState :RequestState;
+  participant :Map;
   personEKID :string;
   phone :string;
-  sentenceEKIDs :Map;
-  sentenceTermsByParticipant :Map;
-};
-
-type State = {
-  enrollmentStatus :string,
-  infractionCounts :Map;
-  participant :Map;
+  requestStates :Map;
   requiredHours :number;
   sentenceTerm :Map;
+  violations :List;
+  warnings :List;
 };
 
-class ParticipantProfile extends Component<Props, State> {
 
-  constructor(props :Props) {
-    super(props);
-
-    this.state = {
-      enrollmentStatus: '',
-      infractionCounts: Map(),
-      participant: Map(),
-      requiredHours: 0,
-      sentenceTerm: Map(),
-    };
-  }
+class ParticipantProfile extends Component<Props> {
 
   componentDidMount() {
-    this.renderParticipant();
+    const { app } = this.props;
+    if (app.get(APP_TYPE_FQNS.PEOPLE)) {
+      this.loadProfile();
+    }
   }
 
   componentDidUpdate(prevProps :Props) {
-    const { participants } = this.props;
-    if (prevProps.participants.count() !== participants.count()) {
-      this.renderParticipant();
+    const { app } = this.props;
+    if (!prevProps.app.get(APP_TYPE_FQNS.PEOPLE) && app.get(APP_TYPE_FQNS.PEOPLE)) {
+      this.loadProfile();
     }
   }
 
-  renderParticipant = () => {
-    const {
-      actions,
-      enrollmentByParticipant,
-      hoursWorked,
-      infractionCountsByParticipant,
-      participants,
-      personEKID,
-      sentenceEKIDs,
-      sentenceTermsByParticipant
-    } = this.props;
-    const participant = participants.find((p :Map) => p.getIn([ENTITY_KEY_ID, 0]) === personEKID);
-    const sentenceTerm = sentenceTermsByParticipant.get(personEKID);
-    const enrollmentStatus = enrollmentByParticipant.getIn([personEKID, STATUS, 0], 'Awaiting enrollment');
-    const infractionCounts = infractionCountsByParticipant.get(personEKID, Map());
-    const requiredHours = hoursWorked.getIn([personEKID, HOURS_CONSTS.REQUIRED], 0);
-    this.setState({
-      enrollmentStatus,
-      infractionCounts,
-      participant,
-      requiredHours,
-      sentenceTerm,
-    });
-    if (sentenceEKIDs.count() > 0) {
-      const sentenceIDs = sentenceEKIDs.get(personEKID, Map()).toJS();
-      actions.getCaseInfo({ sentenceIDs });
-      actions.getContactInfo({ personEKID });
-      actions.getParticipantAddress({ personEKID });
-    }
+  loadProfile = () => {
+    const { actions, personEKID } = this.props;
+    actions.getCaseInfo({ personEKID });
+    actions.getContactInfo({ personEKID });
+    actions.getEnrollmentStatus({ personEKID });
+    actions.getParticipant({ personEKID });
+    actions.getParticipantAddress({ personEKID });
+    actions.getParticipantInfractions({ personEKID });
+    actions.getRequiredHours({ personEKID });
+    actions.getSentenceTerm({ personEKID });
   }
 
   render() {
@@ -195,30 +171,33 @@ class ParticipantProfile extends Component<Props, State> {
       address,
       caseNumber,
       email,
-      getContactInfoRequestState,
-      getAddressRequestState,
-      getSentencesRequestState,
-      phone,
-    } = this.props;
-    const {
       enrollmentStatus,
-      infractionCounts,
+      getInitializeAppRequestState,
       participant,
+      phone,
+      requestStates,
       requiredHours,
-      sentenceTerm
-    } = this.state;
-    const { [FIRST_NAME]: firstName, [LAST_NAME]: lastName } = getEntityProperties(
-      participant, [FIRST_NAME, LAST_NAME]
-    );
+      sentenceTerm,
+      violations,
+      warnings,
+    } = this.props;
 
-    if (getSentencesRequestState === RequestStates.PENDING
-        || getSentencesRequestState === RequestStates.STANDBY) {
+    const requestsPending :boolean = requestStates
+      .find((action :Map) => action.get(PERSON.REQUEST_STATE) === RequestStates.PENDING);
+
+    if (getInitializeAppRequestState === RequestStates.PENDING
+        || requestsPending) {
       return (
         <LogoLoader
             loadingText="Please wait..."
             size={60} />
       );
     }
+
+    const { [FIRST_NAME]: firstName, [LAST_NAME]: lastName } = getEntityProperties(
+      participant, [FIRST_NAME, LAST_NAME]
+    );
+    const { [STATUS]: status } = getEntityProperties(enrollmentStatus, [STATUS]);
 
     return (
       <ProfileWrapper>
@@ -247,17 +226,15 @@ class ParticipantProfile extends Component<Props, State> {
           <BasicInfoWrapper>
             <GeneralInfo
                 address={address}
-                addressRequestState={getAddressRequestState}
-                contactRequestState={getContactInfoRequestState}
                 email={email}
                 person={participant}
                 phone={phone}
-                status={enrollmentStatus} />
+                status={status} />
             <InnerColumnWrapper>
               <KeyDates sentenceTerm={sentenceTerm} />
               <InnerRowWrapper>
                 <CaseInfo caseNumber={caseNumber} hours={requiredHours} />
-                <InfractionsDisplay infractions={infractionCounts} />
+                <InfractionsDisplay violations={violations} warnings={warnings} />
               </InnerRowWrapper>
             </InnerColumnWrapper>
           </BasicInfoWrapper>
@@ -268,22 +245,22 @@ class ParticipantProfile extends Component<Props, State> {
 }
 
 const mapStateToProps = (state :Map<*, *>) => {
-  const people = state.get(STATE.PEOPLE);
+  const app = state.get(STATE.APP);
   const person = state.get(STATE.PERSON);
   return {
     [ADDRESS]: person.get(ADDRESS),
+    app,
     [CASE_NUMBER]: person.get(CASE_NUMBER),
     [EMAIL]: person.get(EMAIL),
-    [ENROLLMENT_BY_PARTICIPANT]: people.get(ENROLLMENT_BY_PARTICIPANT),
-    getContactInfoRequestState: person.getIn([PERSON.ACTIONS, PERSON.GET_CONTACT_INFO, PERSON.REQUEST_STATE]),
-    getAddressRequestState: person.getIn([PERSON.ACTIONS, PERSON.GET_PARTICIPANT_ADDRESS, PERSON.REQUEST_STATE]),
-    getSentencesRequestState: people.getIn([PEOPLE.ACTIONS, PEOPLE.GET_SENTENCES, PEOPLE.REQUEST_STATE]),
-    [HOURS_WORKED]: people.get(HOURS_WORKED),
-    [INFRACTION_COUNTS_BY_PARTICIPANT]: people.get(INFRACTION_COUNTS_BY_PARTICIPANT),
-    [PARTICIPANTS]: people.get(PARTICIPANTS),
+    [ENROLLMENT_STATUS]: person.get(ENROLLMENT_STATUS),
+    getInitializeAppRequestState: app.getIn([APP.ACTIONS, APP.INITIALIZE_APPLICATION, APP.REQUEST_STATE]),
+    [PARTICIPANT]: person.get(PARTICIPANT),
     [PHONE]: person.get(PHONE),
-    [SENTENCE_EKIDS]: people.get(SENTENCE_EKIDS),
-    [SENTENCE_TERMS_BY_PARTICIPANT]: people.get(SENTENCE_TERMS_BY_PARTICIPANT),
+    requestStates: person.get(ACTIONS),
+    [REQUIRED_HOURS]: person.get(REQUIRED_HOURS),
+    [SENTENCE_TERM]: person.get(SENTENCE_TERM),
+    [VIOLATIONS]: person.get(VIOLATIONS),
+    [WARNINGS]: person.get(WARNINGS),
   };
 };
 
@@ -291,7 +268,12 @@ const mapDispatchToProps = dispatch => ({
   actions: bindActionCreators({
     getCaseInfo,
     getContactInfo,
+    getEnrollmentStatus,
+    getParticipant,
     getParticipantAddress,
+    getParticipantInfractions,
+    getRequiredHours,
+    getSentenceTerm,
     goToRoute,
   }, dispatch)
 });
