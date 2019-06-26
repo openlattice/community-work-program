@@ -101,15 +101,15 @@ const { CASE_NUMBER_TEXT } = CASE_FQNS;
 function* getParticipantWorker(action :SequenceAction) :Generator<*, *, *> {
 
   const { id, value } = action;
-  if (value === null || value === undefined) {
-    yield put(getParticipant.failure(id, ERR_ACTION_VALUE_NOT_DEFINED));
-    return;
-  }
+  const workerResponse = {};
   let response :Object = {};
   let participant :Map = Map();
 
   try {
     yield put(getParticipant.request(id));
+    if (value === null || value === undefined) {
+      throw ERR_ACTION_VALUE_NOT_DEFINED;
+    }
     const { personEKID } = value;
     const app = yield select(getAppFromState);
     const peopleESID = getEntitySetIdFromApp(app, PEOPLE);
@@ -123,12 +123,14 @@ function* getParticipantWorker(action :SequenceAction) :Generator<*, *, *> {
     yield put(getParticipant.success(id, participant));
   }
   catch (error) {
+    workerResponse.error = error;
     LOG.error('caught exception in getParticipantWorker()', error);
     yield put(getParticipant.failure(id, error));
   }
   finally {
     yield put(getParticipant.finally(id));
   }
+  return workerResponse;
 }
 
 function* getParticipantWatcher() :Generator<*, *, *> {
@@ -145,15 +147,15 @@ function* getParticipantWatcher() :Generator<*, *, *> {
 function* getCaseInfoWorker(action :SequenceAction) :Generator<*, *, *> {
 
   const { id, value } = action;
-  if (value === null || value === undefined) {
-    yield put(getCaseInfo.failure(id, ERR_ACTION_VALUE_NOT_DEFINED));
-    return;
-  }
+  const workerResponse = {};
   let response :Object = {};
   let caseNumber :string = '';
 
   try {
     yield put(getCaseInfo.request(id));
+    if (value === null || value === undefined) {
+      throw ERR_ACTION_VALUE_NOT_DEFINED;
+    }
     const { personEKID } = value;
     const app = yield select(getAppFromState);
     const peopleESID = getEntitySetIdFromApp(app, PEOPLE);
@@ -185,12 +187,14 @@ function* getCaseInfoWorker(action :SequenceAction) :Generator<*, *, *> {
     yield put(getCaseInfo.success(id, caseNumber));
   }
   catch (error) {
+    workerResponse.error = error;
     LOG.error('caught exception in getCaseInfoWorker()', error);
     yield put(getCaseInfo.failure(id, error));
   }
   finally {
     yield put(getCaseInfo.finally(id));
   }
+  return workerResponse;
 }
 
 function* getCaseInfoWatcher() :Generator<*, *, *> {
@@ -207,21 +211,17 @@ function* getCaseInfoWatcher() :Generator<*, *, *> {
 function* getContactInfoWorker(action :SequenceAction) :Generator<*, *, *> {
 
   const { id, value } = action;
-  if (value === null || value === undefined) {
-    yield put(getContactInfo.failure(id, ERR_ACTION_VALUE_NOT_DEFINED));
-    return;
-  }
+  const workerResponse = {};
   let response :Object = {};
-  // const contactInfo :Object = {
-  //   email: '',
-  //   phone: ''
-  // };
   let contactInfo :Map = Map().withMutations((map :Map) => {
     map.set('email', '');
     map.set('phone', '');
   });
   try {
     yield put(getContactInfo.request(id));
+    if (value === null || value === undefined) {
+      throw ERR_ACTION_VALUE_NOT_DEFINED;
+    }
     const { personEKID } = value;
     const app = yield select(getAppFromState);
     const peopleESID = getEntitySetIdFromApp(app, PEOPLE);
@@ -263,12 +263,14 @@ function* getContactInfoWorker(action :SequenceAction) :Generator<*, *, *> {
     yield put(getContactInfo.success(id, contactInfo));
   }
   catch (error) {
+    workerResponse.error = error;
     LOG.error('caught exception in getContactInfoWorker()', error);
     yield put(getContactInfo.failure(id, error));
   }
   finally {
     yield put(getContactInfo.finally(id));
   }
+  return workerResponse;
 }
 
 function* getContactInfoWatcher() :Generator<*, *, *> {
@@ -285,16 +287,16 @@ function* getContactInfoWatcher() :Generator<*, *, *> {
 function* getEnrollmentStatusWorker(action :SequenceAction) :Generator<*, *, *> {
 
   const { id, value } = action;
-  if (value === null || value === undefined) {
-    yield put(getEnrollmentStatus.failure(id, ERR_ACTION_VALUE_NOT_DEFINED));
-    return;
-  }
+  const workerResponse = {};
   let response :Object = {};
   let enrollmentStatus :Map = Map();
 
   try {
     yield put(getEnrollmentStatus.request(id));
     const { personEKID } = value;
+    if (value === null || value === undefined) {
+      throw ERR_ACTION_VALUE_NOT_DEFINED;
+    }
     const app = yield select(getAppFromState);
     const peopleESID = getEntitySetIdFromApp(app, PEOPLE);
     const enrollmentStatusESID = getEntitySetIdFromApp(app, ENROLLMENT_STATUS);
@@ -335,12 +337,14 @@ function* getEnrollmentStatusWorker(action :SequenceAction) :Generator<*, *, *> 
     yield put(getEnrollmentStatus.success(id, enrollmentStatus));
   }
   catch (error) {
+    workerResponse.error = error;
     LOG.error('caught exception in getEnrollmentStatusWorker()', error);
     yield put(getEnrollmentStatus.failure(id, error));
   }
   finally {
     yield put(getEnrollmentStatus.finally(id));
   }
+  return workerResponse;
 }
 
 function* getEnrollmentStatusWatcher() :Generator<*, *, *> {
@@ -357,16 +361,16 @@ function* getEnrollmentStatusWatcher() :Generator<*, *, *> {
 function* getParticipantAddressWorker(action :SequenceAction) :Generator<*, *, *> {
 
   const { id, value } = action;
-  if (value === null || value === undefined) {
-    yield put(getParticipantAddress.failure(id, ERR_ACTION_VALUE_NOT_DEFINED));
-    return;
-  }
+  const workerResponse = {};
   let response :Object = {};
   let address :string = '';
 
   try {
     yield put(getParticipantAddress.request(id));
     const { personEKID } = value;
+    if (value === null || value === undefined) {
+      throw ERR_ACTION_VALUE_NOT_DEFINED;
+    }
     const app = yield select(getAppFromState);
     const peopleESID = getEntitySetIdFromApp(app, PEOPLE);
     const locationESID = getEntitySetIdFromApp(app, LOCATION);
@@ -393,12 +397,14 @@ function* getParticipantAddressWorker(action :SequenceAction) :Generator<*, *, *
     yield put(getParticipantAddress.success(id, address));
   }
   catch (error) {
+    workerResponse.error = error;
     LOG.error('caught exception in getParticipantAddressWorker()', error);
     yield put(getParticipantAddress.failure(id, error));
   }
   finally {
     yield put(getParticipantAddress.finally(id));
   }
+  return workerResponse;
 }
 
 function* getParticipantAddressWatcher() :Generator<*, *, *> {
@@ -415,10 +421,7 @@ function* getParticipantAddressWatcher() :Generator<*, *, *> {
 function* getParticipantInfractionsWorker(action :SequenceAction) :Generator<*, *, *> {
 
   const { id, value } = action;
-  if (value === null || value === undefined) {
-    yield put(getParticipantInfractions.failure(id, ERR_ACTION_VALUE_NOT_DEFINED));
-    return;
-  }
+  const workerResponse = {};
   let response :Object = {};
   let infractions :Map = Map().withMutations((map :Map) => {
     map.set(INFRACTIONS_CONSTS.VIOLATION, List());
@@ -428,6 +431,9 @@ function* getParticipantInfractionsWorker(action :SequenceAction) :Generator<*, 
   try {
     yield put(getParticipantInfractions.request(id));
     const { personEKID } = value;
+    if (value === null || value === undefined) {
+      throw ERR_ACTION_VALUE_NOT_DEFINED;
+    }
     const app = yield select(getAppFromState);
     const peopleESID = getEntitySetIdFromApp(app, PEOPLE);
     const infractionsESID = getEntitySetIdFromApp(app, INFRACTIONS);
@@ -466,12 +472,14 @@ function* getParticipantInfractionsWorker(action :SequenceAction) :Generator<*, 
     yield put(getParticipantInfractions.success(id, infractions));
   }
   catch (error) {
+    workerResponse.error = error;
     LOG.error('caught exception in getParticipantInfractionsWorker()', error);
     yield put(getParticipantInfractions.failure(id, error));
   }
   finally {
     yield put(getParticipantInfractions.finally(id));
   }
+  return workerResponse;
 }
 
 function* getParticipantInfractionsWatcher() :Generator<*, *, *> {
@@ -488,16 +496,16 @@ function* getParticipantInfractionsWatcher() :Generator<*, *, *> {
 function* getRequiredHoursWorker(action :SequenceAction) :Generator<*, *, *> {
 
   const { id, value } = action;
-  if (value === null || value === undefined) {
-    yield put(getRequiredHours.failure(id, ERR_ACTION_VALUE_NOT_DEFINED));
-    return;
-  }
+  const workerResponse = {};
   let response :Object = {};
   let requiredHours :number = 0;
 
   try {
     yield put(getRequiredHours.request(id));
     const { personEKID } = value;
+    if (value === null || value === undefined) {
+      throw ERR_ACTION_VALUE_NOT_DEFINED;
+    }
     const app = yield select(getAppFromState);
     const peopleESID = getEntitySetIdFromApp(app, PEOPLE);
     const diversionPlanESID = getEntitySetIdFromApp(app, DIVERSION_PLAN);
@@ -530,12 +538,14 @@ function* getRequiredHoursWorker(action :SequenceAction) :Generator<*, *, *> {
     yield put(getRequiredHours.success(id, requiredHours));
   }
   catch (error) {
+    workerResponse.error = error;
     LOG.error('caught exception in getRequiredHoursWorker()', error);
     yield put(getRequiredHours.failure(id, error));
   }
   finally {
     yield put(getRequiredHours.finally(id));
   }
+  return workerResponse;
 }
 
 function* getRequiredHoursWatcher() :Generator<*, *, *> {
@@ -552,16 +562,16 @@ function* getRequiredHoursWatcher() :Generator<*, *, *> {
 function* getSentenceTermWorker(action :SequenceAction) :Generator<*, *, *> {
 
   const { id, value } = action;
-  if (value === null || value === undefined) {
-    yield put(getSentenceTerm.failure(id, ERR_ACTION_VALUE_NOT_DEFINED));
-    return;
-  }
+  const workerResponse = {};
   let response :Object = {};
   let sentenceTerm :Map = Map();
 
   try {
     yield put(getSentenceTerm.request(id));
     const { personEKID } = value;
+    if (value === null || value === undefined) {
+      throw ERR_ACTION_VALUE_NOT_DEFINED;
+    }
     const app = yield select(getAppFromState);
     const peopleESID = getEntitySetIdFromApp(app, PEOPLE);
     const sentenceTermESID = getEntitySetIdFromApp(app, SENTENCE_TERM);
@@ -589,12 +599,14 @@ function* getSentenceTermWorker(action :SequenceAction) :Generator<*, *, *> {
     yield put(getSentenceTerm.success(id, sentenceTerm));
   }
   catch (error) {
+    workerResponse.error = error;
     LOG.error('caught exception in getSentenceTermWorker()', error);
     yield put(getSentenceTerm.failure(id, error));
   }
   finally {
     yield put(getSentenceTerm.finally(id));
   }
+  return workerResponse;
 }
 
 function* getSentenceTermWatcher() :Generator<*, *, *> {
@@ -620,7 +632,7 @@ function* getAllParticipantInfoWorker(action :SequenceAction) :Generator<*, *, *
     yield put(getAllParticipantInfo.request(id));
     const { personEKID } = value;
 
-    yield all([
+    const workerResponses = yield all([
       call(getCaseInfoWorker, getCaseInfo({ personEKID })),
       call(getContactInfoWorker, getContactInfo({ personEKID })),
       call(getEnrollmentStatusWorker, getEnrollmentStatus({ personEKID })),
@@ -630,7 +642,13 @@ function* getAllParticipantInfoWorker(action :SequenceAction) :Generator<*, *, *
       call(getRequiredHoursWorker, getRequiredHours({ personEKID })),
       call(getSentenceTermWorker, getSentenceTerm({ personEKID })),
     ]);
-
+    const responseError = workerResponses.reduce(
+      (error, workerResponse) => (error ? error : workerResponse.error),
+      undefined,
+    );
+    if (responseError) {
+      throw responseError;
+    }
     yield put(getAllParticipantInfo.success(id));
   }
   catch (error) {
