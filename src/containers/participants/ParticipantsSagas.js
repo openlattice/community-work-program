@@ -219,7 +219,6 @@ function* getHoursWorkedWorker(action :SequenceAction) :Generator<*, *, *> {
      */
     const app = yield select(getAppFromState);
     const diversionPlanESID :UUID = getEntitySetIdFromApp(app, DIVERSION_PLAN);
-    const worksiteESID :UUID = getEntitySetIdFromApp(app, WORKSITE);
 
     let searchFilter = {
       entityKeyIds: participantEKIDs,

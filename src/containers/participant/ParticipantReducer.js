@@ -113,24 +113,15 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
             return state;
           }
 
-          const { value } = action;
-          if (value === null || value === undefined) {
-            return state;
-          }
-
           return state
             .setIn([ACTIONS, GET_ALL_PARTICIPANT_INFO, REQUEST_STATE], RequestStates.SUCCESS);
         },
         FAILURE: () => {
 
-          const error = {};
-          const { value: axiosError } = action;
-          if (axiosError && axiosError.response && isNumber(axiosError.response.status)) {
-            error.status = axiosError.response.status;
-          }
+          const { value } = action;
 
           return state
-            .setIn([ERRORS, GET_ALL_PARTICIPANT_INFO], error)
+            .setIn([ERRORS, GET_ALL_PARTICIPANT_INFO], value)
             .setIn([ACTIONS, GET_ALL_PARTICIPANT_INFO, REQUEST_STATE], RequestStates.FAILURE);
         },
         FINALLY: () => state.deleteIn([ACTIONS, GET_ALL_PARTICIPANT_INFO, action.id])
@@ -161,15 +152,10 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
         },
         FAILURE: () => {
 
-          const error = {};
-          const { value: axiosError } = action;
-          if (axiosError && axiosError.response && isNumber(axiosError.response.status)) {
-            error.status = axiosError.response.status;
-          }
-
+          const { value } = action;
           return state
             .set(CASE_NUMBER, List())
-            .setIn([ERRORS, GET_CASE_INFO], error)
+            .setIn([ERRORS, GET_CASE_INFO], value)
             .setIn([ACTIONS, GET_CASE_INFO, REQUEST_STATE], RequestStates.FAILURE);
         },
         FINALLY: () => state.deleteIn([ACTIONS, GET_CASE_INFO, action.id])
@@ -201,16 +187,12 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
         },
         FAILURE: () => {
 
-          const error = {};
-          const { value: axiosError } = action;
-          if (axiosError && axiosError.response && isNumber(axiosError.response.status)) {
-            error.status = axiosError.response.status;
-          }
+          const { value } = action;
 
           return state
             .set(EMAIL, '')
             .set(PHONE, '')
-            .setIn([ERRORS, GET_CONTACT_INFO], error)
+            .setIn([ERRORS, GET_CONTACT_INFO], value)
             .setIn([ACTIONS, GET_CONTACT_INFO, REQUEST_STATE], RequestStates.FAILURE);
         },
         FINALLY: () => state.deleteIn([ACTIONS, GET_CONTACT_INFO, action.id])
@@ -241,15 +223,11 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
         },
         FAILURE: () => {
 
-          const error = {};
-          const { value: axiosError } = action;
-          if (axiosError && axiosError.response && isNumber(axiosError.response.status)) {
-            error.status = axiosError.response.status;
-          }
+          const { value } = action;
 
           return state
             .set(ENROLLMENT_STATUS, Map())
-            .setIn([ERRORS, GET_ENROLLMENT_STATUS], error)
+            .setIn([ERRORS, GET_ENROLLMENT_STATUS], value)
             .setIn([ACTIONS, GET_ENROLLMENT_STATUS, REQUEST_STATE], RequestStates.FAILURE);
         },
         FINALLY: () => state.deleteIn([ACTIONS, GET_ENROLLMENT_STATUS, action.id])
@@ -281,16 +259,12 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
         },
         FAILURE: () => {
 
-          const error = {};
-          const { value: axiosError } = action;
-          if (axiosError && axiosError.response && isNumber(axiosError.response.status)) {
-            error.status = axiosError.response.status;
-          }
+          const { value } = action;
 
           return state
             .set(VIOLATIONS, Map())
             .set(WARNINGS, Map())
-            .setIn([ERRORS, GET_PARTICIPANT_INFRACTIONS], error)
+            .setIn([ERRORS, GET_PARTICIPANT_INFRACTIONS], value)
             .setIn([ACTIONS, GET_PARTICIPANT_INFRACTIONS, REQUEST_STATE], RequestStates.FAILURE);
         },
         FINALLY: () => state.deleteIn([ACTIONS, GET_PARTICIPANT_INFRACTIONS, action.id])
@@ -321,15 +295,11 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
         },
         FAILURE: () => {
 
-          const error = {};
-          const { value: axiosError } = action;
-          if (axiosError && axiosError.response && isNumber(axiosError.response.status)) {
-            error.status = axiosError.response.status;
-          }
+          const { value } = action;
 
           return state
             .set(PARTICIPANT, Map())
-            .setIn([ERRORS, GET_PARTICIPANT], error)
+            .setIn([ERRORS, GET_PARTICIPANT], value)
             .setIn([ACTIONS, GET_PARTICIPANT, REQUEST_STATE], RequestStates.FAILURE);
         },
         FINALLY: () => state.deleteIn([ACTIONS, GET_PARTICIPANT, action.id])
@@ -360,15 +330,11 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
         },
         FAILURE: () => {
 
-          const error = {};
-          const { value: axiosError } = action;
-          if (axiosError && axiosError.response && isNumber(axiosError.response.status)) {
-            error.status = axiosError.response.status;
-          }
+          const { value } = action;
 
           return state
             .set(ADDRESS, '')
-            .setIn([ERRORS, GET_PARTICIPANT_ADDRESS], error)
+            .setIn([ERRORS, GET_PARTICIPANT_ADDRESS], value)
             .setIn([ACTIONS, GET_PARTICIPANT_ADDRESS, REQUEST_STATE], RequestStates.FAILURE);
         },
         FINALLY: () => state.deleteIn([ACTIONS, GET_PARTICIPANT_ADDRESS, action.id])
@@ -399,15 +365,11 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
         },
         FAILURE: () => {
 
-          const error = {};
-          const { value: axiosError } = action;
-          if (axiosError && axiosError.response && isNumber(axiosError.response.status)) {
-            error.status = axiosError.response.status;
-          }
+          const { value } = action;
 
           return state
             .set(REQUIRED_HOURS, 0)
-            .setIn([ERRORS, GET_REQUIRED_HOURS], error)
+            .setIn([ERRORS, GET_REQUIRED_HOURS], value)
             .setIn([ACTIONS, GET_REQUIRED_HOURS, REQUEST_STATE], RequestStates.FAILURE);
         },
         FINALLY: () => state.deleteIn([ACTIONS, GET_REQUIRED_HOURS, action.id])
@@ -438,15 +400,11 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
         },
         FAILURE: () => {
 
-          const error = {};
-          const { value: axiosError } = action;
-          if (axiosError && axiosError.response && isNumber(axiosError.response.status)) {
-            error.status = axiosError.response.status;
-          }
+          const { value } = action;
 
           return state
             .set(SENTENCE_TERM, Map())
-            .setIn([ERRORS, GET_SENTENCE_TERM], error)
+            .setIn([ERRORS, GET_SENTENCE_TERM], value)
             .setIn([ACTIONS, GET_SENTENCE_TERM, REQUEST_STATE], RequestStates.FAILURE);
         },
         FINALLY: () => state.deleteIn([ACTIONS, GET_SENTENCE_TERM, action.id])
