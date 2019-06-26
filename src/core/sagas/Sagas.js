@@ -8,6 +8,7 @@ import { DataApiSagas, SearchApiSagas } from 'lattice-sagas';
 
 import * as AppSagas from '../../containers/app/AppSagas';
 import * as EDMSagas from '../edm/EDMSagas';
+import * as ParticipantSagas from '../../containers/participant/ParticipantSagas';
 import * as ParticipantsSagas from '../../containers/participants/ParticipantsSagas';
 import * as RoutingSagas from '../router/RoutingSagas';
 
@@ -33,6 +34,17 @@ export default function* sagas() :Generator<*, *, *> {
     // EDMSagas
     fork(EDMSagas.getEntityDataModelTypesWatcher),
     fork(EDMSagas.getEntitySetIdsWatcher),
+
+    // ParticipantSagas
+    fork(ParticipantSagas.getAllParticipantInfoWatcher),
+    fork(ParticipantSagas.getCaseInfoWatcher),
+    fork(ParticipantSagas.getContactInfoWatcher),
+    fork(ParticipantSagas.getEnrollmentStatusWatcher),
+    fork(ParticipantSagas.getParticipantAddressWatcher),
+    fork(ParticipantSagas.getParticipantInfractionsWatcher),
+    fork(ParticipantSagas.getParticipantWatcher),
+    fork(ParticipantSagas.getRequiredHoursWatcher),
+    fork(ParticipantSagas.getSentenceTermWatcher),
 
     // ParticipantsSagas
     fork(ParticipantsSagas.getEnrollmentStatusesWatcher),

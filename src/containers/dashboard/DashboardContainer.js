@@ -12,6 +12,7 @@ import ParticipantsTable from '../../components/table/ParticipantsTable';
 import LogoLoader from '../../components/LogoLoader';
 
 import { ErrorMessage } from '../../components/Layout';
+import { getSentences } from '../participants/ParticipantsActions';
 import { goToRoute } from '../../core/router/RoutingActions';
 import { PARTICIPANT_PROFILE } from '../../core/router/Routes';
 import {
@@ -19,14 +20,13 @@ import {
   DASHBOARD_WIDTH,
 } from '../../core/style/Sizes';
 import { getEntityKeyId } from '../../utils/DataUtils';
-import { ENROLLMENT_STATUSES, HOURS_CONSTS } from '../../core/edm/constants/DataModelConsts';
+import { ENROLLMENT_STATUSES, HOURS_CONSTS, INFRACTIONS_CONSTS } from '../../core/edm/constants/DataModelConsts';
 import { ENROLLMENT_STATUS_FQNS, SENTENCE_TERM_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { APP, PEOPLE, STATE } from '../../utils/constants/ReduxStateConsts';
 
 /* constants */
 const { STATUS } = ENROLLMENT_STATUS_FQNS;
 const { REQUIRED, WORKED } = HOURS_CONSTS;
-const VIOLATIONS = 'violations';
 const {
   ENROLLMENT_BY_PARTICIPANT,
   HOURS_WORKED,
@@ -68,8 +68,10 @@ const RightWrapper = styled.div`
 
 type Props = {
   actions:{
+    getSentences :RequestSequence;
     goToRoute :RequestSequence;
   };
+  app :Map;
   enrollmentByParticipant :Map;
   getInitializeAppRequestState :RequestState;
   getSentencesRequestState :RequestState;
@@ -88,6 +90,7 @@ type State = {
 
 /* react component */
 class DashboardContainer extends Component<Props, State> {
+
   constructor(props :Props) {
     super(props);
 
@@ -109,7 +112,10 @@ class DashboardContainer extends Component<Props, State> {
   }
 
   componentDidUpdate(prevProps :Props) {
-    const { participants } = this.props;
+    const { actions, app, participants } = this.props;
+    if (prevProps.app.count() !== app.count()) {
+      actions.getSentences();
+    }
     if (prevProps.participants.count() !== participants.count()) {
       this.setNewParticipants();
       this.setParticipantsWithHoursComplete();
@@ -175,7 +181,8 @@ class DashboardContainer extends Component<Props, State> {
   setParticipantsWithViolations = () => {
 
     const { infractionCountsByParticipant, participants } = this.props;
-    const violationMap :Map = infractionCountsByParticipant.map((count :Map) => count.get(VIOLATIONS));
+    const violationMap :Map = infractionCountsByParticipant
+      .map((count :Map) => count.get(INFRACTIONS_CONSTS.VIOLATION));
     const violationsWatch :List = participants.filter((participant :Map) => {
       const personEKID :UUID = getEntityKeyId(participant);
       return violationMap.get(personEKID);
@@ -289,6 +296,7 @@ const mapStateToProps = (state :Map<*, *>) => {
   const app = state.get(STATE.APP);
   const people = state.get(STATE.PEOPLE);
   return {
+    app,
     [ENROLLMENT_BY_PARTICIPANT]: people.get(ENROLLMENT_BY_PARTICIPANT),
     getInitializeAppRequestState: app.getIn([APP.ACTIONS, APP.INITIALIZE_APPLICATION, APP.REQUEST_STATE]),
     getSentencesRequestState: people.getIn([PEOPLE.ACTIONS, PEOPLE.GET_SENTENCES, PEOPLE.REQUEST_STATE]),
@@ -301,6 +309,7 @@ const mapStateToProps = (state :Map<*, *>) => {
 
 const mapDispatchToProps = dispatch => ({
   actions: bindActionCreators({
+    getSentences,
     goToRoute,
   }, dispatch)
 });

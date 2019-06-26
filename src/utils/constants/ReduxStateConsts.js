@@ -2,6 +2,7 @@ export const STATE = {
   APP: 'app',
   EDM: 'edm',
   PEOPLE: 'people',
+  PERSON: 'person',
 };
 
 /* App */
@@ -45,5 +46,32 @@ export const PEOPLE = {
   PARTICIPANTS: 'participants',
   REQUEST_STATE: 'requestState',
   SENTENCE_TERMS_BY_PARTICIPANT: 'sentenceTermsByParticipant',
-  SENTENCES: 'sentences',
+  SENTENCE_EKIDS: 'sentenceEKIDs',
+};
+
+/* Person */
+
+export const PERSON = {
+  ACTIONS: 'actions',
+  ADDRESS: 'address',
+  CASE_NUMBER: 'caseNumber',
+  EMAIL: 'email',
+  ENROLLMENT_STATUS: 'enrollmentStatus',
+  ERRORS: 'errors',
+  GET_ALL_PARTICIPANT_INFO: 'getAllParticipantInfo',
+  GET_CASE_INFO: 'getCaseInfo',
+  GET_CONTACT_INFO: 'getContactInfo',
+  GET_ENROLLMENT_STATUS: 'getEnrollmentStatus',
+  GET_INFRACTIONS: 'getInfractions',
+  GET_PARTICIPANT: 'getParticipant',
+  GET_PARTICIPANT_ADDRESS: 'getParticipantAddress',
+  GET_REQUIRED_HOURS: 'getRequiredHours',
+  GET_SENTENCE_TERM: 'getSentenceTerm',
+  PARTICIPANT: 'participant',
+  PHONE: 'phone',
+  REQUEST_STATE: 'requestState',
+  REQUIRED_HOURS: 'requiredHours',
+  SENTENCE_TERM: 'sentenceTerm',
+  VIOLATIONS: 'violations',
+  WARNINGS: 'warnings',
 };

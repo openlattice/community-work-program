@@ -14,8 +14,8 @@ const StyledButton = styled.button.attrs({
   font-family: 'Open Sans', Arial, sans-serif;
   line-height: 20px;
   font-size: 14px;
-  padding: 12px;
-  font-weight: 600;
+  font-weight: 500;
+  padding: 10px 20px;
   text-align: center;
   text-decoration: none;
   white-space: nowrap;

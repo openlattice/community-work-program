@@ -19,6 +19,7 @@ export const APP_TYPE_FQNS = {
   CHECK_INS: new FullyQualifiedName('app.checkins'),
   CONTACT_INFO_GIVEN: new FullyQualifiedName('app.contactinfogiven'),
   CONTACT_INFORMATION: new FullyQualifiedName('app.contactinformation'),
+  COURT_CHARGES: new FullyQualifiedName('app.courtcharges'),
   COURT_PRETRIAL_CASES: new FullyQualifiedName('app.courtpretrialcases'),
   DIVERSION_PLAN: new FullyQualifiedName('app.diversionplan'),
   EDITED_BY: new FullyQualifiedName('app.editedby'),
@@ -54,6 +55,19 @@ export const APP_TYPE_FQNS = {
 
 /* Entity Type FQNs */
 
+/* publicsafety.pretrialstatuscaseprocessings */
+export const CASE_FQNS = {
+  CASE_NUMBER_TEXT: new FullyQualifiedName('j.CaseNumberText'),
+};
+
+/* ol.contactinformation */
+export const CONTACT_INFO_FQNS = {
+  CELL_PHONE: new FullyQualifiedName('contact.cellphone'),
+  EMAIL: new FullyQualifiedName('staff.email'),
+  PHONE_NUMBER: new FullyQualifiedName('contact.phonenumber'),
+  PREFERRED: new FullyQualifiedName('ol.preferred'),
+};
+
 /* ol.diversionplan */
 export const DIVERSION_PLAN_FQNS = {
   COMPLETED: new FullyQualifiedName('ol.completed'),
@@ -77,6 +91,11 @@ export const INFRACTION_FQNS = {
   DATETIME: new FullyQualifiedName('general.datetime'),
   DESCRIPTION: new FullyQualifiedName('ol.description'),
   TYPE: new FullyQualifiedName('ol.type'),
+};
+
+/* ol.location */
+export const LOCATION_FQNS = {
+  UNPARSED_ADDRESS: new FullyQualifiedName('location.address'),
 };
 
 /* general.person */

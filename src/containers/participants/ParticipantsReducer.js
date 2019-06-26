@@ -34,7 +34,6 @@ const {
   PARTICIPANTS,
   REQUEST_STATE,
   SENTENCE_TERMS_BY_PARTICIPANT,
-  SENTENCES,
 } = PEOPLE;
 
 const INITIAL_STATE :Map<*, *> = fromJS({
@@ -72,7 +71,6 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [INFRACTION_COUNTS_BY_PARTICIPANT]: Map(),
   [PARTICIPANTS]: List(),
   [SENTENCE_TERMS_BY_PARTICIPANT]: Map(),
-  [SENTENCES]: List(),
 });
 
 export default function participantsReducer(state :Map<*, *> = INITIAL_STATE, action :Object) :Map<*, *> {
@@ -146,13 +144,7 @@ export default function participantsReducer(state :Map<*, *> = INITIAL_STATE, ac
             return state;
           }
 
-          const { value } = seqAction;
-          if (value === null || value === undefined) {
-            return state;
-          }
-
           return state
-            .set(SENTENCES, value)
             .setIn([ACTIONS, GET_SENTENCES, REQUEST_STATE], RequestStates.SUCCESS);
         },
         FAILURE: () => {
@@ -164,7 +156,6 @@ export default function participantsReducer(state :Map<*, *> = INITIAL_STATE, ac
           }
 
           return state
-            .set(SENTENCES, List())
             .setIn([ERRORS, GET_SENTENCES], error)
             .setIn([ACTIONS, GET_SENTENCES, REQUEST_STATE], RequestStates.FAILURE);
         },

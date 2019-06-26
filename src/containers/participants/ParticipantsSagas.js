@@ -5,12 +5,12 @@
 import { List, Map, fromJS } from 'immutable';
 import { DateTime } from 'luxon';
 import {
+  all,
   call,
   put,
   select,
   takeEvery,
 } from '@redux-saga/core/effects';
-import { Constants } from 'lattice';
 import {
   DataApiActions,
   DataApiSagas,
@@ -73,12 +73,13 @@ const {
   PEOPLE,
   SENTENCES,
   SENTENCE_TERM,
+  WORKSITE,
   WORKSITE_PLAN,
 } = APP_TYPE_FQNS;
 const { SENTENCE_CONDITIONS } = SENTENCE_FQNS;
 const { TYPE } = INFRACTION_FQNS;
-const { COMPLETED } = DIVERSION_PLAN_FQNS;
-const { HOURS_WORKED, REQUIRED_HOURS } = WORKSITE_PLAN_FQNS;
+const { REQUIRED_HOURS } = DIVERSION_PLAN_FQNS;
+const { HOURS_WORKED } = WORKSITE_PLAN_FQNS;
 const { DATETIME_START } = SENTENCE_TERM_FQNS;
 const { EFFECTIVE_DATE, STATUS } = ENROLLMENT_STATUS_FQNS;
 
@@ -213,17 +214,16 @@ function* getHoursWorkedWorker(action :SequenceAction) :Generator<*, *, *> {
     const participantEKIDs :UUID[] = participants
       .map((participant :Map) => getEntityKeyId(participant))
       .toJS();
-
     /*
      * 1. Get diversion plans of participants given.
      */
     const app = yield select(getAppFromState);
     const diversionPlanESID :UUID = getEntitySetIdFromApp(app, DIVERSION_PLAN);
 
-
     let searchFilter = {
       entityKeyIds: participantEKIDs,
       destinationEntitySetIds: [diversionPlanESID],
+      sourceEntitySetIds: [],
     };
     response = yield call(
       searchEntityNeighborsWithFilterWorker,
@@ -232,23 +232,32 @@ function* getHoursWorkedWorker(action :SequenceAction) :Generator<*, *, *> {
     if (response.error) {
       throw response.error;
     }
+
+    /*
+     * 2. Get required hours from diversion plan.
+     */
     const diversionPlansByParticipant = fromJS(response.data)
       .map((planArray :List) => planArray.map((plan :Map) => getNeighborDetails(plan)));
-    const activeDiversionPlans = diversionPlansByParticipant
-      .filter((planArray :List) => planArray
-        .filter((plan :Map) => {
-          const { [COMPLETED]: completed } = getEntityProperties(plan, [COMPLETED]);
-          return fromJS(!completed);
-        }));
-    const activeDiversionPlanEKIDs = activeDiversionPlans.map((plans :List) => plans
-      .map((plan :Map) => getEntityKeyId(plan)))
+
+    const requiredHours = diversionPlansByParticipant
+      .map((planArray :List) => {
+        const { [REQUIRED_HOURS]: reqHours } = getEntityProperties(planArray.get(0), [REQUIRED_HOURS]);
+        return reqHours;
+      });
+
+    /*
+     * 3. Get hours worked from worksite plans.
+     */
+    const planEKIDs = diversionPlansByParticipant
+      .map((planArray :List) => {
+        return getEntityKeyId(planArray.get(0));
+      })
       .valueSeq()
-      .toJS()
-      .flat();
+      .toArray();
 
     const worksitePlanESID :UUID = getEntitySetIdFromApp(app, WORKSITE_PLAN);
     searchFilter = {
-      entityKeyIds: activeDiversionPlanEKIDs,
+      entityKeyIds: planEKIDs,
       destinationEntitySetIds: [worksitePlanESID],
       sourceEntitySetIds: [peopleESID],
     };
@@ -259,20 +268,30 @@ function* getHoursWorkedWorker(action :SequenceAction) :Generator<*, *, *> {
     if (response.error) {
       throw response.error;
     }
-    const diversionPlanNeighbors = fromJS(response.data);
-
+    const diversionPlanNeighbors = fromJS(response.data); // people and worksite plan neighbors for each diversion plan
     let hoursWorkedMap :Map = Map();
     diversionPlanNeighbors.forEach((plan :Map) => {
 
       const person :UUID = plan.find((neighbor :Map) => neighbor
         .getIn([NEIGHBOR_ENTITY_SET, 'name']).includes(PEOPLE.toString().split('.')[1]));
       const personEKID = getEntityKeyId(getNeighborDetails(person));
-      const worksitePlan :Map = plan.find((neighbor :Map) => neighbor
+      const worksitePlans :List = plan.filter((neighbor :Map) => neighbor
         .getIn([NEIGHBOR_ENTITY_SET, 'name']).includes(WORKSITE_PLAN.toString().split('.')[1]));
-      const hoursWorked :number = worksitePlan ? getFirstNeighborValue(worksitePlan, HOURS_WORKED) : 0;
-      const reqHours :number = getFirstNeighborValue(worksitePlan, REQUIRED_HOURS);
+      let hoursWorked :number = 0;
+      if (worksitePlans.count() === 1) {
+        hoursWorked = getFirstNeighborValue(worksitePlans.get(0), HOURS_WORKED);
+      }
+      if (worksitePlans.count() > 1) {
+        hoursWorked = worksitePlans
+          .reduce((worksitePlanA :Map, worksitePlanB :Map) => {
+            const hoursA = getFirstNeighborValue(worksitePlanA, HOURS_WORKED);
+            const hoursB = getFirstNeighborValue(worksitePlanB, HOURS_WORKED);
+            return hoursA + hoursB;
+          }, hoursWorked);
+      }
+      const reqHoursFromMap :number = requiredHours.get(personEKID) ? requiredHours.get(personEKID) : 0;
 
-      hoursWorkedMap = hoursWorkedMap.set(personEKID, Map({ worked: hoursWorked, required: reqHours }));
+      hoursWorkedMap = hoursWorkedMap.set(personEKID, Map({ worked: hoursWorked, required: reqHoursFromMap }));
     });
 
     yield put(getHoursWorked.success(id, hoursWorkedMap));
@@ -334,14 +353,14 @@ function* getInfractionsWorker(action :SequenceAction) :Generator<*, *, *> {
         .map((infraction :Map) => getNeighborDetails(infraction)));
 
     const infractionCountMap :Map = infractionsMap.map((infractions :List) => {
-      const infractionCount = { warnings: 0, violations: 0 };
+      const infractionCount = { [INFRACTIONS_CONSTS.WARNING]: 0, [INFRACTIONS_CONSTS.VIOLATION]: 0 };
       infractions.forEach((infraction :Map) => {
         const { [TYPE]: type } = getEntityProperties(infraction, [TYPE]);
         if (type === INFRACTIONS_CONSTS.WARNING) {
-          infractionCount.warnings += 1;
+          infractionCount[INFRACTIONS_CONSTS.WARNING] += 1;
         }
         if (type === INFRACTIONS_CONSTS.VIOLATION) {
-          infractionCount.violations += 1;
+          infractionCount[INFRACTIONS_CONSTS.VIOLATION] += 1;
         }
       });
       return fromJS(infractionCount);
@@ -433,7 +452,6 @@ function* getParticipantsWorker(action :SequenceAction) :Generator<*, *, *> {
     yield put(getParticipants.failure(id, ERR_ACTION_VALUE_NOT_DEFINED));
     return;
   }
-  let response :Object = {};
   let participants :List = List();
 
   try {
@@ -448,53 +466,59 @@ function* getParticipantsWorker(action :SequenceAction) :Generator<*, *, *> {
         .map((sentence :Map) => getEntityKeyId(sentence))
         .toJS();
 
-      let searchFilter = {
-        entityKeyIds: integratedSentencesEKIDs,
-        destinationEntitySetIds: [],
-        sourceEntitySetIds: [peopleESID],
-      };
-      response = yield call(
-        searchEntityNeighborsWithFilterWorker,
-        searchEntityNeighborsWithFilter({ entitySetId: sentenceESID, filter: searchFilter })
-      );
-      if (response.error) {
-        throw response.error;
-      }
-
-      participants = fromJS(response.data).toIndexedSeq()
-        .map(personList => personList.get(0))
-        .map((person :Map) => getNeighborDetails(person))
-        .toList();
-
       const manualSentencesEKIDs :UUID[] = sentences
         .map((sentence :Map) => getEntityKeyId(sentence))
         .toJS();
 
-      searchFilter = {
+      const integratedSearchFilter = {
+        entityKeyIds: integratedSentencesEKIDs,
+        destinationEntitySetIds: [],
+        sourceEntitySetIds: [peopleESID],
+      };
+      const manualSearchFilter = {
         entityKeyIds: manualSentencesEKIDs,
         destinationEntitySetIds: [],
         sourceEntitySetIds: [peopleESID],
       };
-      response = yield call(
-        searchEntityNeighborsWithFilterWorker,
-        searchEntityNeighborsWithFilter({ entitySetId: manualSentenceESID, filter: searchFilter })
-      );
-      if (response.error) {
-        throw response.error;
+
+      const [integrated, manual] = yield all([
+        call(
+          searchEntityNeighborsWithFilterWorker,
+          searchEntityNeighborsWithFilter({ entitySetId: sentenceESID, filter: integratedSearchFilter })
+        ),
+        call(
+          searchEntityNeighborsWithFilterWorker,
+          searchEntityNeighborsWithFilter({ entitySetId: manualSentenceESID, filter: manualSearchFilter })
+        )
+      ]);
+      if (integrated.error) {
+        throw integrated.error;
       }
-      const moreParticipants = fromJS(response.data).toIndexedSeq()
+      if (manual.error) {
+        throw manual.error;
+      }
+      // get participants from each request result
+      const integratedImmutable = fromJS(integrated.data);
+      const manualImmutable = fromJS(manual.data);
+      participants = integratedImmutable.toIndexedSeq()
         .map(personList => personList.get(0))
         .map((person :Map) => getNeighborDetails(person))
         .toList();
-
+      const moreParticipants = manualImmutable.toIndexedSeq()
+        .map(personList => personList.get(0))
+        .map((person :Map) => getNeighborDetails(person))
+        .toList();
       participants = participants.concat(moreParticipants);
     }
 
     if (participants.count() > 0) {
-      yield call(getSentenceTermsWorker, getSentenceTerms({ participants, peopleESID }));
-      yield call(getEnrollmentStatusesWorker, getEnrollmentStatuses({ participants, peopleESID }));
-      yield call(getInfractionsWorker, getInfractions({ participants, peopleESID }));
-      yield call(getHoursWorkedWorker, getHoursWorked({ participants, peopleESID }));
+      const params = { participants, peopleESID };
+      yield all([
+        call(getSentenceTermsWorker, getSentenceTerms(params)),
+        call(getEnrollmentStatusesWorker, getEnrollmentStatuses(params)),
+        call(getInfractionsWorker, getInfractions(params)),
+        call(getHoursWorkedWorker, getHoursWorked(params))
+      ]);
     }
 
     yield put(getParticipants.success(id, participants));
@@ -562,9 +586,9 @@ function* getSentencesWorker(action :SequenceAction) :Generator<*, *, *> {
      * 3. Call getParticipants for all participants associated with sentences found.
      */
 
-    yield call(getParticipantsWorker, getParticipants({ manualSentenceESID, sentences, sentenceESID }));
+    yield call(getParticipantsWorker, getParticipants({ manualSentenceESID, sentenceESID, sentences }));
 
-    yield put(getSentences.success(id, sentences));
+    yield put(getSentences.success(id));
   }
   catch (error) {
     LOG.error('caught exception in getSentencesWorker()', error);
