@@ -276,9 +276,20 @@ function* getHoursWorkedWorker(action :SequenceAction) :Generator<*, *, *> {
       const person :UUID = plan.find((neighbor :Map) => neighbor
         .getIn([NEIGHBOR_ENTITY_SET, 'name']).includes(PEOPLE.toString().split('.')[1]));
       const personEKID = getEntityKeyId(getNeighborDetails(person));
-      const worksitePlan :Map = plan.find((neighbor :Map) => neighbor
+      const worksitePlans :List = plan.filter((neighbor :Map) => neighbor
         .getIn([NEIGHBOR_ENTITY_SET, 'name']).includes(WORKSITE_PLAN.toString().split('.')[1]));
-      const hoursWorked :number = worksitePlan ? getFirstNeighborValue(worksitePlan, HOURS_WORKED) : 0;
+      let hoursWorked :number = 0;
+      if (worksitePlans.count() === 1) {
+        hoursWorked = getFirstNeighborValue(worksitePlans.get(0), HOURS_WORKED);
+      }
+      if (worksitePlans.count() > 1) {
+        hoursWorked = worksitePlans
+          .reduce((worksitePlanA :Map, worksitePlanB :Map) => {
+            const hoursA = getFirstNeighborValue(worksitePlanA, HOURS_WORKED);
+            const hoursB = getFirstNeighborValue(worksitePlanB, HOURS_WORKED);
+            return hoursA + hoursB;
+          }, hoursWorked);
+      }
       const reqHoursFromMap :number = requiredHours.get(personEKID) ? requiredHours.get(personEKID) : 0;
 
       hoursWorkedMap = hoursWorkedMap.set(personEKID, Map({ worked: hoursWorked, required: reqHoursFromMap }));
