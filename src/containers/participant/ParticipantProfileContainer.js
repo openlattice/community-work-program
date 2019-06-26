@@ -13,12 +13,12 @@ type Props = {
 const ParticipantProfileContainer = (props :Props) => {
   const {
     match: {
-      params: { subjectId }
+      params: { subjectId: personEntityKeyId }
     }
   } = props;
   return (
     <Switch>
-      <Route path={Routes.PARTICIPANT_PROFILE} render={() => <ParticipantProfile personEKID={subjectId} />} />
+      <Route path={Routes.PARTICIPANT_PROFILE} render={() => <ParticipantProfile personEKID={personEntityKeyId} />} />
     </Switch>
   );
 };
