@@ -73,6 +73,7 @@ const {
   PEOPLE,
   SENTENCES,
   SENTENCE_TERM,
+  WORKSITE,
   WORKSITE_PLAN,
 } = APP_TYPE_FQNS;
 const { SENTENCE_CONDITIONS } = SENTENCE_FQNS;
@@ -213,16 +214,17 @@ function* getHoursWorkedWorker(action :SequenceAction) :Generator<*, *, *> {
     const participantEKIDs :UUID[] = participants
       .map((participant :Map) => getEntityKeyId(participant))
       .toJS();
-
     /*
      * 1. Get diversion plans of participants given.
      */
     const app = yield select(getAppFromState);
     const diversionPlanESID :UUID = getEntitySetIdFromApp(app, DIVERSION_PLAN);
+    const worksiteESID :UUID = getEntitySetIdFromApp(app, WORKSITE);
 
     let searchFilter = {
       entityKeyIds: participantEKIDs,
       destinationEntitySetIds: [diversionPlanESID],
+      sourceEntitySetIds: [],
     };
     response = yield call(
       searchEntityNeighborsWithFilterWorker,
@@ -231,23 +233,32 @@ function* getHoursWorkedWorker(action :SequenceAction) :Generator<*, *, *> {
     if (response.error) {
       throw response.error;
     }
+
+    /*
+     * 2. Get required hours from diversion plan.
+     */
     const diversionPlansByParticipant = fromJS(response.data)
       .map((planArray :List) => planArray.map((plan :Map) => getNeighborDetails(plan)));
-    const activeDiversionPlans = diversionPlansByParticipant
-      .filter((planArray :List) => planArray
-        .filter((plan :Map) => {
-          const { [COMPLETED]: completed } = getEntityProperties(plan, [COMPLETED]);
-          return fromJS(!completed);
-        }));
-    const activeDiversionPlanEKIDs = activeDiversionPlans.map((plans :List) => plans
-      .map((plan :Map) => getEntityKeyId(plan)))
+
+    const requiredHours = diversionPlansByParticipant
+      .map((planArray :List) => {
+        const { [REQUIRED_HOURS]: reqHours } = getEntityProperties(planArray.get(0), [REQUIRED_HOURS]);
+        return reqHours;
+      });
+
+    /*
+     * 3. Get hours worked from worksite plans.
+     */
+    const planEKIDs = diversionPlansByParticipant
+      .map((planArray :List) => {
+        return getEntityKeyId(planArray.get(0));
+      })
       .valueSeq()
-      .toJS()
-      .flat();
+      .toArray();
 
     const worksitePlanESID :UUID = getEntitySetIdFromApp(app, WORKSITE_PLAN);
     searchFilter = {
-      entityKeyIds: activeDiversionPlanEKIDs,
+      entityKeyIds: planEKIDs,
       destinationEntitySetIds: [worksitePlanESID],
       sourceEntitySetIds: [peopleESID],
     };
@@ -258,8 +269,7 @@ function* getHoursWorkedWorker(action :SequenceAction) :Generator<*, *, *> {
     if (response.error) {
       throw response.error;
     }
-    const diversionPlanNeighbors = fromJS(response.data);
-
+    const diversionPlanNeighbors = fromJS(response.data); // people and worksite plan neighbors for each diversion plan
     let hoursWorkedMap :Map = Map();
     diversionPlanNeighbors.forEach((plan :Map) => {
 
@@ -269,9 +279,9 @@ function* getHoursWorkedWorker(action :SequenceAction) :Generator<*, *, *> {
       const worksitePlan :Map = plan.find((neighbor :Map) => neighbor
         .getIn([NEIGHBOR_ENTITY_SET, 'name']).includes(WORKSITE_PLAN.toString().split('.')[1]));
       const hoursWorked :number = worksitePlan ? getFirstNeighborValue(worksitePlan, HOURS_WORKED) : 0;
-      const reqHours :number = getFirstNeighborValue(worksitePlan, REQUIRED_HOURS);
+      const reqHoursFromMap :number = requiredHours.get(personEKID) ? requiredHours.get(personEKID) : 0;
 
-      hoursWorkedMap = hoursWorkedMap.set(personEKID, Map({ worked: hoursWorked, required: reqHours }));
+      hoursWorkedMap = hoursWorkedMap.set(personEKID, Map({ worked: hoursWorked, required: reqHoursFromMap }));
     });
 
     yield put(getHoursWorked.success(id, hoursWorkedMap));
