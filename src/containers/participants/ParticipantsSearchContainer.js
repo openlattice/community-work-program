@@ -314,8 +314,7 @@ class ParticipantsSearchContainer extends Component<Props, State> {
     } = this.props;
     const { peopleToRender, selectedSortOption } = this.state;
     const onSelectFunctions = Map().withMutations((map :Map) => {
-      map.set('Sort by', this.handleOnSort);
-      map.set('Status', this.handleOnFilter);
+      map.set('Filter by: Status', this.handleOnFilter);
     });
     const warningMap :Map = infractionCountsByParticipant.map((count :Map) => count.get(WARNING));
     const violationMap :Map = infractionCountsByParticipant.map((count :Map) => count.get(VIOLATION));

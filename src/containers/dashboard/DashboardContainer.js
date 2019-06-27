@@ -19,7 +19,7 @@ import {
   APP_CONTENT_PADDING,
   DASHBOARD_WIDTH,
 } from '../../core/style/Sizes';
-import { getEntityKeyId } from '../../utils/DataUtils';
+import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
 import { ENROLLMENT_STATUSES, HOURS_CONSTS, INFRACTIONS_CONSTS } from '../../core/edm/constants/DataModelConsts';
 import { ENROLLMENT_STATUS_FQNS, SENTENCE_TERM_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { APP, PEOPLE, STATE } from '../../utils/constants/ReduxStateConsts';
@@ -139,15 +139,21 @@ class DashboardContainer extends Component<Props, State> {
           return true;
         }
 
-        const isAwaitingEnrollment :boolean = enrollmentByParticipant.get(personEKID)
-          .getIn([STATUS, 0]) === ENROLLMENT_STATUSES.AWAITING_ENROLLMENT;
-        const hasActiveSentence :boolean = DateTime.fromISO(
+        const status :string = enrollmentByParticipant.get(personEKID)
+          .getIn([STATUS, 0]);
+        const isAwaitingEnrollment :boolean = status === ENROLLMENT_STATUSES.AWAITING_ENROLLMENT;
+        const hasActiveSentence :boolean = DateTime.local().diff(DateTime.fromISO(
           sentenceTermsByParticipant.getIn([personEKID, DATETIME_START, 0])
-        ).diff(DateTime.local(), 'days') < 90;
+        ), 'days').days < 90;
 
-        // if person was enrolled in CWP previously
+        // if person was enrolled in CWP previously and is now again
         if (!isAwaitingEnrollment && hasActiveSentence) {
-          return participant;
+          // if person is simply actively enrolled in CWP
+          if (status === ENROLLMENT_STATUSES.ACTIVE
+              || status === ENROLLMENT_STATUSES.ACTIVE_NONCOMPLIANT) {
+            return false;
+          }
+          return true;
         }
         return isAwaitingEnrollment;
       });
@@ -160,17 +166,25 @@ class DashboardContainer extends Component<Props, State> {
 
   setParticipantsWithHoursComplete = () => {
 
-    const { hoursWorked, participants } = this.props;
+    const { enrollmentByParticipant, hoursWorked, participants } = this.props;
     const participantsWithHoursComplete :Map = hoursWorked
-      .filter((hours :Map) => hours.get(WORKED) === hours.get(REQUIRED));
+      .filter((hours :Map) => (hours.get(WORKED) === hours.get(REQUIRED)));
 
     let pendingCompletionReview :List = List();
     participantsWithHoursComplete.forEach((hours :Map, ekid :UUID) => {
+
       const participant :Map = participants.find((person :Map) => {
         const personEKID :UUID = getEntityKeyId(person);
         return personEKID === ekid;
       });
-      pendingCompletionReview = pendingCompletionReview.push(participant);
+
+      const participantEnrollment = enrollmentByParticipant.get(getEntityKeyId(participant));
+      const { [STATUS]: status } = getEntityProperties(participantEnrollment, [STATUS]);
+      if (status !== ENROLLMENT_STATUSES.COMPLETED
+        || status !== ENROLLMENT_STATUSES.CLOSED
+        || status !== ENROLLMENT_STATUSES.REMOVED_NONCOMPLIANT) {
+        pendingCompletionReview = pendingCompletionReview.push(participant);
+      }
     });
 
     this.setState({
@@ -180,12 +194,15 @@ class DashboardContainer extends Component<Props, State> {
 
   setParticipantsWithViolations = () => {
 
-    const { infractionCountsByParticipant, participants } = this.props;
+    const { enrollmentByParticipant, infractionCountsByParticipant, participants } = this.props;
     const violationMap :Map = infractionCountsByParticipant
       .map((count :Map) => count.get(INFRACTIONS_CONSTS.VIOLATION));
     const violationsWatch :List = participants.filter((participant :Map) => {
       const personEKID :UUID = getEntityKeyId(participant);
-      return violationMap.get(personEKID);
+      const participantEnrollment = enrollmentByParticipant.get(getEntityKeyId(participant));
+      const { [STATUS]: status } = getEntityProperties(participantEnrollment, [STATUS]);
+      return violationMap.get(personEKID)
+        && (status === ENROLLMENT_STATUSES.ACTIVE || status === ENROLLMENT_STATUSES.ACTIVE_NONCOMPLIANT);
     });
 
     this.setState({
