@@ -194,12 +194,15 @@ class DashboardContainer extends Component<Props, State> {
 
   setParticipantsWithViolations = () => {
 
-    const { infractionCountsByParticipant, participants } = this.props;
+    const { enrollmentByParticipant, infractionCountsByParticipant, participants } = this.props;
     const violationMap :Map = infractionCountsByParticipant
       .map((count :Map) => count.get(INFRACTIONS_CONSTS.VIOLATION));
     const violationsWatch :List = participants.filter((participant :Map) => {
       const personEKID :UUID = getEntityKeyId(participant);
-      return violationMap.get(personEKID);
+      const participantEnrollment = enrollmentByParticipant.get(getEntityKeyId(participant));
+      const { [STATUS]: status } = getEntityProperties(participantEnrollment, [STATUS]);
+      return violationMap.get(personEKID)
+        && (status === ENROLLMENT_STATUSES.ACTIVE || status === ENROLLMENT_STATUSES.ACTIVE_NONCOMPLIANT);
     });
 
     this.setState({
