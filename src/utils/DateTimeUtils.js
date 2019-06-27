@@ -2,7 +2,8 @@
  * @flow
  */
 
-import { DateTime } from 'luxon';
+import { DateTime, Duration } from 'luxon';
+import { Map } from 'immutable';
 
 const DATE_MDY_SLASH_FORMAT :string = 'MM/DD/YYYY';
 const ISO_DATE_FORMAT :string = 'YYYY-MM-DD';

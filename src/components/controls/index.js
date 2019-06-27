@@ -9,11 +9,6 @@ import TertiaryButtonLink from './buttons/TertiaryButtonLink';
 import DateWidget from './datetime/DateWidget';
 import TimeWidget from './datetime/TimeWidget';
 
-import StyledFunctionSelect from './dropdowns/StyledFunctionSelect';
-import StyledSelect from './dropdowns/StyledSelect';
-
-import StyledInput from './input/StyledInput';
-
 import ToolBar from './ToolBar';
 
 export {
@@ -23,9 +18,6 @@ export {
   NavButton,
   PrimaryButton,
   StyledButton,
-  StyledFunctionSelect,
-  StyledInput,
-  StyledSelect,
   TertiaryButton,
   TertiaryButtonLink,
   TimeWidget,

@@ -51,6 +51,7 @@ export const OL = {
   GREY35: '#f4f4f4',
   GREY36: '#bbbbbb',
   GREY37: '#aaaaaa',
+  GREY38: '#f8f8fb',
   BLUE01: '#455aff',
   BLUE02: '#a3adff',
   BLUE03: '#113355',
@@ -83,6 +84,14 @@ export const OL = {
   PEACH: '#ffb7a2',
   WHITE: '#ffffff',
   BLACK: '#000000',
+};
+
+export const ENROLLMENT_STATUS_COLORS = {
+  ACTIVE: OL.GREEN02,
+  ACTIVE_NONCOMPLIANT: OL.YELLOW01,
+  AWAITING_ENROLLMENT: OL.PINK01,
+  COMPLETED: OL.BLUE01,
+  REMOVED_NONCOMPLIANT: OL.RED01,
 };
 
 export const SCALE = {

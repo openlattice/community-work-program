@@ -5,23 +5,27 @@
 import React, { Component } from 'react';
 
 import styled from 'styled-components';
-import { Map } from 'immutable';
+import { AuthActions } from 'lattice-auth';
+import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
-import { Redirect, Route, Switch } from 'react-router-dom';
+import { Route, Switch, withRouter } from 'react-router-dom';
+import type { RequestSequence } from 'redux-reqseq';
 
 import AppHeaderContainer from './AppHeaderContainer';
-import Spinner from '../../components/spinner/Spinner';
-import Dashboard from '../dashboard/Dashboard';
-import ParticipantsSearchContainer from '../participants/ParticipantsSearchContainer';
+import ParticipantsRouter from '../participants/ParticipantsRouter';
 import WorksiteContainer from '../worksite/WorksiteContainer';
 import WorksitesContainer from '../worksites/WorksitesContainer';
 import OrganizationContainer from '../organization/OrganizationContainer';
 import * as AppActions from './AppActions';
+import * as ParticipantsActions from '../participants/ParticipantsActions';
 import * as Routes from '../../core/router/Routes';
-import { APP_CONTAINER_WIDTH } from '../../core/style/Sizes';
 
-// TODO: this should come from lattice-ui-kit, maybe after the next release. current version v0.1.1
-const APP_CONTENT_BG :string = '#f8f8fb';
+import {
+  APP_CONTAINER_WIDTH,
+} from '../../core/style/Sizes';
+import { OL } from '../../core/style/Colors';
+
+const { logout } = AuthActions;
 
 const AppContainerWrapper = styled.div`
   display: flex;
@@ -33,7 +37,7 @@ const AppContainerWrapper = styled.div`
 `;
 
 const AppContentOuterWrapper = styled.main`
-  background-color: ${APP_CONTENT_BG};
+  background-color: ${OL.GREY38};
   display: flex;
   flex: 1 0 auto;
   justify-content: center;
@@ -49,38 +53,27 @@ const AppContentInnerWrapper = styled.div`
 `;
 
 type Props = {
-  initializeApplication :RequestSequence;
-  isInitializingApplication :boolean;
+  actions:{
+    initializeApplication :RequestSequence;
+    logout :() => void;
+    resetRequestState :(actionType :string) => void;
+  },
 };
 
 class AppContainer extends Component<Props> {
 
   componentDidMount() {
 
-    const { initializeApplication } = this.props;
-    initializeApplication();
+    const { actions } = this.props;
+
+    actions.initializeApplication();
   }
 
-  renderAppContent = () => {
-
-    const { isInitializingApplication } = this.props;
-    if (isInitializingApplication) {
-      return (
-        <Spinner />
-      );
-    }
-
-    return (
-      <Switch>
-        <Route exact strict path={Routes.DASHBOARD} component={Dashboard} />
-        <Route path={Routes.PARTICIPANTS} component={ParticipantsSearchContainer} />
-        <Route path={Routes.WORKSITES} component={WorksitesContainer} />
-        <Route path={Routes.ORGANIZATION_PROFILE} component={OrganizationContainer} />
-        <Route path={Routes.WORKSITE_PROFILE} component={WorksiteContainer} />
-        <Redirect to={Routes.DASHBOARD} />
-      </Switch>
-    );
-  }
+  renderAppContent = () => (
+    <Switch>
+      <ParticipantsRouter />
+    </Switch>
+  );
 
   render() {
 
@@ -97,9 +90,13 @@ class AppContainer extends Component<Props> {
   }
 }
 
-const mapStateToProps = (state :Map<*, *>) => ({
-  isInitializingApplication: state.getIn(['app', 'isInitializingApplication']),
+const mapDispatchToProps = dispatch => ({
+  actions: bindActionCreators({
+    initializeApplication: AppActions.initializeApplication,
+    logout,
+    resetRequestState: ParticipantsActions.resetRequestState,
+  }, dispatch)
 });
 
 // $FlowFixMe
-export default connect(mapStateToProps, { ...AppActions })(AppContainer);
+export default withRouter(connect(null, mapDispatchToProps)(AppContainer));

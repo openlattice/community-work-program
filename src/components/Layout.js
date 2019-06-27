@@ -24,6 +24,10 @@ export const ContainerInnerWrapper = styled.div`
 export const ButtonWrapper = styled.div`
   display: flex;
   align-items: center;
+  margin-left: 15px;
+  &:hover {
+    cursor: pointer;
+  }
 `;
 
 /* Component Headers */
@@ -198,4 +202,11 @@ export const FooterCell = styled.span`
   font-weight: 600;
   text-align: left;
   color: ${OL.GREY15};
+`;
+
+/* Messages */
+
+export const ErrorMessage = styled.div`
+  padding-top: 20px;
+  text-align: center;
 `;
