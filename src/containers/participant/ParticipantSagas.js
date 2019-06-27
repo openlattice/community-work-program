@@ -525,11 +525,6 @@ function* getRequiredHoursWorker(action :SequenceAction) :Generator<*, *, *> {
 
     if (response.data[personEKID]) {
       let activeDiversionPlan :Map = fromJS(response.data[personEKID])
-        .filter((planNeighbor :Map) => {
-          const plan :Map = getNeighborDetails(planNeighbor);
-          const { [COMPLETED]: completed } = getEntityProperties(plan, [COMPLETED]);
-          return !completed;
-        })
         .last();
       activeDiversionPlan = getNeighborDetails(activeDiversionPlan);
       requiredHours = activeDiversionPlan.getIn([REQUIRED_HOURS, 0], 0);
