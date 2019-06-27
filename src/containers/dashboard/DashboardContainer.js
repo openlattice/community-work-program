@@ -19,7 +19,7 @@ import {
   APP_CONTENT_PADDING,
   DASHBOARD_WIDTH,
 } from '../../core/style/Sizes';
-import { getEntityKeyId } from '../../utils/DataUtils';
+import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
 import { ENROLLMENT_STATUSES, HOURS_CONSTS, INFRACTIONS_CONSTS } from '../../core/edm/constants/DataModelConsts';
 import { ENROLLMENT_STATUS_FQNS, SENTENCE_TERM_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { APP, PEOPLE, STATE } from '../../utils/constants/ReduxStateConsts';
@@ -166,17 +166,25 @@ class DashboardContainer extends Component<Props, State> {
 
   setParticipantsWithHoursComplete = () => {
 
-    const { hoursWorked, participants } = this.props;
+    const { enrollmentByParticipant, hoursWorked, participants } = this.props;
     const participantsWithHoursComplete :Map = hoursWorked
-      .filter((hours :Map) => hours.get(WORKED) === hours.get(REQUIRED));
+      .filter((hours :Map) => (hours.get(WORKED) === hours.get(REQUIRED)));
 
     let pendingCompletionReview :List = List();
     participantsWithHoursComplete.forEach((hours :Map, ekid :UUID) => {
+
       const participant :Map = participants.find((person :Map) => {
         const personEKID :UUID = getEntityKeyId(person);
         return personEKID === ekid;
       });
-      pendingCompletionReview = pendingCompletionReview.push(participant);
+
+      const participantEnrollment = enrollmentByParticipant.get(getEntityKeyId(participant));
+      const { [STATUS]: status } = getEntityProperties(participantEnrollment, [STATUS]);
+      if (status !== ENROLLMENT_STATUSES.COMPLETED
+        || status !== ENROLLMENT_STATUSES.CLOSED
+        || status !== ENROLLMENT_STATUSES.REMOVED_NONCOMPLIANT) {
+        pendingCompletionReview = pendingCompletionReview.push(participant);
+      }
     });
 
     this.setState({
