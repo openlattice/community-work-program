@@ -144,7 +144,7 @@ class ParticipantsSearchContainer extends Component<Props, State> {
     let filteredPeople :List = List();
 
     if (property === ALL) {
-      this.setState({ peopleToRender: participants });
+      this.setState({ peopleToRender: participants, selectedFilterOption: clickedProperty });
       return peopleList;
     }
     if (filter === FILTERS.STATUS) {
