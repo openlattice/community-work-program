@@ -1,13 +1,15 @@
 // @flow
 import React, { Component } from 'react';
-// import styled from 'styled-components';
 import { List, Map } from 'immutable';
+import { withRouter } from 'react-router-dom';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import type { RouterHistory } from 'react-router';
 
 import WorksitesByOrgCard from '../../components/organization/WorksitesByOrgCard';
 import * as Routes from '../../core/router/Routes';
+
+import { goToRoute } from '../../core/router/RoutingActions';
 import {
   ContainerOuterWrapper,
   ContainerInnerWrapper,
@@ -20,7 +22,6 @@ import { ToolBar } from '../../components/controls/index';
 import { isDefined } from '../../utils/LangUtils';
 import { statusDropdown } from './WorksitesConstants';
 import { WORKSITES } from '../../utils/constants/ReduxStateConsts';
-// import { OL } from '../../core/style/Colors';
 
 import {
   getOrganizations,
@@ -35,7 +36,6 @@ import { organizations, worksites } from './FakeData';
  */
 
 const {
-  ACTIONS,
   IS_FETCHING_ORGANIZATIONS,
   IS_FETCHING_WORKSITES,
   ORGANIZATIONS,
@@ -55,12 +55,13 @@ const defaultFilterOption :Map = statusDropdown.get('enums').find(option => opti
  */
 
 type Props = {
-  [ACTIONS]:{
+  actions:{
     getOrganizations :RequestSequence;
     getOrganizationWorksites :RequestSequence;
+    goToRoute :RequestSequence;
   },
   history :RouterHistory;
-  IS_FETCHING_ORGANIZATIONS :boolean;
+  isFetchingOrganizations :boolean;
   IS_FETCHING_WORKSITES :boolean;
   ORGANIZATIONS :List;
   WORKSITES_BY_ORGANIZATION :Map;
@@ -105,13 +106,13 @@ class WorksitesContainer extends Component<Props, State> {
   }
 
   handleOnClickOrganization = (org :Map) => {
-    const { history } = this.props;
-    history.push(Routes.ORGANIZATION_PROFILE.replace(':organizationId', org.get('id')));
+    const { actions } = this.props;
+    actions.goToRoute(Routes.ORGANIZATION_PROFILE.replace(':organizationId', org.get('id')));
   }
 
   handleOnClickWorksite = (worksite :Map) => {
-    const { history } = this.props;
-    history.push(Routes.WORKSITE_PROFILE.replace(':worksiteId', worksite.get('id')));
+    const { actions } = this.props;
+    actions.goToRoute(Routes.WORKSITE_PROFILE.replace(':worksiteId', worksite.get('id')));
   }
 
   handleOnFilter = (clickedStatus :Map, orgs :List) => {
@@ -202,7 +203,9 @@ const mapDispatchToProps = dispatch => ({
   actions: bindActionCreators({
     getOrganizations,
     getOrganizationWorksites,
+    goToRoute,
   }, dispatch)
 });
 
-export default connect(mapStateToProps, mapDispatchToProps)(WorksitesContainer);
+// $FlowFixMe
+export default withRouter(connect(mapStateToProps, mapDispatchToProps)(WorksitesContainer));

@@ -8,14 +8,22 @@ import styled from 'styled-components';
 import { AuthActions } from 'lattice-auth';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
-import { Route, Switch, withRouter } from 'react-router-dom';
+import {
+  Redirect,
+  Route,
+  Switch,
+  withRouter
+} from 'react-router-dom';
 import type { RequestSequence } from 'redux-reqseq';
 
 import AppHeaderContainer from './AppHeaderContainer';
-import ParticipantsRouter from '../participants/ParticipantsRouter';
+import DashboardContainer from '../dashboard/DashboardContainer';
+import OrganizationContainer from '../organization/OrganizationContainer';
+import ParticipantProfileContainer from '../participant/ParticipantProfileContainer';
+import ParticipantsSearchContainer from '../participants/ParticipantsSearchContainer';
 import WorksiteContainer from '../worksite/WorksiteContainer';
 import WorksitesContainer from '../worksites/WorksitesContainer';
-import OrganizationContainer from '../organization/OrganizationContainer';
+
 import * as AppActions from './AppActions';
 import * as ParticipantsActions from '../participants/ParticipantsActions';
 import * as Routes from '../../core/router/Routes';
@@ -71,7 +79,13 @@ class AppContainer extends Component<Props> {
 
   renderAppContent = () => (
     <Switch>
-      <ParticipantsRouter />
+      <Route path={Routes.ORGANIZATION_PROFILE} component={OrganizationContainer} />
+      <Route path={Routes.WORKSITE_PROFILE} component={WorksiteContainer} />
+      <Route path={Routes.WORKSITES} component={WorksitesContainer} />
+      <Route path={Routes.PARTICIPANT_PROFILE} component={ParticipantProfileContainer} />
+      <Route path={Routes.PARTICIPANTS} component={ParticipantsSearchContainer} />
+      <Route path={Routes.DASHBOARD} component={DashboardContainer} />
+      <Redirect from={Routes.ROOT} to={Routes.DASHBOARD} />
     </Switch>
   );
 

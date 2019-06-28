@@ -2,8 +2,11 @@
 import React from 'react';
 import styled from 'styled-components';
 import { List, Map } from 'immutable';
+import { Link } from 'react-router-dom';
 
 import WorksitesTable from '../table/WorksitesTable';
+import * as Routes from '../../core/router/Routes';
+
 import {
   CardOuterWrapper,
   CardInnerWrapper,
@@ -34,6 +37,10 @@ const Description = styled.div`
   margin: 40px 0 0 0;
 `;
 
+const StyledLink = styled(Link)`
+  text-decoration: none;
+`;
+
 type Props = {
   onClickOrganization :(organization :Map) => void;
   onClickWorksite :(worksite :Map) => void;
@@ -51,10 +58,11 @@ const WorksitesByOrgCard = ({
 } :Props) => (
   <CardOuterWrapper>
     <CardInnerWrapper>
-      <OrganizationName
-          onClick={() => onClickOrganization(organization)}>
-        {organization.get('name')}
-      </OrganizationName>
+      <StyledLink to={Routes.ORGANIZATION_PROFILE.replace(':organizationId', organization.get('id'))}>
+        <OrganizationName>
+          {organization.get('name')}
+        </OrganizationName>
+      </StyledLink>
       <SubtitleWrapper>
         <Subtitle>{worksiteCount}</Subtitle>
         <SmallSeparator>•</SmallSeparator>
