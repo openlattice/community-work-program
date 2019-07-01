@@ -4,50 +4,25 @@
 
 import React from 'react';
 import styled from 'styled-components';
-import Immutable from 'immutable';
-import { Constants } from 'lattice';
+import { Map } from 'immutable';
 
+import {
+  Cell,
+  Row,
+} from './TableStyledComponents';
 import { formatValue, formatNumericalValue } from '../../utils/FormattingUtils';
 import { formatAsDate } from '../../utils/DateTimeUtils';
-import { OL } from '../../core/style/Colors';
-
-// const { OPENLATTICE_ID_FQN } = Constants;
-
-const Cell = styled.td`
-  padding: 15px 0;
-  font-family: 'Open Sans', sans-serif;
-  font-size: ${props => (props.small ? '12' : '14')}px;
-  text-align: left;
-  color: ${OL.GREY01};
-`;
-
-const Row = styled.tr`
-  padding: 15px 30px;
-  border-bottom: 1px solid ${OL.GREY11};
-  ${Cell}:first-child {
-    padding-left: 30px;
-  }
-  ${Cell}:last-child {
-    padding-right: 30px;
-  }
-  &:hover {
-    cursor: pointer;
-    background: ${OL.GREY14};
-  }
-  &:active {
-    background-color: ${OL.PURPLE06};
-  }
-  :last-of-type {
-    border: none;
-  }
-`;
 
 type Props = {
-  worksite :Immutable.Map<*, *>,
-  selectWorksite :(selectedWorksite :Immutable.Map) => void;
+  worksite :Map,
+  selectWorksite :(selectedWorksite :Map) => void;
   selected? :boolean,
   small? :boolean,
 };
+
+const WorksitesCell = styled(Cell)`
+  padding: 12px 30px 12px 0;
+`;
 
 const TableRow = ({
   worksite,
@@ -73,20 +48,19 @@ const TableRow = ({
             selectWorksite(worksite);
           }
         }}>
-      <Cell small={small} />
-      <Cell small={small}>{ name }</Cell>
-      <Cell small={small}>{ status }</Cell>
-      <Cell small={small}>{ startDate }</Cell>
-      <Cell small={small}>{ lastActiveDate }</Cell>
-      <Cell small={small}>{ scheduledParticipantCount }</Cell>
-      <Cell small={small}>{ pastParticipantCount }</Cell>
-      <Cell small={small}>{ totalHours }</Cell>
+      <WorksitesCell small={small} />
+      <WorksitesCell small={small}>{ name }</WorksitesCell>
+      <WorksitesCell small={small}>{ status }</WorksitesCell>
+      <WorksitesCell small={small}>{ startDate }</WorksitesCell>
+      <WorksitesCell small={small}>{ lastActiveDate }</WorksitesCell>
+      <WorksitesCell small={small}>{ scheduledParticipantCount }</WorksitesCell>
+      <WorksitesCell small={small}>{ pastParticipantCount }</WorksitesCell>
+      <WorksitesCell small={small}>{ totalHours }</WorksitesCell>
     </Row>
   );
 };
 
 TableRow.defaultProps = {
-  handleSelect: () => {},
   selected: false,
   small: false
 };

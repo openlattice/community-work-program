@@ -7,6 +7,7 @@ import { PersonPhoto } from '../picture/PersonPicture';
 import { ENROLLMENT_STATUSES } from '../../core/edm/constants/DataModelConsts';
 
 const { getStyleVariation } = StyleUtils;
+
 /* Table Styles */
 
 export const TableWrapper = styled.div`

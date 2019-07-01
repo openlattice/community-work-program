@@ -17,6 +17,16 @@ import {
 } from '../Layout';
 import { OL } from '../../core/style/Colors';
 
+const WORKSITES_COLUMNS = [
+  'WORKSITE NAME',
+  'STATUS',
+  'START DATE',
+  'LAST ACTIVE DATE',
+  'SCHED. PARTIC.',
+  'PAST PARTIC.',
+  'TOTAL HOURS'
+];
+
 const OrganizationName = styled.span`
   color: ${OL.GREY15};
   font-weight: 600;
@@ -76,6 +86,7 @@ const WorksitesByOrgCard = ({
       worksites
         ? (
           <WorksitesTable
+              columnHeaders={WORKSITES_COLUMNS}
               selectedWorksiteId=""
               small={false}
               selectWorksite={onClickWorksite}
