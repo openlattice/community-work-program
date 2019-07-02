@@ -6,10 +6,7 @@ import React from 'react';
 import styled from 'styled-components';
 import { Map } from 'immutable';
 
-import {
-  Cell,
-  Row,
-} from './TableStyledComponents';
+import { Cell, Row } from './TableStyledComponents';
 import { formatNumericalValue } from '../../utils/FormattingUtils';
 import { formatAsDate } from '../../utils/DateTimeUtils';
 import { getEntityProperties } from '../../utils/DataUtils';
