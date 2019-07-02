@@ -30,6 +30,11 @@ export const ButtonWrapper = styled.div`
   }
 `;
 
+export const ButtonsWrapper = styled.div`
+  display: flex;
+  align-items: center;
+`;
+
 /* Component Headers */
 
 export const HeaderWrapper = styled.div`
