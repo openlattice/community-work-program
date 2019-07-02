@@ -7,6 +7,8 @@ import { Link } from 'react-router-dom';
 import WorksitesTable from '../table/WorksitesTable';
 import * as Routes from '../../core/router/Routes';
 
+import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
+import { ORGANIZATION_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import {
   CardOuterWrapper,
   CardInnerWrapper,
@@ -17,11 +19,12 @@ import {
 } from '../Layout';
 import { OL } from '../../core/style/Colors';
 
+const { DESCRIPTION, ORGANIZATION_NAME } = ORGANIZATION_FQNS;
+
 const WORKSITES_COLUMNS = [
-  'WORKSITE NAME',
+  'WORK SITE NAME',
   'STATUS',
   'START DATE',
-  'LAST ACTIVE DATE',
   'SCHED. PARTIC.',
   'PAST PARTIC.',
   'TOTAL HOURS'
@@ -31,7 +34,6 @@ const OrganizationName = styled.span`
   color: ${OL.GREY15};
   font-weight: 600;
   font-size: 20px;
-  margin: 0 0 20px 0;
   &:hover {
     cursor: pointer;
     color: ${OL.PURPLE02};
@@ -43,58 +45,65 @@ const OrganizationName = styled.span`
 
 const Description = styled.div`
   color: ${OL.GREY15};
-  font-size: 16px;
+  font-size: 14px;
   margin: 40px 0 0 0;
 `;
 
 const StyledLink = styled(Link)`
   text-decoration: none;
+  margin: 0 0 10px 0;
 `;
 
 type Props = {
-  onClickOrganization :(organization :Map) => void;
   onClickWorksite :(worksite :Map) => void;
   organization :Map;
+  orgStatus :string;
   worksiteCount :string;
   worksites :List;
 };
 
 const WorksitesByOrgCard = ({
-  onClickOrganization,
   onClickWorksite,
   organization,
+  orgStatus,
   worksiteCount,
   worksites
-} :Props) => (
-  <CardOuterWrapper>
-    <CardInnerWrapper>
-      <StyledLink to={Routes.ORGANIZATION_PROFILE.replace(':organizationId', organization.get('id'))}>
-        <OrganizationName>
-          {organization.get('name')}
-        </OrganizationName>
-      </StyledLink>
-      <SubtitleWrapper>
-        <Subtitle>{worksiteCount}</Subtitle>
-        <SmallSeparator>•</SmallSeparator>
-        <Status active={organization.get('status') === 'Active'}>
-          {organization.get('status')}
-        </Status>
-      </SubtitleWrapper>
-      <Description>{organization.get('description')}</Description>
-    </CardInnerWrapper>
-    {
-      worksites
-        ? (
-          <WorksitesTable
-              columnHeaders={WORKSITES_COLUMNS}
-              selectedWorksiteId=""
-              small={false}
-              selectWorksite={onClickWorksite}
-              tableMargin="15"
-              worksites={worksites} />
-        ) : null
-    }
-  </CardOuterWrapper>
-);
+} :Props) => {
+  const organizationEKID :UUID = getEntityKeyId(organization);
+  const {
+    [DESCRIPTION]: orgDescription,
+    [ORGANIZATION_NAME]: orgName
+  } = getEntityProperties(organization, [DESCRIPTION, ORGANIZATION_NAME]);
+  return (
+    <CardOuterWrapper>
+      <CardInnerWrapper>
+        <StyledLink to={Routes.ORGANIZATION_PROFILE.replace(':organizationId', organizationEKID)}>
+          <OrganizationName>
+            { orgName }
+          </OrganizationName>
+        </StyledLink>
+        <SubtitleWrapper>
+          <Subtitle>{ worksiteCount }</Subtitle>
+          <SmallSeparator>•</SmallSeparator>
+          <Status status={orgStatus}>
+            { orgStatus }
+          </Status>
+        </SubtitleWrapper>
+        <Description>{ orgDescription }</Description>
+      </CardInnerWrapper>
+      {
+        worksites
+          ? (
+            <WorksitesTable
+                columnHeaders={WORKSITES_COLUMNS}
+                small={false}
+                selectWorksite={onClickWorksite}
+                tableMargin="15"
+                worksites={worksites} />
+          ) : null
+      }
+    </CardOuterWrapper>
+  );
+}
 
 export default WorksitesByOrgCard;
