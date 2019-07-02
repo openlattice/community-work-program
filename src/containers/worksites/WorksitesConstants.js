@@ -1,33 +1,40 @@
 // @flow
-import { List, Map } from 'immutable';
+import { Map } from 'immutable';
 
-const statusFilterOptions :List = List().withMutations((list :List) => {
+/* Worksite Statuses */
 
-  const allStatuses = Map().withMutations((map :Map) => {
-    map.set('label', 'All');
-    map.set('default', true);
-  });
-  list.set(0, allStatuses);
-
-  const active = Map().withMutations((map :Map) => {
-    map.set('label', 'Active');
-    map.set('default', false);
-  });
-  list.set(1, active);
-
-  const inactive = Map().withMutations((map :Map) => {
-    map.set('label', 'Inactive');
-    map.set('default', false);
-  });
-  list.set(2, inactive);
-});
-
-const statusDropdown :Map = Map().withMutations((map :Map) => {
-  map.set('title', 'Status');
-  map.set('enums', statusFilterOptions);
-});
-
-export {
-  statusFilterOptions,
-  statusDropdown,
+export const WORKSITE_STATUSES = {
+  ACTIVE: 'Active',
+  INACTIVE: 'Inactive',
 };
+
+/* Filters */
+
+export const FILTERS = {
+  STATUS: 'Filter by: Status'
+};
+export const ALL = 'ALL';
+
+/* Filter Participant Table by status */
+export const STATUS_FILTER_OPTIONS = [
+  {
+    label: 'All',
+    value: ALL,
+    filter: FILTERS.STATUS,
+  },
+  {
+    label: WORKSITE_STATUSES.ACTIVE,
+    value: WORKSITE_STATUSES.ACTIVE,
+    filter: FILTERS.STATUS,
+  },
+  {
+    label: WORKSITE_STATUSES.INACTIVE,
+    value: WORKSITE_STATUSES.INACTIVE,
+    filter: FILTERS.STATUS,
+  },
+];
+
+export const statusFilterDropdown :Map = Map().withMutations((map :Map) => {
+  map.set('title', FILTERS.STATUS);
+  map.set('enums', STATUS_FILTER_OPTIONS);
+});
