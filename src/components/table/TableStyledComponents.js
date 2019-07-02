@@ -5,6 +5,7 @@ import { StyleUtils } from 'lattice-ui-kit';
 import { ENROLLMENT_STATUS_COLORS, OL } from '../../core/style/Colors';
 import { PersonPhoto } from '../picture/PersonPicture';
 import { ENROLLMENT_STATUSES } from '../../core/edm/constants/DataModelConsts';
+import { WORKSITE_STATUSES } from '../../containers/worksites/WorksitesConstants';
 
 const { getStyleVariation } = StyleUtils;
 
@@ -75,12 +76,14 @@ export const HeaderRow = styled.div`
 /* Table Row Styles */
 
 const statusColorVariation = getStyleVariation('status', {
-  default: `${OL.GREY02}`,
+  default: OL.GREY02,
   [ENROLLMENT_STATUSES.ACTIVE]: ENROLLMENT_STATUS_COLORS.ACTIVE,
   [ENROLLMENT_STATUSES.ACTIVE_NONCOMPLIANT]: ENROLLMENT_STATUS_COLORS.ACTIVE_NONCOMPLIANT,
   [ENROLLMENT_STATUSES.AWAITING_ENROLLMENT]: ENROLLMENT_STATUS_COLORS.AWAITING_ENROLLMENT,
   [ENROLLMENT_STATUSES.COMPLETED]: ENROLLMENT_STATUS_COLORS.COMPLETED,
   [ENROLLMENT_STATUSES.REMOVED_NONCOMPLIANT]: ENROLLMENT_STATUS_COLORS.REMOVED_NONCOMPLIANT,
+  [WORKSITE_STATUSES.ACTIVE]: ENROLLMENT_STATUS_COLORS.ACTIVE,
+  [WORKSITE_STATUSES.INACTIVE]: ENROLLMENT_STATUS_COLORS.REMOVED_NONCOMPLIANT,
 });
 
 export const Cell = styled.span`

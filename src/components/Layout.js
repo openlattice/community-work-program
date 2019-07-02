@@ -1,7 +1,17 @@
 import styled from 'styled-components';
+import { StyleUtils } from 'lattice-ui-kit';
 
 import { APP_CONTENT_PADDING, SEARCH_CONTAINER_WIDTH } from '../core/style/Sizes';
 import { OL } from '../core/style/Colors';
+import { WORKSITE_STATUSES } from '../containers/worksites/WorksitesConstants';
+
+const { getStyleVariation } = StyleUtils;
+
+const statusColorVariation = getStyleVariation('status', {
+  default: OL.GREY02,
+  [WORKSITE_STATUSES.ACTIVE]: OL.GREEN02,
+  [WORKSITE_STATUSES.INACTIVE]: OL.RED01,
+});
 
 /* Component Wrappers */
 
@@ -58,6 +68,7 @@ export const ContainerHeader = styled.span`
 
 export const ContainerSubHeader = styled(ContainerHeader)`
   color: ${OL.GREY02};
+  font-size: 24px;
   margin: 0;
 `;
 
@@ -86,7 +97,7 @@ export const SmallSeparator = styled(Separator)`
 `;
 
 export const Status = styled(Subtitle)`
-  color: ${props => (props.active ? OL.GREEN02 : OL.RED01)};
+  color: ${statusColorVariation};
 `;
 
 /* Cards */
