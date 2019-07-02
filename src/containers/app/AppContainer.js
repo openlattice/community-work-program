@@ -18,7 +18,7 @@ import type { RequestSequence } from 'redux-reqseq';
 
 import AppHeaderContainer from './AppHeaderContainer';
 import DashboardContainer from '../dashboard/DashboardContainer';
-import OrganizationContainer from '../organization/OrganizationContainer';
+import OrganizationContainer from '../organizations/OrganizationContainer';
 import ParticipantProfileContainer from '../participant/ParticipantProfileContainer';
 import ParticipantsSearchContainer from '../participants/ParticipantsSearchContainer';
 import WorksiteContainer from '../worksite/WorksiteContainer';
