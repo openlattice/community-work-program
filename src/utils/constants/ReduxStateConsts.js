@@ -3,8 +3,8 @@ export const STATE = {
   EDM: 'edm',
   PEOPLE: 'people',
   PERSON: 'person',
-  PEOPLE: 'people',
   ORGANIZATION: 'organization',
+  ORGANIZATIONS: 'organizations',
   WORKSITES: 'worksites',
 };
 
@@ -79,25 +79,26 @@ export const PERSON = {
   WARNINGS: 'warnings',
 };
 
-/* Organization */
+/* Organizations */
 
-export const ORGANIZATION = {
+export const ORGANIZATIONS = {
   ACTIONS: 'actions',
   ERRORS: 'errors',
   GET_ORGANIZATION: 'getOrganization',
-  IS_FETCHING_ORGANIZATION: 'isFetchingOrganization',
-  SELECTED_ORGANIZATION: 'selectedOrganization',
+  GET_ORGANIZATIONS: 'getOrganizations',
+  ORGANIZATIONS_LIST: 'organizationsList',
+  REQUEST_STATE: 'requestState',
+  SELECTED_ORGANIZATION: 'organization',
 };
 
-/* Organizations and Worksites */
+/* Worksites */
 
 export const WORKSITES = {
   ACTIONS: 'actions',
   ERRORS: 'errors',
-  GET_ORGANIZATIONS: 'getOrganizations',
-  GET_ORGANIZATION_WORKSITES: 'getOrganizationWorksites',
-  IS_FETCHING_ORGANIZATIONS: 'isFetchingOrganizations',
-  IS_FETCHING_WORKSITES: 'isFetchingWorksites',
-  ORGANIZATIONS: 'organizations',
-  WORKSITES_BY_ORGANIZATION: 'worksitesByOrganization',
+  GET_WORKSITES: 'getWorksites',
+  GET_WORKSITE_PLANS: 'getWorksitePlans',
+  REQUEST_STATE: 'requestState',
+  WORKSITES_BY_ORG: 'worksitesByOrg',
+  WORKSITE_PLANS_BY_WORKSITE: 'worksitePlansByWorksite',
 };
