@@ -13,8 +13,7 @@ import {
   HeaderRow,
   HeaderElement,
 } from './TableStyledComponents';
-import { getEntityProperties } from '../../utils/DataUtils';
-import { ENTITY_KEY_ID } from '../../core/edm/constants/FullyQualifiedNames';
+import { getEntityKeyId } from '../../utils/DataUtils';
 
 const WorksiteTableWrapper = styled(TableWrapper)`
   border: none;
@@ -59,11 +58,10 @@ const WorksitesTable = ({
       <Headers columnHeaders={columnHeaders} />
       {
         worksites.map((worksite :Map) => {
-          // const { [ENTITY_KEY_ID]: worksiteEKID } :UUID = getEntityProperties(worksite, [ENTITY_KEY_ID]);
-          const id = worksite.get('id');
+          const worksiteEKID :UUID = getEntityKeyId(worksite);
           return (
             <WorksitesTableRow
-                key={id}
+                key={worksiteEKID}
                 worksite={worksite}
                 selectWorksite={selectWorksite}
                 small={small} />
