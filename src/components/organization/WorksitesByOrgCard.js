@@ -107,6 +107,6 @@ const WorksitesByOrgCard = ({
       }
     </CardOuterWrapper>
   );
-}
+};
 
 export default WorksitesByOrgCard;
