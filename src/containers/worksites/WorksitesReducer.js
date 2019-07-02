@@ -2,107 +2,113 @@
  * @flow
  */
 
-import isNumber from 'lodash/isNumber';
-import { Map, List, fromJS } from 'immutable';
+import { Map, fromJS } from 'immutable';
+import { RequestStates } from 'redux-reqseq';
+import type { SequenceAction } from 'redux-reqseq';
 
 import { WORKSITES } from '../../utils/constants/ReduxStateConsts';
 
 import {
-  getOrganizations,
-  getOrganizationWorksites,
+  getWorksites,
+  getWorksitePlans,
 } from './WorksitesActions';
 
+const {
+  ACTIONS,
+  ERRORS,
+  GET_WORKSITES,
+  GET_WORKSITE_PLANS,
+  REQUEST_STATE,
+  WORKSITES_BY_ORG,
+  WORKSITE_PLANS_BY_WORKSITE,
+} = WORKSITES;
+
 const INITIAL_STATE :Map<*, *> = fromJS({
-  [WORKSITES.ACTIONS]: {
-    [WORKSITES.GET_ORGANIZATIONS]: Map(),
-    [WORKSITES.GET_ORGANIZATION_WORKSITES]: Map(),
+  [ACTIONS]: {
+    [GET_WORKSITES]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [GET_WORKSITE_PLANS]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
   },
-  [WORKSITES.ERRORS]: Map(),
-  [WORKSITES.IS_FETCHING_ORGANIZATIONS]: false,
-  [WORKSITES.IS_FETCHING_WORKSITES]: false,
-  [WORKSITES.ORGANIZATIONS]: List(),
-  [WORKSITES.WORKSITES_BY_ORGANIZATION]: List(),
+  [ERRORS]: {
+    [GET_WORKSITES]: Map(),
+    [GET_WORKSITE_PLANS]: Map(),
+  },
+  [WORKSITES_BY_ORG]: Map(),
+  [WORKSITE_PLANS_BY_WORKSITE]: Map(),
 });
 
-export default function organizationReducer(state :Map<*, *> = INITIAL_STATE, action :Object) :Map<*, *> {
+export default function worksitesReducer(state :Map<*, *> = INITIAL_STATE, action :SequenceAction) :Map<*, *> {
 
   switch (action.type) {
 
-    case getOrganizations.case(action.type): {
+    case getWorksites.case(action.type): {
 
-      const seqAction :SequenceAction = (action :any);
-      return getOrganizations.reducer(state, action, {
+      return getWorksites.reducer(state, action, {
 
         REQUEST: () => state
-          .setIn([WORKSITES.ACTIONS, WORKSITES.GET_ORGANIZATIONS, seqAction.id], seqAction)
-          .set(WORKSITES.IS_FETCHING_ORGANIZATIONS, true),
+          .setIn([ACTIONS, GET_WORKSITES, action.id], fromJS(action))
+          .setIn([ACTIONS, GET_WORKSITES, REQUEST_STATE], RequestStates.PENDING),
         SUCCESS: () => {
-          if (!state.hasIn([WORKSITES.ACTIONS, WORKSITES.GET_ORGANIZATIONS, seqAction.id])) {
+
+          if (!state.hasIn([ACTIONS, GET_WORKSITES, action.id])) {
             return state;
           }
 
-          const { value } = seqAction;
+          const { value } = action;
           if (value === null || value === undefined) {
             return state;
           }
 
-          return state.set(WORKSITES.ORGANIZATIONS, fromJS(value));
+          return state
+            .set(WORKSITES_BY_ORG, value)
+            .setIn([ACTIONS, GET_WORKSITES, REQUEST_STATE], RequestStates.SUCCESS);
         },
         FAILURE: () => {
-          const error = {};
 
-          const { value: axiosError } = seqAction;
-          if (axiosError && axiosError.response && isNumber(axiosError.response.status)) {
-            error.status = axiosError.response.status;
-          }
-
+          const { value } = action;
           return state
-            .set(WORKSITES.ORGANIZATIONS, Map())
-            .setIn([WORKSITES.ERRORS, WORKSITES.ORGANIZATIONS], error);
+            .set(WORKSITES_BY_ORG, Map())
+            .setIn([ERRORS, GET_WORKSITES], value)
+            .setIn([ACTIONS, GET_WORKSITES, REQUEST_STATE], RequestStates.FAILURE);
         },
-        FINALLY: () => state
-          .deleteIn([WORKSITES.ACTIONS, WORKSITES.GET_ORGANIZATIONS, seqAction.id])
-          .set(WORKSITES.IS_FETCHING_ORGANIZATIONS, false)
-
+        FINALLY: () => state.deleteIn([ACTIONS, GET_WORKSITES, action.id])
       });
     }
 
-    case getOrganizationWorksites.case(action.type): {
+    case getWorksitePlans.case(action.type): {
 
-      const seqAction :SequenceAction = (action :any);
-      return getOrganizationWorksites.reducer(state, action, {
+      return getWorksitePlans.reducer(state, action, {
 
         REQUEST: () => state
-          .setIn([WORKSITES.ACTIONS, WORKSITES.GET_ORGANIZATIONS, seqAction.id], seqAction)
-          .set(WORKSITES.IS_FETCHING_ORGANIZATIONS, true),
+          .setIn([ACTIONS, GET_WORKSITE_PLANS, action.id], fromJS(action))
+          .setIn([ACTIONS, GET_WORKSITE_PLANS, REQUEST_STATE], RequestStates.PENDING),
         SUCCESS: () => {
-          if (!state.hasIn([WORKSITES.ACTIONS, WORKSITES.GET_ORGANIZATIONS, seqAction.id])) {
+
+          if (!state.hasIn([ACTIONS, GET_WORKSITE_PLANS, action.id])) {
             return state;
           }
 
-          const { value } = seqAction;
+          const { value } = action;
           if (value === null || value === undefined) {
             return state;
           }
 
-          return state.set(WORKSITES.ORGANIZATIONS, fromJS(value));
+          return state
+            .set(WORKSITE_PLANS_BY_WORKSITE, value)
+            .setIn([ACTIONS, GET_WORKSITE_PLANS, REQUEST_STATE], RequestStates.SUCCESS);
         },
         FAILURE: () => {
-          const error = {};
 
-          const { value: axiosError } = seqAction;
-          if (axiosError && axiosError.response && isNumber(axiosError.response.status)) {
-            error.status = axiosError.response.status;
-          }
-
+          const { value } = action;
           return state
-            .set(WORKSITES.ORGANIZATIONS, Map())
-            .setIn([WORKSITES.ERRORS, WORKSITES.ORGANIZATIONS], error);
+            .set(WORKSITE_PLANS_BY_WORKSITE, Map())
+            .setIn([ERRORS, GET_WORKSITE_PLANS], value)
+            .setIn([ACTIONS, GET_WORKSITE_PLANS, REQUEST_STATE], RequestStates.FAILURE);
         },
-        FINALLY: () => state
-          .deleteIn([WORKSITES.ACTIONS, WORKSITES.GET_ORGANIZATIONS, seqAction.id])
-          .set(WORKSITES.IS_FETCHING_ORGANIZATIONS, false)
-
+        FINALLY: () => state.deleteIn([ACTIONS, GET_WORKSITE_PLANS, action.id])
       });
     }
 

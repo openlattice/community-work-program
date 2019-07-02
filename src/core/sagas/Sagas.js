@@ -11,7 +11,7 @@ import * as EDMSagas from '../edm/EDMSagas';
 import * as ParticipantSagas from '../../containers/participant/ParticipantSagas';
 import * as ParticipantsSagas from '../../containers/participants/ParticipantsSagas';
 import * as RoutingSagas from '../router/RoutingSagas';
-import * as OrganizationSagas from '../../containers/organization/OrganizationSagas';
+import * as OrganizationSagas from '../../containers/organizations/OrganizationsSagas';
 import * as WorksitesSagas from '../../containers/worksites/WorksitesSagas';
 
 export default function* sagas() :Generator<*, *, *> {
@@ -59,8 +59,8 @@ export default function* sagas() :Generator<*, *, *> {
     fork(ParticipantsSagas.getSentencesWatcher),
 
     // WorksitesSagas
-    fork(WorksitesSagas.getOrganizationsWatcher),
-    fork(WorksitesSagas.getOrganizationWorksitesWatcher),
+    fork(WorksitesSagas.getWorksitesWatcher),
+    fork(WorksitesSagas.getWorksitePlansWatcher),
 
     // RoutingSagas
     fork(RoutingSagas.goToRootWatcher),
