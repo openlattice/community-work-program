@@ -100,5 +100,5 @@ export const WORKSITES = {
   GET_WORKSITE_PLANS: 'getWorksitePlans',
   REQUEST_STATE: 'requestState',
   WORKSITES_BY_ORG: 'worksitesByOrg',
-  WORKSITE_PLANS_BY_WORKSITE: 'worksitePlansByWorksite',
+  WORKSITES_INFO: 'worksitesInfo',
 };

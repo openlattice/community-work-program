@@ -20,7 +20,7 @@ const {
   GET_WORKSITE_PLANS,
   REQUEST_STATE,
   WORKSITES_BY_ORG,
-  WORKSITE_PLANS_BY_WORKSITE,
+  WORKSITES_INFO,
 } = WORKSITES;
 
 const INITIAL_STATE :Map<*, *> = fromJS({
@@ -37,7 +37,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     [GET_WORKSITE_PLANS]: Map(),
   },
   [WORKSITES_BY_ORG]: Map(),
-  [WORKSITE_PLANS_BY_WORKSITE]: Map(),
+  [WORKSITES_INFO]: Map(),
 });
 
 export default function worksitesReducer(state :Map<*, *> = INITIAL_STATE, action :SequenceAction) :Map<*, *> {
@@ -97,14 +97,14 @@ export default function worksitesReducer(state :Map<*, *> = INITIAL_STATE, actio
           }
 
           return state
-            .set(WORKSITE_PLANS_BY_WORKSITE, value)
+            .set(WORKSITES_INFO, value)
             .setIn([ACTIONS, GET_WORKSITE_PLANS, REQUEST_STATE], RequestStates.SUCCESS);
         },
         FAILURE: () => {
 
           const { value } = action;
           return state
-            .set(WORKSITE_PLANS_BY_WORKSITE, Map())
+            .set(WORKSITES_INFO, Map())
             .setIn([ERRORS, GET_WORKSITE_PLANS], value)
             .setIn([ACTIONS, GET_WORKSITE_PLANS, REQUEST_STATE], RequestStates.FAILURE);
         },
