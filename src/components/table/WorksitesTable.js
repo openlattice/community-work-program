@@ -41,6 +41,7 @@ const Headers = ({ columnHeaders } :HeaderProps) => (
 type Props = {
   columnHeaders :string[];
   worksites :List;
+  worksitesInfo :Map;
   selectWorksite :(selectedWorksite :Map) => void;
   small :boolean;
   tableMargin :string;
@@ -49,6 +50,7 @@ type Props = {
 const WorksitesTable = ({
   columnHeaders,
   worksites,
+  worksitesInfo,
   selectWorksite,
   small,
   tableMargin,
@@ -59,10 +61,12 @@ const WorksitesTable = ({
       {
         worksites.map((worksite :Map) => {
           const worksiteEKID :UUID = getEntityKeyId(worksite);
+          const worksiteInfo :Map = worksitesInfo.get(worksiteEKID);
           return (
             <WorksitesTableRow
                 key={worksiteEKID}
                 worksite={worksite}
+                worksiteInfo={worksiteInfo}
                 selectWorksite={selectWorksite}
                 small={small} />
           );

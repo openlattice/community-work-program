@@ -53,7 +53,7 @@ const {
   ORGANIZATIONS_LIST,
   REQUEST_STATE
 } = ORGANIZATIONS;
-const { WORKSITES_BY_ORG, WORKSITE_PLANS_BY_WORKSITE } = WORKSITES;
+const { WORKSITES_BY_ORG, WORKSITES_INFO } = WORKSITES;
 
 const dropdowns :List = List().withMutations((list :List) => {
   list.set(0, statusFilterDropdown);
@@ -74,7 +74,7 @@ type Props = {
   initializeAppRequestState :RequestState;
   organizationsList :List;
   worksitesByOrg :Map;
-  worksitePlansByWorksite :Map;
+  worksitesInfo :Map;
 };
 
 type State = {
@@ -233,7 +233,12 @@ class WorksitesContainer extends Component<Props, State> {
   }
 
   render() {
-    const { getOrganizationsRequestState, initializeAppRequestState, worksitesByOrg } = this.props;
+    const {
+      getOrganizationsRequestState,
+      initializeAppRequestState,
+      worksitesByOrg,
+      worksitesInfo,
+    } = this.props;
     const { organizationStatuses, organizationsToRender } = this.state;
     const onSelectFunctions :Map = Map().withMutations((map :Map) => {
       map.set(FILTERS.STATUS, this.handleOnFilter);
@@ -284,7 +289,8 @@ class WorksitesContainer extends Component<Props, State> {
                     organization={org}
                     orgStatus={organizationStatuses.get(orgEKID)}
                     worksiteCount={orgWorksiteCount}
-                    worksites={orgWorksites} />
+                    worksites={orgWorksites}
+                    worksitesInfo={worksitesInfo} />
               );
             })
           }
@@ -304,7 +310,7 @@ const mapStateToProps = (state :Map<*, *>) => {
     initializeAppRequestState: app.getIn([APP.ACTIONS, APP.INITIALIZE_APPLICATION, APP.REQUEST_STATE]),
     [ORGANIZATIONS_LIST]: organizations.get(ORGANIZATIONS_LIST),
     [WORKSITES_BY_ORG]: worksites.get(WORKSITES_BY_ORG),
-    [WORKSITE_PLANS_BY_WORKSITE]: worksites.get(WORKSITE_PLANS_BY_WORKSITE),
+    [WORKSITES_INFO]: worksites.get(WORKSITES_INFO),
   };
 };
 

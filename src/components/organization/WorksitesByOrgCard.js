@@ -60,6 +60,7 @@ type Props = {
   orgStatus :string;
   worksiteCount :string;
   worksites :List;
+  worksitesInfo :Map;
 };
 
 const WorksitesByOrgCard = ({
@@ -67,7 +68,8 @@ const WorksitesByOrgCard = ({
   organization,
   orgStatus,
   worksiteCount,
-  worksites
+  worksites,
+  worksitesInfo,
 } :Props) => {
   const organizationEKID :UUID = getEntityKeyId(organization);
   const {
@@ -99,7 +101,8 @@ const WorksitesByOrgCard = ({
                 small={false}
                 selectWorksite={onClickWorksite}
                 tableMargin="15"
-                worksites={worksites} />
+                worksites={worksites}
+                worksitesInfo={worksitesInfo} />
           ) : null
       }
     </CardOuterWrapper>
