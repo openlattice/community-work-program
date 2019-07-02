@@ -156,11 +156,13 @@ class WorksitesContainer extends Component<Props, State> {
     return (
       <ContainerOuterWrapper>
         <ToolBar
-            buttonAction={() => {}}
-            buttonText="Add Worksite"
             dropdowns={dropdowns}
             onSelectFunctions={onSelectFunctions}
-            search={this.handleOnSearch} />
+            primaryButtonAction={() => {}}
+            primaryButtonText="Add Worksite"
+            search={this.handleOnSearch}
+            tertiaryButtonAction={() => {}}
+            tertiaryButtonText="Add Organization" />
         <ContainerInnerWrapper>
           <HeaderWrapper>
             <ContainerHeader>Worksites</ContainerHeader>
