@@ -3,8 +3,7 @@
  */
 
 import React, { PureComponent } from 'react';
-import { TimePicker } from '@atlaskit/datetime-picker';
-import { emotionStyles } from '../dropdowns/StyledSelect';
+import { TimePicker } from 'lattice-ui-kit';
 import { TIME_HM_FORMAT, formatAsTime } from '../../../utils/DateTimeUtils';
 
 type Props = {
@@ -50,7 +49,6 @@ class TimeWidget extends PureComponent<Props> {
           id={id}
           isDisabled={disabled}
           onChange={handleChange}
-          selectProps={{ styles: emotionStyles }}
           timeFormat={format}
           timeIsEditable
           value={value} />

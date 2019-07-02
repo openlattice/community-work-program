@@ -3,8 +3,7 @@
  */
 
 import React, { PureComponent } from 'react';
-import { DatePicker } from '@atlaskit/datetime-picker';
-import { emotionStyles } from '../dropdowns/StyledSelect';
+import { DatePicker } from 'lattice-ui-kit';
 import { DATE_MDY_SLASH_FORMAT, formatAsISODate } from '../../../utils/DateTimeUtils';
 
 type Props = {
@@ -52,7 +51,6 @@ class DateWidget extends PureComponent<Props> {
           isDisabled={disabled}
           disabled={[]}
           onChange={handleChange}
-          selectProps={{ styles: emotionStyles }}
           value={value} />
     );
   }
