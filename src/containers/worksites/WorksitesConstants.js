@@ -38,3 +38,11 @@ export const statusFilterDropdown :Map = Map().withMutations((map :Map) => {
   map.set('title', FILTERS.STATUS);
   map.set('enums', STATUS_FILTER_OPTIONS);
 });
+
+/* Worksite Info */
+
+export const WORKSITE_INFO_CONSTS = {
+  PAST: 'past',
+  SCHEDULED: 'scheduled',
+  TOTAL_HOURS: 'totalHours',
+};
