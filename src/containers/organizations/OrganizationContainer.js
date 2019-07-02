@@ -7,8 +7,8 @@ import { bindActionCreators } from 'redux';
 import type { RouterHistory } from 'react-router';
 
 import WorksitesTable from '../../components/table/WorksitesTable';
-import contactIcon from '../../assets/svg/contact.svg';
-import clockIcon from '../../assets/svg/clock.svg';
+// import contactIcon from '../../assets/svg/contact.svg';
+// import clockIcon from '../../assets/svg/clock.svg';
 import * as Routes from '../../core/router/Routes';
 import {
   ContainerOuterWrapper,
@@ -38,8 +38,8 @@ import {
 } from '../../components/Layout';
 import { BackNavButton, PrimaryButton, TertiaryButton } from '../../components/controls/index';
 import { OL } from '../../core/style/Colors';
-import { ORGANIZATION } from '../../utils/constants/ReduxStateConsts';
-import { getOrganization } from './OrganizationActions';
+import { ORGANIZATIONS } from '../../utils/constants/ReduxStateConsts';
+import { getOrganization } from './OrganizationsActions';
 import { worksites } from '../worksites/FakeData';
 
 /* constants */
@@ -48,9 +48,8 @@ const worksiteHeader :string = currentWorksites.count() !== 1 ? `${currentWorksi
 
 const {
   ACTIONS,
-  IS_FETCHING_ORGANIZATION,
   SELECTED_ORGANIZATION,
-} = ORGANIZATION;
+} = ORGANIZATIONS;
 
 const OrganizationCard = styled(CardOuterWrapper)`
   margin-top: 30px;
@@ -84,10 +83,12 @@ type Props = {
   [ACTIONS]:{
     getOrganization :() => void;
   },
-  IS_FETCHING_ORGANIZATION :boolean;
   SELECTED_ORGANIZATION :Map;
   history :RouterHistory;
 };
+
+// <img src={contactIcon} alt="" />
+// <img src={clockIcon} alt="" />
 /* eslint-disable max-len */
 const OrganizationContainer = ({ history } :Props) => (
   <ContainerOuterWrapper>
@@ -121,7 +122,6 @@ const OrganizationContainer = ({ history } :Props) => (
         <InnerSectionWrapper>
           <Section>
             <SectionHeaderWrapper>
-              <img src={contactIcon} alt="" />
               <SectionHeader>Point of contact</SectionHeader>
             </SectionHeaderWrapper>
             <OrganizationSectionText>
@@ -141,7 +141,6 @@ const OrganizationContainer = ({ history } :Props) => (
           </Section>
           <Section>
             <SectionHeaderWrapper>
-              <img src={clockIcon} alt="" />
               <SectionHeader>Hours of operation</SectionHeader>
             </SectionHeaderWrapper>
             <SectionBlockWrapper>
@@ -199,8 +198,7 @@ const OrganizationContainer = ({ history } :Props) => (
 );
 
 const mapStateToProps = state => ({
-  [IS_FETCHING_ORGANIZATION]: state.getIn([ORGANIZATION, IS_FETCHING_ORGANIZATION]),
-  [SELECTED_ORGANIZATION]: state.getIn([ORGANIZATION, SELECTED_ORGANIZATION]),
+  [SELECTED_ORGANIZATION]: state.getIn([ORGANIZATIONS, SELECTED_ORGANIZATION]),
 });
 
 const mapDispatchToProps = dispatch => ({
@@ -209,4 +207,5 @@ const mapDispatchToProps = dispatch => ({
   }, dispatch)
 });
 
+// $FlowFixMe
 export default connect(mapStateToProps, mapDispatchToProps)(OrganizationContainer);
