@@ -151,7 +151,7 @@ class ParticipantsSearchContainer extends Component<Props, State> {
       filteredPeople = peopleList.filter((person :Map) => {
         const statusTypeToInclude = ENROLLMENT_STATUSES[property];
         const personEKID :UUID = getEntityKeyId(person);
-        let { [STATUS]: status } :string = getEntityProperties(enrollmentByParticipant.get(personEKID), [STATUS]);
+        let { [STATUS]: status } = getEntityProperties(enrollmentByParticipant.get(personEKID), [STATUS]);
         status = !isDefined(status) ? ENROLLMENT_STATUSES.AWAITING_ENROLLMENT : status;
         return status === statusTypeToInclude;
       });
@@ -217,10 +217,10 @@ class ParticipantsSearchContainer extends Component<Props, State> {
 
   sortByName = (people :List) => {
     const sortedByName :List = people.sort((personA, personB) => {
-      const { [FIRST_NAME]: firstNameA, [LAST_NAME]: lastNameA } :string = getEntityProperties(
+      const { [FIRST_NAME]: firstNameA, [LAST_NAME]: lastNameA } = getEntityProperties(
         personA, [FIRST_NAME, LAST_NAME]
       );
-      const { [FIRST_NAME]: firstNameB, [LAST_NAME]: lastNameB } :string = getEntityProperties(
+      const { [FIRST_NAME]: firstNameB, [LAST_NAME]: lastNameB } = getEntityProperties(
         personB, [FIRST_NAME, LAST_NAME]
       );
       if (lastNameA === lastNameB) {
@@ -236,10 +236,10 @@ class ParticipantsSearchContainer extends Component<Props, State> {
     const sortedBySentEndDate :List = people.sort((personA, personB) => {
       const personAEKID :UUID = getEntityKeyId(personA);
       const personBEKID :UUID = getEntityKeyId(personB);
-      const { [DATETIME_START]: personASentDate } :string = getEntityProperties(
+      const { [DATETIME_START]: personASentDate } = getEntityProperties(
         sentenceTermsByParticipant.get(personAEKID), [DATETIME_START]
       );
-      const { [DATETIME_START]: personBSentDate } :string = getEntityProperties(
+      const { [DATETIME_START]: personBSentDate } = getEntityProperties(
         sentenceTermsByParticipant.get(personBEKID), [DATETIME_START]
       );
       const sentEndDateA = DateTime.fromISO(personASentDate).plus({ days: 90 });
@@ -263,10 +263,10 @@ class ParticipantsSearchContainer extends Component<Props, State> {
     const sortedByStartDate :List = people.sort((personA, personB) => {
       const personAEKID :UUID = getEntityKeyId(personA);
       const personBEKID :UUID = getEntityKeyId(personB);
-      const { [EFFECTIVE_DATE]: personAStartDate } :string = getEntityProperties(
+      const { [EFFECTIVE_DATE]: personAStartDate } = getEntityProperties(
         enrollmentByParticipant.get(personAEKID), [EFFECTIVE_DATE]
       );
-      const { [EFFECTIVE_DATE]: personBStartDate } :string = getEntityProperties(
+      const { [EFFECTIVE_DATE]: personBStartDate } = getEntityProperties(
         enrollmentByParticipant.get(personBEKID), [EFFECTIVE_DATE]
       );
       const startDateA = DateTime.fromISO(personAStartDate);
@@ -290,10 +290,10 @@ class ParticipantsSearchContainer extends Component<Props, State> {
     const sortedByStatus :List = people.sort((personA, personB) => {
       const personAEKID :UUID = getEntityKeyId(personA);
       const personBEKID :UUID = getEntityKeyId(personB);
-      let { [STATUS]: personAStatus } :string = getEntityProperties(
+      let { [STATUS]: personAStatus } = getEntityProperties(
         enrollmentByParticipant.get(personAEKID), [STATUS]
       );
-      let { [STATUS]: personBStatus } :string = getEntityProperties(
+      let { [STATUS]: personBStatus } = getEntityProperties(
         enrollmentByParticipant.get(personBEKID), [STATUS]
       );
       personAStatus = !isDefined(personAStatus) ? ENROLLMENT_STATUSES.AWAITING_ENROLLMENT : personAStatus;
@@ -314,7 +314,7 @@ class ParticipantsSearchContainer extends Component<Props, State> {
     } = this.props;
     const { peopleToRender, selectedSortOption } = this.state;
     const onSelectFunctions = Map().withMutations((map :Map) => {
-      map.set('Filter by: Status', this.handleOnFilter);
+      map.set(FILTERS.STATUS, this.handleOnFilter);
     });
     const warningMap :Map = infractionCountsByParticipant.map((count :Map) => count.get(WARNING));
     const violationMap :Map = infractionCountsByParticipant.map((count :Map) => count.get(VIOLATION));
