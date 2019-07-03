@@ -41,8 +41,8 @@ export const ButtonWrapper = styled.div`
 `;
 
 export const ButtonsWrapper = styled.div`
-  display: flex;
   align-items: center;
+  display: flex;
 `;
 
 /* Component Headers */
@@ -110,6 +110,12 @@ export const CardOuterWrapper = styled.div`
   margin-bottom: 20px;
 `;
 
+export const CardHeaderWrapper = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+`;
+
 export const CardInnerWrapper = styled.div`
   display: flex;
   flex-direction: column;
@@ -154,7 +160,6 @@ export const SectionHeader = styled.span`
 export const BodyTextSegment = styled.span`
   display: flex;
   flex-direction: column;
-  /* margin: 30px 0; */
 `;
 
 export const BodyTextHeader = styled.span`
