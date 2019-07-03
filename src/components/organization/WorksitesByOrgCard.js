@@ -2,14 +2,17 @@
 import React from 'react';
 import styled from 'styled-components';
 import { List, Map } from 'immutable';
+import { Button } from 'lattice-ui-kit';
 import { Link } from 'react-router-dom';
 
 import WorksitesTable from '../table/WorksitesTable';
+import AddWorksiteModal from '../../containers/worksites/AddWorksiteModal';
 import * as Routes from '../../core/router/Routes';
 
 import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
 import { ORGANIZATION_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import {
+  CardHeaderWrapper,
   CardOuterWrapper,
   CardInnerWrapper,
   SmallSeparator,
@@ -30,7 +33,7 @@ const WORKSITES_COLUMNS = [
   'TOTAL HOURS'
 ];
 
-const OrganizationName = styled.span`
+const OrganizationName = styled.h1`
   color: ${OL.GREY15};
   font-weight: 600;
   font-size: 20px;
@@ -51,13 +54,20 @@ const Description = styled.div`
 
 const StyledLink = styled(Link)`
   text-decoration: none;
-  margin: 0 0 10px 0;
+`;
+
+const StyledButton = styled(Button)`
+  font-size: 13px;
+  padding: 6px 12px;
 `;
 
 type Props = {
   onClickWorksite :(worksite :Map) => void;
   organization :Map;
   orgStatus :string;
+  showAddWorksiteModal :boolean;
+  onClickAddWorksite :() => void;
+  onClickCloseAddWorksite :() => void;
   worksiteCount :string;
   worksites :List;
   worksitesInfo :Map;
@@ -67,6 +77,9 @@ const WorksitesByOrgCard = ({
   onClickWorksite,
   organization,
   orgStatus,
+  showAddWorksiteModal,
+  onClickAddWorksite,
+  onClickCloseAddWorksite,
   worksiteCount,
   worksites,
   worksitesInfo,
@@ -79,11 +92,14 @@ const WorksitesByOrgCard = ({
   return (
     <CardOuterWrapper>
       <CardInnerWrapper>
-        <StyledLink to={Routes.ORGANIZATION_PROFILE.replace(':organizationId', organizationEKID)}>
-          <OrganizationName>
-            { orgName }
-          </OrganizationName>
-        </StyledLink>
+        <CardHeaderWrapper>
+          <StyledLink to={Routes.ORGANIZATION_PROFILE.replace(':organizationId', organizationEKID)}>
+            <OrganizationName>
+              { orgName }
+            </OrganizationName>
+          </StyledLink>
+          <StyledButton onClick={onClickAddWorksite}>Add Worksite</StyledButton>
+        </CardHeaderWrapper>
         <SubtitleWrapper>
           <Subtitle>{ worksiteCount }</Subtitle>
           <SmallSeparator>•</SmallSeparator>
@@ -105,6 +121,10 @@ const WorksitesByOrgCard = ({
                 worksitesInfo={worksitesInfo} />
           ) : null
       }
+      <AddWorksiteModal
+          isOpen={showAddWorksiteModal}
+          onClose={onClickCloseAddWorksite}
+          organization={organization} />
     </CardOuterWrapper>
   );
 };
