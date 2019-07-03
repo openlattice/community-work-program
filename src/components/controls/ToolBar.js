@@ -98,7 +98,7 @@ const ToolBar = ({
           (primaryButtonAction && primaryButtonText)
             ? (
               <ButtonWrapper>
-                <Button mode="primary">{ primaryButtonText }</Button>
+                <Button mode="primary" onClick={primaryButtonAction}>{ primaryButtonText }</Button>
               </ButtonWrapper>
             ) : null
         }
