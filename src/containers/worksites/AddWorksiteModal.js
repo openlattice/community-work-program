@@ -5,15 +5,18 @@ import { Map } from 'immutable';
 import { Card, CardHeader, Modal } from 'lattice-ui-kit';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import type { RequestSequence } from 'redux-reqseq';
+import { RequestStates } from 'redux-reqseq';
+import type { RequestSequence, RequestState } from 'redux-reqseq';
 
 import AddWorksiteForm from './AddWorksiteForm';
 
 import { submitDataGraph } from '../../core/sagas/data/DataActions';
 import { getEntityProperties } from '../../utils/DataUtils';
 import { ORGANIZATION_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { DATA } from '../../utils/constants/ReduxStateConsts';
 
 const { ORGANIZATION_NAME } = ORGANIZATION_FQNS;
+const { ACTIONS, SUBMIT_DATA_GRAPH, REQUEST_STATE } = DATA;
 
 const StyledCard = styled(Card)`
   margin: 0 -30px;
@@ -27,11 +30,18 @@ type Props = {
   isOpen :boolean;
   onClose :() => void;
   organization :Map;
+  submitDataGraphRequestState :RequestState;
 };
 
 class AddWorksiteModal extends Component<Props> {
 
-  componentDidMount() {
+  componentDidUpdate(prevProps :Props) {
+    const { submitDataGraphRequestState, onClose } = this.props;
+    const { submitDataGraphRequestState: prevSumbitState } = prevProps;
+    if (submitDataGraphRequestState === RequestStates.SUCCESS
+      && prevSumbitState === RequestStates.PENDING) {
+      onClose();
+    }
   }
 
   render() {
@@ -39,30 +49,34 @@ class AddWorksiteModal extends Component<Props> {
       isOpen,
       onClose,
       organization,
+      submitDataGraphRequestState,
     } = this.props;
     const { [ORGANIZATION_NAME]: orgName } = getEntityProperties(organization, [ORGANIZATION_NAME]);
     return (
       <>
-        {
-          isOpen && (
-            <Modal
-                isVisible
-                onClose={onClose}
-                viewportScrolling
-                withHeader={false}>
-              <StyledCard>
-                <CardHeader padding="lg">
-                  Add Worksite to {orgName}
-                </CardHeader>
-                <AddWorksiteForm onDiscard={onClose} organization={organization} />
-              </StyledCard>
-            </Modal>
-          )
-        }
+        <Modal
+            isVisible={isOpen}
+            onClose={onClose}
+            viewportScrolling
+            withHeader={false}>
+          <StyledCard>
+            <CardHeader padding="lg">
+              Add Worksite to {orgName}
+            </CardHeader>
+            <AddWorksiteForm
+                isLoading={submitDataGraphRequestState === RequestStates.PENDING}
+                onDiscard={onClose}
+                organization={organization} />
+          </StyledCard>
+        </Modal>
       </>
     );
   }
 }
+
+const mapStateToProps = (state :Map) => ({
+  submitDataGraphRequestState: state.getIn([DATA, ACTIONS, SUBMIT_DATA_GRAPH, REQUEST_STATE]),
+});
 
 const mapDispatchToProps = dispatch => ({
   actions: bindActionCreators({
@@ -71,4 +85,4 @@ const mapDispatchToProps = dispatch => ({
 });
 
 // $FlowFixMe
-export default connect(null, mapDispatchToProps)(AddWorksiteModal);
+export default connect(mapStateToProps, mapDispatchToProps)(AddWorksiteModal);

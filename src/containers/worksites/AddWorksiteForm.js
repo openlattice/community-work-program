@@ -11,8 +11,7 @@ import {
 } from 'lattice-ui-kit';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import { RequestStates } from 'redux-reqseq';
-import type { RequestSequence, RequestState } from 'redux-reqseq';
+import type { RequestSequence } from 'redux-reqseq';
 import type { FQN } from 'lattice';
 
 import { submitDataGraph } from '../../core/sagas/data/DataActions';
@@ -20,7 +19,7 @@ import { getEntityKeyId, getEntitySetIdFromApp } from '../../utils/DataUtils';
 import { processEntityData } from '../../utils/DataProcessingUtils';
 import { getUTCFromDateString } from '../../utils/DateTimeUtils';
 import { APP_TYPE_FQNS, WORKSITE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
-import { DATA, STATE } from '../../utils/constants/ReduxStateConsts';
+import { STATE } from '../../utils/constants/ReduxStateConsts';
 import { ButtonsWrapper } from '../../components/Layout';
 import { OL } from '../../core/style/Colors';
 
@@ -31,7 +30,6 @@ const {
   DESCRIPTION,
   NAME,
 } = WORKSITE_FQNS;
-const { ACTIONS, SUBMIT_DATA_GRAPH, REQUEST_STATE } = DATA;
 
 const FormRow = styled.div`
   display: flex;
@@ -89,30 +87,11 @@ type Props = {
   isLoading :boolean;
   onDiscard :() => void;
   organization :Map;
-  submitDataGraphRequestState :RequestState;
 };
 type State = {
   newWorksiteData :Map;
 };
 
-/*
-{
-  associations: {
-    [associationESID]: [{
-      data: {},
-      srcEntitySetId: [orgESID],
-      srcEntityKeyId: [orgEKID],
-      dstEntityIndex: 0,
-      dstEntitySetId: [worksiteESID]
-    }]
-  },
-  entities: {
-    [dstEntitySetId]: [{
-      [propertyTypeId]: [value]
-    }]
-  }
-}
-*/
 class AddWorksiteForm extends Component<Props, State> {
 
   constructor(props :Props) {
@@ -163,15 +142,12 @@ class AddWorksiteForm extends Component<Props, State> {
         dstEntitySetId: worksiteESID
       }]
     };
-    console.log('data: ', { associationEntityData, entityData });
 
     actions.submitDataGraph({ associationEntityData, entityData });
   }
 
   render() {
-    const { onDiscard, submitDataGraphRequestState } = this.props;
-    const { newWorksiteData } = this.state;
-    console.log('data: ', newWorksiteData.toJS());
+    const { isLoading, onDiscard } = this.props;
     return (
       <>
         <CardSegment padding="small" vertical>
@@ -221,7 +197,7 @@ class AddWorksiteForm extends Component<Props, State> {
             <RowContent>
               <ButtonsWrapper>
                 <Button
-                    isLoading={submitDataGraphRequestState === RequestStates.PENDING}
+                    isLoading={isLoading}
                     mode="primary"
                     onClick={this.handleOnSubmit}
                     style={{ flex: 1 }}>
@@ -239,7 +215,6 @@ class AddWorksiteForm extends Component<Props, State> {
 const mapStateToProps = (state :Map) => ({
   app: state.get(STATE.APP),
   edmPropertyTypes: state.getIn([STATE.EDM, 'typeIdsByFqn']),
-  submitDataGraphRequestState: state.getIn([DATA, ACTIONS, SUBMIT_DATA_GRAPH, REQUEST_STATE]),
 });
 
 const mapDispatchToProps = dispatch => ({
