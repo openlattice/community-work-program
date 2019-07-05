@@ -130,12 +130,13 @@ class WorksitesContainer extends Component<Props, State> {
     const orgsToFilter = isDefined(orgs) ? orgs : organizationsList;
     const { filter, value } = clickedProperty;
     const propertyKeyLookup = value.toUpperCase();
-    let filteredOrgs :List = organizationsList;
+    let filteredOrgs :List = orgsToFilter;
 
     if (value === ALL) {
       if (!isDefined(orgs)) {
-        this.setState({ organizationsToRender: organizationsList, selectedFilterOption: clickedProperty });
-        return organizationsList;
+        this.setState({ selectedFilterOption: clickedProperty });
+        const sorted :List = this.sortOrganizations(orgsToFilter);
+        return sorted;
       }
       return organizationsList;
     }
@@ -153,9 +154,9 @@ class WorksitesContainer extends Component<Props, State> {
     }
 
     this.setState({
-      organizationsToRender: filteredOrgs,
       selectedFilterOption: clickedProperty
     });
+    this.sortOrganizations(filteredOrgs);
   }
 
   handleOnSearch = (input :string) => {
@@ -224,14 +225,12 @@ class WorksitesContainer extends Component<Props, State> {
     this.setState({ organizationsToRender: sortedOrganizations });
   }
 
-  sortOrganizationsSubset = (organizations :List) => {
-    return organizations
-      .sort((orgA, orgB) => {
-        const { [ORGANIZATION_NAME]: orgNameA } = getEntityProperties(orgA, [ORGANIZATION_NAME]);
-        const { [ORGANIZATION_NAME]: orgNameB } = getEntityProperties(orgB, [ORGANIZATION_NAME]);
-        return orgNameA.localeCompare(orgNameB, undefined, { sensitivity: 'base' });
-      });
-  }
+  sortOrganizationsSubset = (organizations :List) => organizations
+    .sort((orgA, orgB) => {
+      const { [ORGANIZATION_NAME]: orgNameA } = getEntityProperties(orgA, [ORGANIZATION_NAME]);
+      const { [ORGANIZATION_NAME]: orgNameB } = getEntityProperties(orgB, [ORGANIZATION_NAME]);
+      return orgNameA.localeCompare(orgNameB, undefined, { sensitivity: 'base' });
+    });
 
   render() {
     const {
