@@ -3,23 +3,29 @@ import React, { Component } from 'react';
 import styled from 'styled-components';
 import { Map } from 'immutable';
 import { Card, CardHeader, Modal } from 'lattice-ui-kit';
-// import { connect } from 'react-redux';
-// import { bindActionCreators } from 'redux';
-// import { RequestStates } from 'redux-reqseq';
-// import type { RequestSequence, RequestState } from 'redux-reqseq';
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+import type { RequestSequence } from 'redux-reqseq';
 
 import AddWorksiteForm from './AddWorksiteForm';
 
+import { submitDataGraph } from '../../core/sagas/data/DataActions';
 import { getEntityProperties } from '../../utils/DataUtils';
 import { ORGANIZATION_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { DATA } from '../../utils/constants/ReduxStateConsts';
 
 const { ORGANIZATION_NAME } = ORGANIZATION_FQNS;
+const { ACTIONS, SUBMIT_DATA_GRAPH, REQUEST_STATE } = DATA;
+
 const StyledCard = styled(Card)`
   margin: 0 -30px;
   border: none;
 `;
 
 type Props = {
+  actions:{
+    submitDataGraph :RequestSequence;
+  };
   isOpen :boolean;
   onClose :() => void;
   organization :Map;
@@ -31,7 +37,11 @@ class AddWorksiteModal extends Component<Props> {
   }
 
   render() {
-    const { isOpen, onClose, organization } = this.props;
+    const {
+      isOpen,
+      onClose,
+      organization,
+    } = this.props;
     const { [ORGANIZATION_NAME]: orgName } = getEntityProperties(organization, [ORGANIZATION_NAME]);
     return (
       <>
@@ -46,7 +56,7 @@ class AddWorksiteModal extends Component<Props> {
                 <CardHeader padding="lg">
                   Add Worksite to {orgName}
                 </CardHeader>
-                <AddWorksiteForm onDiscard={onClose} />
+                <AddWorksiteForm onDiscard={onClose} organization={organization} />
               </StyledCard>
             </Modal>
           )
@@ -56,4 +66,11 @@ class AddWorksiteModal extends Component<Props> {
   }
 }
 
-export default AddWorksiteModal;
+const mapDispatchToProps = dispatch => ({
+  actions: bindActionCreators({
+    submitDataGraph,
+  }, dispatch)
+});
+
+// $FlowFixMe
+export default connect(null, mapDispatchToProps)(AddWorksiteModal);
