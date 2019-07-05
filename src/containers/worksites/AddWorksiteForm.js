@@ -9,17 +9,29 @@ import {
   Input,
   Label
 } from 'lattice-ui-kit';
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+import { RequestStates } from 'redux-reqseq';
+import type { RequestSequence, RequestState } from 'redux-reqseq';
+import type { FQN } from 'lattice';
 
-import { WORKSITE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { submitDataGraph } from '../../core/sagas/data/DataActions';
+import { getEntityKeyId, getEntitySetIdFromApp } from '../../utils/DataUtils';
+import { processEntityData } from '../../utils/DataProcessingUtils';
+import { getUTCFromDateString } from '../../utils/DateTimeUtils';
+import { APP_TYPE_FQNS, WORKSITE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { DATA, STATE } from '../../utils/constants/ReduxStateConsts';
 import { ButtonsWrapper } from '../../components/Layout';
 import { OL } from '../../core/style/Colors';
 
+const { OPERATES, ORGANIZATION, WORKSITE } = APP_TYPE_FQNS;
 const {
   DATETIME_END,
   DATETIME_START,
   DESCRIPTION,
   NAME,
 } = WORKSITE_FQNS;
+const { ACTIONS, SUBMIT_DATA_GRAPH, REQUEST_STATE } = DATA;
 
 const FormRow = styled.div`
   display: flex;
@@ -69,7 +81,15 @@ const StyledTextArea = styled.textarea`
 `;
 
 type Props = {
+  actions:{
+    submitDataGraph :RequestSequence;
+  };
+  app :Map;
+  edmPropertyTypes :Map;
+  isLoading :boolean;
   onDiscard :() => void;
+  organization :Map;
+  submitDataGraphRequestState :RequestState;
 };
 type State = {
   newWorksiteData :Map;
@@ -77,7 +97,20 @@ type State = {
 
 /*
 {
-
+  associations: {
+    [associationESID]: [{
+      data: {},
+      srcEntitySetId: [orgESID],
+      srcEntityKeyId: [orgEKID],
+      dstEntityIndex: 0,
+      dstEntitySetId: [worksiteESID]
+    }]
+  },
+  entities: {
+    [dstEntitySetId]: [{
+      [propertyTypeId]: [value]
+    }]
+  }
 }
 */
 class AddWorksiteForm extends Component<Props, State> {
@@ -89,22 +122,56 @@ class AddWorksiteForm extends Component<Props, State> {
     };
   }
 
+  handleDateChange = (name :FQN) => (date :string) => {
+    const { newWorksiteData } = this.state;
+    const dateAsDateTime = getUTCFromDateString(date);
+    this.setState({ newWorksiteData: newWorksiteData.set(name, dateAsDateTime) });
+  }
+
   handleInputChange = (e :SyntheticEvent<HTMLInputElement>) => {
     const { newWorksiteData } = this.state;
     const { name, value } = e.currentTarget;
-    console.log('name ', name, 'value: ', value);
     this.setState({ newWorksiteData: newWorksiteData.set(name, value) });
   }
 
-  // handleSelectChange = (value :string, e :Object) => {
-  //   const { newWorksiteData } = this.state;
-  //   const { name } = e;
-  //   this.setState({ newWorksiteData: newWorksiteData.set(name, value) });
-  // }
+  handleOnSubmit = () => {
+    const {
+      actions,
+      app,
+      edmPropertyTypes,
+      organization
+    } = this.props;
+    const { newWorksiteData } = this.state;
+
+    const organizationESID :UUID = getEntitySetIdFromApp(app, ORGANIZATION);
+    const worksiteESID :UUID = getEntitySetIdFromApp(app, WORKSITE);
+    const operatesESID :UUID = getEntitySetIdFromApp(app, OPERATES);
+    const organizationEKID :UUID = getEntityKeyId(organization);
+
+    const entityDataToProcess :Map = Map({
+      entityData: newWorksiteData,
+      entitySetId: worksiteESID,
+    });
+    const entityData :{} = processEntityData(entityDataToProcess, edmPropertyTypes);
+
+    const associationEntityData :{} = {
+      [operatesESID]: [{
+        data: {},
+        srcEntitySetId: organizationESID,
+        srcEntityKeyId: organizationEKID,
+        dstEntityIndex: 0,
+        dstEntitySetId: worksiteESID
+      }]
+    };
+    console.log('data: ', { associationEntityData, entityData });
+
+    actions.submitDataGraph({ associationEntityData, entityData });
+  }
 
   render() {
-    const { onDiscard } = this.props;
-    console.log('data: ', this.state.newWorksiteData.toJS());
+    const { onDiscard, submitDataGraphRequestState } = this.props;
+    const { newWorksiteData } = this.state;
+    console.log('data: ', newWorksiteData.toJS());
     return (
       <>
         <CardSegment padding="small" vertical>
@@ -134,11 +201,15 @@ class AddWorksiteForm extends Component<Props, State> {
           <FormRow>
             <RowContent>
               <Label>Date first active</Label>
-              <DatePicker />
+              <DatePicker
+                  name={DATETIME_START}
+                  onChange={this.handleDateChange(DATETIME_START)} />
             </RowContent>
             <RowContent>
               <Label>Date no longer active</Label>
-              <DatePicker />
+              <DatePicker
+                  name={DATETIME_END}
+                  onChange={this.handleDateChange(DATETIME_END)} />
             </RowContent>
           </FormRow>
           <ButtonsRow>
@@ -150,9 +221,9 @@ class AddWorksiteForm extends Component<Props, State> {
             <RowContent>
               <ButtonsWrapper>
                 <Button
-                    isLoading={false}
+                    isLoading={submitDataGraphRequestState === RequestStates.PENDING}
                     mode="primary"
-                    onClick={() => {}}
+                    onClick={this.handleOnSubmit}
                     style={{ flex: 1 }}>
                   Submit
                 </Button>
@@ -165,4 +236,17 @@ class AddWorksiteForm extends Component<Props, State> {
   }
 }
 
-export default AddWorksiteForm;
+const mapStateToProps = (state :Map) => ({
+  app: state.get(STATE.APP),
+  edmPropertyTypes: state.getIn([STATE.EDM, 'typeIdsByFqn']),
+  submitDataGraphRequestState: state.getIn([DATA, ACTIONS, SUBMIT_DATA_GRAPH, REQUEST_STATE]),
+});
+
+const mapDispatchToProps = dispatch => ({
+  actions: bindActionCreators({
+    submitDataGraph,
+  }, dispatch)
+});
+
+// $FlowFixMe
+export default connect(mapStateToProps, mapDispatchToProps)(AddWorksiteForm);
