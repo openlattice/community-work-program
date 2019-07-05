@@ -31,6 +31,14 @@ export const APP = {
   SETTINGS_BY_ORG_ID: 'appSettingsByOrgId'
 };
 
+/* Data */
+export const DATA = {
+  ACTIONS: 'actions',
+  ERRORS: 'errors',
+  REQUEST_STATE: 'requestState',
+  SUBMIT_DATA_GRAPH: 'submitDataGraph',
+};
+
 /* People */
 
 export const PEOPLE = {
