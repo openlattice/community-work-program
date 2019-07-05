@@ -245,7 +245,13 @@ class WorksitesContainer extends Component<Props, State> {
     });
     const orgSubHeader :string = organizationsToRender.count() !== 1
       ? `${organizationsToRender.count()} Organizations` : '1 Organization';
-    const worksiteCount = worksitesByOrg.valueSeq().count();
+    const worksiteCount = organizationsToRender.reduce((count, org) => {
+      const orgEKID :UUID = getEntityKeyId(org);
+      if (worksitesByOrg.get(orgEKID)) {
+        return count + worksitesByOrg.get(orgEKID).count();
+      }
+      return count;
+    }, 0);
     const worksiteSubHeader :string = worksiteCount !== 1 ? `${worksiteCount} Work Sites` : '1 Work Site';
 
     if (getOrganizationsRequestState === RequestStates.PENDING || initializeAppRequestState === RequestStates.PENDING) {
