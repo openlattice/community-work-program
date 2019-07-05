@@ -42,13 +42,13 @@ const TableRow = ({
 
   const startDate = startDateTime ? formatAsDate(startDateTime) : '';
   const status = (startDateTime && !endDateTime) ? 'Active' : 'Inactive';
-  const scheduledParticipantCount = worksiteInfo.get(SCHEDULED)
+  const scheduledParticipantCount = (worksiteInfo && worksiteInfo.get(SCHEDULED))
     ? formatNumericalValue(worksiteInfo.get(SCHEDULED))
     : formatNumericalValue(0);
-  const pastParticipantCount = worksiteInfo.get(PAST)
+  const pastParticipantCount = (worksiteInfo && worksiteInfo.get(PAST))
     ? formatNumericalValue(worksiteInfo.get(PAST))
     : formatNumericalValue(0);
-  const totalHours = worksiteInfo.get(TOTAL_HOURS)
+  const totalHours = (worksiteInfo && worksiteInfo.get(TOTAL_HOURS))
     ? formatNumericalValue(worksiteInfo.get(TOTAL_HOURS))
     : formatNumericalValue(0);
 
