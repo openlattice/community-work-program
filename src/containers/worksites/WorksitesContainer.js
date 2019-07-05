@@ -81,7 +81,6 @@ type State = {
   organizationStatuses :Map;
   organizationsToRender :List;
   selectedFilterOption :Map;
-  showAddWorksite :boolean;
 };
 
 class WorksitesContainer extends Component<Props, State> {
@@ -93,7 +92,6 @@ class WorksitesContainer extends Component<Props, State> {
       organizationStatuses: Map(),
       organizationsToRender: props.organizationsList,
       selectedFilterOption: defaultFilterOption,
-      showAddWorksite: false,
     };
   }
 
@@ -177,18 +175,6 @@ class WorksitesContainer extends Component<Props, State> {
     this.sortOrganizations(filteredSearchedOrgs);
   }
 
-  handleShowAddWorksite = () => {
-    this.setState({
-      showAddWorksite: true
-    });
-  }
-
-  handleHideAddWorksite = () => {
-    this.setState({
-      showAddWorksite: false
-    });
-  }
-
 
   setOrganizationStatuses = () => {
     const { organizationsList, worksitesByOrg } = this.props;
@@ -254,7 +240,7 @@ class WorksitesContainer extends Component<Props, State> {
       worksitesByOrg,
       worksitesInfo,
     } = this.props;
-    const { organizationStatuses, organizationsToRender, showAddWorksite } = this.state;
+    const { organizationStatuses, organizationsToRender } = this.state;
     const onSelectFunctions :Map = Map().withMutations((map :Map) => {
       map.set(FILTERS.STATUS, this.handleOnFilter);
     });
@@ -301,9 +287,6 @@ class WorksitesContainer extends Component<Props, State> {
                     onClickWorksite={this.handleOnClickWorksite}
                     organization={org}
                     orgStatus={organizationStatuses.get(orgEKID)}
-                    showAddWorksiteModal={showAddWorksite}
-                    onClickAddWorksite={this.handleShowAddWorksite}
-                    onClickCloseAddWorksite={this.handleHideAddWorksite}
                     worksiteCount={orgWorksiteCount}
                     worksites={orgWorksites}
                     worksitesInfo={worksitesInfo} />

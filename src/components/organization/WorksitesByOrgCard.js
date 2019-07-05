@@ -1,5 +1,5 @@
 // @flow
-import React from 'react';
+import React, { Component } from 'react';
 import styled from 'styled-components';
 import { List, Map } from 'immutable';
 import { Button } from 'lattice-ui-kit';
@@ -65,68 +65,91 @@ type Props = {
   onClickWorksite :(worksite :Map) => void;
   organization :Map;
   orgStatus :string;
-  showAddWorksiteModal :boolean;
-  onClickAddWorksite :() => void;
-  onClickCloseAddWorksite :() => void;
   worksiteCount :string;
   worksites :List;
   worksitesInfo :Map;
 };
 
-const WorksitesByOrgCard = ({
-  onClickWorksite,
-  organization,
-  orgStatus,
-  showAddWorksiteModal,
-  onClickAddWorksite,
-  onClickCloseAddWorksite,
-  worksiteCount,
-  worksites,
-  worksitesInfo,
-} :Props) => {
-  const organizationEKID :UUID = getEntityKeyId(organization);
-  const {
-    [DESCRIPTION]: orgDescription,
-    [ORGANIZATION_NAME]: orgName
-  } = getEntityProperties(organization, [DESCRIPTION, ORGANIZATION_NAME]);
-  return (
-    <CardOuterWrapper>
-      <CardInnerWrapper>
-        <CardHeaderWrapper>
-          <StyledLink to={Routes.ORGANIZATION_PROFILE.replace(':organizationId', organizationEKID)}>
-            <OrganizationName>
-              { orgName }
-            </OrganizationName>
-          </StyledLink>
-          <StyledButton onClick={onClickAddWorksite}>Add Worksite</StyledButton>
-        </CardHeaderWrapper>
-        <SubtitleWrapper>
-          <Subtitle>{ worksiteCount }</Subtitle>
-          <SmallSeparator>•</SmallSeparator>
-          <Status status={orgStatus}>
-            { orgStatus }
-          </Status>
-        </SubtitleWrapper>
-        <Description>{ orgDescription }</Description>
-      </CardInnerWrapper>
-      {
-        worksites
-          ? (
-            <WorksitesTable
-                columnHeaders={WORKSITES_COLUMNS}
-                small={false}
-                selectWorksite={onClickWorksite}
-                tableMargin="15"
-                worksites={worksites}
-                worksitesInfo={worksitesInfo} />
-          ) : null
-      }
-      <AddWorksiteModal
-          isOpen={showAddWorksiteModal}
-          onClose={onClickCloseAddWorksite}
-          organization={organization} />
-    </CardOuterWrapper>
-  );
+type State ={
+  showAddWorksite :boolean;
 };
+
+class WorksitesByOrgCard extends Component<Props, State> {
+
+  constructor(props :Props) {
+    super(props);
+
+    this.state = {
+      showAddWorksite: false,
+    };
+  }
+  handleShowAddWorksite = () => {
+    this.setState({
+      showAddWorksite: true
+    });
+  }
+
+  handleHideAddWorksite = () => {
+    this.setState({
+      showAddWorksite: false
+    });
+  }
+
+  render() {
+    const {
+      onClickWorksite,
+      organization,
+      orgStatus,
+      worksiteCount,
+      worksites,
+      worksitesInfo,
+    } = this.props;
+    const { showAddWorksite } = this.state;
+
+    const organizationEKID :UUID = getEntityKeyId(organization);
+    const {
+      [DESCRIPTION]: orgDescription,
+      [ORGANIZATION_NAME]: orgName
+    } = getEntityProperties(organization, [DESCRIPTION, ORGANIZATION_NAME]);
+    return (
+      <CardOuterWrapper>
+        <CardInnerWrapper>
+          <CardHeaderWrapper>
+            <StyledLink to={Routes.ORGANIZATION_PROFILE.replace(':organizationId', organizationEKID)}>
+              <OrganizationName>
+                { orgName }
+              </OrganizationName>
+            </StyledLink>
+            <StyledButton onClick={this.handleShowAddWorksite}>Add Worksite</StyledButton>
+          </CardHeaderWrapper>
+          <SubtitleWrapper>
+            <Subtitle>{ worksiteCount }</Subtitle>
+            <SmallSeparator>•</SmallSeparator>
+            <Status status={orgStatus}>
+              { orgStatus }
+            </Status>
+          </SubtitleWrapper>
+          <Description>{ orgDescription }</Description>
+        </CardInnerWrapper>
+        {
+          worksites
+            ? (
+              <WorksitesTable
+                  columnHeaders={WORKSITES_COLUMNS}
+                  small={false}
+                  selectWorksite={onClickWorksite}
+                  tableMargin="15"
+                  worksites={worksites}
+                  worksitesInfo={worksitesInfo} />
+            ) : null
+        }
+        <AddWorksiteModal
+            isOpen={showAddWorksite}
+            onClose={this.handleHideAddWorksite}
+            organization={organization} />
+      </CardOuterWrapper>
+    );
+  }
+}
 
 export default WorksitesByOrgCard;
