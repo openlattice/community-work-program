@@ -2,13 +2,11 @@
  * @flow
  */
 
-import { DateTime, Duration } from 'luxon';
-import { Map } from 'immutable';
-
 const DATE_MDY_SLASH_FORMAT :string = 'MM/DD/YYYY';
 const ISO_DATE_FORMAT :string = 'YYYY-MM-DD';
 const ISO_TIME_HMS_FORMAT :string = 'HH:mm:ss';
 const TIME_HM_FORMAT :string = 'HH:mm';
+import { DateTime } from 'luxon';
 
 function formatAsDate(value :string) :string {
 
@@ -58,6 +56,13 @@ function calculateAge(value :string) :number {
   return -1;
 }
 
+function getUTCFromDateString(value :string) :Object {
+
+  const splitDate :number[] = value.split('-')
+    .map((string :string) => parseInt(string, 10));
+  return DateTime.utc(splitDate[0], splitDate[1], splitDate[2]).toISO();
+}
+
 export {
   DATE_MDY_SLASH_FORMAT,
   ISO_DATE_FORMAT,
@@ -68,4 +73,5 @@ export {
   formatAsISODate,
   formatAsISOTime,
   formatAsTime,
+  getUTCFromDateString,
 };
