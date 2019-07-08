@@ -70,7 +70,7 @@ type Props = {
   worksitesInfo :Map;
 };
 
-type State ={
+type State = {
   showAddWorksite :boolean;
 };
 
