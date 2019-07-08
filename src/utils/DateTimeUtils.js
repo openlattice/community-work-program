@@ -1,16 +1,17 @@
 /*
  * @flow
  */
+import { DateTime } from 'luxon';
 
 const DATE_MDY_SLASH_FORMAT :string = 'MM/DD/YYYY';
 const ISO_DATE_FORMAT :string = 'YYYY-MM-DD';
 const ISO_TIME_HMS_FORMAT :string = 'HH:mm:ss';
 const TIME_HM_FORMAT :string = 'HH:mm';
-import { DateTime } from 'luxon';
+
 
 function formatAsDate(value :string) :string {
 
-  const valueAsDate = DateTime.fromISO(value);
+  const valueAsDate = DateTime.fromISO(value, { zone: 'utc' });
   if (valueAsDate.isValid) {
     return valueAsDate.toLocaleString(DateTime.DATE_SHORT);
   }
