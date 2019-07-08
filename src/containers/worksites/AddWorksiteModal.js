@@ -13,7 +13,7 @@ import AddWorksiteForm from './AddWorksiteForm';
 import { submitDataGraph } from '../../core/sagas/data/DataActions';
 import { getEntityProperties } from '../../utils/DataUtils';
 import { ORGANIZATION_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
-import { DATA } from '../../utils/constants/ReduxStateConsts';
+import { DATA, STATE } from '../../utils/constants/ReduxStateConsts';
 
 const { ORGANIZATION_NAME } = ORGANIZATION_FQNS;
 const { ACTIONS, SUBMIT_DATA_GRAPH, REQUEST_STATE } = DATA;
@@ -61,7 +61,7 @@ class AddWorksiteModal extends Component<Props> {
             withHeader={false}>
           <StyledCard>
             <CardHeader padding="lg">
-              Add Worksite to {orgName}
+              Add Worksite to { orgName }
             </CardHeader>
             <AddWorksiteForm
                 isLoading={submitDataGraphRequestState === RequestStates.PENDING}
@@ -75,7 +75,7 @@ class AddWorksiteModal extends Component<Props> {
 }
 
 const mapStateToProps = (state :Map) => ({
-  submitDataGraphRequestState: state.getIn([DATA, ACTIONS, SUBMIT_DATA_GRAPH, REQUEST_STATE]),
+  submitDataGraphRequestState: state.getIn([STATE.DATA, ACTIONS, SUBMIT_DATA_GRAPH, REQUEST_STATE]),
 });
 
 const mapDispatchToProps = dispatch => ({
