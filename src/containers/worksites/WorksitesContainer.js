@@ -8,6 +8,7 @@ import { RequestStates } from 'redux-reqseq';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
 import WorksitesByOrgCard from '../../components/organization/WorksitesByOrgCard';
+import AddOrganizationModal from '../organizations/AddOrganizationModal';
 import LogoLoader from '../../components/LogoLoader';
 import * as Routes from '../../core/router/Routes';
 
@@ -81,6 +82,7 @@ type State = {
   organizationStatuses :Map;
   organizationsToRender :List;
   selectedFilterOption :Map;
+  showAddOrganization :boolean;
 };
 
 class WorksitesContainer extends Component<Props, State> {
@@ -92,6 +94,7 @@ class WorksitesContainer extends Component<Props, State> {
       organizationStatuses: Map(),
       organizationsToRender: props.organizationsList,
       selectedFilterOption: defaultFilterOption,
+      showAddOrganization: false,
     };
   }
 
@@ -176,6 +179,17 @@ class WorksitesContainer extends Component<Props, State> {
     this.sortOrganizations(filteredSearchedOrgs);
   }
 
+  handleShowAddOrganization = () => {
+    this.setState({
+      showAddOrganization: true
+    });
+  }
+
+  handleHideAddOrganization = () => {
+    this.setState({
+      showAddOrganization: false
+    });
+  }
 
   setOrganizationStatuses = () => {
     const { organizationsList, worksitesByOrg } = this.props;
@@ -239,7 +253,7 @@ class WorksitesContainer extends Component<Props, State> {
       worksitesByOrg,
       worksitesInfo,
     } = this.props;
-    const { organizationStatuses, organizationsToRender } = this.state;
+    const { organizationStatuses, organizationsToRender, showAddOrganization } = this.state;
     const onSelectFunctions :Map = Map().withMutations((map :Map) => {
       map.set(FILTERS.STATUS, this.handleOnFilter);
     });
@@ -267,7 +281,7 @@ class WorksitesContainer extends Component<Props, State> {
         <ToolBar
             dropdowns={dropdowns}
             onSelectFunctions={onSelectFunctions}
-            primaryButtonAction={() => {}}
+            primaryButtonAction={this.handleShowAddOrganization}
             primaryButtonText="Add Organization"
             search={this.handleOnSearch} />
         <ContainerInnerWrapper>
@@ -299,6 +313,9 @@ class WorksitesContainer extends Component<Props, State> {
             })
           }
         </ContainerInnerWrapper>
+        <AddOrganizationModal
+            isOpen={showAddOrganization}
+            onClose={this.handleHideAddOrganization} />
       </ContainerOuterWrapper>
     );
   }
