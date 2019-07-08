@@ -150,7 +150,7 @@ class WorksitesByOrgCard extends Component<Props, State> {
           <Description>{ orgDescription }</Description>
         </CardInnerWrapper>
         {
-          worksites
+          (worksites && worksites.count() > 0)
             ? (
               <WorksitesTable
                   columnHeaders={WORKSITES_COLUMNS}
