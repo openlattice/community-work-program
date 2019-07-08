@@ -134,6 +134,11 @@ class WorksitesContainer extends Component<Props, State> {
     }
   }
 
+  handleAddNewWorksite = () => {
+    const { actions } = this.props;
+    actions.getOrganizations();
+  }
+
   handleOnClickWorksite = (worksite :Map) => {
     const { actions } = this.props;
     actions.goToRoute(Routes.WORKSITE_PROFILE.replace(':worksiteId', worksite.get('id')));
@@ -172,6 +177,7 @@ class WorksitesContainer extends Component<Props, State> {
       selectedFilterOption: clickedProperty
     });
     this.sortOrganizations(filteredOrgs);
+    return filteredOrgs;
   }
 
   handleOnSearch = (input :string) => {
@@ -318,6 +324,7 @@ class WorksitesContainer extends Component<Props, State> {
                     onClickWorksite={this.handleOnClickWorksite}
                     organization={org}
                     orgStatus={organizationStatuses.get(orgEKID)}
+                    updateOrgsList={this.handleAddNewWorksite}
                     worksiteCount={orgWorksiteCount}
                     worksites={orgWorksites}
                     worksitesInfo={worksitesInfo} />

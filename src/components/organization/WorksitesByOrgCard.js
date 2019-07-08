@@ -3,7 +3,10 @@ import React, { Component } from 'react';
 import styled from 'styled-components';
 import { List, Map } from 'immutable';
 import { Button } from 'lattice-ui-kit';
+import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
+import { RequestStates } from 'redux-reqseq';
+import type { RequestState } from 'redux-reqseq';
 
 import WorksitesTable from '../table/WorksitesTable';
 import AddWorksiteModal from '../../containers/worksites/AddWorksiteModal';
@@ -11,6 +14,7 @@ import * as Routes from '../../core/router/Routes';
 
 import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
 import { ORGANIZATION_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { DATA, STATE } from '../../utils/constants/ReduxStateConsts';
 import {
   CardHeaderWrapper,
   CardOuterWrapper,
@@ -65,6 +69,8 @@ type Props = {
   onClickWorksite :(worksite :Map) => void;
   organization :Map;
   orgStatus :string;
+  submitDataGraphRequestState :RequestState;
+  updateOrgsList :() => void;
   worksiteCount :string;
   worksites :List;
   worksitesInfo :Map;
@@ -82,6 +88,17 @@ class WorksitesByOrgCard extends Component<Props, State> {
     this.state = {
       showAddWorksite: false,
     };
+  }
+
+  componentDidUpdate(prevProps :Props, prevState :State) {
+    const { submitDataGraphRequestState, updateOrgsList } = this.props;
+    const { showAddWorksite } = this.state;
+
+    if (prevState.showAddWorksite && !showAddWorksite) {
+      if (submitDataGraphRequestState === RequestStates.SUCCESS) {
+        updateOrgsList();
+      }
+    }
   }
 
   handleShowAddWorksite = () => {
@@ -153,4 +170,9 @@ class WorksitesByOrgCard extends Component<Props, State> {
   }
 }
 
-export default WorksitesByOrgCard;
+const mapStateToProps = (state :Map) => ({
+  submitDataGraphRequestState: state.getIn([STATE.DATA, DATA.ACTIONS, DATA.SUBMIT_DATA_GRAPH, DATA.REQUEST_STATE]),
+});
+
+// $FlowFixMe
+export default connect(mapStateToProps)(WorksitesByOrgCard);
