@@ -83,6 +83,7 @@ class WorksitesByOrgCard extends Component<Props, State> {
       showAddWorksite: false,
     };
   }
+
   handleShowAddWorksite = () => {
     this.setState({
       showAddWorksite: true
