@@ -113,24 +113,43 @@ class WorksitesContainer extends Component<Props, State> {
       app,
       actions,
       organizationsList,
-      submitDataGraphRequestState
+      submitDataGraphRequestState,
+      worksitesByOrg
     } = this.props;
     const { organizationStatuses, showAddOrganization } = this.state;
     const prevOrganizationESID = prevProps.app.get(ORGANIZATION);
     const organizationESID = app.get(ORGANIZATION);
+    // if app types have loaded successfully:
     if (prevOrganizationESID !== organizationESID) {
       actions.getOrganizations();
     }
+    // if getOrganizations was successful and organizations exist:
     if (prevProps.organizationsList.count() !== organizationsList.count()) {
       this.setOrganizationStatuses();
     }
+    // if state field organizationStatuses has been updated:
     if (prevState.organizationStatuses.count() !== organizationStatuses.count()) {
       this.sortOrganizations();
     }
+    // if a new organization was just added:
     if (prevState.showAddOrganization && !showAddOrganization) {
       if (submitDataGraphRequestState === RequestStates.SUCCESS) {
         actions.getOrganizations();
       }
+    }
+    // if a new worksite was just added:
+    const prevWorksitesByOrg = prevProps.worksitesByOrg;
+    const prevWorksiteCount = prevWorksitesByOrg.reduce((count, worksiteList) => count + worksiteList.count(), 0);
+    const worksiteCount = worksitesByOrg.reduce((count, worksiteList) => count + worksiteList.count(), 0);
+    if (submitDataGraphRequestState === RequestStates.SUCCESS && prevWorksiteCount !== worksiteCount) {
+      this.setOrganizationStatuses();
+    }
+    const prevOrgStatuses = prevState.organizationStatuses;
+    const previousActiveStatuses = prevOrgStatuses
+      .reduce((count, status) => (status === 'Active' ? count + 1 : count), 0);
+    const activeStatuses = organizationStatuses.reduce((count, status) => (status === 'Active' ? count + 1 : count), 0);
+    if (previousActiveStatuses !== activeStatuses) {
+      this.sortOrganizations();
     }
   }
 
