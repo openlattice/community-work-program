@@ -4,15 +4,13 @@ import styled from 'styled-components';
 import { List, Map } from 'immutable';
 import { Button } from 'lattice-ui-kit';
 import { connect } from 'react-redux';
-import { Link } from 'react-router-dom';
 import { RequestStates } from 'redux-reqseq';
 import type { RequestState } from 'redux-reqseq';
 
 import WorksitesTable from '../table/WorksitesTable';
 import AddWorksiteModal from '../../containers/worksites/AddWorksiteModal';
-import * as Routes from '../../core/router/Routes';
 
-import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
+import { getEntityProperties } from '../../utils/DataUtils';
 import { ORGANIZATION_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { DATA, STATE } from '../../utils/constants/ReduxStateConsts';
 import {
@@ -54,10 +52,6 @@ const Description = styled.div`
   color: ${OL.GREY15};
   font-size: 14px;
   margin: 40px 0 0 0;
-`;
-
-const StyledLink = styled(Link)`
-  text-decoration: none;
 `;
 
 const StyledButton = styled(Button)`
@@ -124,7 +118,6 @@ class WorksitesByOrgCard extends Component<Props, State> {
     } = this.props;
     const { showAddWorksite } = this.state;
 
-    const organizationEKID :UUID = getEntityKeyId(organization);
     const {
       [DESCRIPTION]: orgDescription,
       [ORGANIZATION_NAME]: orgName
@@ -133,11 +126,9 @@ class WorksitesByOrgCard extends Component<Props, State> {
       <CardOuterWrapper>
         <CardInnerWrapper>
           <CardHeaderWrapper>
-            <StyledLink to={Routes.ORGANIZATION_PROFILE.replace(':organizationId', organizationEKID)}>
-              <OrganizationName>
-                { orgName }
-              </OrganizationName>
-            </StyledLink>
+            <OrganizationName>
+              { orgName }
+            </OrganizationName>
             <StyledButton onClick={this.handleShowAddWorksite}>Add Worksite</StyledButton>
           </CardHeaderWrapper>
           <SubtitleWrapper>

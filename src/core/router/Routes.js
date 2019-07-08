@@ -9,6 +9,3 @@ export const PARTICIPANTS :string = '/participants';
 export const WORKSITES :string = '/worksitesbyorganization';
 
 export const PARTICIPANT_PROFILE :string = `${PARTICIPANTS}/:subjectId`;
-
-export const ORGANIZATION_PROFILE :string = `${ROOT}organizations/:organizationId`;
-export const WORKSITE_PROFILE :string = `${ROOT}worksites/:worksiteId`;

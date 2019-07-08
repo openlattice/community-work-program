@@ -10,7 +10,6 @@ import type { RequestSequence, RequestState } from 'redux-reqseq';
 import WorksitesByOrgCard from '../../components/organization/WorksitesByOrgCard';
 import AddOrganizationModal from '../organizations/AddOrganizationModal';
 import LogoLoader from '../../components/LogoLoader';
-import * as Routes from '../../core/router/Routes';
 
 import { goToRoute } from '../../core/router/RoutingActions';
 import {
@@ -156,11 +155,6 @@ class WorksitesContainer extends Component<Props, State> {
   handleAddNewWorksite = () => {
     const { actions } = this.props;
     actions.getOrganizations();
-  }
-
-  handleOnClickWorksite = (worksite :Map) => {
-    const { actions } = this.props;
-    actions.goToRoute(Routes.WORKSITE_PROFILE.replace(':worksiteId', worksite.get('id')));
   }
 
   handleOnFilter = (clickedProperty :Map, selectEvent :Object, orgs :List) => {
@@ -340,7 +334,7 @@ class WorksitesContainer extends Component<Props, State> {
               return (
                 <WorksitesByOrgCard
                     key={orgEKID}
-                    onClickWorksite={this.handleOnClickWorksite}
+                    onClickWorksite={() => {}}
                     organization={org}
                     orgStatus={organizationStatuses.get(orgEKID)}
                     updateOrgsList={this.handleAddNewWorksite}

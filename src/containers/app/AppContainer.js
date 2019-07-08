@@ -18,10 +18,8 @@ import type { RequestSequence } from 'redux-reqseq';
 
 import AppHeaderContainer from './AppHeaderContainer';
 import DashboardContainer from '../dashboard/DashboardContainer';
-import OrganizationContainer from '../organizations/OrganizationContainer';
 import ParticipantProfileContainer from '../participant/ParticipantProfileContainer';
 import ParticipantsSearchContainer from '../participants/ParticipantsSearchContainer';
-import WorksiteContainer from '../worksite/WorksiteContainer';
 import WorksitesContainer from '../worksites/WorksitesContainer';
 
 import * as AppActions from './AppActions';
@@ -79,8 +77,6 @@ class AppContainer extends Component<Props> {
 
   renderAppContent = () => (
     <Switch>
-      <Route path={Routes.ORGANIZATION_PROFILE} component={OrganizationContainer} />
-      <Route path={Routes.WORKSITE_PROFILE} component={WorksiteContainer} />
       <Route path={Routes.WORKSITES} component={WorksitesContainer} />
       <Route path={Routes.PARTICIPANT_PROFILE} component={ParticipantProfileContainer} />
       <Route path={Routes.PARTICIPANTS} component={ParticipantsSearchContainer} />
