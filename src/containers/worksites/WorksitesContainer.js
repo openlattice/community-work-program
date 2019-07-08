@@ -32,6 +32,7 @@ import {
 } from './WorksitesConstants';
 import {
   APP,
+  DATA,
   STATE,
   ORGANIZATIONS,
   WORKSITES
@@ -74,6 +75,7 @@ type Props = {
   getOrganizationsRequestState :RequestState;
   initializeAppRequestState :RequestState;
   organizationsList :List;
+  submitDataGraphRequestState :RequestState;
   worksitesByOrg :Map;
   worksitesInfo :Map;
 };
@@ -107,8 +109,13 @@ class WorksitesContainer extends Component<Props, State> {
   }
 
   componentDidUpdate(prevProps :Props, prevState :State) {
-    const { app, actions, organizationsList } = this.props;
-    const { organizationStatuses } = this.state;
+    const {
+      app,
+      actions,
+      organizationsList,
+      submitDataGraphRequestState
+    } = this.props;
+    const { organizationStatuses, showAddOrganization } = this.state;
     const prevOrganizationESID = prevProps.app.get(ORGANIZATION);
     const organizationESID = app.get(ORGANIZATION);
     if (prevOrganizationESID !== organizationESID) {
@@ -119,6 +126,11 @@ class WorksitesContainer extends Component<Props, State> {
     }
     if (prevState.organizationStatuses.count() !== organizationStatuses.count()) {
       this.sortOrganizations();
+    }
+    if (prevState.showAddOrganization && !showAddOrganization) {
+      if (submitDataGraphRequestState === RequestStates.SUCCESS) {
+        actions.getOrganizations();
+      }
     }
   }
 
@@ -323,6 +335,7 @@ class WorksitesContainer extends Component<Props, State> {
 
 const mapStateToProps = (state :Map<*, *>) => {
   const app = state.get(STATE.APP);
+  const data = state.get(STATE.DATA);
   const organizations = state.get(STATE.ORGANIZATIONS);
   const worksites = state.get(STATE.WORKSITES);
   return {
@@ -330,6 +343,7 @@ const mapStateToProps = (state :Map<*, *>) => {
     getOrganizationsRequestState: organizations.getIn([ACTIONS, GET_ORGANIZATIONS, REQUEST_STATE]),
     initializeAppRequestState: app.getIn([APP.ACTIONS, APP.INITIALIZE_APPLICATION, APP.REQUEST_STATE]),
     [ORGANIZATIONS_LIST]: organizations.get(ORGANIZATIONS_LIST),
+    submitDataGraphRequestState: data.getIn([DATA.ACTIONS, DATA.SUBMIT_DATA_GRAPH, DATA.REQUEST_STATE]),
     [WORKSITES_BY_ORG]: worksites.get(WORKSITES_BY_ORG),
     [WORKSITES_INFO]: worksites.get(WORKSITES_INFO),
   };
