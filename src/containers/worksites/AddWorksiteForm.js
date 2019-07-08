@@ -1,6 +1,5 @@
 // @flow
 import React, { Component } from 'react';
-import styled from 'styled-components';
 import { Map } from 'immutable';
 import {
   Button,
@@ -20,8 +19,13 @@ import { processEntityData } from '../../utils/DataProcessingUtils';
 import { getUTCFromDateString } from '../../utils/DateTimeUtils';
 import { APP_TYPE_FQNS, WORKSITE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { STATE } from '../../utils/constants/ReduxStateConsts';
-import { ButtonsWrapper } from '../../components/Layout';
-import { OL } from '../../core/style/Colors';
+import {
+  ButtonsRow,
+  ButtonsWrapper,
+  FormRow,
+  RowContent,
+  StyledTextArea,
+} from '../../components/Layout';
 
 const { OPERATES, ORGANIZATION, WORKSITE } = APP_TYPE_FQNS;
 const {
@@ -30,53 +34,6 @@ const {
   DESCRIPTION,
   NAME,
 } = WORKSITE_FQNS;
-
-const FormRow = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-`;
-
-const ButtonsRow = styled(FormRow)`
-  margin-top: 20px;
-`;
-
-const RowContent = styled.div`
-  flex-grow: 1;
-  margin: 0 20px 10px 20px;
-  min-width: 250px;
-`;
-
-const StyledTextArea = styled.textarea`
-  background-color: ${OL.GREY10};
-  border-radius: 3px;
-  border: 1px solid ${props => (props.invalid ? OL.RED01 : OL.GREY05)};
-  box-shadow: 0;
-  box-sizing: border-box;
-  color: ${OL.GREY01};
-  display: flex;
-  flex: 0 1 auto;
-  font-size: 14px;
-  line-height: 18px;
-  padding: 10px 10px;
-  text-overflow: ellipsis;
-  transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out;
-  width: 100%;
-
-  :hover {
-    background-color: ${OL.GREY08};
-  }
-  :focus {
-    border: solid 1px ${OL.PURPLE02};
-    background-color: white;
-    outline: none;
-  }
-  :disabled {
-    background-color: ${OL.GREY10};
-    color: ${OL.GREY02};
-    cursor: not-allowed;
-  }
-`;
 
 type Props = {
   actions:{
@@ -88,6 +45,7 @@ type Props = {
   onDiscard :() => void;
   organization :Map;
 };
+
 type State = {
   newWorksiteData :Map;
 };
