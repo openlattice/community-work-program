@@ -129,7 +129,7 @@ class WorksitesByOrgCard extends Component<Props, State> {
             <OrganizationName>
               { orgName }
             </OrganizationName>
-            <StyledButton onClick={this.handleShowAddWorksite}>Add Worksite</StyledButton>
+            <StyledButton onClick={this.handleShowAddWorksite}>Add Work Site</StyledButton>
           </CardHeaderWrapper>
           <SubtitleWrapper>
             <Subtitle>{ worksiteCount }</Subtitle>
