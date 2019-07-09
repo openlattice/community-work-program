@@ -40,7 +40,7 @@ const TableRow = ({
     [NAME]: worksiteName
   } = getEntityProperties(worksite, [DATETIME_END, DATETIME_START, NAME]);
 
-  const startDate = startDateTime ? formatAsDate(startDateTime) : '';
+  const startDate = formatAsDate(startDateTime);
   const status = (startDateTime && !endDateTime) ? 'Active' : 'Inactive';
   const scheduledParticipantCount = (worksiteInfo && worksiteInfo.get(SCHEDULED))
     ? formatNumericalValue(worksiteInfo.get(SCHEDULED))
