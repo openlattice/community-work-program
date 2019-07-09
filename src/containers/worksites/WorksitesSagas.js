@@ -101,24 +101,24 @@ function* getWorksitePlansWorker(action :SequenceAction) :Generator<*, *, *> {
             [HOURS_WORKED]: hoursWorked,
             [REQUIRED_HOURS]: reqHours
           } = getEntityProperties(plan, [HOURS_WORKED, REQUIRED_HOURS]);
-          if (!hoursWorked || !reqHours) return total + 0;
-          if (hoursWorked === reqHours) return total + 0;
+          if (!hoursWorked || !reqHours) return total;
+          if (hoursWorked === reqHours) return total;
           if (hoursWorked !== reqHours) return total + 1;
-          return total + 0;
+          return total;
         }, 0);
         const pastParticipants :number = worksitePlans.reduce((total, plan) => {
           const {
             [HOURS_WORKED]: hoursWorked,
             [REQUIRED_HOURS]: reqHours
           } = getEntityProperties(plan, [HOURS_WORKED, REQUIRED_HOURS]);
-          if (!hoursWorked || !reqHours) return total + 0;
+          if (!hoursWorked || !reqHours) return total;
           if (hoursWorked === reqHours) return total + 1;
-          if (hoursWorked !== reqHours) return total + 0;
-          return total + 0;
+          if (hoursWorked !== reqHours) return total;
+          return total;
         }, 0);
         const totalHoursWorkedAtWorksite :number = worksitePlans.reduce((total, plan) => {
           const { [HOURS_WORKED]: hoursWorked } = getEntityProperties(plan, [HOURS_WORKED]);
-          if (!hoursWorked) return total + 0;
+          if (!hoursWorked) return total;
           return total + hoursWorked;
         }, 0);
         const individualWorksiteInfo :Map = Map().withMutations((map) => {
