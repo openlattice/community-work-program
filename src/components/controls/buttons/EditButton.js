@@ -30,7 +30,7 @@ const EditButtonWrapper = styled(Button)`
   }
 `;
 
-const LeftChevron = styled(FontAwesomeIcon).attrs({
+const PenIcon = styled(FontAwesomeIcon).attrs({
   icon: faPen
 })`
   margin-right: 7px;
@@ -53,7 +53,7 @@ const EditButton = (props :Props) => {
   } = props;
   return (
     <EditButtonWrapper className={className} onClick={onClick}>
-      <LeftChevron size={size} />
+      <PenIcon size={size} />
       {children}
     </EditButtonWrapper>
   );
