@@ -6,7 +6,8 @@ import {
   CardSegment,
   DatePicker,
   Input,
-  Label
+  Label,
+  TextArea
 } from 'lattice-ui-kit';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
@@ -24,7 +25,6 @@ import {
   ButtonsWrapper,
   FormRow,
   RowContent,
-  StyledTextArea,
 } from '../../components/Layout';
 
 const { OPERATES, ORGANIZATION, WORKSITE } = APP_TYPE_FQNS;
@@ -121,10 +121,9 @@ class AddWorksiteForm extends Component<Props, State> {
           <FormRow>
             <RowContent>
               <Label>Description of work available</Label>
-              <StyledTextArea
+              <TextArea
                   name={DESCRIPTION}
-                  onChange={this.handleInputChange}
-                  rows={3} />
+                  onChange={this.handleInputChange} />
             </RowContent>
           </FormRow>
           <FormRow>

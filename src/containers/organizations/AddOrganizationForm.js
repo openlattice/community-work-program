@@ -5,7 +5,8 @@ import {
   Button,
   CardSegment,
   Input,
-  Label
+  Label,
+  TextArea,
 } from 'lattice-ui-kit';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
@@ -21,7 +22,6 @@ import {
   ButtonsWrapper,
   FormRow,
   RowContent,
-  StyledTextArea,
 } from '../../components/Layout';
 
 const { ORGANIZATION } = APP_TYPE_FQNS;
@@ -92,10 +92,9 @@ class AddOrganizationForm extends Component<Props, State> {
           <FormRow>
             <RowContent>
               <Label>Description of organization</Label>
-              <StyledTextArea
+              <TextArea
                   name={DESCRIPTION}
-                  onChange={this.handleInputChange}
-                  rows={3} />
+                  onChange={this.handleInputChange} />
             </RowContent>
           </FormRow>
           <ButtonsRow>
