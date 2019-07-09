@@ -12,7 +12,6 @@ import {
   Redirect,
   Route,
   Switch,
-  withRouter
 } from 'react-router-dom';
 import type { RequestSequence } from 'redux-reqseq';
 
