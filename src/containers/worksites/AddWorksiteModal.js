@@ -4,13 +4,11 @@ import styled from 'styled-components';
 import { Map } from 'immutable';
 import { Card, CardHeader, Modal } from 'lattice-ui-kit';
 import { connect } from 'react-redux';
-import { bindActionCreators } from 'redux';
 import { RequestStates } from 'redux-reqseq';
-import type { RequestSequence, RequestState } from 'redux-reqseq';
+import type { RequestState } from 'redux-reqseq';
 
 import AddWorksiteForm from './AddWorksiteForm';
 
-import { submitDataGraph } from '../../core/sagas/data/DataActions';
 import { getEntityProperties } from '../../utils/DataUtils';
 import { ORGANIZATION_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { DATA, STATE } from '../../utils/constants/ReduxStateConsts';
@@ -24,9 +22,6 @@ const StyledCard = styled(Card)`
 `;
 
 type Props = {
-  actions:{
-    submitDataGraph :RequestSequence;
-  };
   isOpen :boolean;
   onClose :() => void;
   organization :Map;
@@ -76,11 +71,5 @@ const mapStateToProps = (state :Map) => ({
   submitDataGraphRequestState: state.getIn([STATE.DATA, ACTIONS, SUBMIT_DATA_GRAPH, REQUEST_STATE]),
 });
 
-const mapDispatchToProps = dispatch => ({
-  actions: bindActionCreators({
-    submitDataGraph,
-  }, dispatch)
-});
-
 // $FlowFixMe
-export default connect(mapStateToProps, mapDispatchToProps)(AddWorksiteModal);
+export default connect(mapStateToProps)(AddWorksiteModal);
