@@ -78,45 +78,43 @@ class AddOrganizationForm extends Component<Props, State> {
   render() {
     const { isLoading, onDiscard } = this.props;
     return (
-      <>
-        <CardSegment padding="small" vertical>
-          <FormRow>
-            <RowContent>
-              <Label>Organization name</Label>
-              <Input
-                  name={ORGANIZATION_NAME}
-                  onChange={this.handleInputChange}
-                  type="text" />
-            </RowContent>
-          </FormRow>
-          <FormRow>
-            <RowContent>
-              <Label>Description of organization</Label>
-              <TextArea
-                  name={DESCRIPTION}
-                  onChange={this.handleInputChange} />
-            </RowContent>
-          </FormRow>
-          <ButtonsRow>
-            <RowContent>
-              <ButtonsWrapper>
-                <Button onClick={onDiscard} style={{ flex: 1 }}>Discard</Button>
-              </ButtonsWrapper>
-            </RowContent>
-            <RowContent>
-              <ButtonsWrapper>
-                <Button
-                    isLoading={isLoading}
-                    mode="primary"
-                    onClick={this.handleOnSubmit}
-                    style={{ flex: 1 }}>
-                  Submit
-                </Button>
-              </ButtonsWrapper>
-            </RowContent>
-          </ButtonsRow>
-        </CardSegment>
-      </>
+      <CardSegment padding="small" vertical>
+        <FormRow>
+          <RowContent>
+            <Label>Organization name</Label>
+            <Input
+                name={ORGANIZATION_NAME}
+                onChange={this.handleInputChange}
+                type="text" />
+          </RowContent>
+        </FormRow>
+        <FormRow>
+          <RowContent>
+            <Label>Description of organization</Label>
+            <TextArea
+                name={DESCRIPTION}
+                onChange={this.handleInputChange} />
+          </RowContent>
+        </FormRow>
+        <ButtonsRow>
+          <RowContent>
+            <ButtonsWrapper>
+              <Button onClick={onDiscard} style={{ flex: 1 }}>Discard</Button>
+            </ButtonsWrapper>
+          </RowContent>
+          <RowContent>
+            <ButtonsWrapper>
+              <Button
+                  isLoading={isLoading}
+                  mode="primary"
+                  onClick={this.handleOnSubmit}
+                  style={{ flex: 1 }}>
+                Submit
+              </Button>
+            </ButtonsWrapper>
+          </RowContent>
+        </ButtonsRow>
+      </CardSegment>
     );
   }
 }

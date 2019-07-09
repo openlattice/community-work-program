@@ -53,23 +53,21 @@ class AddWorksiteModal extends Component<Props> {
     } = this.props;
     const { [ORGANIZATION_NAME]: orgName } = getEntityProperties(organization, [ORGANIZATION_NAME]);
     return (
-      <>
-        <Modal
-            isVisible={isOpen}
-            onClose={onClose}
-            viewportScrolling
-            withHeader={false}>
-          <StyledCard>
-            <CardHeader padding="lg">
-              Add Worksite to { orgName }
-            </CardHeader>
-            <AddWorksiteForm
-                isLoading={submitDataGraphRequestState === RequestStates.PENDING}
-                onDiscard={onClose}
-                organization={organization} />
-          </StyledCard>
-        </Modal>
-      </>
+      <Modal
+          isVisible={isOpen}
+          onClose={onClose}
+          viewportScrolling
+          withHeader={false}>
+        <StyledCard>
+          <CardHeader padding="lg">
+            Add Worksite to { orgName }
+          </CardHeader>
+          <AddWorksiteForm
+              isLoading={submitDataGraphRequestState === RequestStates.PENDING}
+              onDiscard={onClose}
+              organization={organization} />
+        </StyledCard>
+      </Modal>
     );
   }
 }

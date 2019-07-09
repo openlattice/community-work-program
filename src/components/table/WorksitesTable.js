@@ -24,18 +24,16 @@ type HeaderProps = {
 };
 
 const Headers = ({ columnHeaders } :HeaderProps) => (
-  <>
-    <HeaderRow>
-      <HeaderElement />
-      {
-        columnHeaders.map(header => (
-          <HeaderElement key={header}>
-            { header }
-          </HeaderElement>
-        ))
-      }
-    </HeaderRow>
-  </>
+  <HeaderRow>
+    <HeaderElement />
+    {
+      columnHeaders.map(header => (
+        <HeaderElement key={header}>
+          { header }
+        </HeaderElement>
+      ))
+    }
+  </HeaderRow>
 );
 
 type Props = {

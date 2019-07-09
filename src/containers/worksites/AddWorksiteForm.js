@@ -107,64 +107,62 @@ class AddWorksiteForm extends Component<Props, State> {
   render() {
     const { isLoading, onDiscard } = this.props;
     return (
-      <>
-        <CardSegment padding="small" vertical>
-          <FormRow>
-            <RowContent>
-              <Label>Worksite name</Label>
-              <Input
-                  name={NAME}
-                  onChange={this.handleInputChange}
-                  type="text" />
-            </RowContent>
-          </FormRow>
-          <FormRow>
-            <RowContent>
-              <Label>Description of work available</Label>
-              <TextArea
-                  name={DESCRIPTION}
-                  onChange={this.handleInputChange} />
-            </RowContent>
-          </FormRow>
-          <FormRow>
-            <RowContent style={{ marginTop: '20px' }}>
-              <Label bold>If applicable:</Label>
-            </RowContent>
-          </FormRow>
-          <FormRow>
-            <RowContent>
-              <Label>Date first active</Label>
-              <DatePicker
-                  name={DATETIME_START}
-                  onChange={this.handleDateChange(DATETIME_START)} />
-            </RowContent>
-            <RowContent>
-              <Label>Date no longer active</Label>
-              <DatePicker
-                  name={DATETIME_END}
-                  onChange={this.handleDateChange(DATETIME_END)} />
-            </RowContent>
-          </FormRow>
-          <ButtonsRow>
-            <RowContent>
-              <ButtonsWrapper>
-                <Button onClick={onDiscard} style={{ flex: 1 }}>Discard</Button>
-              </ButtonsWrapper>
-            </RowContent>
-            <RowContent>
-              <ButtonsWrapper>
-                <Button
-                    isLoading={isLoading}
-                    mode="primary"
-                    onClick={this.handleOnSubmit}
-                    style={{ flex: 1 }}>
-                  Submit
-                </Button>
-              </ButtonsWrapper>
-            </RowContent>
-          </ButtonsRow>
-        </CardSegment>
-      </>
+      <CardSegment padding="small" vertical>
+        <FormRow>
+          <RowContent>
+            <Label>Worksite name</Label>
+            <Input
+                name={NAME}
+                onChange={this.handleInputChange}
+                type="text" />
+          </RowContent>
+        </FormRow>
+        <FormRow>
+          <RowContent>
+            <Label>Description of work available</Label>
+            <TextArea
+                name={DESCRIPTION}
+                onChange={this.handleInputChange} />
+          </RowContent>
+        </FormRow>
+        <FormRow>
+          <RowContent style={{ marginTop: '20px' }}>
+            <Label bold>If applicable:</Label>
+          </RowContent>
+        </FormRow>
+        <FormRow>
+          <RowContent>
+            <Label>Date first active</Label>
+            <DatePicker
+                name={DATETIME_START}
+                onChange={this.handleDateChange(DATETIME_START)} />
+          </RowContent>
+          <RowContent>
+            <Label>Date no longer active</Label>
+            <DatePicker
+                name={DATETIME_END}
+                onChange={this.handleDateChange(DATETIME_END)} />
+          </RowContent>
+        </FormRow>
+        <ButtonsRow>
+          <RowContent>
+            <ButtonsWrapper>
+              <Button onClick={onDiscard} style={{ flex: 1 }}>Discard</Button>
+            </ButtonsWrapper>
+          </RowContent>
+          <RowContent>
+            <ButtonsWrapper>
+              <Button
+                  isLoading={isLoading}
+                  mode="primary"
+                  onClick={this.handleOnSubmit}
+                  style={{ flex: 1 }}>
+                Submit
+              </Button>
+            </ButtonsWrapper>
+          </RowContent>
+        </ButtonsRow>
+      </CardSegment>
     );
   }
 }

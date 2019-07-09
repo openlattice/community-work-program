@@ -47,22 +47,20 @@ class AddOrganizationModal extends Component<Props> {
       submitDataGraphRequestState,
     } = this.props;
     return (
-      <>
-        <Modal
-            isVisible={isOpen}
-            onClose={onClose}
-            viewportScrolling
-            withHeader={false}>
-          <StyledCard>
-            <CardHeader padding="lg">
-              Add Organization
-            </CardHeader>
-            <AddOrganizationForm
-                isLoading={submitDataGraphRequestState === RequestStates.PENDING}
-                onDiscard={onClose} />
-          </StyledCard>
-        </Modal>
-      </>
+      <Modal
+          isVisible={isOpen}
+          onClose={onClose}
+          viewportScrolling
+          withHeader={false}>
+        <StyledCard>
+          <CardHeader padding="lg">
+            Add Organization
+          </CardHeader>
+          <AddOrganizationForm
+              isLoading={submitDataGraphRequestState === RequestStates.PENDING}
+              onDiscard={onClose} />
+        </StyledCard>
+      </Modal>
     );
   }
 }
