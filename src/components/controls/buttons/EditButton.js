@@ -4,9 +4,9 @@
 
 import * as React from 'react';
 import styled from 'styled-components';
+import { Button } from 'lattice-ui-kit';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPen } from '@fortawesome/pro-solid-svg-icons';
-import Button from './StyledButton';
 import { OL } from '../../../core/style/Colors';
 
 const EditButtonWrapper = styled(Button)`
