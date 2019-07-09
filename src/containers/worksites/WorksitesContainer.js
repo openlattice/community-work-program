@@ -292,7 +292,7 @@ class WorksitesContainer extends Component<Props, State> {
       ? `${organizationsToRender.count()} Organizations` : '1 Organization';
     const worksiteCount = organizationsToRender.reduce((count, org) => {
       const orgEKID :UUID = getEntityKeyId(org);
-      if (worksitesByOrg.get(orgEKID)) {
+      if (worksitesByOrg.has(orgEKID)) {
         return count + worksitesByOrg.get(orgEKID).count();
       }
       return count;
