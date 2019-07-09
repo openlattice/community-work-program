@@ -109,4 +109,4 @@ const mapDispatchToProps = dispatch => ({
 });
 
 // $FlowFixMe
-export default withRouter(connect(null, mapDispatchToProps)(AppContainer));
+export default connect(null, mapDispatchToProps)(AppContainer);
