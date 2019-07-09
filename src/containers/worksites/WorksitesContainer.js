@@ -334,7 +334,6 @@ class WorksitesContainer extends Component<Props, State> {
               return (
                 <WorksitesByOrgCard
                     key={orgEKID}
-                    onClickWorksite={() => {}}
                     organization={org}
                     orgStatus={organizationStatuses.get(orgEKID)}
                     updateOrgsList={this.handleAddNewWorksite}

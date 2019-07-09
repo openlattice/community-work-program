@@ -19,7 +19,7 @@ const { PAST, SCHEDULED, TOTAL_HOURS } = WORKSITE_INFO_CONSTS;
 type Props = {
   worksite :Map,
   worksiteInfo :Map;
-  selectWorksite :(selectedWorksite :Map) => void;
+  selectWorksite ? :(selectedWorksite :Map) => void;
   small? :boolean,
 };
 
@@ -71,6 +71,7 @@ const TableRow = ({
 };
 
 TableRow.defaultProps = {
+  selectWorksite: () => {},
   small: false
 };
 

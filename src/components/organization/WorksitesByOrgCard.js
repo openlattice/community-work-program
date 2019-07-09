@@ -60,7 +60,7 @@ const StyledButton = styled(Button)`
 `;
 
 type Props = {
-  onClickWorksite :(worksite :Map) => void;
+  onClickWorksite ? :(worksite :Map) => void;
   organization :Map;
   orgStatus :string;
   submitDataGraphRequestState :RequestState;
@@ -83,6 +83,10 @@ class WorksitesByOrgCard extends Component<Props, State> {
       showAddWorksite: false,
     };
   }
+
+  static defaultProps = {
+    onClickWorksite: () => {},
+  };
 
   componentDidUpdate(prevProps :Props, prevState :State) {
     const { submitDataGraphRequestState, updateOrgsList } = this.props;

@@ -40,7 +40,7 @@ type Props = {
   columnHeaders :string[];
   worksites :List;
   worksitesInfo :Map;
-  selectWorksite :(selectedWorksite :Map) => void;
+  selectWorksite ? :(selectedWorksite :Map) => void;
   small :boolean;
   tableMargin :string;
 };
@@ -73,5 +73,9 @@ const WorksitesTable = ({
     </Table>
   </WorksiteTableWrapper>
 );
+
+WorksitesTable.defaultProps = {
+  selectWorksite: () => {},
+};
 
 export default WorksitesTable;
