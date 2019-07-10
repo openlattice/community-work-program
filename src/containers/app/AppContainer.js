@@ -80,7 +80,7 @@ class AppContainer extends Component<Props> {
       <Route path={Routes.PARTICIPANT_PROFILE} component={ParticipantProfileContainer} />
       <Route path={Routes.PARTICIPANTS} component={ParticipantsSearchContainer} />
       <Route path={Routes.DASHBOARD} component={DashboardContainer} />
-      <Redirect from={Routes.ROOT} to={Routes.DASHBOARD} />
+      <Redirect to={Routes.DASHBOARD} />
     </Switch>
   );
 
