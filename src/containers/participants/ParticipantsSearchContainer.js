@@ -354,12 +354,12 @@ class ParticipantsSearchContainer extends Component<Props, State> {
               people={peopleToRender}
               selectedSortOption={selectedSortOption}
               sentenceTerms={sentenceTermsByParticipant}
-              setWidth={false}
               small
               sortByColumn={this.handleOnSort}
               totalTableItems={peopleToRender.count()}
               violations={violationMap}
-              warnings={warningMap} />
+              warnings={warningMap}
+              width="100%" />
         </ParticipantSearchInnerWrapper>
       </ParticipantSearchOuterWrapper>
     );

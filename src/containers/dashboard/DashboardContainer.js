@@ -259,10 +259,10 @@ class DashboardContainer extends Component<Props, State> {
               handleSelect={this.handleOnSelectPerson}
               hours={hoursWorked}
               people={newParticipants}
-              setWidth
               small
               sentenceTerms={sentenceTermsByParticipant}
-              totalTableItems={newParticipants.count()} />
+              totalTableItems={newParticipants.count()}
+              width="600px" />
           <RightWrapper>
             <ParticipantsTable
                 ageRequired={false}
@@ -279,10 +279,10 @@ class DashboardContainer extends Component<Props, State> {
                 handleSelect={this.handleOnSelectPerson}
                 hours={hoursWorked}
                 people={pendingCompletionReview}
-                setWidth
                 small
                 sentenceTerms={sentenceTermsByParticipant}
-                totalTableItems={pendingCompletionReview.count()} />
+                totalTableItems={pendingCompletionReview.count()}
+                width="600px" />
             <ParticipantsTable
                 ageRequired={false}
                 bannerText="Violations Watch"
@@ -298,10 +298,10 @@ class DashboardContainer extends Component<Props, State> {
                 handleSelect={this.handleOnSelectPerson}
                 hours={hoursWorked}
                 people={violationsWatch}
-                setWidth
                 small
                 totalTableItems={violationsWatch.count()}
-                violations={violationMap} />
+                violations={violationMap}
+                width="600px" />
           </RightWrapper>
         </DashboardBody>
       </DashboardWrapper>

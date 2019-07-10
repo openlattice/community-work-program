@@ -12,11 +12,11 @@ const { getStyleVariation } = StyleUtils;
 /* Table Styles */
 
 export const TableWrapper = styled.div`
-  width: ${props => (props.setWidth ? '600' : 'inherit')}px;
+  width: ${props => (props.width ? props.width : '100%')};
   background-color: ${OL.WHITE};
   border: 1px solid ${OL.GREY11};
   border-radius: 5px;
-  margin-bottom: 30px;
+  margin: ${props => (props.margin ? props.margin : '0 0 30px 0')};
   align-self: ${props => (props.alignCenter ? 'center' : 'start')};
 `;
 

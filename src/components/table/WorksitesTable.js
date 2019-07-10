@@ -42,7 +42,7 @@ type Props = {
   worksitesInfo :Map;
   selectWorksite ? :(selectedWorksite :Map) => void;
   small :boolean;
-  tableMargin :string;
+  tableMargin ? :string;
 };
 
 const WorksitesTable = ({
@@ -53,7 +53,7 @@ const WorksitesTable = ({
   small,
   tableMargin,
 } :Props) => (
-  <WorksiteTableWrapper margin={tableMargin}>
+  <WorksiteTableWrapper margin={tableMargin} width="100%">
     <Table>
       <Headers columnHeaders={columnHeaders} />
       {
@@ -76,6 +76,7 @@ const WorksitesTable = ({
 
 WorksitesTable.defaultProps = {
   selectWorksite: () => {},
+  tableMargin: '0 0 30px 0',
 };
 
 export default WorksitesTable;

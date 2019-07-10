@@ -72,12 +72,12 @@ type Props = {
   people :List;
   selectedSortOption ? :string;
   sentenceTerms ? :Map;
-  setWidth ? :boolean;
   small :boolean;
   sortByColumn ? :(header :string) => void;
   totalTableItems :number;
   violations ? :Map;
   warnings ? :Map;
+  width ? :string;
 };
 
 const ParticipantsTable = ({
@@ -93,14 +93,14 @@ const ParticipantsTable = ({
   people,
   selectedSortOption,
   sentenceTerms,
-  setWidth,
   small,
   sortByColumn,
   totalTableItems,
   violations,
   warnings,
+  width,
 } :Props) => (
-  <TableWrapper alignCenter={alignCenter} setWidth={setWidth}>
+  <TableWrapper alignCenter={alignCenter} width={width}>
     <TableBanner>
       { bannerText }
       <TotalTableItems>{ totalTableItems }</TotalTableItems>
@@ -220,10 +220,10 @@ ParticipantsTable.defaultProps = {
   hours: Map(),
   selectedSortOption: '',
   sentenceTerms: Map(),
-  setWidth: false,
   sortByColumn: () => {},
   violations: undefined,
   warnings: undefined,
+  width: '100%',
 };
 
 export default ParticipantsTable;
