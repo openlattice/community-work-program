@@ -90,7 +90,7 @@ const ToolBar = ({
           (tertiaryButtonAction && tertiaryButtonText)
             ? (
               <ButtonWrapper>
-                <Button>{ tertiaryButtonText }</Button>
+                <Button onClick={tertiaryButtonAction}>{ tertiaryButtonText }</Button>
               </ButtonWrapper>
             ) : null
         }
