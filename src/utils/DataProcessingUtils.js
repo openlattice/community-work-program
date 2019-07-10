@@ -9,6 +9,7 @@ import { isDefined } from './LangUtils';
 
 const LOG :Logger = new Logger('DataProcessingUtils');
 
+/* eslint-disable import/prefer-default-export */
 export function processEntityData(data :Map, edmPropertyTypes :Map) :{} {
 
   if (!Map.isMap(data) || data.isEmpty()) {
@@ -28,8 +29,8 @@ export function processEntityData(data :Map, edmPropertyTypes :Map) :{} {
   const entitySetId :UUID = data.get('entitySetId');
   const entityData = data.get('entityData');
 
-  let entityList :List = processedData.get(entitySetId, List());
-  let entity :Map = entityList.get(0, Map());
+  let entityList :List = List();
+  let entity :Map = Map();
 
   entityData.forEach((value :any, property :FQN) => {
 
