@@ -100,61 +100,6 @@ export const Status = styled(Subtitle)`
   color: ${statusColorVariation};
 `;
 
-/* Cards */
-
-export const CardOuterWrapper = styled.div`
-  width: 100%;
-  border-radius: 5px;
-  border: solid 1px ${OL.GREY11};
-  background-color: ${OL.WHITE};
-  margin-bottom: 20px;
-`;
-
-export const CardHeaderWrapper = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-`;
-
-export const CardInnerWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  margin: 50px;
-`;
-
-export const CardInnerText = styled.div`
-  margin-bottom: 30px;
-  :last-of-type {
-    margin-bottom: 0;
-  }
-`;
-
-export const InnerSectionWrapper = styled.div`
-  display: flex;
-  justify-content: space-between;
-  margin: 50px;
-`;
-
-export const Section = styled.div`
-  display: flex;
-  flex-direction: column;
-  margin-right: 150px;
-`;
-
-export const SectionHeaderWrapper = styled.div`
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
-  margin-bottom: 30px;
-`;
-
-export const SectionHeader = styled.span`
-  color: ${OL.GREY15};
-  font-weight: 600;
-  font-size: 16px;
-  margin: 0 20px;
-`;
-
 /* Body */
 
 export const BodyTextSegment = styled.span`
