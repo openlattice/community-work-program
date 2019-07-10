@@ -92,7 +92,8 @@ const ToolBar = ({
               <ButtonWrapper>
                 <Button onClick={tertiaryButtonAction}>{ tertiaryButtonText }</Button>
               </ButtonWrapper>
-            ) : null
+            )
+            : null
         }
         {
           (primaryButtonAction && primaryButtonText)
@@ -100,7 +101,8 @@ const ToolBar = ({
               <ButtonWrapper>
                 <Button mode="primary" onClick={primaryButtonAction}>{ primaryButtonText }</Button>
               </ButtonWrapper>
-            ) : null
+            )
+            : null
         }
       </ButtonsWrapper>
     </ToolBarInnerWrapper>
