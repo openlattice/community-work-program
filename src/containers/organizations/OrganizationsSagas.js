@@ -61,8 +61,8 @@ function* getOrganizationsWorker(action :SequenceAction) :Generator<*, *, *> {
 
     if (organizations.count() > 0) {
       const organizationEKIDs :string[] = organizations
-        .map((orgNeighbor :Map) => {
-          const org = getNeighborDetails(orgNeighbor);
+        .map((orgObj :Map) => {
+          const org = getNeighborDetails(orgObj);
           return getEntityKeyId(org);
         })
         .toJS();
