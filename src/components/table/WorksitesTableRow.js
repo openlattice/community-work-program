@@ -7,7 +7,7 @@ import styled from 'styled-components';
 import { Map } from 'immutable';
 
 import { Cell, Row } from './TableStyledComponents';
-import { formatNumericalValue } from '../../utils/FormattingUtils';
+import { formatImmutableValue } from '../../utils/FormattingUtils';
 import { formatAsDate } from '../../utils/DateTimeUtils';
 import { getEntityProperties } from '../../utils/DataUtils';
 import { WORKSITE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
@@ -20,7 +20,7 @@ type Props = {
   worksite :Map,
   worksiteInfo :Map;
   selectWorksite ? :(selectedWorksite :Map) => void;
-  small? :boolean,
+  small ? :boolean,
 };
 
 const WorksitesCell = styled(Cell)`
@@ -42,15 +42,9 @@ const TableRow = ({
 
   const startDate = formatAsDate(startDateTime);
   const status = (startDateTime && !endDateTime) ? 'Active' : 'Inactive';
-  const scheduledParticipantCount = (worksiteInfo && worksiteInfo.get(SCHEDULED))
-    ? formatNumericalValue(worksiteInfo.get(SCHEDULED))
-    : formatNumericalValue(0);
-  const pastParticipantCount = (worksiteInfo && worksiteInfo.get(PAST))
-    ? formatNumericalValue(worksiteInfo.get(PAST))
-    : formatNumericalValue(0);
-  const totalHours = (worksiteInfo && worksiteInfo.get(TOTAL_HOURS))
-    ? formatNumericalValue(worksiteInfo.get(TOTAL_HOURS))
-    : formatNumericalValue(0);
+  const scheduledParticipantCount = formatImmutableValue(worksiteInfo, SCHEDULED, 0);
+  const pastParticipantCount = formatImmutableValue(worksiteInfo, PAST, 0);
+  const totalHours = formatImmutableValue(worksiteInfo, TOTAL_HOURS, 0);
 
   return (
     <Row
@@ -72,7 +66,7 @@ const TableRow = ({
 
 TableRow.defaultProps = {
   selectWorksite: () => {},
-  small: false
+  small: false,
 };
 
 export default TableRow;
