@@ -101,9 +101,9 @@ function* getWorksitePlansWorker(action :SequenceAction) :Generator<*, *, *> {
             [HOURS_WORKED]: hoursWorked,
             [REQUIRED_HOURS]: reqHours
           } = getEntityProperties(plan, [HOURS_WORKED, REQUIRED_HOURS]);
-          if (!hoursWorked || !reqHours) return total;
-          if (hoursWorked === reqHours) return total;
-          if (hoursWorked !== reqHours) return total + 1;
+          if (hoursWorked !== reqHours) {
+            return total + 1;
+          }
           return total;
         }, 0);
         const pastParticipants :number = worksitePlans.reduce((total, plan) => {
@@ -111,9 +111,9 @@ function* getWorksitePlansWorker(action :SequenceAction) :Generator<*, *, *> {
             [HOURS_WORKED]: hoursWorked,
             [REQUIRED_HOURS]: reqHours
           } = getEntityProperties(plan, [HOURS_WORKED, REQUIRED_HOURS]);
-          if (!hoursWorked || !reqHours) return total;
-          if (hoursWorked === reqHours) return total + 1;
-          if (hoursWorked !== reqHours) return total;
+          if (hoursWorked === reqHours) {
+            return total + 1;
+          }
           return total;
         }, 0);
         const totalHoursWorkedAtWorksite :number = worksitePlans.reduce((total, plan) => {
