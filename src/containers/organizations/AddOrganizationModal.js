@@ -1,8 +1,7 @@
 // @flow
 import React, { Component } from 'react';
-import styled from 'styled-components';
 import { Map } from 'immutable';
-import { Card, CardHeader, Modal } from 'lattice-ui-kit';
+import { Modal } from 'lattice-ui-kit';
 import { connect } from 'react-redux';
 import { RequestStates } from 'redux-reqseq';
 import type { RequestState } from 'redux-reqseq';
@@ -12,11 +11,6 @@ import AddOrganizationForm from './AddOrganizationForm';
 import { DATA, STATE } from '../../utils/constants/ReduxStateConsts';
 
 const { ACTIONS, SUBMIT_DATA_GRAPH, REQUEST_STATE } = DATA;
-
-const StyledCard = styled(Card)`
-  margin: 0 -30px;
-  border: none;
-`;
 
 type Props = {
   isOpen :boolean;
@@ -45,16 +39,11 @@ class AddOrganizationModal extends Component<Props> {
       <Modal
           isVisible={isOpen}
           onClose={onClose}
-          viewportScrolling
-          withHeader={false}>
-        <StyledCard>
-          <CardHeader padding="lg">
-            Add Organization
-          </CardHeader>
-          <AddOrganizationForm
-              isLoading={submitDataGraphRequestState === RequestStates.PENDING}
-              onDiscard={onClose} />
-        </StyledCard>
+          textTitle="Add Organization"
+          viewportScrolling>
+        <AddOrganizationForm
+            isLoading={submitDataGraphRequestState === RequestStates.PENDING}
+            onDiscard={onClose} />
       </Modal>
     );
   }
