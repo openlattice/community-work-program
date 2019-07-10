@@ -2,7 +2,7 @@
 import React, { Component } from 'react';
 import styled from 'styled-components';
 import { List, Map } from 'immutable';
-import { Button } from 'lattice-ui-kit';
+import { Button, Card, CardSegment } from 'lattice-ui-kit';
 import { connect } from 'react-redux';
 import { RequestStates } from 'redux-reqseq';
 import type { RequestState } from 'redux-reqseq';
@@ -14,9 +14,6 @@ import { getEntityProperties } from '../../utils/DataUtils';
 import { ORGANIZATION_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { DATA, STATE } from '../../utils/constants/ReduxStateConsts';
 import {
-  CardHeaderWrapper,
-  CardOuterWrapper,
-  CardInnerWrapper,
   SmallSeparator,
   SubtitleWrapper,
   Subtitle,
@@ -35,6 +32,28 @@ const WORKSITES_COLUMNS = [
   'TOTAL HOURS'
 ];
 
+const OrgCard = styled(Card)`
+  border-radius: 5px;
+  margin-bottom: 20px;
+  padding: 10px 20px;
+  & > ${CardSegment} {
+    border: none;
+  }
+  & > ${CardSegment}:first-child {
+    justify-content: center;
+  }
+  & > ${CardSegment}:last-child {
+    margin: 0 -20px 0 -20px;
+    padding: 0;
+  }
+`;
+
+const TitleRowWrapper = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+`;
+
 const OrganizationName = styled.h1`
   color: ${OL.GREY15};
   font-weight: 600;
@@ -51,7 +70,6 @@ const OrganizationName = styled.h1`
 const Description = styled.div`
   color: ${OL.GREY15};
   font-size: 14px;
-  margin: 40px 0 0 0;
 `;
 
 const StyledButton = styled(Button)`
@@ -127,14 +145,14 @@ class WorksitesByOrgCard extends Component<Props, State> {
       [ORGANIZATION_NAME]: orgName
     } = getEntityProperties(organization, [DESCRIPTION, ORGANIZATION_NAME]);
     return (
-      <CardOuterWrapper>
-        <CardInnerWrapper>
-          <CardHeaderWrapper>
+      <OrgCard>
+        <CardSegment vertical padding="md">
+          <TitleRowWrapper>
             <OrganizationName>
               { orgName }
             </OrganizationName>
             <StyledButton onClick={this.handleShowAddWorksite}>Add Work Site</StyledButton>
-          </CardHeaderWrapper>
+          </TitleRowWrapper>
           <SubtitleWrapper>
             <Subtitle>{ worksiteCount }</Subtitle>
             <SmallSeparator>•</SmallSeparator>
@@ -142,25 +160,29 @@ class WorksitesByOrgCard extends Component<Props, State> {
               { orgStatus }
             </Status>
           </SubtitleWrapper>
+        </CardSegment>
+        <CardSegment padding="md">
           <Description>{ orgDescription }</Description>
-        </CardInnerWrapper>
-        {
-          (worksites && worksites.count() > 0)
-            ? (
-              <WorksitesTable
-                  columnHeaders={WORKSITES_COLUMNS}
-                  small={false}
-                  selectWorksite={onClickWorksite}
-                  tableMargin="15"
-                  worksites={worksites}
-                  worksitesInfo={worksitesInfo} />
-            ) : null
-        }
-        <AddWorksiteModal
-            isOpen={showAddWorksite}
-            onClose={this.handleHideAddWorksite}
-            organization={organization} />
-      </CardOuterWrapper>
+        </CardSegment>
+        <CardSegment padding="sm">
+          {
+            (worksites && worksites.count() > 0)
+              ? (
+                <WorksitesTable
+                    columnHeaders={WORKSITES_COLUMNS}
+                    small={false}
+                    selectWorksite={onClickWorksite}
+                    tableMargin="0"
+                    worksites={worksites}
+                    worksitesInfo={worksitesInfo} />
+              ) : null
+          }
+          <AddWorksiteModal
+              isOpen={showAddWorksite}
+              onClose={this.handleHideAddWorksite}
+              organization={organization} />
+        </CardSegment>
+      </OrgCard>
     );
   }
 }
