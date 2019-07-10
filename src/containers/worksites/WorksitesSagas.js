@@ -27,11 +27,15 @@ import {
 import { STATE } from '../../utils/constants/ReduxStateConsts';
 import { APP_TYPE_FQNS, WORKSITE_PLAN_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import {
+  ADD_WORKSITE,
   GET_WORKSITES,
   GET_WORKSITE_PLANS,
+  addWorksite,
   getWorksitePlans,
   getWorksites,
 } from './WorksitesActions';
+import { submitDataGraph } from '../../core/sagas/data/DataActions';
+import { submitDataGraphWorker } from '../../core/sagas/data/DataSagas';
 
 const { PAST, SCHEDULED, TOTAL_HOURS } = WORKSITE_INFO_CONSTS;
 const { ORGANIZATION, WORKSITE, WORKSITE_PLAN } = APP_TYPE_FQNS;
@@ -42,6 +46,43 @@ const { searchEntityNeighborsWithFilter } = SearchApiActions;
 const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
 
 const getAppFromState = state => state.get(STATE.APP, Map());
+
+/*
+ *
+ * WorksitesActions.addWorksite()
+ *
+ */
+
+function* addWorksiteWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+  const workerResponse = {};
+  let response :Object = {};
+
+  try {
+    yield put(addWorksite.request(id));
+
+    response = yield call(submitDataGraphWorker, submitDataGraph(value));
+    if (response.error) {
+      throw response.error;
+    }
+
+    yield put(addWorksite.success(id));
+  }
+  catch (error) {
+    workerResponse.error = error;
+    LOG.error('caught exception in addWorksiteWorker()', error);
+    yield put(addWorksite.failure(id, error));
+  }
+  finally {
+    yield put(addWorksite.finally(id));
+  }
+}
+
+function* addWorksiteWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(ADD_WORKSITE, addWorksiteWorker);
+}
 
 /*
  *
@@ -219,6 +260,8 @@ function* getWorksitesWatcher() :Generator<*, *, *> {
 }
 
 export {
+  addWorksiteWatcher,
+  addWorksiteWorker,
   getWorksitePlansWatcher,
   getWorksitePlansWorker,
   getWorksitesWatcher,

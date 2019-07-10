@@ -8,22 +8,22 @@ import type { RequestState } from 'redux-reqseq';
 
 import AddOrganizationForm from './AddOrganizationForm';
 
-import { DATA, STATE } from '../../utils/constants/ReduxStateConsts';
+import { ORGANIZATIONS, STATE } from '../../utils/constants/ReduxStateConsts';
 
-const { ACTIONS, SUBMIT_DATA_GRAPH, REQUEST_STATE } = DATA;
+const { ACTIONS, ADD_ORGANIZATION, REQUEST_STATE } = ORGANIZATIONS;
 
 type Props = {
   isOpen :boolean;
   onClose :() => void;
-  submitDataGraphRequestState :RequestState;
+  addOrganizationRequestState :RequestState;
 };
 
 class AddOrganizationModal extends Component<Props> {
 
   componentDidUpdate(prevProps :Props) {
-    const { submitDataGraphRequestState, onClose } = this.props;
-    const { submitDataGraphRequestState: prevSubmitState } = prevProps;
-    if (submitDataGraphRequestState === RequestStates.SUCCESS
+    const { addOrganizationRequestState, onClose } = this.props;
+    const { addOrganizationRequestState: prevSubmitState } = prevProps;
+    if (addOrganizationRequestState === RequestStates.SUCCESS
       && prevSubmitState === RequestStates.PENDING) {
       onClose();
     }
@@ -33,7 +33,7 @@ class AddOrganizationModal extends Component<Props> {
     const {
       isOpen,
       onClose,
-      submitDataGraphRequestState,
+      addOrganizationRequestState,
     } = this.props;
     return (
       <Modal
@@ -42,7 +42,7 @@ class AddOrganizationModal extends Component<Props> {
           textTitle="Add Organization"
           viewportScrolling>
         <AddOrganizationForm
-            isLoading={submitDataGraphRequestState === RequestStates.PENDING}
+            isLoading={addOrganizationRequestState === RequestStates.PENDING}
             onDiscard={onClose} />
       </Modal>
     );
@@ -50,7 +50,7 @@ class AddOrganizationModal extends Component<Props> {
 }
 
 const mapStateToProps = (state :Map) => ({
-  submitDataGraphRequestState: state.getIn([STATE.DATA, ACTIONS, SUBMIT_DATA_GRAPH, REQUEST_STATE])
+  addOrganizationRequestState: state.getIn([STATE.ORGANIZATIONS, ACTIONS, ADD_ORGANIZATION, REQUEST_STATE])
 });
 
 // $FlowFixMe

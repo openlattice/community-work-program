@@ -21,11 +21,15 @@ import { getEntitySetIdFromApp, getEntityKeyId, getNeighborDetails } from '../..
 import { STATE } from '../../utils/constants/ReduxStateConsts';
 import { APP_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import {
+  ADD_ORGANIZATION,
   GET_ORGANIZATIONS,
+  addOrganization,
   getOrganizations,
 } from './OrganizationsActions';
 import { getWorksites } from '../worksites/WorksitesActions';
 import { getWorksitesWorker } from '../worksites/WorksitesSagas';
+import { submitDataGraph } from '../../core/sagas/data/DataActions';
+import { submitDataGraphWorker } from '../../core/sagas/data/DataSagas';
 
 const { ORGANIZATION } = APP_TYPE_FQNS;
 const { getEntitySetData } = DataApiActions;
@@ -34,6 +38,43 @@ const { getEntitySetDataWorker } = DataApiSagas;
 const LOG = new Logger('OrganizationSagas');
 
 const getAppFromState = state => state.get(STATE.APP, Map());
+
+/*
+ *
+ * OrganizationActions.addOrganization()
+ *
+ */
+
+function* addOrganizationWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+  const workerResponse = {};
+  let response :Object = {};
+
+  try {
+    yield put(addOrganization.request(id));
+
+    response = yield call(submitDataGraphWorker, submitDataGraph(value));
+    if (response.error) {
+      throw response.error;
+    }
+
+    yield put(addOrganization.success(id));
+  }
+  catch (error) {
+    workerResponse.error = error;
+    LOG.error('caught exception in addOrganizationWorker()', error);
+    yield put(addOrganization.failure(id, error));
+  }
+  finally {
+    yield put(addOrganization.finally(id));
+  }
+}
+
+function* addOrganizationWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(ADD_ORGANIZATION, addOrganizationWorker);
+}
 
 /*
  *
@@ -88,6 +129,8 @@ function* getOrganizationsWatcher() :Generator<*, *, *> {
 }
 
 export {
+  addOrganizationWatcher,
+  addOrganizationWorker,
   getOrganizationsWatcher,
   getOrganizationsWorker,
 };

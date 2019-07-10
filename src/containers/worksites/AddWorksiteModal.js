@@ -10,25 +10,25 @@ import AddWorksiteForm from './AddWorksiteForm';
 
 import { getEntityProperties } from '../../utils/DataUtils';
 import { ORGANIZATION_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
-import { DATA, STATE } from '../../utils/constants/ReduxStateConsts';
+import { WORKSITES, STATE } from '../../utils/constants/ReduxStateConsts';
 
 const { ORGANIZATION_NAME } = ORGANIZATION_FQNS;
-const { ACTIONS, SUBMIT_DATA_GRAPH, REQUEST_STATE } = DATA;
+const { ACTIONS, ADD_WORKSITE, REQUEST_STATE } = WORKSITES;
 
 
 type Props = {
   isOpen :boolean;
   onClose :() => void;
   organization :Map;
-  submitDataGraphRequestState :RequestState;
+  addWorksiteRequestState :RequestState;
 };
 
 class AddWorksiteModal extends Component<Props> {
 
   componentDidUpdate(prevProps :Props) {
-    const { submitDataGraphRequestState, onClose } = this.props;
-    const { submitDataGraphRequestState: prevSumbitState } = prevProps;
-    if (submitDataGraphRequestState === RequestStates.SUCCESS
+    const { addWorksiteRequestState, onClose } = this.props;
+    const { addWorksiteRequestState: prevSumbitState } = prevProps;
+    if (addWorksiteRequestState === RequestStates.SUCCESS
       && prevSumbitState === RequestStates.PENDING) {
       onClose();
     }
@@ -39,7 +39,7 @@ class AddWorksiteModal extends Component<Props> {
       isOpen,
       onClose,
       organization,
-      submitDataGraphRequestState,
+      addWorksiteRequestState,
     } = this.props;
     const { [ORGANIZATION_NAME]: orgName } = getEntityProperties(organization, [ORGANIZATION_NAME]);
     return (
@@ -49,7 +49,7 @@ class AddWorksiteModal extends Component<Props> {
           textTitle={`Add Worksite to ${orgName}`}
           viewportScrolling>
         <AddWorksiteForm
-            isLoading={submitDataGraphRequestState === RequestStates.PENDING}
+            isLoading={addWorksiteRequestState === RequestStates.PENDING}
             onDiscard={onClose}
             organization={organization} />
       </Modal>
@@ -58,7 +58,7 @@ class AddWorksiteModal extends Component<Props> {
 }
 
 const mapStateToProps = (state :Map) => ({
-  submitDataGraphRequestState: state.getIn([STATE.DATA, ACTIONS, SUBMIT_DATA_GRAPH, REQUEST_STATE]),
+  addWorksiteRequestState: state.getIn([STATE.WORKSITES, ACTIONS, ADD_WORKSITE, REQUEST_STATE]),
 });
 
 // $FlowFixMe

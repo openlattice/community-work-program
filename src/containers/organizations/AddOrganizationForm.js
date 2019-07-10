@@ -12,7 +12,7 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import type { RequestSequence } from 'redux-reqseq';
 
-import { submitDataGraph } from '../../core/sagas/data/DataActions';
+import { addOrganization } from './OrganizationsActions';
 import { getEntitySetIdFromApp } from '../../utils/DataUtils';
 import { processEntityData } from '../../utils/DataProcessingUtils';
 import { APP_TYPE_FQNS, ORGANIZATION_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
@@ -29,7 +29,7 @@ const { DESCRIPTION, ORGANIZATION_NAME } = ORGANIZATION_FQNS;
 
 type Props = {
   actions:{
-    submitDataGraph :RequestSequence;
+    addOrganization :RequestSequence;
   };
   app :Map;
   edmPropertyTypes :Map;
@@ -72,7 +72,7 @@ class AddOrganizationForm extends Component<Props, State> {
     });
     const entityData :{} = processEntityData(entityDataToProcess, edmPropertyTypes);
 
-    actions.submitDataGraph({ associationEntityData: {}, entityData });
+    actions.addOrganization({ associationEntityData: {}, entityData });
   }
 
   render() {
@@ -126,7 +126,7 @@ const mapStateToProps = (state :Map) => ({
 
 const mapDispatchToProps = dispatch => ({
   actions: bindActionCreators({
-    submitDataGraph,
+    addOrganization,
   }, dispatch)
 });
 

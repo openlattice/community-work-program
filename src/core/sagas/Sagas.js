@@ -42,6 +42,7 @@ export default function* sagas() :Generator<*, *, *> {
     fork(EDMSagas.getEntitySetIdsWatcher),
 
     // OrganizationSagas
+    fork(OrganizationSagas.addOrganizationWatcher),
     fork(OrganizationSagas.getOrganizationsWatcher),
 
     // ParticipantSagas
@@ -63,6 +64,7 @@ export default function* sagas() :Generator<*, *, *> {
     fork(ParticipantsSagas.getSentencesWatcher),
 
     // WorksitesSagas
+    fork(WorksitesSagas.addWorksiteWatcher),
     fork(WorksitesSagas.getWorksitesWatcher),
     fork(WorksitesSagas.getWorksitePlansWatcher),
 

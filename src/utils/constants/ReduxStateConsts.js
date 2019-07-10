@@ -32,14 +32,6 @@ export const APP = {
   SETTINGS_BY_ORG_ID: 'appSettingsByOrgId'
 };
 
-/* Data */
-export const DATA = {
-  ACTIONS: 'actions',
-  ERRORS: 'errors',
-  REQUEST_STATE: 'requestState',
-  SUBMIT_DATA_GRAPH: 'submitDataGraph',
-};
-
 /* People */
 
 export const PEOPLE = {
@@ -92,6 +84,7 @@ export const PERSON = {
 
 export const ORGANIZATIONS = {
   ACTIONS: 'actions',
+  ADD_ORGANIZATION: 'addOrganization',
   ERRORS: 'errors',
   GET_ORGANIZATION: 'getOrganization',
   GET_ORGANIZATIONS: 'getOrganizations',
@@ -104,6 +97,7 @@ export const ORGANIZATIONS = {
 
 export const WORKSITES = {
   ACTIONS: 'actions',
+  ADD_WORKSITE: 'addWorksite',
   ERRORS: 'errors',
   GET_WORKSITES: 'getWorksites',
   GET_WORKSITE_PLANS: 'getWorksitePlans',

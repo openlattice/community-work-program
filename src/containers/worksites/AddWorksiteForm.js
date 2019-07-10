@@ -14,7 +14,7 @@ import { bindActionCreators } from 'redux';
 import type { RequestSequence } from 'redux-reqseq';
 import type { FQN } from 'lattice';
 
-import { submitDataGraph } from '../../core/sagas/data/DataActions';
+import { addWorksite } from './WorksitesActions';
 import { getEntityKeyId, getEntitySetIdFromApp } from '../../utils/DataUtils';
 import { processEntityData } from '../../utils/DataProcessingUtils';
 import { getUTCFromDateString } from '../../utils/DateTimeUtils';
@@ -37,7 +37,7 @@ const {
 
 type Props = {
   actions:{
-    submitDataGraph :RequestSequence;
+    addWorksite :RequestSequence;
   };
   app :Map;
   edmPropertyTypes :Map;
@@ -101,7 +101,7 @@ class AddWorksiteForm extends Component<Props, State> {
       }]
     };
 
-    actions.submitDataGraph({ associationEntityData, entityData });
+    actions.addWorksite({ associationEntityData, entityData });
   }
 
   render() {
@@ -174,7 +174,7 @@ const mapStateToProps = (state :Map) => ({
 
 const mapDispatchToProps = dispatch => ({
   actions: bindActionCreators({
-    submitDataGraph,
+    addWorksite,
   }, dispatch)
 });
 

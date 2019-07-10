@@ -9,12 +9,14 @@ import type { SequenceAction } from 'redux-reqseq';
 import { WORKSITES } from '../../utils/constants/ReduxStateConsts';
 
 import {
+  addWorksite,
   getWorksites,
   getWorksitePlans,
 } from './WorksitesActions';
 
 const {
   ACTIONS,
+  ADD_WORKSITE,
   ERRORS,
   GET_WORKSITES,
   GET_WORKSITE_PLANS,
@@ -25,6 +27,9 @@ const {
 
 const INITIAL_STATE :Map<*, *> = fromJS({
   [ACTIONS]: {
+    [ADD_WORKSITE]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
     [GET_WORKSITES]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
@@ -33,6 +38,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     },
   },
   [ERRORS]: {
+    [ADD_WORKSITE]: Map(),
     [GET_WORKSITES]: Map(),
     [GET_WORKSITE_PLANS]: Map(),
   },
@@ -43,6 +49,28 @@ const INITIAL_STATE :Map<*, *> = fromJS({
 export default function worksitesReducer(state :Map<*, *> = INITIAL_STATE, action :SequenceAction) :Map<*, *> {
 
   switch (action.type) {
+
+    case addWorksite.case(action.type): {
+
+      return addWorksite.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, ADD_WORKSITE, action.id], fromJS(action))
+          .setIn([ACTIONS, ADD_WORKSITE, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+
+          if (!state.hasIn([ACTIONS, ADD_WORKSITE, action.id])) {
+            return state;
+          }
+
+          return state
+            .setIn([ACTIONS, ADD_WORKSITE, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, ADD_WORKSITE, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, ADD_WORKSITE, action.id]),
+      });
+    }
 
     case getWorksites.case(action.type): {
 
