@@ -18,7 +18,6 @@ import { DateTime } from 'luxon';
 import { addWorksite } from './WorksitesActions';
 import { getEntityKeyId, getEntitySetIdFromApp } from '../../utils/DataUtils';
 import { processEntityData } from '../../utils/DataProcessingUtils';
-import { getUTCFromDateString } from '../../utils/DateTimeUtils';
 import { APP_TYPE_FQNS, WORKSITE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { STATE } from '../../utils/constants/ReduxStateConsts';
 import {
