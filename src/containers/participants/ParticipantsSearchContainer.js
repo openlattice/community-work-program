@@ -151,7 +151,8 @@ class ParticipantsSearchContainer extends Component<Props, State> {
       filteredPeople = peopleList.filter((person :Map) => {
         const statusTypeToInclude = ENROLLMENT_STATUSES[property];
         const personEKID :UUID = getEntityKeyId(person);
-        let { [STATUS]: status } = getEntityProperties(enrollmentByParticipant.get(personEKID), [STATUS]);
+        const personEnrollment :Map = enrollmentByParticipant.get(personEKID, Map());
+        let { [STATUS]: status } = getEntityProperties(personEnrollment, [STATUS]);
         status = !isDefined(status) ? ENROLLMENT_STATUSES.AWAITING_ENROLLMENT : status;
         return status === statusTypeToInclude;
       });
