@@ -101,12 +101,12 @@ function* getOrganizationsWorker(action :SequenceAction) :Generator<*, *, *> {
     organizations = fromJS(response.data);
 
     if (organizations.count() > 0) {
-      const organizationEKIDs :string[] = organizations
-        .map((orgObj :Map) => {
-          const org = getNeighborDetails(orgObj);
-          return getEntityKeyId(org);
-        })
-        .toJS();
+      const organizationEKIDs :string[] = [];
+      organizations.forEach((orgObj :Map) => {
+        const org = getNeighborDetails(orgObj);
+        const orgEKID = getEntityKeyId(org);
+        if (orgEKID) organizationEKIDs.push(orgEKID);
+      });
       yield call(getWorksitesWorker, getWorksites({ organizationEKIDs }));
     }
 
