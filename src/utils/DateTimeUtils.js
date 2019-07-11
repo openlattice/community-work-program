@@ -11,7 +11,7 @@ const TIME_HM_FORMAT :string = 'HH:mm';
 
 function formatAsDate(value :string) :string {
 
-  const valueAsDate = DateTime.fromISO(value, { zone: 'utc' });
+  const valueAsDate = DateTime.fromISO(value);
   if (valueAsDate.isValid) {
     return valueAsDate.toLocaleString(DateTime.DATE_SHORT);
   }
@@ -57,13 +57,6 @@ function calculateAge(value :string) :number {
   return -1;
 }
 
-function getUTCFromDateString(value :string) :Object {
-
-  const splitDate :number[] = value.split('-')
-    .map((string :string) => parseInt(string, 10));
-  return DateTime.utc(splitDate[0], splitDate[1], splitDate[2]).toISO();
-}
-
 export {
   DATE_MDY_SLASH_FORMAT,
   ISO_DATE_FORMAT,
@@ -74,5 +67,4 @@ export {
   formatAsISODate,
   formatAsISOTime,
   formatAsTime,
-  getUTCFromDateString,
 };

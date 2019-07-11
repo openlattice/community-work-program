@@ -13,6 +13,7 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import type { RequestSequence } from 'redux-reqseq';
 import type { FQN } from 'lattice';
+import { DateTime } from 'luxon';
 
 import { addWorksite } from './WorksitesActions';
 import { getEntityKeyId, getEntitySetIdFromApp } from '../../utils/DataUtils';
@@ -61,7 +62,9 @@ class AddWorksiteForm extends Component<Props, State> {
 
   handleDateChange = (name :FQN) => (date :string) => {
     const { newWorksiteData } = this.state;
-    const dateAsDateTime = getUTCFromDateString(date);
+    const splitDate :number[] = date.split('-')
+      .map((string :string) => parseInt(string, 10));
+    const dateAsDateTime = DateTime.local(splitDate[0], splitDate[1], splitDate[2]).toISO();
     this.setState({ newWorksiteData: newWorksiteData.set(name, dateAsDateTime) });
   }
 
