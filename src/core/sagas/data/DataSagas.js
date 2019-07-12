@@ -55,6 +55,8 @@ function* submitDataGraphWorker(action :SequenceAction) :Generator<*, *, *> {
     const response = yield call(createEntityAndAssociationDataWorker, createEntityAndAssociationData(dataGraph));
     if (response.error) throw response.error;
 
+    workerResponse.data = response.data;
+
     yield put(submitDataGraph.success(action.id, response.data));
   }
   catch (error) {
