@@ -2,12 +2,14 @@
  * @flow
  */
 
-import { Map, fromJS } from 'immutable';
+import { List, Map, fromJS } from 'immutable';
 import { RequestStates } from 'redux-reqseq';
 import type { SequenceAction } from 'redux-reqseq';
+import type { FQN } from 'lattice';
 
+import { getPropertyFqnFromEdm } from '../../utils/DataUtils';
 import { WORKSITES } from '../../utils/constants/ReduxStateConsts';
-
+import { ENTITY_KEY_ID } from '../../core/edm/constants/FullyQualifiedNames';
 import {
   addWorksite,
   getWorksites,
@@ -55,16 +57,44 @@ export default function worksitesReducer(state :Map<*, *> = INITIAL_STATE, actio
       return addWorksite.reducer(state, action, {
 
         REQUEST: () => state
-          .setIn([ACTIONS, ADD_WORKSITE, action.id], fromJS(action))
+          .setIn([ACTIONS, ADD_WORKSITE, action.id], action)
           .setIn([ACTIONS, ADD_WORKSITE, REQUEST_STATE], RequestStates.PENDING),
         SUCCESS: () => {
 
-          if (!state.hasIn([ACTIONS, ADD_WORKSITE, action.id])) {
-            return state;
+          const seqAction :SequenceAction = action;
+          const storedSeqAction :SequenceAction = state.getIn([ACTIONS, ADD_WORKSITE, seqAction.id]);
+
+          if (storedSeqAction) {
+
+            const { value } :Object = seqAction;
+            const { edm, worksiteEKID, worksiteESID } = value;
+
+            const storedValue :Object = storedSeqAction.value;
+            const { entityData } :Object = storedValue;
+            const storedWorksiteEntity :Map = Map(entityData[worksiteESID][0]);
+
+            const { associationEntityData } :Object = storedValue;
+            const operatesAssociation = Object.values(associationEntityData)[0];
+            const orgEKID = operatesAssociation[0].srcEntityKeyId;
+
+            let newWorksite :Map = Map();
+            storedWorksiteEntity.forEach((worksiteValue, id) => {
+              const propertyTypeFqn :FQN = getPropertyFqnFromEdm(edm, id);
+              newWorksite = newWorksite.set(propertyTypeFqn, worksiteValue);
+            });
+            newWorksite = newWorksite.set(ENTITY_KEY_ID, worksiteEKID);
+
+            let worksitesByOrg :Map = state.get(WORKSITES_BY_ORG);
+            let relevantOrgWorksites :List = worksitesByOrg.get(orgEKID, List());
+            relevantOrgWorksites = relevantOrgWorksites.push(newWorksite);
+            worksitesByOrg = worksitesByOrg.set(orgEKID, relevantOrgWorksites);
+
+            return state
+              .set(WORKSITES_BY_ORG, worksitesByOrg)
+              .setIn([ACTIONS, ADD_WORKSITE, REQUEST_STATE], RequestStates.SUCCESS);
           }
 
-          return state
-            .setIn([ACTIONS, ADD_WORKSITE, REQUEST_STATE], RequestStates.SUCCESS);
+          return state;
         },
         FAILURE: () => state
           .setIn([ACTIONS, ADD_WORKSITE, REQUEST_STATE], RequestStates.FAILURE),

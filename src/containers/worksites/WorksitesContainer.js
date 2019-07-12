@@ -31,7 +31,6 @@ import {
 } from './WorksitesConstants';
 import {
   APP,
-  DATA,
   STATE,
   ORGANIZATIONS,
   WORKSITES
@@ -50,6 +49,7 @@ const { DATETIME_END, DATETIME_START } = WORKSITE_FQNS;
 const { ORGANIZATION_NAME } = ORGANIZATION_FQNS;
 const {
   ACTIONS,
+  ADD_ORGANIZATION,
   GET_ORGANIZATIONS,
   ORGANIZATIONS_LIST,
   REQUEST_STATE
@@ -74,7 +74,7 @@ type Props = {
   getOrganizationsRequestState :RequestState;
   initializeAppRequestState :RequestState;
   organizationsList :List;
-  submitDataGraphRequestState :RequestState;
+  addOrganizationRequestState :RequestState;
   worksitesByOrg :Map;
   worksitesInfo :Map;
 };
@@ -112,7 +112,7 @@ class WorksitesContainer extends Component<Props, State> {
       app,
       actions,
       organizationsList,
-      submitDataGraphRequestState,
+      addOrganizationRequestState,
       worksitesByOrg
     } = this.props;
     const { organizationStatuses, showAddOrganization } = this.state;
@@ -131,25 +131,25 @@ class WorksitesContainer extends Component<Props, State> {
       this.sortOrganizations();
     }
     // if a new organization was just added:
-    if (prevState.showAddOrganization && !showAddOrganization) {
-      if (submitDataGraphRequestState === RequestStates.SUCCESS) {
-        actions.getOrganizations();
-      }
-    }
+    // if (prevState.showAddOrganization && !showAddOrganization) {
+    //   if (addOrganizationRequestState === RequestStates.SUCCESS) {
+    //     actions.getOrganizations();
+    //   }
+    // }
     // if a new worksite was just added:
-    const prevWorksitesByOrg = prevProps.worksitesByOrg;
-    const prevWorksiteCount = prevWorksitesByOrg.reduce((count, worksiteList) => count + worksiteList.count(), 0);
-    const worksiteCount = worksitesByOrg.reduce((count, worksiteList) => count + worksiteList.count(), 0);
-    if (submitDataGraphRequestState === RequestStates.SUCCESS && prevWorksiteCount !== worksiteCount) {
-      this.setOrganizationStatuses();
-    }
-    const prevOrgStatuses = prevState.organizationStatuses;
-    const previousActiveStatuses = prevOrgStatuses
-      .reduce((count, status) => (status === 'Active' ? count + 1 : count), 0);
-    const activeStatuses = organizationStatuses.reduce((count, status) => (status === 'Active' ? count + 1 : count), 0);
-    if (previousActiveStatuses !== activeStatuses) {
-      this.sortOrganizations();
-    }
+    // const prevWorksitesByOrg = prevProps.worksitesByOrg;
+    // const prevWorksiteCount = prevWorksitesByOrg.reduce((count, worksiteList) => count + worksiteList.count(), 0);
+    // const worksiteCount = worksitesByOrg.reduce((count, worksiteList) => count + worksiteList.count(), 0);
+    // if (submitDataGraphRequestState === RequestStates.SUCCESS && prevWorksiteCount !== worksiteCount) {
+    //   this.setOrganizationStatuses();
+    // }
+    // const prevOrgStatuses = prevState.organizationStatuses;
+    // const previousActiveStatuses = prevOrgStatuses
+    //   .reduce((count, status) => (status === 'Active' ? count + 1 : count), 0);
+    // const activeStatuses = organizationStatuses.reduce((count, status) => (status === 'Active' ? count + 1 : count), 0);
+    // if (previousActiveStatuses !== activeStatuses) {
+    //   this.sortOrganizations();
+    // }
   }
 
   handleAddNewWorksite = () => {
@@ -355,15 +355,14 @@ class WorksitesContainer extends Component<Props, State> {
 
 const mapStateToProps = (state :Map<*, *>) => {
   const app = state.get(STATE.APP);
-  const data = state.get(STATE.DATA);
   const organizations = state.get(STATE.ORGANIZATIONS);
   const worksites = state.get(STATE.WORKSITES);
   return {
+    addOrganizationRequestState: organizations.getIn([ACTIONS, ADD_ORGANIZATION, REQUEST_STATE]),
     app,
     getOrganizationsRequestState: organizations.getIn([ACTIONS, GET_ORGANIZATIONS, REQUEST_STATE]),
     initializeAppRequestState: app.getIn([APP.ACTIONS, APP.INITIALIZE_APPLICATION, APP.REQUEST_STATE]),
     [ORGANIZATIONS_LIST]: organizations.get(ORGANIZATIONS_LIST),
-    submitDataGraphRequestState: data.getIn([DATA.ACTIONS, DATA.SUBMIT_DATA_GRAPH, DATA.REQUEST_STATE]),
     [WORKSITES_BY_ORG]: worksites.get(WORKSITES_BY_ORG),
     [WORKSITES_INFO]: worksites.get(WORKSITES_INFO),
   };
