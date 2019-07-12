@@ -3,16 +3,12 @@ import React, { Component } from 'react';
 import styled from 'styled-components';
 import { List, Map } from 'immutable';
 import { Button, Card, CardSegment } from 'lattice-ui-kit';
-import { connect } from 'react-redux';
-import { RequestStates } from 'redux-reqseq';
-import type { RequestState } from 'redux-reqseq';
 
 import WorksitesTable from '../table/WorksitesTable';
 import AddWorksiteModal from '../../containers/worksites/AddWorksiteModal';
 
 import { getEntityProperties } from '../../utils/DataUtils';
 import { ORGANIZATION_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
-import { ORGANIZATIONS, STATE } from '../../utils/constants/ReduxStateConsts';
 import {
   SmallSeparator,
   SubtitleWrapper,
@@ -22,7 +18,6 @@ import {
 import { OL } from '../../core/style/Colors';
 
 const { DESCRIPTION, ORGANIZATION_NAME } = ORGANIZATION_FQNS;
-const { ACTIONS, ADD_ORGANIZATION, REQUEST_STATE } = ORGANIZATIONS;
 
 const WORKSITES_COLUMNS = [
   'WORK SITE NAME',
@@ -82,8 +77,6 @@ type Props = {
   onClickWorksite ? :(worksite :Map) => void;
   organization :Map;
   orgStatus :string;
-  addWorksiteRequestState :RequestState;
-  updateOrgsList :() => void;
   worksiteCount :string;
   worksites :List;
   worksitesInfo :Map;
@@ -106,17 +99,6 @@ class WorksitesByOrgCard extends Component<Props, State> {
   static defaultProps = {
     onClickWorksite: () => {},
   };
-
-  componentDidUpdate(prevProps :Props, prevState :State) {
-    const { addWorksiteRequestState, updateOrgsList } = this.props;
-    const { showAddWorksite } = this.state;
-
-    if (prevState.showAddWorksite && !showAddWorksite) {
-      if (addWorksiteRequestState === RequestStates.SUCCESS) {
-        updateOrgsList();
-      }
-    }
-  }
 
   handleShowAddWorksite = () => {
     this.setState({
@@ -188,9 +170,5 @@ class WorksitesByOrgCard extends Component<Props, State> {
   }
 }
 
-const mapStateToProps = (state :Map) => ({
-  addWorksiteRequestState: state.getIn([STATE.ORGANIZATIONS, ACTIONS, ADD_ORGANIZATION, REQUEST_STATE]),
-});
-
 // $FlowFixMe
-export default connect(mapStateToProps)(WorksitesByOrgCard);
+export default WorksitesByOrgCard;
