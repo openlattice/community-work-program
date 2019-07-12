@@ -17,6 +17,7 @@ import { getEntitySetIdFromApp } from '../../utils/DataUtils';
 import { processEntityData } from '../../utils/DataProcessingUtils';
 import { APP_TYPE_FQNS, ORGANIZATION_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { STATE } from '../../utils/constants/ReduxStateConsts';
+import { TYPE_IDS_BY_FQNS } from '../../core/edm/constants/DataModelConsts';
 import {
   ButtonsRow,
   ButtonsWrapper,
@@ -121,7 +122,7 @@ class AddOrganizationForm extends Component<Props, State> {
 
 const mapStateToProps = (state :Map) => ({
   app: state.get(STATE.APP),
-  edmPropertyTypes: state.getIn([STATE.EDM, 'typeIdsByFqn']),
+  edmPropertyTypes: state.getIn([STATE.EDM, TYPE_IDS_BY_FQNS]),
 });
 
 const mapDispatchToProps = dispatch => ({

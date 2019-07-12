@@ -1,6 +1,7 @@
 // @flow
 import React, { Component } from 'react';
 import { Map } from 'immutable';
+import { DateTime } from 'luxon';
 import {
   Button,
   CardSegment,
@@ -13,13 +14,13 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import type { RequestSequence } from 'redux-reqseq';
 import type { FQN } from 'lattice';
-import { DateTime } from 'luxon';
 
 import { addWorksite } from './WorksitesActions';
 import { getEntityKeyId, getEntitySetIdFromApp } from '../../utils/DataUtils';
 import { processEntityData } from '../../utils/DataProcessingUtils';
 import { APP_TYPE_FQNS, WORKSITE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { STATE } from '../../utils/constants/ReduxStateConsts';
+import { TYPE_IDS_BY_FQNS } from '../../core/edm/constants/DataModelConsts';
 import {
   ButtonsRow,
   ButtonsWrapper,
@@ -171,7 +172,7 @@ class AddWorksiteForm extends Component<Props, State> {
 
 const mapStateToProps = (state :Map) => ({
   app: state.get(STATE.APP),
-  edmPropertyTypes: state.getIn([STATE.EDM, 'typeIdsByFqn']),
+  edmPropertyTypes: state.getIn([STATE.EDM, TYPE_IDS_BY_FQNS]),
 });
 
 const mapDispatchToProps = dispatch => ({
