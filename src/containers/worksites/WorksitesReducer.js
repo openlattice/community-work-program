@@ -7,9 +7,10 @@ import { RequestStates } from 'redux-reqseq';
 import type { SequenceAction } from 'redux-reqseq';
 import type { FQN } from 'lattice';
 
-import { getPropertyFqnFromEdm } from '../../utils/DataUtils';
+import { isDefined } from '../../utils/LangUtils';
+import { getEntityProperties, getPropertyFqnFromEdm } from '../../utils/DataUtils';
 import { WORKSITES } from '../../utils/constants/ReduxStateConsts';
-import { ENTITY_KEY_ID } from '../../core/edm/constants/FullyQualifiedNames';
+import { ENTITY_KEY_ID, WORKSITE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import {
   addWorksite,
   getWorksites,
@@ -23,9 +24,11 @@ const {
   GET_WORKSITES,
   GET_WORKSITE_PLANS,
   REQUEST_STATE,
+  ORGANIZATION_STATUSES,
   WORKSITES_BY_ORG,
   WORKSITES_INFO,
 } = WORKSITES;
+const { DATETIME_END, DATETIME_START } = WORKSITE_FQNS;
 
 const INITIAL_STATE :Map<*, *> = fromJS({
   [ACTIONS]: {
@@ -44,6 +47,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     [GET_WORKSITES]: Map(),
     [GET_WORKSITE_PLANS]: Map(),
   },
+  [ORGANIZATION_STATUSES]: Map(),
   [WORKSITES_BY_ORG]: Map(),
   [WORKSITES_INFO]: Map(),
 });
@@ -107,22 +111,47 @@ export default function worksitesReducer(state :Map<*, *> = INITIAL_STATE, actio
       return getWorksites.reducer(state, action, {
 
         REQUEST: () => state
-          .setIn([ACTIONS, GET_WORKSITES, action.id], fromJS(action))
+          .setIn([ACTIONS, GET_WORKSITES, action.id], action)
           .setIn([ACTIONS, GET_WORKSITES, REQUEST_STATE], RequestStates.PENDING),
         SUCCESS: () => {
 
-          if (!state.hasIn([ACTIONS, GET_WORKSITES, action.id])) {
-            return state;
-          }
+          const seqAction :SequenceAction = action;
+          const storedSeqAction :SequenceAction = state.getIn([ACTIONS, GET_WORKSITES, seqAction.id]);
 
-          const { value } = action;
-          if (value === null || value === undefined) {
-            return state;
+          const { value } :Object = seqAction;
+          const { worksitesByOrg } = value;
+
+          if (storedSeqAction) {
+
+            const storedValue :Object = storedSeqAction.value;
+            const { organizationEKIDs: orgEKIDs } = storedValue;
+
+            let organizationStatuses :Map = Map();
+            worksitesByOrg.forEach((worksiteList :List, orgEKID :UUID) => {
+              const currentlyActiveWorksite :Map = worksiteList ? worksiteList.find((worksite :Map) => {
+                const {
+                  [DATETIME_END]: end,
+                  [DATETIME_START]: start
+                } = getEntityProperties(worksite, [DATETIME_END, DATETIME_START]);
+                return start && !end;
+              }) : undefined;
+              const orgStatus :string = isDefined(currentlyActiveWorksite) ? 'Active' : 'Inactive';
+              organizationStatuses = organizationStatuses.set(orgEKID, orgStatus);
+            });
+
+            orgEKIDs.forEach((orgEKID :UUID) => {
+              if (!worksitesByOrg.get(orgEKID)) organizationStatuses = organizationStatuses.set(orgEKID, 'Inactive');
+            });
+
+            return state
+              .set(ORGANIZATION_STATUSES, organizationStatuses)
+              .set(WORKSITES_BY_ORG, worksitesByOrg)
+              .setIn([ACTIONS, GET_WORKSITES, REQUEST_STATE], RequestStates.SUCCESS);
           }
 
           return state
-            .set(WORKSITES_BY_ORG, value)
-            .setIn([ACTIONS, GET_WORKSITES, REQUEST_STATE], RequestStates.SUCCESS);
+            // .set(WORKSITES_BY_ORG, worksitesByOrg)
+            // .setIn([ACTIONS, GET_WORKSITES, REQUEST_STATE], RequestStates.SUCCESS);
         },
         FAILURE: () => {
 

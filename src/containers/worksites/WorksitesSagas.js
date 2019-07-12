@@ -210,7 +210,7 @@ function* getWorksitesWorker(action :SequenceAction) :Generator<*, *, *> {
   let worksitesByOrg :Map = Map();
 
   try {
-    yield put(getWorksites.request(id));
+    yield put(getWorksites.request(id, value));
     if (value === null || value === undefined) {
       throw ERR_ACTION_VALUE_NOT_DEFINED;
     }
@@ -231,6 +231,7 @@ function* getWorksitesWorker(action :SequenceAction) :Generator<*, *, *> {
     if (response.error) {
       throw response.error;
     }
+
     worksitesByOrg = fromJS(response.data)
       .map((worksiteList :List) => worksiteList
         .map((worksite :Map) => getNeighborDetails(worksite)));
@@ -248,7 +249,7 @@ function* getWorksitesWorker(action :SequenceAction) :Generator<*, *, *> {
       yield call(getWorksitePlansWorker, getWorksitePlans({ worksiteEKIDs }));
     }
 
-    yield put(getWorksites.success(id, worksitesByOrg));
+    yield put(getWorksites.success(id, { worksitesByOrg }));
   }
   catch (error) {
     workerResponse.error = error;
