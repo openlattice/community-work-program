@@ -14,6 +14,7 @@ export const ORG_IDS = {
 /* EDM Constants */
 
 export const TYPE_IDS_BY_FQNS = 'typeIdsByFqn';
+export const TYPES_BY_ID = 'typesById';
 export const NEIGHBOR_DETAILS = 'neighborDetails';
 export const NEIGHBOR_ENTITY_SET = 'neighborEntitySet';
 
