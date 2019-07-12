@@ -12,7 +12,7 @@ import AddWorksiteModal from '../../containers/worksites/AddWorksiteModal';
 
 import { getEntityProperties } from '../../utils/DataUtils';
 import { ORGANIZATION_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
-import { DATA, STATE } from '../../utils/constants/ReduxStateConsts';
+import { ORGANIZATIONS, STATE } from '../../utils/constants/ReduxStateConsts';
 import {
   SmallSeparator,
   SubtitleWrapper,
@@ -22,6 +22,7 @@ import {
 import { OL } from '../../core/style/Colors';
 
 const { DESCRIPTION, ORGANIZATION_NAME } = ORGANIZATION_FQNS;
+const { ACTIONS, ADD_ORGANIZATION, REQUEST_STATE } = ORGANIZATIONS;
 
 const WORKSITES_COLUMNS = [
   'WORK SITE NAME',
@@ -81,7 +82,7 @@ type Props = {
   onClickWorksite ? :(worksite :Map) => void;
   organization :Map;
   orgStatus :string;
-  submitDataGraphRequestState :RequestState;
+  addWorksiteRequestState :RequestState;
   updateOrgsList :() => void;
   worksiteCount :string;
   worksites :List;
@@ -107,11 +108,11 @@ class WorksitesByOrgCard extends Component<Props, State> {
   };
 
   componentDidUpdate(prevProps :Props, prevState :State) {
-    const { submitDataGraphRequestState, updateOrgsList } = this.props;
+    const { addWorksiteRequestState, updateOrgsList } = this.props;
     const { showAddWorksite } = this.state;
 
     if (prevState.showAddWorksite && !showAddWorksite) {
-      if (submitDataGraphRequestState === RequestStates.SUCCESS) {
+      if (addWorksiteRequestState === RequestStates.SUCCESS) {
         updateOrgsList();
       }
     }
@@ -188,7 +189,7 @@ class WorksitesByOrgCard extends Component<Props, State> {
 }
 
 const mapStateToProps = (state :Map) => ({
-  submitDataGraphRequestState: state.getIn([STATE.DATA, DATA.ACTIONS, DATA.SUBMIT_DATA_GRAPH, DATA.REQUEST_STATE]),
+  addWorksiteRequestState: state.getIn([STATE.ORGANIZATIONS, ACTIONS, ADD_ORGANIZATION, REQUEST_STATE]),
 });
 
 // $FlowFixMe
