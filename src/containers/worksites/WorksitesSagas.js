@@ -46,6 +46,7 @@ const { searchEntityNeighborsWithFilter } = SearchApiActions;
 const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
 
 const getAppFromState = state => state.get(STATE.APP, Map());
+const getEdmFromState = state => state.get(STATE.EDM, Map());
 
 /*
  *
@@ -60,14 +61,20 @@ function* addWorksiteWorker(action :SequenceAction) :Generator<*, *, *> {
   let response :Object = {};
 
   try {
-    yield put(addWorksite.request(id));
+    yield put(addWorksite.request(id, value));
 
     response = yield call(submitDataGraphWorker, submitDataGraph(value));
     if (response.error) {
       throw response.error;
     }
+    const { data } :Object = response;
+    const { entityKeyIds } :Object = data;
 
-    yield put(addWorksite.success(id));
+    const edm = yield select(getEdmFromState);
+    const worksiteESID = Object.keys(entityKeyIds)[0];
+    const worksiteEKID = Object.values(entityKeyIds)[0];
+
+    yield put(addWorksite.success(id, { edm, worksiteEKID, worksiteESID }));
   }
   catch (error) {
     workerResponse.error = error;
