@@ -5,7 +5,10 @@
 import { List, Map, fromJS } from 'immutable';
 import { RequestStates } from 'redux-reqseq';
 import type { SequenceAction } from 'redux-reqseq';
+import type { FQN } from 'lattice';
 
+import { getPropertyFqnFromEdm } from '../../utils/DataUtils';
+import { ENTITY_KEY_ID } from '../../core/edm/constants/FullyQualifiedNames';
 import { ORGANIZATIONS } from '../../utils/constants/ReduxStateConsts';
 import {
   addOrganization,
@@ -42,16 +45,40 @@ export default function organizationsReducer(state :Map<*, *> = INITIAL_STATE, a
       return addOrganization.reducer(state, action, {
 
         REQUEST: () => state
-          .setIn([ACTIONS, ADD_ORGANIZATION, action.id], fromJS(action))
+          .setIn([ACTIONS, ADD_ORGANIZATION, action.id], action)
           .setIn([ACTIONS, ADD_ORGANIZATION, REQUEST_STATE], RequestStates.PENDING),
         SUCCESS: () => {
 
-          if (!state.hasIn([ACTIONS, ADD_ORGANIZATION, action.id])) {
-            return state;
+          const seqAction :SequenceAction = action;
+          const storedSeqAction :SequenceAction = state.getIn([ACTIONS, ADD_ORGANIZATION, seqAction.id]);
+
+          if (storedSeqAction) {
+
+            const { value } :Object = seqAction;
+            const { edm, orgEKID, orgESID } = value;
+
+            const storedValue :Object = storedSeqAction.value;
+            const { entityData } :Object = storedValue;
+
+            const storedOrgEntity :Map = Map(entityData[orgESID][0]);
+
+            let newOrg :Map = Map();
+            storedOrgEntity.forEach((orgValue, id) => {
+              const propertyTypeFqn :FQN = getPropertyFqnFromEdm(edm, id);
+              newOrg = newOrg.set(propertyTypeFqn, orgValue);
+            });
+            newOrg = newOrg.set(ENTITY_KEY_ID, orgEKID);
+
+            const organizations :List = state
+              .get(ORGANIZATIONS_LIST)
+              .push(newOrg);
+
+            return state
+              .set(ORGANIZATIONS_LIST, organizations)
+              .setIn([ACTIONS, ADD_ORGANIZATION, REQUEST_STATE], RequestStates.SUCCESS);
           }
 
-          return state
-            .setIn([ACTIONS, ADD_ORGANIZATION, REQUEST_STATE], RequestStates.SUCCESS);
+          return state;
         },
         FAILURE: () => state
           .setIn([ACTIONS, ADD_ORGANIZATION, REQUEST_STATE], RequestStates.FAILURE),

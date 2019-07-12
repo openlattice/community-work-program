@@ -38,6 +38,7 @@ const { getEntitySetDataWorker } = DataApiSagas;
 const LOG = new Logger('OrganizationSagas');
 
 const getAppFromState = state => state.get(STATE.APP, Map());
+const getEdmFromState = state => state.get(STATE.EDM, Map());
 
 /*
  *
@@ -52,14 +53,20 @@ function* addOrganizationWorker(action :SequenceAction) :Generator<*, *, *> {
   let response :Object = {};
 
   try {
-    yield put(addOrganization.request(id));
+    yield put(addOrganization.request(id, value));
 
     response = yield call(submitDataGraphWorker, submitDataGraph(value));
     if (response.error) {
       throw response.error;
     }
+    const { data } :Object = response;
+    const { entityKeyIds } :Object = data;
 
-    yield put(addOrganization.success(id));
+    const edm = yield select(getEdmFromState);
+    const orgESID = Object.keys(entityKeyIds)[0];
+    const orgEKID = Object.values(entityKeyIds)[0];
+
+    yield put(addOrganization.success(id, { edm, orgEKID, orgESID }));
   }
   catch (error) {
     workerResponse.error = error;
