@@ -12,19 +12,24 @@ import { getEntityProperties, getPropertyFqnFromEdm } from '../../utils/DataUtil
 import { WORKSITES } from '../../utils/constants/ReduxStateConsts';
 import { ENTITY_KEY_ID, WORKSITE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import {
+  addOrganization,
   addWorksite,
-  getWorksites,
+  getOrganizations,
   getWorksitePlans,
+  getWorksitesByOrg,
 } from './WorksitesActions';
 
 const {
   ACTIONS,
+  ADD_ORGANIZATION,
   ADD_WORKSITE,
   ERRORS,
+  GET_ORGANIZATIONS,
   GET_WORKSITES,
   GET_WORKSITE_PLANS,
   REQUEST_STATE,
   ORGANIZATION_STATUSES,
+  ORGANIZATIONS_LIST,
   WORKSITES_BY_ORG,
   WORKSITES_INFO,
 } = WORKSITES;
@@ -32,7 +37,13 @@ const { DATETIME_END, DATETIME_START } = WORKSITE_FQNS;
 
 const INITIAL_STATE :Map<*, *> = fromJS({
   [ACTIONS]: {
+    [ADD_ORGANIZATION]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
     [ADD_WORKSITE]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [GET_ORGANIZATIONS]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [GET_WORKSITES]: {
@@ -43,11 +54,14 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     },
   },
   [ERRORS]: {
+    [ADD_ORGANIZATION]: Map(),
     [ADD_WORKSITE]: Map(),
+    [GET_ORGANIZATIONS]: Map(),
     [GET_WORKSITES]: Map(),
     [GET_WORKSITE_PLANS]: Map(),
   },
   [ORGANIZATION_STATUSES]: Map(),
+  [ORGANIZATIONS_LIST]: List(),
   [WORKSITES_BY_ORG]: Map(),
   [WORKSITES_INFO]: Map(),
 });
@@ -106,9 +120,123 @@ export default function worksitesReducer(state :Map<*, *> = INITIAL_STATE, actio
       });
     }
 
-    case getWorksites.case(action.type): {
+    case getWorksitePlans.case(action.type): {
 
-      return getWorksites.reducer(state, action, {
+      return getWorksitePlans.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, GET_WORKSITE_PLANS, action.id], fromJS(action))
+          .setIn([ACTIONS, GET_WORKSITE_PLANS, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+
+          if (!state.hasIn([ACTIONS, GET_WORKSITE_PLANS, action.id])) {
+            return state;
+          }
+
+          const { value } = action;
+          if (value === null || value === undefined) {
+            return state;
+          }
+
+          return state
+            .set(WORKSITES_INFO, value)
+            .setIn([ACTIONS, GET_WORKSITE_PLANS, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => {
+
+          const { value } = action;
+          return state
+            .set(WORKSITES_INFO, Map())
+            .setIn([ERRORS, GET_WORKSITE_PLANS], value)
+            .setIn([ACTIONS, GET_WORKSITE_PLANS, REQUEST_STATE], RequestStates.FAILURE);
+        },
+        FINALLY: () => state.deleteIn([ACTIONS, GET_WORKSITE_PLANS, action.id])
+      });
+    }
+
+    case addOrganization.case(action.type): {
+
+      return addOrganization.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, ADD_ORGANIZATION, action.id], action)
+          .setIn([ACTIONS, ADD_ORGANIZATION, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+
+          const seqAction :SequenceAction = action;
+          const storedSeqAction :SequenceAction = state.getIn([ACTIONS, ADD_ORGANIZATION, seqAction.id]);
+
+          if (storedSeqAction) {
+
+            const { value } :Object = seqAction;
+            const { edm, orgEKID, orgESID } = value;
+
+            const storedValue :Object = storedSeqAction.value;
+            const { entityData } :Object = storedValue;
+
+            const storedOrgEntity :Map = Map(entityData[orgESID][0]);
+
+            let newOrg :Map = Map();
+            storedOrgEntity.forEach((orgValue, id) => {
+              const propertyTypeFqn :FQN = getPropertyFqnFromEdm(edm, id);
+              newOrg = newOrg.set(propertyTypeFqn, orgValue);
+            });
+            newOrg = newOrg.set(ENTITY_KEY_ID, orgEKID);
+
+            const organizations :List = state
+              .get(ORGANIZATIONS_LIST)
+              .push(newOrg);
+
+            return state
+              .set(ORGANIZATIONS_LIST, organizations)
+              .setIn([ACTIONS, ADD_ORGANIZATION, REQUEST_STATE], RequestStates.SUCCESS);
+          }
+
+          return state;
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, ADD_ORGANIZATION, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, ADD_ORGANIZATION, action.id]),
+      });
+    }
+
+    case getOrganizations.case(action.type): {
+
+      return getOrganizations.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, GET_ORGANIZATIONS, action.id], fromJS(action))
+          .setIn([ACTIONS, GET_ORGANIZATIONS, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+
+          if (!state.hasIn([ACTIONS, GET_ORGANIZATIONS, action.id])) {
+            return state;
+          }
+
+          const { value } = action;
+          if (value === null || value === undefined) {
+            return state;
+          }
+
+          return state
+            .set(ORGANIZATIONS_LIST, value)
+            .setIn([ACTIONS, GET_ORGANIZATIONS, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => {
+
+          const { value } = action;
+          return state
+            .set(ORGANIZATIONS_LIST, List())
+            .setIn([ERRORS, GET_ORGANIZATIONS], value)
+            .setIn([ACTIONS, GET_ORGANIZATIONS, REQUEST_STATE], RequestStates.FAILURE);
+        },
+        FINALLY: () => state.deleteIn([ACTIONS, GET_ORGANIZATIONS, action.id])
+      });
+    }
+
+    case getWorksitesByOrg.case(action.type): {
+
+      return getWorksitesByOrg.reducer(state, action, {
 
         REQUEST: () => state
           .setIn([ACTIONS, GET_WORKSITES, action.id], action)
@@ -149,9 +277,7 @@ export default function worksitesReducer(state :Map<*, *> = INITIAL_STATE, actio
               .setIn([ACTIONS, GET_WORKSITES, REQUEST_STATE], RequestStates.SUCCESS);
           }
 
-          return state
-            // .set(WORKSITES_BY_ORG, worksitesByOrg)
-            // .setIn([ACTIONS, GET_WORKSITES, REQUEST_STATE], RequestStates.SUCCESS);
+          return state;
         },
         FAILURE: () => {
 
@@ -162,40 +288,6 @@ export default function worksitesReducer(state :Map<*, *> = INITIAL_STATE, actio
             .setIn([ACTIONS, GET_WORKSITES, REQUEST_STATE], RequestStates.FAILURE);
         },
         FINALLY: () => state.deleteIn([ACTIONS, GET_WORKSITES, action.id])
-      });
-    }
-
-    case getWorksitePlans.case(action.type): {
-
-      return getWorksitePlans.reducer(state, action, {
-
-        REQUEST: () => state
-          .setIn([ACTIONS, GET_WORKSITE_PLANS, action.id], fromJS(action))
-          .setIn([ACTIONS, GET_WORKSITE_PLANS, REQUEST_STATE], RequestStates.PENDING),
-        SUCCESS: () => {
-
-          if (!state.hasIn([ACTIONS, GET_WORKSITE_PLANS, action.id])) {
-            return state;
-          }
-
-          const { value } = action;
-          if (value === null || value === undefined) {
-            return state;
-          }
-
-          return state
-            .set(WORKSITES_INFO, value)
-            .setIn([ACTIONS, GET_WORKSITE_PLANS, REQUEST_STATE], RequestStates.SUCCESS);
-        },
-        FAILURE: () => {
-
-          const { value } = action;
-          return state
-            .set(WORKSITES_INFO, Map())
-            .setIn([ERRORS, GET_WORKSITE_PLANS], value)
-            .setIn([ACTIONS, GET_WORKSITE_PLANS, REQUEST_STATE], RequestStates.FAILURE);
-        },
-        FINALLY: () => state.deleteIn([ACTIONS, GET_WORKSITE_PLANS, action.id])
       });
     }
 

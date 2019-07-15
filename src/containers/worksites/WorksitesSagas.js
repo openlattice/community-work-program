@@ -10,6 +10,8 @@ import {
   takeEvery,
 } from '@redux-saga/core/effects';
 import {
+  DataApiActions,
+  DataApiSagas,
   SearchApiActions,
   SearchApiSagas
 } from 'lattice-sagas';
@@ -27,12 +29,16 @@ import {
 import { STATE } from '../../utils/constants/ReduxStateConsts';
 import { APP_TYPE_FQNS, WORKSITE_PLAN_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import {
+  ADD_ORGANIZATION,
   ADD_WORKSITE,
-  GET_WORKSITES,
+  GET_ORGANIZATIONS,
+  GET_WORKSITES_BY_ORG,
   GET_WORKSITE_PLANS,
+  addOrganization,
   addWorksite,
+  getOrganizations,
   getWorksitePlans,
-  getWorksites,
+  getWorksitesByOrg,
 } from './WorksitesActions';
 import { submitDataGraph } from '../../core/sagas/data/DataActions';
 import { submitDataGraphWorker } from '../../core/sagas/data/DataSagas';
@@ -44,6 +50,8 @@ const { HOURS_WORKED, REQUIRED_HOURS } = WORKSITE_PLAN_FQNS;
 const LOG = new Logger('WorksitesSagas');
 const { searchEntityNeighborsWithFilter } = SearchApiActions;
 const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
+const { getEntitySetData } = DataApiActions;
+const { getEntitySetDataWorker } = DataApiSagas;
 
 const getAppFromState = state => state.get(STATE.APP, Map());
 const getEdmFromState = state => state.get(STATE.EDM, Map());
@@ -89,6 +97,49 @@ function* addWorksiteWorker(action :SequenceAction) :Generator<*, *, *> {
 function* addWorksiteWatcher() :Generator<*, *, *> {
 
   yield takeEvery(ADD_WORKSITE, addWorksiteWorker);
+}
+
+/*
+ *
+ * WorksitesActions.addOrganization()
+ *
+ */
+
+function* addOrganizationWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+  const workerResponse = {};
+  let response :Object = {};
+
+  try {
+    yield put(addOrganization.request(id, value));
+
+    response = yield call(submitDataGraphWorker, submitDataGraph(value));
+    if (response.error) {
+      throw response.error;
+    }
+    const { data } :Object = response;
+    const { entityKeyIds } :Object = data;
+
+    const edm = yield select(getEdmFromState);
+    const orgESID = Object.keys(entityKeyIds)[0];
+    const orgEKID = Object.values(entityKeyIds)[0];
+
+    yield put(addOrganization.success(id, { edm, orgEKID, orgESID }));
+  }
+  catch (error) {
+    workerResponse.error = error;
+    LOG.error('caught exception in addOrganizationWorker()', error);
+    yield put(addOrganization.failure(id, error));
+  }
+  finally {
+    yield put(addOrganization.finally(id));
+  }
+}
+
+function* addOrganizationWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(ADD_ORGANIZATION, addOrganizationWorker);
 }
 
 /*
@@ -198,11 +249,11 @@ function* getWorksitePlansWatcher() :Generator<*, *, *> {
 
 /*
  *
- * WorksitesActions.getWorksites()
+ * WorksitesActions.getWorksitesByOrg()
  *
  */
 
-function* getWorksitesWorker(action :SequenceAction) :Generator<*, *, *> {
+function* getWorksitesByOrgWorker(action :SequenceAction) :Generator<*, *, *> {
 
   const { id, value } = action;
   const workerResponse = {};
@@ -210,7 +261,7 @@ function* getWorksitesWorker(action :SequenceAction) :Generator<*, *, *> {
   let worksitesByOrg :Map = Map();
 
   try {
-    yield put(getWorksites.request(id, value));
+    yield put(getWorksitesByOrg.request(id, value));
     if (value === null || value === undefined) {
       throw ERR_ACTION_VALUE_NOT_DEFINED;
     }
@@ -249,29 +300,85 @@ function* getWorksitesWorker(action :SequenceAction) :Generator<*, *, *> {
       yield call(getWorksitePlansWorker, getWorksitePlans({ worksiteEKIDs }));
     }
 
-    yield put(getWorksites.success(id, { worksitesByOrg }));
+    yield put(getWorksitesByOrg.success(id, { worksitesByOrg }));
   }
   catch (error) {
     workerResponse.error = error;
-    LOG.error('caught exception in getWorksitesWorker()', error);
-    yield put(getWorksites.failure(id, error));
+    LOG.error('caught exception in getWorksitesByOrgWorker()', error);
+    yield put(getWorksitesByOrg.failure(id, error));
   }
   finally {
-    yield put(getWorksites.finally(id));
+    yield put(getWorksitesByOrg.finally(id));
   }
   return workerResponse;
 }
 
-function* getWorksitesWatcher() :Generator<*, *, *> {
+function* getWorksitesByOrgWatcher() :Generator<*, *, *> {
 
-  yield takeEvery(GET_WORKSITES, getWorksitesWorker);
+  yield takeEvery(GET_WORKSITES_BY_ORG, getWorksitesByOrgWorker);
+}
+
+/*
+ *
+ * WorksitesActions.getOrganizations()
+ *
+ */
+
+function* getOrganizationsWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id } = action;
+  const workerResponse = {};
+  let response :Object = {};
+  let organizations :List = List();
+
+  try {
+    yield put(getOrganizations.request(id));
+    const app = yield select(getAppFromState);
+    const organizationESID = getEntitySetIdFromApp(app, ORGANIZATION);
+
+    response = yield call(getEntitySetDataWorker, getEntitySetData({ entitySetId: organizationESID }));
+    if (response.error) {
+      throw response.error;
+    }
+    organizations = fromJS(response.data);
+
+    if (organizations.count() > 0) {
+      const organizationEKIDs :string[] = [];
+      organizations.forEach((orgObj :Map) => {
+        const org = getNeighborDetails(orgObj);
+        const orgEKID = getEntityKeyId(org);
+        if (orgEKID) organizationEKIDs.push(orgEKID);
+      });
+      yield call(getWorksitesByOrgWorker, getWorksitesByOrg({ organizationEKIDs }));
+    }
+
+    yield put(getOrganizations.success(id, organizations));
+  }
+  catch (error) {
+    workerResponse.error = error;
+    LOG.error('caught exception in getOrganizationsWorker()', error);
+    yield put(getOrganizations.failure(id, error));
+  }
+  finally {
+    yield put(getOrganizations.finally(id));
+  }
+  return workerResponse;
+}
+
+function* getOrganizationsWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(GET_ORGANIZATIONS, getOrganizationsWorker);
 }
 
 export {
+  addOrganizationWatcher,
+  addOrganizationWorker,
   addWorksiteWatcher,
   addWorksiteWorker,
+  getOrganizationsWatcher,
+  getOrganizationsWorker,
   getWorksitePlansWatcher,
   getWorksitePlansWorker,
-  getWorksitesWatcher,
-  getWorksitesWorker,
+  getWorksitesByOrgWatcher,
+  getWorksitesByOrgWorker,
 };

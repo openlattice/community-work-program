@@ -32,17 +32,14 @@ import {
 import {
   APP,
   STATE,
-  ORGANIZATIONS,
   WORKSITES
 } from '../../utils/constants/ReduxStateConsts';
 import { APP_TYPE_FQNS, ORGANIZATION_FQNS, WORKSITE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import {
-  getWorksites,
+  getOrganizations,
+  getWorksitesByOrg,
   getWorksitePlans,
 } from './WorksitesActions';
-import {
-  getOrganizations,
-} from '../organizations/OrganizationsActions';
 
 const { ORGANIZATION } = APP_TYPE_FQNS;
 const { DATETIME_END, DATETIME_START } = WORKSITE_FQNS;
@@ -50,10 +47,13 @@ const { ORGANIZATION_NAME } = ORGANIZATION_FQNS;
 const {
   ACTIONS,
   GET_ORGANIZATIONS,
+  ORGANIZATION_STATUSES,
   ORGANIZATIONS_LIST,
-  REQUEST_STATE
-} = ORGANIZATIONS;
-const { ORGANIZATION_STATUSES, WORKSITES_BY_ORG, WORKSITES_INFO } = WORKSITES;
+  REQUEST_STATE,
+  WORKSITES_BY_ORG,
+  WORKSITES_INFO,
+} = WORKSITES;
+// const { ORGANIZATION_STATUSES, WORKSITES_BY_ORG, WORKSITES_INFO } = WORKSITES;
 
 const dropdowns :List = List().withMutations((list :List) => {
   list.set(0, statusFilterDropdown);
@@ -65,7 +65,7 @@ const defaultFilterOption :Map = statusFilterDropdown.get('enums')
 type Props = {
   actions:{
     getOrganizations :RequestSequence;
-    getWorksites :RequestSequence;
+    getWorksitesByOrg :RequestSequence;
     getWorksitePlans :RequestSequence;
     goToRoute :RequestSequence;
   },
@@ -336,13 +336,12 @@ class WorksitesContainer extends Component<Props, State> {
 
 const mapStateToProps = (state :Map<*, *>) => {
   const app = state.get(STATE.APP);
-  const organizations = state.get(STATE.ORGANIZATIONS);
   const worksites = state.get(STATE.WORKSITES);
   return {
     app,
-    getOrganizationsRequestState: organizations.getIn([ACTIONS, GET_ORGANIZATIONS, REQUEST_STATE]),
+    getOrganizationsRequestState: worksites.getIn([ACTIONS, GET_ORGANIZATIONS, REQUEST_STATE]),
     initializeAppRequestState: app.getIn([APP.ACTIONS, APP.INITIALIZE_APPLICATION, APP.REQUEST_STATE]),
-    [ORGANIZATIONS_LIST]: organizations.get(ORGANIZATIONS_LIST),
+    [ORGANIZATIONS_LIST]: worksites.get(ORGANIZATIONS_LIST),
     [ORGANIZATION_STATUSES]: worksites.get(ORGANIZATION_STATUSES),
     [WORKSITES_BY_ORG]: worksites.get(WORKSITES_BY_ORG),
     [WORKSITES_INFO]: worksites.get(WORKSITES_INFO),
@@ -352,7 +351,7 @@ const mapStateToProps = (state :Map<*, *>) => {
 const mapDispatchToProps = dispatch => ({
   actions: bindActionCreators({
     getOrganizations,
-    getWorksites,
+    getWorksitesByOrg,
     getWorksitePlans,
     goToRoute,
   }, dispatch)

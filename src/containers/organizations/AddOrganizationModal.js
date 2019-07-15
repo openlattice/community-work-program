@@ -8,9 +8,9 @@ import type { RequestState } from 'redux-reqseq';
 
 import AddOrganizationForm from './AddOrganizationForm';
 
-import { ORGANIZATIONS, STATE } from '../../utils/constants/ReduxStateConsts';
+import { STATE, WORKSITES } from '../../utils/constants/ReduxStateConsts';
 
-const { ACTIONS, ADD_ORGANIZATION, REQUEST_STATE } = ORGANIZATIONS;
+const { ACTIONS, ADD_ORGANIZATION, REQUEST_STATE } = WORKSITES;
 
 type Props = {
   isOpen :boolean;
@@ -50,7 +50,7 @@ class AddOrganizationModal extends Component<Props> {
 }
 
 const mapStateToProps = (state :Map) => ({
-  addOrganizationRequestState: state.getIn([STATE.ORGANIZATIONS, ACTIONS, ADD_ORGANIZATION, REQUEST_STATE])
+  addOrganizationRequestState: state.getIn([STATE.WORKSITES, ACTIONS, ADD_ORGANIZATION, REQUEST_STATE])
 });
 
 // $FlowFixMe

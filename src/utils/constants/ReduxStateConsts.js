@@ -5,7 +5,6 @@ export const STATE = {
   PEOPLE: 'people',
   PERSON: 'person',
   ORGANIZATION: 'organization',
-  ORGANIZATIONS: 'organizations',
   WORKSITES: 'worksites',
 };
 
@@ -80,29 +79,19 @@ export const PERSON = {
   WARNINGS: 'warnings',
 };
 
-/* Organizations */
-
-export const ORGANIZATIONS = {
-  ACTIONS: 'actions',
-  ADD_ORGANIZATION: 'addOrganization',
-  ERRORS: 'errors',
-  GET_ORGANIZATION: 'getOrganization',
-  GET_ORGANIZATIONS: 'getOrganizations',
-  ORGANIZATIONS_LIST: 'organizationsList',
-  REQUEST_STATE: 'requestState',
-  SELECTED_ORGANIZATION: 'organization',
-};
-
-/* Worksites */
+/* Worksites (and organizations) */
 
 export const WORKSITES = {
   ACTIONS: 'actions',
+  ADD_ORGANIZATION: 'addOrganization',
   ADD_WORKSITE: 'addWorksite',
   ERRORS: 'errors',
+  GET_ORGANIZATIONS: 'getOrganizations',
   GET_WORKSITES: 'getWorksites',
   GET_WORKSITE_PLANS: 'getWorksitePlans',
   REQUEST_STATE: 'requestState',
   ORGANIZATION_STATUSES: 'organizationStatuses',
+  ORGANIZATIONS_LIST: 'organizationsList',
   WORKSITES_BY_ORG: 'worksitesByOrg',
   WORKSITES_INFO: 'worksitesInfo',
 };

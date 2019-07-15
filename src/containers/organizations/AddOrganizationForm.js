@@ -12,7 +12,7 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import type { RequestSequence } from 'redux-reqseq';
 
-import { addOrganization } from './OrganizationsActions';
+import { addOrganization } from '../worksites/WorksitesActions';
 import { getEntitySetIdFromApp } from '../../utils/DataUtils';
 import { processEntityData } from '../../utils/DataProcessingUtils';
 import { APP_TYPE_FQNS, ORGANIZATION_FQNS } from '../../core/edm/constants/FullyQualifiedNames';

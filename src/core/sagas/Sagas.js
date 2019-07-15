@@ -12,7 +12,6 @@ import * as EDMSagas from '../edm/EDMSagas';
 import * as ParticipantSagas from '../../containers/participant/ParticipantSagas';
 import * as ParticipantsSagas from '../../containers/participants/ParticipantsSagas';
 import * as RoutingSagas from '../router/RoutingSagas';
-import * as OrganizationSagas from '../../containers/organizations/OrganizationsSagas';
 import * as WorksitesSagas from '../../containers/worksites/WorksitesSagas';
 
 export default function* sagas() :Generator<*, *, *> {
@@ -41,10 +40,6 @@ export default function* sagas() :Generator<*, *, *> {
     fork(EDMSagas.getEntityDataModelTypesWatcher),
     fork(EDMSagas.getEntitySetIdsWatcher),
 
-    // OrganizationSagas
-    fork(OrganizationSagas.addOrganizationWatcher),
-    fork(OrganizationSagas.getOrganizationsWatcher),
-
     // ParticipantSagas
     fork(ParticipantSagas.getAllParticipantInfoWatcher),
     fork(ParticipantSagas.getCaseInfoWatcher),
@@ -64,9 +59,11 @@ export default function* sagas() :Generator<*, *, *> {
     fork(ParticipantsSagas.getSentencesWatcher),
 
     // WorksitesSagas
+    fork(WorksitesSagas.addOrganizationWatcher),
     fork(WorksitesSagas.addWorksiteWatcher),
-    fork(WorksitesSagas.getWorksitesWatcher),
+    fork(WorksitesSagas.getOrganizationsWatcher),
     fork(WorksitesSagas.getWorksitePlansWatcher),
+    fork(WorksitesSagas.getWorksitesByOrgWatcher),
 
     // RoutingSagas
     fork(RoutingSagas.goToRootWatcher),
