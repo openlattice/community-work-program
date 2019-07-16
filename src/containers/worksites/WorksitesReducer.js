@@ -187,8 +187,12 @@ export default function worksitesReducer(state :Map<*, *> = INITIAL_STATE, actio
               .get(ORGANIZATIONS_LIST)
               .push(newOrg);
 
+            let organizationStatuses :Map = state.get(ORGANIZATION_STATUSES);
+            organizationStatuses = organizationStatuses.set(orgEKID[0], WORKSITE_STATUSES.INACTIVE);
+
             return state
               .set(ORGANIZATIONS_LIST, organizations)
+              .set(ORGANIZATION_STATUSES, organizationStatuses)
               .setIn([ACTIONS, ADD_ORGANIZATION, REQUEST_STATE], RequestStates.SUCCESS);
           }
 
@@ -263,12 +267,16 @@ export default function worksitesReducer(state :Map<*, *> = INITIAL_STATE, actio
                 } = getEntityProperties(worksite, [DATETIME_END, DATETIME_START]);
                 return start && !end;
               }) : undefined;
-              const orgStatus :string = isDefined(currentlyActiveWorksite) ? 'Active' : 'Inactive';
+              const orgStatus :string = isDefined(currentlyActiveWorksite)
+                ? WORKSITE_STATUSES.ACTIVE
+                : WORKSITE_STATUSES.INACTIVE;
               organizationStatuses = organizationStatuses.set(orgEKID, orgStatus);
             });
 
             orgEKIDs.forEach((orgEKID :UUID) => {
-              if (!worksitesByOrg.get(orgEKID)) organizationStatuses = organizationStatuses.set(orgEKID, 'Inactive');
+              if (!worksitesByOrg.get(orgEKID)) {
+                organizationStatuses = organizationStatuses.set(orgEKID, WORKSITE_STATUSES.INACTIVE);
+              }
             });
 
             return state

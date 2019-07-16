@@ -117,11 +117,7 @@ class WorksitesContainer extends Component<Props, State> {
       actions.getOrganizations();
     }
     // if getOrganizations was successful and organizations exist:
-    // if (prevProps.organizationsList.count() !== organizationsList.count()) {
-    //   this.setOrganizationStatuses(false);
-    // }
-    // if state field organizationStatuses has been updated:
-    if (prevProps.organizationStatuses.count() !== organizationStatuses.count()) {
+    if (prevProps.organizationsList.count() !== organizationsList.count()) {
       this.sortOrganizations();
     }
     // if a new worksite was just added and corresponding org has switched to Active:
@@ -145,7 +141,7 @@ class WorksitesContainer extends Component<Props, State> {
     if (value === ALL) {
       if (!isDefined(orgs)) {
         this.setState({ selectedFilterOption: clickedProperty });
-        const sorted :List = this.sortOrganizations(orgsToFilter, null, false);
+        const sorted :List = this.sortOrganizations(orgsToFilter);
         return sorted;
       }
       return organizationsList;
@@ -166,7 +162,7 @@ class WorksitesContainer extends Component<Props, State> {
     this.setState({
       selectedFilterOption: clickedProperty
     });
-    this.sortOrganizations(filteredOrgs, null, false);
+    this.sortOrganizations(filteredOrgs);
     return filteredOrgs;
   }
 
@@ -184,7 +180,7 @@ class WorksitesContainer extends Component<Props, State> {
     const filteredSearchedOrgs :List = (selectedFilterOption !== defaultFilterOption)
       ? this.handleOnFilter(selectedFilterOption, null, matches)
       : matches;
-    this.sortOrganizations(filteredSearchedOrgs, null, false);
+    this.sortOrganizations(filteredSearchedOrgs);
   }
 
   handleShowAddOrganization = () => {
@@ -199,38 +195,7 @@ class WorksitesContainer extends Component<Props, State> {
     });
   }
 
-  // setOrganizationStatuses = (returnStatuses :boolean) => {
-  //   const { organizationsList, worksitesByOrg } = this.props;
-  //   let organizationStatuses :Map = Map();
-  //
-  //   // for organizations that have existing worksites
-  //   worksitesByOrg.forEach((worksiteList :List, orgEKID :UUID) => {
-  //     const currentlyActiveWorksite = worksiteList ? worksiteList.find((worksite :Map) => {
-  //       const {
-  //         [DATETIME_END]: end,
-  //         [DATETIME_START]: start
-  //       } = getEntityProperties(worksite, [DATETIME_END, DATETIME_START]);
-  //       return start && !end;
-  //     }) : undefined;
-  //     const orgStatus :string = isDefined(currentlyActiveWorksite) ? 'Active' : 'Inactive';
-  //     organizationStatuses = organizationStatuses.set(orgEKID, orgStatus);
-  //   });
-  //
-  //   // for organizations with no existing worksites
-  //   organizationsList.forEach((org :Map) => {
-  //     const orgEKID :UUID = getEntityKeyId(org);
-  //     if (!worksitesByOrg.get(orgEKID)) {
-  //       organizationStatuses = organizationStatuses.set(orgEKID, 'Inactive');
-  //     }
-  //   });
-  //
-  //   if (returnStatuses) return organizationStatuses;
-  //   this.setState({ organizationStatuses });
-  //   this.sortOrganizations(organizationsList, organizationStatuses, false);
-  //   return null;
-  // }
-
-  sortOrganizations = (organizations :List, statuses :Map, returnOrgs :boolean) => {
+  sortOrganizations = (organizations :List) => {
     const { organizationsList, organizationStatuses } = this.props;
 
     const organizationsToSort :List = isDefined(organizations) ? organizations : organizationsList;
