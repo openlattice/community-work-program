@@ -1,13 +1,14 @@
 // @flow
 import React, { Component } from 'react';
 import { List, Map } from 'immutable';
+import { CardStack } from 'lattice-ui-kit';
 import { withRouter } from 'react-router-dom';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { RequestStates } from 'redux-reqseq';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
-import WorksitesByOrgCard from '../../components/organization/WorksitesByOrgCard';
+import WorksitesByOrgCard from './WorksitesByOrgCard';
 import AddOrganizationModal from '../organizations/AddOrganizationModal';
 import LogoLoader from '../../components/LogoLoader';
 
@@ -250,27 +251,29 @@ class WorksitesContainer extends Component<Props, State> {
             <Separator>•</Separator>
             <ContainerSubHeader>{ worksiteSubHeader }</ContainerSubHeader>
           </HeaderWrapper>
-          {
-            organizationsToRender.map((org :Map) => {
-              const orgEKID :UUID = getEntityKeyId(org);
-              const orgWorksites = worksitesByOrg.get(orgEKID);
-              let orgWorksiteCount :string = '0 Work Sites';
-              if (orgWorksites) {
-                const count = orgWorksites.count();
-                if (count === 1) orgWorksiteCount = '1 Work Site';
-                if (count > 1) orgWorksiteCount = `${orgWorksites.count()} Work Sites`;
-              }
-              return (
-                <WorksitesByOrgCard
-                    key={orgEKID}
-                    organization={org}
-                    orgStatus={organizationStatuses.get(orgEKID)}
-                    worksiteCount={orgWorksiteCount}
-                    worksites={orgWorksites}
-                    worksitesInfo={worksitesInfo} />
-              );
-            })
-          }
+          <CardStack>
+            {
+              organizationsToRender.map((org :Map) => {
+                const orgEKID :UUID = getEntityKeyId(org);
+                const orgWorksites = worksitesByOrg.get(orgEKID);
+                let orgWorksiteCount :string = '0 Work Sites';
+                if (orgWorksites) {
+                  const count = orgWorksites.count();
+                  if (count === 1) orgWorksiteCount = '1 Work Site';
+                  if (count > 1) orgWorksiteCount = `${orgWorksites.count()} Work Sites`;
+                }
+                return (
+                  <WorksitesByOrgCard
+                      key={orgEKID}
+                      organization={org}
+                      orgStatus={organizationStatuses.get(orgEKID)}
+                      worksiteCount={orgWorksiteCount}
+                      worksites={orgWorksites}
+                      worksitesInfo={worksitesInfo} />
+                );
+              })
+            }
+          </CardStack>
         </ContainerInnerWrapper>
         <AddOrganizationModal
             isOpen={showAddOrganization}
