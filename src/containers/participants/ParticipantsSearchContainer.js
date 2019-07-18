@@ -333,6 +333,8 @@ class ParticipantsSearchContainer extends Component<Props, State> {
         <ToolBar
             dropdowns={dropdowns}
             onSelectFunctions={onSelectFunctions}
+            primaryButtonAction={() => {}}
+            primaryButtonText="Add Participant"
             search={this.searchParticipantList} />
         <ParticipantSearchInnerWrapper>
           <ParticipantsTable
