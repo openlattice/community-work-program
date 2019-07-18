@@ -16,9 +16,9 @@ import type { RequestSequence } from 'redux-reqseq';
 import type { FQN } from 'lattice';
 
 import { addWorksite } from './WorksitesActions';
-import { getEntityKeyId, getEntitySetIdFromApp } from '../../utils/DataUtils';
+import { getEntityKeyId, getEntitySetIdFromApp, getPropertyTypeIdFromEdm } from '../../utils/DataUtils';
 import { processEntityData } from '../../utils/DataProcessingUtils';
-import { APP_TYPE_FQNS, WORKSITE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { APP_TYPE_FQNS, OPERATES_FQNS, WORKSITE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { STATE } from '../../utils/constants/ReduxStateConsts';
 import { TYPE_IDS_BY_FQNS } from '../../core/edm/constants/DataModelConsts';
 import {
@@ -29,6 +29,7 @@ import {
 } from '../../components/Layout';
 
 const { OPERATES, ORGANIZATION, WORKSITE } = APP_TYPE_FQNS;
+const { GENERAL_DATETIME } = OPERATES_FQNS;
 const {
   DATETIME_END,
   DATETIME_START,
@@ -41,6 +42,7 @@ type Props = {
     addWorksite :RequestSequence;
   };
   app :Map;
+  edm :Map;
   edmPropertyTypes :Map;
   isLoading :boolean;
   onDiscard :() => void;
@@ -78,6 +80,7 @@ class AddWorksiteForm extends Component<Props, State> {
     const {
       actions,
       app,
+      edm,
       edmPropertyTypes,
       organization
     } = this.props;
@@ -87,6 +90,7 @@ class AddWorksiteForm extends Component<Props, State> {
     const worksiteESID :UUID = getEntitySetIdFromApp(app, WORKSITE);
     const operatesESID :UUID = getEntitySetIdFromApp(app, OPERATES);
     const organizationEKID :UUID = getEntityKeyId(organization);
+    const datetimePTID :UUID = getPropertyTypeIdFromEdm(edm, GENERAL_DATETIME)
 
     const entityDataToProcess :Map = Map({
       entityData: newWorksiteData,
@@ -96,7 +100,9 @@ class AddWorksiteForm extends Component<Props, State> {
 
     const associationEntityData :{} = {
       [operatesESID]: [{
-        data: {},
+        data: {
+          [datetimePTID]: DateTime.local().toISO()
+        },
         srcEntitySetId: organizationESID,
         srcEntityKeyId: organizationEKID,
         dstEntityIndex: 0,
@@ -171,6 +177,7 @@ class AddWorksiteForm extends Component<Props, State> {
 
 const mapStateToProps = (state :Map) => ({
   app: state.get(STATE.APP),
+  edm: state.get(STATE.EDM),
   edmPropertyTypes: state.getIn([STATE.EDM, TYPE_IDS_BY_FQNS]),
 });
 
