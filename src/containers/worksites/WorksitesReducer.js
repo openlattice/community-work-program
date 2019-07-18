@@ -11,6 +11,7 @@ import { isDefined } from '../../utils/LangUtils';
 import { getEntityProperties, getPropertyFqnFromEdm } from '../../utils/DataUtils';
 import { WORKSITES } from '../../utils/constants/ReduxStateConsts';
 import { ENTITY_KEY_ID, WORKSITE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { WORKSITE_STATUSES } from './WorksitesConstants';
 import {
   addOrganization,
   addWorksite,
@@ -107,8 +108,23 @@ export default function worksitesReducer(state :Map<*, *> = INITIAL_STATE, actio
             relevantOrgWorksites = relevantOrgWorksites.push(newWorksite);
             worksitesByOrg = worksitesByOrg.set(orgEKID, relevantOrgWorksites);
 
+            let organizationStatuses :Map = state.get(ORGANIZATION_STATUSES);
+            const {
+              [DATETIME_END]: end,
+              [DATETIME_START]: start
+            } = getEntityProperties(newWorksite, [DATETIME_END, DATETIME_START]);
+
+            // If org is already active, or worksite is inactive (so it doesn't change org status):
+            if (organizationStatuses.get(orgEKID) === WORKSITE_STATUSES.ACTIVE || (!start && !end)) {
+              return state
+                .set(WORKSITES_BY_ORG, worksitesByOrg)
+                .setIn([ACTIONS, ADD_WORKSITE, REQUEST_STATE], RequestStates.SUCCESS);
+            }
+
+            organizationStatuses = organizationStatuses.set(orgEKID, WORKSITE_STATUSES.ACTIVE);
             return state
               .set(WORKSITES_BY_ORG, worksitesByOrg)
+              .set(ORGANIZATION_STATUSES, organizationStatuses)
               .setIn([ACTIONS, ADD_WORKSITE, REQUEST_STATE], RequestStates.SUCCESS);
           }
 
