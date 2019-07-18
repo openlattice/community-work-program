@@ -90,7 +90,7 @@ class AddWorksiteForm extends Component<Props, State> {
     const worksiteESID :UUID = getEntitySetIdFromApp(app, WORKSITE);
     const operatesESID :UUID = getEntitySetIdFromApp(app, OPERATES);
     const organizationEKID :UUID = getEntityKeyId(organization);
-    const datetimePTID :UUID = getPropertyTypeIdFromEdm(edm, GENERAL_DATETIME)
+    const datetimePTID :UUID = getPropertyTypeIdFromEdm(edm, GENERAL_DATETIME);
 
     const entityDataToProcess :Map = Map({
       entityData: newWorksiteData,
@@ -101,7 +101,7 @@ class AddWorksiteForm extends Component<Props, State> {
     const associationEntityData :{} = {
       [operatesESID]: [{
         data: {
-          [datetimePTID]: DateTime.local().toISO()
+          [datetimePTID]: [DateTime.local().toISO()]
         },
         srcEntitySetId: organizationESID,
         srcEntityKeyId: organizationEKID,
