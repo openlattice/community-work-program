@@ -4,7 +4,7 @@
 import { isImmutable, Map } from 'immutable';
 import { Models } from 'lattice';
 
-import { NEIGHBOR_DETAILS, TYPE_IDS_BY_FQNS } from '../core/edm/constants/DataModelConsts';
+import { NEIGHBOR_DETAILS, TYPE_IDS_BY_FQNS, TYPES_BY_ID } from '../core/edm/constants/DataModelConsts';
 import { ENTITY_KEY_ID } from '../core/edm/constants/FullyQualifiedNames';
 import { APP } from './constants/ReduxStateConsts';
 
@@ -24,6 +24,10 @@ export const getPropertyTypeIdFromEdm = (
   edm :Object | Map, propertyFqn :FullyQualifiedName
 ) => edm.getIn([TYPE_IDS_BY_FQNS, propertyFqn]);
 
+export const getPropertyFqnFromEdm = (edm :Object | Map, propertyTypeId :UUID) => {
+  const propertyType = edm.getIn([TYPES_BY_ID, propertyTypeId, 'type']);
+  return new FullyQualifiedName(propertyType);
+};
 
 export const getFirstNeighborValue = (
   neighborObj :Map,

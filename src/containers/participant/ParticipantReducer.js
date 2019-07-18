@@ -1,5 +1,4 @@
 // @flow
-import isNumber from 'lodash/isNumber';
 import { List, Map, fromJS } from 'immutable';
 import { RequestStates } from 'redux-reqseq';
 import type { SequenceAction } from 'redux-reqseq';

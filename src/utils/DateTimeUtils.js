@@ -1,14 +1,13 @@
 /*
  * @flow
  */
-
-import { DateTime, Duration } from 'luxon';
-import { Map } from 'immutable';
+import { DateTime } from 'luxon';
 
 const DATE_MDY_SLASH_FORMAT :string = 'MM/DD/YYYY';
 const ISO_DATE_FORMAT :string = 'YYYY-MM-DD';
 const ISO_TIME_HMS_FORMAT :string = 'HH:mm:ss';
 const TIME_HM_FORMAT :string = 'HH:mm';
+
 
 function formatAsDate(value :string) :string {
 

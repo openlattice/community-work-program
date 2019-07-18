@@ -20,7 +20,7 @@ import { OL } from '../../core/style/Colors';
 import { PARTICIPANT_PROFILE_WIDTH } from '../../core/style/Sizes';
 import * as Routes from '../../core/router/Routes';
 import { BackNavButton } from '../../components/controls/index';
-import { ButtonWrapper } from '../../components/Layout';
+import { ButtonWrapper, ButtonsWrapper } from '../../components/Layout';
 import { getEntityProperties } from '../../utils/DataUtils';
 import { APP_TYPE_FQNS, ENROLLMENT_STATUS_FQNS, PEOPLE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { APP, PERSON, STATE } from '../../utils/constants/ReduxStateConsts';
@@ -67,11 +67,6 @@ const NameRowWrapper = styled.div`
   width: 100%;
   display: flex;
   justify-content: space-between;
-  align-items: center;
-`;
-
-const ButtonsWrapper = styled.div`
-  display: flex;
   align-items: center;
 `;
 

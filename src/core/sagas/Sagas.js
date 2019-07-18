@@ -7,10 +7,12 @@ import { AuthSagas } from 'lattice-auth';
 import { DataApiSagas, SearchApiSagas } from 'lattice-sagas';
 
 import * as AppSagas from '../../containers/app/AppSagas';
+import * as DataSagas from './data/DataSagas';
 import * as EDMSagas from '../edm/EDMSagas';
 import * as ParticipantSagas from '../../containers/participant/ParticipantSagas';
 import * as ParticipantsSagas from '../../containers/participants/ParticipantsSagas';
 import * as RoutingSagas from '../router/RoutingSagas';
+import * as WorksitesSagas from '../../containers/worksites/WorksitesSagas';
 
 export default function* sagas() :Generator<*, *, *> {
 
@@ -30,6 +32,9 @@ export default function* sagas() :Generator<*, *, *> {
 
     // AppSagas
     fork(AppSagas.initializeApplicationWatcher),
+
+    // DataSagas
+    fork(DataSagas.submitDataGraphWatcher),
 
     // EDMSagas
     fork(EDMSagas.getEntityDataModelTypesWatcher),
@@ -52,6 +57,13 @@ export default function* sagas() :Generator<*, *, *> {
     fork(ParticipantsSagas.getInfractionsWatcher),
     fork(ParticipantsSagas.getParticipantsWatcher),
     fork(ParticipantsSagas.getSentencesWatcher),
+
+    // WorksitesSagas
+    fork(WorksitesSagas.addOrganizationWatcher),
+    fork(WorksitesSagas.addWorksiteWatcher),
+    fork(WorksitesSagas.getOrganizationsWatcher),
+    fork(WorksitesSagas.getWorksitePlansWatcher),
+    fork(WorksitesSagas.getWorksitesByOrgWatcher),
 
     // RoutingSagas
     fork(RoutingSagas.goToRootWatcher),

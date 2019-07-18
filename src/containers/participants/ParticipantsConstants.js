@@ -29,7 +29,7 @@ export const SORTABLE_PARTICIPANT_COLUMNS = {
 /* Filters */
 
 export const FILTERS = {
-  STATUS: 'status'
+  STATUS: 'Filter by: Status'
 };
 export const ALL = 'ALL';
 
@@ -73,6 +73,6 @@ export const STATUS_FILTER_OPTIONS = [
 ];
 
 export const statusFilterDropdown :Map = Map().withMutations((map :Map) => {
-  map.set('title', 'Filter by: Status');
+  map.set('title', FILTERS.STATUS);
   map.set('enums', STATUS_FILTER_OPTIONS);
 });

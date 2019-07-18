@@ -1,7 +1,17 @@
 import styled from 'styled-components';
+import { StyleUtils } from 'lattice-ui-kit';
 
 import { APP_CONTENT_PADDING, SEARCH_CONTAINER_WIDTH } from '../core/style/Sizes';
 import { OL } from '../core/style/Colors';
+import { WORKSITE_STATUSES } from '../containers/worksites/WorksitesConstants';
+
+const { getStyleVariation } = StyleUtils;
+
+const statusColorVariation = getStyleVariation('status', {
+  default: OL.GREY02,
+  [WORKSITE_STATUSES.ACTIVE]: OL.GREEN02,
+  [WORKSITE_STATUSES.INACTIVE]: OL.RED01,
+});
 
 /* Component Wrappers */
 
@@ -30,6 +40,11 @@ export const ButtonWrapper = styled.div`
   }
 `;
 
+export const ButtonsWrapper = styled.div`
+  align-items: center;
+  display: flex;
+`;
+
 /* Component Headers */
 
 export const HeaderWrapper = styled.div`
@@ -53,6 +68,7 @@ export const ContainerHeader = styled.span`
 
 export const ContainerSubHeader = styled(ContainerHeader)`
   color: ${OL.GREY02};
+  font-size: 24px;
   margin: 0;
 `;
 
@@ -81,49 +97,7 @@ export const SmallSeparator = styled(Separator)`
 `;
 
 export const Status = styled(Subtitle)`
-  color: ${props => (props.active ? OL.GREEN02 : OL.RED01)};
-`;
-
-/* Cards */
-
-export const CardOuterWrapper = styled.div`
-  width: 100%;
-  border-radius: 5px;
-  border: solid 1px ${OL.GREY11};
-  background-color: ${OL.WHITE};
-  margin-bottom: 20px;
-`;
-
-export const CardInnerWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  margin: 50px;
-`;
-
-export const InnerSectionWrapper = styled.div`
-  display: flex;
-  justify-content: space-between;
-  margin: 50px;
-`;
-
-export const Section = styled.div`
-  display: flex;
-  flex-direction: column;
-  margin-right: 150px;
-`;
-
-export const SectionHeaderWrapper = styled.div`
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
-  margin-bottom: 30px;
-`;
-
-export const SectionHeader = styled.span`
-  color: ${OL.GREY15};
-  font-weight: 600;
-  font-size: 16px;
-  margin: 0 20px;
+  color: ${statusColorVariation};
 `;
 
 /* Body */
@@ -131,7 +105,6 @@ export const SectionHeader = styled.span`
 export const BodyTextSegment = styled.span`
   display: flex;
   flex-direction: column;
-  /* margin: 30px 0; */
 `;
 
 export const BodyTextHeader = styled.span`
@@ -202,4 +175,22 @@ export const FooterCell = styled.span`
 export const ErrorMessage = styled.div`
   padding-top: 20px;
   text-align: center;
+`;
+
+/* Forms */
+
+export const FormRow = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+`;
+
+export const ButtonsRow = styled(FormRow)`
+  margin-top: 20px;
+`;
+
+export const RowContent = styled.div`
+  flex-grow: 1;
+  margin: 0 20px 10px 20px;
+  min-width: 250px;
 `;

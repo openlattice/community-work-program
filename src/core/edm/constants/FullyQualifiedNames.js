@@ -98,6 +98,12 @@ export const LOCATION_FQNS = {
   UNPARSED_ADDRESS: new FullyQualifiedName('location.address'),
 };
 
+/* ol.organization */
+export const ORGANIZATION_FQNS = {
+  DESCRIPTION: new FullyQualifiedName('ol.description'),
+  ORGANIZATION_NAME: new FullyQualifiedName('ol.organizationname'),
+};
+
 /* general.person */
 export const PEOPLE_FQNS = {
   FIRST_NAME: new FullyQualifiedName('nc.PersonGivenName'),
@@ -134,6 +140,14 @@ export const SENTENCE_TERM_FQNS = {
   DATETIME_START: new FullyQualifiedName('ol.datetimestart'),
 };
 
+/* ol.program */
+export const WORKSITE_FQNS = {
+  DATETIME_END: new FullyQualifiedName('ol.datetimeend'),
+  DATETIME_START: new FullyQualifiedName('ol.datetimestart'),
+  DESCRIPTION: new FullyQualifiedName('ol.description'),
+  NAME: new FullyQualifiedName('ol.name'),
+};
+
 /* ol.individualactivityplan */
 export const WORKSITE_PLAN_FQNS = {
   HOURS_WORKED: new FullyQualifiedName('ol.hoursworked'),
@@ -145,4 +159,8 @@ export const WORKSITE_PLAN_FQNS = {
 /* ol.has */
 export const HAS_FQNS = {
   DATETIME_COMPLETED: new FullyQualifiedName('date.completeddatetime'),
+};
+
+export const OPERATES_FQNS = {
+  GENERAL_DATETIME: new FullyQualifiedName('general.datetime'),
 };

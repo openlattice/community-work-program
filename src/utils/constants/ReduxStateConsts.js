@@ -1,11 +1,14 @@
 export const STATE = {
   APP: 'app',
+  DATA: 'data',
   EDM: 'edm',
   PEOPLE: 'people',
   PERSON: 'person',
+  ORGANIZATION: 'organization',
+  WORKSITES: 'worksites',
 };
 
-/* App */
+// App
 
 export const APP = {
   ACTIONS: 'actions',
@@ -74,4 +77,21 @@ export const PERSON = {
   SENTENCE_TERM: 'sentenceTerm',
   VIOLATIONS: 'violations',
   WARNINGS: 'warnings',
+};
+
+/* Worksites (and organizations) */
+
+export const WORKSITES = {
+  ACTIONS: 'actions',
+  ADD_ORGANIZATION: 'addOrganization',
+  ADD_WORKSITE: 'addWorksite',
+  ERRORS: 'errors',
+  GET_ORGANIZATIONS: 'getOrganizations',
+  GET_WORKSITES: 'getWorksites',
+  GET_WORKSITE_PLANS: 'getWorksitePlans',
+  REQUEST_STATE: 'requestState',
+  ORGANIZATION_STATUSES: 'organizationStatuses',
+  ORGANIZATIONS_LIST: 'organizationsList',
+  WORKSITES_BY_ORG: 'worksitesByOrg',
+  WORKSITES_INFO: 'worksitesInfo',
 };

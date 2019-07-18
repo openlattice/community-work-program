@@ -8,12 +8,19 @@ import styled from 'styled-components';
 import { AuthActions } from 'lattice-auth';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
-import { Route, Switch, withRouter } from 'react-router-dom';
+import {
+  Redirect,
+  Route,
+  Switch,
+} from 'react-router-dom';
 import type { RequestSequence } from 'redux-reqseq';
 
 import AppHeaderContainer from './AppHeaderContainer';
-import ParticipantsRouter from '../participants/ParticipantsRouter';
-import Worksites from '../worksites/Worksites';
+import DashboardContainer from '../dashboard/DashboardContainer';
+import ParticipantProfileContainer from '../participant/ParticipantProfileContainer';
+import ParticipantsSearchContainer from '../participants/ParticipantsSearchContainer';
+import WorksitesContainer from '../worksites/WorksitesContainer';
+
 import * as AppActions from './AppActions';
 import * as ParticipantsActions from '../participants/ParticipantsActions';
 import * as Routes from '../../core/router/Routes';
@@ -69,8 +76,11 @@ class AppContainer extends Component<Props> {
 
   renderAppContent = () => (
     <Switch>
-      <ParticipantsRouter />
-      <Route path={Routes.WORKSITES} component={Worksites} />
+      <Route path={Routes.WORKSITES} component={WorksitesContainer} />
+      <Route path={Routes.PARTICIPANT_PROFILE} component={ParticipantProfileContainer} />
+      <Route path={Routes.PARTICIPANTS} component={ParticipantsSearchContainer} />
+      <Route path={Routes.DASHBOARD} component={DashboardContainer} />
+      <Redirect to={Routes.DASHBOARD} />
     </Switch>
   );
 
@@ -98,4 +108,4 @@ const mapDispatchToProps = dispatch => ({
 });
 
 // $FlowFixMe
-export default withRouter(connect(null, mapDispatchToProps)(AppContainer));
+export default connect(null, mapDispatchToProps)(AppContainer);
