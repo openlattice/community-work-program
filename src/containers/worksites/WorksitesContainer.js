@@ -34,7 +34,7 @@ import {
   STATE,
   WORKSITES
 } from '../../utils/constants/ReduxStateConsts';
-import { APP_TYPE_FQNS, ORGANIZATION_FQNS, WORKSITE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { APP_TYPE_FQNS, ORGANIZATION_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import {
   getOrganizations,
   getWorksitesByOrg,
@@ -42,7 +42,6 @@ import {
 } from './WorksitesActions';
 
 const { ORGANIZATION } = APP_TYPE_FQNS;
-const { DATETIME_END, DATETIME_START } = WORKSITE_FQNS;
 const { ORGANIZATION_NAME } = ORGANIZATION_FQNS;
 const {
   ACTIONS,
@@ -53,7 +52,6 @@ const {
   WORKSITES_BY_ORG,
   WORKSITES_INFO,
 } = WORKSITES;
-// const { ORGANIZATION_STATUSES, WORKSITES_BY_ORG, WORKSITES_INFO } = WORKSITES;
 
 const dropdowns :List = List().withMutations((list :List) => {
   list.set(0, statusFilterDropdown);
@@ -89,12 +87,6 @@ class WorksitesContainer extends Component<Props, State> {
   constructor(props :Props) {
     super(props);
 
-    // let sortedOrganizationsList :List = List();
-    //
-    // if (props.organizationsList.count() > 0 && props.organizationStatuses.count() > 0) {
-    //   sortedOrganizationsList = this.sortOrganizations(null, props.organizationStatuses, true);
-    // }
-
     this.state = {
       organizationsToRender: props.organizationsList,
       selectedFilterOption: defaultFilterOption,
@@ -102,13 +94,11 @@ class WorksitesContainer extends Component<Props, State> {
     };
   }
 
-  componentDidUpdate(prevProps :Props, prevState :State) {
+  componentDidUpdate(prevProps :Props) {
     const {
       app,
       actions,
       organizationsList,
-      organizationStatuses,
-      worksitesByOrg
     } = this.props;
     const prevOrganizationESID = prevProps.app.get(ORGANIZATION);
     const organizationESID = app.get(ORGANIZATION);
@@ -120,15 +110,6 @@ class WorksitesContainer extends Component<Props, State> {
     if (prevProps.organizationsList.count() !== organizationsList.count()) {
       this.sortOrganizations();
     }
-    // if a new worksite was just added and corresponding org has switched to Active:
-    // const prevWorksitesByOrg = prevProps.worksitesByOrg;
-    // const prevWorksiteCount = prevWorksitesByOrg.reduce((count, worksiteList) => count + worksiteList.count(), 0);
-    // const worksiteCount = worksitesByOrg.reduce((count, worksiteList) => count + worksiteList.count(), 0);
-    // if (prevWorksiteCount !== worksiteCount) {
-    //   if (prevWorksitesByOrg.keySeq().count() !== worksitesByOrg.keySeq().count()) {
-    //     this.setOrganizationStatuses(false);
-    //   }
-    // }
   }
 
   handleOnFilter = (clickedProperty :Map, selectEvent :Object, orgs :List) => {
