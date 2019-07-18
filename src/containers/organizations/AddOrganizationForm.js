@@ -100,7 +100,7 @@ class AddOrganizationForm extends Component<Props, State> {
         <ButtonsRow>
           <RowContent>
             <ButtonsWrapper>
-              <Button onClick={onDiscard} style={{ flex: 1 }}>Discard</Button>
+              <Button onClick={onDiscard}>Discard</Button>
             </ButtonsWrapper>
           </RowContent>
           <RowContent>
@@ -108,8 +108,7 @@ class AddOrganizationForm extends Component<Props, State> {
               <Button
                   isLoading={isLoading}
                   mode="primary"
-                  onClick={this.handleOnSubmit}
-                  style={{ flex: 1 }}>
+                  onClick={this.handleOnSubmit}>
                 Submit
               </Button>
             </ButtonsWrapper>
