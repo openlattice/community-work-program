@@ -4,8 +4,8 @@ import styled from 'styled-components';
 import { List, Map } from 'immutable';
 import { Button, Card, CardSegment } from 'lattice-ui-kit';
 
-import WorksitesTable from '../table/WorksitesTable';
-import AddWorksiteModal from '../../containers/worksites/AddWorksiteModal';
+import WorksitesTable from '../../components/table/WorksitesTable';
+import AddWorksiteModal from './AddWorksiteModal';
 
 import { getEntityProperties } from '../../utils/DataUtils';
 import { ORGANIZATION_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
@@ -14,7 +14,7 @@ import {
   SubtitleWrapper,
   Subtitle,
   Status,
-} from '../Layout';
+} from '../../components/Layout';
 import { OL } from '../../core/style/Colors';
 
 const { DESCRIPTION, ORGANIZATION_NAME } = ORGANIZATION_FQNS;
@@ -29,8 +29,6 @@ const WORKSITES_COLUMNS = [
 ];
 
 const OrgCard = styled(Card)`
-  border-radius: 5px;
-  margin-bottom: 20px;
   padding: 10px 20px;
   & > ${CardSegment} {
     border: none;
