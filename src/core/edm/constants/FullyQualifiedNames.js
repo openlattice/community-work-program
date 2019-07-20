@@ -33,6 +33,7 @@ export const APP_TYPE_FQNS = {
   LOCATED_AT: new FullyQualifiedName('app.locatedat'),
   LOCATION: new FullyQualifiedName('app.location'),
   MANUAL_PRETRIAL_CASES: new FullyQualifiedName('app.manualpretrialcases'),
+  MANUAL_SENTENCED_WITH: new FullyQualifiedName('app.manualsentencedwith'),
   MANUAL_SENTENCES: new FullyQualifiedName('app.manualsentences'),
   OF_LENGTH: new FullyQualifiedName('app.oflength'),
   OPERATES: new FullyQualifiedName('app.operates'),
@@ -163,4 +164,8 @@ export const HAS_FQNS = {
 
 export const OPERATES_FQNS = {
   GENERAL_DATETIME: new FullyQualifiedName('general.datetime'),
+};
+
+export const SENTENCED_WITH_FQNS = {
+  DATETIME_COMPLETED: new FullyQualifiedName('date.completeddatetime'),
 };
