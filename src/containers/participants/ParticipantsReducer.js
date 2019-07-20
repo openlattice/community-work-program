@@ -6,8 +6,10 @@ import isNumber from 'lodash/isNumber';
 import { List, Map, fromJS } from 'immutable';
 import { RequestStates } from 'redux-reqseq';
 import type { SequenceAction } from 'redux-reqseq';
+import type { FQN } from 'lattice';
 
 import {
+  addParticipant,
   getEnrollmentStatuses,
   getHoursWorked,
   getInfractions,
@@ -17,9 +19,12 @@ import {
   RESET_REQUEST_STATE,
 } from './ParticipantsActions';
 import { PEOPLE } from '../../utils/constants/ReduxStateConsts';
+import { getPropertyFqnFromEdm } from '../../utils/DataUtils';
+import { DIVERSION_PLAN_FQNS, ENTITY_KEY_ID } from '../../core/edm/constants/FullyQualifiedNames';
 
 const {
   ACTIONS,
+  ADD_PARTICIPANT,
   ENROLLMENT_BY_PARTICIPANT,
   ERRORS,
   GET_ENROLLMENT_STATUSES,
@@ -35,9 +40,13 @@ const {
   REQUEST_STATE,
   SENTENCE_TERMS_BY_PARTICIPANT,
 } = PEOPLE;
+const { REQUIRED_HOURS } = DIVERSION_PLAN_FQNS;
 
 const INITIAL_STATE :Map<*, *> = fromJS({
   [ACTIONS]: {
+    [ADD_PARTICIPANT]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
     [GET_ENROLLMENT_STATUSES]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
@@ -59,6 +68,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   },
   [ENROLLMENT_BY_PARTICIPANT]: Map(),
   [ERRORS]: {
+    [ADD_PARTICIPANT]: Map(),
     [GET_ENROLLMENT_STATUSES]: Map(),
     [GET_HOURS_WORKED]: Map(),
     [GET_INFRACTIONS]: Map(),
@@ -83,6 +93,78 @@ export default function participantsReducer(state :Map<*, *> = INITIAL_STATE, ac
         return state.setIn([actionType, REQUEST_STATE], RequestStates.STANDBY);
       }
       return state;
+    }
+
+    case addParticipant.case(action.type): {
+
+      return addParticipant.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, ADD_PARTICIPANT, action.id], action)
+          .setIn([ACTIONS, ADD_PARTICIPANT, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+
+          const seqAction :SequenceAction = action;
+          const storedSeqAction :SequenceAction = state.getIn([ACTIONS, ADD_PARTICIPANT, seqAction.id]);
+
+          if (storedSeqAction) {
+
+            const { value } :Object = seqAction; // success value
+            const {
+              diversionPlanESID,
+              edm,
+              manualSentenceESID,
+              personEKID,
+              peopleESID,
+              sentenceTermESID,
+            } = value;
+
+            const storedValue :Object = storedSeqAction.value; // request value
+            const { entityData } :Object = storedValue;
+            const storedEntities :Map = Map().withMutations((map :Map) => {
+              map.set('person', Map(entityData[peopleESID][0]));
+              map.set('sentence', Map(entityData[manualSentenceESID][0]));
+              map.set('sentenceTerm', Map(entityData[sentenceTermESID][0]));
+              map.set('diversionPlan', Map(entityData[diversionPlanESID][0]));
+            });
+            let newEntities :Map = Map();
+            storedEntities.forEach((entity :Map, key :string) => {
+              let newEntity = Map();
+              entity.forEach((entityValue, id) => {
+                const propertyTypeFqn :FQN = getPropertyFqnFromEdm(edm, id);
+                newEntity = newEntity.set(propertyTypeFqn, entityValue);
+              });
+              newEntities = newEntities.set(key, newEntity);
+            });
+
+            let person = newEntities.get('person');
+            person = person.set(ENTITY_KEY_ID, personEKID);
+            newEntities = newEntities.set('person', person);
+
+            const participants :List = state.get(PARTICIPANTS)
+              .push(newEntities.get('person'));
+            let sentenceTermsByParticipant = state.get(SENTENCE_TERMS_BY_PARTICIPANT);
+            sentenceTermsByParticipant = sentenceTermsByParticipant.set(personEKID, newEntities.get('sentenceTerm'));
+            let enrollmentByParticipant = state.get(ENROLLMENT_BY_PARTICIPANT);
+            enrollmentByParticipant = enrollmentByParticipant.set(personEKID, Map());
+            let hoursWorked = state.get(HOURS_WORKED);
+            const required = newEntities.getIn(['diversionPlan', REQUIRED_HOURS, 0], 0);
+            hoursWorked = hoursWorked.set(personEKID, Map({ worked: 0, required }));
+
+            return state
+              .set(PARTICIPANTS, participants)
+              .set(SENTENCE_TERMS_BY_PARTICIPANT, sentenceTermsByParticipant)
+              .set(ENROLLMENT_BY_PARTICIPANT, enrollmentByParticipant)
+              .set(HOURS_WORKED, hoursWorked)
+              .setIn([ACTIONS, ADD_PARTICIPANT, REQUEST_STATE], RequestStates.SUCCESS);
+          }
+
+          return state;
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, ADD_PARTICIPANT, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, ADD_PARTICIPANT, action.id]),
+      });
     }
 
     case getParticipants.case(action.type): {
