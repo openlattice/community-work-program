@@ -19,13 +19,14 @@ import { getEntityAddressKey, processAssociationEntityData, processEntityData } 
 import {
   APP_TYPE_FQNS,
   DIVERSION_PLAN_FQNS,
+  ENROLLMENT_STATUS_FQNS,
   SENTENCE_FQNS,
   SENTENCE_TERM_FQNS,
   SENTENCED_WITH_FQNS,
   PEOPLE_FQNS
 } from '../../core/edm/constants/FullyQualifiedNames';
 import { STATE } from '../../utils/constants/ReduxStateConsts';
-import { CWP, TYPE_IDS_BY_FQNS } from '../../core/edm/constants/DataModelConsts';
+import { CWP, ENROLLMENT_STATUSES, TYPE_IDS_BY_FQNS } from '../../core/edm/constants/DataModelConsts';
 import {
   ButtonsRow,
   FormRow,
@@ -35,9 +36,11 @@ import {
 
 const {
   DIVERSION_PLAN,
+  ENROLLMENT_STATUS,
   MANUAL_SENTENCED_WITH,
   MANUAL_SENTENCES,
   PEOPLE,
+  RELATED_TO,
   SENTENCE_TERM,
   SENTENCED_WITH
 } = APP_TYPE_FQNS;
@@ -47,6 +50,7 @@ const {
   NOTES,
   REQUIRED_HOURS
 } = DIVERSION_PLAN_FQNS;
+const { STATUS } = ENROLLMENT_STATUS_FQNS;
 const { DOB, FIRST_NAME, LAST_NAME } = PEOPLE_FQNS;
 const { SENTENCE_CONDITIONS } = SENTENCE_FQNS;
 const { DATETIME_START } = SENTENCE_TERM_FQNS;
@@ -74,6 +78,7 @@ class AddParticipantForm extends Component<Props, State> {
       newParticipantData: Map({
         [getEntityAddressKey(0, DIVERSION_PLAN, COMPLETED)]: [false],
         [getEntityAddressKey(0, DIVERSION_PLAN, NAME)]: [CWP],
+        [getEntityAddressKey(0, ENROLLMENT_STATUS, STATUS)]: [ENROLLMENT_STATUSES.AWAITING_CHECKIN],
         [getEntityAddressKey(0, MANUAL_SENTENCES, SENTENCE_CONDITIONS)]: ['COMMUNITY SERVICE'],
       }),
     };
@@ -116,6 +121,9 @@ class AddParticipantForm extends Component<Props, State> {
     const nowAsIso = DateTime.utc().toISO();
 
     associations.push([MANUAL_SENTENCED_WITH, 0, PEOPLE, 0, DIVERSION_PLAN, {
+      [DATETIME_COMPLETED]: [nowAsIso]
+    }]);
+    associations.push([RELATED_TO, 0, DIVERSION_PLAN, 0, ENROLLMENT_STATUS, {
       [DATETIME_COMPLETED]: [nowAsIso]
     }]);
     associations.push([MANUAL_SENTENCED_WITH, 0, PEOPLE, 0, SENTENCE_TERM, {
