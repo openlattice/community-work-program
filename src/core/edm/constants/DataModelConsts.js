@@ -23,6 +23,8 @@ export const NEIGHBOR_ENTITY_SET = 'neighborEntitySet';
 export const ENROLLMENT_STATUSES = {
   ACTIVE: 'Active',
   ACTIVE_NONCOMPLIANT: 'Active noncompliant',
+  ACTIVE_REOPENED: 'Active reopened',
+  AWAITING_CHECKIN: 'Awaiting checkin',
   AWAITING_ENROLLMENT: 'Awaiting enrollment',
   CLOSED: 'Closed',
   COMPLETED: 'Completed',
