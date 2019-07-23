@@ -2,6 +2,7 @@
 import React, { Component } from 'react';
 import { fromJS, Map } from 'immutable';
 import { DateTime } from 'luxon';
+import { DataProcessingUtils } from 'lattice-fabricate';
 import {
   Button,
   DatePicker,
@@ -15,7 +16,7 @@ import type { RequestSequence } from 'redux-reqseq';
 import type { FQN } from 'lattice';
 
 import { addParticipant } from './ParticipantsActions';
-import { getEntityAddressKey, processAssociationEntityData, processEntityData } from '../../utils/DataProcessingUtils';
+import { getEntitySetIdFromApp, getPropertyTypeIdFromEdm } from '../../utils/DataUtils';
 import {
   APP_TYPE_FQNS,
   DIVERSION_PLAN_FQNS,
@@ -26,7 +27,7 @@ import {
   PEOPLE_FQNS
 } from '../../core/edm/constants/FullyQualifiedNames';
 import { STATE } from '../../utils/constants/ReduxStateConsts';
-import { CWP, ENROLLMENT_STATUSES, TYPE_IDS_BY_FQNS } from '../../core/edm/constants/DataModelConsts';
+import { CWP, ENROLLMENT_STATUSES } from '../../core/edm/constants/DataModelConsts';
 import {
   ButtonsRow,
   FormRow,
@@ -34,6 +35,12 @@ import {
   RowContent
 } from '../../components/Layout';
 
+const {
+  getEntityAddressKey,
+  getPageSectionKey,
+  processAssociationEntityData,
+  processEntityData
+} = DataProcessingUtils;
 const {
   DIVERSION_PLAN,
   ENROLLMENT_STATUS,
@@ -61,7 +68,7 @@ type Props = {
     addParticipant :RequestSequence;
   };
   app :Map;
-  edmPropertyTypes :Map;
+  edm :Map;
   isLoading :boolean;
   onDiscard :() => void;
 };
@@ -75,46 +82,85 @@ class AddParticipantForm extends Component<Props, State> {
   constructor(props :Props) {
     super(props);
     this.state = {
-      newParticipantData: Map({
-        [getEntityAddressKey(0, DIVERSION_PLAN, COMPLETED)]: [false],
-        [getEntityAddressKey(0, DIVERSION_PLAN, NAME)]: [CWP],
-        [getEntityAddressKey(0, ENROLLMENT_STATUS, STATUS)]: [ENROLLMENT_STATUSES.AWAITING_CHECKIN],
-        [getEntityAddressKey(0, MANUAL_SENTENCES, SENTENCE_CONDITIONS)]: ['COMMUNITY SERVICE'],
+      newParticipantData: fromJS({
+        [getPageSectionKey(1, 1)]: {
+          [getEntityAddressKey(0, DIVERSION_PLAN, COMPLETED)]: false,
+          [getEntityAddressKey(0, DIVERSION_PLAN, NAME)]: CWP,
+          [getEntityAddressKey(0, ENROLLMENT_STATUS, STATUS)]: ENROLLMENT_STATUSES.AWAITING_CHECKIN,
+          [getEntityAddressKey(0, MANUAL_SENTENCES, SENTENCE_CONDITIONS)]: 'COMMUNITY SERVICE',
+        },
       }),
     };
   }
 
-  setDate = (name :FQN) => (date :string) => {
-    const { newParticipantData } = this.state;
-    this.setState({ newParticipantData: newParticipantData.set(name, date) });
+  createEntitySetIdsMap = () => {
+    const { app } = this.props;
+
+    const diversionPlanESID :UUID = getEntitySetIdFromApp(app, DIVERSION_PLAN);
+    const enrollmentStatusESID :UUID = getEntitySetIdFromApp(app, ENROLLMENT_STATUS);
+    const manualSentencedWithESID :UUID = getEntitySetIdFromApp(app, MANUAL_SENTENCED_WITH);
+    const manualSentencesESID :UUID = getEntitySetIdFromApp(app, MANUAL_SENTENCES);
+    const peopleESID :UUID = getEntitySetIdFromApp(app, PEOPLE);
+    const relatedToESID :UUID = getEntitySetIdFromApp(app, RELATED_TO);
+    const sentenceTermESID :UUID = getEntitySetIdFromApp(app, SENTENCE_TERM);
+    const sentencedWithESID :UUID = getEntitySetIdFromApp(app, SENTENCED_WITH);
+
+    return {
+      [DIVERSION_PLAN]: diversionPlanESID,
+      [ENROLLMENT_STATUS]: enrollmentStatusESID,
+      [MANUAL_SENTENCED_WITH]: manualSentencedWithESID,
+      [MANUAL_SENTENCES]: manualSentencesESID,
+      [PEOPLE]: peopleESID,
+      [RELATED_TO]: relatedToESID,
+      [SENTENCED_WITH]: sentencedWithESID,
+      [SENTENCE_TERM]: sentenceTermESID,
+    };
   }
 
-  setDateTime = (name :FQN) => (date :string) => {
-    const { newParticipantData } = this.state;
-    const splitDate :number[] = date.split('-')
-      .map((string :string) => parseInt(string, 10));
-    const dateAsDateTime = DateTime.local(splitDate[0], splitDate[1], splitDate[2]).toISO();
-    this.setState({ newParticipantData: newParticipantData.set(name, dateAsDateTime) });
+  createPropertyTypeIdsMap = () => {
+    const { edm } = this.props;
+
+    const completedPTID :UUID = getPropertyTypeIdFromEdm(edm, COMPLETED);
+    const datetimeCompletedPTID :UUID = getPropertyTypeIdFromEdm(edm, DATETIME_COMPLETED);
+    const datetimeStartPTID :UUID = getPropertyTypeIdFromEdm(edm, DATETIME_START);
+    const dobPTID :UUID = getPropertyTypeIdFromEdm(edm, DOB);
+    const firstNamePTID :UUID = getPropertyTypeIdFromEdm(edm, FIRST_NAME);
+    const lastNamePTID :UUID = getPropertyTypeIdFromEdm(edm, LAST_NAME);
+    const namePTID :UUID = getPropertyTypeIdFromEdm(edm, NAME);
+    const notesPTID :UUID = getPropertyTypeIdFromEdm(edm, NOTES);
+    const requiredHoursPTID :UUID = getPropertyTypeIdFromEdm(edm, REQUIRED_HOURS);
+    const sentenceConditionsPTID :UUID = getPropertyTypeIdFromEdm(edm, SENTENCE_CONDITIONS);
+    const statusPTID :UUID = getPropertyTypeIdFromEdm(edm, STATUS);
+
+    return {
+      [COMPLETED]: completedPTID,
+      [DATETIME_COMPLETED]: datetimeCompletedPTID,
+      [DATETIME_START]: datetimeStartPTID,
+      [DOB]: dobPTID,
+      [FIRST_NAME]: firstNamePTID,
+      [LAST_NAME]: lastNamePTID,
+      [NAME]: namePTID,
+      [NOTES]: notesPTID,
+      [REQUIRED_HOURS]: requiredHoursPTID,
+      [SENTENCE_CONDITIONS]: sentenceConditionsPTID,
+      [STATUS]: statusPTID,
+    };
   }
 
   handleInputChange = (e :SyntheticEvent<HTMLInputElement>) => {
     const { newParticipantData } = this.state;
     const { name, value } = e.currentTarget;
-    this.setState({ newParticipantData: newParticipantData.set(name, value) });
+    this.setState({ newParticipantData: newParticipantData.setIn([getPageSectionKey(1, 1), name], value) });
   }
 
   handleSelectChange = (value :string, e :Object) => {
     const { newParticipantData } = this.state;
     const { name } = e;
-    this.setState({ newParticipantData: newParticipantData.set(name, value) });
+    this.setState({ newParticipantData: newParticipantData.setIn([getPageSectionKey(1, 1), name], value) });
   }
 
   handleOnSubmit = () => {
-    const {
-      actions,
-      app,
-      edmPropertyTypes,
-    } = this.props;
+    const { actions } = this.props;
     let { newParticipantData } = this.state;
 
     const associations = [];
@@ -135,14 +181,30 @@ class AddParticipantForm extends Component<Props, State> {
 
     // required hours is saved as a string and needs to be converted to number:
     const requiredHoursKey = getEntityAddressKey(0, DIVERSION_PLAN, REQUIRED_HOURS);
-    let requiredHours = newParticipantData.get(requiredHoursKey, '0');
+    let requiredHours = newParticipantData.getIn([getPageSectionKey(1, 1), requiredHoursKey], '0');
     requiredHours = parseInt(requiredHours, 10);
-    newParticipantData = newParticipantData.set(requiredHoursKey, requiredHours);
+    newParticipantData = newParticipantData.setIn([getPageSectionKey(1, 1), requiredHoursKey], requiredHours);
 
-    const entityData :{} = processEntityData(newParticipantData, edmPropertyTypes, app);
-    const associationEntityData :{} = processAssociationEntityData(fromJS(associations), edmPropertyTypes, app);
+    const entitySetIds :Object = this.createEntitySetIdsMap();
+    const propertyTypeIds :Object = this.createPropertyTypeIdsMap();
+
+    const entityData :{} = processEntityData(newParticipantData, entitySetIds, propertyTypeIds);
+    const associationEntityData :{} = processAssociationEntityData(fromJS(associations), entitySetIds, propertyTypeIds);
 
     actions.addParticipant({ associationEntityData, entityData });
+  }
+
+  setDate = (name :FQN) => (date :string) => {
+    const { newParticipantData } = this.state;
+    this.setState({ newParticipantData: newParticipantData.setIn([getPageSectionKey(1, 1), name], date) });
+  }
+
+  setDateTime = (name :FQN) => (date :string) => {
+    const { newParticipantData } = this.state;
+    const splitDate :number[] = date.split('-')
+      .map((string :string) => parseInt(string, 10));
+    const dateAsDateTime = DateTime.local(splitDate[0], splitDate[1], splitDate[2]).toISO();
+    this.setState({ newParticipantData: newParticipantData.setIn([getPageSectionKey(1, 1), name], dateAsDateTime) });
   }
 
   render() {
@@ -210,7 +272,7 @@ class AddParticipantForm extends Component<Props, State> {
 
 const mapStateToProps = (state :Map) => ({
   app: state.get(STATE.APP),
-  edmPropertyTypes: state.getIn([STATE.EDM, TYPE_IDS_BY_FQNS]),
+  edm: state.get(STATE.EDM),
 });
 
 const mapDispatchToProps = dispatch => ({
