@@ -316,10 +316,10 @@ function* getEnrollmentStatusWorker(action :SequenceAction) :Generator<*, *, *> 
 
     if (response.data[personEKID]) {
       enrollmentStatus = fromJS(response.data[personEKID]);
-      const awaitingEnrollmentStatus = enrollmentStatus.find((status :Map) => status
-        .getIn([STATUS, 0]) === ENROLLMENT_STATUSES.AWAITING_ENROLLMENT);
-      if (isDefined(awaitingEnrollmentStatus)) {
-        enrollmentStatus = awaitingEnrollmentStatus;
+      const awaitingCheckinStatus = enrollmentStatus.find((status :Map) => status
+        .getIn([STATUS, 0]) === ENROLLMENT_STATUSES.AWAITING_CHECKIN);
+      if (isDefined(awaitingCheckinStatus)) {
+        enrollmentStatus = awaitingCheckinStatus;
       }
       else {
         const mostRecentStatus = enrollmentStatus.sort((statusA :Map, statusB :Map) => {
