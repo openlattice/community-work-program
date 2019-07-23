@@ -54,11 +54,7 @@ import {
   WORKSITE_PLAN_FQNS,
 } from '../../core/edm/constants/FullyQualifiedNames';
 import { isDefined } from '../../utils/LangUtils';
-import {
-  ENROLLMENT_STATUSES,
-  INFRACTIONS_CONSTS,
-  NEIGHBOR_ENTITY_SET,
-} from '../../core/edm/constants/DataModelConsts';
+import { INFRACTIONS_CONSTS, NEIGHBOR_ENTITY_SET } from '../../core/edm/constants/DataModelConsts';
 
 const { getEntitySetData } = DataApiActions;
 const { getEntitySetDataWorker } = DataApiSagas;
@@ -73,7 +69,6 @@ const {
   PEOPLE,
   SENTENCES,
   SENTENCE_TERM,
-  WORKSITE,
   WORKSITE_PLAN,
 } = APP_TYPE_FQNS;
 const { SENTENCE_CONDITIONS } = SENTENCE_FQNS;
@@ -81,7 +76,7 @@ const { TYPE } = INFRACTION_FQNS;
 const { COMPLETED, REQUIRED_HOURS } = DIVERSION_PLAN_FQNS;
 const { HOURS_WORKED } = WORKSITE_PLAN_FQNS;
 const { DATETIME_START } = SENTENCE_TERM_FQNS;
-const { EFFECTIVE_DATE, STATUS } = ENROLLMENT_STATUS_FQNS;
+const { EFFECTIVE_DATE } = ENROLLMENT_STATUS_FQNS;
 
 const getAppFromState = state => state.get(STATE.APP, Map());
 const getEdmFromState = state => state.get(STATE.EDM, Map());
@@ -105,7 +100,7 @@ function* getHoursWorkedWorker(action :SequenceAction) :Generator<*, *, *> {
 
   try {
     yield put(getHoursWorked.request(id));
-    const { diversionPlansByParticipant, peopleESID } = value;
+    const { diversionPlansByParticipant, diversionPlanESID, peopleESID } = value;
 
     /*
      * 1. Get required hours from each diversion plan.
@@ -120,7 +115,6 @@ function* getHoursWorkedWorker(action :SequenceAction) :Generator<*, *, *> {
      * 2. Get hours worked from worksite plans.
      */
     const app = yield select(getAppFromState);
-    const diversionPlanESID :UUID = getEntitySetIdFromApp(app, DIVERSION_PLAN);
     const worksitePlanESID :UUID = getEntitySetIdFromApp(app, WORKSITE_PLAN);
     const planEKIDs = diversionPlansByParticipant
       .map((planArray :List) => getEntityKeyId(planArray.get(0)))
@@ -188,6 +182,13 @@ function* getHoursWorkedWatcher() :Generator<*, *, *> {
 
 function* getEnrollmentStatusesWorker(action :SequenceAction) :Generator<*, *, *> {
 
+  /*
+   The data model is as follows: participant -> sentenced with -> diversion plan,
+   diversion plan -> related to -> enrollment status. There is 1 enrollment status entity for every enrollment
+   status update. It is therefore unknown how many enrollment status entities might be tied to a given diversion plan
+   until a search on that diversion plan's enrollment status neighbors is executed. Additionally, the only indicator of
+   enrollment status on the diversion plan entity is the ol.completed boolean.
+   */
   const { id, value } = action;
   if (value === null || value === undefined) {
     yield put(getEnrollmentStatuses.failure(id, ERR_ACTION_VALUE_NOT_DEFINED));
@@ -226,9 +227,9 @@ function* getEnrollmentStatusesWorker(action :SequenceAction) :Generator<*, *, *
     }
     const diversionPlansByParticipant = fromJS(response.data)
       .map((planList :List) => planList.map((plan :Map) => getNeighborDetails(plan)));
-    console.log('diversionPlansByParticipant: ', diversionPlansByParticipant);
-    /* Call getHoursWorked so diversionPlan search doesn't need to happen twice. */
-    yield call(getHoursWorkedWorker, getHoursWorked({ diversionPlansByParticipant, peopleESID }));
+
+    /* Call getHoursWorked so diversionPlan search doesn't need to happen twice on rendering participants tables. */
+    yield call(getHoursWorkedWorker, getHoursWorked({ diversionPlansByParticipant, diversionPlanESID, peopleESID }));
 
     /*
      * 3. Create map of { participant : active diversion plan }.
