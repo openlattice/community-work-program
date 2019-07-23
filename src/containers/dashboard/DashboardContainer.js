@@ -135,22 +135,23 @@ class DashboardContainer extends Component<Props, State> {
 
       const newParticipants = participants.filter((participant :Map) => {
         const personEKID :UUID = getEntityKeyId(participant);
-        if (enrollmentByParticipant.get(personEKID).count() === 0) { // if no existing worksite enrollments
+        if (enrollmentByParticipant.get(personEKID).count() === 0) { // if no existing enrollment
           return true;
         }
 
         const status :string = enrollmentByParticipant.get(personEKID)
           .getIn([STATUS, 0]);
-        const isAwaitingEnrollment :boolean = status === ENROLLMENT_STATUSES.AWAITING_ENROLLMENT;
+        const isAwaitingEnrollment :boolean = status === ENROLLMENT_STATUSES.AWAITING_CHECKIN
+          || status === ENROLLMENT_STATUSES.AWAITING_ORIENTATION;
         const hasActiveSentence :boolean = DateTime.local().diff(DateTime.fromISO(
           sentenceTermsByParticipant.getIn([personEKID, DATETIME_START, 0])
         ), 'days').days < 90;
 
-        // if person was enrolled in CWP previously and is now again
+        // if person was enrolled in CWP previously and is now enrolled again but doesn't have reflective status:
         if (!isAwaitingEnrollment && hasActiveSentence) {
-          // if person is simply actively enrolled in CWP
+          // filter out the people who are simply active in CWP:
           if (status === ENROLLMENT_STATUSES.ACTIVE
-              || status === ENROLLMENT_STATUSES.ACTIVE_NONCOMPLIANT) {
+              || status === ENROLLMENT_STATUSES.ACTIVE_NONCOMPLIANT || status === ENROLLMENT_STATUSES.ACTIVE_REOPENED) {
             return false;
           }
           return true;
