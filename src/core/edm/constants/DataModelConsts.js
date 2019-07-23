@@ -28,6 +28,7 @@ export const ENROLLMENT_STATUSES = {
   AWAITING_ORIENTATION: 'Awaiting orientation',
   CLOSED: 'Closed',
   COMPLETED: 'Completed',
+  NO_SHOW: 'No show',
   REMOVED_NONCOMPLIANT: 'Removed noncompliant'
 };
 
