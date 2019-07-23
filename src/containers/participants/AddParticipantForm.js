@@ -93,7 +93,7 @@ class AddParticipantForm extends Component<Props, State> {
     const { newParticipantData } = this.state;
     const splitDate :number[] = date.split('-')
       .map((string :string) => parseInt(string, 10));
-    const dateAsDateTime = DateTime.utc(splitDate[0], splitDate[1], splitDate[2]).toISO();
+    const dateAsDateTime = DateTime.local(splitDate[0], splitDate[1], splitDate[2]).toISO();
     this.setState({ newParticipantData: newParticipantData.set(name, dateAsDateTime) });
   }
 
@@ -118,7 +118,7 @@ class AddParticipantForm extends Component<Props, State> {
     let { newParticipantData } = this.state;
 
     const associations = [];
-    const nowAsIso = DateTime.utc().toISO();
+    const nowAsIso = DateTime.local().toISO();
 
     associations.push([MANUAL_SENTENCED_WITH, 0, PEOPLE, 0, DIVERSION_PLAN, {
       [DATETIME_COMPLETED]: [nowAsIso]
