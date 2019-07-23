@@ -143,13 +143,13 @@ export default function participantsReducer(state :Map<*, *> = INITIAL_STATE, ac
 
             const participants :List = state.get(PARTICIPANTS)
               .push(newEntities.get('person'));
-            let sentenceTermsByParticipant = state.get(SENTENCE_TERMS_BY_PARTICIPANT);
-            sentenceTermsByParticipant = sentenceTermsByParticipant.set(personEKID, newEntities.get('sentenceTerm'));
-            let enrollmentByParticipant = state.get(ENROLLMENT_BY_PARTICIPANT);
-            enrollmentByParticipant = enrollmentByParticipant.set(personEKID, Map());
-            let hoursWorked = state.get(HOURS_WORKED);
+            const sentenceTermsByParticipant = state.get(SENTENCE_TERMS_BY_PARTICIPANT)
+              .set(personEKID, newEntities.get('sentenceTerm'));
+            const enrollmentByParticipant = state.get(ENROLLMENT_BY_PARTICIPANT)
+              .set(personEKID, Map());
             const required = newEntities.getIn(['diversionPlan', REQUIRED_HOURS, 0], 0);
-            hoursWorked = hoursWorked.set(personEKID, Map({ worked: 0, required }));
+            const hoursWorked = state.get(HOURS_WORKED)
+              .set(personEKID, Map({ worked: 0, required }));
 
             return state
               .set(PARTICIPANTS, participants)
