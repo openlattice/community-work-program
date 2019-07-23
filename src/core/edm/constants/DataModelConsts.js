@@ -24,8 +24,8 @@ export const ENROLLMENT_STATUSES = {
   ACTIVE: 'Active',
   ACTIVE_NONCOMPLIANT: 'Active noncompliant',
   ACTIVE_REOPENED: 'Active reopened',
-  AWAITING_CHECKIN: 'Awaiting checkin',
-  AWAITING_ENROLLMENT: 'Awaiting enrollment',
+  AWAITING_CHECKIN: 'Awaiting check-in',
+  AWAITING_ORIENTATION: 'Awaiting orientation',
   CLOSED: 'Closed',
   COMPLETED: 'Completed',
   REMOVED_NONCOMPLIANT: 'Removed noncompliant'
