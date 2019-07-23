@@ -122,10 +122,10 @@ export default function participantsReducer(state :Map<*, *> = INITIAL_STATE, ac
             const storedValue :Object = storedSeqAction.value; // request value
             const { entityData } :Object = storedValue;
             const storedEntities :Map = Map().withMutations((map :Map) => {
-              map.set('person', Map(entityData[peopleESID][0]));
-              map.set('sentence', Map(entityData[manualSentenceESID][0]));
-              map.set('sentenceTerm', Map(entityData[sentenceTermESID][0]));
-              map.set('diversionPlan', Map(entityData[diversionPlanESID][0]));
+              map.set('person', fromJS(entityData[peopleESID][0]));
+              map.set('sentence', fromJS(entityData[manualSentenceESID][0]));
+              map.set('sentenceTerm', fromJS(entityData[sentenceTermESID][0]));
+              map.set('diversionPlan', fromJS(entityData[diversionPlanESID][0]));
             });
             let newEntities :Map = Map();
             storedEntities.forEach((entity :Map, key :string) => {
