@@ -1,8 +1,10 @@
 /*
  * @flow
  */
-import { isImmutable, Map } from 'immutable';
+import { isImmutable, List, Map } from 'immutable';
 import { Models } from 'lattice';
+import { DateTime } from 'luxon';
+import type { FQN } from 'lattice';
 
 import { NEIGHBOR_DETAILS, TYPE_IDS_BY_FQNS, TYPES_BY_ID } from '../core/edm/constants/DataModelConsts';
 import { ENTITY_KEY_ID } from '../core/edm/constants/FullyQualifiedNames';
@@ -67,3 +69,17 @@ export const getEntityKeyId = (entityObj :Map) :string => {
   }
   return '';
 };
+
+export const sortEntitiesByDateProperty = (
+  entityCollection :List | Map,
+  datePropertyFqn :FQN
+) :List | Map => entityCollection
+
+  .sort((entityObjA :Map, entityObjB :Map) => {
+    const dateA = DateTime.fromISO(entityObjA.getIn([datePropertyFqn, 0]));
+    const dateB = DateTime.fromISO(entityObjB.getIn([datePropertyFqn, 0]));
+    if (dateA.toISO() === dateB.toISO()) {
+      return 0;
+    }
+    return dateA < dateB ? -1 : 1;
+  });
