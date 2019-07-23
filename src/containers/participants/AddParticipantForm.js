@@ -201,9 +201,7 @@ class AddParticipantForm extends Component<Props, State> {
 
   setDateTime = (name :FQN) => (date :string) => {
     const { newParticipantData } = this.state;
-    const splitDate :number[] = date.split('-')
-      .map((string :string) => parseInt(string, 10));
-    const dateAsDateTime = DateTime.local(splitDate[0], splitDate[1], splitDate[2]).toISO();
+    const dateAsDateTime = DateTime.fromISO(date).toISO();
     this.setState({ newParticipantData: newParticipantData.setIn([getPageSectionKey(1, 1), name], dateAsDateTime) });
   }
 
