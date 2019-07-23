@@ -138,9 +138,10 @@ class ParticipantsSearchContainer extends Component<Props, State> {
   handleOnFilter = (clickedProperty :Map, selectEvent :Object, peopleToFilter :List) => {
     const { enrollmentByParticipant, participants } = this.props;
     const peopleList :List = isDefined(peopleToFilter) ? peopleToFilter : participants;
-    const filter :string = clickedProperty.filter.toLowerCase();
+    const { filter } = clickedProperty;
     let property :string = clickedProperty.label.toUpperCase();
     property = property.split(' ').length > 1 ? property.split(' ').join('_') : property;
+    property = property.includes('-') ? property.split('-').join('') : property;
     let filteredPeople :List = List();
 
     if (property === ALL) {
@@ -153,7 +154,7 @@ class ParticipantsSearchContainer extends Component<Props, State> {
         const personEKID :UUID = getEntityKeyId(person);
         const personEnrollment :Map = enrollmentByParticipant.get(personEKID, Map());
         let { [STATUS]: status } = getEntityProperties(personEnrollment, [STATUS]);
-        status = !isDefined(status) ? ENROLLMENT_STATUSES.AWAITING_ENROLLMENT : status;
+        status = !isDefined(status) ? ENROLLMENT_STATUSES.AWAITING_CHECKIN : status;
         return status === statusTypeToInclude;
       });
     }
@@ -297,8 +298,8 @@ class ParticipantsSearchContainer extends Component<Props, State> {
       let { [STATUS]: personBStatus } = getEntityProperties(
         enrollmentByParticipant.get(personBEKID), [STATUS]
       );
-      personAStatus = !isDefined(personAStatus) ? ENROLLMENT_STATUSES.AWAITING_ENROLLMENT : personAStatus;
-      personBStatus = !isDefined(personBStatus) ? ENROLLMENT_STATUSES.AWAITING_ENROLLMENT : personBStatus;
+      personAStatus = !isDefined(personAStatus) ? ENROLLMENT_STATUSES.AWAITING_CHECKIN : personAStatus;
+      personBStatus = !isDefined(personBStatus) ? ENROLLMENT_STATUSES.AWAITING_CHECKIN : personBStatus;
       return personAStatus.localeCompare(personBStatus, undefined, { sensitivity: 'base' });
     });
     return sortedByStatus;
