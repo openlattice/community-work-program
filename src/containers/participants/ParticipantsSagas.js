@@ -90,6 +90,98 @@ const LOG = new Logger('ParticipantsSagas');
 
 /*
  *
+ * ParticipantsActions.getHoursWorked()
+ *
+ */
+
+function* getHoursWorkedWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+  if (value === null || value === undefined) {
+    yield put(getHoursWorked.failure(id, ERR_ACTION_VALUE_NOT_DEFINED));
+    return;
+  }
+  let response :Object = {};
+
+  try {
+    yield put(getHoursWorked.request(id));
+    const { diversionPlansByParticipant, peopleESID } = value;
+
+    /*
+     * 1. Get required hours from each diversion plan.
+     */
+    const requiredHours = diversionPlansByParticipant
+      .map((planArray :List) => {
+        const { [REQUIRED_HOURS]: reqHours } = getEntityProperties(planArray.get(0), [REQUIRED_HOURS]);
+        return reqHours;
+      });
+
+    /*
+     * 2. Get hours worked from worksite plans.
+     */
+    const app = yield select(getAppFromState);
+    const diversionPlanESID :UUID = getEntitySetIdFromApp(app, DIVERSION_PLAN);
+    const worksitePlanESID :UUID = getEntitySetIdFromApp(app, WORKSITE_PLAN);
+    const planEKIDs = diversionPlansByParticipant
+      .map((planArray :List) => getEntityKeyId(planArray.get(0)))
+      .valueSeq()
+      .toArray();
+    const searchFilter = {
+      entityKeyIds: planEKIDs,
+      destinationEntitySetIds: [worksitePlanESID],
+      sourceEntitySetIds: [peopleESID],
+    };
+    response = yield call(
+      searchEntityNeighborsWithFilterWorker,
+      searchEntityNeighborsWithFilter({ entitySetId: diversionPlanESID, filter: searchFilter })
+    );
+    if (response.error) {
+      throw response.error;
+    }
+    const diversionPlanNeighbors = fromJS(response.data); // people and worksite plan neighbors for each diversion plan
+    let hoursWorkedMap :Map = Map();
+    diversionPlanNeighbors.forEach((plan :Map) => {
+
+      const person :UUID = plan.find((neighbor :Map) => neighbor
+        .getIn([NEIGHBOR_ENTITY_SET, 'name']).includes(PEOPLE.toString().split('.')[1]));
+      const personEKID = getEntityKeyId(getNeighborDetails(person));
+      const worksitePlans :List = plan.filter((neighbor :Map) => neighbor
+        .getIn([NEIGHBOR_ENTITY_SET, 'name']).includes(WORKSITE_PLAN.toString().split('.')[1]));
+      let hoursWorked :number = 0;
+      if (worksitePlans.count() === 1) {
+        hoursWorked = getFirstNeighborValue(worksitePlans.get(0), HOURS_WORKED);
+      }
+      if (worksitePlans.count() > 1) {
+        hoursWorked = worksitePlans
+          .reduce((worksitePlanA :Map, worksitePlanB :Map) => {
+            const hoursA = getFirstNeighborValue(worksitePlanA, HOURS_WORKED);
+            const hoursB = getFirstNeighborValue(worksitePlanB, HOURS_WORKED);
+            return hoursA + hoursB;
+          }, hoursWorked);
+      }
+      const reqHoursFromMap :number = requiredHours.get(personEKID) ? requiredHours.get(personEKID) : 0;
+
+      hoursWorkedMap = hoursWorkedMap.set(personEKID, Map({ worked: hoursWorked, required: reqHoursFromMap }));
+    });
+
+    yield put(getHoursWorked.success(id, hoursWorkedMap));
+  }
+  catch (error) {
+    LOG.error('caught exception in getHoursWorkedWorker()', error);
+    yield put(getHoursWorked.failure(id, error));
+  }
+  finally {
+    yield put(getHoursWorked.finally(id));
+  }
+}
+
+function* getHoursWorkedWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(GET_HOURS_WORKED, getHoursWorkedWorker);
+}
+
+/*
+ *
  * ParticipantsActions.getEnrollmentStatuses()
  *
  */
@@ -134,6 +226,9 @@ function* getEnrollmentStatusesWorker(action :SequenceAction) :Generator<*, *, *
     }
     const diversionPlansByParticipant = fromJS(response.data)
       .map((planList :List) => planList.map((plan :Map) => getNeighborDetails(plan)));
+    console.log('diversionPlansByParticipant: ', diversionPlansByParticipant);
+    /* Call getHoursWorked so diversionPlan search doesn't need to happen twice. */
+    yield call(getHoursWorkedWorker, getHoursWorked({ diversionPlansByParticipant, peopleESID }));
 
     /*
      * 3. Create map of { participant : active diversion plan }.
@@ -248,123 +343,6 @@ function* getEnrollmentStatusesWatcher() :Generator<*, *, *> {
   yield takeEvery(GET_ENROLLMENT_STATUSES, getEnrollmentStatusesWorker);
 }
 
-
-/*
- *
- * ParticipantsActions.getHoursWorked()
- *
- */
-
-function* getHoursWorkedWorker(action :SequenceAction) :Generator<*, *, *> {
-
-  const { id, value } = action;
-  if (value === null || value === undefined) {
-    yield put(getHoursWorked.failure(id, ERR_ACTION_VALUE_NOT_DEFINED));
-    return;
-  }
-  let response :Object = {};
-
-  try {
-    yield put(getHoursWorked.request(id));
-    const { participants, peopleESID } = value;
-    const participantEKIDs :UUID[] = participants
-      .map((participant :Map) => getEntityKeyId(participant))
-      .toJS();
-    /*
-     * 1. Get diversion plans of participants given.
-     */
-    const app = yield select(getAppFromState);
-    const diversionPlanESID :UUID = getEntitySetIdFromApp(app, DIVERSION_PLAN);
-
-    let searchFilter = {
-      entityKeyIds: participantEKIDs,
-      destinationEntitySetIds: [diversionPlanESID],
-      sourceEntitySetIds: [],
-    };
-    response = yield call(
-      searchEntityNeighborsWithFilterWorker,
-      searchEntityNeighborsWithFilter({ entitySetId: peopleESID, filter: searchFilter })
-    );
-    if (response.error) {
-      throw response.error;
-    }
-
-    /*
-     * 2. Get required hours from diversion plan.
-     */
-    const diversionPlansByParticipant = fromJS(response.data)
-      .map((planArray :List) => planArray.map((plan :Map) => getNeighborDetails(plan)));
-
-    const requiredHours = diversionPlansByParticipant
-      .map((planArray :List) => {
-        const { [REQUIRED_HOURS]: reqHours } = getEntityProperties(planArray.get(0), [REQUIRED_HOURS]);
-        return reqHours;
-      });
-
-    /*
-     * 3. Get hours worked from worksite plans.
-     */
-    const planEKIDs = diversionPlansByParticipant
-      .map((planArray :List) => {
-        return getEntityKeyId(planArray.get(0));
-      })
-      .valueSeq()
-      .toArray();
-
-    const worksitePlanESID :UUID = getEntitySetIdFromApp(app, WORKSITE_PLAN);
-    searchFilter = {
-      entityKeyIds: planEKIDs,
-      destinationEntitySetIds: [worksitePlanESID],
-      sourceEntitySetIds: [peopleESID],
-    };
-    response = yield call(
-      searchEntityNeighborsWithFilterWorker,
-      searchEntityNeighborsWithFilter({ entitySetId: diversionPlanESID, filter: searchFilter })
-    );
-    if (response.error) {
-      throw response.error;
-    }
-    const diversionPlanNeighbors = fromJS(response.data); // people and worksite plan neighbors for each diversion plan
-    let hoursWorkedMap :Map = Map();
-    diversionPlanNeighbors.forEach((plan :Map) => {
-
-      const person :UUID = plan.find((neighbor :Map) => neighbor
-        .getIn([NEIGHBOR_ENTITY_SET, 'name']).includes(PEOPLE.toString().split('.')[1]));
-      const personEKID = getEntityKeyId(getNeighborDetails(person));
-      const worksitePlans :List = plan.filter((neighbor :Map) => neighbor
-        .getIn([NEIGHBOR_ENTITY_SET, 'name']).includes(WORKSITE_PLAN.toString().split('.')[1]));
-      let hoursWorked :number = 0;
-      if (worksitePlans.count() === 1) {
-        hoursWorked = getFirstNeighborValue(worksitePlans.get(0), HOURS_WORKED);
-      }
-      if (worksitePlans.count() > 1) {
-        hoursWorked = worksitePlans
-          .reduce((worksitePlanA :Map, worksitePlanB :Map) => {
-            const hoursA = getFirstNeighborValue(worksitePlanA, HOURS_WORKED);
-            const hoursB = getFirstNeighborValue(worksitePlanB, HOURS_WORKED);
-            return hoursA + hoursB;
-          }, hoursWorked);
-      }
-      const reqHoursFromMap :number = requiredHours.get(personEKID) ? requiredHours.get(personEKID) : 0;
-
-      hoursWorkedMap = hoursWorkedMap.set(personEKID, Map({ worked: hoursWorked, required: reqHoursFromMap }));
-    });
-
-    yield put(getHoursWorked.success(id, hoursWorkedMap));
-  }
-  catch (error) {
-    LOG.error('caught exception in getHoursWorkedWorker()', error);
-    yield put(getHoursWorked.failure(id, error));
-  }
-  finally {
-    yield put(getHoursWorked.finally(id));
-  }
-}
-
-function* getHoursWorkedWatcher() :Generator<*, *, *> {
-
-  yield takeEvery(GET_HOURS_WORKED, getHoursWorkedWorker);
-}
 
 /*
  *
@@ -573,7 +551,7 @@ function* getParticipantsWorker(action :SequenceAction) :Generator<*, *, *> {
         call(getSentenceTermsWorker, getSentenceTerms(params)),
         call(getEnrollmentStatusesWorker, getEnrollmentStatuses(params)),
         call(getInfractionsWorker, getInfractions(params)),
-        call(getHoursWorkedWorker, getHoursWorked(params))
+        // call(getHoursWorkedWorker, getHoursWorked(params))
       ]);
     }
 
