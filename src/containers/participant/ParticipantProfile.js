@@ -22,7 +22,9 @@ import * as Routes from '../../core/router/Routes';
 import { BackNavButton } from '../../components/controls/index';
 import { ButtonWrapper, ButtonsWrapper } from '../../components/Layout';
 import { getEntityProperties } from '../../utils/DataUtils';
+import { isDefined } from '../../utils/LangUtils';
 import { APP_TYPE_FQNS, ENROLLMENT_STATUS_FQNS, PEOPLE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { ENROLLMENT_STATUSES } from '../../core/edm/constants/DataModelConsts';
 import { APP, PERSON, STATE } from '../../utils/constants/ReduxStateConsts';
 
 const { STATUS } = ENROLLMENT_STATUS_FQNS;
@@ -168,7 +170,8 @@ class ParticipantProfile extends Component<Props> {
     const { [FIRST_NAME]: firstName, [LAST_NAME]: lastName } = getEntityProperties(
       participant, [FIRST_NAME, LAST_NAME]
     );
-    const { [STATUS]: status } = getEntityProperties(enrollmentStatus, [STATUS]);
+    let { [STATUS]: status } = getEntityProperties(enrollmentStatus, [STATUS]);
+    if (!isDefined(status)) status = ENROLLMENT_STATUSES.AWAITING_CHECKIN;
 
     return (
       <ProfileWrapper>
