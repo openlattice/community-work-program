@@ -84,12 +84,12 @@ class AddParticipantForm extends Component<Props, State> {
     };
   }
 
-  handleDateChange = (name :FQN) => (date :string) => {
+  setDate = (name :FQN) => (date :string) => {
     const { newParticipantData } = this.state;
     this.setState({ newParticipantData: newParticipantData.set(name, date) });
   }
 
-  handleDateTimeChange = (name :FQN) => (date :string) => {
+  setDateTime = (name :FQN) => (date :string) => {
     const { newParticipantData } = this.state;
     const splitDate :number[] = date.split('-')
       .map((string :string) => parseInt(string, 10));
@@ -168,7 +168,7 @@ class AddParticipantForm extends Component<Props, State> {
             <Label>Date of birth</Label>
             <DatePicker
                 name={getEntityAddressKey(0, PEOPLE, DOB)}
-                onChange={this.handleDateChange(getEntityAddressKey(0, PEOPLE, DOB))} />
+                onChange={this.setDate(getEntityAddressKey(0, PEOPLE, DOB))} />
           </RowContent>
         </FormRow>
         <FormRow>
@@ -176,7 +176,7 @@ class AddParticipantForm extends Component<Props, State> {
             <Label>Sentence date</Label>
             <DatePicker
                 name={getEntityAddressKey(0, SENTENCE_TERM, DATETIME_START)}
-                onChange={this.handleDateTimeChange(getEntityAddressKey(0, SENTENCE_TERM, DATETIME_START))} />
+                onChange={this.setDateTime(getEntityAddressKey(0, SENTENCE_TERM, DATETIME_START))} />
           </RowContent>
           <RowContent>
             <Label>Required hours</Label>
