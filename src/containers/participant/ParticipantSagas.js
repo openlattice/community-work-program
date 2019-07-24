@@ -357,10 +357,9 @@ function* getEnrollmentStatusWorker(action :SequenceAction) :Generator<*, *, *> 
           const sortedStatusList :List = sortEntitiesByDateProperty(statusList, EFFECTIVE_DATE);
           return sortedStatusList.last();
         });
-        enrollmentStatusesByDiversionPlan = sortEntitiesByDateProperty(
+        enrollmentStatus = sortEntitiesByDateProperty(
           enrollmentStatusesByDiversionPlan, EFFECTIVE_DATE
-        );
-        enrollmentStatus = enrollmentStatusesByDiversionPlan.last();
+        ).last();
       }
     }
 
