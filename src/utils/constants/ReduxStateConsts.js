@@ -56,7 +56,7 @@ export const PEOPLE = {
 
 export const PERSON = {
   ACTIONS: 'actions',
-  ADD_NEW_ENROLLMENT_STATUS: 'addNewEnrollmentStatus',
+  ADD_NEW_DIVERSION_PLAN_STATUS: 'addNewDiversionPlanStatus',
   ADDRESS: 'address',
   CASE_NUMBER: 'caseNumber',
   DIVERSION_PLAN: 'diversionPlan',
