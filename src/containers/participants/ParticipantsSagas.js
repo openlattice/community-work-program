@@ -552,7 +552,6 @@ function* getParticipantsWorker(action :SequenceAction) :Generator<*, *, *> {
         call(getSentenceTermsWorker, getSentenceTerms(params)),
         call(getEnrollmentStatusesWorker, getEnrollmentStatuses(params)),
         call(getInfractionsWorker, getInfractions(params)),
-        // call(getHoursWorkedWorker, getHoursWorked(params))
       ]);
     }
 
