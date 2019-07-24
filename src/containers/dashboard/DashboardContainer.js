@@ -36,7 +36,7 @@ const {
 } = PEOPLE;
 const { DATETIME_START } = SENTENCE_TERM_FQNS;
 
-const NEW_PARTICIPANTS_COLUMNS = ['NAME', 'SENT. DATE', 'CHECK-IN DEADLINE', 'REQ. HRS.'];
+const NEW_PARTICIPANTS_COLUMNS = ['NAME', 'SENT. DATE', 'CHECK-IN DEADLINE', 'STATUS', 'REQ. HRS.'];
 const PENDING_PARTICIPANTS_COLUMNS = ['NAME', 'SENT. DATE', 'REQ. HRS.'];
 const VIOLATIONS_WATCH_COLUMNS = ['NAME', '# OF VIO.', 'HRS. SERVED'];
 
@@ -245,6 +245,7 @@ class DashboardContainer extends Component<Props, State> {
 
   render() {
     const {
+      enrollmentByParticipant,
       getInitializeAppRequestState,
       getSentencesRequestState,
       hoursWorked,
@@ -288,13 +289,14 @@ class DashboardContainer extends Component<Props, State> {
                 includeStartDate: false,
                 includeWorkedHours: false
               }}
+              enrollment={enrollmentByParticipant}
               handleSelect={this.handleOnSelectPerson}
               hours={hoursWorked}
               people={newParticipants}
               small
               sentenceTerms={sentenceTermsByParticipant}
               totalTableItems={newParticipants.count()}
-              width="600px" />
+              width="700px" />
           <RightWrapper>
             <ParticipantsTable
                 ageRequired={false}
