@@ -10,7 +10,7 @@ import AddNewPlanStatusForm from './AddNewPlanStatusForm';
 
 import { PERSON, STATE } from '../../utils/constants/ReduxStateConsts';
 
-const { ACTIONS, ADD_NEW_ENROLLMENT_STATUS, REQUEST_STATE } = PERSON;
+const { ACTIONS, ADD_NEW_DIVERSION_PLAN_STATUS, REQUEST_STATE } = PERSON;
 
 
 type Props = {
@@ -57,7 +57,7 @@ class AddNewPlanEnrollmentStatusModal extends Component<Props> {
 }
 
 const mapStateToProps = (state :Map) => ({
-  addNewEnrollmentStatusState: state.getIn([STATE.PERSON, ACTIONS, ADD_NEW_ENROLLMENT_STATUS, REQUEST_STATE]),
+  addNewEnrollmentStatusState: state.getIn([STATE.PERSON, ACTIONS, ADD_NEW_DIVERSION_PLAN_STATUS, REQUEST_STATE]),
 });
 
 // $FlowFixMe
