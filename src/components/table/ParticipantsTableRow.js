@@ -3,8 +3,9 @@
  */
 
 import React from 'react';
+import styled from 'styled-components';
 import { List, Map } from 'immutable';
-import { faUserCircle } from '@fortawesome/pro-solid-svg-icons';
+import { faCheckCircle, faUserCircle } from '@fortawesome/pro-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 import { PersonPicture } from '../picture/PersonPicture';
@@ -20,8 +21,16 @@ import {
   StyledPersonPhoto,
 } from './TableStyledComponents';
 import { ENROLLMENT_STATUSES } from '../../core/edm/constants/DataModelConsts';
+import { OL } from '../../core/style/Colors';
 
 const { DOB, MUGSHOT, PICTURE } = PEOPLE_FQNS;
+
+const CellContentWrapper = styled.div`
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  margin-right: 10px;
+`;
 
 type Props = {
   ageRequired :boolean;
@@ -62,6 +71,7 @@ const TableRow = ({
   } = dates;
 
   let photo = '';
+  let includeCheckedInCircle :boolean = false;
   let cellData :List = List();
 
   if (isDefined(person)) {
@@ -90,6 +100,10 @@ const TableRow = ({
       if (!isDefined(hoursWorked) && isDefined(hoursRequired)) list.push(formatNumericalValue(hoursRequired));
       if (isDefined(courtType)) list.push(courtType);
     });
+
+    if (isDefined(enrollmentDeadline) && status === ENROLLMENT_STATUSES.AWAITING_ORIENTATION) {
+      includeCheckedInCircle = true;
+    }
   }
 
   return (
@@ -102,6 +116,16 @@ const TableRow = ({
       {
         cellData.map((field :string, index :number) => {
           const text = Object.values(ENROLLMENT_STATUSES).includes(field) ? field : 'default';
+          if (includeCheckedInCircle && field === enrollmentDeadline) {
+            return (
+              <Cell key={`${index}-${field}`} small={small} status={text}>
+                <CellContentWrapper>
+                  <span>{ field }</span>
+                  <FontAwesomeIcon icon={faCheckCircle} color={OL.PINK01} />
+                </CellContentWrapper>
+              </Cell>
+            );
+          }
           return (
             <Cell key={`${index}-${field}`} small={small} status={text}>{ field }</Cell>
           );
