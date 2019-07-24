@@ -105,7 +105,6 @@ class DashboardContainer extends Component<Props, State> {
   componentDidMount() {
     const { participants } = this.props;
     if (participants.count() > 0) {
-      this.setNewParticipants();
       this.setParticipantsWithHoursComplete();
       this.setParticipantsWithViolations();
     }
@@ -117,7 +116,6 @@ class DashboardContainer extends Component<Props, State> {
       actions.getSentences();
     }
     if (prevProps.participants.count() !== participants.count()) {
-      this.setNewParticipants();
       this.setParticipantsWithHoursComplete();
       this.setParticipantsWithViolations();
     }
@@ -128,17 +126,24 @@ class DashboardContainer extends Component<Props, State> {
     actions.goToRoute(PARTICIPANT_PROFILE.replace(':subjectId', personEKID));
   }
 
-  setNewParticipants = () => {
+  setNewParticipants = (noShows :List) => {
 
     const { enrollmentByParticipant, participants, sentenceTermsByParticipant } = this.props;
     if (enrollmentByParticipant.count() > 0 && participants.count() > 0) {
 
       const newParticipants = participants.filter((participant :Map) => {
+
+        // If person hasn't checked in by the deadline, they should be in Violations Watch table instead:
+        const participantIsNoShow :boolean = noShows.includes(participant);
+        if (participantIsNoShow) return false;
+
+        // If participant doesn't have enrollment status, they are newly integrated:
         const personEKID :UUID = getEntityKeyId(participant);
         if (enrollmentByParticipant.get(personEKID).count() === 0) { // if no existing enrollment
           return true;
         }
 
+        // If person is awaiting check-in or awaiting orientation, they should be in New Participants:
         const status :string = enrollmentByParticipant.get(personEKID)
           .getIn([STATUS, 0]);
         const isAwaitingEnrollment :boolean = status === ENROLLMENT_STATUSES.AWAITING_CHECKIN
@@ -147,15 +152,16 @@ class DashboardContainer extends Component<Props, State> {
           sentenceTermsByParticipant.getIn([personEKID, DATETIME_START, 0])
         ), 'days').days < 90;
 
-        // if person was enrolled in CWP previously and is now enrolled again but doesn't have reflective status:
+        // If person was enrolled in CWP previously and is now enrolled again but doesn't have correct status:
         if (!isAwaitingEnrollment && hasActiveSentence) {
-          // filter out the people who are simply active in CWP:
+          // Filter out the people who are simply active in CWP:
           if (status === ENROLLMENT_STATUSES.ACTIVE
               || status === ENROLLMENT_STATUSES.ACTIVE_NONCOMPLIANT || status === ENROLLMENT_STATUSES.ACTIVE_REOPENED) {
             return false;
           }
           return true;
         }
+
         return isAwaitingEnrollment;
       });
 
@@ -195,16 +201,41 @@ class DashboardContainer extends Component<Props, State> {
 
   setParticipantsWithViolations = () => {
 
-    const { enrollmentByParticipant, infractionCountsByParticipant, participants } = this.props;
+    const {
+      enrollmentByParticipant,
+      infractionCountsByParticipant,
+      participants,
+      sentenceTermsByParticipant,
+    } = this.props;
+
     const violationMap :Map = infractionCountsByParticipant
       .map((count :Map) => count.get(INFRACTIONS_CONSTS.VIOLATION));
-    const violationsWatch :List = participants.filter((participant :Map) => {
+
+    // Get participants with registered violations:
+    let violationsWatch :List = participants.filter((participant :Map) => {
       const personEKID :UUID = getEntityKeyId(participant);
-      const participantEnrollment = enrollmentByParticipant.get(getEntityKeyId(participant));
+      const participantEnrollment = enrollmentByParticipant.get(personEKID);
       const { [STATUS]: status } = getEntityProperties(participantEnrollment, [STATUS]);
       return violationMap.get(personEKID)
         && (status === ENROLLMENT_STATUSES.ACTIVE || status === ENROLLMENT_STATUSES.ACTIVE_NONCOMPLIANT);
     });
+    // Get participants who haven't checked in by their check-in deadline:
+    const noShows :List = participants.filter((participant :Map) => {
+      const personEKID :UUID = getEntityKeyId(participant);
+      const sentenceTerm = sentenceTermsByParticipant.get(personEKID);
+      const { [DATETIME_START]: sentenceDate } = getEntityProperties(sentenceTerm, [DATETIME_START]);
+      let checkInDeadline = '';
+      if (sentenceDate) checkInDeadline = DateTime.fromISO(sentenceDate).plus({ hours: 48 });
+      let pastDeadline = false;
+      if (checkInDeadline) {
+        const now = DateTime.local();
+        pastDeadline = now > checkInDeadline;
+      }
+      return pastDeadline;
+    });
+
+    violationsWatch = violationsWatch.concat(noShows);
+    this.setNewParticipants(noShows);
 
     this.setState({
       violationMap,
