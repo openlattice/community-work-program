@@ -12,6 +12,7 @@ import GeneralInfo from '../../components/participant/GeneralInfo';
 import KeyDates from '../../components/participant/KeyDates';
 import CaseInfo from '../../components/participant/CaseInfo';
 import InfractionsDisplay from '../../components/participant/InfractionsDisplay';
+import AddNewPlanStatusModal from './AddNewPlanStatusModal';
 import LogoLoader from '../../components/LogoLoader';
 
 import { getAllParticipantInfo } from './ParticipantActions';
@@ -118,8 +119,19 @@ type Props = {
   warnings :List;
 };
 
+type State = {
+  showEnrollmentModal :boolean;
+};
 
-class ParticipantProfile extends Component<Props> {
+class ParticipantProfile extends Component<Props, State> {
+
+  constructor(props :Props) {
+    super(props);
+
+    this.state = {
+      showEnrollmentModal: false,
+    };
+  }
 
   componentDidMount() {
     const { app } = this.props;
@@ -140,6 +152,18 @@ class ParticipantProfile extends Component<Props> {
     actions.getAllParticipantInfo({ personEKID });
   }
 
+  handleShowEnrollmentModal = () => {
+    this.setState({
+      showEnrollmentModal: true
+    });
+  }
+
+  handleHideEnrollmentModal = () => {
+    this.setState({
+      showEnrollmentModal: false
+    });
+  }
+
   render() {
     const {
       actions,
@@ -156,6 +180,7 @@ class ParticipantProfile extends Component<Props> {
       violations,
       warnings,
     } = this.props;
+    const { showEnrollmentModal } = this.state;
 
     if (getInitializeAppRequestState === RequestStates.PENDING
         || getAllParticipantInfoRequestState === RequestStates.PENDING) {
@@ -203,6 +228,11 @@ class ParticipantProfile extends Component<Props> {
             </InnerColumnWrapper>
           </BasicInfoWrapper>
         </ProfileBody>
+        <AddNewPlanStatusModal
+            currentStatus={status}
+            isOpen={showEnrollmentModal}
+            onClose={this.handleHideEnrollmentModal}
+            personName={firstName} />
       </ProfileWrapper>
     );
   }
