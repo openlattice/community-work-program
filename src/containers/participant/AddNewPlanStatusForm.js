@@ -11,17 +11,16 @@ import {
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import type { RequestSequence } from 'redux-reqseq';
-import type { FQN } from 'lattice';
 
-// import { addNewDiversionPlanStatus } from './ParticipantActions';
-import { getEntitySetIdFromApp, getPropertyTypeIdFromEdm } from '../../utils/DataUtils';
+import { addNewDiversionPlanStatus } from './ParticipantActions';
+import { getEntityKeyId, getEntitySetIdFromApp, getPropertyTypeIdFromEdm } from '../../utils/DataUtils';
 import { STATUS_FILTER_OPTIONS } from '../participants/ParticipantsConstants';
 import {
   APP_TYPE_FQNS,
   ENROLLMENT_STATUS_FQNS,
+  RELATED_TO_FQNS,
 } from '../../core/edm/constants/FullyQualifiedNames';
-import { STATE } from '../../utils/constants/ReduxStateConsts';
-import { ENROLLMENT_STATUSES } from '../../core/edm/constants/DataModelConsts';
+import { PERSON, STATE } from '../../utils/constants/ReduxStateConsts';
 import {
   ButtonsRow,
   FormRow,
@@ -36,9 +35,12 @@ const {
   processEntityData
 } = DataProcessingUtils;
 const {
+  DIVERSION_PLAN,
   ENROLLMENT_STATUS,
+  RELATED_TO,
 } = APP_TYPE_FQNS;
-const { STATUS } = ENROLLMENT_STATUS_FQNS;
+const { EFFECTIVE_DATE, STATUS } = ENROLLMENT_STATUS_FQNS;
+const { DATETIME_COMPLETED } = RELATED_TO_FQNS;
 
 const ENROLLMENT_STATUS_OPTIONS :Object[] = STATUS_FILTER_OPTIONS
   .slice(1)
@@ -52,6 +54,7 @@ type Props = {
   };
   app :Map;
   currentStatus :string;
+  diversionPlan :Map;
   edm :Map;
   isLoading :boolean;
   onDiscard :() => void;
@@ -75,32 +78,50 @@ class AddNewPlanStatusForm extends Component<Props, State> {
 
   createEntitySetIdsMap = () => {
     const { app } = this.props;
+    return {
+      [ENROLLMENT_STATUS]: getEntitySetIdFromApp(app, ENROLLMENT_STATUS),
+      [RELATED_TO]: getEntitySetIdFromApp(app, RELATED_TO),
+      [DIVERSION_PLAN]: getEntitySetIdFromApp(app, DIVERSION_PLAN),
+    };
   }
 
   createPropertyTypeIdsMap = () => {
     const { edm } = this.props;
+    return {
+      [DATETIME_COMPLETED]: getPropertyTypeIdFromEdm(edm, DATETIME_COMPLETED),
+      [EFFECTIVE_DATE]: getPropertyTypeIdFromEdm(edm, EFFECTIVE_DATE),
+      [STATUS]: getPropertyTypeIdFromEdm(edm, STATUS),
+    };
   }
 
-  handleSelectChange = (value :string, e :Object) => {
+  handleSelectChange = (option :Object, e :Object) => {
     const { newEnrollmentData } = this.state;
     const { name } = e;
+    const { value } = option;
     this.setState({ newEnrollmentData: newEnrollmentData.setIn([getPageSectionKey(1, 1), name], value) });
   }
 
   handleOnSubmit = () => {
-    const { actions } = this.props;
-    const { newEnrollmentData } = this.state;
+    const { actions, diversionPlan } = this.props;
+    let { newEnrollmentData } = this.state;
 
     const associations = [];
+    const diversionPlanEKID :UUID = getEntityKeyId(diversionPlan);
     const nowAsIso = DateTime.local().toISO();
 
+    newEnrollmentData = newEnrollmentData
+      .setIn([getPageSectionKey(1, 1), getEntityAddressKey(0, ENROLLMENT_STATUS, EFFECTIVE_DATE)], nowAsIso);
+
+    associations.push([RELATED_TO, diversionPlanEKID, DIVERSION_PLAN, 0, ENROLLMENT_STATUS, {
+      [DATETIME_COMPLETED]: [nowAsIso]
+    }]);
     const entitySetIds :Object = this.createEntitySetIdsMap();
     const propertyTypeIds :Object = this.createPropertyTypeIdsMap();
 
     const entityData :{} = processEntityData(newEnrollmentData, entitySetIds, propertyTypeIds);
     const associationEntityData :{} = processAssociationEntityData(fromJS(associations), entitySetIds, propertyTypeIds);
 
-    // actions.addNewDiversionPlanStatus({ associationEntityData, entityData });
+    actions.addNewDiversionPlanStatus({ associationEntityData, entityData });
   }
 
   render() {
@@ -117,7 +138,7 @@ class AddNewPlanStatusForm extends Component<Props, State> {
           <RowContent>
             <Label>{ label }</Label>
             <Select
-                name="status"
+                name={getEntityAddressKey(0, ENROLLMENT_STATUS, STATUS)}
                 onChange={this.handleSelectChange}
                 options={ENROLLMENT_STATUS_OPTIONS}
                 placeholder={currentStatus} />
@@ -139,11 +160,13 @@ class AddNewPlanStatusForm extends Component<Props, State> {
 
 const mapStateToProps = (state :Map) => ({
   app: state.get(STATE.APP),
+  diversionPlan: state.getIn([STATE.PERSON, PERSON.DIVERSION_PLAN]),
   edm: state.get(STATE.EDM),
 });
 
 const mapDispatchToProps = dispatch => ({
   actions: bindActionCreators({
+    addNewDiversionPlanStatus,
   }, dispatch)
 });
 
