@@ -19,6 +19,7 @@ export const NEIGHBOR_DETAILS = 'neighborDetails';
 export const NEIGHBOR_ENTITY_SET = 'neighborEntitySet';
 
 /* Miscellaneous Constants */
+export const CWP = 'Community Work Program';
 
 export const ENROLLMENT_STATUSES = {
   ACTIVE: 'Active',

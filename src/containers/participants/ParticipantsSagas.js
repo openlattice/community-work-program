@@ -22,12 +22,14 @@ import type { SequenceAction } from 'redux-reqseq';
 import Logger from '../../utils/Logger';
 import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../utils/Errors';
 import {
+  ADD_PARTICIPANT,
   GET_ENROLLMENT_STATUSES,
   GET_HOURS_WORKED,
   GET_INFRACTIONS,
   GET_PARTICIPANTS,
   GET_SENTENCES,
   GET_SENTENCE_TERMS,
+  addParticipant,
   getEnrollmentStatuses,
   getHoursWorked,
   getInfractions,
@@ -35,6 +37,8 @@ import {
   getSentenceTerms,
   getSentences,
 } from './ParticipantsActions';
+import { submitDataGraph } from '../../core/sagas/data/DataActions';
+import { submitDataGraphWorker } from '../../core/sagas/data/DataSagas';
 import {
   getEntityKeyId,
   getEntityProperties,
@@ -82,6 +86,60 @@ const getAppFromState = state => state.get(STATE.APP, Map());
 const getEdmFromState = state => state.get(STATE.EDM, Map());
 
 const LOG = new Logger('ParticipantsSagas');
+
+/*
+ *
+ * ParticipantsActions.addParticipant()
+ *
+ */
+
+function* addParticipantWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+  const workerResponse = {};
+  let response :Object = {};
+
+  try {
+    yield put(addParticipant.request(id, value));
+
+    response = yield call(submitDataGraphWorker, submitDataGraph(value));
+    if (response.error) {
+      throw response.error;
+    }
+    const { data } :Object = response;
+    const { entityKeyIds } :Object = data;
+
+    const edm = yield select(getEdmFromState);
+    const app = yield select(getAppFromState);
+    const peopleESID :UUID = getEntitySetIdFromApp(app, PEOPLE);
+    const personEKID :UUID = entityKeyIds[peopleESID][0];
+    const manualSentenceESID :UUID = getEntitySetIdFromApp(app, MANUAL_SENTENCES);
+    const sentenceTermESID :UUID = getEntitySetIdFromApp(app, SENTENCE_TERM);
+    const diversionPlanESID :UUID = getEntitySetIdFromApp(app, DIVERSION_PLAN);
+
+    yield put(addParticipant.success(id, {
+      diversionPlanESID,
+      edm,
+      manualSentenceESID,
+      personEKID,
+      peopleESID,
+      sentenceTermESID,
+    }));
+  }
+  catch (error) {
+    workerResponse.error = error;
+    LOG.error('caught exception in addParticipantWorker()', error);
+    yield put(addParticipant.failure(id, error));
+  }
+  finally {
+    yield put(addParticipant.finally(id));
+  }
+}
+
+function* addParticipantWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(ADD_PARTICIPANT, addParticipantWorker);
+}
 
 /*
  *
@@ -639,6 +697,8 @@ function* getSentencesWatcher() :Generator<*, *, *> {
 }
 
 export {
+  addParticipantWatcher,
+  addParticipantWorker,
   getEnrollmentStatusesWatcher,
   getEnrollmentStatusesWorker,
   getHoursWorkedWatcher,
