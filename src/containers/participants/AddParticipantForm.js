@@ -57,7 +57,7 @@ const {
   NOTES,
   REQUIRED_HOURS
 } = DIVERSION_PLAN_FQNS;
-const { STATUS } = ENROLLMENT_STATUS_FQNS;
+const { EFFECTIVE_DATE, STATUS } = ENROLLMENT_STATUS_FQNS;
 const { DOB, FIRST_NAME, LAST_NAME } = PEOPLE_FQNS;
 const { SENTENCE_CONDITIONS } = SENTENCE_FQNS;
 const { DATETIME_START } = SENTENCE_TERM_FQNS;
@@ -124,6 +124,7 @@ class AddParticipantForm extends Component<Props, State> {
     const datetimeCompletedPTID :UUID = getPropertyTypeIdFromEdm(edm, DATETIME_COMPLETED);
     const datetimeStartPTID :UUID = getPropertyTypeIdFromEdm(edm, DATETIME_START);
     const dobPTID :UUID = getPropertyTypeIdFromEdm(edm, DOB);
+    const effectiveDatePTID :UUID = getPropertyTypeIdFromEdm(edm, EFFECTIVE_DATE);
     const firstNamePTID :UUID = getPropertyTypeIdFromEdm(edm, FIRST_NAME);
     const lastNamePTID :UUID = getPropertyTypeIdFromEdm(edm, LAST_NAME);
     const namePTID :UUID = getPropertyTypeIdFromEdm(edm, NAME);
@@ -137,6 +138,7 @@ class AddParticipantForm extends Component<Props, State> {
       [DATETIME_COMPLETED]: datetimeCompletedPTID,
       [DATETIME_START]: datetimeStartPTID,
       [DOB]: dobPTID,
+      [EFFECTIVE_DATE]: effectiveDatePTID,
       [FIRST_NAME]: firstNamePTID,
       [LAST_NAME]: lastNamePTID,
       [NAME]: namePTID,
@@ -184,6 +186,10 @@ class AddParticipantForm extends Component<Props, State> {
     let requiredHours = newParticipantData.getIn([getPageSectionKey(1, 1), requiredHoursKey], '0');
     requiredHours = parseInt(requiredHours, 10);
     newParticipantData = newParticipantData.setIn([getPageSectionKey(1, 1), requiredHoursKey], requiredHours);
+
+    // set datetime on enrollment status:
+    const enrollmentStatusKey = getEntityAddressKey(0, ENROLLMENT_STATUS, EFFECTIVE_DATE);
+    newParticipantData = newParticipantData.setIn([getPageSectionKey(1, 1), enrollmentStatusKey], nowAsIso);
 
     const entitySetIds :Object = this.createEntitySetIdsMap();
     const propertyTypeIds :Object = this.createPropertyTypeIdsMap();
