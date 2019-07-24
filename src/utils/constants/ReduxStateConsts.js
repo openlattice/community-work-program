@@ -59,6 +59,7 @@ export const PERSON = {
   ADD_NEW_ENROLLMENT_STATUS: 'addNewEnrollmentStatus',
   ADDRESS: 'address',
   CASE_NUMBER: 'caseNumber',
+  DIVERSION_PLAN: 'diversionPlan',
   EMAIL: 'email',
   ENROLLMENT_STATUS: 'enrollmentStatus',
   ERRORS: 'errors',

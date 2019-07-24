@@ -292,6 +292,7 @@ function* getEnrollmentStatusWorker(action :SequenceAction) :Generator<*, *, *> 
   const workerResponse = {};
   let response :Object = {};
   let enrollmentStatus :Map = Map();
+  let diversionPlan :Map = Map();
 
   try {
     yield put(getEnrollmentStatus.request(id));
@@ -329,8 +330,8 @@ function* getEnrollmentStatusWorker(action :SequenceAction) :Generator<*, *, *> 
        * 2. Find all enrollment statuses for each diversion plan found.
        */
       const diversionPlanEKIDs :UUID[] = [];
-      diversionPlans.get(personEKID).forEach((diversionPlan :Map) => {
-        diversionPlanEKIDs.push(getEntityKeyId(diversionPlan));
+      diversionPlans.get(personEKID).forEach((plan :Map) => {
+        diversionPlanEKIDs.push(getEntityKeyId(plan));
       });
 
       const enrollmentFilter :Object = {
@@ -361,10 +362,17 @@ function* getEnrollmentStatusWorker(action :SequenceAction) :Generator<*, *, *> 
           enrollmentStatusesByDiversionPlan, EFFECTIVE_DATE
         );
         enrollmentStatus = enrollmentStatusesByDiversionPlan.last();
+
+        /*
+         * 4. Additionally, return relevant diversion plan.
+         */
+        const diversionPlanEKID :UUID = enrollmentStatusesByDiversionPlan
+          .findKey((status :Map) => status === enrollmentStatus);
+        diversionPlan = diversionPlans.get(personEKID).find((plan :Map) => getEntityKeyId(plan) === diversionPlanEKID);
       }
     }
 
-    yield put(getEnrollmentStatus.success(id, enrollmentStatus));
+    yield put(getEnrollmentStatus.success(id, { diversionPlan, enrollmentStatus }));
   }
   catch (error) {
     workerResponse.error = error;

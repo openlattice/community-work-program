@@ -21,6 +21,7 @@ const {
   ACTIONS,
   ADDRESS,
   CASE_NUMBER,
+  DIVERSION_PLAN,
   EMAIL,
   ENROLLMENT_STATUS,
   ERRORS,
@@ -74,6 +75,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   },
   [ADDRESS]: '',
   [CASE_NUMBER]: List(),
+  [DIVERSION_PLAN]: Map(),
   [EMAIL]: '',
   [ENROLLMENT_STATUS]: Map(),
   [ERRORS]: {
@@ -217,7 +219,8 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
           }
 
           return state
-            .set(ENROLLMENT_STATUS, value)
+            .set(ENROLLMENT_STATUS, value.enrollmentStatus)
+            .set(DIVERSION_PLAN, value.diversionPlan)
             .setIn([ACTIONS, GET_ENROLLMENT_STATUS, REQUEST_STATE], RequestStates.SUCCESS);
         },
         FAILURE: () => {
