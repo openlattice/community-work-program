@@ -110,8 +110,6 @@ const mapStateToProps = (state) => {
   const person = state.get(STATE.PERSON);
   return {
     getParticipantInfractionsState: person.getIn([ACTIONS, GET_PARTICIPANT_INFRACTIONS, REQUEST_STATE]),
-    [VIOLATIONS]: person.get(VIOLATIONS),
-    [WARNINGS]: person.get(WARNINGS),
   };
 };
 
