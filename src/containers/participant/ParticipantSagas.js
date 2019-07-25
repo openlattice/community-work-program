@@ -22,6 +22,7 @@ import type { SequenceAction } from 'redux-reqseq';
 import Logger from '../../utils/Logger';
 import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../utils/Errors';
 import {
+  ADD_NEW_DIVERSION_PLAN_STATUS,
   GET_ALL_PARTICIPANT_INFO,
   GET_CASE_INFO,
   GET_CONTACT_INFO,
@@ -31,6 +32,7 @@ import {
   GET_PARTICIPANT_INFRACTIONS,
   GET_REQUIRED_HOURS,
   GET_SENTENCE_TERM,
+  addNewDiversionPlanStatus,
   getAllParticipantInfo,
   getCaseInfo,
   getContactInfo,
@@ -41,6 +43,8 @@ import {
   getRequiredHours,
   getSentenceTerm,
 } from './ParticipantActions';
+import { submitDataGraph } from '../../core/sagas/data/DataActions';
+import { submitDataGraphWorker } from '../../core/sagas/data/DataSagas';
 import { isDefined } from '../../utils/LangUtils';
 import {
   getEntityKeyId,
@@ -93,6 +97,50 @@ const getAppFromState = state => state.get(STATE.APP, Map());
 const LOG = new Logger('ParticipantSagas');
 
 const { CASE_NUMBER_TEXT } = CASE_FQNS;
+const getEdmFromState = state => state.get(STATE.EDM, Map());
+
+/*
+ *
+ * WorksitesActions.addNewDiversionPlanStatus()
+ *
+ */
+
+function* addNewDiversionPlanStatusWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+  const workerResponse = {};
+  let response :Object = {};
+
+  try {
+    yield put(addNewDiversionPlanStatus.request(id, value));
+
+    response = yield call(submitDataGraphWorker, submitDataGraph(value));
+    if (response.error) {
+      throw response.error;
+    }
+    const { data } :Object = response;
+    const { entityKeyIds } :Object = data;
+
+    const edm = yield select(getEdmFromState);
+    const enrollmentStatusESID = Object.keys(entityKeyIds)[0];
+    const enrollmentStatusEKID = Object.values(entityKeyIds)[0];
+
+    yield put(addNewDiversionPlanStatus.success(id, { edm, enrollmentStatusEKID, enrollmentStatusESID }));
+  }
+  catch (error) {
+    workerResponse.error = error;
+    LOG.error('caught exception in addNewDiversionPlanStatusWorker()', error);
+    yield put(addNewDiversionPlanStatus.failure(id, error));
+  }
+  finally {
+    yield put(addNewDiversionPlanStatus.finally(id));
+  }
+}
+
+function* addNewDiversionPlanStatusWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(ADD_NEW_DIVERSION_PLAN_STATUS, addNewDiversionPlanStatusWorker);
+}
 
 /*
  *
@@ -292,6 +340,7 @@ function* getEnrollmentStatusWorker(action :SequenceAction) :Generator<*, *, *> 
   const workerResponse = {};
   let response :Object = {};
   let enrollmentStatus :Map = Map();
+  let diversionPlan :Map = Map();
 
   try {
     yield put(getEnrollmentStatus.request(id));
@@ -329,8 +378,8 @@ function* getEnrollmentStatusWorker(action :SequenceAction) :Generator<*, *, *> 
        * 2. Find all enrollment statuses for each diversion plan found.
        */
       const diversionPlanEKIDs :UUID[] = [];
-      diversionPlans.get(personEKID).forEach((diversionPlan :Map) => {
-        diversionPlanEKIDs.push(getEntityKeyId(diversionPlan));
+      diversionPlans.get(personEKID).forEach((plan :Map) => {
+        diversionPlanEKIDs.push(getEntityKeyId(plan));
       });
 
       const enrollmentFilter :Object = {
@@ -360,10 +409,17 @@ function* getEnrollmentStatusWorker(action :SequenceAction) :Generator<*, *, *> 
         enrollmentStatus = sortEntitiesByDateProperty(
           enrollmentStatusesByDiversionPlan, EFFECTIVE_DATE
         ).last();
+
+        /*
+         * 4. Additionally, return relevant diversion plan.
+         */
+        const diversionPlanEKID :UUID = enrollmentStatusesByDiversionPlan
+          .findKey((status :Map) => status === enrollmentStatus);
+        diversionPlan = diversionPlans.get(personEKID).find((plan :Map) => getEntityKeyId(plan) === diversionPlanEKID);
       }
     }
 
-    yield put(getEnrollmentStatus.success(id, enrollmentStatus));
+    yield put(getEnrollmentStatus.success(id, { diversionPlan, enrollmentStatus }));
   }
   catch (error) {
     workerResponse.error = error;
@@ -690,6 +746,8 @@ function* getAllParticipantInfoWatcher() :Generator<*, *, *> {
 }
 
 export {
+  addNewDiversionPlanStatusWatcher,
+  addNewDiversionPlanStatusWorker,
   getAllParticipantInfoWatcher,
   getAllParticipantInfoWorker,
   getCaseInfoWatcher,

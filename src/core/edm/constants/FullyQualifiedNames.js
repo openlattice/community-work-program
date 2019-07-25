@@ -166,6 +166,10 @@ export const OPERATES_FQNS = {
   GENERAL_DATETIME: new FullyQualifiedName('general.datetime'),
 };
 
+export const RELATED_TO_FQNS = {
+  DATETIME_COMPLETED: new FullyQualifiedName('date.completeddatetime'),
+};
+
 export const SENTENCED_WITH_FQNS = {
   DATETIME_COMPLETED: new FullyQualifiedName('date.completeddatetime'),
 };
