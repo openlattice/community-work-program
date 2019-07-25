@@ -69,6 +69,7 @@ type Props = {
   enrollment ? :Map;
   handleSelect :(personEKID :string) => void;
   hours ? :Map;
+  noShows ? :List;
   people :List;
   selectedSortOption ? :string;
   sentenceTerms ? :Map;
@@ -90,6 +91,7 @@ const ParticipantsTable = ({
   enrollment,
   handleSelect,
   hours,
+  noShows,
   people,
   selectedSortOption,
   sentenceTerms,
@@ -192,6 +194,10 @@ const ParticipantsTable = ({
           // Court type
           // TODO: more information is needed on this—for now just an empty column in All Participants table
 
+          // No shows
+          // if person is a no show, should display an exclamation warning in Violations Watch table
+          const includeWarning :boolean = (isDefined(noShows) && noShows.includes(person));
+
           return (
             <ParticipantsTableRow
                 ageRequired={ageRequired}
@@ -201,6 +207,7 @@ const ParticipantsTable = ({
                 handleSelect={handleSelect}
                 hoursRequired={required}
                 hoursWorked={worked}
+                includeWarning={includeWarning}
                 person={person}
                 status={enrollmentStatus}
                 small={small}
@@ -218,6 +225,7 @@ ParticipantsTable.defaultProps = {
   courtType: undefined,
   enrollment: undefined,
   hours: Map(),
+  noShows: undefined,
   selectedSortOption: '',
   sentenceTerms: Map(),
   sortByColumn: () => {},

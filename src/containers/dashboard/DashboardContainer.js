@@ -83,6 +83,7 @@ type Props = {
 
 type State = {
   newParticipants :List;
+  noShows :List;
   pendingCompletionReview :List;
   violationMap :Map;
   violationsWatch :List;
@@ -96,6 +97,7 @@ class DashboardContainer extends Component<Props, State> {
 
     this.state = {
       newParticipants: List(),
+      noShows: List(),
       pendingCompletionReview: List(),
       violationMap: Map(),
       violationsWatch: List(),
@@ -238,6 +240,7 @@ class DashboardContainer extends Component<Props, State> {
     this.setNewParticipants(noShows);
 
     this.setState({
+      noShows,
       violationMap,
       violationsWatch,
     });
@@ -253,6 +256,7 @@ class DashboardContainer extends Component<Props, State> {
     } = this.props;
     const {
       newParticipants,
+      noShows,
       pendingCompletionReview,
       violationMap,
       violationsWatch,
@@ -331,6 +335,7 @@ class DashboardContainer extends Component<Props, State> {
                 }}
                 handleSelect={this.handleOnSelectPerson}
                 hours={hoursWorked}
+                noShows={noShows}
                 people={violationsWatch}
                 small
                 totalTableItems={violationsWatch.count()}

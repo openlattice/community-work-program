@@ -5,7 +5,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import { List, Map } from 'immutable';
-import { faCheckCircle, faUserCircle } from '@fortawesome/pro-solid-svg-icons';
+import { faCheckCircle, faExclamationCircle, faUserCircle } from '@fortawesome/pro-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 import { PersonPicture } from '../picture/PersonPicture';
@@ -29,7 +29,7 @@ const CellContentWrapper = styled.div`
   align-items: center;
   display: flex;
   justify-content: space-between;
-  margin-right: 10px;
+  margin-right: 15px;
 `;
 
 type Props = {
@@ -39,6 +39,7 @@ type Props = {
   handleSelect :(personEKID :string) => void;
   hoursRequired :number | string;
   hoursWorked :number | void;
+  includeWarning :boolean;
   person :Map;
   selected ? :boolean;
   small ? :boolean;
@@ -54,6 +55,7 @@ const TableRow = ({
   handleSelect,
   hoursRequired,
   hoursWorked,
+  includeWarning,
   person,
   selected,
   small,
@@ -122,6 +124,16 @@ const TableRow = ({
                 <CellContentWrapper>
                   <span>{ field }</span>
                   <FontAwesomeIcon icon={faCheckCircle} color={OL.PINK01} />
+                </CellContentWrapper>
+              </Cell>
+            );
+          }
+          if (includeWarning && field === enrollmentDeadline) {
+            return (
+              <Cell key={`${index}-${field}`} small={small} status={text}>
+                <CellContentWrapper>
+                  <span>{ field }</span>
+                  <FontAwesomeIcon icon={faExclamationCircle} color={OL.PINK01} />
                 </CellContentWrapper>
               </Cell>
             );
