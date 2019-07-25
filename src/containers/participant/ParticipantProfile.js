@@ -228,6 +228,14 @@ class ParticipantProfile extends Component<Props, State> {
             </InnerColumnWrapper>
           </BasicInfoWrapper>
         </ProfileBody>
+        <ProfileBody>
+          <NameRowWrapper>
+            <NameHeader>Warnings & Violations</NameHeader>
+            <Button onClick={() => {}}>
+              Report Warning or Violation
+            </Button>
+          </NameRowWrapper>
+        </ProfileBody>
         <AddNewPlanStatusModal
             currentStatus={status}
             isOpen={showEnrollmentModal}
