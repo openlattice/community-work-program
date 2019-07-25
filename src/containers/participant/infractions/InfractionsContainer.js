@@ -3,6 +3,7 @@ import React, { Component } from 'react';
 import styled from 'styled-components';
 import { List, Map } from 'immutable';
 import {
+  Button,
   Card,
   Select,
   Spinner
@@ -21,6 +22,13 @@ import { ContainerOuterWrapper } from '../../../components/Layout';
 
 const InfractionsOuterWrapper = styled(ContainerOuterWrapper)`
   width: 100%;
+`;
+
+const ActionsWrapper = styled.div`
+  display: grid;
+  grid-gap: 0 15px;
+  grid-template-columns: 5fr 1fr;
+  margin: 30px;
 `;
 
 const {
@@ -45,7 +53,7 @@ class WarningsViolationsContainer extends Component<Props> {
   handleOnSelectChange = () => {
   }
 
-  renderNotes = () => {
+  renderReports = () => {
     const { getParticipantInfractionsState, violations, warnings } = this.props;
     const infractions = violations.concat(warnings);
 
@@ -59,6 +67,15 @@ class WarningsViolationsContainer extends Component<Props> {
     if (infractions.isEmpty()) {
       return (
         <Card>
+          <ActionsWrapper>
+            <Select
+                options={[]}
+                onChange={this.handleOnSelectChange}
+                placeholder="Select report..." />
+            <Button onClick={() => {}}>
+              Create report
+            </Button>
+          </ActionsWrapper>
           <NoInformation caption="No Warnings or Violations" />
         </Card>
       );
@@ -73,11 +90,7 @@ class WarningsViolationsContainer extends Component<Props> {
   render() {
     return (
       <InfractionsOuterWrapper>
-        <Select
-            options={[]}
-            onChange={this.handleOnSelectChange}
-            placeholder="Select note..." />
-        { this.renderNotes() }
+        { this.renderReports() }
       </InfractionsOuterWrapper>
     );
   }
