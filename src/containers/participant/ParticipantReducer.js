@@ -102,8 +102,8 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [PHONE]: '',
   [REQUIRED_HOURS]: 0,
   [SENTENCE_TERM]: Map(),
-  [VIOLATIONS]: Map(),
-  [WARNINGS]: Map(),
+  [VIOLATIONS]: List(),
+  [WARNINGS]: List(),
 });
 
 export default function participantReducer(state :Map<*, *> = INITIAL_STATE, action :SequenceAction) :Map<*, *> {
