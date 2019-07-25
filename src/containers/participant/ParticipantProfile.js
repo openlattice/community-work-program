@@ -232,11 +232,10 @@ class ParticipantProfile extends Component<Props, State> {
         <ProfileBody>
           <NameRowWrapper>
             <NameHeader>Warnings & Violations</NameHeader>
-            <Button onClick={() => {}}>
-              Report Warning or Violation
-            </Button>
           </NameRowWrapper>
-          <InfractionsContainer />
+          <InfractionsContainer
+              violations={violations}
+              warnings={warnings} />
         </ProfileBody>
         <AddNewPlanStatusModal
             currentStatus={status}
