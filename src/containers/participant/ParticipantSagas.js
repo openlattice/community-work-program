@@ -43,9 +43,11 @@ import {
 } from './ParticipantActions';
 import { isDefined } from '../../utils/LangUtils';
 import {
+  getEntityKeyId,
   getEntityProperties,
   getEntitySetIdFromApp,
   getNeighborDetails,
+  sortEntitiesByDateProperty,
 } from '../../utils/DataUtils';
 import { STATE } from '../../utils/constants/ReduxStateConsts';
 import {
@@ -297,40 +299,67 @@ function* getEnrollmentStatusWorker(action :SequenceAction) :Generator<*, *, *> 
     if (value === null || value === undefined) {
       throw ERR_ACTION_VALUE_NOT_DEFINED;
     }
+
+    /*
+     * 1. Find all diversion plans for participant.
+     */
     const app = yield select(getAppFromState);
     const peopleESID = getEntitySetIdFromApp(app, PEOPLE);
+    const diversionPlanESID = getEntitySetIdFromApp(app, DIVERSION_PLAN);
     const enrollmentStatusESID = getEntitySetIdFromApp(app, ENROLLMENT_STATUS);
 
-    const searchFilter :Object = {
+    const diversionPlanFilter :Object = {
       entityKeyIds: [personEKID],
-      destinationEntitySetIds: [enrollmentStatusESID],
+      destinationEntitySetIds: [diversionPlanESID],
       sourceEntitySetIds: [],
     };
     response = yield call(
       searchEntityNeighborsWithFilterWorker,
-      searchEntityNeighborsWithFilter({ entitySetId: peopleESID, filter: searchFilter })
+      searchEntityNeighborsWithFilter({ entitySetId: peopleESID, filter: diversionPlanFilter })
     );
     if (response.error) {
       throw response.error;
     }
+    const diversionPlans :Map = fromJS(response.data)
+      .map((planList :List) => planList.map((plan :Map) => getNeighborDetails(plan)));
 
-    if (response.data[personEKID]) {
-      enrollmentStatus = fromJS(response.data[personEKID]);
-      const awaitingEnrollmentStatus = enrollmentStatus.find((status :Map) => status
-        .getIn([STATUS, 0]) === ENROLLMENT_STATUSES.AWAITING_ENROLLMENT);
-      if (isDefined(awaitingEnrollmentStatus)) {
-        enrollmentStatus = awaitingEnrollmentStatus;
+    if (diversionPlans.count() > 0) {
+
+      /*
+       * 2. Find all enrollment statuses for each diversion plan found.
+       */
+      const diversionPlanEKIDs :UUID[] = [];
+      diversionPlans.get(personEKID).forEach((diversionPlan :Map) => {
+        diversionPlanEKIDs.push(getEntityKeyId(diversionPlan));
+      });
+
+      const enrollmentFilter :Object = {
+        entityKeyIds: diversionPlanEKIDs,
+        destinationEntitySetIds: [enrollmentStatusESID],
+        sourceEntitySetIds: [],
+      };
+      response = yield call(
+        searchEntityNeighborsWithFilterWorker,
+        searchEntityNeighborsWithFilter({ entitySetId: diversionPlanESID, filter: enrollmentFilter })
+      );
+      if (response.error) {
+        throw response.error;
       }
-      else {
-        const mostRecentStatus = enrollmentStatus.sort((statusA :Map, statusB :Map) => {
-          const dateA = DateTime.fromISO(statusA.getIn([EFFECTIVE_DATE, 0]));
-          const dateB = DateTime.fromISO(statusB.getIn([EFFECTIVE_DATE, 0]));
-          if (dateA.toISO() === dateB.toISO()) {
-            return 0;
-          }
-          return dateA < dateB ? -1 : 1;
+      let enrollmentStatusesByDiversionPlan :Map = fromJS(response.data)
+        .map((enrollmentList :List) => enrollmentList.map((enrollment :Map) => getNeighborDetails(enrollment)));
+
+      /*
+       * 3. Find most recent enrollment status, if any exist.
+       */
+      if (enrollmentStatusesByDiversionPlan.count() > 0) {
+
+        enrollmentStatusesByDiversionPlan = enrollmentStatusesByDiversionPlan.map((statusList :List) => {
+          const sortedStatusList :List = sortEntitiesByDateProperty(statusList, EFFECTIVE_DATE);
+          return sortedStatusList.last();
         });
-        enrollmentStatus = getNeighborDetails(mostRecentStatus.last());
+        enrollmentStatus = sortEntitiesByDateProperty(
+          enrollmentStatusesByDiversionPlan, EFFECTIVE_DATE
+        ).last();
       }
     }
 

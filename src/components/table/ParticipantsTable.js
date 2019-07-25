@@ -173,7 +173,7 @@ const ParticipantsTable = ({
           // need to pass empty '' if status is required
           const enrollmentStatus = (isDefined(enrollment) ||
             (isDefined(enrollment) && enrollment.get(personEntityKeyId).count() === 0))
-            ? enrollment.getIn([personEntityKeyId, STATUS, 0], ENROLLMENT_STATUSES.AWAITING_ENROLLMENT)
+            ? enrollment.getIn([personEntityKeyId, STATUS, 0], ENROLLMENT_STATUSES.AWAITING_CHECKIN)
             : undefined;
 
           // Hours
