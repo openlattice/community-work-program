@@ -13,6 +13,7 @@ import KeyDates from '../../components/participant/KeyDates';
 import CaseInfo from '../../components/participant/CaseInfo';
 import InfractionsDisplay from '../../components/participant/InfractionsDisplay';
 import AddNewPlanStatusModal from './AddNewPlanStatusModal';
+import InfractionsContainer from './infractions/InfractionsContainer';
 import LogoLoader from '../../components/LogoLoader';
 
 import { getAllParticipantInfo } from './ParticipantActions';
@@ -235,6 +236,7 @@ class ParticipantProfile extends Component<Props, State> {
               Report Warning or Violation
             </Button>
           </NameRowWrapper>
+          <InfractionsContainer />
         </ProfileBody>
         <AddNewPlanStatusModal
             currentStatus={status}
