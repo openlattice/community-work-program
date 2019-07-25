@@ -2,7 +2,6 @@
 import React, { Component } from 'react';
 import styled from 'styled-components';
 import { List, Map } from 'immutable';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFolderOpen } from '@fortawesome/pro-light-svg-icons';
 import {
   Button,
@@ -17,7 +16,6 @@ import { RequestStates } from 'redux-reqseq';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
 import DigestedInfractionsContainer from './DigestedInfractionsContainer';
-import NoInformation from '../../../components/participant/NoInformation';
 
 import { getParticipantInfractions } from '../ParticipantActions';
 import { PERSON, STATE } from '../../../utils/constants/ReduxStateConsts';
