@@ -45,7 +45,8 @@ import {
   getEntitySetIdFromApp,
   getFirstNeighborValue,
   getNeighborDetails,
-  getPropertyTypeIdFromEdm
+  getPropertyTypeIdFromEdm,
+  sortEntitiesByDateProperty,
 } from '../../utils/DataUtils';
 import { STATE } from '../../utils/constants/ReduxStateConsts';
 import {
@@ -76,7 +77,7 @@ const {
   WORKSITE_PLAN,
 } = APP_TYPE_FQNS;
 const { SENTENCE_CONDITIONS } = SENTENCE_FQNS;
-const { TYPE } = INFRACTION_FQNS;
+const { DATETIME, TYPE } = INFRACTION_FQNS;
 const { COMPLETED, REQUIRED_HOURS } = DIVERSION_PLAN_FQNS;
 const { HOURS_WORKED } = WORKSITE_PLAN_FQNS;
 const { DATETIME_START } = SENTENCE_TERM_FQNS;
@@ -442,8 +443,12 @@ function* getInfractionsWorker(action :SequenceAction) :Generator<*, *, *> {
     }
 
     const infractionsMap :Map = fromJS(response.data)
-      .map((participant :Map) => participant
-        .map((infraction :Map) => getNeighborDetails(infraction)));
+      .map((participantInfractions :List) => {
+        const mappedList :List = participantInfractions
+          .map((infraction :Map) => getNeighborDetails(infraction));
+        const sorted :List = sortEntitiesByDateProperty(mappedList, DATETIME);
+        return sorted;
+      });
 
     const infractionCountMap :Map = infractionsMap.map((infractions :List) => {
       const infractionCount = { [INFRACTIONS_CONSTS.WARNING]: 0, [INFRACTIONS_CONSTS.VIOLATION]: 0 };
