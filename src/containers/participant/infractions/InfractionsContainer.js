@@ -2,9 +2,12 @@
 import React, { Component } from 'react';
 import styled from 'styled-components';
 import { List, Map } from 'immutable';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faFolderOpen } from '@fortawesome/pro-light-svg-icons';
 import {
   Button,
   Card,
+  IconSplash,
   Select,
   Spinner
 } from 'lattice-ui-kit';
@@ -29,6 +32,10 @@ const ActionsWrapper = styled.div`
   grid-gap: 0 15px;
   grid-template-columns: 5fr 1fr;
   margin: 30px;
+`;
+
+const IconSplashWrapper = styled.div`
+  padding: 50px 0 70px 0;
 `;
 
 const {
@@ -76,7 +83,12 @@ class WarningsViolationsContainer extends Component<Props> {
               Create report
             </Button>
           </ActionsWrapper>
-          <NoInformation caption="No Warnings or Violations" />
+          <IconSplashWrapper>
+            <IconSplash
+                caption="No Warnings or Violations"
+                icon={faFolderOpen}
+                size="3x" />
+          </IconSplashWrapper>
         </Card>
       );
     }
