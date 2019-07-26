@@ -3,8 +3,17 @@
 import React from 'react';
 import styled from 'styled-components';
 import { List, Map } from 'immutable';
+import { DateTime } from 'luxon';
 
+import { INFRACTION_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { OL } from '../../../core/style/Colors';
+
+const {
+  TYPE,
+  CATEGORY,
+  DATETIME,
+  DESCRIPTION,
+} = INFRACTION_FQNS;
 
 const NoteWrapper = styled.div`
   margin-top: 20px;
@@ -59,38 +68,36 @@ type Props = {
 };
 
 const DigestedInfractionsContainer = ({ infractions } :Props) => (
-  <NoteWrapper>
-    <InfoWrapper>
-      <InfoBlock>
-        <Title>Report Level</Title>
-        <Data>Violation</Data>
-      </InfoBlock>
-      <InfoBlock>
-        <Title>Worksite</Title>
-        <Data>Garden</Data>
-      </InfoBlock>
-      <InfoBlock>
-        <Title>Case Number</Title>
-        <Data>1234567890123456</Data>
-      </InfoBlock>
-    </InfoWrapper>
-    <InfoWrapper>
-      <InfoBlock>
-        <Title>Date</Title>
-        <Data>7/25/19</Data>
-      </InfoBlock>
-      <InfoBlock>
-        <Title>Time</Title>
-        <Data>1:00pm</Data>
-      </InfoBlock>
-    </InfoWrapper>
-    <InfoWrapper>
-      <InfoBlock>
-        <Title>Description of Incident</Title>
-        <Data>smoking</Data>
-      </InfoBlock>
-    </InfoWrapper>
-  </NoteWrapper>
+
+  infractions.map((infraction :Map) => {
+    const datetimeObj = DateTime.fromISO(infraction.get(DATETIME));
+    const date :string = datetimeObj.toLocaleString(DateTime.DATE_SHORT);
+    const time :string = datetimeObj.toLocaleString(DateTime.TIME_SIMPLE);
+    return (
+      <NoteWrapper>
+        <InfoWrapper>
+          <InfoBlock>
+            <Title>Report Level</Title>
+            <Data>{ infraction.get(TYPE) }</Data>
+          </InfoBlock>
+          <InfoBlock>
+            <Title>Date</Title>
+            <Data>{ date }</Data>
+          </InfoBlock>
+          <InfoBlock>
+            <Title>Time</Title>
+            <Data>{ time }</Data>
+          </InfoBlock>
+        </InfoWrapper>
+        <InfoWrapper>
+          <InfoBlock>
+            <Title>Description of Incident</Title>
+            <Data>{ infraction.get(DESCRIPTION) }</Data>
+          </InfoBlock>
+        </InfoWrapper>
+      </NoteWrapper>
+    );
+  })
 );
 
 // $FlowFixMe
