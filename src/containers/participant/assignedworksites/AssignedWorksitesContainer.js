@@ -1,5 +1,5 @@
 // @flow
-import React, { Component } from 'react';
+import React from 'react';
 import styled from 'styled-components';
 import { List, Map } from 'immutable';
 import { faTools } from '@fortawesome/pro-light-svg-icons';
@@ -18,40 +18,35 @@ const OuterWrapper = styled(ContainerOuterWrapper)`
 `;
 
 type Props = {
-  worksites :List;
+  worksitePlans :List;
+  worksites :Map;
 };
 
-class AssignedWorksitesContainer extends Component<Props> {
-
-  render() {
-    const { worksites } = this.props;
-    return (
-      <OuterWrapper>
-        <Card>
-          {
-            worksites.count() === 0
-              ? (
-                <CardSegment>
-                  <IconSplash
-                      caption="No Assigned Work Sites"
-                      icon={faTools}
-                      size="3x" />
-                </CardSegment>
-              )
-              : (
-                <WorksitesTable
-                    columnHeaders={['WORK SITE NAME', 'HRS. SERVED', 'DATE ASSIGNED']}
-                    small={false}
-                    selectWorksite={() => {}}
-                    tableMargin="0"
-                    worksites={worksites}
-                    worksitesInfo={Map()} />
-              )
-          }
-        </Card>
-      </OuterWrapper>
-    );
-  }
-}
+const AssignedWorksitesContainer = ({ worksitePlans, worksites } :Props) => {
+  return (
+    <OuterWrapper>
+      <Card>
+        {
+          worksitePlans.count() === 0
+            ? (
+              <CardSegment>
+                <IconSplash
+                    caption="No Assigned Work Sites"
+                    icon={faTools}
+                    size="3x" />
+              </CardSegment>
+            )
+            : (
+              <WorksitesTable
+                  columnHeaders={['WORK SITE NAME', 'HRS. SERVED', 'DATE ASSIGNED']}
+                  small={false}
+                  worksites={worksites}
+                  worksitesInfo={Map()} />
+            )
+        }
+      </Card>
+    </OuterWrapper>
+  );
+};
 
 export default AssignedWorksitesContainer;
