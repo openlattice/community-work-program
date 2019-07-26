@@ -46,8 +46,7 @@ const AssignedWorksitesContainer = ({ worksitePlans, worksites } :Props) => {
                     includesStatus: false,
                   }}
                   small={false}
-                  worksites={worksites}
-                  worksitesInfo={Map()} />
+                  worksites={worksites} />
             )
         }
       </Card>

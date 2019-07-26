@@ -152,6 +152,7 @@ class WorksitesByOrgCard extends Component<Props, State> {
                 <WorksitesTable
                     columnHeaders={WORKSITES_COLUMNS}
                     config={{
+                      includeCounts: true,
                       includeStartDate: true,
                       includeStatus: true,
                     }}

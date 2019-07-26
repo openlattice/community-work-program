@@ -41,11 +41,11 @@ const TableRow = ({
 } :Props) => {
 
   let cellData :List = List();
-  const { includeStartDate, includeStatus } = config;
+  const { includeCounts, includeStartDate, includeStatus } = config;
 
-  const scheduledParticipantCount = isDefined(worksiteInfo) ? formatImmutableValue(worksiteInfo, SCHEDULED, 0) : '';
-  const pastParticipantCount = isDefined(worksiteInfo) ? formatImmutableValue(worksiteInfo, PAST, 0) : '';
-  const totalHours = isDefined(worksiteInfo) ? formatImmutableValue(worksiteInfo, TOTAL_HOURS, 0) : '';
+  const scheduledParticipantCount = formatImmutableValue(worksiteInfo, SCHEDULED, 0);
+  const pastParticipantCount = formatImmutableValue(worksiteInfo, PAST, 0);
+  const totalHours = formatImmutableValue(worksiteInfo, TOTAL_HOURS, 0);
 
   const hoursWorked = isDefined(worksitePlan) ? formatImmutableValue(worksitePlan, HOURS_WORKED, 0) : '';
   const requiredHours = isDefined(worksitePlan) ? formatImmutableValue(worksitePlan, REQUIRED_HOURS, 0) : '';
@@ -67,9 +67,9 @@ const TableRow = ({
       if (isDefined(worksiteName)) list.push(worksiteName);
       if (includeStatus) list.push(status);
       if (includeStartDate) list.push(startDate);
-      if (scheduledParticipantCount) list.push(scheduledParticipantCount);
-      if (pastParticipantCount) list.push(pastParticipantCount);
-      if (totalHours) list.push(totalHours);
+      if (includeCounts) list.push(scheduledParticipantCount);
+      if (includeCounts) list.push(pastParticipantCount);
+      if (includeCounts) list.push(totalHours);
       if (isDefined(worksitePlan)) list.push(hoursServed);
     });
   }
@@ -83,7 +83,7 @@ const TableRow = ({
         }}>
       {
         cellData.map((field :string, index :number) => (
-          <WorksitesCell key={`${index}-${field}`} small={small}>{ field }</WorksitesCell>
+          <WorksitesCell key={`${index}-${field}`} small={small} status={field}>{ field }</WorksitesCell>
         ))
       }
     </Row>
