@@ -42,6 +42,11 @@ const {
 } = PEOPLE;
 const { REQUIRED_HOURS } = DIVERSION_PLAN_FQNS;
 
+const DIVERSION_PLAN = 'diversionPlan';
+const PERSON = 'person';
+const SENTENCE = 'sentence';
+const SENTENCE_TERM = 'sentenceTerm';
+
 const INITIAL_STATE :Map<*, *> = fromJS({
   [ACTIONS]: {
     [ADD_PARTICIPANT]: {
@@ -122,10 +127,10 @@ export default function participantsReducer(state :Map<*, *> = INITIAL_STATE, ac
             const storedValue :Object = storedSeqAction.value; // request value
             const { entityData } :Object = storedValue;
             const storedEntities :Map = Map().withMutations((map :Map) => {
-              map.set('person', fromJS(entityData[peopleESID][0]));
-              map.set('sentence', fromJS(entityData[manualSentenceESID][0]));
-              map.set('sentenceTerm', fromJS(entityData[sentenceTermESID][0]));
-              map.set('diversionPlan', fromJS(entityData[diversionPlanESID][0]));
+              map.set(PERSON, fromJS(entityData[peopleESID][0]));
+              map.set(SENTENCE, fromJS(entityData[manualSentenceESID][0]));
+              map.set(SENTENCE_TERM, fromJS(entityData[sentenceTermESID][0]));
+              map.set(DIVERSION_PLAN, fromJS(entityData[diversionPlanESID][0]));
             });
             let newEntities :Map = Map();
             storedEntities.forEach((entity :Map, key :string) => {
@@ -137,17 +142,17 @@ export default function participantsReducer(state :Map<*, *> = INITIAL_STATE, ac
               newEntities = newEntities.set(key, newEntity);
             });
 
-            let person = newEntities.get('person');
+            let person = newEntities.get(PERSON);
             person = person.set(ENTITY_KEY_ID, personEKID);
-            newEntities = newEntities.set('person', person);
+            newEntities = newEntities.set(PERSON, person);
 
             const participants :List = state.get(PARTICIPANTS)
-              .push(newEntities.get('person'));
+              .push(newEntities.get(PERSON));
             const sentenceTermsByParticipant = state.get(SENTENCE_TERMS_BY_PARTICIPANT)
-              .set(personEKID, newEntities.get('sentenceTerm'));
+              .set(personEKID, newEntities.get(SENTENCE_TERM));
             const enrollmentByParticipant = state.get(ENROLLMENT_BY_PARTICIPANT)
               .set(personEKID, Map());
-            const required = newEntities.getIn(['diversionPlan', REQUIRED_HOURS, 0], 0);
+            const required = newEntities.getIn([DIVERSION_PLAN, REQUIRED_HOURS, 0], 0);
             const hoursWorked = state.get(HOURS_WORKED)
               .set(personEKID, Map({ worked: 0, required }));
 
