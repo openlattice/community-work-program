@@ -4,23 +4,26 @@
 
 import React from 'react';
 import styled from 'styled-components';
-import { Map } from 'immutable';
+import { List, Map } from 'immutable';
 
 import { Cell, Row } from './TableStyledComponents';
 import { formatImmutableValue } from '../../utils/FormattingUtils';
 import { formatAsDate } from '../../utils/DateTimeUtils';
 import { getEntityProperties } from '../../utils/DataUtils';
-import { WORKSITE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { isDefined } from '../../utils/LangUtils';
+import { WORKSITE_FQNS, WORKSITE_PLAN_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { WORKSITE_INFO_CONSTS } from '../../containers/worksites/WorksitesConstants';
 
 const { DATETIME_END, DATETIME_START, NAME } = WORKSITE_FQNS;
+const { HOURS_WORKED, REQUIRED_HOURS } = WORKSITE_PLAN_FQNS;
 const { PAST, SCHEDULED, TOTAL_HOURS } = WORKSITE_INFO_CONSTS;
 
 type Props = {
-  worksite :Map,
-  worksiteInfo :Map;
   selectWorksite ? :(selectedWorksite :Map) => void;
   small ? :boolean,
+  worksite :Map,
+  worksiteInfo ? :Map;
+  worksitePlan ? :Map;
 };
 
 const WorksitesCell = styled(Cell)`
@@ -28,23 +31,44 @@ const WorksitesCell = styled(Cell)`
 `;
 
 const TableRow = ({
+  selectWorksite,
+  small,
   worksite,
   worksiteInfo,
-  selectWorksite,
-  small
+  worksitePlan,
 } :Props) => {
 
-  const {
-    [DATETIME_END]: endDateTime,
-    [DATETIME_START]: startDateTime,
-    [NAME]: worksiteName
-  } = getEntityProperties(worksite, [DATETIME_END, DATETIME_START, NAME]);
+  let cellData :List = List();
 
-  const startDate = formatAsDate(startDateTime);
-  const status = (startDateTime && !endDateTime) ? 'Active' : 'Inactive';
-  const scheduledParticipantCount = formatImmutableValue(worksiteInfo, SCHEDULED, 0);
-  const pastParticipantCount = formatImmutableValue(worksiteInfo, PAST, 0);
-  const totalHours = formatImmutableValue(worksiteInfo, TOTAL_HOURS, 0);
+  const scheduledParticipantCount = isDefined(worksiteInfo) ? formatImmutableValue(worksiteInfo, SCHEDULED, 0) : '';
+  const pastParticipantCount = isDefined(worksiteInfo) ? formatImmutableValue(worksiteInfo, PAST, 0) : '';
+  const totalHours = isDefined(worksiteInfo) ? formatImmutableValue(worksiteInfo, TOTAL_HOURS, 0) : '';
+
+  const hoursWorked = isDefined(worksitePlan) ? formatImmutableValue(worksitePlan, HOURS_WORKED, 0) : '';
+  const requiredHours = isDefined(worksitePlan) ? formatImmutableValue(worksitePlan, REQUIRED_HOURS, 0) : '';
+  const hoursServed = `${hoursWorked} / ${requiredHours}`;
+
+  if (isDefined(worksite)) {
+
+    const {
+      [DATETIME_END]: endDateTime,
+      [DATETIME_START]: startDateTime,
+      [NAME]: worksiteName
+    } = getEntityProperties(worksite, [DATETIME_END, DATETIME_START, NAME]);
+
+    const startDate = formatAsDate(startDateTime);
+    const status = (startDateTime && !endDateTime) ? 'Active' : 'Inactive';
+
+    cellData = List().withMutations((list :List) => {
+      if (isDefined(worksiteName)) list.push(worksiteName);
+      if (isDefined(worksiteInfo)) list.push(status);
+      if (isDefined(worksiteInfo)) list.push(startDate);
+      if (scheduledParticipantCount) list.push(scheduledParticipantCount);
+      if (pastParticipantCount) list.push(pastParticipantCount);
+      if (totalHours) list.push(totalHours);
+      if (isDefined(worksitePlan)) list.push(hoursServed);
+    });
+  }
 
   return (
     <Row
@@ -53,13 +77,11 @@ const TableRow = ({
             selectWorksite(worksite);
           }
         }}>
-      <WorksitesCell small={small} />
-      <WorksitesCell small={small}>{ worksiteName }</WorksitesCell>
-      <WorksitesCell small={small} status={status}>{ status }</WorksitesCell>
-      <WorksitesCell small={small}>{ startDate }</WorksitesCell>
-      <WorksitesCell small={small}>{ scheduledParticipantCount }</WorksitesCell>
-      <WorksitesCell small={small}>{ pastParticipantCount }</WorksitesCell>
-      <WorksitesCell small={small}>{ totalHours }</WorksitesCell>
+      {
+        cellData.map((field :string, index :number) => (
+          <WorksitesCell key={`${index}-${field}`} small={small}>{ field }</WorksitesCell>
+        ))
+      }
     </Row>
   );
 };
@@ -67,6 +89,8 @@ const TableRow = ({
 TableRow.defaultProps = {
   selectWorksite: () => {},
   small: false,
+  worksiteInfo: undefined,
+  worksitePlan: undefined,
 };
 
 export default TableRow;
