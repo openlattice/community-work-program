@@ -73,6 +73,7 @@ export const PERSON = {
   GET_PARTICIPANT_ADDRESS: 'getParticipantAddress',
   GET_REQUIRED_HOURS: 'getRequiredHours',
   GET_SENTENCE_TERM: 'getSentenceTerm',
+  GET_WORKSITE_PLANS: 'getWorksitePlans',
   PARTICIPANT: 'participant',
   PHONE: 'phone',
   REQUEST_STATE: 'requestState',
@@ -80,6 +81,8 @@ export const PERSON = {
   SENTENCE_TERM: 'sentenceTerm',
   VIOLATIONS: 'violations',
   WARNINGS: 'warnings',
+  WORKSITES_BY_WORKSITE_PLAN: 'worksitesByWorksitePlan',
+  WORKSITE_PLANS: 'worksitePlans',
 };
 
 /* Worksites (and organizations) */
