@@ -5,6 +5,9 @@
 import { newRequestSequence } from 'redux-reqseq';
 import type { RequestSequence } from 'redux-reqseq';
 
+const ADD_PARTICIPANT :'ADD_PARTICIPANT' = 'ADD_PARTICIPANT';
+const addParticipant :RequestSequence = newRequestSequence(ADD_PARTICIPANT);
+
 const GET_ENROLLMENT_STATUSES :'GET_ENROLLMENT_STATUSES' = 'GET_ENROLLMENT_STATUSES';
 const getEnrollmentStatuses :RequestSequence = newRequestSequence(GET_ENROLLMENT_STATUSES);
 
@@ -32,6 +35,7 @@ function resetRequestState(actionType :string) {
 }
 
 export {
+  ADD_PARTICIPANT,
   GET_ENROLLMENT_STATUSES,
   GET_HOURS_WORKED,
   GET_INFRACTIONS,
@@ -39,6 +43,7 @@ export {
   GET_SENTENCES,
   GET_SENTENCE_TERMS,
   RESET_REQUEST_STATE,
+  addParticipant,
   getEnrollmentStatuses,
   getHoursWorked,
   getInfractions,

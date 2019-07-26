@@ -9,6 +9,7 @@ import { RequestStates } from 'redux-reqseq';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
 import ParticipantsTable from '../../components/table/ParticipantsTable';
+import AddParticipantModal from './AddParticipantModal';
 import LogoLoader from '../../components/LogoLoader';
 
 import { ToolBar } from '../../components/controls/index';
@@ -96,6 +97,7 @@ type Props = {
 };
 
 type State = {
+  showAddParticipant :boolean;
   peopleToRender :List;
   selectedFilterOption :Map;
   selectedSortOption :Map;
@@ -111,6 +113,7 @@ class ParticipantsSearchContainer extends Component<Props, State> {
     super(props);
 
     this.state = {
+      showAddParticipant: false,
       peopleToRender: props.participants,
       selectedFilterOption: defaultFilterOption,
       selectedSortOption: SORTABLE_PARTICIPANT_COLUMNS.STATUS,
@@ -193,6 +196,18 @@ class ParticipantsSearchContainer extends Component<Props, State> {
 
     this.setState({ peopleToRender: sortedPeople, selectedSortOption: clickedColumnHeader });
     return sortedPeople;
+  }
+
+  handleShowAddParticipant = () => {
+    this.setState({
+      showAddParticipant: true
+    });
+  }
+
+  handleHideAddParticipant = () => {
+    this.setState({
+      showAddParticipant: false
+    });
   }
 
   searchParticipantList = (input :string) => {
@@ -314,7 +329,7 @@ class ParticipantsSearchContainer extends Component<Props, State> {
       infractionCountsByParticipant,
       sentenceTermsByParticipant
     } = this.props;
-    const { peopleToRender, selectedSortOption } = this.state;
+    const { showAddParticipant, peopleToRender, selectedSortOption } = this.state;
     const onSelectFunctions = Map().withMutations((map :Map) => {
       map.set(FILTERS.STATUS, this.handleOnFilter);
     });
@@ -334,6 +349,8 @@ class ParticipantsSearchContainer extends Component<Props, State> {
         <ToolBar
             dropdowns={dropdowns}
             onSelectFunctions={onSelectFunctions}
+            primaryButtonAction={this.handleShowAddParticipant}
+            primaryButtonText="Add Participant"
             search={this.searchParticipantList} />
         <ParticipantSearchInnerWrapper>
           <ParticipantsTable
@@ -363,6 +380,9 @@ class ParticipantsSearchContainer extends Component<Props, State> {
               warnings={warningMap}
               width="100%" />
         </ParticipantSearchInnerWrapper>
+        <AddParticipantModal
+            isOpen={showAddParticipant}
+            onClose={this.handleHideAddParticipant} />
       </ParticipantSearchOuterWrapper>
     );
   }
