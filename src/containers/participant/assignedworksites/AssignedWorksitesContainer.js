@@ -42,6 +42,7 @@ const AssignedWorksitesContainer = ({ worksitePlans, worksites } :Props) => {
               <WorksitesTable
                   columnHeaders={WORKSITES_COLUMN_HEADERS}
                   config={{
+                    includeCounts: false,
                     includeStartDate: false,
                     includesStatus: false,
                   }}
