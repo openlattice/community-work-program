@@ -1,7 +1,8 @@
 // @flow
 import React, { Component } from 'react';
-import { Map } from 'immutable';
+import { fromJS, Map } from 'immutable';
 import { DateTime } from 'luxon';
+import { DataProcessingUtils } from 'lattice-fabricate';
 import {
   Button,
   CardSegment,
@@ -17,10 +18,8 @@ import type { FQN } from 'lattice';
 
 import { addWorksite } from './WorksitesActions';
 import { getEntityKeyId, getEntitySetIdFromApp, getPropertyTypeIdFromEdm } from '../../utils/DataUtils';
-import { processEntityData } from '../../utils/DataProcessingUtils';
 import { APP_TYPE_FQNS, OPERATES_FQNS, WORKSITE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { STATE } from '../../utils/constants/ReduxStateConsts';
-import { TYPE_IDS_BY_FQNS } from '../../core/edm/constants/DataModelConsts';
 import {
   ButtonsRow,
   ButtonsWrapper,
@@ -28,8 +27,14 @@ import {
   RowContent,
 } from '../../components/Layout';
 
+const {
+  getEntityAddressKey,
+  getPageSectionKey,
+  processAssociationEntityData,
+  processEntityData
+} = DataProcessingUtils;
 const { OPERATES, ORGANIZATION, WORKSITE } = APP_TYPE_FQNS;
-const { GENERAL_DATETIME } = OPERATES_FQNS;
+const { DATETIME } = OPERATES_FQNS;
 const {
   DATETIME_END,
   DATETIME_START,
@@ -43,7 +48,6 @@ type Props = {
   };
   app :Map;
   edm :Map;
-  edmPropertyTypes :Map;
   isLoading :boolean;
   onDiscard :() => void;
   organization :Map;
@@ -58,7 +62,9 @@ class AddWorksiteForm extends Component<Props, State> {
   constructor(props :Props) {
     super(props);
     this.state = {
-      newWorksiteData: Map(),
+      newWorksiteData: fromJS({
+        [getPageSectionKey(1, 1)]: {}
+      }),
     };
   }
 
@@ -67,13 +73,13 @@ class AddWorksiteForm extends Component<Props, State> {
     const splitDate :number[] = date.split('-')
       .map((string :string) => parseInt(string, 10));
     const dateAsDateTime = DateTime.local(splitDate[0], splitDate[1], splitDate[2]).toISO();
-    this.setState({ newWorksiteData: newWorksiteData.set(name, dateAsDateTime) });
+    this.setState({ newWorksiteData: newWorksiteData.setIn([getPageSectionKey(1, 1), name], dateAsDateTime) });
   }
 
   handleInputChange = (e :SyntheticEvent<HTMLInputElement>) => {
     const { newWorksiteData } = this.state;
     const { name, value } = e.currentTarget;
-    this.setState({ newWorksiteData: newWorksiteData.set(name, value) });
+    this.setState({ newWorksiteData: newWorksiteData.setIn([getPageSectionKey(1, 1), name], value) });
   }
 
   handleOnSubmit = () => {
@@ -81,34 +87,32 @@ class AddWorksiteForm extends Component<Props, State> {
       actions,
       app,
       edm,
-      edmPropertyTypes,
       organization
     } = this.props;
     const { newWorksiteData } = this.state;
 
-    const organizationESID :UUID = getEntitySetIdFromApp(app, ORGANIZATION);
-    const worksiteESID :UUID = getEntitySetIdFromApp(app, WORKSITE);
-    const operatesESID :UUID = getEntitySetIdFromApp(app, OPERATES);
-    const organizationEKID :UUID = getEntityKeyId(organization);
-    const datetimePTID :UUID = getPropertyTypeIdFromEdm(edm, GENERAL_DATETIME);
-
-    const entityDataToProcess :Map = Map({
-      entityData: newWorksiteData,
-      entitySetId: worksiteESID,
-    });
-    const entityData :{} = processEntityData(entityDataToProcess, edmPropertyTypes);
-
-    const associationEntityData :{} = {
-      [operatesESID]: [{
-        data: {
-          [datetimePTID]: [DateTime.local().toISO()]
-        },
-        srcEntitySetId: organizationESID,
-        srcEntityKeyId: organizationEKID,
-        dstEntityIndex: 0,
-        dstEntitySetId: worksiteESID
-      }]
+    const entitySetIds :{} = {
+      [ORGANIZATION]: getEntitySetIdFromApp(app, ORGANIZATION),
+      [WORKSITE]: getEntitySetIdFromApp(app, WORKSITE),
+      [OPERATES]: getEntitySetIdFromApp(app, OPERATES),
     };
+    const propertyTypeIds :{} = {
+      [DATETIME]: getPropertyTypeIdFromEdm(edm, DATETIME),
+      [DATETIME_START]: getPropertyTypeIdFromEdm(edm, DATETIME_START),
+      [DATETIME_END]: getPropertyTypeIdFromEdm(edm, DATETIME_END),
+      [DESCRIPTION]: getPropertyTypeIdFromEdm(edm, DESCRIPTION),
+      [NAME]: getPropertyTypeIdFromEdm(edm, NAME),
+    };
+
+    const organizationEKID :UUID = getEntityKeyId(organization);
+    const associations = [];
+    const nowAsIso = DateTime.local().toISO();
+
+    associations.push([OPERATES, organizationEKID, ORGANIZATION, 0, WORKSITE, {
+      [DATETIME]: [nowAsIso]
+    }]);
+    const entityData :{} = processEntityData(newWorksiteData, entitySetIds, propertyTypeIds);
+    const associationEntityData :{} = processAssociationEntityData(fromJS(associations), entitySetIds, propertyTypeIds);
 
     actions.addWorksite({ associationEntityData, entityData });
   }
@@ -121,7 +125,7 @@ class AddWorksiteForm extends Component<Props, State> {
           <RowContent>
             <Label>Worksite name</Label>
             <Input
-                name={NAME}
+                name={getEntityAddressKey(0, WORKSITE, NAME)}
                 onChange={this.handleInputChange}
                 type="text" />
           </RowContent>
@@ -130,7 +134,7 @@ class AddWorksiteForm extends Component<Props, State> {
           <RowContent>
             <Label>Description of work available</Label>
             <TextArea
-                name={DESCRIPTION}
+                name={getEntityAddressKey(0, WORKSITE, DESCRIPTION)}
                 onChange={this.handleInputChange} />
           </RowContent>
         </FormRow>
@@ -143,14 +147,14 @@ class AddWorksiteForm extends Component<Props, State> {
           <RowContent>
             <Label>Date first active</Label>
             <DatePicker
-                name={DATETIME_START}
-                onChange={this.handleDateChange(DATETIME_START)} />
+                name={getEntityAddressKey(0, WORKSITE, DATETIME_START)}
+                onChange={this.handleDateChange(getEntityAddressKey(0, WORKSITE, DATETIME_START))} />
           </RowContent>
           <RowContent>
             <Label>Date no longer active</Label>
             <DatePicker
-                name={DATETIME_END}
-                onChange={this.handleDateChange(DATETIME_END)} />
+                name={getEntityAddressKey(0, WORKSITE, DATETIME_END)}
+                onChange={this.handleDateChange(getEntityAddressKey(0, WORKSITE, DATETIME_END))} />
           </RowContent>
         </FormRow>
         <ButtonsRow>
@@ -178,7 +182,6 @@ class AddWorksiteForm extends Component<Props, State> {
 const mapStateToProps = (state :Map) => ({
   app: state.get(STATE.APP),
   edm: state.get(STATE.EDM),
-  edmPropertyTypes: state.getIn([STATE.EDM, TYPE_IDS_BY_FQNS]),
 });
 
 const mapDispatchToProps = dispatch => ({
