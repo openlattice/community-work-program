@@ -35,6 +35,7 @@ export const APP = {
 
 export const PEOPLE = {
   ACTIONS: 'actions',
+  ADD_PARTICIPANT: 'addParticipant',
   ENROLLMENT_BY_PARTICIPANT: 'enrollmentByParticipant',
   ERRORS: 'errors',
   GET_ENROLLMENT_STATUSES: 'getEnrollmentStatuses',

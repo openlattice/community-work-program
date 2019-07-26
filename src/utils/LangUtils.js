@@ -60,8 +60,14 @@ function isNonEmptyStringArray(value :string[]) :boolean {
   return true;
 }
 
+function isDigitOnlyString(value :any) :boolean {
+
+  return isNonEmptyString(value) && /^\d+$/.test(value);
+}
+
 export {
   isDefined,
+  isDigitOnlyString,
   isEmptyArray,
   isEmptyObject,
   isEmptyString,
