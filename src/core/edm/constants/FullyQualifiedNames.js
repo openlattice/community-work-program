@@ -163,7 +163,7 @@ export const HAS_FQNS = {
 };
 
 export const OPERATES_FQNS = {
-  GENERAL_DATETIME: new FullyQualifiedName('general.datetime'),
+  DATETIME: new FullyQualifiedName('general.datetime'),
 };
 
 export const SENTENCED_WITH_FQNS = {
