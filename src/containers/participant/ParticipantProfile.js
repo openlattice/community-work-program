@@ -48,6 +48,10 @@ const {
   WORKSITE_PLANS,
 } = PERSON;
 
+const ENROLLMENT_STATUSES_EXCLUDING_PREENROLLMENT = Object.values(ENROLLMENT_STATUSES)
+  .filter(status => status !== ENROLLMENT_STATUSES.AWAITING_CHECKIN
+    && status !== ENROLLMENT_STATUSES.AWAITING_ORIENTATION);
+
 const ProfileWrapper = styled.div`
   display: flex;
   flex-direction: column;
@@ -235,15 +239,21 @@ class ParticipantProfile extends Component<Props, State> {
             </InnerColumnWrapper>
           </BasicInfoWrapper>
         </ProfileBody>
-        <ProfileBody>
-          <NameRowWrapper>
-            <NameHeader>Assigned Work Sites</NameHeader>
-            <Button>Add Work Site</Button>
-          </NameRowWrapper>
-          <AssignedWorksitesContainer
-              worksitePlans={worksitePlans}
-              worksites={worksitesByWorksitePlan} />
-        </ProfileBody>
+        {
+          ENROLLMENT_STATUSES_EXCLUDING_PREENROLLMENT.includes(status)
+            ? (
+              <ProfileBody>
+                <NameRowWrapper>
+                  <NameHeader>Assigned Work Sites</NameHeader>
+                  <Button>Add Work Site</Button>
+                </NameRowWrapper>
+                <AssignedWorksitesContainer
+                    worksitePlans={worksitePlans}
+                    worksites={worksitesByWorksitePlan} />
+              </ProfileBody>
+            )
+            : null
+        }
         <AddNewPlanStatusModal
             currentStatus={status}
             isOpen={showEnrollmentModal}
