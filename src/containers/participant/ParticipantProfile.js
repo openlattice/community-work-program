@@ -12,6 +12,7 @@ import GeneralInfo from '../../components/participant/GeneralInfo';
 import KeyDates from '../../components/participant/KeyDates';
 import CaseInfo from '../../components/participant/CaseInfo';
 import InfractionsDisplay from '../../components/participant/InfractionsDisplay';
+import AssignedWorksitesContainer from './assignedworksites/AssignedWorksitesContainer';
 import LogoLoader from '../../components/LogoLoader';
 
 import { getAllParticipantInfo } from './ParticipantActions';
@@ -183,11 +184,6 @@ class ParticipantProfile extends Component<Props> {
             <NameHeader>{ `${firstName} ${lastName}` }</NameHeader>
             <ButtonsWrapper>
               <ButtonWrapper>
-                <Button>
-                  Assign to Worksite
-                </Button>
-              </ButtonWrapper>
-              <ButtonWrapper>
                 <Button mode="primary">
                   Enroll in CWP
                 </Button>
@@ -209,6 +205,14 @@ class ParticipantProfile extends Component<Props> {
               </InnerRowWrapper>
             </InnerColumnWrapper>
           </BasicInfoWrapper>
+        </ProfileBody>
+        <ProfileBody>
+          <NameRowWrapper>
+            <NameHeader>Assigned Work Sites</NameHeader>
+            <Button>Add Work Site</Button>
+          </NameRowWrapper>
+          <AssignedWorksitesContainer
+              worksites={List()} />
         </ProfileBody>
       </ProfileWrapper>
     );
