@@ -44,6 +44,8 @@ const {
   SENTENCE_TERM,
   VIOLATIONS,
   WARNINGS,
+  WORKSITES_BY_WORKSITE_PLAN,
+  WORKSITE_PLANS,
 } = PERSON;
 
 const ProfileWrapper = styled.div`
@@ -118,6 +120,8 @@ type Props = {
   sentenceTerm :Map;
   violations :List;
   warnings :List;
+  worksitesByWorksitePlan :Map;
+  worksitePlans :List;
 };
 
 type State = {
@@ -180,6 +184,8 @@ class ParticipantProfile extends Component<Props, State> {
       sentenceTerm,
       violations,
       warnings,
+      worksitesByWorksitePlan,
+      worksitePlans,
     } = this.props;
     const { showEnrollmentModal } = this.state;
 
@@ -235,7 +241,8 @@ class ParticipantProfile extends Component<Props, State> {
             <Button>Add Work Site</Button>
           </NameRowWrapper>
           <AssignedWorksitesContainer
-              worksites={List()} />
+              worksitePlans={worksitePlans}
+              worksites={worksitesByWorksitePlan} />
         </ProfileBody>
         <AddNewPlanStatusModal
             currentStatus={status}
@@ -264,6 +271,8 @@ const mapStateToProps = (state :Map<*, *>) => {
     [SENTENCE_TERM]: person.get(SENTENCE_TERM),
     [VIOLATIONS]: person.get(VIOLATIONS),
     [WARNINGS]: person.get(WARNINGS),
+    [WORKSITES_BY_WORKSITE_PLAN]: person.get(WORKSITES_BY_WORKSITE_PLAN),
+    [WORKSITE_PLANS]: person.get(WORKSITE_PLANS),
   };
 };
 
