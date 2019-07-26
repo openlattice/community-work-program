@@ -12,11 +12,8 @@ import GeneralInfo from '../../components/participant/GeneralInfo';
 import KeyDates from '../../components/participant/KeyDates';
 import CaseInfo from '../../components/participant/CaseInfo';
 import InfractionsDisplay from '../../components/participant/InfractionsDisplay';
-<<<<<<< HEAD
 import AssignedWorksitesContainer from './assignedworksites/AssignedWorksitesContainer';
-=======
 import AddNewPlanStatusModal from './AddNewPlanStatusModal';
->>>>>>> feature/PCM-623-change-enrollment-status-modal
 import LogoLoader from '../../components/LogoLoader';
 
 import { getAllParticipantInfo } from './ParticipantActions';
