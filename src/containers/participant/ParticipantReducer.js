@@ -15,6 +15,8 @@ import {
   getParticipantInfractions,
   getRequiredHours,
   getSentenceTerm,
+  getWorksiteByWorksitePlan,
+  getWorksitePlans,
 } from './ParticipantActions';
 import { getPropertyFqnFromEdm } from '../../utils/DataUtils';
 import { PERSON } from '../../utils/constants/ReduxStateConsts';
@@ -39,6 +41,8 @@ const {
   GET_PARTICIPANT_INFRACTIONS,
   GET_REQUIRED_HOURS,
   GET_SENTENCE_TERM,
+  GET_WORKSITE_BY_WORKSITE_PLAN,
+  GET_WORKSITE_PLANS,
   PARTICIPANT,
   PHONE,
   REQUEST_STATE,
@@ -46,6 +50,8 @@ const {
   SENTENCE_TERM,
   VIOLATIONS,
   WARNINGS,
+  WORKSITES_BY_WORKSITE_PLAN,
+  WORKSITE_PLANS,
 } = PERSON;
 
 const INITIAL_STATE :Map<*, *> = fromJS({
@@ -104,6 +110,8 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [SENTENCE_TERM]: Map(),
   [VIOLATIONS]: Map(),
   [WARNINGS]: Map(),
+  [WORKSITES_BY_WORKSITE_PLAN]: Map(),
+  [WORKSITE_PLANS]: List(),
 });
 
 export default function participantReducer(state :Map<*, *> = INITIAL_STATE, action :SequenceAction) :Map<*, *> {
@@ -461,6 +469,76 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
             .setIn([ACTIONS, GET_SENTENCE_TERM, REQUEST_STATE], RequestStates.FAILURE);
         },
         FINALLY: () => state.deleteIn([ACTIONS, GET_SENTENCE_TERM, action.id])
+      });
+    }
+
+    case getWorksitePlans.case(action.type): {
+
+      return getWorksitePlans.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, GET_WORKSITE_PLANS, action.id], fromJS(action))
+          .setIn([ACTIONS, GET_WORKSITE_PLANS, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+
+          if (!state.hasIn([ACTIONS, GET_WORKSITE_PLANS, action.id])) {
+            return state;
+          }
+
+          const { value } = action;
+          if (value === null || value === undefined) {
+            return state;
+          }
+
+          return state
+            .set(WORKSITE_PLANS, value)
+            .setIn([ACTIONS, GET_WORKSITE_PLANS, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => {
+
+          const { value } = action;
+
+          return state
+            .set(SENTENCE_TERM, Map())
+            .setIn([ERRORS, GET_WORKSITE_PLANS], value)
+            .setIn([ACTIONS, GET_WORKSITE_PLANS, REQUEST_STATE], RequestStates.FAILURE);
+        },
+        FINALLY: () => state.deleteIn([ACTIONS, GET_WORKSITE_PLANS, action.id])
+      });
+    }
+
+    case getWorksiteByWorksitePlan.case(action.type): {
+
+      return getWorksiteByWorksitePlan.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, GET_WORKSITE_BY_WORKSITE_PLAN, action.id], fromJS(action))
+          .setIn([ACTIONS, GET_WORKSITE_BY_WORKSITE_PLAN, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+
+          if (!state.hasIn([ACTIONS, GET_WORKSITE_BY_WORKSITE_PLAN, action.id])) {
+            return state;
+          }
+
+          const { value } = action;
+          if (value === null || value === undefined) {
+            return state;
+          }
+
+          return state
+            .set(WORKSITES_BY_WORKSITE_PLAN, value)
+            .setIn([ACTIONS, GET_WORKSITE_BY_WORKSITE_PLAN, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => {
+
+          const { value } = action;
+
+          return state
+            .set(SENTENCE_TERM, Map())
+            .setIn([ERRORS, GET_WORKSITE_BY_WORKSITE_PLAN], value)
+            .setIn([ACTIONS, GET_WORKSITE_BY_WORKSITE_PLAN, REQUEST_STATE], RequestStates.FAILURE);
+        },
+        FINALLY: () => state.deleteIn([ACTIONS, GET_WORKSITE_BY_WORKSITE_PLAN, action.id])
       });
     }
 
