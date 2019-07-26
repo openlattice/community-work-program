@@ -179,6 +179,13 @@ export const ErrorMessage = styled.div`
 
 /* Forms */
 
+export const FormWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 30px;
+  padding: 0;
+`;
+
 export const FormRow = styled.div`
   display: flex;
   justify-content: space-between;
