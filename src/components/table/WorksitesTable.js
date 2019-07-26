@@ -38,6 +38,7 @@ const Headers = ({ columnHeaders } :HeaderProps) => (
 
 type Props = {
   columnHeaders :string[];
+  config :Object;
   worksites :List;
   worksitesInfo :Map;
   selectWorksite ? :(selectedWorksite :Map) => void;
@@ -47,6 +48,7 @@ type Props = {
 
 const WorksitesTable = ({
   columnHeaders,
+  config,
   worksites,
   worksitesInfo,
   selectWorksite,
@@ -63,6 +65,7 @@ const WorksitesTable = ({
           return (
             <WorksitesTableRow
                 key={worksiteEKID}
+                config={config}
                 worksite={worksite}
                 worksiteInfo={worksiteInfo}
                 selectWorksite={selectWorksite}

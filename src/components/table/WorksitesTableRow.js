@@ -19,6 +19,7 @@ const { HOURS_WORKED, REQUIRED_HOURS } = WORKSITE_PLAN_FQNS;
 const { PAST, SCHEDULED, TOTAL_HOURS } = WORKSITE_INFO_CONSTS;
 
 type Props = {
+  config :Object;
   selectWorksite ? :(selectedWorksite :Map) => void;
   small ? :boolean,
   worksite :Map,
@@ -31,6 +32,7 @@ const WorksitesCell = styled(Cell)`
 `;
 
 const TableRow = ({
+  config,
   selectWorksite,
   small,
   worksite,
@@ -39,6 +41,7 @@ const TableRow = ({
 } :Props) => {
 
   let cellData :List = List();
+  const { includeStartDate, includeStatus } = config;
 
   const scheduledParticipantCount = isDefined(worksiteInfo) ? formatImmutableValue(worksiteInfo, SCHEDULED, 0) : '';
   const pastParticipantCount = isDefined(worksiteInfo) ? formatImmutableValue(worksiteInfo, PAST, 0) : '';
@@ -60,9 +63,10 @@ const TableRow = ({
     const status = (startDateTime && !endDateTime) ? 'Active' : 'Inactive';
 
     cellData = List().withMutations((list :List) => {
+      list.push('');
       if (isDefined(worksiteName)) list.push(worksiteName);
-      if (isDefined(worksiteInfo)) list.push(status);
-      if (isDefined(worksiteInfo)) list.push(startDate);
+      if (includeStatus) list.push(status);
+      if (includeStartDate) list.push(startDate);
       if (scheduledParticipantCount) list.push(scheduledParticipantCount);
       if (pastParticipantCount) list.push(pastParticipantCount);
       if (totalHours) list.push(totalHours);

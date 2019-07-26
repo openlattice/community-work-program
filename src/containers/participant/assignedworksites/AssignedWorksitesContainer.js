@@ -13,6 +13,8 @@ import WorksitesTable from '../../../components/table/WorksitesTable';
 
 import { ContainerOuterWrapper } from '../../../components/Layout';
 
+const WORKSITES_COLUMN_HEADERS :string[] = ['WORK SITE NAME', 'HRS. SERVED', 'DATE ASSIGNED'];
+
 const OuterWrapper = styled(ContainerOuterWrapper)`
   width: 100%;
 `;
@@ -38,7 +40,11 @@ const AssignedWorksitesContainer = ({ worksitePlans, worksites } :Props) => {
             )
             : (
               <WorksitesTable
-                  columnHeaders={['WORK SITE NAME', 'HRS. SERVED', 'DATE ASSIGNED']}
+                  columnHeaders={WORKSITES_COLUMN_HEADERS}
+                  config={{
+                    includeStartDate: false,
+                    includesStatus: false,
+                  }}
                   small={false}
                   worksites={worksites}
                   worksitesInfo={Map()} />
