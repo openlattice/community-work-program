@@ -16,7 +16,6 @@ import {
   SearchApiActions,
   SearchApiSagas,
 } from 'lattice-sagas';
-import { DateTime } from 'luxon';
 import type { SequenceAction } from 'redux-reqseq';
 
 import Logger from '../../utils/Logger';
@@ -49,7 +48,6 @@ import {
 } from './ParticipantActions';
 import { submitDataGraph } from '../../core/sagas/data/DataActions';
 import { submitDataGraphWorker } from '../../core/sagas/data/DataSagas';
-import { isDefined } from '../../utils/LangUtils';
 import {
   getEntityKeyId,
   getEntityProperties,
@@ -68,7 +66,7 @@ import {
   LOCATION_FQNS,
   SENTENCE_TERM_FQNS,
 } from '../../core/edm/constants/FullyQualifiedNames';
-import { ENROLLMENT_STATUSES, INFRACTIONS_CONSTS } from '../../core/edm/constants/DataModelConsts';
+import { INFRACTIONS_CONSTS } from '../../core/edm/constants/DataModelConsts';
 
 const { getEntityData } = DataApiActions;
 const { getEntityDataWorker } = DataApiSagas;
@@ -92,8 +90,8 @@ const {
   PHONE_NUMBER,
   PREFERRED,
 } = CONTACT_INFO_FQNS;
-const { COMPLETED, REQUIRED_HOURS } = DIVERSION_PLAN_FQNS;
-const { EFFECTIVE_DATE, STATUS } = ENROLLMENT_STATUS_FQNS;
+const { REQUIRED_HOURS } = DIVERSION_PLAN_FQNS;
+const { EFFECTIVE_DATE } = ENROLLMENT_STATUS_FQNS;
 const { TYPE } = INFRACTION_FQNS;
 const { UNPARSED_ADDRESS } = LOCATION_FQNS;
 const { DATETIME_START } = SENTENCE_TERM_FQNS;
