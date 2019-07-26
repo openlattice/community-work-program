@@ -32,6 +32,8 @@ import {
   GET_PARTICIPANT_INFRACTIONS,
   GET_REQUIRED_HOURS,
   GET_SENTENCE_TERM,
+  GET_WORKSITE_BY_WORKSITE_PLAN,
+  GET_WORKSITE_PLANS,
   addNewDiversionPlanStatus,
   getAllParticipantInfo,
   getCaseInfo,
@@ -42,6 +44,8 @@ import {
   getParticipantInfractions,
   getRequiredHours,
   getSentenceTerm,
+  getWorksiteByWorksitePlan,
+  getWorksitePlans,
 } from './ParticipantActions';
 import { submitDataGraph } from '../../core/sagas/data/DataActions';
 import { submitDataGraphWorker } from '../../core/sagas/data/DataSagas';
@@ -80,6 +84,8 @@ const {
   MANUAL_PRETRIAL_CASES,
   PEOPLE,
   SENTENCE_TERM,
+  WORKSITE,
+  WORKSITE_PLAN,
 } = APP_TYPE_FQNS;
 const {
   EMAIL,
@@ -330,6 +336,129 @@ function* getContactInfoWatcher() :Generator<*, *, *> {
 
 /*
  *
+ * WorksitesActions.getWorksiteByWorksitePlan()
+ *
+ */
+function* getWorksiteByWorksitePlanWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+  const workerResponse = {};
+  let response :Object = {};
+  let worksitesByPlanEKID :Map = Map();
+
+  try {
+    yield put(getWorksiteByWorksitePlan.request(id));
+    const { worksitePlans } = value;
+    if (value === null || value === undefined) {
+      throw ERR_ACTION_VALUE_NOT_DEFINED;
+    }
+    const worksitePlanEKIDs :UUID[] = [];
+    worksitePlans.forEach((plan :Map) => worksitePlanEKIDs.push(getEntityKeyId(plan)));
+
+    const app = yield select(getAppFromState);
+    const worksitePlanESID :UUID = getEntitySetIdFromApp(app, WORKSITE_PLAN);
+    const worksiteESID :UUID = getEntitySetIdFromApp(app, WORKSITE);
+
+    const searchFilter :Object = {
+      entityKeyIds: worksitePlanEKIDs,
+      destinationEntitySetIds: [worksiteESID],
+      sourceEntitySetIds: [],
+    };
+    response = yield call(
+      searchEntityNeighborsWithFilterWorker,
+      searchEntityNeighborsWithFilter({ entitySetId: worksitePlanESID, filter: searchFilter })
+    );
+    if (response.error) {
+      throw response.error;
+    }
+
+    if (Object.keys(response.data).length > 0) {
+
+      worksitesByPlanEKID = fromJS(response.data)
+        .map((worksitesList :List) => getNeighborDetails(worksitesList.get(0)));
+    }
+
+    yield put(getWorksiteByWorksitePlan.success(id, worksitesByPlanEKID));
+  }
+  catch (error) {
+    workerResponse.error = error;
+    LOG.error('caught exception in getWorksiteByWorksitePlanWorker()', error);
+    yield put(getWorksiteByWorksitePlan.failure(id, error));
+  }
+  finally {
+    yield put(getWorksiteByWorksitePlan.finally(id));
+  }
+  return workerResponse;
+}
+
+function* getWorksiteByWorksitePlanWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(GET_WORKSITE_BY_WORKSITE_PLAN, getWorksiteByWorksitePlanWorker);
+}
+
+/*
+ *
+ * WorksitesActions.getWorksitePlans()
+ *
+ */
+function* getWorksitePlansWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+  const workerResponse = {};
+  let response :Object = {};
+  let worksitePlans :List = List();
+
+  try {
+    yield put(getWorksitePlans.request(id));
+    const { diversionPlan } = value;
+    if (value === null || value === undefined) {
+      throw ERR_ACTION_VALUE_NOT_DEFINED;
+    }
+    const app = yield select(getAppFromState);
+    const diversionPlanESID :UUID = getEntitySetIdFromApp(app, DIVERSION_PLAN);
+    const worksitePlanESID :UUID = getEntitySetIdFromApp(app, WORKSITE_PLAN);
+    const diversionPlanEKID :UUID = getEntityKeyId(diversionPlan);
+
+    const searchFilter :Object = {
+      entityKeyIds: [diversionPlanEKID],
+      destinationEntitySetIds: [worksitePlanESID],
+      sourceEntitySetIds: [],
+    };
+    response = yield call(
+      searchEntityNeighborsWithFilterWorker,
+      searchEntityNeighborsWithFilter({ entitySetId: diversionPlanESID, filter: searchFilter })
+    );
+    if (response.error) {
+      throw response.error;
+    }
+
+    if (response.data[diversionPlanESID]) {
+      worksitePlans = fromJS(response.data[diversionPlanESID])
+        .map((worksitePlan :Map) => getNeighborDetails(worksitePlan));
+
+      yield call(getWorksiteByWorksitePlanWorker, getWorksiteByWorksitePlan({ worksitePlans }));
+    }
+
+    yield put(getWorksitePlans.success(id, worksitePlans));
+  }
+  catch (error) {
+    workerResponse.error = error;
+    LOG.error('caught exception in getWorksitePlansWorker()', error);
+    yield put(getWorksitePlans.failure(id, error));
+  }
+  finally {
+    yield put(getWorksitePlans.finally(id));
+  }
+  return workerResponse;
+}
+
+function* getWorksitePlansWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(GET_WORKSITE_PLANS, getWorksitePlansWorker);
+}
+
+/*
+ *
  * ParticipantsActions.getEnrollmentStatus()
  *
  */
@@ -416,6 +545,9 @@ function* getEnrollmentStatusWorker(action :SequenceAction) :Generator<*, *, *> 
         const diversionPlanEKID :UUID = enrollmentStatusesByDiversionPlan
           .findKey((status :Map) => status === enrollmentStatus);
         diversionPlan = diversionPlans.get(personEKID).find((plan :Map) => getEntityKeyId(plan) === diversionPlanEKID);
+
+        /* Call getWorksitePlans() to find all worksite plans for current diversion plan */
+        yield call(getWorksitePlansWorker, getWorksitePlans({ diversionPlan }));
       }
     }
 
@@ -766,4 +898,8 @@ export {
   getRequiredHoursWorker,
   getSentenceTermWatcher,
   getSentenceTermWorker,
+  getWorksiteByWorksitePlanWatcher,
+  getWorksiteByWorksitePlanWorker,
+  getWorksitePlansWatcher,
+  getWorksitePlansWorker,
 };
