@@ -54,7 +54,11 @@ export const APP_TYPE_FQNS = {
   WORKSITE_PLAN: new FullyQualifiedName('app.worksiteplan'),
 };
 
-/* Entity Type FQNs */
+/* DateTime FQNs */
+export const DATETIME = new FullyQualifiedName('general.datetime');
+export const DATETIME_COMPLETED = new FullyQualifiedName('date.completeddatetime');
+export const DATETIME_START = new FullyQualifiedName('ol.datetimestart');
+/* Property Type FQNs by Entity Type */
 
 /* publicsafety.pretrialstatuscaseprocessings */
 export const CASE_FQNS = {
@@ -153,23 +157,4 @@ export const WORKSITE_FQNS = {
 export const WORKSITE_PLAN_FQNS = {
   HOURS_WORKED: new FullyQualifiedName('ol.hoursworked'),
   REQUIRED_HOURS: new FullyQualifiedName('ol.requiredhours'),
-};
-
-/* Association Type FQNs */
-
-/* ol.has */
-export const HAS_FQNS = {
-  DATETIME_COMPLETED: new FullyQualifiedName('date.completeddatetime'),
-};
-
-export const OPERATES_FQNS = {
-  DATETIME: new FullyQualifiedName('general.datetime'),
-};
-
-export const RELATED_TO_FQNS = {
-  DATETIME_COMPLETED: new FullyQualifiedName('date.completeddatetime'),
-};
-
-export const SENTENCED_WITH_FQNS = {
-  DATETIME_COMPLETED: new FullyQualifiedName('date.completeddatetime'),
 };

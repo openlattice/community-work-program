@@ -8,7 +8,6 @@ import type { RequestState } from 'redux-reqseq';
 
 import AddParticipantForm from './AddParticipantForm';
 
-// import { ORGANIZATION_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { PEOPLE, STATE } from '../../utils/constants/ReduxStateConsts';
 
 const { ACTIONS, ADD_PARTICIPANT, REQUEST_STATE } = PEOPLE;

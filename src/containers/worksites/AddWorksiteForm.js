@@ -18,7 +18,7 @@ import type { FQN } from 'lattice';
 
 import { addWorksite } from './WorksitesActions';
 import { getEntityKeyId, getEntitySetIdFromApp, getPropertyTypeIdFromEdm } from '../../utils/DataUtils';
-import { APP_TYPE_FQNS, OPERATES_FQNS, WORKSITE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { APP_TYPE_FQNS, DATETIME, WORKSITE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { STATE } from '../../utils/constants/ReduxStateConsts';
 import {
   ButtonsRow,
@@ -34,7 +34,6 @@ const {
   processEntityData
 } = DataProcessingUtils;
 const { OPERATES, ORGANIZATION, WORKSITE } = APP_TYPE_FQNS;
-const { DATETIME } = OPERATES_FQNS;
 const {
   DATETIME_END,
   DATETIME_START,
