@@ -9,11 +9,11 @@ import {
   IconSplash,
 } from 'lattice-ui-kit';
 
-import WorksitesTable from '../../../components/table/WorksitesTable';
+import AssignedWorksitesTable from '../../../components/table/AssignedWorksitesTable';
 
 import { ContainerOuterWrapper } from '../../../components/Layout';
 
-const WORKSITES_COLUMN_HEADERS :string[] = ['WORK SITE NAME', 'HRS. SERVED', 'DATE ASSIGNED'];
+const WORKSITES_COLUMN_HEADERS :string[] = ['WORK SITE NAME', 'HOURS WORKED', 'REQ. HOURS'];
 
 const OuterWrapper = styled(ContainerOuterWrapper)`
   width: 100%;
@@ -21,10 +21,10 @@ const OuterWrapper = styled(ContainerOuterWrapper)`
 
 type Props = {
   worksitePlans :List;
-  worksites :Map;
+  worksitesByWorksitePlan :Map;
 };
 
-const AssignedWorksitesContainer = ({ worksitePlans, worksites } :Props) => {
+const AssignedWorksitesContainer = ({ worksitePlans, worksitesByWorksitePlan } :Props) => {
   return (
     <OuterWrapper>
       <Card>
@@ -39,15 +39,12 @@ const AssignedWorksitesContainer = ({ worksitePlans, worksites } :Props) => {
               </CardSegment>
             )
             : (
-              <WorksitesTable
+              <AssignedWorksitesTable
                   columnHeaders={WORKSITES_COLUMN_HEADERS}
-                  config={{
-                    includeCounts: false,
-                    includeStartDate: false,
-                    includesStatus: false,
-                  }}
                   small={false}
-                  worksites={worksites} />
+                  tableMargin="25px 0"
+                  worksitesByWorksitePlan={worksitesByWorksitePlan}
+                  worksitePlans={worksitePlans} />
             )
         }
       </Card>
