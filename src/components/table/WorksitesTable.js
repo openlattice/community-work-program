@@ -38,9 +38,8 @@ const Headers = ({ columnHeaders } :HeaderProps) => (
 
 type Props = {
   columnHeaders :string[];
-  config :Object;
   worksites :List;
-  worksitesInfo ? :Map;
+  worksitesInfo :Map;
   selectWorksite ? :(selectedWorksite :Map) => void;
   small :boolean;
   tableMargin ? :string;
@@ -48,7 +47,6 @@ type Props = {
 
 const WorksitesTable = ({
   columnHeaders,
-  config,
   worksites,
   worksitesInfo,
   selectWorksite,
@@ -65,7 +63,6 @@ const WorksitesTable = ({
           return (
             <WorksitesTableRow
                 key={worksiteEKID}
-                config={config}
                 worksite={worksite}
                 worksiteInfo={worksiteInfo}
                 selectWorksite={selectWorksite}
@@ -80,7 +77,6 @@ const WorksitesTable = ({
 WorksitesTable.defaultProps = {
   selectWorksite: () => {},
   tableMargin: '0 0 30px 0',
-  worksitesInfo: Map(),
 };
 
 export default WorksitesTable;
