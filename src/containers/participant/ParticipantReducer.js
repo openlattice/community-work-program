@@ -6,6 +6,7 @@ import type { FQN } from 'lattice';
 
 import {
   addNewDiversionPlanStatus,
+  addWorksitePlan,
   getAllParticipantInfo,
   getCaseInfo,
   getContactInfo,
@@ -26,6 +27,7 @@ import { ENTITY_KEY_ID } from '../../core/edm/constants/FullyQualifiedNames';
 const {
   ACTIONS,
   ADD_NEW_DIVERSION_PLAN_STATUS,
+  ADD_WORKSITE_PLAN,
   ADDRESS,
   CASE_NUMBER,
   DIVERSION_PLAN,
@@ -57,6 +59,9 @@ const {
 const INITIAL_STATE :Map<*, *> = fromJS({
   [ACTIONS]: {
     [ADD_NEW_DIVERSION_PLAN_STATUS]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [ADD_WORKSITE_PLAN]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [GET_ALL_PARTICIPANT_INFO]: {
@@ -157,6 +162,49 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
         FAILURE: () => state
           .setIn([ACTIONS, ADD_NEW_DIVERSION_PLAN_STATUS, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, ADD_NEW_DIVERSION_PLAN_STATUS, action.id]),
+      });
+    }
+
+    case addWorksitePlan.case(action.type): {
+
+      return addWorksitePlan.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, ADD_WORKSITE_PLAN, action.id], action)
+          .setIn([ACTIONS, ADD_WORKSITE_PLAN, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+
+          const seqAction :SequenceAction = action;
+          const storedSeqAction :SequenceAction = state.getIn([ACTIONS, ADD_WORKSITE_PLAN, seqAction.id]);
+
+          if (storedSeqAction) {
+
+            // const { value } :Object = seqAction;
+            // const { edm, enrollmentStatusEKID, enrollmentStatusESID } = value;
+            //
+            // const requestValue :Object = storedSeqAction.value;
+            // const { entityData } :Object = requestValue;
+            // const storedEnrollmentEntity :Map = fromJS(entityData[enrollmentStatusESID][0]);
+            //
+            //
+            // let newEnrollmentStatus :Map = Map();
+            // storedEnrollmentEntity.forEach((enrollmentValue, id) => {
+            //   const propertyTypeFqn :FQN = getPropertyFqnFromEdm(edm, id);
+            //   newEnrollmentStatus = newEnrollmentStatus.set(propertyTypeFqn, enrollmentValue);
+            // });
+            // newEnrollmentStatus = newEnrollmentStatus.set(ENTITY_KEY_ID, enrollmentStatusEKID);
+
+            return state
+              .set(WORKSITE_PLANS, [])
+              .set(WORKSITES_BY_WORKSITE_PLAN, {})
+              .setIn([ACTIONS, ADD_WORKSITE_PLAN, REQUEST_STATE], RequestStates.SUCCESS);
+          }
+
+          return state;
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, ADD_WORKSITE_PLAN, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, ADD_WORKSITE_PLAN, action.id]),
       });
     }
 

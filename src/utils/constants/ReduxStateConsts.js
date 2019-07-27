@@ -58,6 +58,7 @@ export const PEOPLE = {
 export const PERSON = {
   ACTIONS: 'actions',
   ADD_NEW_DIVERSION_PLAN_STATUS: 'addNewDiversionPlanStatus',
+  ADD_WORKSITE_PLAN: 'addWorksitePlan',
   ADDRESS: 'address',
   CASE_NUMBER: 'caseNumber',
   DIVERSION_PLAN: 'diversionPlan',

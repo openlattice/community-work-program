@@ -22,6 +22,7 @@ import Logger from '../../utils/Logger';
 import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../utils/Errors';
 import {
   ADD_NEW_DIVERSION_PLAN_STATUS,
+  ADD_WORKSITE_PLAN,
   GET_ALL_PARTICIPANT_INFO,
   GET_CASE_INFO,
   GET_CONTACT_INFO,
@@ -34,6 +35,7 @@ import {
   GET_WORKSITE_BY_WORKSITE_PLAN,
   GET_WORKSITE_PLANS,
   addNewDiversionPlanStatus,
+  addWorksitePlan,
   getAllParticipantInfo,
   getCaseInfo,
   getContactInfo,
@@ -48,6 +50,8 @@ import {
 } from './ParticipantActions';
 import { submitDataGraph } from '../../core/sagas/data/DataActions';
 import { submitDataGraphWorker } from '../../core/sagas/data/DataSagas';
+import { getWorksites } from '../worksites/WorksitesActions';
+import { getWorksitesWorker } from '../worksites/WorksitesSagas';
 import {
   getEntityKeyId,
   getEntityProperties,
@@ -144,6 +148,49 @@ function* addNewDiversionPlanStatusWorker(action :SequenceAction) :Generator<*, 
 function* addNewDiversionPlanStatusWatcher() :Generator<*, *, *> {
 
   yield takeEvery(ADD_NEW_DIVERSION_PLAN_STATUS, addNewDiversionPlanStatusWorker);
+}
+
+/*
+ *
+ * WorksitesActions.addWorksitePlan()
+ *
+ */
+
+function* addWorksitePlanWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+  const workerResponse = {};
+  let response :Object = {};
+
+  try {
+    yield put(addWorksitePlan.request(id, value));
+
+    response = yield call(submitDataGraphWorker, submitDataGraph(value));
+    if (response.error) {
+      throw response.error;
+    }
+    const { data } :Object = response;
+    const { entityKeyIds } :Object = data;
+
+    const edm = yield select(getEdmFromState);
+    const worksitePlanESID = Object.keys(entityKeyIds)[0];
+    const worksiteEKID = Object.values(entityKeyIds)[0];
+
+    yield put(addWorksitePlan.success(id, { edm, worksiteEKID, worksitePlanESID }));
+  }
+  catch (error) {
+    workerResponse.error = error;
+    LOG.error('caught exception in addWorksitePlanWorker()', error);
+    yield put(addWorksitePlan.failure(id, error));
+  }
+  finally {
+    yield put(addWorksitePlan.finally(id));
+  }
+}
+
+function* addWorksitePlanWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(ADD_WORKSITE_PLAN, addWorksitePlanWorker);
 }
 
 /*
@@ -430,8 +477,8 @@ function* getWorksitePlansWorker(action :SequenceAction) :Generator<*, *, *> {
       throw response.error;
     }
 
-    if (response.data[diversionPlanESID]) {
-      worksitePlans = fromJS(response.data[diversionPlanESID])
+    if (response.data[diversionPlanEKID]) {
+      worksitePlans = fromJS(response.data[diversionPlanEKID])
         .map((worksitePlan :Map) => getNeighborDetails(worksitePlan));
 
       yield call(getWorksiteByWorksitePlanWorker, getWorksiteByWorksitePlan({ worksitePlans }));
@@ -851,6 +898,7 @@ function* getAllParticipantInfoWorker(action :SequenceAction) :Generator<*, *, *
       call(getParticipantWorker, getParticipant({ personEKID })),
       call(getRequiredHoursWorker, getRequiredHours({ personEKID })),
       call(getSentenceTermWorker, getSentenceTerm({ personEKID })),
+      call(getWorksitesWorker, getWorksites()),
     ]);
     const responseError = workerResponses.reduce(
       (error, workerResponse) => (error ? error : workerResponse.error),
@@ -878,6 +926,8 @@ function* getAllParticipantInfoWatcher() :Generator<*, *, *> {
 export {
   addNewDiversionPlanStatusWatcher,
   addNewDiversionPlanStatusWorker,
+  addWorksitePlanWatcher,
+  addWorksitePlanWorker,
   getAllParticipantInfoWatcher,
   getAllParticipantInfoWorker,
   getCaseInfoWatcher,

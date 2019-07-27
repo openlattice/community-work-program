@@ -4,6 +4,9 @@ import { newRequestSequence } from 'redux-reqseq';
 const ADD_NEW_DIVERSION_PLAN_STATUS :'ADD_NEW_DIVERSION_PLAN_STATUS' = 'ADD_NEW_DIVERSION_PLAN_STATUS';
 const addNewDiversionPlanStatus = newRequestSequence(ADD_NEW_DIVERSION_PLAN_STATUS);
 
+const ADD_WORKSITE_PLAN :'ADD_WORKSITE_PLAN' = 'ADD_WORKSITE_PLAN';
+const addWorksitePlan = newRequestSequence(ADD_WORKSITE_PLAN);
+
 const GET_ALL_PARTICIPANT_INFO :'GET_ALL_PARTICIPANT_INFO' = 'GET_ALL_PARTICIPANT_INFO';
 const getAllParticipantInfo = newRequestSequence(GET_ALL_PARTICIPANT_INFO);
 
@@ -40,6 +43,7 @@ const getWorksitePlans = newRequestSequence(GET_WORKSITE_PLANS);
 
 export {
   ADD_NEW_DIVERSION_PLAN_STATUS,
+  ADD_WORKSITE_PLAN,
   GET_ALL_PARTICIPANT_INFO,
   GET_CASE_INFO,
   GET_CONTACT_INFO,
@@ -52,6 +56,7 @@ export {
   GET_WORKSITE_BY_WORKSITE_PLAN,
   GET_WORKSITE_PLANS,
   addNewDiversionPlanStatus,
+  addWorksitePlan,
   getAllParticipantInfo,
   getCaseInfo,
   getContactInfo,
