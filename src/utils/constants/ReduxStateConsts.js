@@ -94,10 +94,12 @@ export const WORKSITES = {
   ERRORS: 'errors',
   GET_ORGANIZATIONS: 'getOrganizations',
   GET_WORKSITES: 'getWorksites',
+  GET_WORKSITES_BY_ORG: 'getWorksitesByOrg',
   GET_WORKSITE_PLANS: 'getWorksitePlans',
   REQUEST_STATE: 'requestState',
   ORGANIZATION_STATUSES: 'organizationStatuses',
   ORGANIZATIONS_LIST: 'organizationsList',
   WORKSITES_BY_ORG: 'worksitesByOrg',
   WORKSITES_INFO: 'worksitesInfo',
+  WORKSITES_LIST: 'worksitesList',
 };

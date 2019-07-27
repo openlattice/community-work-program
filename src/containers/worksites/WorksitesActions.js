@@ -17,6 +17,9 @@ const getOrganization :RequestSequence = newRequestSequence(GET_ORGANIZATION);
 const GET_ORGANIZATIONS :'GET_ORGANIZATIONS' = 'GET_ORGANIZATIONS';
 const getOrganizations :RequestSequence = newRequestSequence(GET_ORGANIZATIONS);
 
+const GET_WORKSITES :'GET_WORKSITES' = 'GET_WORKSITES';
+const getWorksites :RequestSequence = newRequestSequence(GET_WORKSITES);
+
 const GET_WORKSITES_BY_ORG :'GET_WORKSITES_BY_ORG' = 'GET_WORKSITES_BY_ORG';
 const getWorksitesByOrg :RequestSequence = newRequestSequence(GET_WORKSITES_BY_ORG);
 
@@ -28,12 +31,14 @@ export {
   ADD_WORKSITE,
   GET_ORGANIZATION,
   GET_ORGANIZATIONS,
+  GET_WORKSITES,
   GET_WORKSITES_BY_ORG,
   GET_WORKSITE_PLANS,
   addOrganization,
   addWorksite,
   getOrganization,
   getOrganizations,
+  getWorksites,
   getWorksitePlans,
   getWorksitesByOrg,
 };

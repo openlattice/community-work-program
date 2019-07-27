@@ -32,11 +32,13 @@ import {
   ADD_ORGANIZATION,
   ADD_WORKSITE,
   GET_ORGANIZATIONS,
+  GET_WORKSITES,
   GET_WORKSITES_BY_ORG,
   GET_WORKSITE_PLANS,
   addOrganization,
   addWorksite,
   getOrganizations,
+  getWorksites,
   getWorksitePlans,
   getWorksitesByOrg,
 } from './WorksitesActions';
@@ -370,6 +372,48 @@ function* getOrganizationsWatcher() :Generator<*, *, *> {
   yield takeEvery(GET_ORGANIZATIONS, getOrganizationsWorker);
 }
 
+/*
+ *
+ * WorksitesActions.getWorksites()
+ *
+ */
+
+function* getWorksitesWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id } = action;
+  const workerResponse = {};
+  let response :Object = {};
+  let worksites :List = List();
+
+  try {
+    yield put(getWorksites.request(id));
+    const app = yield select(getAppFromState);
+    const worksiteESID = getEntitySetIdFromApp(app, WORKSITE);
+
+    response = yield call(getEntitySetDataWorker, getEntitySetData({ entitySetId: worksiteESID }));
+    if (response.error) {
+      throw response.error;
+    }
+    worksites = fromJS(response.data);
+
+    yield put(getWorksites.success(id, worksites));
+  }
+  catch (error) {
+    workerResponse.error = error;
+    LOG.error('caught exception in getWorksitesWorker()', error);
+    yield put(getWorksites.failure(id, error));
+  }
+  finally {
+    yield put(getWorksites.finally(id));
+  }
+  return workerResponse;
+}
+
+function* getWorksitesWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(GET_WORKSITES, getWorksitesWorker);
+}
+
 export {
   addOrganizationWatcher,
   addOrganizationWorker,
@@ -377,6 +421,8 @@ export {
   addWorksiteWorker,
   getOrganizationsWatcher,
   getOrganizationsWorker,
+  getWorksitesWatcher,
+  getWorksitesWorker,
   getWorksitePlansWatcher,
   getWorksitePlansWorker,
   getWorksitesByOrgWatcher,
