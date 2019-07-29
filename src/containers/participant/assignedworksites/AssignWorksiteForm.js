@@ -29,9 +29,11 @@ import {
   DATETIME,
   DATETIME_COMPLETED,
   DATETIME_START,
+  ENROLLMENT_STATUS_FQNS,
   WORKSITE_FQNS,
   WORKSITE_PLAN_FQNS,
 } from '../../../core/edm/constants/FullyQualifiedNames';
+import { WORKSITE_ENROLLMENT_STATUSES } from '../../../core/edm/constants/DataModelConsts';
 import { STATE } from '../../../utils/constants/ReduxStateConsts';
 import {
   ButtonsRow,
@@ -51,13 +53,18 @@ const {
   ASSIGNED_TO,
   BASED_ON,
   DIVERSION_PLAN,
+  ENROLLMENT_STATUS,
+  HAS,
   INCLUDES,
   PEOPLE,
+  RELATED_TO,
   WORKSITE,
   WORKSITE_PLAN,
 } = APP_TYPE_FQNS;
+const { EFFECTIVE_DATE, STATUS } = ENROLLMENT_STATUS_FQNS;
 const { NAME } = WORKSITE_FQNS;
 const { HOURS_WORKED, REQUIRED_HOURS } = WORKSITE_PLAN_FQNS;
+const { PLANNED } = WORKSITE_ENROLLMENT_STATUSES;
 
 const WarningLabel = styled(Label)`
   color: ${OL.RED01};
@@ -91,6 +98,7 @@ class AssignWorksiteForm extends Component<Props, State> {
       newWorksitePlanData: fromJS({
         [getPageSectionKey(1, 1)]: {
           [getEntityAddressKey(0, WORKSITE_PLAN, HOURS_WORKED)]: 0,
+          [getEntityAddressKey(0, ENROLLMENT_STATUS, STATUS)]: PLANNED,
         },
       }),
       worksiteEKID: '',
@@ -125,8 +133,13 @@ class AssignWorksiteForm extends Component<Props, State> {
     requiredHours = parseInt(requiredHours, 10);
     newWorksitePlanData = newWorksitePlanData.setIn([getPageSectionKey(1, 1), requiredHoursKey], requiredHours);
 
-    const associations = [];
     const nowAsIso = DateTime.local().toISO();
+
+    // set datetime on enrollment status:
+    const enrollmentStatusKey = getEntityAddressKey(0, ENROLLMENT_STATUS, EFFECTIVE_DATE);
+    newWorksitePlanData = newWorksitePlanData.setIn([getPageSectionKey(1, 1), enrollmentStatusKey], nowAsIso);
+
+    const associations = [];
 
     associations.push([ASSIGNED_TO, personEKID, PEOPLE, 0, WORKSITE_PLAN, {
       [DATETIME]: [nowAsIso]
@@ -140,13 +153,22 @@ class AssignWorksiteForm extends Component<Props, State> {
     associations.push([INCLUDES, diversionPlanEKID, DIVERSION_PLAN, 0, WORKSITE_PLAN, {
       [DATETIME_COMPLETED]: [nowAsIso]
     }]);
+    associations.push([RELATED_TO, worksiteEKID, WORKSITE, 0, ENROLLMENT_STATUS, {
+      [DATETIME_COMPLETED]: [nowAsIso]
+    }]);
+    associations.push([HAS, personEKID, PEOPLE, 0, ENROLLMENT_STATUS, {
+      [DATETIME_COMPLETED]: [nowAsIso]
+    }]);
 
     const entitySetIds :Object = {
       [ASSIGNED_TO]: getEntitySetIdFromApp(app, ASSIGNED_TO),
       [BASED_ON]: getEntitySetIdFromApp(app, BASED_ON),
       [DIVERSION_PLAN]: getEntitySetIdFromApp(app, DIVERSION_PLAN),
+      [ENROLLMENT_STATUS]: getEntitySetIdFromApp(app, ENROLLMENT_STATUS),
+      [HAS]: getEntitySetIdFromApp(app, HAS),
       [INCLUDES]: getEntitySetIdFromApp(app, INCLUDES),
       [PEOPLE]: getEntitySetIdFromApp(app, PEOPLE),
+      [RELATED_TO]: getEntitySetIdFromApp(app, RELATED_TO),
       [WORKSITE]: getEntitySetIdFromApp(app, WORKSITE),
       [WORKSITE_PLAN]: getEntitySetIdFromApp(app, WORKSITE_PLAN),
     };
@@ -154,8 +176,10 @@ class AssignWorksiteForm extends Component<Props, State> {
       [DATETIME]: getPropertyTypeIdFromEdm(edm, DATETIME),
       [DATETIME_COMPLETED]: getPropertyTypeIdFromEdm(edm, DATETIME_COMPLETED),
       [DATETIME_START]: getPropertyTypeIdFromEdm(edm, DATETIME_START),
+      [EFFECTIVE_DATE]: getPropertyTypeIdFromEdm(edm, EFFECTIVE_DATE),
       [HOURS_WORKED]: getPropertyTypeIdFromEdm(edm, HOURS_WORKED),
       [REQUIRED_HOURS]: getPropertyTypeIdFromEdm(edm, REQUIRED_HOURS),
+      [STATUS]: getPropertyTypeIdFromEdm(edm, STATUS),
     };
 
     const entityData :{} = processEntityData(newWorksitePlanData, entitySetIds, propertyTypeIds);
