@@ -1,5 +1,6 @@
 // @flow
 import React, { Component } from 'react';
+import styled from 'styled-components';
 import { fromJS, List, Map } from 'immutable';
 import { DateTime } from 'luxon';
 import { DataProcessingUtils } from 'lattice-fabricate';
@@ -9,6 +10,8 @@ import {
   Label,
   Select,
 } from 'lattice-ui-kit';
+import { faExclamationCircle } from '@fortawesome/pro-regular-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import type { RequestSequence } from 'redux-reqseq';
@@ -36,6 +39,7 @@ import {
   FormWrapper,
   RowContent
 } from '../../../components/Layout';
+import { OL } from '../../../core/style/Colors';
 
 const {
   getEntityAddressKey,
@@ -54,6 +58,12 @@ const {
 } = APP_TYPE_FQNS;
 const { NAME } = WORKSITE_FQNS;
 const { HOURS_WORKED, REQUIRED_HOURS } = WORKSITE_PLAN_FQNS;
+
+const WarningLabel = styled(Label)`
+  color: ${OL.RED01};
+  font-weight: 600;
+  margin: 0 10px;
+`;
 
 type Props = {
   actions:{
@@ -174,33 +184,54 @@ class AssignWorksiteForm extends Component<Props, State> {
       return { label: name, value: ekid };
     }).toJS();
 
+    const noWorksitesMessage = 'No work sites exist in the system. Please add one on the Worksites page first.';
+
     return (
       <FormWrapper>
-        <FormRow>
-          <RowContent>
-            <Label>Work site name</Label>
-            <Select
-                name={getEntityAddressKey(0, WORKSITE, NAME)}
-                onChange={this.handleSelectChange}
-                options={worksitesNames} />
-          </RowContent>
-          <RowContent>
-            <Label>Required hours at work site</Label>
-            <Input
-                name={getEntityAddressKey(0, WORKSITE_PLAN, REQUIRED_HOURS)}
-                onChange={this.handleInputChange}
-                type="text" />
-          </RowContent>
-        </FormRow>
-        <ButtonsRow>
-          <Button onClick={onDiscard}>Discard</Button>
-          <Button
-              isLoading={isLoading}
-              mode="primary"
-              onClick={this.handleOnSubmit}>
-            Submit
-          </Button>
-        </ButtonsRow>
+        {
+          worksites.count() > 0
+            ? (
+              <FormRow>
+                <RowContent>
+                  <Label>Work site name</Label>
+                  <Select
+                      name={getEntityAddressKey(0, WORKSITE, NAME)}
+                      onChange={this.handleSelectChange}
+                      options={worksitesNames} />
+                </RowContent>
+                <RowContent>
+                  <Label>Required hours at work site</Label>
+                  <Input
+                      name={getEntityAddressKey(0, WORKSITE_PLAN, REQUIRED_HOURS)}
+                      onChange={this.handleInputChange}
+                      type="text" />
+                </RowContent>
+              </FormRow>
+            )
+            : (
+              <FormRow>
+                <RowContent>
+                  <FontAwesomeIcon icon={faExclamationCircle} color={OL.RED01} />
+                  <WarningLabel>{ noWorksitesMessage }</WarningLabel>
+                </RowContent>
+              </FormRow>
+            )
+        }
+        {
+          worksites.count() > 0
+            ? (
+              <ButtonsRow>
+                <Button onClick={onDiscard}>Discard</Button>
+                <Button
+                    isLoading={isLoading}
+                    mode="primary"
+                    onClick={this.handleOnSubmit}>
+                  Submit
+                </Button>
+              </ButtonsRow>
+            )
+            : null
+        }
       </FormWrapper>
     );
   }
