@@ -142,8 +142,8 @@ class ParticipantsSearchContainer extends Component<Props, State> {
     const peopleList :List = isDefined(peopleToFilter) ? peopleToFilter : participants;
     const { filter } = clickedProperty;
     let property :string = clickedProperty.label.toUpperCase();
-    property = property.split(' ').length > 1 ? property.split(' ').join('_') : property;
-    property = property.includes('-') ? property.split('-').join('') : property;
+    property = property.split(' ').join('_');
+    property = property.split('-').join('');
     let filteredPeople :List = List();
 
     if (property === ALL) {
