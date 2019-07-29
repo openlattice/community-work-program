@@ -17,8 +17,8 @@ import { getEntityKeyId, getEntitySetIdFromApp, getPropertyTypeIdFromEdm } from 
 import { STATUS_FILTER_OPTIONS } from '../participants/ParticipantsConstants';
 import {
   APP_TYPE_FQNS,
+  DATETIME_COMPLETED,
   ENROLLMENT_STATUS_FQNS,
-  RELATED_TO_FQNS,
 } from '../../core/edm/constants/FullyQualifiedNames';
 import { PERSON, STATE } from '../../utils/constants/ReduxStateConsts';
 import {
@@ -40,7 +40,6 @@ const {
   RELATED_TO,
 } = APP_TYPE_FQNS;
 const { EFFECTIVE_DATE, STATUS } = ENROLLMENT_STATUS_FQNS;
-const { DATETIME_COMPLETED } = RELATED_TO_FQNS;
 
 const ENROLLMENT_STATUS_OPTIONS :Object[] = STATUS_FILTER_OPTIONS
   .slice(1)

@@ -50,11 +50,11 @@ import {
 import { STATE } from '../../utils/constants/ReduxStateConsts';
 import {
   APP_TYPE_FQNS,
+  DATETIME_START,
   DIVERSION_PLAN_FQNS,
   ENROLLMENT_STATUS_FQNS,
   INFRACTION_FQNS,
   SENTENCE_FQNS,
-  SENTENCE_TERM_FQNS,
   WORKSITE_PLAN_FQNS,
 } from '../../core/edm/constants/FullyQualifiedNames';
 import { isDefined } from '../../utils/LangUtils';
@@ -79,7 +79,6 @@ const { SENTENCE_CONDITIONS } = SENTENCE_FQNS;
 const { TYPE } = INFRACTION_FQNS;
 const { COMPLETED, REQUIRED_HOURS } = DIVERSION_PLAN_FQNS;
 const { HOURS_WORKED } = WORKSITE_PLAN_FQNS;
-const { DATETIME_START } = SENTENCE_TERM_FQNS;
 const { EFFECTIVE_DATE } = ENROLLMENT_STATUS_FQNS;
 
 const getAppFromState = state => state.get(STATE.APP, Map());

@@ -19,11 +19,11 @@ import { addParticipant } from './ParticipantsActions';
 import { getEntitySetIdFromApp, getPropertyTypeIdFromEdm } from '../../utils/DataUtils';
 import {
   APP_TYPE_FQNS,
+  DATETIME_COMPLETED,
+  DATETIME_START,
   DIVERSION_PLAN_FQNS,
   ENROLLMENT_STATUS_FQNS,
   SENTENCE_FQNS,
-  SENTENCE_TERM_FQNS,
-  SENTENCED_WITH_FQNS,
   PEOPLE_FQNS
 } from '../../core/edm/constants/FullyQualifiedNames';
 import { STATE } from '../../utils/constants/ReduxStateConsts';
@@ -60,8 +60,6 @@ const {
 const { EFFECTIVE_DATE, STATUS } = ENROLLMENT_STATUS_FQNS;
 const { DOB, FIRST_NAME, LAST_NAME } = PEOPLE_FQNS;
 const { SENTENCE_CONDITIONS } = SENTENCE_FQNS;
-const { DATETIME_START } = SENTENCE_TERM_FQNS;
-const { DATETIME_COMPLETED } = SENTENCED_WITH_FQNS;
 
 type Props = {
   actions:{

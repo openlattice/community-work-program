@@ -30,9 +30,9 @@ import { APP, PEOPLE, STATE } from '../../utils/constants/ReduxStateConsts';
 import { ENROLLMENT_STATUSES, INFRACTIONS_CONSTS } from '../../core/edm/constants/DataModelConsts';
 import {
   APP_TYPE_FQNS,
+  DATETIME_START,
   ENROLLMENT_STATUS_FQNS,
   PEOPLE_FQNS,
-  SENTENCE_TERM_FQNS,
 } from '../../core/edm/constants/FullyQualifiedNames';
 
 /*
@@ -48,7 +48,6 @@ const {
 const { VIOLATION, WARNING } = INFRACTIONS_CONSTS;
 const { EFFECTIVE_DATE, STATUS } = ENROLLMENT_STATUS_FQNS;
 const { FIRST_NAME, LAST_NAME } = PEOPLE_FQNS;
-const { DATETIME_START } = SENTENCE_TERM_FQNS;
 
 const dropdowns :List = List().withMutations((list :List) => {
   list.set(0, statusFilterDropdown);
