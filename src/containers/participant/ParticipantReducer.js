@@ -19,7 +19,7 @@ import {
   getWorksiteByWorksitePlan,
   getWorksitePlans,
 } from './ParticipantActions';
-import { getPropertyFqnFromEdm } from '../../utils/DataUtils';
+import { getEntityKeyId, getPropertyFqnFromEdm } from '../../utils/DataUtils';
 import { PERSON } from '../../utils/constants/ReduxStateConsts';
 import { INFRACTIONS_CONSTS } from '../../core/edm/constants/DataModelConsts';
 import { ENTITY_KEY_ID } from '../../core/edm/constants/FullyQualifiedNames';
@@ -179,24 +179,37 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
 
           if (storedSeqAction) {
 
-            // const { value } :Object = seqAction;
-            // const { edm, enrollmentStatusEKID, enrollmentStatusESID } = value;
-            //
-            // const requestValue :Object = storedSeqAction.value;
-            // const { entityData } :Object = requestValue;
-            // const storedEnrollmentEntity :Map = fromJS(entityData[enrollmentStatusESID][0]);
-            //
-            //
-            // let newEnrollmentStatus :Map = Map();
-            // storedEnrollmentEntity.forEach((enrollmentValue, id) => {
-            //   const propertyTypeFqn :FQN = getPropertyFqnFromEdm(edm, id);
-            //   newEnrollmentStatus = newEnrollmentStatus.set(propertyTypeFqn, enrollmentValue);
-            // });
-            // newEnrollmentStatus = newEnrollmentStatus.set(ENTITY_KEY_ID, enrollmentStatusEKID);
+            const successValue :Object = seqAction.value;
+            const {
+              basedOnESID,
+              edm,
+              worksitePlanEKID,
+              worksitePlanESID,
+              worksitesList
+            } = successValue;
+
+            const requestValue :Object = storedSeqAction.value;
+            const { associationEntityData, entityData } :Object = requestValue;
+            const storedWorksitePlanEntity :Map = fromJS(entityData[worksitePlanESID][0]);
+            const worksiteEKID = associationEntityData[basedOnESID][0].dstEntityKeyId;
+
+            let newWorksitePlan :Map = Map();
+            storedWorksitePlanEntity.forEach((enrollmentValue, id) => {
+              const propertyTypeFqn :FQN = getPropertyFqnFromEdm(edm, id);
+              newWorksitePlan = newWorksitePlan.set(propertyTypeFqn, enrollmentValue);
+            });
+            newWorksitePlan = newWorksitePlan.set(ENTITY_KEY_ID, worksitePlanEKID);
+
+            const worksitePlans = state.get(WORKSITE_PLANS)
+              .push(newWorksitePlan);
+
+            const worksite :Map = worksitesList.find((site :Map) => getEntityKeyId(site) === worksiteEKID);
+            const worksitesByWorksitePlan = state.get(WORKSITES_BY_WORKSITE_PLAN)
+              .set(worksitePlanEKID[0], worksite);
 
             return state
-              .set(WORKSITE_PLANS, [])
-              .set(WORKSITES_BY_WORKSITE_PLAN, {})
+              .set(WORKSITE_PLANS, worksitePlans)
+              .set(WORKSITES_BY_WORKSITE_PLAN, worksitesByWorksitePlan)
               .setIn([ACTIONS, ADD_WORKSITE_PLAN, REQUEST_STATE], RequestStates.SUCCESS);
           }
 

@@ -59,7 +59,7 @@ import {
   getNeighborDetails,
   sortEntitiesByDateProperty,
 } from '../../utils/DataUtils';
-import { STATE } from '../../utils/constants/ReduxStateConsts';
+import { STATE, WORKSITES } from '../../utils/constants/ReduxStateConsts';
 import {
   APP_TYPE_FQNS,
   CASE_FQNS,
@@ -77,6 +77,7 @@ const { getEntityDataWorker } = DataApiSagas;
 const { searchEntityNeighborsWithFilter } = SearchApiActions;
 const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
 const {
+  BASED_ON,
   CONTACT_INFORMATION,
   COURT_PRETRIAL_CASES,
   DIVERSION_PLAN,
@@ -106,6 +107,7 @@ const LOG = new Logger('ParticipantSagas');
 
 const { CASE_NUMBER_TEXT } = CASE_FQNS;
 const getEdmFromState = state => state.get(STATE.EDM, Map());
+const getWorksitesListFromState = state => state.getIn([STATE.WORKSITES, WORKSITES.WORKSITES_LIST], List());
 
 /*
  *
@@ -172,11 +174,20 @@ function* addWorksitePlanWorker(action :SequenceAction) :Generator<*, *, *> {
     const { data } :Object = response;
     const { entityKeyIds } :Object = data;
 
+    const app = yield select(getAppFromState);
     const edm = yield select(getEdmFromState);
     const worksitePlanESID = Object.keys(entityKeyIds)[0];
-    const worksiteEKID = Object.values(entityKeyIds)[0];
+    const worksitePlanEKID = Object.values(entityKeyIds)[0];
+    const basedOnESID = getEntitySetIdFromApp(app, BASED_ON);
+    const worksitesList = yield select(getWorksitesListFromState);
 
-    yield put(addWorksitePlan.success(id, { edm, worksiteEKID, worksitePlanESID }));
+    yield put(addWorksitePlan.success(id, {
+      basedOnESID,
+      edm,
+      worksitePlanEKID,
+      worksitePlanESID,
+      worksitesList
+    }));
   }
   catch (error) {
     workerResponse.error = error;
