@@ -1,6 +1,7 @@
 // @flow
 import React, { Component } from 'react';
-import { Map } from 'immutable';
+import { fromJS, Map } from 'immutable';
+import { DataProcessingUtils } from 'lattice-fabricate';
 import {
   Button,
   CardSegment,
@@ -13,11 +14,9 @@ import { bindActionCreators } from 'redux';
 import type { RequestSequence } from 'redux-reqseq';
 
 import { addOrganization } from '../worksites/WorksitesActions';
-import { getEntitySetIdFromApp } from '../../utils/DataUtils';
-import { processEntityData } from '../../utils/DataProcessingUtils';
+import { getEntitySetIdFromApp, getPropertyTypeIdFromEdm } from '../../utils/DataUtils';
 import { APP_TYPE_FQNS, ORGANIZATION_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { STATE } from '../../utils/constants/ReduxStateConsts';
-import { TYPE_IDS_BY_FQNS } from '../../core/edm/constants/DataModelConsts';
 import {
   ButtonsRow,
   ButtonsWrapper,
@@ -25,6 +24,11 @@ import {
   RowContent,
 } from '../../components/Layout';
 
+const {
+  getEntityAddressKey,
+  getPageSectionKey,
+  processEntityData
+} = DataProcessingUtils;
 const { ORGANIZATION } = APP_TYPE_FQNS;
 const { DESCRIPTION, ORGANIZATION_NAME } = ORGANIZATION_FQNS;
 
@@ -33,7 +37,7 @@ type Props = {
     addOrganization :RequestSequence;
   };
   app :Map;
-  edmPropertyTypes :Map;
+  edm :Map;
   isLoading :boolean;
   onDiscard :() => void;
 };
@@ -47,31 +51,35 @@ class AddOrganizationForm extends Component<Props, State> {
   constructor(props :Props) {
     super(props);
     this.state = {
-      newOrganizationData: Map(),
+      newOrganizationData: fromJS({
+        [getPageSectionKey(1, 1)]: {
+        }
+      }),
     };
   }
 
   handleInputChange = (e :SyntheticEvent<HTMLInputElement>) => {
     const { newOrganizationData } = this.state;
     const { name, value } = e.currentTarget;
-    this.setState({ newOrganizationData: newOrganizationData.set(name, value) });
+    this.setState({ newOrganizationData: newOrganizationData.setIn([getPageSectionKey(1, 1), name], value) });
   }
 
   handleOnSubmit = () => {
     const {
       actions,
       app,
-      edmPropertyTypes,
+      edm,
     } = this.props;
     const { newOrganizationData } = this.state;
 
-    const organizationESID :UUID = getEntitySetIdFromApp(app, ORGANIZATION);
-
-    const entityDataToProcess :Map = Map({
-      entityData: newOrganizationData,
-      entitySetId: organizationESID,
-    });
-    const entityData :{} = processEntityData(entityDataToProcess, edmPropertyTypes);
+    const entitySetIds :{} = {
+      [ORGANIZATION]: getEntitySetIdFromApp(app, ORGANIZATION),
+    };
+    const propertyTypeIds :{} = {
+      [DESCRIPTION]: getPropertyTypeIdFromEdm(edm, DESCRIPTION),
+      [ORGANIZATION_NAME]: getPropertyTypeIdFromEdm(edm, ORGANIZATION_NAME),
+    };
+    const entityData :{} = processEntityData(newOrganizationData, entitySetIds, propertyTypeIds);
 
     actions.addOrganization({ associationEntityData: {}, entityData });
   }
@@ -84,7 +92,7 @@ class AddOrganizationForm extends Component<Props, State> {
           <RowContent>
             <Label>Organization name</Label>
             <Input
-                name={ORGANIZATION_NAME}
+                name={getEntityAddressKey(0, ORGANIZATION, ORGANIZATION_NAME)}
                 onChange={this.handleInputChange}
                 type="text" />
           </RowContent>
@@ -93,7 +101,7 @@ class AddOrganizationForm extends Component<Props, State> {
           <RowContent>
             <Label>Description of organization</Label>
             <TextArea
-                name={DESCRIPTION}
+                name={getEntityAddressKey(0, ORGANIZATION, DESCRIPTION)}
                 onChange={this.handleInputChange} />
           </RowContent>
         </FormRow>
@@ -121,7 +129,7 @@ class AddOrganizationForm extends Component<Props, State> {
 
 const mapStateToProps = (state :Map) => ({
   app: state.get(STATE.APP),
-  edmPropertyTypes: state.getIn([STATE.EDM, TYPE_IDS_BY_FQNS]),
+  edm: state.get(STATE.EDM),
 });
 
 const mapDispatchToProps = dispatch => ({
