@@ -125,13 +125,9 @@ type State = {
 
 class ParticipantProfile extends Component<Props, State> {
 
-  constructor(props :Props) {
-    super(props);
-
-    this.state = {
-      showEnrollmentModal: false,
-    };
-  }
+  state = {
+    showEnrollmentModal: false,
+  };
 
   componentDidMount() {
     const { app } = this.props;
