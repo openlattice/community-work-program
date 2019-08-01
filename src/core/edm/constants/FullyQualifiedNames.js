@@ -58,6 +58,7 @@ export const APP_TYPE_FQNS = {
 export const DATETIME = new FullyQualifiedName('general.datetime');
 export const DATETIME_COMPLETED = new FullyQualifiedName('date.completeddatetime');
 export const DATETIME_START = new FullyQualifiedName('ol.datetimestart');
+
 /* Property Type FQNs by Entity Type */
 
 /* publicsafety.pretrialstatuscaseprocessings */
@@ -138,11 +139,6 @@ export const PEOPLE_FQNS = {
 export const SENTENCE_FQNS = {
   CONCURRENT_CONSECUTIVE: new FullyQualifiedName('justice.concurrentconsecutive'),
   SENTENCE_CONDITIONS: new FullyQualifiedName('justice.sentenceconditions'),
-};
-
-/* ol.sentenceterm */
-export const SENTENCE_TERM_FQNS = {
-  DATETIME_START: new FullyQualifiedName('ol.datetimestart'),
 };
 
 /* ol.program */

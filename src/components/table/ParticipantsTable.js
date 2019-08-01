@@ -18,16 +18,15 @@ import {
   HeaderElement,
 } from './TableStyledComponents';
 import {
+  DATETIME_START,
   ENROLLMENT_STATUS_FQNS,
   ENTITY_KEY_ID,
-  SENTENCE_TERM_FQNS
 } from '../../core/edm/constants/FullyQualifiedNames';
 import { ENROLLMENT_STATUSES, HOURS_CONSTS } from '../../core/edm/constants/DataModelConsts';
 import { SORTABLE_PARTICIPANT_COLUMNS } from '../../containers/participants/ParticipantsConstants';
 
 const { EFFECTIVE_DATE, STATUS } = ENROLLMENT_STATUS_FQNS;
 const { REQUIRED, WORKED } = HOURS_CONSTS;
-const { DATETIME_START } = SENTENCE_TERM_FQNS;
 
 type HeaderProps = {
   columnHeaders :string[];

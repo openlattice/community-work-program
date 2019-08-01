@@ -64,11 +64,11 @@ import {
   APP_TYPE_FQNS,
   CASE_FQNS,
   CONTACT_INFO_FQNS,
+  DATETIME_START,
   DIVERSION_PLAN_FQNS,
   ENROLLMENT_STATUS_FQNS,
   INFRACTION_FQNS,
   LOCATION_FQNS,
-  SENTENCE_TERM_FQNS,
 } from '../../core/edm/constants/FullyQualifiedNames';
 import { INFRACTIONS_CONSTS } from '../../core/edm/constants/DataModelConsts';
 
@@ -99,7 +99,6 @@ const { REQUIRED_HOURS } = DIVERSION_PLAN_FQNS;
 const { EFFECTIVE_DATE } = ENROLLMENT_STATUS_FQNS;
 const { TYPE } = INFRACTION_FQNS;
 const { UNPARSED_ADDRESS } = LOCATION_FQNS;
-const { DATETIME_START } = SENTENCE_TERM_FQNS;
 
 const getAppFromState = state => state.get(STATE.APP, Map());
 
