@@ -27,7 +27,6 @@ import {
 import {
   APP_TYPE_FQNS,
   DATETIME,
-  DATETIME_COMPLETED,
   DATETIME_START,
   ENROLLMENT_STATUS_FQNS,
   WORKSITE_FQNS,
@@ -147,18 +146,10 @@ class AssignWorksiteForm extends Component<Props, State> {
     associations.push([ASSIGNED_TO, personEKID, PEOPLE, worksiteEKID, WORKSITE, {
       [DATETIME]: [nowAsIso]
     }]);
-    associations.push([BASED_ON, 0, WORKSITE_PLAN, worksiteEKID, WORKSITE, {
-      [DATETIME_COMPLETED]: [nowAsIso]
-    }]);
-    associations.push([INCLUDES, diversionPlanEKID, DIVERSION_PLAN, 0, WORKSITE_PLAN, {
-      [DATETIME_COMPLETED]: [nowAsIso]
-    }]);
-    associations.push([RELATED_TO, worksiteEKID, WORKSITE, 0, ENROLLMENT_STATUS, {
-      [DATETIME_COMPLETED]: [nowAsIso]
-    }]);
-    associations.push([HAS, personEKID, PEOPLE, 0, ENROLLMENT_STATUS, {
-      [DATETIME_COMPLETED]: [nowAsIso]
-    }]);
+    associations.push([BASED_ON, 0, WORKSITE_PLAN, worksiteEKID, WORKSITE, {}]);
+    associations.push([INCLUDES, diversionPlanEKID, DIVERSION_PLAN, 0, WORKSITE_PLAN, {}]);
+    associations.push([RELATED_TO, worksiteEKID, WORKSITE, 0, ENROLLMENT_STATUS, {}]);
+    associations.push([HAS, personEKID, PEOPLE, 0, ENROLLMENT_STATUS, {}]);
 
     const entitySetIds :Object = {
       [ASSIGNED_TO]: getEntitySetIdFromApp(app, ASSIGNED_TO),
@@ -174,7 +165,6 @@ class AssignWorksiteForm extends Component<Props, State> {
     };
     const propertyTypeIds :Object = {
       [DATETIME]: getPropertyTypeIdFromEdm(edm, DATETIME),
-      [DATETIME_COMPLETED]: getPropertyTypeIdFromEdm(edm, DATETIME_COMPLETED),
       [DATETIME_START]: getPropertyTypeIdFromEdm(edm, DATETIME_START),
       [EFFECTIVE_DATE]: getPropertyTypeIdFromEdm(edm, EFFECTIVE_DATE),
       [HOURS_WORKED]: getPropertyTypeIdFromEdm(edm, HOURS_WORKED),
