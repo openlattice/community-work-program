@@ -16,6 +16,7 @@ import { RequestStates } from 'redux-reqseq';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
 import DigestedInfractionsContainer from './DigestedInfractionsContainer';
+import AddInfractionModal from './AddInfractionModal';
 
 import { getParticipantInfractions } from '../ParticipantActions';
 import { PERSON, STATE } from '../../../utils/constants/ReduxStateConsts';
@@ -48,18 +49,45 @@ type Props = {
   actions:{
     getParticipantInfractions :RequestSequence;
   };
+  currentStatus :string;
   getParticipantInfractionsState :RequestState;
+  personEKID :UUID;
   violations :List;
   warnings :List;
-}
+};
 
-class WarningsViolationsContainer extends Component<Props> {
+type State = {
+  infractionEventModalVisible :boolean;
+};
+
+class InfractionsContainer extends Component<Props, State> {
+
+  state = {
+    infractionEventModalVisible: false,
+  };
+
+  showAddInfractionEventModal = () => {
+    this.setState({
+      infractionEventModalVisible: true,
+    });
+  }
+
+  hideAddInfractionEventModal = () => {
+    this.setState({
+      infractionEventModalVisible: false,
+    });
+  }
 
   handleOnSelectChange = () => {
   }
 
   renderReports = () => {
-    const { getParticipantInfractionsState, violations, warnings } = this.props;
+    const {
+      getParticipantInfractionsState,
+      violations,
+      warnings
+    } = this.props;
+
     const infractions = violations.concat(warnings);
 
     if (getParticipantInfractionsState === RequestStates.PENDING) {
@@ -77,7 +105,7 @@ class WarningsViolationsContainer extends Component<Props> {
                 options={[]}
                 onChange={this.handleOnSelectChange}
                 placeholder="Select report..." />
-            <Button onClick={() => {}}>
+            <Button onClick={this.showAddInfractionEventModal}>
               Create report
             </Button>
           </ActionsWrapper>
@@ -98,9 +126,19 @@ class WarningsViolationsContainer extends Component<Props> {
   }
 
   render() {
+    const {
+      currentStatus,
+      personEKID,
+    } = this.props;
+    const { infractionEventModalVisible } = this.state;
     return (
       <InfractionsOuterWrapper>
         { this.renderReports() }
+        <AddInfractionModal
+            currentStatus={currentStatus}
+            isOpen={infractionEventModalVisible}
+            onClose={this.hideAddInfractionEventModal}
+            personEKID={personEKID} />
       </InfractionsOuterWrapper>
     );
   }
@@ -120,4 +158,4 @@ const mapDispatchToProps = dispatch => ({
 });
 
 // $FlowFixMe
-export default connect(mapStateToProps, mapDispatchToProps)(WarningsViolationsContainer);
+export default connect(mapStateToProps, mapDispatchToProps)(InfractionsContainer);
