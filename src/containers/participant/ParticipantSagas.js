@@ -35,6 +35,7 @@ import {
   GET_SENTENCE_TERM,
   GET_WORKSITE_BY_WORKSITE_PLAN,
   GET_WORKSITE_PLANS,
+  GET_WORK_APPOINTMENTS,
   addNewDiversionPlanStatus,
   addWorksitePlan,
   getAllParticipantInfo,
@@ -47,6 +48,7 @@ import {
   getParticipantInfractions,
   getRequiredHours,
   getSentenceTerm,
+  getWorkAppointments,
   getWorksiteByWorksitePlan,
   getWorksitePlans,
 } from './ParticipantActions';
@@ -79,6 +81,7 @@ const { getEntityDataWorker, getEntitySetDataWorker } = DataApiSagas;
 const { searchEntityNeighborsWithFilter } = SearchApiActions;
 const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
 const {
+  APPOINTMENT,
   BASED_ON,
   CONTACT_INFORMATION,
   COURT_PRETRIAL_CASES,
@@ -456,6 +459,64 @@ function* getWorksiteByWorksitePlanWatcher() :Generator<*, *, *> {
 
 /*
  *
+ * WorksitesActions.getWorkAppointments()
+ *
+ */
+function* getWorkAppointmentsWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+  const workerResponse = {};
+  let response :Object = {};
+  let workAppointmentsByWorksitePlan :Map = Map();
+
+  try {
+    yield put(getWorkAppointments.request(id));
+    const { worksitePlans } = value;
+    if (value === null || value === undefined) {
+      throw ERR_ACTION_VALUE_NOT_DEFINED;
+    }
+    const app = yield select(getAppFromState);
+    const worksitePlanESID :UUID = getEntitySetIdFromApp(app, WORKSITE_PLAN);
+    const appointmentESID :UUID = getEntitySetIdFromApp(app, APPOINTMENT);
+    const worksitePlanEKIDs :string[] = [];
+    worksitePlans.forEach((worksitePlan :Map) => {
+      worksitePlanEKIDs.push(getEntityKeyId(worksitePlan));
+    });
+
+    const searchFilter :Object = {
+      entityKeyIds: worksitePlanEKIDs,
+      destinationEntitySetIds: [],
+      sourceEntitySetIds: [appointmentESID],
+    };
+    response = yield call(
+      searchEntityNeighborsWithFilterWorker,
+      searchEntityNeighborsWithFilter({ entitySetId: worksitePlanESID, filter: searchFilter })
+    );
+    if (response.error) {
+      throw response.error;
+    }
+    if (Object.keys(response.data).length > 0) workAppointmentsByWorksitePlan = fromJS(response.data);
+
+    yield put(getWorkAppointments.success(id, workAppointmentsByWorksitePlan));
+  }
+  catch (error) {
+    workerResponse.error = error;
+    LOG.error('caught exception in getWorkAppointmentsWorker()', error);
+    yield put(getWorkAppointments.failure(id, error));
+  }
+  finally {
+    yield put(getWorkAppointments.finally(id));
+  }
+  return workerResponse;
+}
+
+function* getWorkAppointmentsWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(GET_WORK_APPOINTMENTS, getWorkAppointmentsWorker);
+}
+
+/*
+ *
  * WorksitesActions.getWorksitePlans()
  *
  */
@@ -494,7 +555,10 @@ function* getWorksitePlansWorker(action :SequenceAction) :Generator<*, *, *> {
       worksitePlans = fromJS(response.data[diversionPlanEKID])
         .map((worksitePlan :Map) => getNeighborDetails(worksitePlan));
 
-      yield call(getWorksiteByWorksitePlanWorker, getWorksiteByWorksitePlan({ worksitePlans }));
+      yield all([
+        call(getWorksiteByWorksitePlanWorker, getWorksiteByWorksitePlan({ worksitePlans })),
+        call(getWorkAppointmentsWorker, getWorkAppointments({ worksitePlans })),
+      ]);
     }
 
     yield put(getWorksitePlans.success(id, worksitePlans));
@@ -998,6 +1062,8 @@ export {
   getRequiredHoursWorker,
   getSentenceTermWatcher,
   getSentenceTermWorker,
+  getWorkAppointmentsWatcher,
+  getWorkAppointmentsWorker,
   getWorksiteByWorksitePlanWatcher,
   getWorksiteByWorksitePlanWorker,
   getWorksitePlansWatcher,

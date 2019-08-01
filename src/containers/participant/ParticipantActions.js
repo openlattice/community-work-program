@@ -43,6 +43,8 @@ const getWorksiteByWorksitePlan = newRequestSequence(GET_WORKSITE_BY_WORKSITE_PL
 const GET_WORKSITE_PLANS :'GET_WORKSITE_PLANS' = 'GET_WORKSITE_PLANS';
 const getWorksitePlans = newRequestSequence(GET_WORKSITE_PLANS);
 
+const GET_WORK_APPOINTMENTS :'GET_WORK_APPOINTMENTS' = 'GET_WORK_APPOINTMENTS';
+const getWorkAppointments = newRequestSequence(GET_WORK_APPOINTMENTS);
 
 export {
   ADD_NEW_DIVERSION_PLAN_STATUS,
@@ -59,6 +61,7 @@ export {
   GET_SENTENCE_TERM,
   GET_WORKSITE_BY_WORKSITE_PLAN,
   GET_WORKSITE_PLANS,
+  GET_WORK_APPOINTMENTS,
   addNewDiversionPlanStatus,
   addWorksitePlan,
   getAllParticipantInfo,
@@ -71,6 +74,7 @@ export {
   getParticipantInfractions,
   getRequiredHours,
   getSentenceTerm,
+  getWorkAppointments,
   getWorksiteByWorksitePlan,
   getWorksitePlans,
 };

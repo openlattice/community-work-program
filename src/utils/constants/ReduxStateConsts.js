@@ -57,9 +57,9 @@ export const PEOPLE = {
 
 export const PERSON = {
   ACTIONS: 'actions',
+  ADDRESS: 'address',
   ADD_NEW_DIVERSION_PLAN_STATUS: 'addNewDiversionPlanStatus',
   ADD_WORKSITE_PLAN: 'addWorksitePlan',
-  ADDRESS: 'address',
   CASE_NUMBER: 'caseNumber',
   DIVERSION_PLAN: 'diversionPlan',
   EMAIL: 'email',
@@ -75,6 +75,7 @@ export const PERSON = {
   GET_REQUIRED_HOURS: 'getRequiredHours',
   GET_SENTENCE_TERM: 'getSentenceTerm',
   GET_WORKSITE_PLANS: 'getWorksitePlans',
+  GET_WORK_APPOINTMENTS: 'getWorkAppointments',
   INFRACTION_TYPES: 'infractionTypes',
   PARTICIPANT: 'participant',
   PHONE: 'phone',
@@ -85,6 +86,7 @@ export const PERSON = {
   WARNINGS: 'warnings',
   WORKSITES_BY_WORKSITE_PLAN: 'worksitesByWorksitePlan',
   WORKSITE_PLANS: 'worksitePlans',
+  WORK_APPOINTMENTS_BY_WORKSITE_PLAN: 'workAppointmentsByWorksitePlan',
 };
 
 /* Worksites (and organizations) */

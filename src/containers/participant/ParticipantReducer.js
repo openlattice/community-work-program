@@ -17,6 +17,7 @@ import {
   getParticipantInfractions,
   getRequiredHours,
   getSentenceTerm,
+  getWorkAppointments,
   getWorksiteByWorksitePlan,
   getWorksitePlans,
 } from './ParticipantActions';
@@ -47,6 +48,7 @@ const {
   GET_SENTENCE_TERM,
   GET_WORKSITE_BY_WORKSITE_PLAN,
   GET_WORKSITE_PLANS,
+  GET_WORK_APPOINTMENTS,
   INFRACTION_TYPES,
   PARTICIPANT,
   PHONE,
@@ -57,6 +59,7 @@ const {
   WARNINGS,
   WORKSITES_BY_WORKSITE_PLAN,
   WORKSITE_PLANS,
+  WORK_APPOINTMENTS_BY_WORKSITE_PLAN,
 } = PERSON;
 
 const INITIAL_STATE :Map<*, *> = fromJS({
@@ -97,6 +100,9 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     [GET_SENTENCE_TERM]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
+    [GET_WORK_APPOINTMENTS]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
   },
   [ADDRESS]: '',
   [CASE_NUMBER]: List(),
@@ -125,6 +131,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [WARNINGS]: List(),
   [WORKSITES_BY_WORKSITE_PLAN]: Map(),
   [WORKSITE_PLANS]: List(),
+  [WORK_APPOINTMENTS_BY_WORKSITE_PLAN]: Map(),
 });
 
 export default function participantReducer(state :Map<*, *> = INITIAL_STATE, action :SequenceAction) :Map<*, *> {
@@ -576,6 +583,41 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
       });
     }
 
+    case getWorkAppointments.case(action.type): {
+
+      return getWorkAppointments.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, GET_WORK_APPOINTMENTS, action.id], fromJS(action))
+          .setIn([ACTIONS, GET_WORK_APPOINTMENTS, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+
+          if (!state.hasIn([ACTIONS, GET_WORK_APPOINTMENTS, action.id])) {
+            return state;
+          }
+
+          const { value } = action;
+          if (value === null || value === undefined) {
+            return state;
+          }
+
+          return state
+            .set(WORK_APPOINTMENTS_BY_WORKSITE_PLAN, value)
+            .setIn([ACTIONS, GET_WORK_APPOINTMENTS, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => {
+
+          const { value } = action;
+
+          return state
+            .set(WORK_APPOINTMENTS_BY_WORKSITE_PLAN, Map())
+            .setIn([ERRORS, GET_WORK_APPOINTMENTS], value)
+            .setIn([ACTIONS, GET_WORK_APPOINTMENTS, REQUEST_STATE], RequestStates.FAILURE);
+        },
+        FINALLY: () => state.deleteIn([ACTIONS, GET_WORK_APPOINTMENTS, action.id])
+      });
+    }
+
     case getWorksitePlans.case(action.type): {
 
       return getWorksitePlans.reducer(state, action, {
@@ -603,7 +645,7 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
           const { value } = action;
 
           return state
-            .set(SENTENCE_TERM, Map())
+            .set(WORKSITE_PLANS, Map())
             .setIn([ERRORS, GET_WORKSITE_PLANS], value)
             .setIn([ACTIONS, GET_WORKSITE_PLANS, REQUEST_STATE], RequestStates.FAILURE);
         },
@@ -638,7 +680,7 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
           const { value } = action;
 
           return state
-            .set(SENTENCE_TERM, Map())
+            .set(WORKSITES_BY_WORKSITE_PLAN, Map())
             .setIn([ERRORS, GET_WORKSITE_BY_WORKSITE_PLAN], value)
             .setIn([ACTIONS, GET_WORKSITE_BY_WORKSITE_PLAN, REQUEST_STATE], RequestStates.FAILURE);
         },
