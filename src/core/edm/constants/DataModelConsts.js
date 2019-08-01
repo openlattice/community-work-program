@@ -33,6 +33,14 @@ export const ENROLLMENT_STATUSES = {
   REMOVED_NONCOMPLIANT: 'Removed noncompliant'
 };
 
+export const WORKSITE_ENROLLMENT_STATUSES = {
+  ACTIVE: 'Active',
+  CANCELED: 'Canceled',
+  COMPLETED: 'Completed',
+  ON_HOLD: 'On hold',
+  PLANNED: 'Planned'
+};
+
 export const HOURS_CONSTS = {
   REQUIRED: 'required',
   WORKED: 'worked'

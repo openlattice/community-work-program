@@ -6,6 +6,7 @@ import type { FQN } from 'lattice';
 
 import {
   addNewDiversionPlanStatus,
+  addWorksitePlan,
   getAllParticipantInfo,
   getCaseInfo,
   getContactInfo,
@@ -16,8 +17,10 @@ import {
   getParticipantInfractions,
   getRequiredHours,
   getSentenceTerm,
+  getWorksiteByWorksitePlan,
+  getWorksitePlans,
 } from './ParticipantActions';
-import { getPropertyFqnFromEdm } from '../../utils/DataUtils';
+import { getEntityKeyId, getPropertyFqnFromEdm } from '../../utils/DataUtils';
 import { PERSON } from '../../utils/constants/ReduxStateConsts';
 import { INFRACTIONS_CONSTS } from '../../core/edm/constants/DataModelConsts';
 import { ENTITY_KEY_ID } from '../../core/edm/constants/FullyQualifiedNames';
@@ -25,6 +28,7 @@ import { ENTITY_KEY_ID } from '../../core/edm/constants/FullyQualifiedNames';
 const {
   ACTIONS,
   ADD_NEW_DIVERSION_PLAN_STATUS,
+  ADD_WORKSITE_PLAN,
   ADDRESS,
   CASE_NUMBER,
   DIVERSION_PLAN,
@@ -41,6 +45,8 @@ const {
   GET_PARTICIPANT_INFRACTIONS,
   GET_REQUIRED_HOURS,
   GET_SENTENCE_TERM,
+  GET_WORKSITE_BY_WORKSITE_PLAN,
+  GET_WORKSITE_PLANS,
   INFRACTION_TYPES,
   PARTICIPANT,
   PHONE,
@@ -49,11 +55,16 @@ const {
   SENTENCE_TERM,
   VIOLATIONS,
   WARNINGS,
+  WORKSITES_BY_WORKSITE_PLAN,
+  WORKSITE_PLANS,
 } = PERSON;
 
 const INITIAL_STATE :Map<*, *> = fromJS({
   [ACTIONS]: {
     [ADD_NEW_DIVERSION_PLAN_STATUS]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [ADD_WORKSITE_PLAN]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [GET_ALL_PARTICIPANT_INFO]: {
@@ -112,6 +123,8 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [SENTENCE_TERM]: Map(),
   [VIOLATIONS]: List(),
   [WARNINGS]: List(),
+  [WORKSITES_BY_WORKSITE_PLAN]: Map(),
+  [WORKSITE_PLANS]: List(),
 });
 
 export default function participantReducer(state :Map<*, *> = INITIAL_STATE, action :SequenceAction) :Map<*, *> {
@@ -157,6 +170,62 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
         FAILURE: () => state
           .setIn([ACTIONS, ADD_NEW_DIVERSION_PLAN_STATUS, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, ADD_NEW_DIVERSION_PLAN_STATUS, action.id]),
+      });
+    }
+
+    case addWorksitePlan.case(action.type): {
+
+      return addWorksitePlan.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, ADD_WORKSITE_PLAN, action.id], action)
+          .setIn([ACTIONS, ADD_WORKSITE_PLAN, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+
+          const seqAction :SequenceAction = action;
+          const storedSeqAction :SequenceAction = state.getIn([ACTIONS, ADD_WORKSITE_PLAN, seqAction.id]);
+
+          if (storedSeqAction) {
+
+            const successValue :Object = seqAction.value;
+            const {
+              basedOnESID,
+              edm,
+              worksitePlanEKID,
+              worksitePlanESID,
+              worksitesList
+            } = successValue;
+
+            const requestValue :Object = storedSeqAction.value;
+            const { associationEntityData, entityData } :Object = requestValue;
+            const storedWorksitePlanEntity :Map = fromJS(entityData[worksitePlanESID][0]);
+            const worksiteEKID = associationEntityData[basedOnESID][0].dstEntityKeyId;
+
+            let newWorksitePlan :Map = Map();
+            storedWorksitePlanEntity.forEach((enrollmentValue, id) => {
+              const propertyTypeFqn :FQN = getPropertyFqnFromEdm(edm, id);
+              newWorksitePlan = newWorksitePlan.set(propertyTypeFqn, enrollmentValue);
+            });
+            newWorksitePlan = newWorksitePlan.set(ENTITY_KEY_ID, worksitePlanEKID);
+
+            const worksitePlans = state.get(WORKSITE_PLANS)
+              .push(newWorksitePlan);
+
+            const worksite :Map = worksitesList.find((site :Map) => getEntityKeyId(site) === worksiteEKID);
+            const worksitesByWorksitePlan = state.get(WORKSITES_BY_WORKSITE_PLAN)
+              .set(worksitePlanEKID[0], worksite);
+
+            return state
+              .set(WORKSITE_PLANS, worksitePlans)
+              .set(WORKSITES_BY_WORKSITE_PLAN, worksitesByWorksitePlan)
+              .setIn([ACTIONS, ADD_WORKSITE_PLAN, REQUEST_STATE], RequestStates.SUCCESS);
+          }
+
+          return state;
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, ADD_WORKSITE_PLAN, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, ADD_WORKSITE_PLAN, action.id]),
       });
     }
 
@@ -504,6 +573,76 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
             .setIn([ACTIONS, GET_SENTENCE_TERM, REQUEST_STATE], RequestStates.FAILURE);
         },
         FINALLY: () => state.deleteIn([ACTIONS, GET_SENTENCE_TERM, action.id])
+      });
+    }
+
+    case getWorksitePlans.case(action.type): {
+
+      return getWorksitePlans.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, GET_WORKSITE_PLANS, action.id], fromJS(action))
+          .setIn([ACTIONS, GET_WORKSITE_PLANS, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+
+          if (!state.hasIn([ACTIONS, GET_WORKSITE_PLANS, action.id])) {
+            return state;
+          }
+
+          const { value } = action;
+          if (value === null || value === undefined) {
+            return state;
+          }
+
+          return state
+            .set(WORKSITE_PLANS, value)
+            .setIn([ACTIONS, GET_WORKSITE_PLANS, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => {
+
+          const { value } = action;
+
+          return state
+            .set(SENTENCE_TERM, Map())
+            .setIn([ERRORS, GET_WORKSITE_PLANS], value)
+            .setIn([ACTIONS, GET_WORKSITE_PLANS, REQUEST_STATE], RequestStates.FAILURE);
+        },
+        FINALLY: () => state.deleteIn([ACTIONS, GET_WORKSITE_PLANS, action.id])
+      });
+    }
+
+    case getWorksiteByWorksitePlan.case(action.type): {
+
+      return getWorksiteByWorksitePlan.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, GET_WORKSITE_BY_WORKSITE_PLAN, action.id], fromJS(action))
+          .setIn([ACTIONS, GET_WORKSITE_BY_WORKSITE_PLAN, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+
+          if (!state.hasIn([ACTIONS, GET_WORKSITE_BY_WORKSITE_PLAN, action.id])) {
+            return state;
+          }
+
+          const { value } = action;
+          if (value === null || value === undefined) {
+            return state;
+          }
+
+          return state
+            .set(WORKSITES_BY_WORKSITE_PLAN, value)
+            .setIn([ACTIONS, GET_WORKSITE_BY_WORKSITE_PLAN, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => {
+
+          const { value } = action;
+
+          return state
+            .set(SENTENCE_TERM, Map())
+            .setIn([ERRORS, GET_WORKSITE_BY_WORKSITE_PLAN], value)
+            .setIn([ACTIONS, GET_WORKSITE_BY_WORKSITE_PLAN, REQUEST_STATE], RequestStates.FAILURE);
+        },
+        FINALLY: () => state.deleteIn([ACTIONS, GET_WORKSITE_BY_WORKSITE_PLAN, action.id])
       });
     }
 
