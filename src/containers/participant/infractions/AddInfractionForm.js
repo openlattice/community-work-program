@@ -26,10 +26,10 @@ import {
 import { STATUS_FILTER_OPTIONS } from '../../participants/ParticipantsConstants';
 import {
   APP_TYPE_FQNS,
+  DATETIME_COMPLETED,
   ENROLLMENT_STATUS_FQNS,
   INFRACTION_FQNS,
   INFRACTION_EVENT_FQNS,
-  RELATED_TO_FQNS,
 } from '../../../core/edm/constants/FullyQualifiedNames';
 import { PERSON, STATE } from '../../../utils/constants/ReduxStateConsts';
 import { INFRACTIONS_CONSTS } from '../../../core/edm/constants/DataModelConsts';
@@ -62,9 +62,9 @@ const {
 const { EFFECTIVE_DATE, STATUS } = ENROLLMENT_STATUS_FQNS;
 const { CATEGORY } = INFRACTION_FQNS;
 const { NOTES, TYPE } = INFRACTION_EVENT_FQNS;
-const { DATETIME_COMPLETED } = RELATED_TO_FQNS;
 const {
   INFRACTION_TYPES,
+  WORKSITE_PLANS,
 } = PERSON;
 
 const ENROLLMENT_STATUS_OPTIONS :Object[] = STATUS_FILTER_OPTIONS
@@ -334,6 +334,7 @@ const mapStateToProps = (state :Map) => {
     app: state.get(STATE.APP),
     edm: state.get(STATE.EDM),
     [INFRACTION_TYPES]: person.get(INFRACTION_TYPES),
+    [WORKSITE_PLANS]: person.get(WORKSITE_PLANS),
   });
 };
 
