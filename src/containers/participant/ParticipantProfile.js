@@ -12,6 +12,7 @@ import GeneralInfo from '../../components/participant/GeneralInfo';
 import KeyDates from '../../components/participant/KeyDates';
 import CaseInfo from '../../components/participant/CaseInfo';
 import InfractionsDisplay from '../../components/participant/InfractionsDisplay';
+import AddNewPlanStatusModal from './AddNewPlanStatusModal';
 import LogoLoader from '../../components/LogoLoader';
 
 import { getAllParticipantInfo } from './ParticipantActions';
@@ -20,7 +21,6 @@ import { OL } from '../../core/style/Colors';
 import { PARTICIPANT_PROFILE_WIDTH } from '../../core/style/Sizes';
 import * as Routes from '../../core/router/Routes';
 import { BackNavButton } from '../../components/controls/index';
-import { ButtonWrapper, ButtonsWrapper } from '../../components/Layout';
 import { getEntityProperties } from '../../utils/DataUtils';
 import { isDefined } from '../../utils/LangUtils';
 import { APP_TYPE_FQNS, ENROLLMENT_STATUS_FQNS, PEOPLE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
@@ -119,8 +119,15 @@ type Props = {
   warnings :List;
 };
 
+type State = {
+  showEnrollmentModal :boolean;
+};
 
-class ParticipantProfile extends Component<Props> {
+class ParticipantProfile extends Component<Props, State> {
+
+  state = {
+    showEnrollmentModal: false,
+  };
 
   componentDidMount() {
     const { app } = this.props;
@@ -141,6 +148,18 @@ class ParticipantProfile extends Component<Props> {
     actions.getAllParticipantInfo({ personEKID });
   }
 
+  handleShowEnrollmentModal = () => {
+    this.setState({
+      showEnrollmentModal: true
+    });
+  }
+
+  handleHideEnrollmentModal = () => {
+    this.setState({
+      showEnrollmentModal: false
+    });
+  }
+
   render() {
     const {
       actions,
@@ -157,6 +176,7 @@ class ParticipantProfile extends Component<Props> {
       violations,
       warnings,
     } = this.props;
+    const { showEnrollmentModal } = this.state;
 
     if (getInitializeAppRequestState === RequestStates.PENDING
         || getAllParticipantInfoRequestState === RequestStates.PENDING) {
@@ -184,18 +204,9 @@ class ParticipantProfile extends Component<Props> {
           </BackNavButton>
           <NameRowWrapper>
             <NameHeader>{ `${firstName} ${lastName}` }</NameHeader>
-            <ButtonsWrapper>
-              <ButtonWrapper>
-                <Button>
-                  Assign to Worksite
-                </Button>
-              </ButtonWrapper>
-              <ButtonWrapper>
-                <Button mode="primary">
-                  Enroll in CWP
-                </Button>
-              </ButtonWrapper>
-            </ButtonsWrapper>
+            <Button mode="primary" onClick={this.handleShowEnrollmentModal}>
+              Change Enrollment Status
+            </Button>
           </NameRowWrapper>
           <BasicInfoWrapper>
             <GeneralInfo
@@ -213,6 +224,11 @@ class ParticipantProfile extends Component<Props> {
             </InnerColumnWrapper>
           </BasicInfoWrapper>
         </ProfileBody>
+        <AddNewPlanStatusModal
+            currentStatus={status}
+            isOpen={showEnrollmentModal}
+            onClose={this.handleHideEnrollmentModal}
+            personName={firstName} />
       </ProfileWrapper>
     );
   }
