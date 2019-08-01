@@ -10,6 +10,7 @@ import {
   Label,
   Radio,
   Select,
+  TextArea,
   TimePicker
 } from 'lattice-ui-kit';
 import { connect } from 'react-redux';
@@ -27,9 +28,12 @@ import { STATUS_FILTER_OPTIONS } from '../../participants/ParticipantsConstants'
 import {
   APP_TYPE_FQNS,
   DATETIME_COMPLETED,
+  DATETIME_END,
   ENROLLMENT_STATUS_FQNS,
   INFRACTION_FQNS,
   INFRACTION_EVENT_FQNS,
+  START_DATETIME,
+  WORKSITE_FQNS,
 } from '../../../core/edm/constants/FullyQualifiedNames';
 import { PERSON, STATE } from '../../../utils/constants/ReduxStateConsts';
 import { INFRACTIONS_CONSTS } from '../../../core/edm/constants/DataModelConsts';
@@ -62,9 +66,12 @@ const {
 const { EFFECTIVE_DATE, STATUS } = ENROLLMENT_STATUS_FQNS;
 const { CATEGORY } = INFRACTION_FQNS;
 const { NOTES, TYPE } = INFRACTION_EVENT_FQNS;
+const { NAME } = WORKSITE_FQNS;
 const {
   INFRACTION_TYPES,
   WORKSITE_PLANS,
+  WORKSITES_BY_WORKSITE_PLAN,
+  WORK_APPOINTMENTS_BY_WORKSITE_PLAN,
 } = PERSON;
 
 const ENROLLMENT_STATUS_OPTIONS :Object[] = STATUS_FILTER_OPTIONS
@@ -94,6 +101,8 @@ type Props = {
   isLoading :boolean;
   onDiscard :() => void;
   personEKID :UUID;
+  workAppointmentsByWorksitePlan :Map;
+  worksitesByWorksitePlan :Map;
 };
 
 type State = {
@@ -103,13 +112,32 @@ type State = {
   newInfractionData :Map;
   registeredForAppointment :boolean;
   time :string;
+  workAppointmentList :Object[];
   workInfraction :string;
+  worksitePlanEKID :string;
 };
 
 class AddNewPlanStatusForm extends Component<Props, State> {
 
   constructor(props :Props) {
     super(props);
+
+    const workAppointmentList :Object[] = [];
+    props.workAppointmentsByWorksitePlan
+      .forEach((appt :Map, worksitePlanEKID :UUID) => {
+        const appointmentEKID :UUID = getEntityKeyId(appt);
+        const { [START_DATETIME]: startDatetime, [DATETIME_END]: datetimeEnd } = getEntityProperties(
+          appt,
+          [START_DATETIME, DATETIME_END]
+        );
+        const { [NAME]: worksiteName } = getEntityProperties(
+          props.worksitesByWorksitePlan.get(worksitePlanEKID),
+          [NAME]
+        );
+        const label = `${worksiteName}: ${startDatetime}-${datetimeEnd}`;
+        workAppointmentList.push({ label, value: { appointmentEKID, worksitePlanEKID } });
+      });
+
     this.state = {
       appointmentEKID: '',
       date: '',
@@ -119,16 +147,26 @@ class AddNewPlanStatusForm extends Component<Props, State> {
       }),
       registeredForAppointment: false,
       time: '',
+      workAppointmentList,
       workInfraction: '',
+      worksitePlanEKID: '',
     };
   }
 
   createEntitySetIdsMap = () => {
     const { app } = this.props;
     return {
-      [ENROLLMENT_STATUS]: getEntitySetIdFromApp(app, ENROLLMENT_STATUS),
-      [RELATED_TO]: getEntitySetIdFromApp(app, RELATED_TO),
+      [APPOINTMENT]: getEntitySetIdFromApp(app, APPOINTMENT),
       [DIVERSION_PLAN]: getEntitySetIdFromApp(app, DIVERSION_PLAN),
+      [ENROLLMENT_STATUS]: getEntitySetIdFromApp(app, ENROLLMENT_STATUS),
+      [INFRACTIONS]: getEntitySetIdFromApp(app, INFRACTIONS),
+      [INFRACTION_EVENT]: getEntitySetIdFromApp(app, INFRACTION_EVENT),
+      [PEOPLE]: getEntitySetIdFromApp(app, PEOPLE),
+      [REGISTERED_FOR]: getEntitySetIdFromApp(app, REGISTERED_FOR),
+      [RELATED_TO]: getEntitySetIdFromApp(app, RELATED_TO),
+      [RESULTS_IN]: getEntitySetIdFromApp(app, RESULTS_IN),
+      [SUBJECT_OF]: getEntitySetIdFromApp(app, SUBJECT_OF),
+      [WORKSITE_PLAN]: getEntitySetIdFromApp(app, WORKSITE_PLAN),
     };
   }
 
@@ -138,6 +176,9 @@ class AddNewPlanStatusForm extends Component<Props, State> {
       [DATETIME_COMPLETED]: getPropertyTypeIdFromEdm(edm, DATETIME_COMPLETED),
       [EFFECTIVE_DATE]: getPropertyTypeIdFromEdm(edm, EFFECTIVE_DATE),
       [STATUS]: getPropertyTypeIdFromEdm(edm, STATUS),
+      [NOTES]: getPropertyTypeIdFromEdm(edm, NOTES),
+      [TYPE]: getPropertyTypeIdFromEdm(edm, TYPE),
+
     };
   }
 
@@ -156,6 +197,12 @@ class AddNewPlanStatusForm extends Component<Props, State> {
     return datetime;
   }
 
+  handleInputChange = (event :SyntheticEvent<HTMLInputElement>) => {
+    const { newInfractionData } = this.state;
+    const { name, value } = event.currentTarget;
+    this.setState({ newInfractionData: newInfractionData.setIn([getPageSectionKey(1, 1), name], value) });
+  }
+
   handleRadioChange = (option :Object) => {
     const { name } = option.currentTarget;
     this.setState({
@@ -168,18 +215,28 @@ class AddNewPlanStatusForm extends Component<Props, State> {
     const { name } = event;
     const { value } = option;
     if (name === REGISTERED_FOR) {
-      this.setState({ registeredForAppointment: true });
+      this.setState({
+        appointmentEKID: value.appointmentEKID,
+        registeredForAppointment: true,
+        worksitePlanEKID: value.worksitePlanEKID,
+      });
     }
     if (name === CATEGORY) {
       this.setState({ infractionEKID: value });
     }
-    console.log('value: ', value);
-    this.setState({ newInfractionData: newInfractionData.setIn([getPageSectionKey(1, 1), name], value) });
+    else {
+      this.setState({ newInfractionData: newInfractionData.setIn([getPageSectionKey(1, 1), name], value) });
+    }
   }
 
   handleOnSubmit = () => {
     const { actions, diversionPlan, personEKID } = this.props;
-    const { appointmentEKID, infractionEKID, registeredForAppointment } = this.state;
+    const {
+      appointmentEKID,
+      infractionEKID,
+      registeredForAppointment,
+      worksitePlanEKID
+    } = this.state;
     let { newInfractionData } = this.state;
 
     const associations = [];
@@ -194,11 +251,9 @@ class AddNewPlanStatusForm extends Component<Props, State> {
       ], datetimeOfInfraction);
 
     associations.push([SUBJECT_OF, personEKID, PEOPLE, 0, INFRACTION_EVENT, {}]);
-    associations.push([REGISTERED_FOR, 0, INFRACTION_EVENT, infractionEKID, INFRACTIONS, {}]);
+    if (infractionEKID) associations.push([REGISTERED_FOR, 0, INFRACTION_EVENT, infractionEKID, INFRACTIONS, {}]);
 
-    const innerDataSection = newInfractionData.get(getPageSectionKey(1, 1));
-    if (innerDataSection.get(getEntityAddressKey(0, ENROLLMENT_STATUS, STATUS))) {
-
+    if (newInfractionData.getIn([getPageSectionKey(1, 1), getEntityAddressKey(0, ENROLLMENT_STATUS, STATUS)])) {
       associations.push([RELATED_TO, diversionPlanEKID, DIVERSION_PLAN, 0, ENROLLMENT_STATUS, {}]);
       associations.push([RESULTS_IN, 0, INFRACTION_EVENT, 0, ENROLLMENT_STATUS, {}]);
       newInfractionData = newInfractionData
@@ -213,10 +268,12 @@ class AddNewPlanStatusForm extends Component<Props, State> {
     const entitySetIds :Object = this.createEntitySetIdsMap();
     const propertyTypeIds :Object = this.createPropertyTypeIdsMap();
 
+    console.log('newInfractionData: ', newInfractionData.toJS());
     const entityData :{} = processEntityData(newInfractionData, entitySetIds, propertyTypeIds);
     const associationEntityData :{} = processAssociationEntityData(fromJS(associations), entitySetIds, propertyTypeIds);
-
-    // actions.addNewDiversionPlanStatus({ associationEntityData, entityData });
+    console.log('entityData: ', entityData);
+    console.log('associationEntityData: ', associationEntityData);
+    // actions.addInfraction({ associationEntityData, entityData });
   }
 
   render() {
@@ -226,7 +283,7 @@ class AddNewPlanStatusForm extends Component<Props, State> {
       isLoading,
       onDiscard,
     } = this.props;
-    const { newInfractionData, workInfraction } = this.state;
+    const { newInfractionData, workAppointmentList, workInfraction } = this.state;
 
     const VIOLATION_TYPE_OPTIONS = infractionTypes.map((infractionEntity :Map) => {
       const { [CATEGORY]: category } = getEntityProperties(infractionEntity, [CATEGORY]);
@@ -272,6 +329,14 @@ class AddNewPlanStatusForm extends Component<Props, State> {
         </FormRow>
         <FormRow>
           <RowContent>
+            <Label>Notes</Label>
+            <TextArea
+                name={getEntityAddressKey(0, INFRACTION_EVENT, NOTES)}
+                onChange={this.handleInputChange} />
+          </RowContent>
+        </FormRow>
+        <FormRow>
+          <RowContent>
             <Label>Did this incident happen during work?</Label>
           </RowContent>
         </FormRow>
@@ -296,12 +361,12 @@ class AddNewPlanStatusForm extends Component<Props, State> {
         </FormRow>
         <FormRow>
           <RowContent>
-            <Label>If yes, choose work site appointment</Label>
+            <Label>If yes, choose work site appointment:</Label>
             <Select
                 isDisabled={workInfraction !== RADIO_OPTIONS[0]}
                 name={REGISTERED_FOR}
                 onChange={this.handleSelectChange}
-                options={[]} />
+                options={workAppointmentList} />
           </RowContent>
         </FormRow>
         <FormRow>
@@ -335,6 +400,8 @@ const mapStateToProps = (state :Map) => {
     edm: state.get(STATE.EDM),
     [INFRACTION_TYPES]: person.get(INFRACTION_TYPES),
     [WORKSITE_PLANS]: person.get(WORKSITE_PLANS),
+    [WORKSITES_BY_WORKSITE_PLAN]: person.get(WORKSITES_BY_WORKSITE_PLAN),
+    [WORK_APPOINTMENTS_BY_WORKSITE_PLAN]: person.get(WORK_APPOINTMENTS_BY_WORKSITE_PLAN),
   });
 };
 
