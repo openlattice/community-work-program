@@ -22,7 +22,7 @@ import { OL } from '../../core/style/Colors';
 import { PARTICIPANT_PROFILE_WIDTH } from '../../core/style/Sizes';
 import * as Routes from '../../core/router/Routes';
 import { BackNavButton } from '../../components/controls/index';
-import { getEntityProperties } from '../../utils/DataUtils';
+import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
 import { isDefined } from '../../utils/LangUtils';
 import { APP_TYPE_FQNS, ENROLLMENT_STATUS_FQNS, PEOPLE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { ENROLLMENT_STATUSES } from '../../core/edm/constants/DataModelConsts';
@@ -192,6 +192,7 @@ class ParticipantProfile extends Component<Props, State> {
       );
     }
 
+    const personEKID :UUID = getEntityKeyId(participant);
     const { [FIRST_NAME]: firstName, [LAST_NAME]: lastName } = getEntityProperties(
       participant, [FIRST_NAME, LAST_NAME]
     );
@@ -234,6 +235,8 @@ class ParticipantProfile extends Component<Props, State> {
             <NameHeader>Warnings & Violations</NameHeader>
           </NameRowWrapper>
           <InfractionsContainer
+              currentStatus={status}
+              personEKID={personEKID}
               violations={violations}
               warnings={warnings} />
         </ProfileBody>
