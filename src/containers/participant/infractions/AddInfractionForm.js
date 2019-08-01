@@ -296,7 +296,7 @@ class AddNewPlanStatusForm extends Component<Props, State> {
         </FormRow>
         <FormRow>
           <RowContent>
-            <Label>Work site appointment</Label>
+            <Label>If yes, choose work site appointment</Label>
             <Select
                 isDisabled={workInfraction !== RADIO_OPTIONS[0]}
                 name={REGISTERED_FOR}
@@ -306,7 +306,7 @@ class AddNewPlanStatusForm extends Component<Props, State> {
         </FormRow>
         <FormRow>
           <RowContent>
-            <Label>Choose new enrollment status, if relevant:</Label>
+            <Label>If relevant, choose new enrollment status:</Label>
             <Select
                 name={getEntityAddressKey(0, ENROLLMENT_STATUS, STATUS)}
                 onChange={this.handleSelectChange}
