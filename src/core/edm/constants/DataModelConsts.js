@@ -39,6 +39,6 @@ export const HOURS_CONSTS = {
 };
 
 export const INFRACTIONS_CONSTS = {
-  VIOLATION: 'violation',
-  WARNING: 'warning'
+  VIOLATION: 'Violation',
+  WARNING: 'Warning'
 };
