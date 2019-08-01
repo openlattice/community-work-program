@@ -94,6 +94,12 @@ export const INFRACTION_FQNS = {
   TYPE: new FullyQualifiedName('ol.type'),
 };
 
+/* ol.notificationevent */
+export const INFRACTION_EVENT_FQNS = {
+  NOTES: new FullyQualifiedName('ol.notes'),
+  TYPE: new FullyQualifiedName('ol.type'),
+};
+
 /* ol.location */
 export const LOCATION_FQNS = {
   UNPARSED_ADDRESS: new FullyQualifiedName('location.address'),
