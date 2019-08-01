@@ -10,6 +10,7 @@ import {
   getCaseInfo,
   getContactInfo,
   getEnrollmentStatus,
+  getInfractionTypes,
   getParticipant,
   getParticipantAddress,
   getParticipantInfractions,
@@ -34,11 +35,13 @@ const {
   GET_CASE_INFO,
   GET_CONTACT_INFO,
   GET_ENROLLMENT_STATUS,
+  GET_INFRACTION_TYPES,
   GET_PARTICIPANT,
   GET_PARTICIPANT_ADDRESS,
   GET_PARTICIPANT_INFRACTIONS,
   GET_REQUIRED_HOURS,
   GET_SENTENCE_TERM,
+  INFRACTION_TYPES,
   PARTICIPANT,
   PHONE,
   REQUEST_STATE,
@@ -63,6 +66,9 @@ const INITIAL_STATE :Map<*, *> = fromJS({
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [GET_ENROLLMENT_STATUS]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [GET_INFRACTION_TYPES]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [GET_PARTICIPANT]: {
@@ -92,12 +98,14 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     [GET_CASE_INFO]: Map(),
     [GET_CONTACT_INFO]: Map(),
     [GET_ENROLLMENT_STATUS]: Map(),
+    [GET_INFRACTION_TYPES]: Map(),
     [GET_PARTICIPANT]: Map(),
     [GET_PARTICIPANT_ADDRESS]: Map(),
     [GET_PARTICIPANT_INFRACTIONS]: Map(),
     [GET_REQUIRED_HOURS]: Map(),
     [GET_SENTENCE_TERM]: Map(),
   },
+  [INFRACTION_TYPES]: List(),
   [PARTICIPANT]: Map(),
   [PHONE]: '',
   [REQUIRED_HOURS]: 0,
@@ -284,6 +292,41 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
             .setIn([ACTIONS, GET_ENROLLMENT_STATUS, REQUEST_STATE], RequestStates.FAILURE);
         },
         FINALLY: () => state.deleteIn([ACTIONS, GET_ENROLLMENT_STATUS, action.id])
+      });
+    }
+
+    case getInfractionTypes.case(action.type): {
+
+      return getInfractionTypes.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, GET_INFRACTION_TYPES, action.id], fromJS(action))
+          .setIn([ACTIONS, GET_INFRACTION_TYPES, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+
+          if (!state.hasIn([ACTIONS, GET_INFRACTION_TYPES, action.id])) {
+            return state;
+          }
+
+          const { value } = action;
+          if (value === null || value === undefined) {
+            return state;
+          }
+
+          return state
+            .set(INFRACTION_TYPES, value)
+            .setIn([ACTIONS, GET_INFRACTION_TYPES, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => {
+
+          const { value } = action;
+
+          return state
+            .set(INFRACTION_TYPES, List())
+            .setIn([ERRORS, GET_INFRACTION_TYPES], value)
+            .setIn([ACTIONS, GET_INFRACTION_TYPES, REQUEST_STATE], RequestStates.FAILURE);
+        },
+        FINALLY: () => state.deleteIn([ACTIONS, GET_INFRACTION_TYPES, action.id])
       });
     }
 

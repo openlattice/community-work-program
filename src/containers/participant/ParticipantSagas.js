@@ -27,6 +27,7 @@ import {
   GET_CASE_INFO,
   GET_CONTACT_INFO,
   GET_ENROLLMENT_STATUS,
+  GET_INFRACTION_TYPES,
   GET_PARTICIPANT,
   GET_PARTICIPANT_ADDRESS,
   GET_PARTICIPANT_INFRACTIONS,
@@ -37,6 +38,7 @@ import {
   getCaseInfo,
   getContactInfo,
   getEnrollmentStatus,
+  getInfractionTypes,
   getParticipant,
   getParticipantAddress,
   getParticipantInfractions,
@@ -66,8 +68,8 @@ import {
 } from '../../core/edm/constants/FullyQualifiedNames';
 import { ENROLLMENT_STATUSES, INFRACTIONS_CONSTS } from '../../core/edm/constants/DataModelConsts';
 
-const { getEntityData } = DataApiActions;
-const { getEntityDataWorker } = DataApiSagas;
+const { getEntityData, getEntitySetData } = DataApiActions;
+const { getEntityDataWorker, getEntitySetDataWorker } = DataApiSagas;
 const { searchEntityNeighborsWithFilter } = SearchApiActions;
 const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
 const {
@@ -497,6 +499,42 @@ function* getParticipantAddressWatcher() :Generator<*, *, *> {
   yield takeEvery(GET_PARTICIPANT_ADDRESS, getParticipantAddressWorker);
 }
 
+function* getInfractionTypesWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+  const workerResponse = {};
+  let response :Object = {};
+  let infractionTypes :List = List();
+
+  try {
+    yield put(getInfractionTypes.request(id));
+
+    const app = yield select(getAppFromState);
+    const infractionsESID :UUID = getEntitySetIdFromApp(app, INFRACTIONS);
+
+    response = yield call(getEntitySetDataWorker, getEntitySetData({ entitySetId: infractionsESID }));
+    if (response.error) {
+      throw response.error;
+    }
+    infractionTypes = fromJS(response.data);
+    yield put(getInfractionTypes.success(id, infractionTypes));
+  }
+  catch (error) {
+    workerResponse.error = error;
+    LOG.error('caught exception in getInfractionTypesWorker()', error);
+    yield put(getInfractionTypes.failure(id, error));
+  }
+  finally {
+    yield put(getInfractionTypes.finally(id));
+  }
+  return workerResponse;
+}
+
+function* getInfractionTypesWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(GET_INFRACTION_TYPES, getInfractionTypesWorker);
+}
+
 /*
  *
  * ParticipantsActions.getParticipantInfractions()
@@ -721,6 +759,7 @@ function* getAllParticipantInfoWorker(action :SequenceAction) :Generator<*, *, *
       call(getParticipantWorker, getParticipant({ personEKID })),
       call(getRequiredHoursWorker, getRequiredHours({ personEKID })),
       call(getSentenceTermWorker, getSentenceTerm({ personEKID })),
+      call(getInfractionTypesWorker, getInfractionTypes()),
     ]);
     const responseError = workerResponses.reduce(
       (error, workerResponse) => (error ? error : workerResponse.error),
@@ -756,6 +795,8 @@ export {
   getContactInfoWorker,
   getEnrollmentStatusWatcher,
   getEnrollmentStatusWorker,
+  getInfractionTypesWatcher,
+  getInfractionTypesWorker,
   getParticipantAddressWatcher,
   getParticipantAddressWorker,
   getParticipantInfractionsWatcher,

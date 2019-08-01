@@ -19,6 +19,9 @@ const getRequiredHours = newRequestSequence(GET_REQUIRED_HOURS);
 const GET_ENROLLMENT_STATUS :'GET_ENROLLMENT_STATUS' = 'GET_ENROLLMENT_STATUS';
 const getEnrollmentStatus = newRequestSequence(GET_ENROLLMENT_STATUS);
 
+const GET_INFRACTION_TYPES :'GET_INFRACTION_TYPES' = 'GET_INFRACTION_TYPES';
+const getInfractionTypes = newRequestSequence(GET_INFRACTION_TYPES);
+
 const GET_PARTICIPANT :'GET_PARTICIPANT' = 'GET_PARTICIPANT';
 const getParticipant = newRequestSequence(GET_PARTICIPANT);
 
@@ -37,6 +40,7 @@ export {
   GET_CASE_INFO,
   GET_CONTACT_INFO,
   GET_ENROLLMENT_STATUS,
+  GET_INFRACTION_TYPES,
   GET_PARTICIPANT,
   GET_PARTICIPANT_ADDRESS,
   GET_PARTICIPANT_INFRACTIONS,
@@ -47,6 +51,7 @@ export {
   getCaseInfo,
   getContactInfo,
   getEnrollmentStatus,
+  getInfractionTypes,
   getParticipant,
   getParticipantAddress,
   getParticipantInfractions,
