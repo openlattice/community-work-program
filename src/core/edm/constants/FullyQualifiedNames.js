@@ -57,7 +57,10 @@ export const APP_TYPE_FQNS = {
 /* DateTime FQNs */
 export const DATETIME = new FullyQualifiedName('general.datetime');
 export const DATETIME_COMPLETED = new FullyQualifiedName('date.completeddatetime');
+export const DATETIME_END = new FullyQualifiedName('ol.datetimeend');
 export const DATETIME_START = new FullyQualifiedName('ol.datetimestart');
+export const START_DATETIME = new FullyQualifiedName('incident.startdatetime');
+
 /* Property Type FQNs by Entity Type */
 
 /* publicsafety.pretrialstatuscaseprocessings */
