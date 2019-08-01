@@ -495,7 +495,10 @@ function* getWorkAppointmentsWorker(action :SequenceAction) :Generator<*, *, *> 
     if (response.error) {
       throw response.error;
     }
-    if (Object.keys(response.data).length > 0) workAppointmentsByWorksitePlan = fromJS(response.data);
+    if (Object.keys(response.data).length > 0) {
+      workAppointmentsByWorksitePlan = fromJS(response.data)
+        .map((appointmentsList :List) => appointmentsList.map((appt :Map) => getNeighborDetails(appt)));
+    }
 
     yield put(getWorkAppointments.success(id, workAppointmentsByWorksitePlan));
   }
