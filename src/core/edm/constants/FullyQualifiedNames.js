@@ -10,6 +10,7 @@ const { OPENLATTICE_ID_FQN } = Constants;
 export const ENTITY_KEY_ID = OPENLATTICE_ID_FQN;
 
 export const APP_TYPE_FQNS = {
+  ADDRESSES: new FullyQualifiedName('app.addresses'),
   APP_SETTINGS: new FullyQualifiedName('app.settings'),
   APPEARS_IN: new FullyQualifiedName('app.appearsin'),
   APPOINTMENT: new FullyQualifiedName('app.appointment'),
