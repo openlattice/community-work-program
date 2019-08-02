@@ -17,6 +17,7 @@ import { getEntityKeyId, getEntitySetIdFromApp, getPropertyTypeIdFromEdm } from 
 import { STATUS_FILTER_OPTIONS } from '../participants/ParticipantsConstants';
 import {
   APP_TYPE_FQNS,
+  DATETIME_COMPLETED,
   ENROLLMENT_STATUS_FQNS,
 } from '../../core/edm/constants/FullyQualifiedNames';
 import { PERSON, STATE } from '../../utils/constants/ReduxStateConsts';

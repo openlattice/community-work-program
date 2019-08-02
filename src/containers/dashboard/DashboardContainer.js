@@ -21,7 +21,7 @@ import {
 } from '../../core/style/Sizes';
 import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
 import { ENROLLMENT_STATUSES, HOURS_CONSTS, INFRACTIONS_CONSTS } from '../../core/edm/constants/DataModelConsts';
-import { ENROLLMENT_STATUS_FQNS, SENTENCE_TERM_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { DATETIME_START, ENROLLMENT_STATUS_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { APP, PEOPLE, STATE } from '../../utils/constants/ReduxStateConsts';
 
 /* constants */
@@ -34,7 +34,6 @@ const {
   PARTICIPANTS,
   SENTENCE_TERMS_BY_PARTICIPANT,
 } = PEOPLE;
-const { DATETIME_START } = SENTENCE_TERM_FQNS;
 
 const NEW_PARTICIPANTS_COLUMNS = ['NAME', 'SENT. DATE', 'ENROLL. DEADLINE', 'REQ. HRS.'];
 const PENDING_PARTICIPANTS_COLUMNS = ['NAME', 'SENT. DATE', 'REQ. HRS.'];

@@ -10,6 +10,7 @@ const { OPENLATTICE_ID_FQN } = Constants;
 export const ENTITY_KEY_ID = OPENLATTICE_ID_FQN;
 
 export const APP_TYPE_FQNS = {
+  ADDRESSES: new FullyQualifiedName('app.addresses'),
   APP_SETTINGS: new FullyQualifiedName('app.settings'),
   APPEARS_IN: new FullyQualifiedName('app.appearsin'),
   APPOINTMENT: new FullyQualifiedName('app.appointment'),
@@ -147,11 +148,6 @@ export const PEOPLE_FQNS = {
 export const SENTENCE_FQNS = {
   CONCURRENT_CONSECUTIVE: new FullyQualifiedName('justice.concurrentconsecutive'),
   SENTENCE_CONDITIONS: new FullyQualifiedName('justice.sentenceconditions'),
-};
-
-/* ol.sentenceterm */
-export const SENTENCE_TERM_FQNS = {
-  DATETIME_START: new FullyQualifiedName('ol.datetimestart'),
 };
 
 /* ol.program */
