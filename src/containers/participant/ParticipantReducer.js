@@ -5,6 +5,7 @@ import type { SequenceAction } from 'redux-reqseq';
 import type { FQN } from 'lattice';
 
 import {
+  addInfraction,
   addNewDiversionPlanStatus,
   addWorksitePlan,
   getAllParticipantInfo,
@@ -28,6 +29,7 @@ import { ENTITY_KEY_ID } from '../../core/edm/constants/FullyQualifiedNames';
 
 const {
   ACTIONS,
+  ADD_INFRACTION,
   ADD_NEW_DIVERSION_PLAN_STATUS,
   ADD_WORKSITE_PLAN,
   ADDRESS,
@@ -49,6 +51,7 @@ const {
   GET_WORKSITE_BY_WORKSITE_PLAN,
   GET_WORKSITE_PLANS,
   GET_WORK_APPOINTMENTS,
+  INFRACTIONS_LIST,
   INFRACTION_TYPES,
   PARTICIPANT,
   PHONE,
@@ -64,6 +67,9 @@ const {
 
 const INITIAL_STATE :Map<*, *> = fromJS({
   [ACTIONS]: {
+    [ADD_INFRACTION]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
     [ADD_NEW_DIVERSION_PLAN_STATUS]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
@@ -110,6 +116,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [EMAIL]: '',
   [ENROLLMENT_STATUS]: Map(),
   [ERRORS]: {
+    [ADD_INFRACTION]: Map(),
     [ADD_NEW_DIVERSION_PLAN_STATUS]: Map(),
     [GET_ALL_PARTICIPANT_INFO]: Map(),
     [GET_CASE_INFO]: Map(),
@@ -122,6 +129,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     [GET_REQUIRED_HOURS]: Map(),
     [GET_SENTENCE_TERM]: Map(),
   },
+  [INFRACTIONS_LIST]: List(),
   [INFRACTION_TYPES]: List(),
   [PARTICIPANT]: Map(),
   [PHONE]: '',
@@ -137,6 +145,49 @@ const INITIAL_STATE :Map<*, *> = fromJS({
 export default function participantReducer(state :Map<*, *> = INITIAL_STATE, action :SequenceAction) :Map<*, *> {
 
   switch (action.type) {
+
+    case addInfraction.case(action.type): {
+
+      return addInfraction.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, ADD_INFRACTION, action.id], action)
+          .setIn([ACTIONS, ADD_INFRACTION, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+
+          const seqAction :SequenceAction = action;
+          const storedSeqAction :SequenceAction = state.getIn([ACTIONS, ADD_INFRACTION, seqAction.id]);
+
+          if (storedSeqAction) {
+
+            // const { value } :Object = seqAction;
+            // const { edm, enrollmentStatusEKID, enrollmentStatusESID } = value;
+            //
+            // const requestValue :Object = storedSeqAction.value;
+            // const { entityData } :Object = requestValue;
+            // const storedEnrollmentEntity :Map = fromJS(entityData[enrollmentStatusESID][0]);
+            //
+            //
+            // let newEnrollmentStatus :Map = Map();
+            // storedEnrollmentEntity.forEach((enrollmentValue, id) => {
+            //   const propertyTypeFqn :FQN = getPropertyFqnFromEdm(edm, id);
+            //   newEnrollmentStatus = newEnrollmentStatus.set(propertyTypeFqn, enrollmentValue);
+            // });
+            // newEnrollmentStatus = newEnrollmentStatus.set(ENTITY_KEY_ID, enrollmentStatusEKID);
+
+            return state
+              .set(INFRACTIONS_LIST, List())
+              .setIn([ACTIONS, ADD_INFRACTION, REQUEST_STATE], RequestStates.SUCCESS);
+          }
+
+          return state;
+        },
+        FAILURE: () => state
+          .set(INFRACTIONS_LIST, List())
+          .setIn([ACTIONS, ADD_INFRACTION, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, ADD_INFRACTION, action.id]),
+      });
+    }
 
     case addNewDiversionPlanStatus.case(action.type): {
 

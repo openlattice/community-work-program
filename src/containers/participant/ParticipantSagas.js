@@ -21,6 +21,7 @@ import type { SequenceAction } from 'redux-reqseq';
 import Logger from '../../utils/Logger';
 import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../utils/Errors';
 import {
+  ADD_INFRACTION,
   ADD_NEW_DIVERSION_PLAN_STATUS,
   ADD_WORKSITE_PLAN,
   GET_ALL_PARTICIPANT_INFO,
@@ -36,6 +37,7 @@ import {
   GET_WORKSITE_BY_WORKSITE_PLAN,
   GET_WORKSITE_PLANS,
   GET_WORK_APPOINTMENTS,
+  addInfraction,
   addNewDiversionPlanStatus,
   addWorksitePlan,
   getAllParticipantInfo,
@@ -112,6 +114,49 @@ const LOG = new Logger('ParticipantSagas');
 const { CASE_NUMBER_TEXT } = CASE_FQNS;
 const getEdmFromState = state => state.get(STATE.EDM, Map());
 const getWorksitesListFromState = state => state.getIn([STATE.WORKSITES, WORKSITES.WORKSITES_LIST], List());
+
+/*
+ *
+ * WorksitesActions.addInfraction()
+ *
+ */
+
+function* addInfractionWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+  const workerResponse = {};
+  let response :Object = {};
+
+  try {
+    yield put(addInfraction.request(id, value));
+
+    response = yield call(submitDataGraphWorker, submitDataGraph(value));
+    if (response.error) {
+      throw response.error;
+    }
+    const { data } :Object = response;
+    const { entityKeyIds } :Object = data;
+
+    const edm = yield select(getEdmFromState);
+    const infractionESID = Object.keys(entityKeyIds)[0];
+    const infractionEKID = Object.values(entityKeyIds)[0];
+
+    yield put(addInfraction.success(id, { edm, infractionEKID, infractionESID }));
+  }
+  catch (error) {
+    workerResponse.error = error;
+    LOG.error('caught exception in addInfractionWorker()', error);
+    yield put(addInfraction.failure(id, error));
+  }
+  finally {
+    yield put(addInfraction.finally(id));
+  }
+}
+
+function* addInfractionWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(ADD_INFRACTION, addInfractionWorker);
+}
 
 /*
  *
@@ -1040,6 +1085,8 @@ function* getAllParticipantInfoWatcher() :Generator<*, *, *> {
 }
 
 export {
+  addInfractionWatcher,
+  addInfractionWorker,
   addNewDiversionPlanStatusWatcher,
   addNewDiversionPlanStatusWorker,
   addWorksitePlanWatcher,

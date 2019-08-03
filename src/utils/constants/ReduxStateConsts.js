@@ -58,6 +58,7 @@ export const PEOPLE = {
 export const PERSON = {
   ACTIONS: 'actions',
   ADDRESS: 'address',
+  ADD_INFRACTION: 'addInfraction',
   ADD_NEW_DIVERSION_PLAN_STATUS: 'addNewDiversionPlanStatus',
   ADD_WORKSITE_PLAN: 'addWorksitePlan',
   CASE_NUMBER: 'caseNumber',
@@ -76,6 +77,7 @@ export const PERSON = {
   GET_SENTENCE_TERM: 'getSentenceTerm',
   GET_WORKSITE_PLANS: 'getWorksitePlans',
   GET_WORK_APPOINTMENTS: 'getWorkAppointments',
+  INFRACTIONS_LIST: 'infractionsList',
   INFRACTION_TYPES: 'infractionTypes',
   PARTICIPANT: 'participant',
   PHONE: 'phone',

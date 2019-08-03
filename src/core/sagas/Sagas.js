@@ -41,6 +41,7 @@ export default function* sagas() :Generator<*, *, *> {
     fork(EDMSagas.getEntitySetIdsWatcher),
 
     // ParticipantSagas
+    fork(ParticipantSagas.addInfractionWatcher),
     fork(ParticipantSagas.addNewDiversionPlanStatusWatcher),
     fork(ParticipantSagas.addWorksitePlanWatcher),
     fork(ParticipantSagas.getAllParticipantInfoWatcher),

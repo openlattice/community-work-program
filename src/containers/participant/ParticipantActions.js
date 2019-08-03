@@ -1,6 +1,9 @@
 // @flow
 import { newRequestSequence } from 'redux-reqseq';
 
+const ADD_INFRACTION :'ADD_INFRACTION' = 'ADD_INFRACTION';
+const addInfraction = newRequestSequence(ADD_INFRACTION);
+
 const ADD_NEW_DIVERSION_PLAN_STATUS :'ADD_NEW_DIVERSION_PLAN_STATUS' = 'ADD_NEW_DIVERSION_PLAN_STATUS';
 const addNewDiversionPlanStatus = newRequestSequence(ADD_NEW_DIVERSION_PLAN_STATUS);
 
@@ -47,6 +50,7 @@ const GET_WORK_APPOINTMENTS :'GET_WORK_APPOINTMENTS' = 'GET_WORK_APPOINTMENTS';
 const getWorkAppointments = newRequestSequence(GET_WORK_APPOINTMENTS);
 
 export {
+  ADD_INFRACTION,
   ADD_NEW_DIVERSION_PLAN_STATUS,
   ADD_WORKSITE_PLAN,
   GET_ALL_PARTICIPANT_INFO,
@@ -62,6 +66,7 @@ export {
   GET_WORKSITE_BY_WORKSITE_PLAN,
   GET_WORKSITE_PLANS,
   GET_WORK_APPOINTMENTS,
+  addInfraction,
   addNewDiversionPlanStatus,
   addWorksitePlan,
   getAllParticipantInfo,
