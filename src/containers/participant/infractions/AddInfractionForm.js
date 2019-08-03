@@ -117,25 +117,32 @@ type State = {
   worksitePlanEKID :string;
 };
 
-class AddNewPlanStatusForm extends Component<Props, State> {
+class AddInfractionForm extends Component<Props, State> {
 
   constructor(props :Props) {
     super(props);
 
     const workAppointmentList :Object[] = [];
     props.workAppointmentsByWorksitePlan
-      .forEach((appt :Map, worksitePlanEKID :UUID) => {
-        const appointmentEKID :UUID = getEntityKeyId(appt);
-        const { [START_DATETIME]: startDatetime, [DATETIME_END]: datetimeEnd } = getEntityProperties(
-          appt,
-          [START_DATETIME, DATETIME_END]
-        );
-        const { [NAME]: worksiteName } = getEntityProperties(
-          props.worksitesByWorksitePlan.get(worksitePlanEKID),
-          [NAME]
-        );
-        const label = `${worksiteName}: ${startDatetime}-${datetimeEnd}`;
-        workAppointmentList.push({ label, value: { appointmentEKID, worksitePlanEKID } });
+      .forEach((apptList :List, worksitePlanEKID :UUID) => {
+        apptList.forEach((appt :Map) => {
+          const appointmentEKID :UUID = getEntityKeyId(appt);
+          const { [START_DATETIME]: startDatetime, [DATETIME_END]: datetimeEnd } = getEntityProperties(
+            appt,
+            [START_DATETIME, DATETIME_END]
+          );
+          const { [NAME]: worksiteName } = getEntityProperties(
+            props.worksitesByWorksitePlan.get(worksitePlanEKID),
+            [NAME]
+          );
+          const startObj = DateTime.fromISO(startDatetime);
+          const start = startObj.toLocaleString(DateTime.DATETIME_SHORT);
+          const endObj = DateTime.fromISO(datetimeEnd);
+          const label = startObj.hasSame(endObj, 'day')
+            ? `${worksiteName}: ${start} – ${endObj.toLocaleString(DateTime.TIME_SIMPLE)}`
+            : `${worksiteName}: ${start} – ${endObj.toLocaleString(DateTime.DATETIME_SHORT)}`;
+          workAppointmentList.push({ label, value: { appointmentEKID, worksitePlanEKID } });
+        });
       });
 
     this.state = {
@@ -411,4 +418,4 @@ const mapDispatchToProps = dispatch => ({
 });
 
 // $FlowFixMe
-export default connect(mapStateToProps, mapDispatchToProps)(AddNewPlanStatusForm);
+export default connect(mapStateToProps, mapDispatchToProps)(AddInfractionForm);
