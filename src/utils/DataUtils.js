@@ -6,7 +6,12 @@ import { Models } from 'lattice';
 import { DateTime } from 'luxon';
 import type { FQN } from 'lattice';
 
-import { NEIGHBOR_DETAILS, TYPE_IDS_BY_FQNS, TYPES_BY_ID } from '../core/edm/constants/DataModelConsts';
+import {
+  NEIGHBOR_DETAILS,
+  NEIGHBOR_ENTITY_SET,
+  TYPE_IDS_BY_FQNS,
+  TYPES_BY_ID
+} from '../core/edm/constants/DataModelConsts';
 import { ENTITY_KEY_ID } from '../core/edm/constants/FullyQualifiedNames';
 import { APP } from './constants/ReduxStateConsts';
 
@@ -83,3 +88,5 @@ export const sortEntitiesByDateProperty = (
     }
     return dateA < dateB ? -1 : 1;
   });
+
+export const getNeighborESID = (neighbor :Map) => (neighbor.getIn([NEIGHBOR_ENTITY_SET, 'id']));
