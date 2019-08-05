@@ -17,7 +17,7 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import type { RequestSequence } from 'redux-reqseq';
 
-// import { addNewDiversionPlanStatus } from './ParticipantActions';
+import { addInfraction } from '../ParticipantActions';
 import {
   getEntityKeyId,
   getEntityProperties,
@@ -91,7 +91,7 @@ const RadioWrapper = styled.span`
 
 type Props = {
   actions:{
-    addNewDiversionPlanStatus :RequestSequence;
+    addInfraction :RequestSequence;
   };
   app :Map;
   currentStatus :string;
@@ -185,7 +185,6 @@ class AddInfractionForm extends Component<Props, State> {
       [STATUS]: getPropertyTypeIdFromEdm(edm, STATUS),
       [NOTES]: getPropertyTypeIdFromEdm(edm, NOTES),
       [TYPE]: getPropertyTypeIdFromEdm(edm, TYPE),
-
     };
   }
 
@@ -200,7 +199,7 @@ class AddInfractionForm extends Component<Props, State> {
   getCombinedDateTime = () => {
     const { date, time } = this.state;
     const datetimeString :string = date.concat(' ', time);
-    const datetime = DateTime.local(datetimeString).toISO();
+    const datetime = DateTime.fromSQL(datetimeString).toISO();
     return datetime;
   }
 
@@ -228,7 +227,7 @@ class AddInfractionForm extends Component<Props, State> {
         worksitePlanEKID: value.worksitePlanEKID,
       });
     }
-    if (name === CATEGORY) {
+    else if (name === CATEGORY) {
       this.setState({ infractionEKID: value });
     }
     else {
@@ -275,12 +274,10 @@ class AddInfractionForm extends Component<Props, State> {
     const entitySetIds :Object = this.createEntitySetIdsMap();
     const propertyTypeIds :Object = this.createPropertyTypeIdsMap();
 
-    console.log('newInfractionData: ', newInfractionData.toJS());
     const entityData :{} = processEntityData(newInfractionData, entitySetIds, propertyTypeIds);
     const associationEntityData :{} = processAssociationEntityData(fromJS(associations), entitySetIds, propertyTypeIds);
-    console.log('entityData: ', entityData);
-    console.log('associationEntityData: ', associationEntityData);
-    // actions.addInfraction({ associationEntityData, entityData });
+
+    actions.addInfraction({ associationEntityData, entityData });
   }
 
   render() {
@@ -404,6 +401,7 @@ const mapStateToProps = (state :Map) => {
   const person = state.get(STATE.PERSON);
   return ({
     app: state.get(STATE.APP),
+    [PERSON.DIVERSION_PLAN]: person.get(PERSON.DIVERSION_PLAN),
     edm: state.get(STATE.EDM),
     [INFRACTION_TYPES]: person.get(INFRACTION_TYPES),
     [WORKSITE_PLANS]: person.get(WORKSITE_PLANS),
@@ -414,6 +412,7 @@ const mapStateToProps = (state :Map) => {
 
 const mapDispatchToProps = dispatch => ({
   actions: bindActionCreators({
+    addInfraction,
   }, dispatch)
 });
 
