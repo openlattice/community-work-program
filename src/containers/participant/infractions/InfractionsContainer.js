@@ -19,7 +19,7 @@ import type { RequestSequence, RequestState } from 'redux-reqseq';
 import DigestedInfractionsContainer from './DigestedInfractionsContainer';
 import AddInfractionModal from './AddInfractionModal';
 
-import { getEntityProperties, sortEntitiesByDateProperty } from '../../../utils/DataUtils';
+import { getEntityKeyId, getEntityProperties, sortEntitiesByDateProperty } from '../../../utils/DataUtils';
 import { formatAsDate } from '../../../utils/DateTimeUtils';
 import { getParticipantInfractions } from '../ParticipantActions';
 import { PERSON, STATE } from '../../../utils/constants/ReduxStateConsts';
@@ -66,13 +66,34 @@ type Props = {
 
 type State = {
   infractionEventModalVisible :boolean;
+  infractionOptions :Object[];
+  selectedInfraction :Map;
 };
 
 class InfractionsContainer extends Component<Props, State> {
 
-  state = {
-    infractionEventModalVisible: false,
-  };
+  constructor(props :Props) {
+    super(props);
+
+    const infractions :List = props.violations.concat(props.warnings);
+    const sortedInfractions :List = sortEntitiesByDateProperty(infractions, DATETIME_COMPLETED);
+    const selectedInfraction :Map = sortedInfractions.last();
+    const infractionOptions :Object[] = sortedInfractions
+      .map((infraction :Map) => {
+        const {
+          [DATETIME_COMPLETED]: date,
+          [TYPE]: infractionType
+        } = getEntityProperties(infraction, [DATETIME_COMPLETED, TYPE]);
+        const formattedDate = formatAsDate(date);
+        return { label: `${infractionType} on ${formattedDate}`, value: infraction };
+      });
+
+    this.state = {
+      infractionEventModalVisible: false,
+      infractionOptions,
+      selectedInfraction,
+    };
+  }
 
   showAddInfractionEventModal = () => {
     this.setState({
@@ -86,7 +107,8 @@ class InfractionsContainer extends Component<Props, State> {
     });
   }
 
-  handleOnSelectChange = () => {
+  handleOnSelectChange = (option :Object) => {
+    this.setState({ selectedInfraction: option.value });
   }
 
   renderReports = () => {
@@ -97,23 +119,14 @@ class InfractionsContainer extends Component<Props, State> {
       warnings,
       worksitesByWorksitePlan,
     } = this.props;
+    const { infractionOptions, selectedInfraction } = this.state;
 
     const infractions :List = violations.concat(warnings);
-    const sortedInfractions :List = sortEntitiesByDateProperty(infractions, DATETIME_COMPLETED);
-    const INFRACTIONS_OPTIONS :Object[] = sortedInfractions
-      .map((infraction :Map) => {
-        const {
-          [DATETIME_COMPLETED]: date,
-          [TYPE]: infractionType
-        } = getEntityProperties(infraction, [DATETIME_COMPLETED, TYPE]);
-        const formattedDate = formatAsDate(date);
-        return { label: `${infractionType} on ${formattedDate}`, value: infraction };
-      });
 
     const actions :Element<*> = (
       <ActionsWrapper>
         <Select
-            options={INFRACTIONS_OPTIONS}
+            options={infractionOptions}
             onChange={this.handleOnSelectChange}
             placeholder="Select report..." />
         <Button onClick={this.showAddInfractionEventModal}>
@@ -143,11 +156,13 @@ class InfractionsContainer extends Component<Props, State> {
       );
     }
 
+    const selectedInfractionEKID :UUID = getEntityKeyId(selectedInfraction);
+    const infractionInfo :Map = infractionsInfo.get(selectedInfractionEKID);
     return (
       <DigestedInfractionsContainer
           actions={actions}
-          infractions={infractions}
-          infractionsInfo={infractionsInfo}
+          infraction={selectedInfraction}
+          infractionInfo={infractionInfo}
           worksitesByWorksitePlan={worksitesByWorksitePlan} />
     );
   }

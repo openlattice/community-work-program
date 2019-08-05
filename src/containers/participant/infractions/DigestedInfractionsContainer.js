@@ -16,7 +16,7 @@ import {
   OrderedMap
 } from 'immutable';
 
-import { getEntityKeyId, getEntityProperties } from '../../../utils/DataUtils';
+import { getEntityProperties } from '../../../utils/DataUtils';
 import { formatAsDate, formatAsTime } from '../../../utils/DateTimeUtils';
 import {
   APP_TYPE_FQNS,
@@ -41,69 +41,64 @@ const NotesWrapper = styled.div`
 
 type Props = {
   actions :Element<*>;
-  infractions :List;
-  infractionsInfo :Map;
+  infraction :Map;
+  infractionInfo :Map;
   worksitesByWorksitePlan :Map;
 };
 
 const DigestedInfractionsContainer = ({
   actions,
-  infractions,
-  infractionsInfo,
+  infraction,
+  infractionInfo,
   worksitesByWorksitePlan,
-} :Props) => (
+} :Props) => {
 
-  infractions.map((infraction :Map) => {
+  const {
+    [DATETIME_COMPLETED]: infractionDateTime,
+    [NOTES]: infractionNotes,
+    [TYPE]: infractionType
+  } = getEntityProperties(infraction, [DATETIME_COMPLETED, NOTES, TYPE]);
+  const date :string = formatAsDate(infractionDateTime);
+  const time :string = formatAsTime(infractionDateTime);
 
-    const infractionEKID :UUID = getEntityKeyId(infraction);
-    const {
-      [DATETIME_COMPLETED]: infractionDateTime,
-      [NOTES]: infractionNotes,
-      [TYPE]: infractionType
-    } = getEntityProperties(infraction, [DATETIME_COMPLETED, NOTES, TYPE]);
-    const date :string = formatAsDate(infractionDateTime);
-    const time :string = formatAsTime(infractionDateTime);
+  const violationCategory :string = infractionInfo.get(CATEGORY, '');
+  const worksiteEntity :Map = worksitesByWorksitePlan.get(infractionInfo.get(WORKSITE_PLAN));
+  const { [NAME]: worksiteName } = getEntityProperties(worksiteEntity, [NAME]);
+  const status :string = infractionInfo.get(STATUS, '');
 
-    const infractionInfo :Map = infractionsInfo.get(infractionEKID, Map());
-    const violationCategory :string = infractionInfo.get(CATEGORY, '');
-    const worksiteEntity :Map = worksitesByWorksitePlan.get(infractionInfo.get(WORKSITE_PLAN));
-    const { [NAME]: worksiteName } = getEntityProperties(worksiteEntity, [NAME]);
-    const status :string = infractionInfo.get(STATUS, '');
+  const labelMap :OrderedMap = OrderedMap({
+    infractionType: 'Infraction type',
+    violationCategory: 'Violation category, if applicable',
+    worksiteName: 'Work Site, if applicable',
+    date: 'Date',
+    time: 'Time',
+    status: 'Resulting enrollment status, if any',
+  });
+  const data :List = fromJS({
+    date,
+    infractionType,
+    status,
+    time,
+    violationCategory,
+    worksiteName,
+  });
 
-    const labelMap :OrderedMap = OrderedMap({
-      infractionType: 'Infraction type',
-      violationCategory: 'Violation category, if applicable',
-      worksiteName: 'Work Site, if applicable',
-      date: 'Date',
-      time: 'Time',
-      status: 'Resulting enrollment status, if any',
-    });
-    const data :List = fromJS({
-      date,
-      infractionType,
-      status,
-      time,
-      violationCategory,
-      worksiteName,
-    });
-
-    return (
-      <Card key={infractionEKID}>
-        { actions }
-        <CardSegment padding="sm" vertical>
-          <DataGrid
-              columns={3}
-              data={data}
-              labelMap={labelMap} />
-          <NotesWrapper>
-            <Label subtle>Notes</Label>
-            <span>{ infractionNotes }</span>
-          </NotesWrapper>
-        </CardSegment>
-      </Card>
-    );
-  })
-);
+  return (
+    <Card>
+      { actions }
+      <CardSegment padding="sm" vertical>
+        <DataGrid
+            columns={3}
+            data={data}
+            labelMap={labelMap} />
+        <NotesWrapper>
+          <Label subtle>Notes</Label>
+          <span>{ infractionNotes }</span>
+        </NotesWrapper>
+      </CardSegment>
+    </Card>
+  );
+};
 
 // $FlowFixMe
 export default DigestedInfractionsContainer;
