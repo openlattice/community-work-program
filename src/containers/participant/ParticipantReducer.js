@@ -51,7 +51,7 @@ const {
   GET_WORKSITE_BY_WORKSITE_PLAN,
   GET_WORKSITE_PLANS,
   GET_WORK_APPOINTMENTS,
-  INFRACTIONS_LIST,
+  INFRACTIONS_INFO,
   INFRACTION_TYPES,
   PARTICIPANT,
   PHONE,
@@ -129,7 +129,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     [GET_REQUIRED_HOURS]: Map(),
     [GET_SENTENCE_TERM]: Map(),
   },
-  [INFRACTIONS_LIST]: List(),
+  [INFRACTIONS_INFO]: Map(),
   [INFRACTION_TYPES]: List(),
   [PARTICIPANT]: Map(),
   [PHONE]: '',
@@ -176,14 +176,14 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
             // newEnrollmentStatus = newEnrollmentStatus.set(ENTITY_KEY_ID, enrollmentStatusEKID);
 
             return state
-              .set(INFRACTIONS_LIST, List())
+              // .set(INFRACTIONS_INFO, List())
               .setIn([ACTIONS, ADD_INFRACTION, REQUEST_STATE], RequestStates.SUCCESS);
           }
 
           return state;
         },
         FAILURE: () => state
-          .set(INFRACTIONS_LIST, List())
+          .set(INFRACTIONS_INFO, List())
           .setIn([ACTIONS, ADD_INFRACTION, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, ADD_INFRACTION, action.id]),
       });
@@ -474,10 +474,12 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
           if (value === null || value === undefined) {
             return state;
           }
+          const { infractionInfoMap, infractionsMap } = value;
 
           return state
-            .set(VIOLATIONS, value.get(INFRACTIONS_CONSTS.VIOLATION))
-            .set(WARNINGS, value.get(INFRACTIONS_CONSTS.WARNING))
+            .set(VIOLATIONS, infractionsMap.get(INFRACTIONS_CONSTS.VIOLATION))
+            .set(WARNINGS, infractionsMap.get(INFRACTIONS_CONSTS.WARNING))
+            .set(INFRACTIONS_INFO, infractionInfoMap)
             .setIn([ACTIONS, GET_PARTICIPANT_INFRACTIONS, REQUEST_STATE], RequestStates.SUCCESS);
         },
         FAILURE: () => {
