@@ -1,101 +1,106 @@
 // @flow
 
 import React from 'react';
+import type { Element } from 'react';
 import styled from 'styled-components';
-import { List, Map } from 'immutable';
-import { DateTime } from 'luxon';
+import {
+  Card,
+  CardSegment,
+  DataGrid,
+  Label,
+} from 'lattice-ui-kit';
+import {
+  fromJS,
+  List,
+  Map,
+  OrderedMap
+} from 'immutable';
 
-import { INFRACTION_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
-import { OL } from '../../../core/style/Colors';
+import { getEntityKeyId, getEntityProperties } from '../../../utils/DataUtils';
+import { formatAsDate, formatAsTime } from '../../../utils/DateTimeUtils';
+import {
+  APP_TYPE_FQNS,
+  DATETIME_COMPLETED,
+  ENROLLMENT_STATUS_FQNS,
+  INFRACTION_FQNS,
+  INFRACTION_EVENT_FQNS,
+  WORKSITE_FQNS,
+} from '../../../core/edm/constants/FullyQualifiedNames';
 
-const {
-  TYPE,
-  CATEGORY,
-  DATETIME,
-  DESCRIPTION,
-} = INFRACTION_FQNS;
+const { WORKSITE_PLAN } = APP_TYPE_FQNS;
+const { STATUS } = ENROLLMENT_STATUS_FQNS;
+const { CATEGORY } = INFRACTION_FQNS;
+const { NOTES, TYPE } = INFRACTION_EVENT_FQNS;
+const { NAME } = WORKSITE_FQNS;
 
-const NoteWrapper = styled.div`
-  margin-top: 20px;
-  padding: 40px;
-  background-color: ${OL.WHITE};
-  border: 1px solid ${OL.GREY11};
-  border-radius: 5px;
+const NotesWrapper = styled.div`
   display: flex;
   flex-direction: column;
-  justify-content: center;
-`;
-
-const InfoWrapper = styled.div`
-  width: 100%;
-  display: flex;
-  margin: 15px 0;
-  justify-content: flex-start;
-  align-items: center;
-`;
-
-const InfoBlock = styled.span`
-  display: flex;
-  flex-direction: column;
-  font-size: 14px;
-  margin-right: 150px;
-  :last-of-type {
-    margin-right: none;
-  }
-`;
-
-const Title = styled.div`
-  display: flex;
-  justify-content: flex-start;
-  color: ${OL.GREY02};
-  font-weight: 600;
-  margin: 5px 0;
-`;
-
-const Data = styled.div`
-  display: flex;
-  justify-content: flex-start;
-  color: ${(props) => {
-    if (props.level) {
-      return props.level === 'Warning' ? OL.YELLOW01 : OL.RED01;
-    }
-    return OL.GREY15;
-  }};
+  margin: 20px 0;
 `;
 
 type Props = {
+  actions :Element<*>;
   infractions :List;
+  infractionsInfo :Map;
+  worksitesByWorksitePlan :Map;
 };
 
-const DigestedInfractionsContainer = ({ infractions } :Props) => (
+const DigestedInfractionsContainer = ({
+  actions,
+  infractions,
+  infractionsInfo,
+  worksitesByWorksitePlan,
+} :Props) => (
 
   infractions.map((infraction :Map) => {
-    const datetimeObj = DateTime.fromISO(infraction.get(DATETIME));
-    const date :string = datetimeObj.toLocaleString(DateTime.DATE_SHORT);
-    const time :string = datetimeObj.toLocaleString(DateTime.TIME_SIMPLE);
+
+    const infractionEKID :UUID = getEntityKeyId(infraction);
+    const {
+      [DATETIME_COMPLETED]: infractionDateTime,
+      [NOTES]: infractionNotes,
+      [TYPE]: infractionType
+    } = getEntityProperties(infraction, [DATETIME_COMPLETED, NOTES, TYPE]);
+    const date :string = formatAsDate(infractionDateTime);
+    const time :string = formatAsTime(infractionDateTime);
+
+    const infractionInfo :Map = infractionsInfo.get(infractionEKID, Map());
+    const violationCategory :string = infractionInfo.get(CATEGORY, '');
+    const worksiteEntity :Map = worksitesByWorksitePlan.get(infractionInfo.get(WORKSITE_PLAN));
+    const { [NAME]: worksiteName } = getEntityProperties(worksiteEntity, [NAME]);
+    const status :string = infractionInfo.get(STATUS, '');
+
+    const labelMap :OrderedMap = OrderedMap({
+      infractionType: 'Infraction type',
+      violationCategory: 'Violation category, if applicable',
+      worksiteName: 'Work Site, if applicable',
+      date: 'Date',
+      time: 'Time',
+      status: 'Resulting enrollment status, if any',
+    });
+    const data :List = fromJS({
+      date,
+      infractionType,
+      status,
+      time,
+      violationCategory,
+      worksiteName,
+    });
+
     return (
-      <NoteWrapper>
-        <InfoWrapper>
-          <InfoBlock>
-            <Title>Report Level</Title>
-            <Data>{ infraction.get(TYPE) }</Data>
-          </InfoBlock>
-          <InfoBlock>
-            <Title>Date</Title>
-            <Data>{ date }</Data>
-          </InfoBlock>
-          <InfoBlock>
-            <Title>Time</Title>
-            <Data>{ time }</Data>
-          </InfoBlock>
-        </InfoWrapper>
-        <InfoWrapper>
-          <InfoBlock>
-            <Title>Description of Incident</Title>
-            <Data>{ infraction.get(DESCRIPTION) }</Data>
-          </InfoBlock>
-        </InfoWrapper>
-      </NoteWrapper>
+      <Card key={infractionEKID}>
+        { actions }
+        <CardSegment padding="sm" vertical>
+          <DataGrid
+              columns={3}
+              data={data}
+              labelMap={labelMap} />
+          <NotesWrapper>
+            <Label subtle>Notes</Label>
+            <span>{ infractionNotes }</span>
+          </NotesWrapper>
+        </CardSegment>
+      </Card>
     );
   })
 );
