@@ -77,7 +77,7 @@ export const PERSON = {
   GET_SENTENCE_TERM: 'getSentenceTerm',
   GET_WORKSITE_PLANS: 'getWorksitePlans',
   GET_WORK_APPOINTMENTS: 'getWorkAppointments',
-  INFRACTIONS_LIST: 'infractionsList',
+  INFRACTIONS_INFO: 'infractionsInfo',
   INFRACTION_TYPES: 'infractionTypes',
   PARTICIPANT: 'participant',
   PHONE: 'phone',
