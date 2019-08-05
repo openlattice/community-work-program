@@ -1,5 +1,6 @@
 // @flow
 import React, { Component } from 'react';
+import type { Element } from 'react';
 import styled from 'styled-components';
 import { List, Map } from 'immutable';
 import { faFolderOpen } from '@fortawesome/pro-light-svg-icons';
@@ -32,7 +33,6 @@ const ActionsWrapper = styled.div`
   grid-template-columns: 5fr 1fr;
   margin: 30px;
 `;
-
 const IconSplashWrapper = styled.div`
   padding: 50px 0 70px 0;
 `;
@@ -94,7 +94,18 @@ class InfractionsContainer extends Component<Props, State> {
       worksitesByWorksitePlan,
     } = this.props;
 
-    const infractions = violations.concat(warnings);
+    const infractions :List = violations.concat(warnings);
+    const actions :Element<*> = (
+      <ActionsWrapper>
+        <Select
+            options={[]}
+            onChange={this.handleOnSelectChange}
+            placeholder="Select report..." />
+        <Button onClick={this.showAddInfractionEventModal}>
+          Create report
+        </Button>
+      </ActionsWrapper>
+    );
 
     if (getParticipantInfractionsState === RequestStates.PENDING) {
       return (
@@ -106,15 +117,7 @@ class InfractionsContainer extends Component<Props, State> {
     if (infractions.isEmpty()) {
       return (
         <Card>
-          <ActionsWrapper>
-            <Select
-                options={[]}
-                onChange={this.handleOnSelectChange}
-                placeholder="Select report..." />
-            <Button onClick={this.showAddInfractionEventModal}>
-              Create report
-            </Button>
-          </ActionsWrapper>
+          { actions }
           <IconSplashWrapper>
             <IconSplash
                 caption="No Warnings or Violations"
@@ -127,6 +130,7 @@ class InfractionsContainer extends Component<Props, State> {
 
     return (
       <DigestedInfractionsContainer
+          actions={actions}
           infractions={infractions}
           infractionsInfo={infractionsInfo}
           worksitesByWorksitePlan={worksitesByWorksitePlan} />
