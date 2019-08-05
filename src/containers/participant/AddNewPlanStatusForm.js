@@ -92,9 +92,9 @@ class AddNewPlanStatusForm extends Component<Props, State> {
     };
   }
 
-  handleSelectChange = (option :Object, e :Object) => {
+  handleSelectChange = (option :Object, event :Object) => {
     const { newEnrollmentData } = this.state;
-    const { name } = e;
+    const { name } = event;
     const { value } = option;
     this.setState({ newEnrollmentData: newEnrollmentData.setIn([getPageSectionKey(1, 1), name], value) });
   }

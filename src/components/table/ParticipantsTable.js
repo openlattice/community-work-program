@@ -170,8 +170,7 @@ const ParticipantsTable = ({
           // Status
           // we can get enrollment status from enrollment or from absence of enrollment
           // need to pass empty '' if status is required
-          const enrollmentStatus = (isDefined(enrollment) ||
-            (isDefined(enrollment) && enrollment.get(personEntityKeyId).count() === 0))
+          const enrollmentStatus = isDefined(enrollment)
             ? enrollment.getIn([personEntityKeyId, STATUS, 0], ENROLLMENT_STATUSES.AWAITING_CHECKIN)
             : undefined;
 

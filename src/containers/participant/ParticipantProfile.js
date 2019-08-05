@@ -12,6 +12,7 @@ import GeneralInfo from '../../components/participant/GeneralInfo';
 import KeyDates from '../../components/participant/KeyDates';
 import CaseInfo from '../../components/participant/CaseInfo';
 import InfractionsDisplay from '../../components/participant/InfractionsDisplay';
+
 import AssignedWorksitesContainer from './assignedworksites/AssignedWorksitesContainer';
 import AddNewPlanStatusModal from './AddNewPlanStatusModal';
 import AssignWorksiteModal from './assignedworksites/AssignWorksiteModal';
