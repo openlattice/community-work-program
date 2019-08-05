@@ -63,6 +63,7 @@ import {
   getEntityProperties,
   getEntitySetIdFromApp,
   getNeighborDetails,
+  getNeighborESID,
   sortEntitiesByDateProperty,
 } from '../../utils/DataUtils';
 import { STATE, WORKSITES } from '../../utils/constants/ReduxStateConsts';
@@ -70,11 +71,14 @@ import {
   APP_TYPE_FQNS,
   CASE_FQNS,
   CONTACT_INFO_FQNS,
+  DATETIME_END,
   DATETIME_START,
   DIVERSION_PLAN_FQNS,
   ENROLLMENT_STATUS_FQNS,
+  INFRACTION_EVENT_FQNS,
   INFRACTION_FQNS,
   LOCATION_FQNS,
+  START_DATETIME,
 } from '../../core/edm/constants/FullyQualifiedNames';
 import { INFRACTIONS_CONSTS } from '../../core/edm/constants/DataModelConsts';
 
@@ -89,6 +93,7 @@ const {
   COURT_PRETRIAL_CASES,
   DIVERSION_PLAN,
   ENROLLMENT_STATUS,
+  INFRACTION_EVENT,
   INFRACTIONS,
   LOCATION,
   MANUAL_PRETRIAL_CASES,
@@ -103,8 +108,9 @@ const {
   PREFERRED,
 } = CONTACT_INFO_FQNS;
 const { REQUIRED_HOURS } = DIVERSION_PLAN_FQNS;
-const { EFFECTIVE_DATE } = ENROLLMENT_STATUS_FQNS;
-const { TYPE } = INFRACTION_FQNS;
+const { EFFECTIVE_DATE, STATUS } = ENROLLMENT_STATUS_FQNS;
+const { CATEGORY } = INFRACTION_FQNS;
+const { TYPE } = INFRACTION_EVENT_FQNS;
 const { UNPARSED_ADDRESS } = LOCATION_FQNS;
 
 const getAppFromState = state => state.get(STATE.APP, Map());
@@ -845,10 +851,12 @@ function* getParticipantInfractionsWorker(action :SequenceAction) :Generator<*, 
   const { id, value } = action;
   const workerResponse = {};
   let response :Object = {};
-  let infractions :Map = Map().withMutations((map :Map) => {
+  let infractionsMap :Map = Map().withMutations((map :Map) => {
     map.set(INFRACTIONS_CONSTS.VIOLATION, List());
     map.set(INFRACTIONS_CONSTS.WARNING, List());
   });
+  let infractionsList :List = List();
+  let infractionInfoMap :Map = Map();
 
   try {
     yield put(getParticipantInfractions.request(id));
@@ -857,12 +865,12 @@ function* getParticipantInfractionsWorker(action :SequenceAction) :Generator<*, 
       throw ERR_ACTION_VALUE_NOT_DEFINED;
     }
     const app = yield select(getAppFromState);
-    const peopleESID = getEntitySetIdFromApp(app, PEOPLE);
-    const infractionsESID = getEntitySetIdFromApp(app, INFRACTIONS);
+    const peopleESID :UUID = getEntitySetIdFromApp(app, PEOPLE);
+    const infractionEventESID :UUID = getEntitySetIdFromApp(app, INFRACTION_EVENT);
 
-    const searchFilter = {
+    let searchFilter = {
       entityKeyIds: [personEKID],
-      destinationEntitySetIds: [infractionsESID],
+      destinationEntitySetIds: [infractionEventESID],
       sourceEntitySetIds: [],
     };
     response = yield call(
@@ -874,24 +882,74 @@ function* getParticipantInfractionsWorker(action :SequenceAction) :Generator<*, 
     }
 
     if (response.data[personEKID]) {
-      const infractionsFound :List = fromJS(response.data[personEKID])
+      infractionsList = fromJS(response.data[personEKID])
         .map((infraction :Map) => getNeighborDetails(infraction));
-      infractionsFound.forEach((infraction :Map) => {
+      infractionsList.forEach((infraction :Map) => {
         const { [TYPE]: type } = getEntityProperties(infraction, [TYPE]);
         if (type === INFRACTIONS_CONSTS.WARNING) {
-          let warnings = infractions.get(INFRACTIONS_CONSTS.WARNING);
+          let warnings = infractionsMap.get(INFRACTIONS_CONSTS.WARNING);
           warnings = warnings.push(infraction);
-          infractions = infractions.set(INFRACTIONS_CONSTS.WARNING, warnings);
+          infractionsMap = infractionsMap.set(INFRACTIONS_CONSTS.WARNING, warnings);
         }
         if (type === INFRACTIONS_CONSTS.VIOLATION) {
-          let violations = infractions.get(INFRACTIONS_CONSTS.VIOLATION);
+          let violations = infractionsMap.get(INFRACTIONS_CONSTS.VIOLATION);
           violations = violations.push(infraction);
-          infractions = infractions.set(INFRACTIONS_CONSTS.VIOLATION, violations);
+          infractionsMap = infractionsMap.set(INFRACTIONS_CONSTS.VIOLATION, violations);
         }
       });
+
+      const infractionEventEKIDs :UUID[] = [];
+      infractionsList
+        .forEach((infraction :Map) => {
+          infractionEventEKIDs.push(getEntityKeyId(infraction));
+        });
+      const infractionsESID :UUID = getEntitySetIdFromApp(app, INFRACTIONS);
+      const enrollmentStatusESID :UUID = getEntitySetIdFromApp(app, ENROLLMENT_STATUS);
+      const worksitePlanESID :UUID = getEntitySetIdFromApp(app, WORKSITE_PLAN);
+      searchFilter = {
+        entityKeyIds: infractionEventEKIDs,
+        destinationEntitySetIds: [enrollmentStatusESID, infractionsESID],
+        sourceEntitySetIds: [worksitePlanESID],
+      };
+      response = yield call(
+        searchEntityNeighborsWithFilterWorker,
+        searchEntityNeighborsWithFilter({ entitySetId: infractionEventESID, filter: searchFilter })
+      );
+      if (response.error) {
+        throw response.error;
+      }
+      const infractionEventNeighbors :Map = fromJS(response.data);
+
+      if (infractionEventNeighbors.count() > 0) {
+
+        infractionEventNeighbors.forEach((neighborList :List, infractionEventEKID :UUID) => {
+          neighborList.forEach((neighbor :Map) => {
+            const neighborESID = getNeighborESID(neighbor);
+            const entity :Map = getNeighborDetails(neighbor);
+            let infractionEventMap :Map = infractionInfoMap.get(infractionEventEKID, Map());
+
+            if (neighborESID === infractionsESID) {
+              const { [CATEGORY]: violationCategory } = getEntityProperties(entity, [CATEGORY]);
+              infractionEventMap = infractionEventMap.set(CATEGORY, violationCategory);
+              infractionInfoMap = infractionInfoMap.set(infractionEventEKID, infractionEventMap);
+            }
+            if (neighborESID === enrollmentStatusESID) {
+              const { [STATUS]: enrollmentStatus } = getEntityProperties(entity, [STATUS]);
+              infractionEventMap = infractionEventMap.set(STATUS, enrollmentStatus);
+              infractionInfoMap = infractionInfoMap.set(infractionEventEKID, infractionEventMap);
+            }
+            if (neighborESID === worksitePlanESID) {
+              const worksitePlanEKID :UUID = getEntityKeyId(entity);
+              infractionEventMap = infractionEventMap.set(WORKSITE_PLAN, worksitePlanEKID);
+              infractionInfoMap = infractionInfoMap.set(infractionEventEKID, infractionEventMap);
+            }
+
+          });
+        });
+      }
     }
 
-    yield put(getParticipantInfractions.success(id, infractions));
+    yield put(getParticipantInfractions.success(id, { infractionInfoMap, infractionsMap }));
   }
   catch (error) {
     workerResponse.error = error;
