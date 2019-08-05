@@ -19,8 +19,11 @@ import type { RequestSequence, RequestState } from 'redux-reqseq';
 import DigestedInfractionsContainer from './DigestedInfractionsContainer';
 import AddInfractionModal from './AddInfractionModal';
 
+import { getEntityProperties, sortEntitiesByDateProperty } from '../../../utils/DataUtils';
+import { formatAsDate } from '../../../utils/DateTimeUtils';
 import { getParticipantInfractions } from '../ParticipantActions';
 import { PERSON, STATE } from '../../../utils/constants/ReduxStateConsts';
+import { DATETIME_COMPLETED, INFRACTION_EVENT_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { ContainerOuterWrapper } from '../../../components/Layout';
 
 const InfractionsOuterWrapper = styled(ContainerOuterWrapper)`
@@ -37,6 +40,7 @@ const IconSplashWrapper = styled.div`
   padding: 50px 0 70px 0;
 `;
 
+const { TYPE } = INFRACTION_EVENT_FQNS;
 const {
   ACTIONS,
   GET_PARTICIPANT_INFRACTIONS,
@@ -95,10 +99,21 @@ class InfractionsContainer extends Component<Props, State> {
     } = this.props;
 
     const infractions :List = violations.concat(warnings);
+    const sortedInfractions :List = sortEntitiesByDateProperty(infractions, DATETIME_COMPLETED);
+    const INFRACTIONS_OPTIONS :Object[] = sortedInfractions
+      .map((infraction :Map) => {
+        const {
+          [DATETIME_COMPLETED]: date,
+          [TYPE]: infractionType
+        } = getEntityProperties(infraction, [DATETIME_COMPLETED, TYPE]);
+        const formattedDate = formatAsDate(date);
+        return { label: `${infractionType} on ${formattedDate}`, value: infraction };
+      });
+
     const actions :Element<*> = (
       <ActionsWrapper>
         <Select
-            options={[]}
+            options={INFRACTIONS_OPTIONS}
             onChange={this.handleOnSelectChange}
             placeholder="Select report..." />
         <Button onClick={this.showAddInfractionEventModal}>
