@@ -285,9 +285,7 @@ class ParticipantProfile extends Component<Props, State> {
           </NameRowWrapper>
           <InfractionsContainer
               currentStatus={status}
-              personEKID={personEKID}
-              violations={violations}
-              warnings={warnings} />
+              personEKID={personEKID} />
         </ProfileBody>
         <AddNewPlanStatusModal
             currentStatus={status}
