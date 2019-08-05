@@ -40,9 +40,11 @@ const IconSplashWrapper = styled.div`
 const {
   ACTIONS,
   GET_PARTICIPANT_INFRACTIONS,
+  INFRACTIONS_INFO,
   REQUEST_STATE,
   VIOLATIONS,
   WARNINGS,
+  WORKSITES_BY_WORKSITE_PLAN,
 } = PERSON;
 
 type Props = {
@@ -51,9 +53,11 @@ type Props = {
   };
   currentStatus :string;
   getParticipantInfractionsState :RequestState;
+  infractionsInfo :Map;
   personEKID :UUID;
   violations :List;
   warnings :List;
+  worksitesByWorksitePlan :Map;
 };
 
 type State = {
@@ -84,8 +88,10 @@ class InfractionsContainer extends Component<Props, State> {
   renderReports = () => {
     const {
       getParticipantInfractionsState,
+      infractionsInfo,
       violations,
-      warnings
+      warnings,
+      worksitesByWorksitePlan,
     } = this.props;
 
     const infractions = violations.concat(warnings);
@@ -121,7 +127,9 @@ class InfractionsContainer extends Component<Props, State> {
 
     return (
       <DigestedInfractionsContainer
-          infractions={infractions} />
+          infractions={infractions}
+          infractionsInfo={infractionsInfo}
+          worksitesByWorksitePlan={worksitesByWorksitePlan} />
     );
   }
 
@@ -148,6 +156,10 @@ const mapStateToProps = (state) => {
   const person = state.get(STATE.PERSON);
   return {
     getParticipantInfractionsState: person.getIn([ACTIONS, GET_PARTICIPANT_INFRACTIONS, REQUEST_STATE]),
+    [INFRACTIONS_INFO]: person.get(INFRACTIONS_INFO),
+    [VIOLATIONS]: person.get(VIOLATIONS),
+    [WARNINGS]: person.get(WARNINGS),
+    [WORKSITES_BY_WORKSITE_PLAN]: person.get(WORKSITES_BY_WORKSITE_PLAN),
   };
 };
 
