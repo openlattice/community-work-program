@@ -12,7 +12,10 @@ import GeneralInfo from '../../components/participant/GeneralInfo';
 import KeyDates from '../../components/participant/KeyDates';
 import CaseInfo from '../../components/participant/CaseInfo';
 import InfractionsDisplay from '../../components/participant/InfractionsDisplay';
+
+import AssignedWorksitesContainer from './assignedworksites/AssignedWorksitesContainer';
 import AddNewPlanStatusModal from './AddNewPlanStatusModal';
+import AssignWorksiteModal from './assignedworksites/AssignWorksiteModal';
 import LogoLoader from '../../components/LogoLoader';
 
 import { getAllParticipantInfo } from './ParticipantActions';
@@ -21,11 +24,16 @@ import { OL } from '../../core/style/Colors';
 import { PARTICIPANT_PROFILE_WIDTH } from '../../core/style/Sizes';
 import * as Routes from '../../core/router/Routes';
 import { BackNavButton } from '../../components/controls/index';
-import { getEntityProperties } from '../../utils/DataUtils';
+import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
 import { isDefined } from '../../utils/LangUtils';
 import { APP_TYPE_FQNS, ENROLLMENT_STATUS_FQNS, PEOPLE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { ENROLLMENT_STATUSES } from '../../core/edm/constants/DataModelConsts';
-import { APP, PERSON, STATE } from '../../utils/constants/ReduxStateConsts';
+import {
+  APP,
+  PERSON,
+  STATE,
+  WORKSITES
+} from '../../utils/constants/ReduxStateConsts';
 
 const { STATUS } = ENROLLMENT_STATUS_FQNS;
 const { FIRST_NAME, LAST_NAME } = PEOPLE_FQNS;
@@ -33,6 +41,7 @@ const {
   ACTIONS,
   ADDRESS,
   CASE_NUMBER,
+  DIVERSION_PLAN,
   EMAIL,
   ENROLLMENT_STATUS,
   GET_ALL_PARTICIPANT_INFO,
@@ -43,7 +52,14 @@ const {
   SENTENCE_TERM,
   VIOLATIONS,
   WARNINGS,
+  WORKSITES_BY_WORKSITE_PLAN,
+  WORKSITE_PLANS,
 } = PERSON;
+const { WORKSITES_LIST } = WORKSITES;
+
+const ENROLLMENT_STATUSES_EXCLUDING_PREENROLLMENT = Object.values(ENROLLMENT_STATUSES)
+  .filter(status => status !== ENROLLMENT_STATUSES.AWAITING_CHECKIN
+    && status !== ENROLLMENT_STATUSES.AWAITING_ORIENTATION);
 
 const ProfileWrapper = styled.div`
   display: flex;
@@ -106,6 +122,7 @@ type Props = {
   address :string;
   app :Map;
   caseNumber :string;
+  diversionPlan :Map;
   email :string;
   enrollmentStatus :Map;
   getAllParticipantInfoRequestState :RequestState;
@@ -117,17 +134,26 @@ type Props = {
   sentenceTerm :Map;
   violations :List;
   warnings :List;
+  worksitesByWorksitePlan :Map;
+  worksitePlans :List;
+  worksitesList :List;
 };
 
 type State = {
+  showAssignWorksiteModal :boolean;
   showEnrollmentModal :boolean;
 };
 
 class ParticipantProfile extends Component<Props, State> {
 
-  state = {
-    showEnrollmentModal: false,
-  };
+  constructor(props :Props) {
+    super(props);
+
+    this.state = {
+      showAssignWorksiteModal: false,
+      showEnrollmentModal: false,
+    };
+  }
 
   componentDidMount() {
     const { app } = this.props;
@@ -160,11 +186,24 @@ class ParticipantProfile extends Component<Props, State> {
     });
   }
 
+  handleShowAssignWorksiteModal = () => {
+    this.setState({
+      showAssignWorksiteModal: true
+    });
+  }
+
+  handleHideAssignWorksiteModal = () => {
+    this.setState({
+      showAssignWorksiteModal: false
+    });
+  }
+
   render() {
     const {
       actions,
       address,
       caseNumber,
+      diversionPlan,
       email,
       enrollmentStatus,
       getAllParticipantInfoRequestState,
@@ -175,8 +214,11 @@ class ParticipantProfile extends Component<Props, State> {
       sentenceTerm,
       violations,
       warnings,
+      worksitesByWorksitePlan,
+      worksitePlans,
+      worksitesList,
     } = this.props;
-    const { showEnrollmentModal } = this.state;
+    const { showAssignWorksiteModal, showEnrollmentModal } = this.state;
 
     if (getInitializeAppRequestState === RequestStates.PENDING
         || getAllParticipantInfoRequestState === RequestStates.PENDING) {
@@ -187,11 +229,13 @@ class ParticipantProfile extends Component<Props, State> {
       );
     }
 
+    const personEKID :UUID = getEntityKeyId(participant);
     const { [FIRST_NAME]: firstName, [LAST_NAME]: lastName } = getEntityProperties(
       participant, [FIRST_NAME, LAST_NAME]
     );
     let { [STATUS]: status } = getEntityProperties(enrollmentStatus, [STATUS]);
     if (!isDefined(status)) status = ENROLLMENT_STATUSES.AWAITING_CHECKIN;
+    const diversionPlanEKID :UUID = getEntityKeyId(diversionPlan);
 
     return (
       <ProfileWrapper>
@@ -224,11 +268,33 @@ class ParticipantProfile extends Component<Props, State> {
             </InnerColumnWrapper>
           </BasicInfoWrapper>
         </ProfileBody>
+        {
+          ENROLLMENT_STATUSES_EXCLUDING_PREENROLLMENT.includes(status)
+            ? (
+              <ProfileBody>
+                <NameRowWrapper>
+                  <NameHeader>Assigned Work Sites</NameHeader>
+                  <Button onClick={this.handleShowAssignWorksiteModal}>Add Work Site</Button>
+                </NameRowWrapper>
+                <AssignedWorksitesContainer
+                    worksitePlans={worksitePlans}
+                    worksitesByWorksitePlan={worksitesByWorksitePlan} />
+              </ProfileBody>
+            )
+            : null
+        }
+
         <AddNewPlanStatusModal
             currentStatus={status}
             isOpen={showEnrollmentModal}
             onClose={this.handleHideEnrollmentModal}
             personName={firstName} />
+        <AssignWorksiteModal
+            diversionPlanEKID={diversionPlanEKID}
+            isOpen={showAssignWorksiteModal}
+            onClose={this.handleHideAssignWorksiteModal}
+            personEKID={personEKID}
+            worksites={worksitesList} />
       </ProfileWrapper>
     );
   }
@@ -237,10 +303,12 @@ class ParticipantProfile extends Component<Props, State> {
 const mapStateToProps = (state :Map<*, *>) => {
   const app = state.get(STATE.APP);
   const person = state.get(STATE.PERSON);
+  const worksites = state.get(STATE.WORKSITES);
   return {
     [ADDRESS]: person.get(ADDRESS),
     app,
     [CASE_NUMBER]: person.get(CASE_NUMBER),
+    [DIVERSION_PLAN]: person.get(DIVERSION_PLAN),
     [EMAIL]: person.get(EMAIL),
     [ENROLLMENT_STATUS]: person.get(ENROLLMENT_STATUS),
     getAllParticipantInfoRequestState: person.getIn([ACTIONS, GET_ALL_PARTICIPANT_INFO, REQUEST_STATE]),
@@ -251,6 +319,9 @@ const mapStateToProps = (state :Map<*, *>) => {
     [SENTENCE_TERM]: person.get(SENTENCE_TERM),
     [VIOLATIONS]: person.get(VIOLATIONS),
     [WARNINGS]: person.get(WARNINGS),
+    [WORKSITES_BY_WORKSITE_PLAN]: person.get(WORKSITES_BY_WORKSITE_PLAN),
+    [WORKSITE_PLANS]: person.get(WORKSITE_PLANS),
+    [WORKSITES_LIST]: worksites.get(WORKSITES_LIST),
   };
 };
 

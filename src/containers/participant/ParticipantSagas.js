@@ -16,13 +16,13 @@ import {
   SearchApiActions,
   SearchApiSagas,
 } from 'lattice-sagas';
-import { DateTime } from 'luxon';
 import type { SequenceAction } from 'redux-reqseq';
 
 import Logger from '../../utils/Logger';
 import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../utils/Errors';
 import {
   ADD_NEW_DIVERSION_PLAN_STATUS,
+  ADD_WORKSITE_PLAN,
   GET_ALL_PARTICIPANT_INFO,
   GET_CASE_INFO,
   GET_CONTACT_INFO,
@@ -32,7 +32,10 @@ import {
   GET_PARTICIPANT_INFRACTIONS,
   GET_REQUIRED_HOURS,
   GET_SENTENCE_TERM,
+  GET_WORKSITE_BY_WORKSITE_PLAN,
+  GET_WORKSITE_PLANS,
   addNewDiversionPlanStatus,
+  addWorksitePlan,
   getAllParticipantInfo,
   getCaseInfo,
   getContactInfo,
@@ -42,10 +45,13 @@ import {
   getParticipantInfractions,
   getRequiredHours,
   getSentenceTerm,
+  getWorksiteByWorksitePlan,
+  getWorksitePlans,
 } from './ParticipantActions';
 import { submitDataGraph } from '../../core/sagas/data/DataActions';
 import { submitDataGraphWorker } from '../../core/sagas/data/DataSagas';
-import { isDefined } from '../../utils/LangUtils';
+import { getWorksites } from '../worksites/WorksitesActions';
+import { getWorksitesWorker } from '../worksites/WorksitesSagas';
 import {
   getEntityKeyId,
   getEntityProperties,
@@ -53,7 +59,7 @@ import {
   getNeighborDetails,
   sortEntitiesByDateProperty,
 } from '../../utils/DataUtils';
-import { STATE } from '../../utils/constants/ReduxStateConsts';
+import { STATE, WORKSITES } from '../../utils/constants/ReduxStateConsts';
 import {
   APP_TYPE_FQNS,
   CASE_FQNS,
@@ -64,13 +70,14 @@ import {
   INFRACTION_FQNS,
   LOCATION_FQNS,
 } from '../../core/edm/constants/FullyQualifiedNames';
-import { ENROLLMENT_STATUSES, INFRACTIONS_CONSTS } from '../../core/edm/constants/DataModelConsts';
+import { INFRACTIONS_CONSTS } from '../../core/edm/constants/DataModelConsts';
 
 const { getEntityData } = DataApiActions;
 const { getEntityDataWorker } = DataApiSagas;
 const { searchEntityNeighborsWithFilter } = SearchApiActions;
 const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
 const {
+  BASED_ON,
   CONTACT_INFORMATION,
   COURT_PRETRIAL_CASES,
   DIVERSION_PLAN,
@@ -80,14 +87,16 @@ const {
   MANUAL_PRETRIAL_CASES,
   PEOPLE,
   SENTENCE_TERM,
+  WORKSITE,
+  WORKSITE_PLAN,
 } = APP_TYPE_FQNS;
 const {
   EMAIL,
   PHONE_NUMBER,
   PREFERRED,
 } = CONTACT_INFO_FQNS;
-const { COMPLETED, REQUIRED_HOURS } = DIVERSION_PLAN_FQNS;
-const { EFFECTIVE_DATE, STATUS } = ENROLLMENT_STATUS_FQNS;
+const { REQUIRED_HOURS } = DIVERSION_PLAN_FQNS;
+const { EFFECTIVE_DATE } = ENROLLMENT_STATUS_FQNS;
 const { TYPE } = INFRACTION_FQNS;
 const { UNPARSED_ADDRESS } = LOCATION_FQNS;
 
@@ -97,6 +106,7 @@ const LOG = new Logger('ParticipantSagas');
 
 const { CASE_NUMBER_TEXT } = CASE_FQNS;
 const getEdmFromState = state => state.get(STATE.EDM, Map());
+const getWorksitesListFromState = state => state.getIn([STATE.WORKSITES, WORKSITES.WORKSITES_LIST], List());
 
 /*
  *
@@ -139,6 +149,58 @@ function* addNewDiversionPlanStatusWorker(action :SequenceAction) :Generator<*, 
 function* addNewDiversionPlanStatusWatcher() :Generator<*, *, *> {
 
   yield takeEvery(ADD_NEW_DIVERSION_PLAN_STATUS, addNewDiversionPlanStatusWorker);
+}
+
+/*
+ *
+ * WorksitesActions.addWorksitePlan()
+ *
+ */
+
+function* addWorksitePlanWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+  const workerResponse = {};
+  let response :Object = {};
+
+  try {
+    yield put(addWorksitePlan.request(id, value));
+
+    response = yield call(submitDataGraphWorker, submitDataGraph(value));
+    if (response.error) {
+      throw response.error;
+    }
+    const { data } :Object = response;
+    const { entityKeyIds } :Object = data;
+
+    const app = yield select(getAppFromState);
+    const edm = yield select(getEdmFromState);
+    const worksitePlanESID = Object.keys(entityKeyIds)[0];
+    const worksitePlanEKID = Object.values(entityKeyIds)[0];
+    const basedOnESID = getEntitySetIdFromApp(app, BASED_ON);
+    const worksitesList = yield select(getWorksitesListFromState);
+
+    yield put(addWorksitePlan.success(id, {
+      basedOnESID,
+      edm,
+      worksitePlanEKID,
+      worksitePlanESID,
+      worksitesList
+    }));
+  }
+  catch (error) {
+    workerResponse.error = error;
+    LOG.error('caught exception in addWorksitePlanWorker()', error);
+    yield put(addWorksitePlan.failure(id, error));
+  }
+  finally {
+    yield put(addWorksitePlan.finally(id));
+  }
+}
+
+function* addWorksitePlanWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(ADD_WORKSITE_PLAN, addWorksitePlanWorker);
 }
 
 /*
@@ -329,6 +391,129 @@ function* getContactInfoWatcher() :Generator<*, *, *> {
 
 /*
  *
+ * WorksitesActions.getWorksiteByWorksitePlan()
+ *
+ */
+function* getWorksiteByWorksitePlanWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+  const workerResponse = {};
+  let response :Object = {};
+  let worksitesByPlanEKID :Map = Map();
+
+  try {
+    yield put(getWorksiteByWorksitePlan.request(id));
+    const { worksitePlans } = value;
+    if (value === null || value === undefined) {
+      throw ERR_ACTION_VALUE_NOT_DEFINED;
+    }
+    const worksitePlanEKIDs :UUID[] = [];
+    worksitePlans.forEach((plan :Map) => worksitePlanEKIDs.push(getEntityKeyId(plan)));
+
+    const app = yield select(getAppFromState);
+    const worksitePlanESID :UUID = getEntitySetIdFromApp(app, WORKSITE_PLAN);
+    const worksiteESID :UUID = getEntitySetIdFromApp(app, WORKSITE);
+
+    const searchFilter :Object = {
+      entityKeyIds: worksitePlanEKIDs,
+      destinationEntitySetIds: [worksiteESID],
+      sourceEntitySetIds: [],
+    };
+    response = yield call(
+      searchEntityNeighborsWithFilterWorker,
+      searchEntityNeighborsWithFilter({ entitySetId: worksitePlanESID, filter: searchFilter })
+    );
+    if (response.error) {
+      throw response.error;
+    }
+
+    if (Object.keys(response.data).length > 0) {
+
+      worksitesByPlanEKID = fromJS(response.data)
+        .map((worksitesList :List) => getNeighborDetails(worksitesList.get(0)));
+    }
+
+    yield put(getWorksiteByWorksitePlan.success(id, worksitesByPlanEKID));
+  }
+  catch (error) {
+    workerResponse.error = error;
+    LOG.error('caught exception in getWorksiteByWorksitePlanWorker()', error);
+    yield put(getWorksiteByWorksitePlan.failure(id, error));
+  }
+  finally {
+    yield put(getWorksiteByWorksitePlan.finally(id));
+  }
+  return workerResponse;
+}
+
+function* getWorksiteByWorksitePlanWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(GET_WORKSITE_BY_WORKSITE_PLAN, getWorksiteByWorksitePlanWorker);
+}
+
+/*
+ *
+ * WorksitesActions.getWorksitePlans()
+ *
+ */
+function* getWorksitePlansWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+  const workerResponse = {};
+  let response :Object = {};
+  let worksitePlans :List = List();
+
+  try {
+    yield put(getWorksitePlans.request(id));
+    const { diversionPlan } = value;
+    if (value === null || value === undefined) {
+      throw ERR_ACTION_VALUE_NOT_DEFINED;
+    }
+    const app = yield select(getAppFromState);
+    const diversionPlanESID :UUID = getEntitySetIdFromApp(app, DIVERSION_PLAN);
+    const worksitePlanESID :UUID = getEntitySetIdFromApp(app, WORKSITE_PLAN);
+    const diversionPlanEKID :UUID = getEntityKeyId(diversionPlan);
+
+    const searchFilter :Object = {
+      entityKeyIds: [diversionPlanEKID],
+      destinationEntitySetIds: [worksitePlanESID],
+      sourceEntitySetIds: [],
+    };
+    response = yield call(
+      searchEntityNeighborsWithFilterWorker,
+      searchEntityNeighborsWithFilter({ entitySetId: diversionPlanESID, filter: searchFilter })
+    );
+    if (response.error) {
+      throw response.error;
+    }
+
+    if (response.data[diversionPlanEKID]) {
+      worksitePlans = fromJS(response.data[diversionPlanEKID])
+        .map((worksitePlan :Map) => getNeighborDetails(worksitePlan));
+
+      yield call(getWorksiteByWorksitePlanWorker, getWorksiteByWorksitePlan({ worksitePlans }));
+    }
+
+    yield put(getWorksitePlans.success(id, worksitePlans));
+  }
+  catch (error) {
+    workerResponse.error = error;
+    LOG.error('caught exception in getWorksitePlansWorker()', error);
+    yield put(getWorksitePlans.failure(id, error));
+  }
+  finally {
+    yield put(getWorksitePlans.finally(id));
+  }
+  return workerResponse;
+}
+
+function* getWorksitePlansWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(GET_WORKSITE_PLANS, getWorksitePlansWorker);
+}
+
+/*
+ *
  * ParticipantsActions.getEnrollmentStatus()
  *
  */
@@ -415,6 +600,9 @@ function* getEnrollmentStatusWorker(action :SequenceAction) :Generator<*, *, *> 
         const diversionPlanEKID :UUID = enrollmentStatusesByDiversionPlan
           .findKey((status :Map) => status === enrollmentStatus);
         diversionPlan = diversionPlans.get(personEKID).find((plan :Map) => getEntityKeyId(plan) === diversionPlanEKID);
+
+        /* Call getWorksitePlans() to find all worksite plans for current diversion plan */
+        yield call(getWorksitePlansWorker, getWorksitePlans({ diversionPlan }));
       }
     }
 
@@ -720,6 +908,7 @@ function* getAllParticipantInfoWorker(action :SequenceAction) :Generator<*, *, *
       call(getParticipantWorker, getParticipant({ personEKID })),
       call(getRequiredHoursWorker, getRequiredHours({ personEKID })),
       call(getSentenceTermWorker, getSentenceTerm({ personEKID })),
+      call(getWorksitesWorker, getWorksites()),
     ]);
     const responseError = workerResponses.reduce(
       (error, workerResponse) => (error ? error : workerResponse.error),
@@ -747,6 +936,8 @@ function* getAllParticipantInfoWatcher() :Generator<*, *, *> {
 export {
   addNewDiversionPlanStatusWatcher,
   addNewDiversionPlanStatusWorker,
+  addWorksitePlanWatcher,
+  addWorksitePlanWorker,
   getAllParticipantInfoWatcher,
   getAllParticipantInfoWorker,
   getCaseInfoWatcher,
@@ -765,4 +956,8 @@ export {
   getRequiredHoursWorker,
   getSentenceTermWatcher,
   getSentenceTermWorker,
+  getWorksiteByWorksitePlanWatcher,
+  getWorksiteByWorksitePlanWorker,
+  getWorksitePlansWatcher,
+  getWorksitePlansWorker,
 };

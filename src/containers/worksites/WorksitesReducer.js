@@ -16,6 +16,7 @@ import {
   addOrganization,
   addWorksite,
   getOrganizations,
+  getWorksites,
   getWorksitePlans,
   getWorksitesByOrg,
 } from './WorksitesActions';
@@ -27,12 +28,14 @@ const {
   ERRORS,
   GET_ORGANIZATIONS,
   GET_WORKSITES,
+  GET_WORKSITES_BY_ORG,
   GET_WORKSITE_PLANS,
   REQUEST_STATE,
   ORGANIZATION_STATUSES,
   ORGANIZATIONS_LIST,
   WORKSITES_BY_ORG,
   WORKSITES_INFO,
+  WORKSITES_LIST,
 } = WORKSITES;
 const { DATETIME_END, DATETIME_START } = WORKSITE_FQNS;
 
@@ -50,6 +53,9 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     [GET_WORKSITES]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
+    [GET_WORKSITES_BY_ORG]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
     [GET_WORKSITE_PLANS]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
@@ -59,12 +65,14 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     [ADD_WORKSITE]: Map(),
     [GET_ORGANIZATIONS]: Map(),
     [GET_WORKSITES]: Map(),
+    [GET_WORKSITES_BY_ORG]: Map(),
     [GET_WORKSITE_PLANS]: Map(),
   },
   [ORGANIZATION_STATUSES]: Map(),
   [ORGANIZATIONS_LIST]: List(),
   [WORKSITES_BY_ORG]: Map(),
   [WORKSITES_INFO]: Map(),
+  [WORKSITES_LIST]: List(),
 });
 
 export default function worksitesReducer(state :Map<*, *> = INITIAL_STATE, action :SequenceAction) :Map<*, *> {
@@ -259,12 +267,12 @@ export default function worksitesReducer(state :Map<*, *> = INITIAL_STATE, actio
       return getWorksitesByOrg.reducer(state, action, {
 
         REQUEST: () => state
-          .setIn([ACTIONS, GET_WORKSITES, action.id], action)
-          .setIn([ACTIONS, GET_WORKSITES, REQUEST_STATE], RequestStates.PENDING),
+          .setIn([ACTIONS, GET_WORKSITES_BY_ORG, action.id], action)
+          .setIn([ACTIONS, GET_WORKSITES_BY_ORG, REQUEST_STATE], RequestStates.PENDING),
         SUCCESS: () => {
 
           const seqAction :SequenceAction = action;
-          const storedSeqAction :SequenceAction = state.getIn([ACTIONS, GET_WORKSITES, seqAction.id]);
+          const storedSeqAction :SequenceAction = state.getIn([ACTIONS, GET_WORKSITES_BY_ORG, seqAction.id]);
 
           const { value } :Object = seqAction;
           const { worksitesByOrg } = value;
@@ -298,7 +306,7 @@ export default function worksitesReducer(state :Map<*, *> = INITIAL_STATE, actio
             return state
               .set(ORGANIZATION_STATUSES, organizationStatuses)
               .set(WORKSITES_BY_ORG, worksitesByOrg)
-              .setIn([ACTIONS, GET_WORKSITES, REQUEST_STATE], RequestStates.SUCCESS);
+              .setIn([ACTIONS, GET_WORKSITES_BY_ORG, REQUEST_STATE], RequestStates.SUCCESS);
           }
 
           return state;
@@ -308,6 +316,40 @@ export default function worksitesReducer(state :Map<*, *> = INITIAL_STATE, actio
           const { value } = action;
           return state
             .set(WORKSITES_BY_ORG, Map())
+            .setIn([ERRORS, GET_WORKSITES_BY_ORG], value)
+            .setIn([ACTIONS, GET_WORKSITES_BY_ORG, REQUEST_STATE], RequestStates.FAILURE);
+        },
+        FINALLY: () => state.deleteIn([ACTIONS, GET_WORKSITES_BY_ORG, action.id])
+      });
+    }
+
+    case getWorksites.case(action.type): {
+
+      return getWorksites.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, GET_WORKSITES, action.id], fromJS(action))
+          .setIn([ACTIONS, GET_WORKSITES, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+
+          if (!state.hasIn([ACTIONS, GET_WORKSITES, action.id])) {
+            return state;
+          }
+
+          const { value } = action;
+          if (value === null || value === undefined) {
+            return state;
+          }
+
+          return state
+            .set(WORKSITES_LIST, value)
+            .setIn([ACTIONS, GET_WORKSITES, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => {
+
+          const { value } = action;
+          return state
+            .set(WORKSITES_LIST, List())
             .setIn([ERRORS, GET_WORKSITES], value)
             .setIn([ACTIONS, GET_WORKSITES, REQUEST_STATE], RequestStates.FAILURE);
         },

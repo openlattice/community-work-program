@@ -87,15 +87,14 @@ class AddNewPlanStatusForm extends Component<Props, State> {
   createPropertyTypeIdsMap = () => {
     const { edm } = this.props;
     return {
-      [DATETIME_COMPLETED]: getPropertyTypeIdFromEdm(edm, DATETIME_COMPLETED),
       [EFFECTIVE_DATE]: getPropertyTypeIdFromEdm(edm, EFFECTIVE_DATE),
       [STATUS]: getPropertyTypeIdFromEdm(edm, STATUS),
     };
   }
 
-  handleSelectChange = (option :Object, e :Object) => {
+  handleSelectChange = (option :Object, event :Object) => {
     const { newEnrollmentData } = this.state;
-    const { name } = e;
+    const { name } = event;
     const { value } = option;
     this.setState({ newEnrollmentData: newEnrollmentData.setIn([getPageSectionKey(1, 1), name], value) });
   }
@@ -111,9 +110,7 @@ class AddNewPlanStatusForm extends Component<Props, State> {
     newEnrollmentData = newEnrollmentData
       .setIn([getPageSectionKey(1, 1), getEntityAddressKey(0, ENROLLMENT_STATUS, EFFECTIVE_DATE)], nowAsIso);
 
-    associations.push([RELATED_TO, diversionPlanEKID, DIVERSION_PLAN, 0, ENROLLMENT_STATUS, {
-      [DATETIME_COMPLETED]: [nowAsIso]
-    }]);
+    associations.push([RELATED_TO, diversionPlanEKID, DIVERSION_PLAN, 0, ENROLLMENT_STATUS, {}]);
     const entitySetIds :Object = this.createEntitySetIdsMap();
     const propertyTypeIds :Object = this.createPropertyTypeIdsMap();
 
