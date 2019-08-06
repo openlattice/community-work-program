@@ -58,7 +58,7 @@ export const PEOPLE = {
 export const PERSON = {
   ACTIONS: 'actions',
   ADDRESS: 'address',
-  ADD_INFRACTION: 'addInfraction',
+  ADD_INFRACTION_EVENT: 'addInfractionEvent',
   ADD_NEW_DIVERSION_PLAN_STATUS: 'addNewDiversionPlanStatus',
   ADD_WORKSITE_PLAN: 'addWorksitePlan',
   CASE_NUMBER: 'caseNumber',
