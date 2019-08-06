@@ -252,6 +252,7 @@ function* getEnrollmentStatusesWorker(action :SequenceAction) :Generator<*, *, *
     return;
   }
   let response :Object = {};
+  let enrollmentMap :Map = Map();
 
   try {
     yield put(getEnrollmentStatuses.request(id));
@@ -285,96 +286,97 @@ function* getEnrollmentStatusesWorker(action :SequenceAction) :Generator<*, *, *
     const diversionPlansByParticipant = fromJS(response.data)
       .map((planList :List) => planList.map((plan :Map) => getNeighborDetails(plan)));
 
-    /* Call getHoursWorked so diversionPlan search doesn't need to happen twice on rendering participants tables. */
-    yield call(getHoursWorkedWorker, getHoursWorked({ diversionPlansByParticipant, diversionPlanESID, peopleESID }));
+    if (!diversionPlansByParticipant.isEmpty()) {
+      /* Call getHoursWorked so diversionPlan search doesn't need to happen twice on rendering participants tables. */
+      yield call(getHoursWorkedWorker, getHoursWorked({ diversionPlansByParticipant, diversionPlanESID, peopleESID }));
 
-    /*
-     * 3. Create map of { participant : active diversion plan }.
-     *    If participant doesn't have an active diversion plan: { participant: all diversion plans }.
-     *    Also create map of all { diversionPlanEKID: participantEKID } for easy lookup later.
-     */
-    const activeDiversionPlansByParticipantIfAny = diversionPlansByParticipant
-      .map((planList :List) => {
-        const newPlanList :List = List();
-        const activePlan :Map = planList.find((plan :Map) => {
-          const { [COMPLETED]: completed } = getEntityProperties(plan, [COMPLETED]);
-          return !completed;
+      /*
+       * 3. Create map of { participant : active diversion plan }.
+       *    If participant doesn't have an active diversion plan: { participant: all diversion plans }.
+       *    Also create map of all { diversionPlanEKID: participantEKID } for easy lookup later.
+       */
+      const activeDiversionPlansByParticipantIfAny = diversionPlansByParticipant
+        .map((planList :List) => {
+          const newPlanList :List = List();
+          const activePlan :Map = planList.find((plan :Map) => {
+            const { [COMPLETED]: completed } = getEntityProperties(plan, [COMPLETED]);
+            return !completed;
+          });
+          if (!isDefined(activePlan)) {
+            return planList;
+          }
+          return newPlanList.push(activePlan);
         });
-        if (!isDefined(activePlan)) {
-          return planList;
-        }
-        return newPlanList.push(activePlan);
-      });
 
-    const diversionPlanEKIDs = [];
-    let diversionPlanEKIDMap :Map = Map();
-    activeDiversionPlansByParticipantIfAny.forEach((participantPlans :List, participantEKID :UUID) => {
-      let diversionPlanEKID = '';
-      if (participantPlans.count() === 1) {
-        diversionPlanEKID = getEntityKeyId(participantPlans.get(0));
-        diversionPlanEKIDs.push(diversionPlanEKID);
-        diversionPlanEKIDMap = diversionPlanEKIDMap.set(diversionPlanEKID, participantEKID);
-      }
-      if (participantPlans.count() > 1) {
-        participantPlans.forEach((plan) => {
-          diversionPlanEKID = getEntityKeyId(plan);
+      const diversionPlanEKIDs = [];
+      let diversionPlanEKIDMap :Map = Map();
+      activeDiversionPlansByParticipantIfAny.forEach((participantPlans :List, participantEKID :UUID) => {
+        let diversionPlanEKID = '';
+        if (participantPlans.count() === 1) {
+          diversionPlanEKID = getEntityKeyId(participantPlans.get(0));
           diversionPlanEKIDs.push(diversionPlanEKID);
           diversionPlanEKIDMap = diversionPlanEKIDMap.set(diversionPlanEKID, participantEKID);
-        });
-      }
-    });
-
-    /*
-     * 4. Find enrollment statuses for all diversion plans in map above.
-     */
-    const enrollmentStatusESID :UUID = getEntitySetIdFromApp(app, ENROLLMENT_STATUS);
-    const enrollmentFilter :Object = {
-      entityKeyIds: diversionPlanEKIDs,
-      destinationEntitySetIds: [enrollmentStatusESID],
-      sourceEntitySetIds: [],
-    };
-    response = yield call(
-      searchEntityNeighborsWithFilterWorker,
-      searchEntityNeighborsWithFilter({ entitySetId: diversionPlanESID, filter: enrollmentFilter })
-    );
-    if (response.error) {
-      throw response.error;
-    }
-    const enrollmentSearchResults :Map = fromJS(response.data)
-      .map((planEnrollments :List) => planEnrollments
-        .map((enrollment :Map) => getNeighborDetails(enrollment)));
-
-    /*
-     * 5. Create new map of { participantEKID: most recent enrollment status }.
-     */
-    let enrollmentMap :Map = Map();
-    enrollmentSearchResults.forEach((enrollmentList :List, diversionPlanEKID :UUID) => {
-      const participantEKID :UUID = diversionPlanEKIDMap.get(diversionPlanEKID);
-      let personEnrollment :Map = enrollmentMap.get(participantEKID, Map());
-
-      const sortedEnrollmentStatuses :List = enrollmentList.sort((statusA :Map, statusB :Map) => {
-        const dateA = DateTime.fromISO(statusA.getIn([EFFECTIVE_DATE, 0]));
-        const dateB = DateTime.fromISO(statusB.getIn([EFFECTIVE_DATE, 0]));
-        if (dateA.toISO() === dateB.toISO()) {
-          return 0;
         }
-        return dateA < dateB ? -1 : 1;
+        if (participantPlans.count() > 1) {
+          participantPlans.forEach((plan) => {
+            diversionPlanEKID = getEntityKeyId(plan);
+            diversionPlanEKIDs.push(diversionPlanEKID);
+            diversionPlanEKIDMap = diversionPlanEKIDMap.set(diversionPlanEKID, participantEKID);
+          });
+        }
       });
 
-      const mostRecentStatus = sortedEnrollmentStatuses.last();
-      const mostRecentStatusDate = DateTime.fromISO(mostRecentStatus.getIn([EFFECTIVE_DATE, 0]));
-
-      let { [EFFECTIVE_DATE]: storedStatusDate } = getEntityProperties(personEnrollment, [EFFECTIVE_DATE]);
-      storedStatusDate = DateTime.fromISO(storedStatusDate);
-      if (personEnrollment.count() > 0) {
-        if (storedStatusDate < mostRecentStatusDate) personEnrollment = mostRecentStatus;
+      /*
+       * 4. Find enrollment statuses for all diversion plans in map above.
+       */
+      const enrollmentStatusESID :UUID = getEntitySetIdFromApp(app, ENROLLMENT_STATUS);
+      const enrollmentFilter :Object = {
+        entityKeyIds: diversionPlanEKIDs,
+        destinationEntitySetIds: [enrollmentStatusESID],
+        sourceEntitySetIds: [],
+      };
+      response = yield call(
+        searchEntityNeighborsWithFilterWorker,
+        searchEntityNeighborsWithFilter({ entitySetId: diversionPlanESID, filter: enrollmentFilter })
+      );
+      if (response.error) {
+        throw response.error;
       }
-      if (personEnrollment.count() === 0) {
-        personEnrollment = mostRecentStatus;
-      }
+      const enrollmentSearchResults :Map = fromJS(response.data)
+        .map((planEnrollments :List) => planEnrollments
+          .map((enrollment :Map) => getNeighborDetails(enrollment)));
 
-      enrollmentMap = enrollmentMap.set(participantEKID, personEnrollment);
-    });
+      /*
+       * 5. Create new map of { participantEKID: most recent enrollment status }.
+       */
+      enrollmentSearchResults.forEach((enrollmentList :List, diversionPlanEKID :UUID) => {
+        const participantEKID :UUID = diversionPlanEKIDMap.get(diversionPlanEKID);
+        let personEnrollment :Map = enrollmentMap.get(participantEKID, Map());
+
+        const sortedEnrollmentStatuses :List = enrollmentList.sort((statusA :Map, statusB :Map) => {
+          const dateA = DateTime.fromISO(statusA.getIn([EFFECTIVE_DATE, 0]));
+          const dateB = DateTime.fromISO(statusB.getIn([EFFECTIVE_DATE, 0]));
+          if (dateA.toISO() === dateB.toISO()) {
+            return 0;
+          }
+          return dateA < dateB ? -1 : 1;
+        });
+
+        const mostRecentStatus = sortedEnrollmentStatuses.last();
+        const mostRecentStatusDate = DateTime.fromISO(mostRecentStatus.getIn([EFFECTIVE_DATE, 0]));
+
+        let { [EFFECTIVE_DATE]: storedStatusDate } = getEntityProperties(personEnrollment, [EFFECTIVE_DATE]);
+        storedStatusDate = DateTime.fromISO(storedStatusDate);
+        if (personEnrollment.count() > 0) {
+          if (storedStatusDate < mostRecentStatusDate) personEnrollment = mostRecentStatus;
+        }
+        if (personEnrollment.count() === 0) {
+          personEnrollment = mostRecentStatus;
+        }
+
+        enrollmentMap = enrollmentMap.set(participantEKID, personEnrollment);
+      });
+    }
 
     /*
      * 6. If no enrollment status for a person exists, set enrollment to empty Map().
