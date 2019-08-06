@@ -286,7 +286,7 @@ function* getEnrollmentStatusesWorker(action :SequenceAction) :Generator<*, *, *
     const diversionPlansByParticipant = fromJS(response.data)
       .map((planList :List) => planList.map((plan :Map) => getNeighborDetails(plan)));
 
-    if (diversionPlansByParticipant.count() > 0) {
+    if (!diversionPlansByParticipant.isEmpty()) {
       /* Call getHoursWorked so diversionPlan search doesn't need to happen twice on rendering participants tables. */
       yield call(getHoursWorkedWorker, getHoursWorked({ diversionPlansByParticipant, diversionPlanESID, peopleESID }));
 
