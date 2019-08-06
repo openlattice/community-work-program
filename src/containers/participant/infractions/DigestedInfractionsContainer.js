@@ -61,10 +61,10 @@ const DigestedInfractionsContainer = ({
   const date :string = formatAsDate(infractionDateTime);
   const time :string = formatAsTime(infractionDateTime);
 
-  const violationCategory :string = infractionInfo.get(CATEGORY, '');
-  const worksiteEntity :Map = worksitesByWorksitePlan.get(infractionInfo.get(WORKSITE_PLAN));
+  const violationCategory :string = infractionInfo ? infractionInfo.get(CATEGORY, '') : '';
+  const worksiteEntity :Map = infractionInfo ? worksitesByWorksitePlan.get(infractionInfo.get(WORKSITE_PLAN)) : Map();
   const { [NAME]: worksiteName } = getEntityProperties(worksiteEntity, [NAME]);
-  const status :string = infractionInfo.get(STATUS, '');
+  const status :string = infractionInfo ? infractionInfo.get(STATUS, '') : '';
 
   const labelMap :OrderedMap = OrderedMap({
     infractionType: 'Infraction type',
