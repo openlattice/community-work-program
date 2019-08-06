@@ -22,14 +22,24 @@ import {
   getWorksiteByWorksitePlan,
   getWorksitePlans,
 } from './ParticipantActions';
-import { getEntityKeyId, getPropertyFqnFromEdm } from '../../utils/DataUtils';
+import { getEntityKeyId, getEntityProperties, getPropertyFqnFromEdm } from '../../utils/DataUtils';
 import { PERSON } from '../../utils/constants/ReduxStateConsts';
 import { INFRACTIONS_CONSTS } from '../../core/edm/constants/DataModelConsts';
-import { ENTITY_KEY_ID } from '../../core/edm/constants/FullyQualifiedNames';
+import {
+  APP_TYPE_FQNS,
+  ENROLLMENT_STATUS_FQNS,
+  ENTITY_KEY_ID,
+  INFRACTION_EVENT_FQNS,
+  INFRACTION_FQNS,
+} from '../../core/edm/constants/FullyQualifiedNames';
 
+const { WORKSITE_PLAN } = APP_TYPE_FQNS;
+const { STATUS } = ENROLLMENT_STATUS_FQNS;
+const { TYPE } = INFRACTION_EVENT_FQNS;
+const { CATEGORY } = INFRACTION_FQNS;
 const {
   ACTIONS,
-  ADD_INFRACTION,
+  ADD_INFRACTION_EVENT,
   ADD_NEW_DIVERSION_PLAN_STATUS,
   ADD_WORKSITE_PLAN,
   ADDRESS,
@@ -67,7 +77,7 @@ const {
 
 const INITIAL_STATE :Map<*, *> = fromJS({
   [ACTIONS]: {
-    [ADD_INFRACTION]: {
+    [ADD_INFRACTION_EVENT]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [ADD_NEW_DIVERSION_PLAN_STATUS]: {
@@ -116,7 +126,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [EMAIL]: '',
   [ENROLLMENT_STATUS]: Map(),
   [ERRORS]: {
-    [ADD_INFRACTION]: Map(),
+    [ADD_INFRACTION_EVENT]: Map(),
     [ADD_NEW_DIVERSION_PLAN_STATUS]: Map(),
     [GET_ALL_PARTICIPANT_INFO]: Map(),
     [GET_CASE_INFO]: Map(),
@@ -151,41 +161,95 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
       return addInfraction.reducer(state, action, {
 
         REQUEST: () => state
-          .setIn([ACTIONS, ADD_INFRACTION, action.id], action)
-          .setIn([ACTIONS, ADD_INFRACTION, REQUEST_STATE], RequestStates.PENDING),
+          .setIn([ACTIONS, ADD_INFRACTION_EVENT, action.id], action)
+          .setIn([ACTIONS, ADD_INFRACTION_EVENT, REQUEST_STATE], RequestStates.PENDING),
         SUCCESS: () => {
 
           const seqAction :SequenceAction = action;
-          const storedSeqAction :SequenceAction = state.getIn([ACTIONS, ADD_INFRACTION, seqAction.id]);
+          const storedSeqAction :SequenceAction = state.getIn([ACTIONS, ADD_INFRACTION_EVENT, seqAction.id]);
 
           if (storedSeqAction) {
 
-            // const { value } :Object = seqAction;
-            // const { edm, enrollmentStatusEKID, enrollmentStatusESID } = value;
-            //
-            // const requestValue :Object = storedSeqAction.value;
-            // const { entityData } :Object = requestValue;
-            // const storedEnrollmentEntity :Map = fromJS(entityData[enrollmentStatusESID][0]);
-            //
-            //
-            // let newEnrollmentStatus :Map = Map();
-            // storedEnrollmentEntity.forEach((enrollmentValue, id) => {
-            //   const propertyTypeFqn :FQN = getPropertyFqnFromEdm(edm, id);
-            //   newEnrollmentStatus = newEnrollmentStatus.set(propertyTypeFqn, enrollmentValue);
-            // });
-            // newEnrollmentStatus = newEnrollmentStatus.set(ENTITY_KEY_ID, enrollmentStatusEKID);
+            const successValue :Object = seqAction.value;
+            const {
+              edm,
+              enrollmentStatusESID,
+              infractionESID,
+              infractionEventEKID,
+              infractionEventESID,
+              registeredForESID,
+              worksitePlanESID,
+            } = successValue;
+
+            const requestValue :Object = storedSeqAction.value;
+            const { associationEntityData, entityData } :Object = requestValue;
+
+            const storedInfractionEventEntity :Map = fromJS(entityData[infractionEventESID][0]);
+            const storedEnrollmentStatusEntity :Map = entityData[enrollmentStatusESID]
+              ? fromJS(entityData[enrollmentStatusESID][0])
+              : Map();
+
+            const worksitePlan :Map = associationEntityData[registeredForESID]
+              ? fromJS(associationEntityData[registeredForESID])
+                .find((association :Map) => association.get('srcEntitySetId') === worksitePlanESID)
+              : Map();
+            const worksitePlanEKID :UUID = worksitePlan ? worksitePlan.get('srcEntityKeyId', '') : '';
+
+            console.log('associationEntityData[registeredForESID]: ', associationEntityData[registeredForESID]);
+            const infraction = associationEntityData[registeredForESID]
+              ? fromJS(associationEntityData[registeredForESID])
+                .find((association :Map) => association.get('dstEntitySetId') === infractionESID)
+              : Map();
+            const infractionEKID :UUID = infraction ? infraction.get('dstEntityKeyId', '') : '';
+            console.log('infractionEKID: ', infractionEKID);
+
+            let newInfractionEvent :Map = Map();
+            storedInfractionEventEntity.forEach((infractionEventValue, id) => {
+              const propertyTypeFqn :FQN = getPropertyFqnFromEdm(edm, id);
+              newInfractionEvent = newInfractionEvent.set(propertyTypeFqn, infractionEventValue);
+            });
+            newInfractionEvent = newInfractionEvent.set(ENTITY_KEY_ID, infractionEventEKID);
+            console.log('newInfractionEvent ', newInfractionEvent.toJS());
+
+            let violations = state.get(VIOLATIONS);
+            let warnings = state.get(WARNINGS);
+            const { [TYPE]: infractionType } = getEntityProperties(newInfractionEvent, [TYPE]);
+            console.log('infractionType: ', infractionType);
+            if (infractionType === INFRACTIONS_CONSTS.VIOLATION) violations = violations.push(newInfractionEvent);
+            if (infractionType === INFRACTIONS_CONSTS.WARNING) warnings = warnings.push(newInfractionEvent);
+
+            const infractionTypes :List = state.get(INFRACTION_TYPES);
+            console.log('infractionTypes.toJS: ', infractionTypes.toJS());
+            const infractionEntity = infraction
+              ? infractionTypes.find((type :Map) => getEntityKeyId(type) === infractionEKID)
+              : Map();
+            console.log('infractionEntity: ', infractionEntity);
+            const { [CATEGORY]: category } = getEntityProperties(infractionEntity, [CATEGORY]);
+            const { [STATUS]: status } = getEntityProperties(storedEnrollmentStatusEntity, [STATUS]);
+            const info :Map = fromJS({
+              [CATEGORY]: category,
+              [STATUS]: status,
+              [WORKSITE_PLAN]: worksitePlanEKID,
+            });
+            const infractionsInfo = state.get(INFRACTIONS_INFO)
+              .set(infractionEventEKID, info);
+            console.log('infractionsInfo: ', infractionsInfo.toJS());
+            console.log('warnings: ', warnings.toJS());
+            console.log('violations: ', violations.toJS());
 
             return state
-              // .set(INFRACTIONS_INFO, List())
-              .setIn([ACTIONS, ADD_INFRACTION, REQUEST_STATE], RequestStates.SUCCESS);
+              .set(VIOLATIONS, violations)
+              .set(WARNINGS, warnings)
+              .set(INFRACTIONS_INFO, infractionsInfo)
+              .setIn([ACTIONS, ADD_INFRACTION_EVENT, REQUEST_STATE], RequestStates.SUCCESS);
           }
 
           return state;
         },
         FAILURE: () => state
           .set(INFRACTIONS_INFO, List())
-          .setIn([ACTIONS, ADD_INFRACTION, REQUEST_STATE], RequestStates.FAILURE),
-        FINALLY: () => state.deleteIn([ACTIONS, ADD_INFRACTION, action.id]),
+          .setIn([ACTIONS, ADD_INFRACTION_EVENT, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, ADD_INFRACTION_EVENT, action.id]),
       });
     }
 

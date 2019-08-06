@@ -98,6 +98,7 @@ const {
   LOCATION,
   MANUAL_PRETRIAL_CASES,
   PEOPLE,
+  REGISTERED_FOR,
   SENTENCE_TERM,
   WORKSITE,
   WORKSITE_PLAN,
@@ -142,12 +143,25 @@ function* addInfractionWorker(action :SequenceAction) :Generator<*, *, *> {
     }
     const { data } :Object = response;
     const { entityKeyIds } :Object = data;
+    const app = yield select(getAppFromState);
+    const infractionEventESID = getEntitySetIdFromApp(app, INFRACTION_EVENT);
+    const infractionEventEKID = entityKeyIds[infractionEventESID][0];
 
+    const worksitePlanESID = getEntitySetIdFromApp(app, WORKSITE_PLAN);
+    const registeredForESID = getEntitySetIdFromApp(app, REGISTERED_FOR);
+    const enrollmentStatusESID = getEntitySetIdFromApp(app, ENROLLMENT_STATUS);
+    const infractionESID = getEntitySetIdFromApp(app, INFRACTIONS);
     const edm = yield select(getEdmFromState);
-    const infractionESID = Object.keys(entityKeyIds)[0];
-    const infractionEKID = Object.values(entityKeyIds)[0];
 
-    yield put(addInfraction.success(id, { edm, infractionEKID, infractionESID }));
+    yield put(addInfraction.success(id, {
+      edm,
+      enrollmentStatusESID,
+      infractionESID,
+      infractionEventEKID,
+      infractionEventESID,
+      registeredForESID,
+      worksitePlanESID
+    }));
   }
   catch (error) {
     workerResponse.error = error;
@@ -812,7 +826,7 @@ function* getInfractionTypesWorker(action :SequenceAction) :Generator<*, *, *> {
   let infractionTypes :List = List();
 
   try {
-    yield put(getInfractionTypes.request(id));
+    yield put(getInfractionTypes.request(id, value));
 
     const app = yield select(getAppFromState);
     const infractionsESID :UUID = getEntitySetIdFromApp(app, INFRACTIONS);
