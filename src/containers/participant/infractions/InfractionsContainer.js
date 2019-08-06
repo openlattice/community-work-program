@@ -43,6 +43,7 @@ const IconSplashWrapper = styled.div`
 const { TYPE } = INFRACTION_EVENT_FQNS;
 const {
   ACTIONS,
+  ADD_INFRACTION_EVENT,
   GET_PARTICIPANT_INFRACTIONS,
   INFRACTIONS_INFO,
   REQUEST_STATE,
@@ -55,6 +56,7 @@ type Props = {
   actions:{
     getParticipantInfractions :RequestSequence;
   };
+  addInfractionEventRequestState :RequestState;
   currentStatus :string;
   getParticipantInfractionsState :RequestState;
   infractionsInfo :Map;
@@ -76,8 +78,27 @@ class InfractionsContainer extends Component<Props, State> {
     super(props);
 
     const infractions :List = props.violations.concat(props.warnings);
-    const sortedInfractions :List = sortEntitiesByDateProperty(infractions, DATETIME_COMPLETED);
-    const selectedInfraction :Map = sortedInfractions.last();
+    const { infractionOptions, selectedInfraction } = this.getInfractionStateValues(infractions);
+
+    this.state = {
+      infractionEventModalVisible: false,
+      infractionOptions,
+      selectedInfraction,
+    };
+  }
+
+  updateInfractionsList = () => {
+    const { violations, warnings } = this.props;
+    const infractions :List = violations.concat(warnings);
+    const { infractionOptions, selectedInfraction } = this.getInfractionStateValues(infractions);
+    this.setState({
+      infractionOptions,
+      selectedInfraction,
+    });
+  }
+
+  getInfractionStateValues = (infractions :List) => {
+    const sortedInfractions :List = sortEntitiesByDateProperty(infractions, DATETIME_COMPLETED).reverse();
     const infractionOptions :Object[] = sortedInfractions
       .map((infraction :Map) => {
         const {
@@ -87,12 +108,7 @@ class InfractionsContainer extends Component<Props, State> {
         const formattedDate = formatAsDate(date);
         return { label: `${infractionType} on ${formattedDate}`, value: infraction };
       });
-
-    this.state = {
-      infractionEventModalVisible: false,
-      infractionOptions,
-      selectedInfraction,
-    };
+    return { infractionOptions, selectedInfraction: sortedInfractions.first() };
   }
 
   showAddInfractionEventModal = () => {
@@ -102,9 +118,13 @@ class InfractionsContainer extends Component<Props, State> {
   }
 
   hideAddInfractionEventModal = () => {
+    const { addInfractionEventRequestState } = this.props;
     this.setState({
       infractionEventModalVisible: false,
     });
+    if (addInfractionEventRequestState === RequestStates.SUCCESS) {
+      this.updateInfractionsList();
+    }
   }
 
   handleOnSelectChange = (option :Object) => {
@@ -189,6 +209,7 @@ class InfractionsContainer extends Component<Props, State> {
 const mapStateToProps = (state) => {
   const person = state.get(STATE.PERSON);
   return {
+    addInfractionEventRequestState: state.getIn([STATE.PERSON, ACTIONS, ADD_INFRACTION_EVENT, REQUEST_STATE]),
     getParticipantInfractionsState: person.getIn([ACTIONS, GET_PARTICIPANT_INFRACTIONS, REQUEST_STATE]),
     [INFRACTIONS_INFO]: person.get(INFRACTIONS_INFO),
     [VIOLATIONS]: person.get(VIOLATIONS),
