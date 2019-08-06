@@ -195,13 +195,11 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
               : Map();
             const worksitePlanEKID :UUID = worksitePlan ? worksitePlan.get('srcEntityKeyId', '') : '';
 
-            console.log('associationEntityData[registeredForESID]: ', associationEntityData[registeredForESID]);
             const infraction = associationEntityData[registeredForESID]
               ? fromJS(associationEntityData[registeredForESID])
                 .find((association :Map) => association.get('dstEntitySetId') === infractionESID)
               : Map();
             const infractionEKID :UUID = infraction ? infraction.get('dstEntityKeyId', '') : '';
-            console.log('infractionEKID: ', infractionEKID);
 
             let newInfractionEvent :Map = Map();
             storedInfractionEventEntity.forEach((infractionEventValue, id) => {
@@ -209,21 +207,17 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
               newInfractionEvent = newInfractionEvent.set(propertyTypeFqn, infractionEventValue);
             });
             newInfractionEvent = newInfractionEvent.set(ENTITY_KEY_ID, infractionEventEKID);
-            console.log('newInfractionEvent ', newInfractionEvent.toJS());
 
             let violations = state.get(VIOLATIONS);
             let warnings = state.get(WARNINGS);
             const { [TYPE]: infractionType } = getEntityProperties(newInfractionEvent, [TYPE]);
-            console.log('infractionType: ', infractionType);
             if (infractionType === INFRACTIONS_CONSTS.VIOLATION) violations = violations.push(newInfractionEvent);
             if (infractionType === INFRACTIONS_CONSTS.WARNING) warnings = warnings.push(newInfractionEvent);
 
             const infractionTypes :List = state.get(INFRACTION_TYPES);
-            console.log('infractionTypes.toJS: ', infractionTypes.toJS());
             const infractionEntity = infraction
               ? infractionTypes.find((type :Map) => getEntityKeyId(type) === infractionEKID)
               : Map();
-            console.log('infractionEntity: ', infractionEntity);
             const { [CATEGORY]: category } = getEntityProperties(infractionEntity, [CATEGORY]);
             const { [STATUS]: status } = getEntityProperties(storedEnrollmentStatusEntity, [STATUS]);
             const info :Map = fromJS({
@@ -233,9 +227,6 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
             });
             const infractionsInfo = state.get(INFRACTIONS_INFO)
               .set(infractionEventEKID, info);
-            console.log('infractionsInfo: ', infractionsInfo.toJS());
-            console.log('warnings: ', warnings.toJS());
-            console.log('violations: ', violations.toJS());
 
             return state
               .set(VIOLATIONS, violations)
