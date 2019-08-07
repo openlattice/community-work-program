@@ -27,7 +27,12 @@ import * as Routes from '../../core/router/Routes';
 import { BackNavButton } from '../../components/controls/index';
 import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
 import { isDefined } from '../../utils/LangUtils';
-import { APP_TYPE_FQNS, ENROLLMENT_STATUS_FQNS, PEOPLE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import {
+  APP_TYPE_FQNS,
+  DIVERSION_PLAN_FQNS,
+  ENROLLMENT_STATUS_FQNS,
+  PEOPLE_FQNS
+} from '../../core/edm/constants/FullyQualifiedNames';
 import { ENROLLMENT_STATUSES } from '../../core/edm/constants/DataModelConsts';
 import {
   APP,
@@ -36,6 +41,7 @@ import {
   WORKSITES
 } from '../../utils/constants/ReduxStateConsts';
 
+const { ORIENTATION_DATETIME } = DIVERSION_PLAN_FQNS;
 const { STATUS } = ENROLLMENT_STATUS_FQNS;
 const { FIRST_NAME, LAST_NAME } = PEOPLE_FQNS;
 const {
@@ -232,7 +238,9 @@ class ParticipantProfile extends Component<Props, State> {
     );
     let { [STATUS]: status } = getEntityProperties(enrollmentStatus, [STATUS]);
     if (!isDefined(status)) status = ENROLLMENT_STATUSES.AWAITING_CHECKIN;
+
     const diversionPlanEKID :UUID = getEntityKeyId(diversionPlan);
+    const { [ORIENTATION_DATETIME]: orientationDateTime } = getEntityProperties(diversionPlan, [ORIENTATION_DATETIME]);
 
     return (
       <ProfileWrapper>
@@ -257,7 +265,9 @@ class ParticipantProfile extends Component<Props, State> {
                 phone={phone}
                 status={status} />
             <InnerColumnWrapper>
-              <KeyDates sentenceTerm={sentenceTerm} />
+              <KeyDates
+                  orientationDateTime={orientationDateTime}
+                  sentenceTerm={sentenceTerm} />
               <InnerRowWrapper>
                 <CaseInfo caseNumber={caseNumber} hours={requiredHours} />
                 <InfractionsDisplay violations={violations} warnings={warnings} />
