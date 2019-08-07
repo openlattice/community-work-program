@@ -30,9 +30,9 @@ import {
   DATETIME_COMPLETED,
   DATETIME_END,
   ENROLLMENT_STATUS_FQNS,
-  INFRACTION_FQNS,
+  INCIDENT_START_DATETIME,
   INFRACTION_EVENT_FQNS,
-  START_DATETIME,
+  INFRACTION_FQNS,
   WORKSITE_FQNS,
 } from '../../../core/edm/constants/FullyQualifiedNames';
 import { PERSON, STATE } from '../../../utils/constants/ReduxStateConsts';
@@ -127,9 +127,9 @@ class AddInfractionForm extends Component<Props, State> {
       .forEach((apptList :List, worksitePlanEKID :UUID) => {
         apptList.forEach((appt :Map) => {
           const appointmentEKID :UUID = getEntityKeyId(appt);
-          const { [START_DATETIME]: startDatetime, [DATETIME_END]: datetimeEnd } = getEntityProperties(
+          const { [INCIDENT_START_DATETIME]: startDatetime, [DATETIME_END]: datetimeEnd } = getEntityProperties(
             appt,
-            [START_DATETIME, DATETIME_END]
+            [INCIDENT_START_DATETIME, DATETIME_END]
           );
           const { [NAME]: worksiteName } = getEntityProperties(
             props.worksitesByWorksitePlan.get(worksitePlanEKID),

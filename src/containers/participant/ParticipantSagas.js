@@ -78,7 +78,6 @@ import {
   INFRACTION_EVENT_FQNS,
   INFRACTION_FQNS,
   LOCATION_FQNS,
-  START_DATETIME,
 } from '../../core/edm/constants/FullyQualifiedNames';
 import { INFRACTIONS_CONSTS } from '../../core/edm/constants/DataModelConsts';
 
