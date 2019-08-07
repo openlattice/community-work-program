@@ -58,7 +58,9 @@ export const APP_TYPE_FQNS = {
 /* DateTime FQNs */
 export const DATETIME = new FullyQualifiedName('general.datetime');
 export const DATETIME_COMPLETED = new FullyQualifiedName('date.completeddatetime');
+export const DATETIME_END = new FullyQualifiedName('ol.datetimeend');
 export const DATETIME_START = new FullyQualifiedName('ol.datetimestart');
+export const INCIDENT_START_DATETIME = new FullyQualifiedName('incident.startdatetime');
 
 /* Property Type FQNs by Entity Type */
 
@@ -97,6 +99,12 @@ export const INFRACTION_FQNS = {
   CATEGORY: new FullyQualifiedName('ol.category'),
   DATETIME: new FullyQualifiedName('general.datetime'),
   DESCRIPTION: new FullyQualifiedName('ol.description'),
+  TYPE: new FullyQualifiedName('ol.type'),
+};
+
+/* ol.notificationevent */
+export const INFRACTION_EVENT_FQNS = {
+  NOTES: new FullyQualifiedName('ol.notes'),
   TYPE: new FullyQualifiedName('ol.type'),
 };
 

@@ -16,6 +16,7 @@ import InfractionsDisplay from '../../components/participant/InfractionsDisplay'
 import AssignedWorksitesContainer from './assignedworksites/AssignedWorksitesContainer';
 import AddNewPlanStatusModal from './AddNewPlanStatusModal';
 import AssignWorksiteModal from './assignedworksites/AssignWorksiteModal';
+import InfractionsContainer from './infractions/InfractionsContainer';
 import LogoLoader from '../../components/LogoLoader';
 
 import { getAllParticipantInfo } from './ParticipantActions';
@@ -146,14 +147,10 @@ type State = {
 
 class ParticipantProfile extends Component<Props, State> {
 
-  constructor(props :Props) {
-    super(props);
-
-    this.state = {
-      showAssignWorksiteModal: false,
-      showEnrollmentModal: false,
-    };
-  }
+  state = {
+    showAssignWorksiteModal: false,
+    showEnrollmentModal: false,
+  };
 
   componentDidMount() {
     const { app } = this.props;
@@ -283,7 +280,14 @@ class ParticipantProfile extends Component<Props, State> {
             )
             : null
         }
-
+        <ProfileBody>
+          <NameRowWrapper>
+            <NameHeader>Warnings & Violations</NameHeader>
+          </NameRowWrapper>
+          <InfractionsContainer
+              currentStatus={status}
+              personEKID={personEKID} />
+        </ProfileBody>
         <AddNewPlanStatusModal
             currentStatus={status}
             isOpen={showEnrollmentModal}

@@ -31,7 +31,7 @@ function formatAsTime(value :string) :string {
 
   const valueAsTime = DateTime.fromISO(value);
   if (valueAsTime.isValid) {
-    return valueAsTime.toLocaleString(DateTime.TIME_24_SIMPLE);
+    return valueAsTime.toLocaleString(DateTime.TIME_SIMPLE);
   }
   return '';
 }

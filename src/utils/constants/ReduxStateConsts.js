@@ -57,9 +57,10 @@ export const PEOPLE = {
 
 export const PERSON = {
   ACTIONS: 'actions',
+  ADDRESS: 'address',
+  ADD_INFRACTION_EVENT: 'addInfractionEvent',
   ADD_NEW_DIVERSION_PLAN_STATUS: 'addNewDiversionPlanStatus',
   ADD_WORKSITE_PLAN: 'addWorksitePlan',
-  ADDRESS: 'address',
   CASE_NUMBER: 'caseNumber',
   DIVERSION_PLAN: 'diversionPlan',
   EMAIL: 'email',
@@ -69,12 +70,15 @@ export const PERSON = {
   GET_CASE_INFO: 'getCaseInfo',
   GET_CONTACT_INFO: 'getContactInfo',
   GET_ENROLLMENT_STATUS: 'getEnrollmentStatus',
-  GET_INFRACTIONS: 'getInfractions',
+  GET_INFRACTION_TYPES: 'getInfractionTypes',
   GET_PARTICIPANT: 'getParticipant',
   GET_PARTICIPANT_ADDRESS: 'getParticipantAddress',
   GET_REQUIRED_HOURS: 'getRequiredHours',
   GET_SENTENCE_TERM: 'getSentenceTerm',
   GET_WORKSITE_PLANS: 'getWorksitePlans',
+  GET_WORK_APPOINTMENTS: 'getWorkAppointments',
+  INFRACTIONS_INFO: 'infractionsInfo',
+  INFRACTION_TYPES: 'infractionTypes',
   PARTICIPANT: 'participant',
   PHONE: 'phone',
   REQUEST_STATE: 'requestState',
@@ -84,6 +88,7 @@ export const PERSON = {
   WARNINGS: 'warnings',
   WORKSITES_BY_WORKSITE_PLAN: 'worksitesByWorksitePlan',
   WORKSITE_PLANS: 'worksitePlans',
+  WORK_APPOINTMENTS_BY_WORKSITE_PLAN: 'workAppointmentsByWorksitePlan',
 };
 
 /* Worksites (and organizations) */
