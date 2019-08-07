@@ -87,6 +87,15 @@ class InfractionsContainer extends Component<Props, State> {
     };
   }
 
+  componentDidUpdate(prevProps :Props) {
+    const { addInfractionEventRequestState } = this.props;
+    const { addInfractionEventRequestState: prevSumbitState } = prevProps;
+    if (addInfractionEventRequestState === RequestStates.SUCCESS
+      && prevSumbitState === RequestStates.PENDING) {
+      this.updateInfractionsList();
+    }
+  }
+
   updateInfractionsList = () => {
     const { violations, warnings } = this.props;
     const infractions :List = violations.concat(warnings);
@@ -118,13 +127,9 @@ class InfractionsContainer extends Component<Props, State> {
   }
 
   hideAddInfractionEventModal = () => {
-    const { addInfractionEventRequestState } = this.props;
     this.setState({
       infractionEventModalVisible: false,
     });
-    if (addInfractionEventRequestState === RequestStates.SUCCESS) {
-      this.updateInfractionsList();
-    }
   }
 
   handleOnSelectChange = (option :Object) => {
