@@ -23,27 +23,32 @@ const DatesWrapper = styled.div`
 `;
 
 type Props = {
+  orientationDateTime :string;
   sentenceTerm :Map;
 };
 
-const KeyDates = ({ sentenceTerm } :Props) => {
+const KeyDates = ({ orientationDateTime, sentenceTerm } :Props) => {
 
   const { [DATETIME_START]: sentDate } = getEntityProperties(sentenceTerm, [DATETIME_START]);
   const sentenceDate = sentDate ? formatAsDate(sentDate) : '';
   const sentenceDateObj = DateTime.fromISO(sentDate);
   const checkInDeadline = sentenceDateObj.isValid
     ? sentenceDateObj.plus({ hours: 48 }).toLocaleString()
-    : '';
+    : '----';
   const sentenceEndDate = sentenceDateObj.isValid
     ? sentenceDateObj.plus({ days: 90 }).toLocaleString()
-    : '';
+    : '----';
+  const orientationDateObj = DateTime.fromISO(orientationDateTime);
+  const orientationDate = orientationDateObj.isValid
+    ? orientationDateObj.toLocaleString(DateTime.DATE_SHORT)
+    : '----';
 
   const data :Map = fromJS({
     sentenceDate,
     checkInDeadline,
-    checkedInDate: '',
-    orientationDate: '',
-    workStartDate: '',
+    checkedInDate: '----',
+    orientationDate,
+    workStartDate: '----',
     sentenceEndDate,
   });
   return (
