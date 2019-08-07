@@ -6,7 +6,6 @@ import { ENROLLMENT_STATUSES } from '../../core/edm/constants/DataModelConsts';
 export const ALL_PARTICIPANTS_COLUMNS = [
   'NAME',
   'AGE',
-  'START DATE',
   'SENT. DATE',
   'SENT. END DATE',
   'STATUS',
@@ -19,10 +18,9 @@ export const ALL_PARTICIPANTS_COLUMNS = [
 /* Sort Participant Table */
 
 export const SORTABLE_PARTICIPANT_COLUMNS = {
-  COURT_TYPE: 'court type',
+  // COURT_TYPE: 'court type',
   NAME: 'name',
   SENT_END_DATE: 'sent. end date',
-  START_DATE: 'start date',
   STATUS: 'status',
 };
 
