@@ -33,6 +33,15 @@ const { CATEGORY } = INFRACTION_FQNS;
 const { NOTES, TYPE } = INFRACTION_EVENT_FQNS;
 const { NAME } = WORKSITE_FQNS;
 
+const labelMap :OrderedMap = OrderedMap({
+  infractionType: 'Infraction type',
+  violationCategory: 'Violation category, if applicable',
+  worksiteName: 'Work Site, if applicable',
+  date: 'Date',
+  time: 'Time',
+  status: 'Resulting enrollment status, if any',
+});
+
 const NotesWrapper = styled.div`
   display: flex;
   flex-direction: column;
@@ -65,15 +74,6 @@ const DigestedInfractionsContainer = ({
   const worksiteEntity :Map = infractionInfo ? worksitesByWorksitePlan.get(infractionInfo.get(WORKSITE_PLAN)) : Map();
   const { [NAME]: worksiteName } = getEntityProperties(worksiteEntity, [NAME]);
   const status :string = infractionInfo ? infractionInfo.get(STATUS, '') : '';
-
-  const labelMap :OrderedMap = OrderedMap({
-    infractionType: 'Infraction type',
-    violationCategory: 'Violation category, if applicable',
-    worksiteName: 'Work Site, if applicable',
-    date: 'Date',
-    time: 'Time',
-    status: 'Resulting enrollment status, if any',
-  });
   const data :List = fromJS({
     date,
     infractionType,
