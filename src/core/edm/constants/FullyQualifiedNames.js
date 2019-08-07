@@ -84,6 +84,7 @@ export const DIVERSION_PLAN_FQNS = {
   CONSECUTIVE: new FullyQualifiedName('ol.consecutive'),
   NAME: new FullyQualifiedName('ol.name'),
   NOTES: new FullyQualifiedName('ol.notes'),
+  ORIENTATION_DATETIME: new FullyQualifiedName('ol.orientationdatetime'),
   REQUIRED_HOURS: new FullyQualifiedName('ol.requiredhours'),
 };
 
