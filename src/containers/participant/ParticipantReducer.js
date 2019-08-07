@@ -201,12 +201,13 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
               : Map();
             const infractionEKID :UUID = infraction ? infraction.get('dstEntityKeyId', '') : '';
 
-            let newInfractionEvent :Map = Map();
-            storedInfractionEventEntity.forEach((infractionEventValue, id) => {
-              const propertyTypeFqn :FQN = getPropertyFqnFromEdm(edm, id);
-              newInfractionEvent = newInfractionEvent.set(propertyTypeFqn, infractionEventValue);
+            const newInfractionEvent = Map().withMutations((map) => {
+              map.set(ENTITY_KEY_ID, infractionEventEKID);
+              storedInfractionEventEntity.forEach((infractionEventValue, id) => {
+                const propertyTypeFqn :FQN = getPropertyFqnFromEdm(edm, id);
+                map.set(propertyTypeFqn, infractionEventValue);
+              });
             });
-            newInfractionEvent = newInfractionEvent.set(ENTITY_KEY_ID, infractionEventEKID);
 
             let violations = state.get(VIOLATIONS);
             let warnings = state.get(WARNINGS);
