@@ -280,6 +280,7 @@ function* addWorksitePlanWatcher() :Generator<*, *, *> {
 function* getParticipantWorker(action :SequenceAction) :Generator<*, *, *> {
 
   const { id, value } = action;
+  const workerResponse = {};
   let response :Object = {};
   let participant :Map = Map();
 
@@ -301,12 +302,14 @@ function* getParticipantWorker(action :SequenceAction) :Generator<*, *, *> {
     yield put(getParticipant.success(id, participant));
   }
   catch (error) {
+    workerResponse.error = error;
     LOG.error('caught exception in getParticipantWorker()', error);
     yield put(getParticipant.failure(id, error));
   }
   finally {
     yield put(getParticipant.finally(id));
   }
+  return workerResponse;
 }
 
 function* getParticipantWatcher() :Generator<*, *, *> {
@@ -323,6 +326,7 @@ function* getParticipantWatcher() :Generator<*, *, *> {
 function* getCaseInfoWorker(action :SequenceAction) :Generator<*, *, *> {
 
   const { id, value } = action;
+  const workerResponse = {};
   let response :Object = {};
   let caseNumber :string = '';
 
@@ -362,12 +366,14 @@ function* getCaseInfoWorker(action :SequenceAction) :Generator<*, *, *> {
     yield put(getCaseInfo.success(id, caseNumber));
   }
   catch (error) {
+    workerResponse.error = error;
     LOG.error('caught exception in getCaseInfoWorker()', error);
     yield put(getCaseInfo.failure(id, error));
   }
   finally {
     yield put(getCaseInfo.finally(id));
   }
+  return workerResponse;
 }
 
 function* getCaseInfoWatcher() :Generator<*, *, *> {
@@ -384,6 +390,7 @@ function* getCaseInfoWatcher() :Generator<*, *, *> {
 function* getContactInfoWorker(action :SequenceAction) :Generator<*, *, *> {
 
   const { id, value } = action;
+  const workerResponse = {};
   let response :Object = {};
   let contactInfo :Map = Map().withMutations((map :Map) => {
     map.set('email', '');
@@ -435,12 +442,14 @@ function* getContactInfoWorker(action :SequenceAction) :Generator<*, *, *> {
     yield put(getContactInfo.success(id, contactInfo));
   }
   catch (error) {
+    workerResponse.error = error;
     LOG.error('caught exception in getContactInfoWorker()', error);
     yield put(getContactInfo.failure(id, error));
   }
   finally {
     yield put(getContactInfo.finally(id));
   }
+  return workerResponse;
 }
 
 function* getContactInfoWatcher() :Generator<*, *, *> {
@@ -456,6 +465,7 @@ function* getContactInfoWatcher() :Generator<*, *, *> {
 function* getWorksiteByWorksitePlanWorker(action :SequenceAction) :Generator<*, *, *> {
 
   const { id, value } = action;
+  const workerResponse = {};
   let response :Object = {};
   let worksitesByPlanEKID :Map = Map();
 
@@ -494,12 +504,14 @@ function* getWorksiteByWorksitePlanWorker(action :SequenceAction) :Generator<*, 
     yield put(getWorksiteByWorksitePlan.success(id, worksitesByPlanEKID));
   }
   catch (error) {
+    workerResponse.error = error;
     LOG.error('caught exception in getWorksiteByWorksitePlanWorker()', error);
     yield put(getWorksiteByWorksitePlan.failure(id, error));
   }
   finally {
     yield put(getWorksiteByWorksitePlan.finally(id));
   }
+  return workerResponse;
 }
 
 function* getWorksiteByWorksitePlanWatcher() :Generator<*, *, *> {
@@ -573,6 +585,7 @@ function* getWorkAppointmentsWatcher() :Generator<*, *, *> {
 function* getWorksitePlansWorker(action :SequenceAction) :Generator<*, *, *> {
 
   const { id, value } = action;
+  const workerResponse = {};
   let response :Object = {};
   let worksitePlans :List = List();
 
@@ -613,12 +626,14 @@ function* getWorksitePlansWorker(action :SequenceAction) :Generator<*, *, *> {
     yield put(getWorksitePlans.success(id, worksitePlans));
   }
   catch (error) {
+    workerResponse.error = error;
     LOG.error('caught exception in getWorksitePlansWorker()', error);
     yield put(getWorksitePlans.failure(id, error));
   }
   finally {
     yield put(getWorksitePlans.finally(id));
   }
+  return workerResponse;
 }
 
 function* getWorksitePlansWatcher() :Generator<*, *, *> {
@@ -635,6 +650,7 @@ function* getWorksitePlansWatcher() :Generator<*, *, *> {
 function* getEnrollmentStatusWorker(action :SequenceAction) :Generator<*, *, *> {
 
   const { id, value } = action;
+  const workerResponse = {};
   let response :Object = {};
   let enrollmentStatus :Map = Map();
   let diversionPlan :Map = Map();
@@ -722,12 +738,14 @@ function* getEnrollmentStatusWorker(action :SequenceAction) :Generator<*, *, *> 
     yield put(getEnrollmentStatus.success(id, { diversionPlan, enrollmentStatus }));
   }
   catch (error) {
+    workerResponse.error = error;
     LOG.error('caught exception in getEnrollmentStatusWorker()', error);
     yield put(getEnrollmentStatus.failure(id, error));
   }
   finally {
     yield put(getEnrollmentStatus.finally(id));
   }
+  return workerResponse;
 }
 
 function* getEnrollmentStatusWatcher() :Generator<*, *, *> {
@@ -744,6 +762,7 @@ function* getEnrollmentStatusWatcher() :Generator<*, *, *> {
 function* getParticipantAddressWorker(action :SequenceAction) :Generator<*, *, *> {
 
   const { id, value } = action;
+  const workerResponse = {};
   let response :Object = {};
   let address :string = '';
 
@@ -779,12 +798,14 @@ function* getParticipantAddressWorker(action :SequenceAction) :Generator<*, *, *
     yield put(getParticipantAddress.success(id, address));
   }
   catch (error) {
+    workerResponse.error = error;
     LOG.error('caught exception in getParticipantAddressWorker()', error);
     yield put(getParticipantAddress.failure(id, error));
   }
   finally {
     yield put(getParticipantAddress.finally(id));
   }
+  return workerResponse;
 }
 
 function* getParticipantAddressWatcher() :Generator<*, *, *> {
@@ -795,6 +816,7 @@ function* getParticipantAddressWatcher() :Generator<*, *, *> {
 function* getInfractionTypesWorker(action :SequenceAction) :Generator<*, *, *> {
 
   const { id, value } = action;
+  const workerResponse = {};
   let response :Object = {};
   let infractionTypes :List = List();
 
@@ -812,12 +834,14 @@ function* getInfractionTypesWorker(action :SequenceAction) :Generator<*, *, *> {
     yield put(getInfractionTypes.success(id, infractionTypes));
   }
   catch (error) {
+    workerResponse.error = error;
     LOG.error('caught exception in getInfractionTypesWorker()', error);
     yield put(getInfractionTypes.failure(id, error));
   }
   finally {
     yield put(getInfractionTypes.finally(id));
   }
+  return workerResponse;
 }
 
 function* getInfractionTypesWatcher() :Generator<*, *, *> {
@@ -834,6 +858,7 @@ function* getInfractionTypesWatcher() :Generator<*, *, *> {
 function* getParticipantInfractionsWorker(action :SequenceAction) :Generator<*, *, *> {
 
   const { id, value } = action;
+  const workerResponse = {};
   let response :Object = {};
   let infractionsMap :Map = Map().withMutations((map :Map) => {
     map.set(INFRACTIONS_CONSTS.VIOLATION, List());
@@ -904,7 +929,7 @@ function* getParticipantInfractionsWorker(action :SequenceAction) :Generator<*, 
       }
       const infractionEventNeighbors :Map = fromJS(response.data);
 
-      if (infractionEventNeighbors.count() > 0) {
+      if (!infractionEventNeighbors.isEmpty()) {
 
         infractionEventNeighbors.forEach((neighborList :List, infractionEventEKID :UUID) => {
           neighborList.forEach((neighbor :Map) => {
@@ -936,12 +961,14 @@ function* getParticipantInfractionsWorker(action :SequenceAction) :Generator<*, 
     yield put(getParticipantInfractions.success(id, { infractionInfoMap, infractionsMap }));
   }
   catch (error) {
+    workerResponse.error = error;
     LOG.error('caught exception in getParticipantInfractionsWorker()', error);
     yield put(getParticipantInfractions.failure(id, error));
   }
   finally {
     yield put(getParticipantInfractions.finally(id));
   }
+  return workerResponse;
 }
 
 function* getParticipantInfractionsWatcher() :Generator<*, *, *> {
@@ -958,6 +985,7 @@ function* getParticipantInfractionsWatcher() :Generator<*, *, *> {
 function* getRequiredHoursWorker(action :SequenceAction) :Generator<*, *, *> {
 
   const { id, value } = action;
+  const workerResponse = {};
   let response :Object = {};
   let requiredHours :number = 0;
 
@@ -994,12 +1022,14 @@ function* getRequiredHoursWorker(action :SequenceAction) :Generator<*, *, *> {
     yield put(getRequiredHours.success(id, requiredHours));
   }
   catch (error) {
+    workerResponse.error = error;
     LOG.error('caught exception in getRequiredHoursWorker()', error);
     yield put(getRequiredHours.failure(id, error));
   }
   finally {
     yield put(getRequiredHours.finally(id));
   }
+  return workerResponse;
 }
 
 function* getRequiredHoursWatcher() :Generator<*, *, *> {
@@ -1016,6 +1046,7 @@ function* getRequiredHoursWatcher() :Generator<*, *, *> {
 function* getSentenceTermWorker(action :SequenceAction) :Generator<*, *, *> {
 
   const { id, value } = action;
+  const workerResponse = {};
   let response :Object = {};
   let sentenceTerm :Map = Map();
 
@@ -1052,12 +1083,14 @@ function* getSentenceTermWorker(action :SequenceAction) :Generator<*, *, *> {
     yield put(getSentenceTerm.success(id, sentenceTerm));
   }
   catch (error) {
+    workerResponse.error = error;
     LOG.error('caught exception in getSentenceTermWorker()', error);
     yield put(getSentenceTerm.failure(id, error));
   }
   finally {
     yield put(getSentenceTerm.finally(id));
   }
+  return workerResponse;
 }
 
 function* getSentenceTermWatcher() :Generator<*, *, *> {
