@@ -46,7 +46,7 @@ const {
   SENTENCE_TERMS_BY_PARTICIPANT,
 } = PEOPLE;
 const { VIOLATION, WARNING } = INFRACTIONS_CONSTS;
-const { EFFECTIVE_DATE, STATUS } = ENROLLMENT_STATUS_FQNS;
+const { STATUS } = ENROLLMENT_STATUS_FQNS;
 const { FIRST_NAME, LAST_NAME } = PEOPLE_FQNS;
 
 const dropdowns :List = List().withMutations((list :List) => {
@@ -179,9 +179,6 @@ class ParticipantsSearchContainer extends Component<Props, State> {
     if (column === SORTABLE_PARTICIPANT_COLUMNS.NAME) {
       sortedPeople = this.sortByName(peopleList);
     }
-    if (column === SORTABLE_PARTICIPANT_COLUMNS.START_DATE) {
-      sortedPeople = this.sortByStartDate(peopleList);
-    }
     if (column === SORTABLE_PARTICIPANT_COLUMNS.SENT_END_DATE) {
       sortedPeople = this.sortBySentenceEndDate(peopleList);
     }
@@ -274,33 +271,6 @@ class ParticipantsSearchContainer extends Component<Props, State> {
     return sortedBySentEndDate;
   }
 
-  sortByStartDate = (people :List) => {
-    const { enrollmentByParticipant } = this.props;
-    const sortedByStartDate :List = people.sort((personA, personB) => {
-      const personAEKID :UUID = getEntityKeyId(personA);
-      const personBEKID :UUID = getEntityKeyId(personB);
-      const { [EFFECTIVE_DATE]: personAStartDate } = getEntityProperties(
-        enrollmentByParticipant.get(personAEKID), [EFFECTIVE_DATE]
-      );
-      const { [EFFECTIVE_DATE]: personBStartDate } = getEntityProperties(
-        enrollmentByParticipant.get(personBEKID), [EFFECTIVE_DATE]
-      );
-      const startDateA = DateTime.fromISO(personAStartDate);
-      const startDateB = DateTime.fromISO(personBStartDate);
-      if (startDateB.isValid && !startDateA.isValid) {
-        return 1;
-      }
-      if (startDateA.isValid && !startDateB.isValid) {
-        return -1;
-      }
-      if ((!startDateA.isValid && !startDateB.isValid) || (+startDateA === +startDateB)) {
-        return 0;
-      }
-      return (startDateA < startDateB) ? 1 : -1;
-    });
-    return sortedByStartDate;
-  }
-
   sortByStatus = (people :List) => {
     const { enrollmentByParticipant } = this.props;
     const sortedByStatus :List = people.sort((personA, personB) => {
@@ -362,7 +332,7 @@ class ParticipantsSearchContainer extends Component<Props, State> {
                 includeRequiredHours: true,
                 includeSentenceDate: true,
                 includeSentenceEndDate: true,
-                includeStartDate: true,
+                includeStartDate: false,
                 includeWorkedHours: true
               }}
               courtType=""
