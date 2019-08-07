@@ -11,6 +11,7 @@ import type { RequestSequence, RequestState } from 'redux-reqseq';
 import GeneralInfo from '../../components/participant/GeneralInfo';
 import KeyDates from '../../components/participant/KeyDates';
 import CaseInfo from '../../components/participant/CaseInfo';
+import ParticipantWorkSchedule from './schedule/ParticipantWorkSchedule';
 import InfractionsDisplay from '../../components/participant/InfractionsDisplay';
 
 import AssignedWorksitesContainer from './assignedworksites/AssignedWorksitesContainer';
@@ -59,6 +60,7 @@ const {
   SENTENCE_TERM,
   VIOLATIONS,
   WARNINGS,
+  WORK_APPOINTMENTS_BY_WORKSITE_PLAN,
   WORKSITES_BY_WORKSITE_PLAN,
   WORKSITE_PLANS,
 } = PERSON;
@@ -141,6 +143,7 @@ type Props = {
   sentenceTerm :Map;
   violations :List;
   warnings :List;
+  workAppointmentsByWorksitePlan :Map;
   worksitesByWorksitePlan :Map;
   worksitePlans :List;
   worksitesList :List;
@@ -217,6 +220,7 @@ class ParticipantProfile extends Component<Props, State> {
       sentenceTerm,
       violations,
       warnings,
+      workAppointmentsByWorksitePlan,
       worksitesByWorksitePlan,
       worksitePlans,
       worksitesList,
@@ -292,6 +296,14 @@ class ParticipantProfile extends Component<Props, State> {
         }
         <ProfileBody>
           <NameRowWrapper>
+            <NameHeader>Work Schedule</NameHeader>
+            <Button>Create Appointment</Button>
+          </NameRowWrapper>
+          <ParticipantWorkSchedule
+              workAppointmentsByWorksitePlan={workAppointmentsByWorksitePlan} />
+        </ProfileBody>
+        <ProfileBody>
+          <NameRowWrapper>
             <NameHeader>Warnings & Violations</NameHeader>
           </NameRowWrapper>
           <InfractionsContainer
@@ -333,6 +345,7 @@ const mapStateToProps = (state :Map<*, *>) => {
     [SENTENCE_TERM]: person.get(SENTENCE_TERM),
     [VIOLATIONS]: person.get(VIOLATIONS),
     [WARNINGS]: person.get(WARNINGS),
+    [WORK_APPOINTMENTS_BY_WORKSITE_PLAN]: person.get(WORK_APPOINTMENTS_BY_WORKSITE_PLAN),
     [WORKSITES_BY_WORKSITE_PLAN]: person.get(WORKSITES_BY_WORKSITE_PLAN),
     [WORKSITE_PLANS]: person.get(WORKSITE_PLANS),
     [WORKSITES_LIST]: worksites.get(WORKSITES_LIST),
