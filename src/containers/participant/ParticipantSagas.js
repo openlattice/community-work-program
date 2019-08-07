@@ -71,7 +71,6 @@ import {
   APP_TYPE_FQNS,
   CASE_FQNS,
   CONTACT_INFO_FQNS,
-  DATETIME_END,
   DATETIME_START,
   DIVERSION_PLAN_FQNS,
   ENROLLMENT_STATUS_FQNS,
@@ -946,12 +945,12 @@ function* getParticipantInfractionsWorker(action :SequenceAction) :Generator<*, 
               infractionEventMap = infractionEventMap.set(CATEGORY, violationCategory);
               infractionInfoMap = infractionInfoMap.set(infractionEventEKID, infractionEventMap);
             }
-            if (neighborESID === enrollmentStatusESID) {
+            else if (neighborESID === enrollmentStatusESID) {
               const { [STATUS]: enrollmentStatus } = getEntityProperties(entity, [STATUS]);
               infractionEventMap = infractionEventMap.set(STATUS, enrollmentStatus);
               infractionInfoMap = infractionInfoMap.set(infractionEventEKID, infractionEventMap);
             }
-            if (neighborESID === worksitePlanESID) {
+            else if (neighborESID === worksitePlanESID) {
               const worksitePlanEKID :UUID = getEntityKeyId(entity);
               infractionEventMap = infractionEventMap.set(WORKSITE_PLAN, worksitePlanEKID);
               infractionInfoMap = infractionInfoMap.set(infractionEventEKID, infractionEventMap);
