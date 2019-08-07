@@ -55,7 +55,7 @@ type Props = {
   worksitesByWorksitePlan :Map;
 };
 
-const DigestedInfractionsContainer = ({
+const InfractionDisplay = ({
   actions,
   infraction,
   infractionInfo,
@@ -101,4 +101,4 @@ const DigestedInfractionsContainer = ({
 };
 
 // $FlowFixMe
-export default DigestedInfractionsContainer;
+export default InfractionDisplay;

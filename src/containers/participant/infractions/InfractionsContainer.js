@@ -16,7 +16,7 @@ import { connect } from 'react-redux';
 import { RequestStates } from 'redux-reqseq';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
-import DigestedInfractionsContainer from './DigestedInfractionsContainer';
+import InfractionDisplay from './InfractionDisplay';
 import AddInfractionModal from './AddInfractionModal';
 
 import { getEntityKeyId, getEntityProperties, sortEntitiesByDateProperty } from '../../../utils/DataUtils';
@@ -179,7 +179,7 @@ class InfractionsContainer extends Component<Props, State> {
     const selectedInfractionEKID :UUID = getEntityKeyId(selectedInfraction);
     const infractionInfo :Map = infractionsInfo.get(selectedInfractionEKID);
     return (
-      <DigestedInfractionsContainer
+      <InfractionDisplay
           actions={actions}
           infraction={selectedInfraction}
           infractionInfo={infractionInfo}
