@@ -68,7 +68,7 @@ const KeyDates = ({ sentenceTerm } :Props) => {
         <Date>{ sentenceDate }</Date>
       </DateBlock>
       <DateBlock>
-        <Header>Enrollment Deadline</Header>
+        <Header>Check-In Deadline</Header>
         <Date>{ enrollmentDeadline }</Date>
       </DateBlock>
       <DateBlock>
