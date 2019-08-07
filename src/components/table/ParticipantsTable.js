@@ -18,16 +18,15 @@ import {
   HeaderElement,
 } from './TableStyledComponents';
 import {
+  DATETIME_START,
   ENROLLMENT_STATUS_FQNS,
   ENTITY_KEY_ID,
-  SENTENCE_TERM_FQNS
 } from '../../core/edm/constants/FullyQualifiedNames';
 import { ENROLLMENT_STATUSES, HOURS_CONSTS } from '../../core/edm/constants/DataModelConsts';
 import { SORTABLE_PARTICIPANT_COLUMNS } from '../../containers/participants/ParticipantsConstants';
 
 const { EFFECTIVE_DATE, STATUS } = ENROLLMENT_STATUS_FQNS;
 const { REQUIRED, WORKED } = HOURS_CONSTS;
-const { DATETIME_START } = SENTENCE_TERM_FQNS;
 
 type HeaderProps = {
   columnHeaders :string[];
@@ -173,8 +172,7 @@ const ParticipantsTable = ({
           // Status
           // we can get enrollment status from enrollment or from absence of enrollment
           // need to pass empty '' if status is required
-          const enrollmentStatus = (isDefined(enrollment) ||
-            (isDefined(enrollment) && enrollment.get(personEntityKeyId).count() === 0))
+          const enrollmentStatus = isDefined(enrollment)
             ? enrollment.getIn([personEntityKeyId, STATUS, 0], ENROLLMENT_STATUSES.AWAITING_CHECKIN)
             : undefined;
 

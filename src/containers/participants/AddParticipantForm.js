@@ -19,11 +19,11 @@ import { addParticipant } from './ParticipantsActions';
 import { getEntitySetIdFromApp, getPropertyTypeIdFromEdm } from '../../utils/DataUtils';
 import {
   APP_TYPE_FQNS,
+  DATETIME_COMPLETED,
+  DATETIME_START,
   DIVERSION_PLAN_FQNS,
   ENROLLMENT_STATUS_FQNS,
   SENTENCE_FQNS,
-  SENTENCE_TERM_FQNS,
-  SENTENCED_WITH_FQNS,
   PEOPLE_FQNS
 } from '../../core/edm/constants/FullyQualifiedNames';
 import { STATE } from '../../utils/constants/ReduxStateConsts';
@@ -60,8 +60,6 @@ const {
 const { EFFECTIVE_DATE, STATUS } = ENROLLMENT_STATUS_FQNS;
 const { DOB, FIRST_NAME, LAST_NAME } = PEOPLE_FQNS;
 const { SENTENCE_CONDITIONS } = SENTENCE_FQNS;
-const { DATETIME_START } = SENTENCE_TERM_FQNS;
-const { DATETIME_COMPLETED } = SENTENCED_WITH_FQNS;
 
 type Props = {
   actions:{
@@ -168,18 +166,10 @@ class AddParticipantForm extends Component<Props, State> {
     const associations = [];
     const nowAsIso = DateTime.local().toISO();
 
-    associations.push([MANUAL_SENTENCED_WITH, 0, PEOPLE, 0, DIVERSION_PLAN, {
-      [DATETIME_COMPLETED]: [nowAsIso]
-    }]);
-    associations.push([RELATED_TO, 0, DIVERSION_PLAN, 0, ENROLLMENT_STATUS, {
-      [DATETIME_COMPLETED]: [nowAsIso]
-    }]);
-    associations.push([MANUAL_SENTENCED_WITH, 0, PEOPLE, 0, SENTENCE_TERM, {
-      [DATETIME_COMPLETED]: [nowAsIso]
-    }]);
-    associations.push([SENTENCED_WITH, 0, PEOPLE, 0, MANUAL_SENTENCES, {
-      [DATETIME_COMPLETED]: [nowAsIso]
-    }]);
+    associations.push([MANUAL_SENTENCED_WITH, 0, PEOPLE, 0, DIVERSION_PLAN, {}]);
+    associations.push([RELATED_TO, 0, DIVERSION_PLAN, 0, ENROLLMENT_STATUS, {}]);
+    associations.push([MANUAL_SENTENCED_WITH, 0, PEOPLE, 0, SENTENCE_TERM, {}]);
+    associations.push([SENTENCED_WITH, 0, PEOPLE, 0, MANUAL_SENTENCES, {}]);
 
     // required hours is saved as a string and needs to be converted to number:
     const requiredHoursKey = getEntityAddressKey(0, DIVERSION_PLAN, REQUIRED_HOURS);

@@ -97,7 +97,8 @@ const TableRow = ({
       if (isDefined(warningsCount)) list.push(formatNumericalValue(warningsCount));
       if (isDefined(violationsCount)) list.push(formatNumericalValue(violationsCount));
       if (isDefined(hoursWorked) && isDefined(hoursRequired)) {
-        list.push(`${formatNumericalValue(hoursWorked)} / ${(formatNumericalValue(hoursRequired))}`);
+        if (!hoursWorked && !hoursRequired) list.push('');
+        else list.push(`${formatNumericalValue(hoursWorked)} / ${(formatNumericalValue(hoursRequired))}`);
       }
       if (!isDefined(hoursWorked) && isDefined(hoursRequired)) list.push(formatNumericalValue(hoursRequired));
       if (isDefined(courtType)) list.push(courtType);

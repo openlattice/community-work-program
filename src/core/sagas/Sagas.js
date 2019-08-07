@@ -42,6 +42,7 @@ export default function* sagas() :Generator<*, *, *> {
 
     // ParticipantSagas
     fork(ParticipantSagas.addNewDiversionPlanStatusWatcher),
+    fork(ParticipantSagas.addWorksitePlanWatcher),
     fork(ParticipantSagas.getAllParticipantInfoWatcher),
     fork(ParticipantSagas.getCaseInfoWatcher),
     fork(ParticipantSagas.getContactInfoWatcher),
@@ -51,6 +52,8 @@ export default function* sagas() :Generator<*, *, *> {
     fork(ParticipantSagas.getParticipantWatcher),
     fork(ParticipantSagas.getRequiredHoursWatcher),
     fork(ParticipantSagas.getSentenceTermWatcher),
+    fork(ParticipantSagas.getWorksiteByWorksitePlanWatcher),
+    fork(ParticipantSagas.getWorksitePlansWatcher),
 
     // ParticipantsSagas
     fork(ParticipantsSagas.addParticipantWatcher),
@@ -64,6 +67,7 @@ export default function* sagas() :Generator<*, *, *> {
     fork(WorksitesSagas.addOrganizationWatcher),
     fork(WorksitesSagas.addWorksiteWatcher),
     fork(WorksitesSagas.getOrganizationsWatcher),
+    fork(WorksitesSagas.getWorksitesWatcher),
     fork(WorksitesSagas.getWorksitePlansWatcher),
     fork(WorksitesSagas.getWorksitesByOrgWatcher),
 

@@ -6,10 +6,8 @@ import { DateTime } from 'luxon';
 
 import { getEntityProperties } from '../../utils/DataUtils';
 import { formatAsDate } from '../../utils/DateTimeUtils';
-import { SENTENCE_TERM_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { DATETIME_START } from '../../core/edm/constants/FullyQualifiedNames';
 import { OL } from '../../core/style/Colors';
-
-const { DATETIME_START } = SENTENCE_TERM_FQNS;
 
 const DatesWrapper = styled.div`
   align-items: center;

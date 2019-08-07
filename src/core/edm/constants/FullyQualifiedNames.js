@@ -10,6 +10,7 @@ const { OPENLATTICE_ID_FQN } = Constants;
 export const ENTITY_KEY_ID = OPENLATTICE_ID_FQN;
 
 export const APP_TYPE_FQNS = {
+  ADDRESSES: new FullyQualifiedName('app.addresses'),
   APP_SETTINGS: new FullyQualifiedName('app.settings'),
   APPEARS_IN: new FullyQualifiedName('app.appearsin'),
   APPOINTMENT: new FullyQualifiedName('app.appointment'),
@@ -23,11 +24,11 @@ export const APP_TYPE_FQNS = {
   COURT_PRETRIAL_CASES: new FullyQualifiedName('app.courtpretrialcases'),
   DIVERSION_PLAN: new FullyQualifiedName('app.diversionplan'),
   EDITED_BY: new FullyQualifiedName('app.editedby'),
-  ELIGIBLE_FOR: new FullyQualifiedName('app.eligiblefor'),
   ENROLLMENT_STATUS: new FullyQualifiedName('app.enrollmentstatus'),
   FULFILLS: new FullyQualifiedName('app.fulfills'),
   HAS: new FullyQualifiedName('app.has'),
   INCLUDES: new FullyQualifiedName('app.includes'),
+  INFRACTION_EVENT: new FullyQualifiedName('app.infractionevent'),
   INFRACTIONS: new FullyQualifiedName('app.infractions'),
   JUDGES: new FullyQualifiedName('app.judges'),
   LOCATED_AT: new FullyQualifiedName('app.locatedat'),
@@ -54,7 +55,12 @@ export const APP_TYPE_FQNS = {
   WORKSITE_PLAN: new FullyQualifiedName('app.worksiteplan'),
 };
 
-/* Entity Type FQNs */
+/* DateTime FQNs */
+export const DATETIME = new FullyQualifiedName('general.datetime');
+export const DATETIME_COMPLETED = new FullyQualifiedName('date.completeddatetime');
+export const DATETIME_START = new FullyQualifiedName('ol.datetimestart');
+
+/* Property Type FQNs by Entity Type */
 
 /* publicsafety.pretrialstatuscaseprocessings */
 export const CASE_FQNS = {
@@ -136,11 +142,6 @@ export const SENTENCE_FQNS = {
   SENTENCE_CONDITIONS: new FullyQualifiedName('justice.sentenceconditions'),
 };
 
-/* ol.sentenceterm */
-export const SENTENCE_TERM_FQNS = {
-  DATETIME_START: new FullyQualifiedName('ol.datetimestart'),
-};
-
 /* ol.program */
 export const WORKSITE_FQNS = {
   DATETIME_END: new FullyQualifiedName('ol.datetimeend'),
@@ -153,23 +154,4 @@ export const WORKSITE_FQNS = {
 export const WORKSITE_PLAN_FQNS = {
   HOURS_WORKED: new FullyQualifiedName('ol.hoursworked'),
   REQUIRED_HOURS: new FullyQualifiedName('ol.requiredhours'),
-};
-
-/* Association Type FQNs */
-
-/* ol.has */
-export const HAS_FQNS = {
-  DATETIME_COMPLETED: new FullyQualifiedName('date.completeddatetime'),
-};
-
-export const OPERATES_FQNS = {
-  GENERAL_DATETIME: new FullyQualifiedName('general.datetime'),
-};
-
-export const RELATED_TO_FQNS = {
-  DATETIME_COMPLETED: new FullyQualifiedName('date.completeddatetime'),
-};
-
-export const SENTENCED_WITH_FQNS = {
-  DATETIME_COMPLETED: new FullyQualifiedName('date.completeddatetime'),
 };
