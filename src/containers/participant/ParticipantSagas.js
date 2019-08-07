@@ -520,10 +520,10 @@ function* getWorkAppointmentsWorker(action :SequenceAction) :Generator<*, *, *> 
 
   try {
     yield put(getWorkAppointments.request(id));
-    const { worksitePlans } = value;
     if (value === null || value === undefined) {
       throw ERR_ACTION_VALUE_NOT_DEFINED;
     }
+    const { worksitePlans } = value;
     const app = yield select(getAppFromState);
     const worksitePlanESID :UUID = getEntitySetIdFromApp(app, WORKSITE_PLAN);
     const appointmentESID :UUID = getEntitySetIdFromApp(app, APPOINTMENT);
