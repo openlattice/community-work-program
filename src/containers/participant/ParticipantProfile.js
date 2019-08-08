@@ -155,6 +155,7 @@ type State = {
   appointmentsByWorksiteName :Map;
   showAssignWorksiteModal :boolean;
   showEnrollmentModal :boolean;
+  worksiteNamesByWorksitePlan :Map;
 };
 
 class ParticipantProfile extends Component<Props, State> {
@@ -166,6 +167,7 @@ class ParticipantProfile extends Component<Props, State> {
       appointmentsByWorksiteName: Map(),
       showAssignWorksiteModal: false,
       showEnrollmentModal: false,
+      worksiteNamesByWorksitePlan: Map(),
     };
   }
 
@@ -181,15 +183,25 @@ class ParticipantProfile extends Component<Props, State> {
     if (!prevProps.app.get(APP_TYPE_FQNS.PEOPLE) && app.get(APP_TYPE_FQNS.PEOPLE)) {
       this.loadProfile();
     }
-    if (prevProps.workAppointmentsByWorksitePlan.count() !== workAppointmentsByWorksitePlan.count()
-      && prevProps.worksitesByWorksitePlan.count() !== worksitesByWorksitePlan) {
-      this.loadWorkAppointments();
+    if (prevProps.worksitesByWorksitePlan.count() !== worksitesByWorksitePlan.count()) {
+      this.createWorksiteNameMap();
     }
   }
 
   loadProfile = () => {
     const { actions, personEKID } = this.props;
     actions.getAllParticipantInfo({ personEKID });
+  }
+
+  createWorksiteNameMap = () => {
+    const { worksitesByWorksitePlan } = this.props;
+    const worksiteNamesByWorksitePlan = Map().withMutations((map :Map) => {
+      worksitesByWorksitePlan.forEach((worksite :Map, worksitePlanEKID :UUID) => {
+        const { [NAME]: worksiteName } = getEntityProperties(worksite, [NAME]);
+        map.set(worksitePlanEKID, worksiteName);
+      });
+    });
+    this.setState({ worksiteNamesByWorksitePlan });
   }
 
   loadWorkAppointments = () => {
@@ -245,11 +257,12 @@ class ParticipantProfile extends Component<Props, State> {
       sentenceTerm,
       violations,
       warnings,
+      workAppointmentsByWorksitePlan,
       worksitesByWorksitePlan,
       worksitePlans,
       worksitesList,
     } = this.props;
-    const { appointmentsByWorksiteName, showAssignWorksiteModal, showEnrollmentModal } = this.state;
+    const { appointmentsByWorksiteName, showAssignWorksiteModal, showEnrollmentModal, worksiteNamesByWorksitePlan } = this.state;
 
     if (getInitializeAppRequestState === RequestStates.PENDING
         || getAllParticipantInfoRequestState === RequestStates.PENDING) {
@@ -324,7 +337,10 @@ class ParticipantProfile extends Component<Props, State> {
             <Button>Create Appointment</Button>
           </NameRowWrapper>
           <ParticipantWorkSchedule
-              appointmentsByWorksite={appointmentsByWorksiteName} />
+              appointmentsByWorksite={appointmentsByWorksiteName}
+              workAppointmentsByWorksitePlan={workAppointmentsByWorksitePlan}
+              worksitesByWorksitePlan={worksitesByWorksitePlan}
+              worksiteNamesByWorksitePlan={worksiteNamesByWorksitePlan} />
         </ProfileBody>
         <ProfileBody>
           <NameRowWrapper>
