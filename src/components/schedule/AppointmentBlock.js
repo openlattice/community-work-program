@@ -42,9 +42,10 @@ const Text = styled.span`
 
 type Props = {
   appointment :Map;
+  worksiteName :string;
 };
 
-const AppointmentBlock = ({ appointment } :Props) => {
+const AppointmentBlock = ({ appointment, worksiteName } :Props) => {
 
   const {
     [DATETIME_END]: datetimeEnd,
@@ -58,7 +59,7 @@ const AppointmentBlock = ({ appointment } :Props) => {
     <AppointmentWrapper>
       <InfoWrapper>
         <DateText>{ date }</DateText>
-        <Text>Work Site</Text>
+        <Text>{ worksiteName }</Text>
         <Text>{ hours }</Text>
       </InfoWrapper>
     </AppointmentWrapper>

@@ -32,7 +32,8 @@ import {
   APP_TYPE_FQNS,
   DIVERSION_PLAN_FQNS,
   ENROLLMENT_STATUS_FQNS,
-  PEOPLE_FQNS
+  PEOPLE_FQNS,
+  WORKSITE_FQNS,
 } from '../../core/edm/constants/FullyQualifiedNames';
 import { ENROLLMENT_STATUSES } from '../../core/edm/constants/DataModelConsts';
 import {
@@ -45,6 +46,7 @@ import {
 const { ORIENTATION_DATETIME } = DIVERSION_PLAN_FQNS;
 const { STATUS } = ENROLLMENT_STATUS_FQNS;
 const { FIRST_NAME, LAST_NAME } = PEOPLE_FQNS;
+const { NAME } = WORKSITE_FQNS;
 const {
   ACTIONS,
   ADDRESS,
@@ -150,16 +152,31 @@ type Props = {
 };
 
 type State = {
+  appointmentsByWorksiteName :Map;
   showAssignWorksiteModal :boolean;
   showEnrollmentModal :boolean;
 };
 
 class ParticipantProfile extends Component<Props, State> {
 
-  state = {
-    showAssignWorksiteModal: false,
-    showEnrollmentModal: false,
-  };
+  constructor(props :Props) {
+    super(props);
+
+    console.log('workAppointmentsByWorksitePlan ', props.workAppointmentsByWorksitePlan.toJS());
+    const appointmentsByWorksiteName :Map = Map().withMutations((map :Map) => {
+      props.workAppointmentsByWorksitePlan
+        .forEach((appointmentList :List, worksitePlanEKID :UUID) => {
+          const worksite :Map = props.worksitesByWorksitePlan.get(worksitePlanEKID);
+          const { [NAME]: worksiteName } = getEntityProperties(worksite, [NAME]);
+          map.set(worksiteName, appointmentList);
+        });
+    });
+    this.state = {
+      appointmentsByWorksiteName,
+      showAssignWorksiteModal: false,
+      showEnrollmentModal: false,
+    };
+  }
 
   componentDidMount() {
     const { app } = this.props;
@@ -220,12 +237,11 @@ class ParticipantProfile extends Component<Props, State> {
       sentenceTerm,
       violations,
       warnings,
-      workAppointmentsByWorksitePlan,
       worksitesByWorksitePlan,
       worksitePlans,
       worksitesList,
     } = this.props;
-    const { showAssignWorksiteModal, showEnrollmentModal } = this.state;
+    const { appointmentsByWorksiteName, showAssignWorksiteModal, showEnrollmentModal } = this.state;
 
     if (getInitializeAppRequestState === RequestStates.PENDING
         || getAllParticipantInfoRequestState === RequestStates.PENDING) {
@@ -300,7 +316,7 @@ class ParticipantProfile extends Component<Props, State> {
             <Button>Create Appointment</Button>
           </NameRowWrapper>
           <ParticipantWorkSchedule
-              workAppointmentsByWorksitePlan={workAppointmentsByWorksitePlan} />
+              appointmentsByWorksite={appointmentsByWorksiteName} />
         </ProfileBody>
         <ProfileBody>
           <NameRowWrapper>

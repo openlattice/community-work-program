@@ -4,6 +4,12 @@ import styled from 'styled-components';
 import { Map, List } from 'immutable';
 import { withRouter } from 'react-router-dom';
 import { DateTime } from 'luxon';
+import { faCalendarTimes } from '@fortawesome/pro-light-svg-icons';
+import {
+  Card,
+  CardSegment,
+  IconSplash,
+} from 'lattice-ui-kit';
 
 import AppointmentBlock from '../../../components/schedule/AppointmentBlock';
 
@@ -14,7 +20,7 @@ const OuterWrapper = styled(ContainerOuterWrapper)`
 `;
 
 type Props = {
-  workAppointmentsByWorksitePlan :Map
+  appointmentsByWorksite :Map
 };
 
 type State = {};
@@ -22,20 +28,35 @@ type State = {};
 class ParticipantWorkSchedule extends Component<Props, State> {
 
   renderAppointmentList = () => {
-    const { workAppointmentsByWorksitePlan } = this.props;
-    const appointments :List = workAppointmentsByWorksitePlan
-      .valueSeq()
-      .toList();
-    return appointments.map((appointment :Map) => (
+    const { appointmentsByWorksite } = this.props;
+    // const appointments :List = appointmentsByWorksite
+    //   .valueSeq()
+    //   .toList();
+    return appointmentsByWorksite.map((appointment :Map, worksiteName :string) => (
       <AppointmentBlock
-          appointment={appointment} />
+          appointment={appointment}
+          worksiteName={worksiteName} />
     ));
   }
 
   render() {
+    const { appointmentsByWorksite } = this.props;
     return (
       <OuterWrapper>
-        { this.renderAppointmentList() }
+        {
+          appointmentsByWorksite.isEmpty()
+            ? (
+              <Card>
+                <CardSegment>
+                  <IconSplash
+                      caption="No Appointments Scheduled"
+                      icon={faCalendarTimes}
+                      size="3x" />
+                </CardSegment>
+              </Card>
+            )
+            : this.renderAppointmentList()
+        }
       </OuterWrapper>
     );
   }
