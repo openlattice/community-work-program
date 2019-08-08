@@ -162,17 +162,8 @@ class ParticipantProfile extends Component<Props, State> {
   constructor(props :Props) {
     super(props);
 
-    console.log('workAppointmentsByWorksitePlan ', props.workAppointmentsByWorksitePlan.toJS());
-    const appointmentsByWorksiteName :Map = Map().withMutations((map :Map) => {
-      props.workAppointmentsByWorksitePlan
-        .forEach((appointmentList :List, worksitePlanEKID :UUID) => {
-          const worksite :Map = props.worksitesByWorksitePlan.get(worksitePlanEKID);
-          const { [NAME]: worksiteName } = getEntityProperties(worksite, [NAME]);
-          map.set(worksiteName, appointmentList);
-        });
-    });
     this.state = {
-      appointmentsByWorksiteName,
+      appointmentsByWorksiteName: Map(),
       showAssignWorksiteModal: false,
       showEnrollmentModal: false,
     };
@@ -186,15 +177,31 @@ class ParticipantProfile extends Component<Props, State> {
   }
 
   componentDidUpdate(prevProps :Props) {
-    const { app } = this.props;
+    const { app, workAppointmentsByWorksitePlan } = this.props;
     if (!prevProps.app.get(APP_TYPE_FQNS.PEOPLE) && app.get(APP_TYPE_FQNS.PEOPLE)) {
       this.loadProfile();
+    }
+    if (prevProps.workAppointmentsByWorksitePlan.count() !== workAppointmentsByWorksitePlan.count()) {
+      this.loadWorkAppointments();
     }
   }
 
   loadProfile = () => {
     const { actions, personEKID } = this.props;
     actions.getAllParticipantInfo({ personEKID });
+  }
+
+  loadWorkAppointments = () => {
+    const { workAppointmentsByWorksitePlan, worksitesByWorksitePlan } = this.props;
+    const appointmentsByWorksiteName :Map = Map().withMutations((map :Map) => {
+      workAppointmentsByWorksitePlan
+        .forEach((appointmentList :List, worksitePlanEKID :UUID) => {
+          const worksite :Map = worksitesByWorksitePlan.get(worksitePlanEKID);
+          const { [NAME]: worksiteName } = getEntityProperties(worksite, [NAME]);
+          map.set(worksiteName, appointmentList);
+        });
+    });
+    this.setState({ appointmentsByWorksiteName });
   }
 
   handleShowEnrollmentModal = () => {
