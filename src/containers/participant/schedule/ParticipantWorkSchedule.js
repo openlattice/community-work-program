@@ -2,8 +2,6 @@
 import React, { Component } from 'react';
 import styled from 'styled-components';
 import { Map, List } from 'immutable';
-import { withRouter } from 'react-router-dom';
-import { DateTime } from 'luxon';
 import { faCalendarTimes } from '@fortawesome/pro-light-svg-icons';
 import {
   Card,
@@ -14,37 +12,69 @@ import {
 import AppointmentBlock from '../../../components/schedule/AppointmentBlock';
 
 import { ContainerOuterWrapper } from '../../../components/Layout';
+import { getEntityKeyId, sortEntitiesByDateProperty } from '../../../utils/DataUtils';
+import { INCIDENT_START_DATETIME } from '../../../core/edm/constants/FullyQualifiedNames';
 
 const OuterWrapper = styled(ContainerOuterWrapper)`
   width: 100%;
 `;
 
 type Props = {
-  appointmentsByWorksite :Map
+  workAppointmentsByWorksitePlan :Map;
+  worksiteNamesByWorksitePlan :Map;
 };
 
-type State = {};
+type State = {
+};
 
 class ParticipantWorkSchedule extends Component<Props, State> {
 
+  createWorksiteNameByAppointmentMap = () => {
+    const { workAppointmentsByWorksitePlan, worksiteNamesByWorksitePlan } = this.props;
+    const worksiteNamesByAppointmentEKID = Map().withMutations((map :Map) => {
+      workAppointmentsByWorksitePlan.forEach((apptList :List, worksitePlanEKID :UUID) => {
+        apptList.forEach((appt :Map) => {
+          const apptEKID :UUID = getEntityKeyId(appt);
+          const apptWorksiteName = worksiteNamesByWorksitePlan.get(worksitePlanEKID);
+          map.set(apptEKID, apptWorksiteName);
+        });
+      });
+    });
+    return worksiteNamesByAppointmentEKID;
+  }
+
+  sortAppointmentsByDate = (appointments :List) => (
+    sortEntitiesByDateProperty(appointments, [INCIDENT_START_DATETIME])
+  );
+
   renderAppointmentList = () => {
-    const { appointmentsByWorksite } = this.props;
-    // const appointments :List = appointmentsByWorksite
-    //   .valueSeq()
-    //   .toList();
-    return appointmentsByWorksite.map((appointment :Map, worksiteName :string) => (
-      <AppointmentBlock
-          appointment={appointment}
-          worksiteName={worksiteName} />
-    ));
+    const { workAppointmentsByWorksitePlan } = this.props;
+
+    const worksiteNamesByAppointmentEKID = this.createWorksiteNameByAppointmentMap();
+    const appointments :List = workAppointmentsByWorksitePlan
+      .valueSeq()
+      .toList()
+      .flatten(1);
+    const sortedAppointments :List = this.sortAppointmentsByDate(appointments);
+
+    return sortedAppointments.map((appointment :Map) => {
+      const appointmentEKID = getEntityKeyId(appointment);
+      const worksiteName :string = worksiteNamesByAppointmentEKID.get(appointmentEKID);
+      return (
+        <AppointmentBlock
+            key={appointmentEKID}
+            appointment={appointment}
+            worksiteName={worksiteName} />
+      );
+    });
   }
 
   render() {
-    const { appointmentsByWorksite } = this.props;
+    const { workAppointmentsByWorksitePlan } = this.props;
     return (
       <OuterWrapper>
         {
-          appointmentsByWorksite.isEmpty()
+          workAppointmentsByWorksitePlan.isEmpty()
             ? (
               <Card>
                 <CardSegment>
