@@ -14,10 +14,41 @@ import AppointmentBlock from '../../../components/schedule/AppointmentBlock';
 import { ContainerOuterWrapper } from '../../../components/Layout';
 import { getEntityKeyId, sortEntitiesByDateProperty } from '../../../utils/DataUtils';
 import { INCIDENT_START_DATETIME } from '../../../core/edm/constants/FullyQualifiedNames';
+import { OL } from '../../../core/style/Colors';
 
 const OuterWrapper = styled(ContainerOuterWrapper)`
   width: 100%;
 `;
+
+const RowWrapper = styled.div`
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+`;
+
+const Menu = styled.div`
+  display: flex;
+  align-items: center;
+`;
+
+const MenuItem = styled.span`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-right: 20px;
+  color: ${props => (props.selected ? OL.GREY15 : OL.GREY02)};
+  font-weight: 600;
+  &:hover {
+    cursor: pointer;
+    color: ${OL.GREY01};
+  }
+`;
+
+const scheduleViews :string[] = [
+  'All',
+  'Upcoming',
+  'Past',
+];
 
 type Props = {
   workAppointmentsByWorksitePlan :Map;
@@ -25,9 +56,14 @@ type Props = {
 };
 
 type State = {
+  selectedScheduleList :string;
 };
 
 class ParticipantWorkSchedule extends Component<Props, State> {
+
+  state = {
+    selectedScheduleList: scheduleViews[1],
+  };
 
   createWorksiteNameByAppointmentMap = () => {
     const { workAppointmentsByWorksitePlan, worksiteNamesByWorksitePlan } = this.props;
@@ -46,6 +82,10 @@ class ParticipantWorkSchedule extends Component<Props, State> {
   sortAppointmentsByDate = (appointments :List) => (
     sortEntitiesByDateProperty(appointments, [INCIDENT_START_DATETIME])
   );
+
+  changeScheduleView = (view :string) => {
+    this.setState({ selectedScheduleView: view });
+  }
 
   renderAppointmentList = () => {
     const { workAppointmentsByWorksitePlan } = this.props;
@@ -71,8 +111,26 @@ class ParticipantWorkSchedule extends Component<Props, State> {
 
   render() {
     const { workAppointmentsByWorksitePlan } = this.props;
+    const { selectedScheduleList } = this.state;
     return (
       <OuterWrapper>
+        <RowWrapper>
+          <Menu>
+            {
+              scheduleViews.map((view :string) => {
+                const current = selectedScheduleList === view;
+                return (
+                  <MenuItem
+                      key={view}
+                      onClick={() => this.changeScheduleView(view)}
+                      selected={current}>
+                    {view}
+                  </MenuItem>
+                );
+              })
+            }
+          </Menu>
+        </RowWrapper>
         {
           workAppointmentsByWorksitePlan.isEmpty()
             ? (
