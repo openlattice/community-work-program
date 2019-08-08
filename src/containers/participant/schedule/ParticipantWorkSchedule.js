@@ -8,11 +8,12 @@ import {
   CardSegment,
   IconSplash,
 } from 'lattice-ui-kit';
+import { DateTime } from 'luxon';
 
 import AppointmentBlock from '../../../components/schedule/AppointmentBlock';
 
 import { ContainerOuterWrapper } from '../../../components/Layout';
-import { getEntityKeyId, sortEntitiesByDateProperty } from '../../../utils/DataUtils';
+import { getEntityKeyId, getEntityProperties, sortEntitiesByDateProperty } from '../../../utils/DataUtils';
 import { INCIDENT_START_DATETIME } from '../../../core/edm/constants/FullyQualifiedNames';
 import { OL } from '../../../core/style/Colors';
 
@@ -56,13 +57,13 @@ type Props = {
 };
 
 type State = {
-  selectedScheduleList :string;
+  selectedScheduleView :string;
 };
 
 class ParticipantWorkSchedule extends Component<Props, State> {
 
   state = {
-    selectedScheduleList: scheduleViews[1],
+    selectedScheduleView: scheduleViews[1],
   };
 
   createWorksiteNameByAppointmentMap = () => {
@@ -87,6 +88,29 @@ class ParticipantWorkSchedule extends Component<Props, State> {
     this.setState({ selectedScheduleView: view });
   }
 
+  filterAppointmentList = (appointments :List) => {
+    const { selectedScheduleView } = this.state;
+    let filteredList = List();
+    const today = DateTime.local();
+
+    if (selectedScheduleView === scheduleViews[0]) {
+      filteredList = appointments;
+    }
+    if (selectedScheduleView === scheduleViews[1]) {
+      filteredList = appointments.filter((appt :Map) => {
+        const { [INCIDENT_START_DATETIME]: startDateTime } = getEntityProperties(appt, [INCIDENT_START_DATETIME]);
+        return DateTime.fromISO(startDateTime) > today;
+      });
+    }
+    if (selectedScheduleView === scheduleViews[2]) {
+      filteredList = appointments.filter((appt :Map) => {
+        const { [INCIDENT_START_DATETIME]: startDateTime } = getEntityProperties(appt, [INCIDENT_START_DATETIME]);
+        return DateTime.fromISO(startDateTime) < today;
+      });
+    }
+    return filteredList;
+  }
+
   renderAppointmentList = () => {
     const { workAppointmentsByWorksitePlan } = this.props;
 
@@ -95,7 +119,8 @@ class ParticipantWorkSchedule extends Component<Props, State> {
       .valueSeq()
       .toList()
       .flatten(1);
-    const sortedAppointments :List = this.sortAppointmentsByDate(appointments);
+    const appointmentsBySelectedView = this.filterAppointmentList(appointments);
+    const sortedAppointments :List = this.sortAppointmentsByDate(appointmentsBySelectedView);
 
     return sortedAppointments.map((appointment :Map) => {
       const appointmentEKID = getEntityKeyId(appointment);
@@ -111,14 +136,14 @@ class ParticipantWorkSchedule extends Component<Props, State> {
 
   render() {
     const { workAppointmentsByWorksitePlan } = this.props;
-    const { selectedScheduleList } = this.state;
+    const { selectedScheduleView } = this.state;
     return (
       <OuterWrapper>
         <RowWrapper>
           <Menu>
             {
               scheduleViews.map((view :string) => {
-                const current = selectedScheduleList === view;
+                const current = selectedScheduleView === view;
                 return (
                   <MenuItem
                       key={view}
