@@ -86,13 +86,7 @@ export default function appReducer(state :Map<*, *> = INITIAL_STATE, action :Obj
           }
 
           let newState :Map<*, *> = state;
-          const {
-            app,
-            appConfigs,
-            appSettingsByOrgId,
-            // appTypes,
-            // edm
-          } = value;
+          const { app, appConfigs } = value;
           const organizations :Object = {};
 
           appConfigs.forEach((appConfig :Object) => {
@@ -133,8 +127,6 @@ export default function appReducer(state :Map<*, *> = INITIAL_STATE, action :Obj
             selectedOrganizationTitle = organizations[selectedOrganizationId].title;
           }
 
-          const appSettings = appSettingsByOrgId.get(selectedOrganizationId, Map());
-
           return newState
             .set(APP.APP, app)
             .set(ENTITY_SETS_BY_ORG, entitySetsByOrgId)
@@ -142,8 +134,6 @@ export default function appReducer(state :Map<*, *> = INITIAL_STATE, action :Obj
             .set(ORGS, fromJS(organizations))
             .set(SELECTED_ORG_ID, selectedOrganizationId)
             .set(SELECTED_ORG_TITLE, selectedOrganizationTitle)
-            .set(SETTINGS_BY_ORG_ID, appSettingsByOrgId)
-            .set(SELECTED_ORG_SETTINGS, appSettings)
             .setIn([ACTIONS, INITIALIZE_APPLICATION, REQUEST_STATE], RequestStates.SUCCESS);
         },
         FAILURE: () => {

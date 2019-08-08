@@ -68,7 +68,6 @@ function* initializeApplicationWorker(action :SequenceAction) :Generator<*, *, *
       call(getEntityDataModelTypesWorker, getEntityDataModelTypes()),
     ]);
 
-    let appSettingsByOrgId :OrderedMap<*, *> = OrderedMap();
     /*
      * 1. load App
      */
@@ -78,51 +77,18 @@ function* initializeApplicationWorker(action :SequenceAction) :Generator<*, *, *
     if (response.error) throw response.error;
 
     /*
-     * 2. load AppConfigs and AppTypes
+     * 2. load AppConfigs
      */
 
     const app = response.data;
-    response = yield all([
-      call(getAppConfigsWorker, getAppConfigs(app.id)),
-      call(getAppTypesWorker, getAppTypes(app.appTypeIds)),
-    ]);
-    if (response[0].error) throw response[0].error;
-    if (response[1].error) throw response[1].error;
-    /*
-     * 3. load EntityTypes and PropertyTypes
-     */
+    response = yield call(getAppConfigsWorker, getAppConfigs(app.id));
+    if (response.error) throw response.error;
 
-    const appConfigs :Object[] = response[0].data;
-    const appTypesMap :Object = response[1].data;
-    const appTypes :Object[] = (Object.values(appTypesMap) :any);
-    const projection :Object[] = appTypes.map((appType :Object) => ({
-      id: appType.entityTypeId,
-      include: [SecurableTypes.EntityType, SecurableTypes.PropertyTypeInEntitySet],
-      type: SecurableTypes.EntityType,
-    }));
-    response = yield call(getEntityDataModelProjectionWorker, getEntityDataModelProjection(projection));
-    if (response.error) {
-      LOG.error(response.error);
-      throw response.error;
-    }
-
-    const edm :Object = response.data;
-    appConfigs.forEach((appConfig :Object) => {
-
-      const { organization } :Object = appConfig;
-      const orgId :string = organization.id;
-      if (fromJS(appConfig.config).size) {
-        const appSettingsConfig = appConfig.config[APP_SETTINGS];
-        appSettingsByOrgId = appSettingsByOrgId.set(orgId, appSettingsConfig.entitySetId);
-      }
-    });
+    const appConfigs :Object[] = response.data;
 
     yield put(initializeApplication.success(action.id, {
       app,
       appConfigs,
-      appSettingsByOrgId,
-      appTypes,
-      edm
     }));
   }
   catch (error) {
