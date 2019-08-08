@@ -18,8 +18,6 @@ import {
 
 const {
   ACTIONS,
-  APP_SETTINGS_ID,
-  APP_TYPES,
   ENTITY_SETS_BY_ORG,
   ERRORS,
   FQN_TO_ID,
@@ -27,9 +25,7 @@ const {
   ORGS,
   REQUEST_STATE,
   SELECTED_ORG_ID,
-  SELECTED_ORG_SETTINGS,
   SELECTED_ORG_TITLE,
-  SETTINGS_BY_ORG_ID,
 } = APP;
 
 const INITIAL_STATE :Map<*, *> = fromJS({
@@ -40,8 +36,6 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     }
   },
   [APP.APP]: Map(),
-  [APP_SETTINGS_ID]: '',
-  [APP_TYPES]: Map(),
   [ENTITY_SETS_BY_ORG]: Map(),
   [ERRORS]: {
     [APP.INITIALIZE_APPLICATION]: Map(),
@@ -49,9 +43,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [FQN_TO_ID]: Map(),
   [ORGS]: Map(),
   [SELECTED_ORG_ID]: '',
-  [SELECTED_ORG_SETTINGS]: Map(),
   [SELECTED_ORG_TITLE]: '',
-  [SETTINGS_BY_ORG_ID]: Map(),
 });
 
 export default function appReducer(state :Map<*, *> = INITIAL_STATE, action :Object) {
