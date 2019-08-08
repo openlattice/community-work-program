@@ -177,11 +177,12 @@ class ParticipantProfile extends Component<Props, State> {
   }
 
   componentDidUpdate(prevProps :Props) {
-    const { app, workAppointmentsByWorksitePlan } = this.props;
+    const { app, workAppointmentsByWorksitePlan, worksitesByWorksitePlan } = this.props;
     if (!prevProps.app.get(APP_TYPE_FQNS.PEOPLE) && app.get(APP_TYPE_FQNS.PEOPLE)) {
       this.loadProfile();
     }
-    if (prevProps.workAppointmentsByWorksitePlan.count() !== workAppointmentsByWorksitePlan.count()) {
+    if (prevProps.workAppointmentsByWorksitePlan.count() !== workAppointmentsByWorksitePlan.count()
+      && prevProps.worksitesByWorksitePlan.count() !== worksitesByWorksitePlan) {
       this.loadWorkAppointments();
     }
   }
