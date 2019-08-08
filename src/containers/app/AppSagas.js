@@ -116,25 +116,6 @@ function* initializeApplicationWorker(action :SequenceAction) :Generator<*, *, *
         appSettingsByOrgId = appSettingsByOrgId.set(orgId, appSettingsConfig.entitySetId);
       }
     });
-    const appSettingCalls = appSettingsByOrgId.valueSeq().map(entitySetId => (
-      call(SearchApi.searchEntitySetData, entitySetId, {
-        searchTerm: '*',
-        start: 0,
-        maxHits: 1
-      })
-    ));
-
-    const orgIds = appSettingsByOrgId.keySeq().toJS();
-    const appSettingResults = yield all(appSettingCalls.toJS());
-    let i = 0;
-    if (appSettingResults[0].numHits > 0) {
-      appSettingResults.forEach((setting) => {
-        const entitySetId = orgIds[i];
-        const settings = JSON.parse(setting.hits[0]['ol.appdetails']);
-        appSettingsByOrgId = appSettingsByOrgId.set(entitySetId, fromJS(settings));
-        i += 1;
-      });
-    }
 
     yield put(initializeApplication.success(action.id, {
       app,
