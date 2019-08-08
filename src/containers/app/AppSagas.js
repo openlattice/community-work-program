@@ -8,13 +8,9 @@ import {
   put,
   takeEvery,
 } from '@redux-saga/core/effects';
-import { OrderedMap, fromJS } from 'immutable';
-import { Types, SearchApi } from 'lattice';
 import {
   AppApiActions,
   AppApiSagas,
-  EntityDataModelApiActions,
-  EntityDataModelApiSagas,
 } from 'lattice-sagas';
 import type { SequenceAction } from 'redux-reqseq';
 
@@ -33,14 +29,9 @@ import {
   getEntityDataModelTypesWorker,
 } from '../../core/edm/EDMSagas';
 import { APP_NAME } from '../../core/edm/constants/DataModelConsts';
-import { APP_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 
-const { APP_SETTINGS } = APP_TYPE_FQNS;
-const { SecurableTypes } = Types;
-const { getEntityDataModelProjection } = EntityDataModelApiActions;
-const { getEntityDataModelProjectionWorker } = EntityDataModelApiSagas;
-const { getApp, getAppConfigs, getAppTypes } = AppApiActions;
-const { getAppWorker, getAppConfigsWorker, getAppTypesWorker } = AppApiSagas;
+const { getApp, getAppConfigs } = AppApiActions;
+const { getAppWorker, getAppConfigsWorker } = AppApiSagas;
 
 const LOG = new Logger('AppSagas');
 
