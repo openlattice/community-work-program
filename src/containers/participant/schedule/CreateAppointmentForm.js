@@ -23,6 +23,7 @@ import {
   getEntitySetIdFromApp,
   getPropertyTypeIdFromEdm
 } from '../../../utils/DataUtils';
+import { getCombinedDateTime } from '../../../utils/ScheduleUtils';
 import {
   APP_TYPE_FQNS,
   DATETIME_END,
@@ -51,7 +52,10 @@ const {
   WORKSITE_PLAN,
 } = APP_TYPE_FQNS;
 const { NAME } = WORKSITE_FQNS;
+const { WORKSITES_BY_WORKSITE_PLAN } = PERSON;
 
+const START = 'start';
+const END = 'end';
 const repetitionOptions :Object[] = [
   { label: 'Weekday', value: 'Weekday' },
   { label: 'Week', value: 'Week' },
@@ -84,21 +88,32 @@ type Props = {
   isLoading :boolean;
   onDiscard :() => void;
   personEKID :UUID;
-  worksites :List;
+  worksitesByWorksitePlan :Map;
 };
 
 type State = {
+  endsOnDate :string;
   newAppointmentData :Map;
+  rawEndTime :string;
+  rawStartDate :string;
+  rawStartTime :string;
+  worksitePlanEKID :string;
 };
 
 class CreateWorkAppointmentForm extends Component<Props, State> {
 
   constructor(props :Props) {
     super(props);
+
     this.state = {
+      endsOnDate: '',
       newAppointmentData: fromJS({
         [getPageSectionKey(1, 1)]: {},
       }),
+      rawEndTime: '',
+      rawStartDate: '',
+      rawStartTime: '',
+      worksitePlanEKID: '',
     };
   }
 
@@ -121,15 +136,39 @@ class CreateWorkAppointmentForm extends Component<Props, State> {
     };
   }
 
-  handleSelectChange = (option :Object, event :Object) => {
-    const { newAppointmentData } = this.state;
-    const { name } = event;
+  handleSelectChange = (option :Object) => {
     const { value } = option;
-    this.setState({ newAppointmentData: newAppointmentData.setIn([getPageSectionKey(1, 1), name], value) });
+    this.setState({ worksitePlanEKID: value });
+  }
+
+  setRawStartDate = () => (date :string) => {
+    console.log('date: ', date);
+    this.setState({ rawStartDate: date });
+  }
+
+  setRawTime = (type :string) => (time :string) => {
+    if (type === START) this.setState({ rawStartTime: time });
+    if (type === END) this.setState({ rawEndTime: time });
+  }
+
+  setEndsOnDate = () => (date :string) => {
+    const dateAsDateTime = DateTime.fromISO(date).toISO();
+    this.setState({ endsOnDate: dateAsDateTime });
+  }
+
+  getCombinedStartDateTime = () => {
+    const { rawStartDate, rawStartTime } = this.state;
+    return getCombinedDateTime(rawStartDate, rawStartTime);
+  }
+
+  getCombinedEndDateTime = () => {
+    const { rawStartDate, rawEndTime } = this.state;
+    return getCombinedDateTime(rawStartDate, rawEndTime);
   }
 
   handleOnSubmit = () => {
     const { actions, personEKID } = this.props;
+    const { worksitePlanEKID } = this.state;
     let { newAppointmentData } = this.state;
 
     const associations = [];
@@ -151,15 +190,16 @@ class CreateWorkAppointmentForm extends Component<Props, State> {
     const {
       isLoading,
       onDiscard,
-      worksites,
+      worksitesByWorksitePlan,
     } = this.props;
 
     const WORKSITES_OPTIONS :Object[] = [];
-    worksites.forEach((worksite :Map) => {
-      const worksiteEKID :UUID = getEntityKeyId(worksite);
+    worksitesByWorksitePlan.forEach((worksite :Map, worksitePlanEKID :UUID) => {
       const { [NAME]: worksiteName } = getEntityProperties(worksite, [NAME]);
-      WORKSITES_OPTIONS.push({ label: worksiteName, value: worksiteEKID });
+      WORKSITES_OPTIONS.push({ label: worksiteName, value: worksitePlanEKID });
     });
+
+    console.log('this.state ', this.state);
 
     return (
       <FormWrapper>
@@ -172,17 +212,20 @@ class CreateWorkAppointmentForm extends Component<Props, State> {
           </RowContent>
           <RowContent>
             <Label>Date</Label>
-            <DatePicker />
+            <DatePicker
+                onChange={this.setRawStartDate()} />
           </RowContent>
         </FormRow>
         <FormRow>
           <RowContent>
             <Label>Start time</Label>
-            <TimePicker />
+            <TimePicker
+                onChange={this.setRawTime(START)} />
           </RowContent>
           <RowContent>
             <Label>End time</Label>
-            <TimePicker />
+            <TimePicker
+                onChange={this.setRawTime(END)} />
           </RowContent>
         </FormRow>
         <FormRow>
@@ -219,7 +262,8 @@ class CreateWorkAppointmentForm extends Component<Props, State> {
         <FormRow>
           <RowContent>
             <Label>Ends on:</Label>
-            <DatePicker />
+            <DatePicker
+                onChange={this.setEndsOnDate()} />
           </RowContent>
         </FormRow>
         <ButtonsRow>
@@ -239,6 +283,7 @@ class CreateWorkAppointmentForm extends Component<Props, State> {
 const mapStateToProps = (state :Map) => ({
   app: state.get(STATE.APP),
   edm: state.get(STATE.EDM),
+  [WORKSITES_BY_WORKSITE_PLAN]: state.getIn([STATE.PERSON, WORKSITES_BY_WORKSITE_PLAN]),
 });
 
 const mapDispatchToProps = dispatch => ({
