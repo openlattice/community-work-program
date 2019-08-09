@@ -288,9 +288,6 @@ class ParticipantProfile extends Component<Props, State> {
     const diversionPlanEKID :UUID = getEntityKeyId(diversionPlan);
     const { [ORIENTATION_DATETIME]: orientationDateTime } = getEntityProperties(diversionPlan, [ORIENTATION_DATETIME]);
 
-    const assignedWorksites :List = worksitesList.filter((worksite :Map) => (
-      worksitesByWorksitePlan.valueSeq().includes(worksite)
-    ));
     return (
       <ProfileWrapper>
         <ProfileBody>
@@ -371,8 +368,7 @@ class ParticipantProfile extends Component<Props, State> {
         <CreateWorkAppointmentModal
             isOpen={showWorkAppointmentModal}
             onClose={this.handleHideWorkAppointmentModal}
-            personEKID={personEKID}
-            worksites={assignedWorksites} />
+            personEKID={personEKID} />
       </ProfileWrapper>
     );
   }
