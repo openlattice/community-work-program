@@ -24,6 +24,7 @@ import {
   getEntitySetIdFromApp,
   getPropertyTypeIdFromEdm
 } from '../../../utils/DataUtils';
+import { getCombinedDateTime } from '../../../utils/ScheduleUtils';
 import { STATUS_FILTER_OPTIONS } from '../../participants/ParticipantsConstants';
 import {
   APP_TYPE_FQNS,
@@ -196,13 +197,6 @@ class AddInfractionForm extends Component<Props, State> {
     this.setState({ time });
   }
 
-  getCombinedDateTime = () => {
-    const { date, time } = this.state;
-    const datetimeString :string = date.concat(' ', time);
-    const datetime = DateTime.fromSQL(datetimeString).toISO();
-    return datetime;
-  }
-
   handleInputChange = (event :SyntheticEvent<HTMLInputElement>) => {
     const { newInfractionData } = this.state;
     const { name, value } = event.currentTarget;
@@ -243,13 +237,14 @@ class AddInfractionForm extends Component<Props, State> {
       registeredForAppointment,
       worksitePlanEKID
     } = this.state;
+    const { date, time } = this.state;
     let { newInfractionData } = this.state;
 
     const associations = [];
     const diversionPlanEKID :UUID = getEntityKeyId(diversionPlan);
     const nowAsIso = DateTime.local().toISO();
 
-    const datetimeOfInfraction = this.getCombinedDateTime();
+    const datetimeOfInfraction = getCombinedDateTime(date, time);
     newInfractionData = newInfractionData
       .setIn([
         getPageSectionKey(1, 1),
