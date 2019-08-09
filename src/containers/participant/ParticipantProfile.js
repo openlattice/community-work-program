@@ -18,6 +18,7 @@ import AssignedWorksitesContainer from './assignedworksites/AssignedWorksitesCon
 import AddNewPlanStatusModal from './AddNewPlanStatusModal';
 import AssignWorksiteModal from './assignedworksites/AssignWorksiteModal';
 import InfractionsContainer from './infractions/InfractionsContainer';
+import CreateWorkAppointmentModal from './schedule/CreateAppointmentModal';
 import LogoLoader from '../../components/LogoLoader';
 
 import { getAllParticipantInfo } from './ParticipantActions';
@@ -152,9 +153,9 @@ type Props = {
 };
 
 type State = {
-  appointmentsByWorksiteName :Map;
   showAssignWorksiteModal :boolean;
   showEnrollmentModal :boolean;
+  showWorkAppointmentModal :boolean;
   worksiteNamesByWorksitePlan :Map;
 };
 
@@ -164,9 +165,9 @@ class ParticipantProfile extends Component<Props, State> {
     super(props);
 
     this.state = {
-      appointmentsByWorksiteName: Map(),
       showAssignWorksiteModal: false,
       showEnrollmentModal: false,
+      showWorkAppointmentModal: false,
       worksiteNamesByWorksitePlan: Map(),
     };
   }
@@ -179,7 +180,7 @@ class ParticipantProfile extends Component<Props, State> {
   }
 
   componentDidUpdate(prevProps :Props) {
-    const { app, workAppointmentsByWorksitePlan, worksitesByWorksitePlan } = this.props;
+    const { app, worksitesByWorksitePlan } = this.props;
     if (!prevProps.app.get(APP_TYPE_FQNS.PEOPLE) && app.get(APP_TYPE_FQNS.PEOPLE)) {
       this.loadProfile();
     }
@@ -202,19 +203,6 @@ class ParticipantProfile extends Component<Props, State> {
       });
     });
     this.setState({ worksiteNamesByWorksitePlan });
-  }
-
-  loadWorkAppointments = () => {
-    const { workAppointmentsByWorksitePlan, worksitesByWorksitePlan } = this.props;
-    const appointmentsByWorksiteName :Map = Map().withMutations((map :Map) => {
-      workAppointmentsByWorksitePlan
-        .forEach((appointmentList :List, worksitePlanEKID :UUID) => {
-          const worksite :Map = worksitesByWorksitePlan.get(worksitePlanEKID);
-          const { [NAME]: worksiteName } = getEntityProperties(worksite, [NAME]);
-          map.set(worksiteName, appointmentList);
-        });
-    });
-    this.setState({ appointmentsByWorksiteName });
   }
 
   handleShowEnrollmentModal = () => {
@@ -241,6 +229,18 @@ class ParticipantProfile extends Component<Props, State> {
     });
   }
 
+  handleShowWorkAppointmentModal = () => {
+    this.setState({
+      showWorkAppointmentModal: true
+    });
+  }
+
+  handleHideWorkAppointmentModal = () => {
+    this.setState({
+      showWorkAppointmentModal: false
+    });
+  }
+
   render() {
     const {
       actions,
@@ -262,7 +262,12 @@ class ParticipantProfile extends Component<Props, State> {
       worksitePlans,
       worksitesList,
     } = this.props;
-    const { appointmentsByWorksiteName, showAssignWorksiteModal, showEnrollmentModal, worksiteNamesByWorksitePlan } = this.state;
+    const {
+      showAssignWorksiteModal,
+      showEnrollmentModal,
+      showWorkAppointmentModal,
+      worksiteNamesByWorksitePlan
+    } = this.state;
 
     if (getInitializeAppRequestState === RequestStates.PENDING
         || getAllParticipantInfoRequestState === RequestStates.PENDING) {
@@ -283,6 +288,9 @@ class ParticipantProfile extends Component<Props, State> {
     const diversionPlanEKID :UUID = getEntityKeyId(diversionPlan);
     const { [ORIENTATION_DATETIME]: orientationDateTime } = getEntityProperties(diversionPlan, [ORIENTATION_DATETIME]);
 
+    const assignedWorksites :List = worksitesList.filter((worksite :Map) => (
+      worksitesByWorksitePlan.valueSeq().includes(worksite)
+    ));
     return (
       <ProfileWrapper>
         <ProfileBody>
@@ -334,10 +342,9 @@ class ParticipantProfile extends Component<Props, State> {
         <ProfileBody>
           <NameRowWrapper>
             <NameHeader>Work Schedule</NameHeader>
-            <Button>Create Appointment</Button>
+            <Button onClick={this.handleShowWorkAppointmentModal}>Create Appointment</Button>
           </NameRowWrapper>
           <ParticipantWorkSchedule
-              appointmentsByWorksite={appointmentsByWorksiteName}
               workAppointmentsByWorksitePlan={workAppointmentsByWorksitePlan}
               worksitesByWorksitePlan={worksitesByWorksitePlan}
               worksiteNamesByWorksitePlan={worksiteNamesByWorksitePlan} />
@@ -361,6 +368,11 @@ class ParticipantProfile extends Component<Props, State> {
             onClose={this.handleHideAssignWorksiteModal}
             personEKID={personEKID}
             worksites={worksitesList} />
+        <CreateWorkAppointmentModal
+            isOpen={showWorkAppointmentModal}
+            onClose={this.handleHideWorkAppointmentModal}
+            personEKID={personEKID}
+            worksites={assignedWorksites} />
       </ProfileWrapper>
     );
   }
