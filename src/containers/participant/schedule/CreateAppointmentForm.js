@@ -56,11 +56,7 @@ const { WORKSITES_BY_WORKSITE_PLAN } = PERSON;
 
 const START = 'start';
 const END = 'end';
-const repetitionOptions :Object[] = [
-  { label: 'Weekday', value: 'Weekday' },
-  { label: 'Week', value: 'Week' },
-  { label: 'Month', value: 'Month' },
-];
+const repetitionOptions :string[] = ['Weekday', 'Week', 'Month'];
 const daysOfTheWeek :Object[] = [
   { label: 'Monday', value: 'Monday' },
   { label: 'Tuesday', value: 'Tuesday' },
@@ -97,6 +93,7 @@ type State = {
   rawEndTime :string;
   rawStartDate :string;
   rawStartTime :string;
+  repetitionOption :string,
   worksitePlanEKID :string;
 };
 
@@ -113,6 +110,7 @@ class CreateWorkAppointmentForm extends Component<Props, State> {
       rawEndTime: '',
       rawStartDate: '',
       rawStartTime: '',
+      repetitionOption: '',
       worksitePlanEKID: '',
     };
   }
@@ -166,6 +164,12 @@ class CreateWorkAppointmentForm extends Component<Props, State> {
     return getCombinedDateTime(rawStartDate, rawEndTime);
   }
 
+  handleRadioChange = (option :Object) => {
+    const { name } = option.currentTarget;
+    console.log('name: ', name);
+    this.setState({ repetitionOption: name });
+  }
+
   handleOnSubmit = () => {
     const { actions, personEKID } = this.props;
     const { worksitePlanEKID } = this.state;
@@ -192,6 +196,7 @@ class CreateWorkAppointmentForm extends Component<Props, State> {
       onDiscard,
       worksitesByWorksitePlan,
     } = this.props;
+    const { repetitionOption } = this.state;
 
     const WORKSITES_OPTIONS :Object[] = [];
     worksitesByWorksitePlan.forEach((worksite :Map, worksitePlanEKID :UUID) => {
@@ -238,11 +243,18 @@ class CreateWorkAppointmentForm extends Component<Props, State> {
             <Label>Yes, every:</Label>
             <RadioButtonsWrapper>
               {
-                repetitionOptions.map((option :Object) => (
-                  <Radio
-                      key={option.value}
-                      label={option.label} />
-                ))
+                repetitionOptions.map((option :string) => {
+                  const checked = option === repetitionOption;
+                  return (
+                    <Radio
+                        key={option}
+                        checked={checked}
+                        label={option}
+                        name={option}
+                        onChange={this.handleRadioChange}
+                        value={option} />
+                  );
+                })
               }
             </RadioButtonsWrapper>
           </RowContent>
