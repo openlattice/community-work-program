@@ -5,6 +5,10 @@
 import { DateTime, Interval } from 'luxon';
 
 import { isDefined } from './LangUtils';
+import {
+  DATETIME_END,
+  INCIDENT_START_DATETIME,
+} from '../core/edm/constants/FullyQualifiedNames';
 
 export const getCombinedDateTime = (date :string, time :string) => {
   const datetimeString :string = date.concat(' ', time);
@@ -38,7 +42,10 @@ export const getRegularlyRepeatingAppointments = (
   for (let i = 0; i < dividedEqually.length; i += 1) {
     const startDate = dividedEqually[i].end.toISODate();
     const startDateTimeISO = getCombinedDateTime(startDate, startTime);
-    appointmentDates.push({ start: startDateTimeISO, end: dividedEqually[i].end.toISO() });
+    appointmentDates.push({
+      [INCIDENT_START_DATETIME]: startDateTimeISO,
+      [DATETIME_END]: dividedEqually[i].end.toISO()
+    });
   }
   console.log('appointmentDates: ', appointmentDates);
   return appointmentDates;
