@@ -8,6 +8,7 @@ import {
   Button,
   Checkbox,
   DatePicker,
+  Input,
   Label,
   Radio,
   Select,
@@ -23,7 +24,7 @@ import {
   getEntitySetIdFromApp,
   getPropertyTypeIdFromEdm
 } from '../../../utils/DataUtils';
-import { getCombinedDateTime } from '../../../utils/ScheduleUtils';
+import { getCombinedDateTime, getRegularlyRepeatingAppointments } from '../../../utils/ScheduleUtils';
 import {
   APP_TYPE_FQNS,
   DATETIME_END,
@@ -56,23 +57,30 @@ const { WORKSITES_BY_WORKSITE_PLAN } = PERSON;
 
 const START = 'start';
 const END = 'end';
-const repetitionOptions :string[] = ['Weekday', 'Week', 'Month'];
 const daysOfTheWeek :Object[] = [
-  { label: 'Monday', value: 'Monday' },
-  { label: 'Tuesday', value: 'Tuesday' },
-  { label: 'Wednesday', value: 'Wednesday' },
-  { label: 'Thursday', value: 'Thursday' },
-  { label: 'Friday', value: 'Friday' },
+  { label: 'Sun', value: 1 },
+  { label: 'Mon', value: 2 },
+  { label: 'Tues', value: 3 },
+  { label: 'Weds', value: 4 },
+  { label: 'Thurs', value: 5 },
+  { label: 'Fri', value: 6 },
+  { label: 'Sat', value: 7 },
 ];
 
-const RadioButtonsRow = styled(FormRow)`
-  align-items: flex-start;
-`;
+const generateNumbersList = () => {
+  const numbers = [];
+  for (let i = 1; i < 13; i += 1) {
+    let label = `${i} weeks`;
+    if (i === 1) label = `${i} week`;
+    numbers.push({ label, value: i });
+  }
+  return numbers;
+}
 
 const RadioButtonsWrapper = styled.div`
   display: flex;
-  flex-direction: column;
-  space-between;
+  flex-direction: row;
+  justify-content: space-between;
 `;
 
 type Props = {
@@ -88,12 +96,14 @@ type Props = {
 };
 
 type State = {
+  appointmentDays :number[];
   endsOnDate :string;
+  isRepeatingAppointment :boolean;
   newAppointmentData :Map;
   rawEndTime :string;
   rawStartDate :string;
   rawStartTime :string;
-  repetitionOption :string,
+  weeklyIntervalToRepeat :number;
   worksitePlanEKID :string;
 };
 
@@ -103,14 +113,16 @@ class CreateWorkAppointmentForm extends Component<Props, State> {
     super(props);
 
     this.state = {
+      appointmentDays: [],
       endsOnDate: '',
+      isRepeatingAppointment: false,
       newAppointmentData: fromJS({
         [getPageSectionKey(1, 1)]: {},
       }),
       rawEndTime: '',
       rawStartDate: '',
       rawStartTime: '',
-      repetitionOption: '',
+      weeklyIntervalToRepeat: 0,
       worksitePlanEKID: '',
     };
   }
@@ -134,13 +146,25 @@ class CreateWorkAppointmentForm extends Component<Props, State> {
     };
   }
 
-  handleSelectChange = (option :Object) => {
+  handleCheckboxChange = (e :SyntheticEvent<HTMLInputElement>) => {
+    const { appointmentDays } = this.state;
+    let { value } = e.currentTarget;
+    value = parseInt(value, 10);
+    this.setState({ appointmentDays: appointmentDays.concat([value]) });
+  }
+
+  handleWorkSiteSelectChange = (option :Object) => {
     const { value } = option;
     this.setState({ worksitePlanEKID: value });
   }
 
+  handleRepetitionSelectChange = (option :Object) => {
+    let { value } = option;
+    value = parseInt(value, 10);
+    this.setState({ weeklyIntervalToRepeat: value });
+  }
+
   setRawStartDate = () => (date :string) => {
-    console.log('date: ', date);
     this.setState({ rawStartDate: date });
   }
 
@@ -150,42 +174,60 @@ class CreateWorkAppointmentForm extends Component<Props, State> {
   }
 
   setEndsOnDate = () => (date :string) => {
-    const dateAsDateTime = DateTime.fromISO(date).toISO();
-    this.setState({ endsOnDate: dateAsDateTime });
+    // const dateAsDateTime = DateTime.fromISO(date).toISO();
+    this.setState({ endsOnDate: date });
   }
 
-  getCombinedStartDateTime = () => {
-    const { rawStartDate, rawStartTime } = this.state;
-    return getCombinedDateTime(rawStartDate, rawStartTime);
-  }
-
-  getCombinedEndDateTime = () => {
-    const { rawStartDate, rawEndTime } = this.state;
-    return getCombinedDateTime(rawStartDate, rawEndTime);
-  }
-
-  handleRadioChange = (option :Object) => {
-    const { name } = option.currentTarget;
-    console.log('name: ', name);
-    this.setState({ repetitionOption: name });
+  setIsRepeatingAppointment = () => {
+    const { isRepeatingAppointment } = this.state;
+    this.setState({ isRepeatingAppointment: !isRepeatingAppointment });
   }
 
   handleOnSubmit = () => {
     const { actions, personEKID } = this.props;
-    const { worksitePlanEKID } = this.state;
+    const {
+      appointmentDays,
+      endsOnDate,
+      isRepeatingAppointment,
+      rawEndTime,
+      rawStartDate,
+      rawStartTime,
+      weeklyIntervalToRepeat,
+      worksitePlanEKID,
+    } = this.state;
     let { newAppointmentData } = this.state;
 
     const associations = [];
     const nowAsIso = DateTime.local().toISO();
 
-    associations.push([ADDRESSES, 0, APPOINTMENT, worksitePlanEKID, WORKSITE_PLAN, {}]);
-    associations.push([HAS, personEKID, PEOPLE, 0, APPOINTMENT, {}]);
+    const startDateTime = getCombinedDateTime(rawStartDate, rawStartTime);
+    const endDateTime = getCombinedDateTime(rawStartDate, rawEndTime);
+    const endsOnDateTime = getCombinedDateTime(endsOnDate, rawEndTime);
 
-    const entitySetIds :Object = this.createEntitySetIdsMap();
-    const propertyTypeIds :Object = this.createPropertyTypeIdsMap();
+    if (isRepeatingAppointment) {
 
-    const entityData :{} = processEntityData(newAppointmentData, entitySetIds, propertyTypeIds);
-    const associationEntityData :{} = processAssociationEntityData(fromJS(associations), entitySetIds, propertyTypeIds);
+      let appointmentDateTimes = [];
+
+      if (!appointmentDays.length) {
+        appointmentDateTimes = getRegularlyRepeatingAppointments(
+          startDateTime,
+          endDateTime,
+          endsOnDateTime,
+          'weeks',
+          weeklyIntervalToRepeat,
+        );
+      }
+      console.log('appointmentDateTimes: ', appointmentDateTimes);
+    }
+
+    // associations.push([ADDRESSES, 0, APPOINTMENT, worksitePlanEKID, WORKSITE_PLAN, {}]);
+    // associations.push([HAS, personEKID, PEOPLE, 0, APPOINTMENT, {}]);
+    //
+    // const entitySetIds :Object = this.createEntitySetIdsMap();
+    // const propertyTypeIds :Object = this.createPropertyTypeIdsMap();
+    //
+    // const entityData :{} = processEntityData(newAppointmentData, entitySetIds, propertyTypeIds);
+    // const associationEntityData :{} = processAssociationEntityData(fromJS(associations), entitySetIds, propertyTypeIds);
 
     // actions.createWorkAppointment({ associationEntityData, entityData });
   }
@@ -196,13 +238,15 @@ class CreateWorkAppointmentForm extends Component<Props, State> {
       onDiscard,
       worksitesByWorksitePlan,
     } = this.props;
-    const { repetitionOption } = this.state;
+    const { isRepeatingAppointment } = this.state;
 
     const WORKSITES_OPTIONS :Object[] = [];
     worksitesByWorksitePlan.forEach((worksite :Map, worksitePlanEKID :UUID) => {
       const { [NAME]: worksiteName } = getEntityProperties(worksite, [NAME]);
       WORKSITES_OPTIONS.push({ label: worksiteName, value: worksitePlanEKID });
     });
+
+    const NUMBERS_OPTIONS = generateNumbersList();
 
     console.log('this.state ', this.state);
 
@@ -212,7 +256,7 @@ class CreateWorkAppointmentForm extends Component<Props, State> {
           <RowContent>
             <Label>Work Site</Label>
             <Select
-                onChange={this.handleSelectChange}
+                onChange={this.handleWorkSiteSelectChange}
                 options={WORKSITES_OPTIONS} />
           </RowContent>
           <RowContent>
@@ -235,49 +279,49 @@ class CreateWorkAppointmentForm extends Component<Props, State> {
         </FormRow>
         <FormRow>
           <RowContent>
-            <Label>Does this work appointment repeat?</Label>
+            <Checkbox
+                label="This is a repeating appointment"
+                onChange={this.setIsRepeatingAppointment}
+                value={isRepeatingAppointment} />
           </RowContent>
         </FormRow>
-        <RadioButtonsRow>
-          <RowContent>
-            <Label>Yes, every:</Label>
-            <RadioButtonsWrapper>
-              {
-                repetitionOptions.map((option :string) => {
-                  const checked = option === repetitionOption;
-                  return (
-                    <Radio
-                        key={option}
-                        checked={checked}
-                        label={option}
-                        name={option}
-                        onChange={this.handleRadioChange}
-                        value={option} />
-                  );
-                })
-              }
-            </RadioButtonsWrapper>
-          </RowContent>
-          <RowContent>
-            <Label>Or, choose all that apply:</Label>
-            <RadioButtonsWrapper>
-              {
-                daysOfTheWeek.map((option :Object) => (
-                  <Checkbox
-                      key={option.value}
-                      label={option.label} />
-                ))
-              }
-            </RadioButtonsWrapper>
-          </RowContent>
-        </RadioButtonsRow>
-        <FormRow>
-          <RowContent>
-            <Label>Ends on:</Label>
-            <DatePicker
-                onChange={this.setEndsOnDate()} />
-          </RowContent>
-        </FormRow>
+        {
+          isRepeatingAppointment
+            ? (
+              <>
+                <FormRow>
+                  <RowContent>
+                    <Label>Repeat every:</Label>
+                    <Select
+                        onChange={this.handleRepetitionSelectChange}
+                        options={NUMBERS_OPTIONS} />
+                  </RowContent>
+                  <RowContent>
+                    <Label>Repeat until (inclusive):</Label>
+                    <DatePicker
+                        onChange={this.setEndsOnDate()} />
+                  </RowContent>
+                </FormRow>
+                <FormRow>
+                  <RowContent>
+                    <Label>Repeat on:</Label>
+                    <RadioButtonsWrapper>
+                      {
+                        daysOfTheWeek.map((option :Object) => (
+                          <Checkbox
+                              key={option.value}
+                              label={option.label}
+                              onChange={this.handleCheckboxChange}
+                              value={option.value} />
+                        ))
+                      }
+                    </RadioButtonsWrapper>
+                  </RowContent>
+                </FormRow>
+              </>
+            )
+            : null
+        }
         <ButtonsRow>
           <Button onClick={onDiscard}>Discard</Button>
           <Button

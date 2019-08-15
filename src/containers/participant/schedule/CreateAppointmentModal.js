@@ -1,6 +1,6 @@
 // @flow
 import React, { Component } from 'react';
-import { List, Map } from 'immutable';
+import { Map } from 'immutable';
 import { Modal } from 'lattice-ui-kit';
 import { connect } from 'react-redux';
 import { RequestStates } from 'redux-reqseq';
