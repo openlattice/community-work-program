@@ -202,9 +202,6 @@ class CreateWorkAppointmentForm extends Component<Props, State> {
     } = this.state;
     let { newAppointmentData } = this.state;
 
-    const associations = [];
-    const nowAsIso = DateTime.local().toISO();
-
     const startDateTime = getCombinedDateTime(rawStartDate, rawStartTime);
     const endDateTime = getCombinedDateTime(rawStartDate, rawEndTime);
 
@@ -227,7 +224,6 @@ class CreateWorkAppointmentForm extends Component<Props, State> {
         );
       }
       else if (appointmentDays.length > 1) {
-        // do getRegularlyRepeatingAppointments() for each day of the week that is selected
         appointmentDateTimes = appointmentDateTimes.concat(
           getCustomSchedule(
             appointmentDays,
@@ -239,17 +235,32 @@ class CreateWorkAppointmentForm extends Component<Props, State> {
           )
         );
       }
-      console.log('appointmentDateTimes: ', appointmentDateTimes);
     }
 
-    // associations.push([ADDRESSES, 0, APPOINTMENT, worksitePlanEKID, WORKSITE_PLAN, {}]);
-    // associations.push([HAS, personEKID, PEOPLE, 0, APPOINTMENT, {}]);
-    //
-    // const entitySetIds :Object = this.createEntitySetIdsMap();
-    // const propertyTypeIds :Object = this.createPropertyTypeIdsMap();
-    //
-    // const entityData :{} = processEntityData(newAppointmentData, entitySetIds, propertyTypeIds);
-    // const associationEntityData :{} = processAssociationEntityData(fromJS(associations), entitySetIds, propertyTypeIds);
+    console.log('appointmentDateTimes: ', appointmentDateTimes);
+
+    const associations = [];
+
+    appointmentDateTimes.forEach((appointment :Object, i :number) => {
+      newAppointmentData = newAppointmentData
+        .setIn([getPageSectionKey(1, 1), getEntityAddressKey(i, APPOINTMENT, INCIDENT_START_DATETIME)],
+          appointment[INCIDENT_START_DATETIME]);
+      newAppointmentData = newAppointmentData
+        .setIn([getPageSectionKey(1, 1), getEntityAddressKey(i, APPOINTMENT, DATETIME_END)],
+          appointment[DATETIME_END]);
+
+      associations.push([ADDRESSES, i, APPOINTMENT, worksitePlanEKID, WORKSITE_PLAN, {}]);
+      associations.push([HAS, personEKID, PEOPLE, i, APPOINTMENT, {}]);
+    });
+
+    const entitySetIds :Object = this.createEntitySetIdsMap();
+    const propertyTypeIds :Object = this.createPropertyTypeIdsMap();
+
+    const entityData :{} = processEntityData(newAppointmentData, entitySetIds, propertyTypeIds);
+    const associationEntityData :{} = processAssociationEntityData(fromJS(associations), entitySetIds, propertyTypeIds);
+
+    console.log('entityData: ', entityData);
+    console.log('associationEntityData: ', associationEntityData);
 
     // actions.createWorkAppointment({ associationEntityData, entityData });
   }
