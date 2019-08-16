@@ -24,7 +24,11 @@ import {
   getEntitySetIdFromApp,
   getPropertyTypeIdFromEdm
 } from '../../../utils/DataUtils';
-import { getCombinedDateTime, getRegularlyRepeatingAppointments } from '../../../utils/ScheduleUtils';
+import {
+  getCombinedDateTime,
+  getCustomSchedule,
+  getRegularlyRepeatingAppointments
+} from '../../../utils/ScheduleUtils';
 import {
   APP_TYPE_FQNS,
   DATETIME_END,
@@ -57,14 +61,15 @@ const { WORKSITES_BY_WORKSITE_PLAN } = PERSON;
 
 const START = 'start';
 const END = 'end';
+const WEEKS = 'weeks';
 const daysOfTheWeek :Object[] = [
-  { label: 'Sun', value: 1 },
-  { label: 'Mon', value: 2 },
-  { label: 'Tues', value: 3 },
-  { label: 'Weds', value: 4 },
-  { label: 'Thurs', value: 5 },
-  { label: 'Fri', value: 6 },
-  { label: 'Sat', value: 7 },
+  { label: 'Sun', value: 7 },
+  { label: 'Mon', value: 1 },
+  { label: 'Tues', value: 2 },
+  { label: 'Weds', value: 3 },
+  { label: 'Thurs', value: 4 },
+  { label: 'Fri', value: 5 },
+  { label: 'Sat', value: 6 },
 ];
 
 const generateNumbersList = () => {
@@ -202,19 +207,36 @@ class CreateWorkAppointmentForm extends Component<Props, State> {
 
     const startDateTime = getCombinedDateTime(rawStartDate, rawStartTime);
     const endDateTime = getCombinedDateTime(rawStartDate, rawEndTime);
-    const endsOnDateTime = getCombinedDateTime(endsOnDate, rawEndTime);
+
+    let appointmentDateTimes = [];
 
     if (isRepeatingAppointment) {
 
-      let appointmentDateTimes = [];
+      const endsOnDateTime = getCombinedDateTime(endsOnDate, rawEndTime);
+      const startDateWeekday = DateTime.fromISO(startDateTime).weekday;
 
-      if (!appointmentDays.length) {
-        appointmentDateTimes = getRegularlyRepeatingAppointments(
-          startDateTime,
-          endDateTime,
-          endsOnDateTime,
-          'weeks',
-          weeklyIntervalToRepeat,
+      if (!appointmentDays.length || (appointmentDays.length === 1 && appointmentDays[0] === startDateWeekday)) {
+        appointmentDateTimes = appointmentDateTimes.concat(
+          getRegularlyRepeatingAppointments(
+            startDateTime,
+            endDateTime,
+            endsOnDateTime,
+            WEEKS,
+            weeklyIntervalToRepeat,
+          )
+        );
+      }
+      else if (appointmentDays.length > 1) {
+        // do getRegularlyRepeatingAppointments() for each day of the week that is selected
+        appointmentDateTimes = appointmentDateTimes.concat(
+          getCustomSchedule(
+            appointmentDays,
+            startDateTime,
+            endDateTime,
+            endsOnDateTime,
+            WEEKS,
+            weeklyIntervalToRepeat,
+          )
         );
       }
       console.log('appointmentDateTimes: ', appointmentDateTimes);
