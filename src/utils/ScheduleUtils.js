@@ -5,10 +5,7 @@
 import { DateTime, Interval } from 'luxon';
 
 import { isDefined } from './LangUtils';
-import {
-  DATETIME_END,
-  INCIDENT_START_DATETIME,
-} from '../core/edm/constants/FullyQualifiedNames';
+import { DATETIME_END, INCIDENT_START_DATETIME } from '../core/edm/constants/FullyQualifiedNames';
 
 export const getCombinedDateTime = (date :string, time :string) => {
   const datetimeString :string = date.concat(' ', time);
@@ -86,6 +83,7 @@ export const getCustomSchedule = (
     );
   }
 
+  /* call getRegularlyRepeatingAppointments() for each day of the week that is selected */
   appointmentWeekdays.forEach((day :number) => {
     if (day !== startDateWeekday) {
       const differenceInDaysFromStartDate :number = daysOrderedFromStartDay.indexOf(day);
