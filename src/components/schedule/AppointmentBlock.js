@@ -3,40 +3,25 @@ import React from 'react';
 import styled from 'styled-components';
 import { Map } from 'immutable';
 import { DateTime } from 'luxon';
+import { Card, CardSegment } from 'lattice-ui-kit';
 
 import { getEntityProperties } from '../../utils/DataUtils';
 import { DATETIME_END, INCIDENT_START_DATETIME } from '../../core/edm/constants/FullyQualifiedNames';
-import { OL } from '../../core/style/Colors';
-
-const AppointmentWrapper = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  color: ${OL.GREY15};
-  background-color: ${OL.WHITE};
-  margin-bottom: 15px;
-  height: 69px;
-  border: 1px solid ${OL.GREY11};
-  border-radius: 5px;
-  padding: 30px;
-`;
 
 const InfoWrapper = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-gap: 5px 40px;
+  width: 70%;
 `;
 
 const DateText = styled.span`
-  display: flex;
-  min-width: 200px;
+  font-size: 18px;
   font-weight: 600;
-  font-size: 20px;
+  margin-left: 20px;
 `;
 
 const Text = styled.span`
-  display: flex;
-  width: 230px;
   font-size: 16px;
 `;
 
@@ -51,18 +36,26 @@ const AppointmentBlock = ({ appointment, worksiteName } :Props) => {
     [DATETIME_END]: datetimeEnd,
     [INCIDENT_START_DATETIME]: datetimeStart
   } = getEntityProperties(appointment, [DATETIME_END, INCIDENT_START_DATETIME]);
-  const date = DateTime.fromISO(datetimeStart).toLocaleString(DateTime.DATE_SHORT);
-  const startTime = DateTime.fromISO(datetimeStart).toLocaleString(DateTime.TIME_SIMPLE);
-  const endTime = DateTime.fromISO(datetimeEnd).toLocaleString(DateTime.TIME_SIMPLE);
-  const hours = `${startTime} - ${endTime}`;
+
+  const dateObj :DateTime = DateTime.fromISO(datetimeStart);
+  const date :string = dateObj.toLocaleString(DateTime.DATE_SHORT);
+  const weekday :string = dateObj.weekdayShort;
+  const startTime :string = DateTime.fromISO(datetimeStart).toLocaleString(DateTime.TIME_SIMPLE);
+  const endTime :string = DateTime.fromISO(datetimeEnd).toLocaleString(DateTime.TIME_SIMPLE);
+  const hours :string = `${startTime} - ${endTime}`;
   return (
-    <AppointmentWrapper>
-      <InfoWrapper>
-        <DateText>{ date }</DateText>
-        <Text>{ worksiteName }</Text>
-        <Text>{ hours }</Text>
-      </InfoWrapper>
-    </AppointmentWrapper>
+    <Card>
+      <CardSegment padding="sm">
+        <InfoWrapper>
+          <span>
+            <DateText>{ weekday }</DateText>
+            <DateText>{ date }</DateText>
+          </span>
+          <Text>{ worksiteName }</Text>
+          <Text>{ hours }</Text>
+        </InfoWrapper>
+      </CardSegment>
+    </Card>
   );
 };
 

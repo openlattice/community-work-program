@@ -6,6 +6,7 @@ import { faCalendarTimes } from '@fortawesome/pro-light-svg-icons';
 import {
   Card,
   CardSegment,
+  CardStack,
   IconSplash,
 } from 'lattice-ui-kit';
 import { DateTime } from 'luxon';
@@ -168,7 +169,11 @@ class ParticipantWorkSchedule extends Component<Props, State> {
                 </CardSegment>
               </Card>
             )
-            : this.renderAppointmentList()
+            : (
+              <CardStack>
+                { this.renderAppointmentList() }
+              </CardStack>
+            )
         }
       </OuterWrapper>
     );
