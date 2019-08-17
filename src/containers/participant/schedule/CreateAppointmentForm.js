@@ -240,8 +240,6 @@ class CreateWorkAppointmentForm extends Component<Props, State> {
       });
     }
 
-    console.log('appointmentDateTimes: ', appointmentDateTimes);
-
     const associations = [];
 
     appointmentDateTimes.forEach((appointment :Object, i :number) => {
