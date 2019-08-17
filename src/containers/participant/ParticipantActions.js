@@ -10,6 +10,9 @@ const addNewDiversionPlanStatus = newRequestSequence(ADD_NEW_DIVERSION_PLAN_STAT
 const ADD_WORKSITE_PLAN :'ADD_WORKSITE_PLAN' = 'ADD_WORKSITE_PLAN';
 const addWorksitePlan = newRequestSequence(ADD_WORKSITE_PLAN);
 
+const CREATE_WORK_APPOINTMENTS:'CREATE_WORK_APPOINTMENTS' = 'CREATE_WORK_APPOINTMENTS';
+const createWorkAppointments = newRequestSequence(CREATE_WORK_APPOINTMENTS);
+
 const GET_ALL_PARTICIPANT_INFO :'GET_ALL_PARTICIPANT_INFO' = 'GET_ALL_PARTICIPANT_INFO';
 const getAllParticipantInfo = newRequestSequence(GET_ALL_PARTICIPANT_INFO);
 
@@ -53,6 +56,7 @@ export {
   ADD_INFRACTION,
   ADD_NEW_DIVERSION_PLAN_STATUS,
   ADD_WORKSITE_PLAN,
+  CREATE_WORK_APPOINTMENTS,
   GET_ALL_PARTICIPANT_INFO,
   GET_CASE_INFO,
   GET_CONTACT_INFO,
@@ -69,6 +73,7 @@ export {
   addInfraction,
   addNewDiversionPlanStatus,
   addWorksitePlan,
+  createWorkAppointments,
   getAllParticipantInfo,
   getCaseInfo,
   getContactInfo,
