@@ -1,16 +1,14 @@
 // @flow
 import React, { Component } from 'react';
 import styled from 'styled-components';
-import { fromJS, List, Map } from 'immutable';
+import { fromJS, Map } from 'immutable';
 import { DateTime } from 'luxon';
 import { DataProcessingUtils } from 'lattice-fabricate';
 import {
   Button,
   Checkbox,
   DatePicker,
-  Input,
   Label,
-  Radio,
   Select,
   TimePicker,
 } from 'lattice-ui-kit';
@@ -18,8 +16,8 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import type { RequestSequence } from 'redux-reqseq';
 
+import { createWorkAppointments } from '../ParticipantActions';
 import {
-  getEntityKeyId,
   getEntityProperties,
   getEntitySetIdFromApp,
   getPropertyTypeIdFromEdm
@@ -80,7 +78,7 @@ const generateNumbersList = () => {
     numbers.push({ label, value: i });
   }
   return numbers;
-}
+};
 
 const RadioButtonsWrapper = styled.div`
   display: flex;
@@ -90,7 +88,7 @@ const RadioButtonsWrapper = styled.div`
 
 type Props = {
   actions:{
-    createWorkAppointment :RequestSequence;
+    createWorkAppointments :RequestSequence;
   };
   app :Map;
   edm :Map;
@@ -179,7 +177,6 @@ class CreateWorkAppointmentForm extends Component<Props, State> {
   }
 
   setEndsOnDate = () => (date :string) => {
-    // const dateAsDateTime = DateTime.fromISO(date).toISO();
     this.setState({ endsOnDate: date });
   }
 
@@ -236,6 +233,12 @@ class CreateWorkAppointmentForm extends Component<Props, State> {
         );
       }
     }
+    else {
+      appointmentDateTimes.push({
+        [INCIDENT_START_DATETIME]: startDateTime,
+        [DATETIME_END]: endDateTime
+      });
+    }
 
     console.log('appointmentDateTimes: ', appointmentDateTimes);
 
@@ -258,11 +261,7 @@ class CreateWorkAppointmentForm extends Component<Props, State> {
 
     const entityData :{} = processEntityData(newAppointmentData, entitySetIds, propertyTypeIds);
     const associationEntityData :{} = processAssociationEntityData(fromJS(associations), entitySetIds, propertyTypeIds);
-
-    console.log('entityData: ', entityData);
-    console.log('associationEntityData: ', associationEntityData);
-
-    // actions.createWorkAppointment({ associationEntityData, entityData });
+    actions.createWorkAppointments({ associationEntityData, entityData });
   }
 
   render() {
@@ -280,8 +279,6 @@ class CreateWorkAppointmentForm extends Component<Props, State> {
     });
 
     const NUMBERS_OPTIONS = generateNumbersList();
-
-    console.log('this.state ', this.state);
 
     return (
       <FormWrapper>
@@ -377,7 +374,7 @@ const mapStateToProps = (state :Map) => ({
 
 const mapDispatchToProps = dispatch => ({
   actions: bindActionCreators({
-    // addNewDiversionPlanStatus,
+    createWorkAppointments
   }, dispatch)
 });
 
