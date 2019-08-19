@@ -3,25 +3,29 @@ import React from 'react';
 import styled from 'styled-components';
 import { Map } from 'immutable';
 import { DateTime } from 'luxon';
-import { Card, CardSegment } from 'lattice-ui-kit';
+import { Button, Card, CardSegment } from 'lattice-ui-kit';
 
 import { getEntityProperties } from '../../utils/DataUtils';
 import { DATETIME_END, INCIDENT_START_DATETIME } from '../../core/edm/constants/FullyQualifiedNames';
 
 const InfoWrapper = styled.div`
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   grid-gap: 5px 40px;
-  width: 70%;
+  width: 100%;
 `;
 
 const DateText = styled.span`
+  align-items: center;
+  display: flex;
   font-size: 18px;
   font-weight: 600;
   margin-left: 20px;
 `;
 
 const Text = styled.span`
+  align-items: center;
+  display: flex;
   font-size: 16px;
 `;
 
@@ -54,6 +58,7 @@ const AppointmentBlock = ({ appointment, worksiteName } :Props) => {
           <Text>{ worksiteName }</Text>
           <Text>{ hours }</Text>
         </InfoWrapper>
+        <Button mode="subtle">Check in</Button>
       </CardSegment>
     </Card>
   );
