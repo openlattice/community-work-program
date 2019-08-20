@@ -283,7 +283,6 @@ function* addWorksitePlanWatcher() :Generator<*, *, *> {
 function* createWorkAppointmentsWorker(action :SequenceAction) :Generator<*, *, *> {
 
   const { id, value } = action;
-  const workerResponse = {};
   let response :Object = {};
 
   try {
@@ -310,7 +309,6 @@ function* createWorkAppointmentsWorker(action :SequenceAction) :Generator<*, *, 
     }));
   }
   catch (error) {
-    workerResponse.error = error;
     LOG.error('caught exception in createWorkAppointmentsWorker()', error);
     yield put(createWorkAppointments.failure(id, error));
   }

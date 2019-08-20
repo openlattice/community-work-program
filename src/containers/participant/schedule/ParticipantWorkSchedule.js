@@ -46,7 +46,7 @@ const MenuItem = styled.span`
   }
 `;
 
-const scheduleViews :string[] = [
+const SCHEDULE_VIEWS :string[] = [
   'All',
   'Upcoming',
   'Past',
@@ -64,7 +64,7 @@ type State = {
 class ParticipantWorkSchedule extends Component<Props, State> {
 
   state = {
-    selectedScheduleView: scheduleViews[1],
+    selectedScheduleView: SCHEDULE_VIEWS[1],
   };
 
   createWorksiteNameByAppointmentMap = () => {
@@ -94,16 +94,16 @@ class ParticipantWorkSchedule extends Component<Props, State> {
     let filteredList = List();
     const today = DateTime.local();
 
-    if (selectedScheduleView === scheduleViews[0]) {
+    if (selectedScheduleView === SCHEDULE_VIEWS[0]) {
       filteredList = appointments;
     }
-    if (selectedScheduleView === scheduleViews[1]) {
+    if (selectedScheduleView === SCHEDULE_VIEWS[1]) {
       filteredList = appointments.filter((appt :Map) => {
         const { [INCIDENT_START_DATETIME]: startDateTime } = getEntityProperties(appt, [INCIDENT_START_DATETIME]);
         return DateTime.fromISO(startDateTime) > today;
       });
     }
-    if (selectedScheduleView === scheduleViews[2]) {
+    if (selectedScheduleView === SCHEDULE_VIEWS[2]) {
       filteredList = appointments.filter((appt :Map) => {
         const { [INCIDENT_START_DATETIME]: startDateTime } = getEntityProperties(appt, [INCIDENT_START_DATETIME]);
         return DateTime.fromISO(startDateTime) < today;
@@ -143,7 +143,7 @@ class ParticipantWorkSchedule extends Component<Props, State> {
         <RowWrapper>
           <Menu>
             {
-              scheduleViews.map((view :string) => {
+              SCHEDULE_VIEWS.map((view :string) => {
                 const current = selectedScheduleView === view;
                 return (
                   <MenuItem

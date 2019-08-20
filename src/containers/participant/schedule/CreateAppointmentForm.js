@@ -70,7 +70,7 @@ const daysOfTheWeek :Object[] = [
   { label: 'Sat', value: 6 },
 ];
 
-const generateNumbersList = () => {
+const generateWeekOptionsList = () => {
   const numbers = [];
   for (let i = 1; i < 13; i += 1) {
     let label = `${i} weeks`;
@@ -276,7 +276,7 @@ class CreateWorkAppointmentForm extends Component<Props, State> {
       WORKSITES_OPTIONS.push({ label: worksiteName, value: worksitePlanEKID });
     });
 
-    const NUMBERS_OPTIONS = generateNumbersList();
+    const NUMBERS_OPTIONS = generateWeekOptionsList();
 
     return (
       <FormWrapper>
