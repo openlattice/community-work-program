@@ -1,7 +1,8 @@
 // @flow
 import React from 'react';
+import styled from 'styled-components';
 import { fromJS, OrderedMap, Map } from 'immutable';
-import { CardSegment, DataGrid, Modal } from 'lattice-ui-kit';
+import { DataGrid, Modal } from 'lattice-ui-kit';
 import { DateTime } from 'luxon';
 
 import { getEntityProperties } from '../../../utils/DataUtils';
@@ -22,6 +23,11 @@ const labelMap :OrderedMap = OrderedMap({
   timeOut: 'Time out',
   hoursWorked: 'Hours worked',
 });
+
+const ModalWrapper = styled.div`
+  width: 100%;
+  padding-bottom: 30px;
+`;
 
 type Props = {
   checkIn :Map;
@@ -61,12 +67,12 @@ const CheckInDetailsModal = ({
         onClose={onClose}
         textTitle="Check In"
         viewportScrolling>
-      <CardSegment padding="lg" vertical>
+      <ModalWrapper>
         <DataGrid
             columns={3}
             data={data}
             labelMap={labelMap} />
-      </CardSegment>
+      </ModalWrapper>
     </Modal>
   );
 };
