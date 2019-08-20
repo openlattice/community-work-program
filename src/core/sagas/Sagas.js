@@ -44,6 +44,7 @@ export default function* sagas() :Generator<*, *, *> {
     fork(ParticipantSagas.addInfractionWatcher),
     fork(ParticipantSagas.addNewDiversionPlanStatusWatcher),
     fork(ParticipantSagas.addWorksitePlanWatcher),
+    fork(ParticipantSagas.checkInForAppointmentWatcher),
     fork(ParticipantSagas.createWorkAppointmentsWatcher),
     fork(ParticipantSagas.getAllParticipantInfoWatcher),
     fork(ParticipantSagas.getCaseInfoWatcher),

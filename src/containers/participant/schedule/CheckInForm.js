@@ -15,6 +15,7 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import type { RequestSequence } from 'redux-reqseq';
 
+import { checkInForAppointment } from '../ParticipantActions';
 import { getCombinedDateTime } from '../../../utils/ScheduleUtils';
 import {
   getEntityKeyId,
@@ -136,7 +137,7 @@ class CheckInForm extends Component<Props, State> {
   }
 
   handleOnSubmit = () => {
-    const { appointment, participant } = this.props;
+    const { actions, appointment, participant } = this.props;
     const { checkedIn, timeIn, timeOut } = this.state;
     let { newCheckInData } = this.state;
 
@@ -167,9 +168,7 @@ class CheckInForm extends Component<Props, State> {
 
     const entityData :{} = processEntityData(newCheckInData, entitySetIds, propertyTypeIds);
     const associationEntityData :{} = processAssociationEntityData(fromJS(associations), entitySetIds, propertyTypeIds);
-    console.log('entityData: ', entityData);
-    console.log('associationEntityData: ', associationEntityData);
-    // actions.createWorkAppointments({ associationEntityData, entityData });
+    actions.checkInForAppointment({ associationEntityData, entityData });
   }
 
   render() {
@@ -258,7 +257,7 @@ const mapStateToProps = (state :Map) => {
 
 const mapDispatchToProps = dispatch => ({
   actions: bindActionCreators({
-    // addInfraction,
+    checkInForAppointment,
   }, dispatch)
 });
 

@@ -24,6 +24,7 @@ import {
   ADD_INFRACTION,
   ADD_NEW_DIVERSION_PLAN_STATUS,
   ADD_WORKSITE_PLAN,
+  CHECK_IN_FOR_APPOINTMENT,
   CREATE_WORK_APPOINTMENTS,
   GET_ALL_PARTICIPANT_INFO,
   GET_CASE_INFO,
@@ -41,6 +42,7 @@ import {
   addInfraction,
   addNewDiversionPlanStatus,
   addWorksitePlan,
+  checkInForAppointment,
   createWorkAppointments,
   getAllParticipantInfo,
   getCaseInfo,
@@ -272,6 +274,43 @@ function* addWorksitePlanWorker(action :SequenceAction) :Generator<*, *, *> {
 function* addWorksitePlanWatcher() :Generator<*, *, *> {
 
   yield takeEvery(ADD_WORKSITE_PLAN, addWorksitePlanWorker);
+}
+
+/*
+ *
+ * ParticipantActions.checkInForAppointment()
+ *
+ */
+
+function* checkInForAppointmentWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+  const workerResponse = {};
+  let response :Object = {};
+
+  try {
+    yield put(checkInForAppointment.request(id, value));
+
+    response = yield call(submitDataGraphWorker, submitDataGraph(value));
+    if (response.error) {
+      throw response.error;
+    }
+
+    yield put(checkInForAppointment.success(id, {}));
+  }
+  catch (error) {
+    workerResponse.error = error;
+    LOG.error('caught exception in checkInForAppointmentWorker()', error);
+    yield put(checkInForAppointment.failure(id, error));
+  }
+  finally {
+    yield put(checkInForAppointment.finally(id));
+  }
+}
+
+function* checkInForAppointmentWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(CHECK_IN_FOR_APPOINTMENT, checkInForAppointmentWorker);
 }
 
 /*
@@ -1211,6 +1250,8 @@ export {
   addNewDiversionPlanStatusWorker,
   addWorksitePlanWatcher,
   addWorksitePlanWorker,
+  checkInForAppointmentWatcher,
+  checkInForAppointmentWorker,
   createWorkAppointmentsWatcher,
   createWorkAppointmentsWorker,
   getAllParticipantInfoWatcher,

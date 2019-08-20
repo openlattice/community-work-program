@@ -8,6 +8,7 @@ import {
   addInfraction,
   addNewDiversionPlanStatus,
   addWorksitePlan,
+  checkInForAppointment,
   createWorkAppointments,
   getAllParticipantInfo,
   getCaseInfo,
@@ -45,6 +46,7 @@ const {
   ADD_WORKSITE_PLAN,
   ADDRESS,
   CASE_NUMBER,
+  CHECK_IN_FOR_APPOINTMENT,
   CREATE_WORK_APPOINTMENTS,
   DIVERSION_PLAN,
   EMAIL,
@@ -86,6 +88,9 @@ const INITIAL_STATE :Map<*, *> = fromJS({
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [ADD_WORKSITE_PLAN]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [CHECK_IN_FOR_APPOINTMENT]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [CREATE_WORK_APPOINTMENTS]: {
@@ -133,6 +138,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [ERRORS]: {
     [ADD_INFRACTION_EVENT]: Map(),
     [ADD_NEW_DIVERSION_PLAN_STATUS]: Map(),
+    [CHECK_IN_FOR_APPOINTMENT]: Map(),
     [CREATE_WORK_APPOINTMENTS]: Map(),
     [GET_ALL_PARTICIPANT_INFO]: Map(),
     [GET_CASE_INFO]: Map(),
@@ -346,6 +352,33 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
         FAILURE: () => state
           .setIn([ACTIONS, ADD_WORKSITE_PLAN, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, ADD_WORKSITE_PLAN, action.id]),
+      });
+    }
+
+    case checkInForAppointment.case(action.type): {
+
+      return checkInForAppointment.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, CHECK_IN_FOR_APPOINTMENT, action.id], action)
+          .setIn([ACTIONS, CHECK_IN_FOR_APPOINTMENT, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+
+          const seqAction :SequenceAction = action;
+          const storedSeqAction :SequenceAction = state.getIn([ACTIONS, CHECK_IN_FOR_APPOINTMENT, seqAction.id]);
+
+          // if (storedSeqAction) {
+          //
+          //   return state
+          //     .setIn([ACTIONS, CHECK_IN_FOR_APPOINTMENT, REQUEST_STATE], RequestStates.SUCCESS);
+          // }
+
+          return state
+            .setIn([ACTIONS, CHECK_IN_FOR_APPOINTMENT, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, CHECK_IN_FOR_APPOINTMENT, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, CHECK_IN_FOR_APPOINTMENT, action.id])
       });
     }
 

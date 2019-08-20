@@ -10,7 +10,7 @@ import CheckInForm from './CheckInForm';
 
 import { PERSON, STATE } from '../../../utils/constants/ReduxStateConsts';
 
-const { ACTIONS, CREATE_WORK_APPOINTMENTS, REQUEST_STATE } = PERSON;
+const { ACTIONS, CHECK_IN_FOR_APPOINTMENT, REQUEST_STATE } = PERSON;
 
 type Props = {
   appointment :Map;
@@ -54,7 +54,7 @@ class CheckInModal extends Component<Props> {
 }
 
 const mapStateToProps = (state :Map) => ({
-  checkInForAppointmentState: state.getIn([STATE.PERSON, ACTIONS, CREATE_WORK_APPOINTMENTS, REQUEST_STATE]),
+  checkInForAppointmentState: state.getIn([STATE.PERSON, ACTIONS, CHECK_IN_FOR_APPOINTMENT, REQUEST_STATE]),
 });
 
 // $FlowFixMe

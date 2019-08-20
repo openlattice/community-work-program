@@ -10,6 +10,9 @@ const addNewDiversionPlanStatus = newRequestSequence(ADD_NEW_DIVERSION_PLAN_STAT
 const ADD_WORKSITE_PLAN :'ADD_WORKSITE_PLAN' = 'ADD_WORKSITE_PLAN';
 const addWorksitePlan = newRequestSequence(ADD_WORKSITE_PLAN);
 
+const CHECK_IN_FOR_APPOINTMENT:'CHECK_IN_FOR_APPOINTMENT' = 'CHECK_IN_FOR_APPOINTMENT';
+const checkInForAppointment = newRequestSequence(CHECK_IN_FOR_APPOINTMENT);
+
 const CREATE_WORK_APPOINTMENTS:'CREATE_WORK_APPOINTMENTS' = 'CREATE_WORK_APPOINTMENTS';
 const createWorkAppointments = newRequestSequence(CREATE_WORK_APPOINTMENTS);
 
@@ -56,6 +59,7 @@ export {
   ADD_INFRACTION,
   ADD_NEW_DIVERSION_PLAN_STATUS,
   ADD_WORKSITE_PLAN,
+  CHECK_IN_FOR_APPOINTMENT,
   CREATE_WORK_APPOINTMENTS,
   GET_ALL_PARTICIPANT_INFO,
   GET_CASE_INFO,
@@ -73,6 +77,7 @@ export {
   addInfraction,
   addNewDiversionPlanStatus,
   addWorksitePlan,
+  checkInForAppointment,
   createWorkAppointments,
   getAllParticipantInfo,
   getCaseInfo,
