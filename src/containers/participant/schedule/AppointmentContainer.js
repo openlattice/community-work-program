@@ -7,7 +7,7 @@ import { Button, Card, CardSegment } from 'lattice-ui-kit';
 
 import CheckInModal from './CheckInModal';
 
-import { getEntityProperties } from '../../../utils/DataUtils';
+import { getEntityKeyId, getEntityProperties } from '../../../utils/DataUtils';
 import { DATETIME_END, INCIDENT_START_DATETIME } from '../../../core/edm/constants/FullyQualifiedNames';
 
 const InfoWrapper = styled.div`
@@ -88,6 +88,7 @@ class AppointmentContainer extends Component<Props, State> {
           </Button>
         </CardSegment>
         <CheckInModal
+            appointment={appointment}
             isOpen={isCheckInModalVisible}
             onClose={this.hideCheckInModal} />
       </Card>
