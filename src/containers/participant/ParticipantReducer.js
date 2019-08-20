@@ -10,6 +10,7 @@ import {
   addWorksitePlan,
   checkInForAppointment,
   createWorkAppointments,
+  getAppointmentCheckIns,
   getAllParticipantInfo,
   getCaseInfo,
   getContactInfo,
@@ -46,12 +47,14 @@ const {
   ADD_WORKSITE_PLAN,
   ADDRESS,
   CASE_NUMBER,
+  CHECK_INS_BY_APPOINTMENT,
   CHECK_IN_FOR_APPOINTMENT,
   CREATE_WORK_APPOINTMENTS,
   DIVERSION_PLAN,
   EMAIL,
   ENROLLMENT_STATUS,
   ERRORS,
+  GET_APPOINTMENT_CHECK_INS,
   GET_ALL_PARTICIPANT_INFO,
   GET_CASE_INFO,
   GET_CONTACT_INFO,
@@ -96,6 +99,9 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     [CREATE_WORK_APPOINTMENTS]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
+    [GET_APPOINTMENT_CHECK_INS]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
     [GET_ALL_PARTICIPANT_INFO]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
@@ -132,6 +138,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   },
   [ADDRESS]: '',
   [CASE_NUMBER]: List(),
+  [CHECK_INS_BY_APPOINTMENT]: Map(),
   [DIVERSION_PLAN]: Map(),
   [EMAIL]: '',
   [ENROLLMENT_STATUS]: Map(),
@@ -140,6 +147,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     [ADD_NEW_DIVERSION_PLAN_STATUS]: Map(),
     [CHECK_IN_FOR_APPOINTMENT]: Map(),
     [CREATE_WORK_APPOINTMENTS]: Map(),
+    [GET_APPOINTMENT_CHECK_INS]: Map(),
     [GET_ALL_PARTICIPANT_INFO]: Map(),
     [GET_CASE_INFO]: Map(),
     [GET_CONTACT_INFO]: Map(),
@@ -439,6 +447,41 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
         FAILURE: () => state
           .setIn([ACTIONS, CREATE_WORK_APPOINTMENTS, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, CREATE_WORK_APPOINTMENTS, action.id])
+      });
+    }
+
+    case getAppointmentCheckIns.case(action.type): {
+
+      return getAppointmentCheckIns.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, GET_APPOINTMENT_CHECK_INS, action.id], fromJS(action))
+          .setIn([ACTIONS, GET_APPOINTMENT_CHECK_INS, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+
+          if (!state.hasIn([ACTIONS, GET_APPOINTMENT_CHECK_INS, action.id])) {
+            return state;
+          }
+
+          const { value } = action;
+          if (value === null || value === undefined) {
+            return state;
+          }
+
+          return state
+            .set(CHECK_INS_BY_APPOINTMENT, value)
+            .setIn([ACTIONS, GET_APPOINTMENT_CHECK_INS, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => {
+
+          const { value } = action;
+
+          return state
+            .set(CHECK_INS_BY_APPOINTMENT, Map())
+            .setIn([ERRORS, GET_APPOINTMENT_CHECK_INS], value)
+            .setIn([ACTIONS, GET_APPOINTMENT_CHECK_INS, REQUEST_STATE], RequestStates.FAILURE);
+        },
+        FINALLY: () => state.deleteIn([ACTIONS, GET_APPOINTMENT_CHECK_INS, action.id])
       });
     }
 

@@ -16,6 +16,9 @@ const checkInForAppointment = newRequestSequence(CHECK_IN_FOR_APPOINTMENT);
 const CREATE_WORK_APPOINTMENTS:'CREATE_WORK_APPOINTMENTS' = 'CREATE_WORK_APPOINTMENTS';
 const createWorkAppointments = newRequestSequence(CREATE_WORK_APPOINTMENTS);
 
+const GET_APPOINTMENT_CHECK_INS :'GET_APPOINTMENT_CHECK_INS' = 'GET_APPOINTMENT_CHECK_INS';
+const getAppointmentCheckIns = newRequestSequence(GET_APPOINTMENT_CHECK_INS);
+
 const GET_ALL_PARTICIPANT_INFO :'GET_ALL_PARTICIPANT_INFO' = 'GET_ALL_PARTICIPANT_INFO';
 const getAllParticipantInfo = newRequestSequence(GET_ALL_PARTICIPANT_INFO);
 
@@ -61,6 +64,7 @@ export {
   ADD_WORKSITE_PLAN,
   CHECK_IN_FOR_APPOINTMENT,
   CREATE_WORK_APPOINTMENTS,
+  GET_APPOINTMENT_CHECK_INS,
   GET_ALL_PARTICIPANT_INFO,
   GET_CASE_INFO,
   GET_CONTACT_INFO,
@@ -79,6 +83,7 @@ export {
   addWorksitePlan,
   checkInForAppointment,
   createWorkAppointments,
+  getAppointmentCheckIns,
   getAllParticipantInfo,
   getCaseInfo,
   getContactInfo,

@@ -26,6 +26,7 @@ import {
   ADD_WORKSITE_PLAN,
   CHECK_IN_FOR_APPOINTMENT,
   CREATE_WORK_APPOINTMENTS,
+  GET_APPOINTMENT_CHECK_INS,
   GET_ALL_PARTICIPANT_INFO,
   GET_CASE_INFO,
   GET_CONTACT_INFO,
@@ -44,6 +45,7 @@ import {
   addWorksitePlan,
   checkInForAppointment,
   createWorkAppointments,
+  getAppointmentCheckIns,
   getAllParticipantInfo,
   getCaseInfo,
   getContactInfo,
@@ -70,6 +72,7 @@ import {
   getNeighborESID,
   sortEntitiesByDateProperty,
 } from '../../utils/DataUtils';
+import { isDefined } from '../../utils/LangUtils';
 import { STATE, WORKSITES } from '../../utils/constants/ReduxStateConsts';
 import {
   APP_TYPE_FQNS,
@@ -81,6 +84,7 @@ import {
   INFRACTION_EVENT_FQNS,
   INFRACTION_FQNS,
   LOCATION_FQNS,
+  WORKSITE_PLAN_FQNS,
 } from '../../core/edm/constants/FullyQualifiedNames';
 import { INFRACTIONS_CONSTS } from '../../core/edm/constants/DataModelConsts';
 
@@ -92,6 +96,8 @@ const {
   ADDRESSES,
   APPOINTMENT,
   BASED_ON,
+  CHECK_INS,
+  CHECK_IN_DETAILS,
   CONTACT_INFORMATION,
   COURT_PRETRIAL_CASES,
   DIVERSION_PLAN,
@@ -116,6 +122,7 @@ const { EFFECTIVE_DATE, STATUS } = ENROLLMENT_STATUS_FQNS;
 const { CATEGORY } = INFRACTION_FQNS;
 const { TYPE } = INFRACTION_EVENT_FQNS;
 const { UNPARSED_ADDRESS } = LOCATION_FQNS;
+const { HOURS_WORKED } = WORKSITE_PLAN_FQNS;
 
 const getAppFromState = state => state.get(STATE.APP, Map());
 
@@ -613,6 +620,102 @@ function* getWorksiteByWorksitePlanWatcher() :Generator<*, *, *> {
 
 /*
  *
+ * ParticipantActions.getAppointmentCheckIns()
+ *
+ */
+
+function* getAppointmentCheckInsWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+  let response :Object = {};
+  let checkInData :Map = Map();
+  let checkInsByAppointment :Map = Map();
+
+  try {
+    yield put(getAppointmentCheckIns.request(id));
+    if (value === null || value === undefined) {
+      throw ERR_ACTION_VALUE_NOT_DEFINED;
+    }
+    const { workAppointmentEKIDs } = value;
+    const app = yield select(getAppFromState);
+
+    const appointmentESID :UUID = getEntitySetIdFromApp(app, APPOINTMENT);
+    const checkInESID :UUID = getEntitySetIdFromApp(app, CHECK_INS);
+
+    let searchFilter :Object = {
+      entityKeyIds: workAppointmentEKIDs,
+      destinationEntitySetIds: [],
+      sourceEntitySetIds: [checkInESID],
+    };
+    response = yield call(
+      searchEntityNeighborsWithFilterWorker,
+      searchEntityNeighborsWithFilter({ entitySetId: appointmentESID, filter: searchFilter })
+    );
+    if (response.error) {
+      throw response.error;
+    }
+    if (Object.keys(response.data).length > 0) {
+      checkInData = fromJS(response.data)
+        .map((appointmentCheckIns :List) => appointmentCheckIns
+          .map((checkIn :Map) => getNeighborDetails(checkIn)));
+
+      const checkInEKIDs :UUID[] = [];
+      checkInData
+        .forEach((checkIns :List) => {
+          checkIns.forEach((checkIn :Map) => {
+            const checkInEKID :UUID = getEntityKeyId(checkIn);
+            checkInEKIDs.push(checkInEKID);
+          });
+        });
+      const checkInDetailsESID :UUID = getEntitySetIdFromApp(app, CHECK_IN_DETAILS);
+      searchFilter = {
+        entityKeyIds: checkInEKIDs,
+        destinationEntitySetIds: [checkInDetailsESID],
+        sourceEntitySetIds: [],
+      };
+      response = yield call(
+        searchEntityNeighborsWithFilterWorker,
+        searchEntityNeighborsWithFilter({ entitySetId: checkInESID, filter: searchFilter })
+      );
+      if (response.error) {
+        throw response.error;
+      }
+      const checkInDetailsByCheckIn :Map = fromJS(response.data)
+        .map((checkInDetailsList :List) => checkInDetailsList.map((details :Map) => getNeighborDetails(details)));
+
+      /* Store hours worked property from check-in details on check-in to save additional lookups */
+      checkInData
+        .forEach((checkInEntity :List, appointmentEKID :UUID) => {
+          const checkInEKID :UUID = getEntityKeyId(checkInEntity.get(0));
+          const checkInDetails = checkInDetailsByCheckIn.getIn([checkInEKID, 0]);
+
+          let checkIn :Map = checkInEntity.get(0);
+          if (isDefined(checkInDetails)) {
+            const { [HOURS_WORKED]: hoursWorked } = getEntityProperties(checkInDetails, [HOURS_WORKED]);
+            checkIn = checkIn.set(HOURS_WORKED, [hoursWorked]);
+          }
+          checkInsByAppointment = checkInsByAppointment.set(appointmentEKID, checkIn);
+        });
+    }
+
+    yield put(getAppointmentCheckIns.success(id, checkInsByAppointment));
+  }
+  catch (error) {
+    LOG.error('caught exception in getAppointmentCheckInsWorker()', error);
+    yield put(getAppointmentCheckIns.failure(id, error));
+  }
+  finally {
+    yield put(getAppointmentCheckIns.finally(id));
+  }
+}
+
+function* getAppointmentCheckInsWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(GET_APPOINTMENT_CHECK_INS, getAppointmentCheckInsWorker);
+}
+
+/*
+ *
  * ParticipantActions.getWorkAppointments()
  *
  */
@@ -651,6 +754,16 @@ function* getWorkAppointmentsWorker(action :SequenceAction) :Generator<*, *, *> 
     if (Object.keys(response.data).length > 0) {
       workAppointmentsByWorksitePlan = fromJS(response.data)
         .map((appointmentsList :List) => appointmentsList.map((appt :Map) => getNeighborDetails(appt)));
+
+      const workAppointmentEKIDs :UUID[] = [];
+      workAppointmentsByWorksitePlan
+        .forEach((appointmentsList :List) => {
+          appointmentsList.forEach((appt :Map) => {
+            const appointmentEKID :UUID = getEntityKeyId(appt);
+            workAppointmentEKIDs.push(appointmentEKID);
+          });
+        });
+      yield call(getAppointmentCheckInsWorker, getAppointmentCheckIns({ workAppointmentEKIDs }));
     }
 
     yield put(getWorkAppointments.success(id, workAppointmentsByWorksitePlan));
@@ -1254,6 +1367,8 @@ export {
   checkInForAppointmentWorker,
   createWorkAppointmentsWatcher,
   createWorkAppointmentsWorker,
+  getAppointmentCheckInsWatcher,
+  getAppointmentCheckInsWorker,
   getAllParticipantInfoWatcher,
   getAllParticipantInfoWorker,
   getCaseInfoWatcher,
