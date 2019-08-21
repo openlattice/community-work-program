@@ -26,8 +26,8 @@ import {
   ADD_WORKSITE_PLAN,
   CHECK_IN_FOR_APPOINTMENT,
   CREATE_WORK_APPOINTMENTS,
-  GET_APPOINTMENT_CHECK_INS,
   GET_ALL_PARTICIPANT_INFO,
+  GET_APPOINTMENT_CHECK_INS,
   GET_CASE_INFO,
   GET_CONTACT_INFO,
   GET_ENROLLMENT_STATUS,
@@ -40,13 +40,14 @@ import {
   GET_WORKSITE_BY_WORKSITE_PLAN,
   GET_WORKSITE_PLANS,
   GET_WORK_APPOINTMENTS,
+  UPDATE_HOURS_WORKED,
   addInfraction,
   addNewDiversionPlanStatus,
   addWorksitePlan,
   checkInForAppointment,
   createWorkAppointments,
-  getAppointmentCheckIns,
   getAllParticipantInfo,
+  getAppointmentCheckIns,
   getCaseInfo,
   getContactInfo,
   getEnrollmentStatus,
@@ -59,6 +60,7 @@ import {
   getWorkAppointments,
   getWorksiteByWorksitePlan,
   getWorksitePlans,
+  updateHoursWorked,
 } from './ParticipantActions';
 import { submitDataGraph } from '../../core/sagas/data/DataActions';
 import { submitDataGraphWorker } from '../../core/sagas/data/DataSagas';
@@ -318,7 +320,12 @@ function* updateHoursWorkedWorker(action :SequenceAction) :Generator<*, *, *> {
     if (response.error) {
       throw response.error;
     }
-    const worksitePlan :Map = fromJS(response.data[appointmentEKID]);
+    if (response.data[appointmentEKID]) {
+      const worksitePlan :Map = fromJS(response.data[appointmentEKID][0]).map((plan :Map) => getNeighborDetails(plan));
+      // update worksite plan hours worked property
+      // get diversion plan neighbor of worksite plan
+      // update hours worked property on diversion plan
+    }
 
     yield put(updateHoursWorked.success(id, {}));
   }
@@ -1465,4 +1472,6 @@ export {
   getWorksiteByWorksitePlanWorker,
   getWorksitePlansWatcher,
   getWorksitePlansWorker,
+  updateHoursWorkedWatcher,
+  updateHoursWorkedWorker,
 };

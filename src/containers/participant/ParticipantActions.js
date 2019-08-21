@@ -58,14 +58,17 @@ const getWorksitePlans = newRequestSequence(GET_WORKSITE_PLANS);
 const GET_WORK_APPOINTMENTS :'GET_WORK_APPOINTMENTS' = 'GET_WORK_APPOINTMENTS';
 const getWorkAppointments = newRequestSequence(GET_WORK_APPOINTMENTS);
 
+const UPDATE_HOURS_WORKED :'UPDATE_HOURS_WORKED' = 'UPDATE_HOURS_WORKED';
+const updateHoursWorked = newRequestSequence(UPDATE_HOURS_WORKED);
+
 export {
   ADD_INFRACTION,
   ADD_NEW_DIVERSION_PLAN_STATUS,
   ADD_WORKSITE_PLAN,
   CHECK_IN_FOR_APPOINTMENT,
   CREATE_WORK_APPOINTMENTS,
-  GET_APPOINTMENT_CHECK_INS,
   GET_ALL_PARTICIPANT_INFO,
+  GET_APPOINTMENT_CHECK_INS,
   GET_CASE_INFO,
   GET_CONTACT_INFO,
   GET_ENROLLMENT_STATUS,
@@ -78,13 +81,14 @@ export {
   GET_WORKSITE_BY_WORKSITE_PLAN,
   GET_WORKSITE_PLANS,
   GET_WORK_APPOINTMENTS,
+  UPDATE_HOURS_WORKED,
   addInfraction,
   addNewDiversionPlanStatus,
   addWorksitePlan,
   checkInForAppointment,
   createWorkAppointments,
-  getAppointmentCheckIns,
   getAllParticipantInfo,
+  getAppointmentCheckIns,
   getCaseInfo,
   getContactInfo,
   getEnrollmentStatus,
@@ -97,4 +101,5 @@ export {
   getWorkAppointments,
   getWorksiteByWorksitePlan,
   getWorksitePlans,
+  updateHoursWorked,
 };

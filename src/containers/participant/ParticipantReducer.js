@@ -24,6 +24,7 @@ import {
   getWorkAppointments,
   getWorksiteByWorksitePlan,
   getWorksitePlans,
+  updateHoursWorked,
 } from './ParticipantActions';
 import { getEntityKeyId, getEntityProperties, getPropertyFqnFromEdm } from '../../utils/DataUtils';
 import { PERSON } from '../../utils/constants/ReduxStateConsts';
@@ -75,6 +76,7 @@ const {
   REQUEST_STATE,
   REQUIRED_HOURS,
   SENTENCE_TERM,
+  UPDATE_HOURS_WORKED,
   VIOLATIONS,
   WARNINGS,
   WORKSITES_BY_WORKSITE_PLAN,
@@ -135,6 +137,9 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     [GET_WORK_APPOINTMENTS]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
+    [UPDATE_HOURS_WORKED]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
   },
   [ADDRESS]: '',
   [CASE_NUMBER]: List(),
@@ -158,6 +163,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     [GET_PARTICIPANT_INFRACTIONS]: Map(),
     [GET_REQUIRED_HOURS]: Map(),
     [GET_SENTENCE_TERM]: Map(),
+    [UPDATE_HOURS_WORKED]: Map(),
   },
   [INFRACTIONS_INFO]: Map(),
   [INFRACTION_TYPES]: List(),
@@ -936,6 +942,48 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
             .setIn([ACTIONS, GET_WORKSITE_BY_WORKSITE_PLAN, REQUEST_STATE], RequestStates.FAILURE);
         },
         FINALLY: () => state.deleteIn([ACTIONS, GET_WORKSITE_BY_WORKSITE_PLAN, action.id])
+      });
+    }
+
+    case updateHoursWorked.case(action.type): {
+
+      return updateHoursWorked.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, UPDATE_HOURS_WORKED, action.id], action)
+          .setIn([ACTIONS, UPDATE_HOURS_WORKED, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+
+          // const seqAction :SequenceAction = action;
+          // const storedSeqAction :SequenceAction = state.getIn([ACTIONS, UPDATE_HOURS_WORKED, seqAction.id]);
+          //
+          // if (storedSeqAction) {
+          //
+          //   const { value } :Object = seqAction;
+          //   const { edm, enrollmentStatusEKID, enrollmentStatusESID } = value;
+          //
+          //   const requestValue :Object = storedSeqAction.value;
+          //   const { entityData } :Object = requestValue;
+          //   const storedEnrollmentEntity :Map = fromJS(entityData[enrollmentStatusESID][0]);
+          //
+          //
+          //   let newEnrollmentStatus :Map = Map();
+          //   storedEnrollmentEntity.forEach((enrollmentValue, id) => {
+          //     const propertyTypeFqn :FQN = getPropertyFqnFromEdm(edm, id);
+          //     newEnrollmentStatus = newEnrollmentStatus.set(propertyTypeFqn, enrollmentValue);
+          //   });
+          //   newEnrollmentStatus = newEnrollmentStatus.set(ENTITY_KEY_ID, enrollmentStatusEKID);
+          //
+          //   return state
+          //     .set(ENROLLMENT_STATUS, newEnrollmentStatus)
+          //     .setIn([ACTIONS, UPDATE_HOURS_WORKED, REQUEST_STATE], RequestStates.SUCCESS);
+          // }
+
+          return state;
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, UPDATE_HOURS_WORKED, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, UPDATE_HOURS_WORKED, action.id]),
       });
     }
 

@@ -80,6 +80,7 @@ export const PERSON = {
   REQUEST_STATE: 'requestState',
   REQUIRED_HOURS: 'requiredHours',
   SENTENCE_TERM: 'sentenceTerm',
+  UPDATE_HOURS_WORKED: 'updateHoursWorked',
   VIOLATIONS: 'violations',
   WARNINGS: 'warnings',
   WORKSITES_BY_WORKSITE_PLAN: 'worksitesByWorksitePlan',
