@@ -1,5 +1,5 @@
 // @flow
-import React from 'react';
+import React, { Component } from 'react';
 import styled from 'styled-components';
 import { fromJS, Map, OrderedMap } from 'immutable';
 import { DateTime } from 'luxon';
@@ -28,42 +28,55 @@ type Props = {
   sentenceTerm :Map;
 };
 
-const KeyDates = ({ orientationDateTime, sentenceTerm } :Props) => {
-
-  const { [DATETIME_START]: sentDate } = getEntityProperties(sentenceTerm, [DATETIME_START]);
-  const sentenceDate = sentDate ? formatAsDate(sentDate) : EMPTY_FIELD;
-  const sentenceDateObj = DateTime.fromISO(sentDate);
-  const checkInDeadline = sentenceDateObj.isValid
-    ? sentenceDateObj.plus({ hours: 48 }).toLocaleString()
-    : EMPTY_FIELD;
-  const sentenceEndDate = sentenceDateObj.isValid
-    ? sentenceDateObj.plus({ days: 90 }).toLocaleString()
-    : EMPTY_FIELD;
-  const orientationDateObj = DateTime.fromISO(orientationDateTime);
-  const orientationDate = orientationDateObj.isValid
-    ? orientationDateObj.toLocaleString(DateTime.DATE_SHORT)
-    : EMPTY_FIELD;
-
-  const data :Map = fromJS({
-    sentenceDate,
-    checkInDeadline,
-    checkedInDate: EMPTY_FIELD,
-    orientationDate,
-    workStartDate: EMPTY_FIELD,
-    sentenceEndDate,
-  });
-  return (
-    <DatesWrapper>
-      <Card>
-        <CardSegment padding="lg" vertical>
-          <DataGrid
-              columns={3}
-              data={data}
-              labelMap={labelMap} />
-        </CardSegment>
-      </Card>
-    </DatesWrapper>
-  );
+type State = {
+  isEditDatesModalVisible :boolean;
 };
 
-export default KeyDates;
+class KeyDatesContainer extends Component<Props, State> {
+
+  state = {
+    isEditDatesModalVisible: false,
+  };
+
+  render() {
+
+    const { orientationDateTime, sentenceTerm } = this.props;
+
+    const { [DATETIME_START]: sentDate } = getEntityProperties(sentenceTerm, [DATETIME_START]);
+    const sentenceDate = sentDate ? formatAsDate(sentDate) : EMPTY_FIELD;
+    const sentenceDateObj = DateTime.fromISO(sentDate);
+    const checkInDeadline = sentenceDateObj.isValid
+      ? sentenceDateObj.plus({ hours: 48 }).toLocaleString()
+      : EMPTY_FIELD;
+    const sentenceEndDate = sentenceDateObj.isValid
+      ? sentenceDateObj.plus({ days: 90 }).toLocaleString()
+      : EMPTY_FIELD;
+    const orientationDateObj = DateTime.fromISO(orientationDateTime);
+    const orientationDate = orientationDateObj.isValid
+      ? orientationDateObj.toLocaleString(DateTime.DATE_SHORT)
+      : EMPTY_FIELD;
+
+    const data :Map = fromJS({
+      sentenceDate,
+      checkInDeadline,
+      checkedInDate: EMPTY_FIELD,
+      orientationDate,
+      workStartDate: EMPTY_FIELD,
+      sentenceEndDate,
+    });
+    return (
+      <DatesWrapper>
+        <Card>
+          <CardSegment padding="lg" vertical>
+            <DataGrid
+                columns={3}
+                data={data}
+                labelMap={labelMap} />
+          </CardSegment>
+        </Card>
+      </DatesWrapper>
+    );
+  }
+}
+
+export default KeyDatesContainer;
