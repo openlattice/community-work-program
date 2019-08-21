@@ -376,7 +376,6 @@ function* updateHoursWorkedWatcher() :Generator<*, *, *> {
 function* checkInForAppointmentWorker(action :SequenceAction) :Generator<*, *, *> {
 
   const { id, value } = action;
-  const workerResponse = {};
   let response :Object = {};
 
   try {
@@ -386,10 +385,14 @@ function* checkInForAppointmentWorker(action :SequenceAction) :Generator<*, *, *
     if (response.error) {
       throw response.error;
     }
+    const { data } = response;
+    const { entityKeyIds } = data;
+    const app = yield select(getAppFromState);
+    const checkInESID :UUID = getEntitySetIdFromApp(app, CHECK_INS);
+    const checkInEKID :UUID = entityKeyIds[checkInESID][0];
 
     if (response.data) {
 
-      const app = yield select(getAppFromState);
       const edm = yield select(getEdmFromState);
       const checkInDetailsESID :UUID = getEntitySetIdFromApp(app, CHECK_IN_DETAILS);
       const hoursWorkedPTID :UUID = getPropertyTypeIdFromEdm(edm, HOURS_WORKED);
@@ -400,13 +403,23 @@ function* checkInForAppointmentWorker(action :SequenceAction) :Generator<*, *, *
       const fulfillsESID :UUID = getEntitySetIdFromApp(app, FULFILLS);
       const appointmentEKID :UUID = associationEntityData[fulfillsESID][0].dstEntityKeyId;
 
-      // response = yield call(updateHoursWorkedWorker, updateHoursWorked({ appointmentEKID, numberHoursWorked }));
+      response = yield call(updateHoursWorkedWorker, updateHoursWorked({ appointmentEKID, numberHoursWorked }));
+      if (response.error) {
+        throw response.error;
+      }
+
+      response = {
+        appointmentEKID,
+        checkInDetailsESID,
+        checkInEKID,
+        checkInESID,
+        edm,
+      };
     }
 
-    yield put(checkInForAppointment.success(id, {}));
+    yield put(checkInForAppointment.success(id, response));
   }
   catch (error) {
-    workerResponse.error = error;
     LOG.error('caught exception in checkInForAppointmentWorker()', error);
     yield put(checkInForAppointment.failure(id, error));
   }

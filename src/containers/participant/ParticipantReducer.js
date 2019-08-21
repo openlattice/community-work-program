@@ -35,12 +35,14 @@ import {
   ENTITY_KEY_ID,
   INFRACTION_EVENT_FQNS,
   INFRACTION_FQNS,
+  WORKSITE_PLAN_FQNS,
 } from '../../core/edm/constants/FullyQualifiedNames';
 
 const { WORKSITE_PLAN } = APP_TYPE_FQNS;
 const { STATUS } = ENROLLMENT_STATUS_FQNS;
 const { TYPE } = INFRACTION_EVENT_FQNS;
 const { CATEGORY } = INFRACTION_FQNS;
+const { HOURS_WORKED } = WORKSITE_PLAN_FQNS;
 const {
   ACTIONS,
   ADD_INFRACTION_EVENT,
@@ -381,11 +383,38 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
           const seqAction :SequenceAction = action;
           const storedSeqAction :SequenceAction = state.getIn([ACTIONS, CHECK_IN_FOR_APPOINTMENT, seqAction.id]);
 
-          // if (storedSeqAction) {
-          //
-          //   return state
-          //     .setIn([ACTIONS, CHECK_IN_FOR_APPOINTMENT, REQUEST_STATE], RequestStates.SUCCESS);
-          // }
+          if (storedSeqAction) {
+
+            const successValue :Object = seqAction.value;
+            const {
+              appointmentEKID,
+              checkInDetailsESID,
+              checkInEKID,
+              checkInESID,
+              edm,
+            } = successValue;
+            const requestValue :Object = storedSeqAction.value;
+            const { entityData } = requestValue;
+
+            const storedCheckInEntity :Map = fromJS(entityData[checkInESID][0]);
+            const storedCheckInDetailsEntity :Map = fromJS(entityData[checkInDetailsESID][0]);
+
+            let newCheckIn :Map = Map();
+            storedCheckInEntity.forEach((value, id) => {
+              const propertyTypeFqn :FQN = getPropertyFqnFromEdm(edm, id);
+              newCheckIn = newCheckIn.set(propertyTypeFqn, value);
+            });
+            newCheckIn = newCheckIn.set(ENTITY_KEY_ID, checkInEKID);
+            const hoursWorked :number = storedCheckInDetailsEntity.getIn([HOURS_WORKED, 0]);
+            newCheckIn = newCheckIn.set(HOURS_WORKED, hoursWorked);
+
+            let checkInsByAppointment :Map = state.get(CHECK_INS_BY_APPOINTMENT);
+            checkInsByAppointment = checkInsByAppointment.set(appointmentEKID, newCheckIn);
+
+            return state
+              .set(CHECK_INS_BY_APPOINTMENT, checkInsByAppointment)
+              .setIn([ACTIONS, CHECK_IN_FOR_APPOINTMENT, REQUEST_STATE], RequestStates.SUCCESS);
+          }
 
           return state
             .setIn([ACTIONS, CHECK_IN_FOR_APPOINTMENT, REQUEST_STATE], RequestStates.SUCCESS);
@@ -954,34 +983,27 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
           .setIn([ACTIONS, UPDATE_HOURS_WORKED, REQUEST_STATE], RequestStates.PENDING),
         SUCCESS: () => {
 
-          // const seqAction :SequenceAction = action;
-          // const storedSeqAction :SequenceAction = state.getIn([ACTIONS, UPDATE_HOURS_WORKED, seqAction.id]);
-          //
-          // if (storedSeqAction) {
-          //
-          //   const { value } :Object = seqAction;
-          //   const { edm, enrollmentStatusEKID, enrollmentStatusESID } = value;
-          //
-          //   const requestValue :Object = storedSeqAction.value;
-          //   const { entityData } :Object = requestValue;
-          //   const storedEnrollmentEntity :Map = fromJS(entityData[enrollmentStatusESID][0]);
-          //
-          //
-          //   let newEnrollmentStatus :Map = Map();
-          //   storedEnrollmentEntity.forEach((enrollmentValue, id) => {
-          //     const propertyTypeFqn :FQN = getPropertyFqnFromEdm(edm, id);
-          //     newEnrollmentStatus = newEnrollmentStatus.set(propertyTypeFqn, enrollmentValue);
-          //   });
-          //   newEnrollmentStatus = newEnrollmentStatus.set(ENTITY_KEY_ID, enrollmentStatusEKID);
-          //
-          //   return state
-          //     .set(ENROLLMENT_STATUS, newEnrollmentStatus)
-          //     .setIn([ACTIONS, UPDATE_HOURS_WORKED, REQUEST_STATE], RequestStates.SUCCESS);
-          // }
+          if (!state.hasIn([ACTIONS, UPDATE_HOURS_WORKED, action.id])) {
+            return state;
+          }
 
-          return state;
+          const { value } = action;
+          if (value === null || value === undefined) {
+            return state;
+          }
+
+          const worksitePlanEKID :UUID = getEntityKeyId(value);
+          let worksitePlans :List = state.get(WORKSITE_PLANS);
+          const worksitePlanToReplace :number = worksitePlans
+            .findKey((worksitePlan :Map) => worksitePlanEKID === getEntityKeyId(worksitePlan));
+          worksitePlans = worksitePlans.set(worksitePlanToReplace, value);
+
+          return state
+            .set(WORKSITE_PLANS, worksitePlans)
+            .setIn([ACTIONS, GET_WORKSITE_BY_WORKSITE_PLAN, REQUEST_STATE], RequestStates.SUCCESS);
         },
         FAILURE: () => state
+          .set(WORKSITE_PLANS, List())
           .setIn([ACTIONS, UPDATE_HOURS_WORKED, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, UPDATE_HOURS_WORKED, action.id]),
       });
