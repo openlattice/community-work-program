@@ -118,12 +118,24 @@ const InnerColumnWrapper = styled.div`
   flex-direction: column;
   justify-content: space-between;
   align-items: center;
+  /* display: grid;
+  grid-template-columns: 1fr; */
+
 `;
 
 const InnerRowWrapper = styled.div`
   display: flex;
   justify-content: space-between;
   width: 100%;
+  /* display: grid;
+  grid-template-rows: repeat(2, 1fr);
+  width: 100%; */
+`;
+
+const ButtonsWrapper = styled.div`
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-gap: 0 10px;
 `;
 
 type Props = {
@@ -291,17 +303,20 @@ class ParticipantProfile extends Component<Props, State> {
     return (
       <ProfileWrapper>
         <ProfileBody>
-          <BackNavButton
-              onClick={() => {
-                actions.goToRoute(Routes.PARTICIPANTS);
-              }}>
-            Back to Participants
-          </BackNavButton>
           <NameRowWrapper>
-            <NameHeader>{ `${firstName} ${lastName}` }</NameHeader>
-            <Button mode="primary" onClick={this.handleShowEnrollmentModal}>
-              Change Enrollment Status
-            </Button>
+            <BackNavButton
+                onClick={() => {
+                  actions.goToRoute(Routes.PARTICIPANTS);
+                }}>
+              Back to Participants
+            </BackNavButton>
+            <ButtonsWrapper>
+              <Button>Add Check-In Date</Button>
+              <Button>Add Orientation Date</Button>
+              <Button mode="primary" onClick={this.handleShowEnrollmentModal}>
+                Change Enrollment Status
+              </Button>
+            </ButtonsWrapper>
           </NameRowWrapper>
           <BasicInfoWrapper>
             <GeneralInfo
