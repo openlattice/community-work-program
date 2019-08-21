@@ -18,7 +18,7 @@ export const getRegularlyRepeatingAppointments = (
   endDateTime :string,
   endsOnDate :string,
   units :string,
-  repetitionInterval :number
+  repetitionInterval ? :number
 ) => {
 
   const startDateTimeObj :DateTime = DateTime.fromISO(startDateTime);
