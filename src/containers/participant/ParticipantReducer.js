@@ -183,6 +183,7 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
               infractionESID,
               infractionEventEKID,
               infractionEventESID,
+              resultsInESID,
               registeredForESID,
               worksitePlanESID,
             } = successValue;
@@ -196,7 +197,7 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
               : Map();
 
             const worksitePlan :Map = associationEntityData[registeredForESID]
-              ? fromJS(associationEntityData[registeredForESID])
+              ? fromJS(associationEntityData[resultsInESID])
                 .find((association :Map) => association.get('srcEntitySetId') === worksitePlanESID)
               : Map();
             const worksitePlanEKID :UUID = worksitePlan ? worksitePlan.get('srcEntityKeyId', '') : '';
