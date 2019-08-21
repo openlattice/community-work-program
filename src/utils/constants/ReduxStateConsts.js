@@ -54,6 +54,7 @@ export const PERSON = {
   ADD_NEW_DIVERSION_PLAN_STATUS: 'addNewDiversionPlanStatus',
   ADD_WORKSITE_PLAN: 'addWorksitePlan',
   CASE_NUMBER: 'caseNumber',
+  CREATE_WORK_APPOINTMENTS: 'createWorkAppointments',
   DIVERSION_PLAN: 'diversionPlan',
   EMAIL: 'email',
   ENROLLMENT_STATUS: 'enrollmentStatus',

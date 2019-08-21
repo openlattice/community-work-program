@@ -24,6 +24,7 @@ import {
   ADD_INFRACTION,
   ADD_NEW_DIVERSION_PLAN_STATUS,
   ADD_WORKSITE_PLAN,
+  CREATE_WORK_APPOINTMENTS,
   GET_ALL_PARTICIPANT_INFO,
   GET_CASE_INFO,
   GET_CONTACT_INFO,
@@ -40,6 +41,7 @@ import {
   addInfraction,
   addNewDiversionPlanStatus,
   addWorksitePlan,
+  createWorkAppointments,
   getAllParticipantInfo,
   getCaseInfo,
   getContactInfo,
@@ -85,6 +87,7 @@ const { getEntityDataWorker, getEntitySetDataWorker } = DataApiSagas;
 const { searchEntityNeighborsWithFilter } = SearchApiActions;
 const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
 const {
+  ADDRESSES,
   APPOINTMENT,
   BASED_ON,
   CONTACT_INFORMATION,
@@ -122,7 +125,7 @@ const getWorksitesListFromState = state => state.getIn([STATE.WORKSITES, WORKSIT
 
 /*
  *
- * WorksitesActions.addInfraction()
+ * ParticipantActions.addInfraction()
  *
  */
 
@@ -178,7 +181,7 @@ function* addInfractionWatcher() :Generator<*, *, *> {
 
 /*
  *
- * WorksitesActions.addNewDiversionPlanStatus()
+ * ParticipantActions.addNewDiversionPlanStatus()
  *
  */
 
@@ -221,7 +224,7 @@ function* addNewDiversionPlanStatusWatcher() :Generator<*, *, *> {
 
 /*
  *
- * WorksitesActions.addWorksitePlan()
+ * ParticipantActions.addWorksitePlan()
  *
  */
 
@@ -269,6 +272,54 @@ function* addWorksitePlanWorker(action :SequenceAction) :Generator<*, *, *> {
 function* addWorksitePlanWatcher() :Generator<*, *, *> {
 
   yield takeEvery(ADD_WORKSITE_PLAN, addWorksitePlanWorker);
+}
+
+/*
+ *
+ * ParticipantActions.createWorkAppointments()
+ *
+ */
+
+function* createWorkAppointmentsWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+  let response :Object = {};
+
+  try {
+    yield put(createWorkAppointments.request(id, value));
+
+    response = yield call(submitDataGraphWorker, submitDataGraph(value));
+    if (response.error) {
+      throw response.error;
+    }
+    const { data } :Object = response;
+    const { entityKeyIds } :Object = data;
+
+    const app = yield select(getAppFromState);
+    const addressesESID :UUID = getEntitySetIdFromApp(app, ADDRESSES);
+    const appointmentESID :UUID = getEntitySetIdFromApp(app, APPOINTMENT);
+    const appointmentEKIDs :UUID[] = entityKeyIds[appointmentESID];
+    const edm = yield select(getEdmFromState);
+
+    yield put(createWorkAppointments.success(id, {
+      addressesESID,
+      appointmentEKIDs,
+      appointmentESID,
+      edm,
+    }));
+  }
+  catch (error) {
+    LOG.error('caught exception in createWorkAppointmentsWorker()', error);
+    yield put(createWorkAppointments.failure(id, error));
+  }
+  finally {
+    yield put(createWorkAppointments.finally(id));
+  }
+}
+
+function* createWorkAppointmentsWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(CREATE_WORK_APPOINTMENTS, createWorkAppointmentsWorker);
 }
 
 /*
@@ -459,7 +510,7 @@ function* getContactInfoWatcher() :Generator<*, *, *> {
 
 /*
  *
- * WorksitesActions.getWorksiteByWorksitePlan()
+ * ParticipantActions.getWorksiteByWorksitePlan()
  *
  */
 function* getWorksiteByWorksitePlanWorker(action :SequenceAction) :Generator<*, *, *> {
@@ -521,7 +572,7 @@ function* getWorksiteByWorksitePlanWatcher() :Generator<*, *, *> {
 
 /*
  *
- * WorksitesActions.getWorkAppointments()
+ * ParticipantActions.getWorkAppointments()
  *
  */
 function* getWorkAppointmentsWorker(action :SequenceAction) :Generator<*, *, *> {
@@ -579,7 +630,7 @@ function* getWorkAppointmentsWatcher() :Generator<*, *, *> {
 
 /*
  *
- * WorksitesActions.getWorksitePlans()
+ * ParticipantActions.getWorksitePlans()
  *
  */
 function* getWorksitePlansWorker(action :SequenceAction) :Generator<*, *, *> {
@@ -1158,6 +1209,8 @@ export {
   addNewDiversionPlanStatusWorker,
   addWorksitePlanWatcher,
   addWorksitePlanWorker,
+  createWorkAppointmentsWatcher,
+  createWorkAppointmentsWorker,
   getAllParticipantInfoWatcher,
   getAllParticipantInfoWorker,
   getCaseInfoWatcher,

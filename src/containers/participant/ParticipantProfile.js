@@ -11,12 +11,14 @@ import type { RequestSequence, RequestState } from 'redux-reqseq';
 import GeneralInfo from '../../components/participant/GeneralInfo';
 import KeyDates from '../../components/participant/KeyDates';
 import CaseInfo from '../../components/participant/CaseInfo';
+import ParticipantWorkSchedule from './schedule/ParticipantWorkSchedule';
 import InfractionsDisplay from '../../components/participant/InfractionsDisplay';
 
 import AssignedWorksitesContainer from './assignedworksites/AssignedWorksitesContainer';
 import AddNewPlanStatusModal from './AddNewPlanStatusModal';
 import AssignWorksiteModal from './assignedworksites/AssignWorksiteModal';
 import InfractionsContainer from './infractions/InfractionsContainer';
+import CreateWorkAppointmentModal from './schedule/CreateAppointmentModal';
 import LogoLoader from '../../components/LogoLoader';
 
 import { getAllParticipantInfo } from './ParticipantActions';
@@ -31,7 +33,8 @@ import {
   APP_TYPE_FQNS,
   DIVERSION_PLAN_FQNS,
   ENROLLMENT_STATUS_FQNS,
-  PEOPLE_FQNS
+  PEOPLE_FQNS,
+  WORKSITE_FQNS,
 } from '../../core/edm/constants/FullyQualifiedNames';
 import { ENROLLMENT_STATUSES } from '../../core/edm/constants/DataModelConsts';
 import {
@@ -44,6 +47,7 @@ import {
 const { ORIENTATION_DATETIME } = DIVERSION_PLAN_FQNS;
 const { STATUS } = ENROLLMENT_STATUS_FQNS;
 const { FIRST_NAME, LAST_NAME } = PEOPLE_FQNS;
+const { NAME } = WORKSITE_FQNS;
 const {
   ACTIONS,
   ADDRESS,
@@ -59,6 +63,7 @@ const {
   SENTENCE_TERM,
   VIOLATIONS,
   WARNINGS,
+  WORK_APPOINTMENTS_BY_WORKSITE_PLAN,
   WORKSITES_BY_WORKSITE_PLAN,
   WORKSITE_PLANS,
 } = PERSON;
@@ -141,6 +146,7 @@ type Props = {
   sentenceTerm :Map;
   violations :List;
   warnings :List;
+  workAppointmentsByWorksitePlan :Map;
   worksitesByWorksitePlan :Map;
   worksitePlans :List;
   worksitesList :List;
@@ -149,14 +155,22 @@ type Props = {
 type State = {
   showAssignWorksiteModal :boolean;
   showEnrollmentModal :boolean;
+  showWorkAppointmentModal :boolean;
+  worksiteNamesByWorksitePlan :Map;
 };
 
 class ParticipantProfile extends Component<Props, State> {
 
-  state = {
-    showAssignWorksiteModal: false,
-    showEnrollmentModal: false,
-  };
+  constructor(props :Props) {
+    super(props);
+
+    this.state = {
+      showAssignWorksiteModal: false,
+      showEnrollmentModal: false,
+      showWorkAppointmentModal: false,
+      worksiteNamesByWorksitePlan: Map(),
+    };
+  }
 
   componentDidMount() {
     const { app } = this.props;
@@ -166,15 +180,29 @@ class ParticipantProfile extends Component<Props, State> {
   }
 
   componentDidUpdate(prevProps :Props) {
-    const { app } = this.props;
+    const { app, worksitesByWorksitePlan } = this.props;
     if (!prevProps.app.get(APP_TYPE_FQNS.PEOPLE) && app.get(APP_TYPE_FQNS.PEOPLE)) {
       this.loadProfile();
+    }
+    if (prevProps.worksitesByWorksitePlan.count() !== worksitesByWorksitePlan.count()) {
+      this.createWorksiteNameMap();
     }
   }
 
   loadProfile = () => {
     const { actions, personEKID } = this.props;
     actions.getAllParticipantInfo({ personEKID });
+  }
+
+  createWorksiteNameMap = () => {
+    const { worksitesByWorksitePlan } = this.props;
+    const worksiteNamesByWorksitePlan = Map().withMutations((map :Map) => {
+      worksitesByWorksitePlan.forEach((worksite :Map, worksitePlanEKID :UUID) => {
+        const { [NAME]: worksiteName } = getEntityProperties(worksite, [NAME]);
+        map.set(worksitePlanEKID, worksiteName);
+      });
+    });
+    this.setState({ worksiteNamesByWorksitePlan });
   }
 
   handleShowEnrollmentModal = () => {
@@ -201,6 +229,18 @@ class ParticipantProfile extends Component<Props, State> {
     });
   }
 
+  handleShowWorkAppointmentModal = () => {
+    this.setState({
+      showWorkAppointmentModal: true
+    });
+  }
+
+  handleHideWorkAppointmentModal = () => {
+    this.setState({
+      showWorkAppointmentModal: false
+    });
+  }
+
   render() {
     const {
       actions,
@@ -217,11 +257,17 @@ class ParticipantProfile extends Component<Props, State> {
       sentenceTerm,
       violations,
       warnings,
+      workAppointmentsByWorksitePlan,
       worksitesByWorksitePlan,
       worksitePlans,
       worksitesList,
     } = this.props;
-    const { showAssignWorksiteModal, showEnrollmentModal } = this.state;
+    const {
+      showAssignWorksiteModal,
+      showEnrollmentModal,
+      showWorkAppointmentModal,
+      worksiteNamesByWorksitePlan
+    } = this.state;
 
     if (getInitializeAppRequestState === RequestStates.PENDING
         || getAllParticipantInfoRequestState === RequestStates.PENDING) {
@@ -292,6 +338,16 @@ class ParticipantProfile extends Component<Props, State> {
         }
         <ProfileBody>
           <NameRowWrapper>
+            <NameHeader>Work Schedule</NameHeader>
+            <Button onClick={this.handleShowWorkAppointmentModal}>Create Appointment</Button>
+          </NameRowWrapper>
+          <ParticipantWorkSchedule
+              workAppointmentsByWorksitePlan={workAppointmentsByWorksitePlan}
+              worksitesByWorksitePlan={worksitesByWorksitePlan}
+              worksiteNamesByWorksitePlan={worksiteNamesByWorksitePlan} />
+        </ProfileBody>
+        <ProfileBody>
+          <NameRowWrapper>
             <NameHeader>Warnings & Violations</NameHeader>
           </NameRowWrapper>
           <InfractionsContainer
@@ -309,6 +365,10 @@ class ParticipantProfile extends Component<Props, State> {
             onClose={this.handleHideAssignWorksiteModal}
             personEKID={personEKID}
             worksites={worksitesList} />
+        <CreateWorkAppointmentModal
+            isOpen={showWorkAppointmentModal}
+            onClose={this.handleHideWorkAppointmentModal}
+            personEKID={personEKID} />
       </ProfileWrapper>
     );
   }
@@ -333,6 +393,7 @@ const mapStateToProps = (state :Map<*, *>) => {
     [SENTENCE_TERM]: person.get(SENTENCE_TERM),
     [VIOLATIONS]: person.get(VIOLATIONS),
     [WARNINGS]: person.get(WARNINGS),
+    [WORK_APPOINTMENTS_BY_WORKSITE_PLAN]: person.get(WORK_APPOINTMENTS_BY_WORKSITE_PLAN),
     [WORKSITES_BY_WORKSITE_PLAN]: person.get(WORKSITES_BY_WORKSITE_PLAN),
     [WORKSITE_PLANS]: person.get(WORKSITE_PLANS),
     [WORKSITES_LIST]: worksites.get(WORKSITES_LIST),
