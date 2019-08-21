@@ -16,6 +16,7 @@ import {
   SearchApiActions,
   SearchApiSagas,
 } from 'lattice-sagas';
+import { Types } from 'lattice';
 import type { SequenceAction } from 'redux-reqseq';
 
 import Logger from '../../utils/Logger';
@@ -84,6 +85,7 @@ import {
   DATETIME_START,
   DIVERSION_PLAN_FQNS,
   ENROLLMENT_STATUS_FQNS,
+  ENTITY_KEY_ID,
   INFRACTION_EVENT_FQNS,
   INFRACTION_FQNS,
   LOCATION_FQNS,
@@ -91,8 +93,9 @@ import {
 } from '../../core/edm/constants/FullyQualifiedNames';
 import { INFRACTIONS_CONSTS } from '../../core/edm/constants/DataModelConsts';
 
-const { getEntityData, getEntitySetData } = DataApiActions;
-const { getEntityDataWorker, getEntitySetDataWorker } = DataApiSagas;
+const { UpdateTypes } = Types;
+const { getEntityData, getEntitySetData, updateEntityData } = DataApiActions;
+const { getEntityDataWorker, getEntitySetDataWorker, updateEntityDataWorker } = DataApiSagas;
 const { searchEntityNeighborsWithFilter } = SearchApiActions;
 const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
 const {
@@ -127,15 +130,13 @@ const { CATEGORY } = INFRACTION_FQNS;
 const { TYPE } = INFRACTION_EVENT_FQNS;
 const { UNPARSED_ADDRESS } = LOCATION_FQNS;
 const { HOURS_WORKED } = WORKSITE_PLAN_FQNS;
+const { CASE_NUMBER_TEXT } = CASE_FQNS;
 
 const getAppFromState = state => state.get(STATE.APP, Map());
-
-const LOG = new Logger('ParticipantSagas');
-
-const { CASE_NUMBER_TEXT } = CASE_FQNS;
 const getEdmFromState = state => state.get(STATE.EDM, Map());
 const getWorksitesListFromState = state => state.getIn([STATE.WORKSITES, WORKSITES.WORKSITES_LIST], List());
 
+const LOG = new Logger('ParticipantSagas');
 /*
  *
  * ParticipantActions.addInfraction()
@@ -298,6 +299,7 @@ function* updateHoursWorkedWorker(action :SequenceAction) :Generator<*, *, *> {
   const { id, value } = action;
   const workerResponse = {};
   let response :Object = {};
+  let newWorksitePlan :Map = Map();
 
   try {
     yield put(updateHoursWorked.request(id, value));
@@ -321,13 +323,33 @@ function* updateHoursWorkedWorker(action :SequenceAction) :Generator<*, *, *> {
       throw response.error;
     }
     if (response.data[appointmentEKID]) {
-      const worksitePlan :Map = fromJS(response.data[appointmentEKID][0]).map((plan :Map) => getNeighborDetails(plan));
-      // update worksite plan hours worked property
-      // get diversion plan neighbor of worksite plan
-      // update hours worked property on diversion plan
+
+      const worksitePlan :Map = getNeighborDetails(fromJS(response.data[appointmentEKID][0]));
+      const edm = yield select(getEdmFromState);
+      const hoursWorkedPTID :UUID = getPropertyTypeIdFromEdm(edm, HOURS_WORKED);
+      const worksitePlanEKID :UUID = getEntityKeyId(worksitePlan);
+      const { [HOURS_WORKED]: hoursWorkedOld } = getEntityProperties(worksitePlan, [HOURS_WORKED]);
+      const hoursWorkedToDate = hoursWorkedOld + numberHoursWorked;
+      const worksitePlanDataToUpdate :{} = {
+        [worksitePlanEKID]: {
+          [hoursWorkedPTID]: [hoursWorkedToDate]
+        }
+      };
+
+      response = yield call(updateEntityDataWorker, updateEntityData({
+        entitySetId: worksitePlanESID,
+        entities: worksitePlanDataToUpdate,
+        updateType: UpdateTypes.PartialReplace,
+      }));
+      if (response.error) {
+        throw response.error;
+      }
+
+      newWorksitePlan = worksitePlan;
+      newWorksitePlan = newWorksitePlan.setIn([HOURS_WORKED, 0], hoursWorkedToDate);
     }
 
-    yield put(updateHoursWorked.success(id, {}));
+    yield put(updateHoursWorked.success(id, newWorksitePlan));
   }
   catch (error) {
     workerResponse.error = error;
@@ -337,6 +359,7 @@ function* updateHoursWorkedWorker(action :SequenceAction) :Generator<*, *, *> {
   finally {
     yield put(updateHoursWorked.finally(id));
   }
+  return workerResponse;
 }
 
 function* updateHoursWorkedWatcher() :Generator<*, *, *> {
