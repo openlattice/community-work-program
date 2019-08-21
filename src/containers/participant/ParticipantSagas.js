@@ -100,6 +100,7 @@ const {
   MANUAL_PRETRIAL_CASES,
   PEOPLE,
   REGISTERED_FOR,
+  RESULTS_IN,
   SENTENCE_TERM,
   WORKSITE,
   WORKSITE_PLAN,
@@ -150,6 +151,7 @@ function* addInfractionWorker(action :SequenceAction) :Generator<*, *, *> {
 
     const worksitePlanESID = getEntitySetIdFromApp(app, WORKSITE_PLAN);
     const registeredForESID = getEntitySetIdFromApp(app, REGISTERED_FOR);
+    const resultsInESID = getEntitySetIdFromApp(app, RESULTS_IN);
     const enrollmentStatusESID = getEntitySetIdFromApp(app, ENROLLMENT_STATUS);
     const infractionESID = getEntitySetIdFromApp(app, INFRACTIONS);
     const edm = yield select(getEdmFromState);
@@ -160,6 +162,7 @@ function* addInfractionWorker(action :SequenceAction) :Generator<*, *, *> {
       infractionESID,
       infractionEventEKID,
       infractionEventESID,
+      resultsInESID,
       registeredForESID,
       worksitePlanESID
     }));

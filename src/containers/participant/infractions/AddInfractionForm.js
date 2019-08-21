@@ -263,7 +263,7 @@ class AddInfractionForm extends Component<Props, State> {
 
     if (registeredForAppointment) {
       associations.push([REGISTERED_FOR, 0, INFRACTION_EVENT, appointmentEKID, APPOINTMENT, {}]);
-      associations.push([REGISTERED_FOR, worksitePlanEKID, WORKSITE_PLAN, 0, INFRACTION_EVENT, {}]);
+      associations.push([RESULTS_IN, worksitePlanEKID, WORKSITE_PLAN, 0, INFRACTION_EVENT, {}]);
     }
 
     const entitySetIds :Object = this.createEntitySetIdsMap();
