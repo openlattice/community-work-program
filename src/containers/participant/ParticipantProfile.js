@@ -19,6 +19,7 @@ import AddNewPlanStatusModal from './AddNewPlanStatusModal';
 import AssignWorksiteModal from './assignedworksites/AssignWorksiteModal';
 import InfractionsContainer from './infractions/InfractionsContainer';
 import CreateWorkAppointmentModal from './schedule/CreateAppointmentModal';
+import AddOrientationDateModal from './AddOrientationDateModal';
 import LogoLoader from '../../components/LogoLoader';
 
 import { getAllParticipantInfo } from './ParticipantActions';
@@ -167,6 +168,7 @@ type Props = {
 type State = {
   showAssignWorksiteModal :boolean;
   showEnrollmentModal :boolean;
+  showOrientationDateModal :boolean;
   showWorkAppointmentModal :boolean;
   worksiteNamesByWorksitePlan :Map;
 };
@@ -179,6 +181,7 @@ class ParticipantProfile extends Component<Props, State> {
     this.state = {
       showAssignWorksiteModal: false,
       showEnrollmentModal: false,
+      showOrientationDateModal: false,
       showWorkAppointmentModal: false,
       worksiteNamesByWorksitePlan: Map(),
     };
@@ -253,6 +256,18 @@ class ParticipantProfile extends Component<Props, State> {
     });
   }
 
+  handleShowOrientationDateModal = () => {
+    this.setState({
+      showOrientationDateModal: true
+    });
+  }
+
+  handleHideOrientationDateModal = () => {
+    this.setState({
+      showOrientationDateModal: false
+    });
+  }
+
   render() {
     const {
       actions,
@@ -277,6 +292,7 @@ class ParticipantProfile extends Component<Props, State> {
     const {
       showAssignWorksiteModal,
       showEnrollmentModal,
+      showOrientationDateModal,
       showWorkAppointmentModal,
       worksiteNamesByWorksitePlan
     } = this.state;
@@ -291,7 +307,7 @@ class ParticipantProfile extends Component<Props, State> {
     }
 
     const personEKID :UUID = getEntityKeyId(participant);
-    const { [FIRST_NAME]: firstName, [LAST_NAME]: lastName } = getEntityProperties(
+    const { [FIRST_NAME]: firstName } = getEntityProperties(
       participant, [FIRST_NAME, LAST_NAME]
     );
     let { [STATUS]: status } = getEntityProperties(enrollmentStatus, [STATUS]);
@@ -311,8 +327,7 @@ class ParticipantProfile extends Component<Props, State> {
               Back to Participants
             </BackNavButton>
             <ButtonsWrapper>
-              <Button>Add Check-In Date</Button>
-              <Button>Add Orientation Date</Button>
+              <Button onClick={this.handleShowOrientationDateModal}>Add Orientation Date</Button>
               <Button mode="primary" onClick={this.handleShowEnrollmentModal}>
                 Change Enrollment Status
               </Button>
@@ -384,6 +399,9 @@ class ParticipantProfile extends Component<Props, State> {
             isOpen={showWorkAppointmentModal}
             onClose={this.handleHideWorkAppointmentModal}
             personEKID={personEKID} />
+        <AddOrientationDateModal
+            isOpen={showOrientationDateModal}
+            onClose={this.handleHideOrientationDateModal} />
       </ProfileWrapper>
     );
   }
