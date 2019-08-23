@@ -13,7 +13,7 @@ import AddParticipantModal from './AddParticipantModal';
 import LogoLoader from '../../components/LogoLoader';
 
 import { ToolBar } from '../../components/controls/index';
-import { getSentences } from './ParticipantsActions';
+import { getDiversionPlans } from './ParticipantsActions';
 import { goToRoute } from '../../core/router/RoutingActions';
 import { PARTICIPANT_PROFILE } from '../../core/router/Routes';
 import { SEARCH_CONTAINER_WIDTH } from '../../core/style/Sizes';
@@ -81,13 +81,13 @@ const ParticipantSearchInnerWrapper = styled.div`
 
 type Props = {
   actions:{
-    getSentences :RequestSequence;
+    getDiversionPlans :RequestSequence;
     goToRoute :RequestSequence;
   };
   app :Map;
   enrollmentByParticipant :Map;
   getInitializeAppRequestState :RequestState;
-  getSentencesRequestState :RequestState;
+  getDiversionPlansRequestState :RequestState;
   hoursWorked :Map;
   infractionCountsByParticipant :Map;
   participants :List;
@@ -121,14 +121,14 @@ class ParticipantsSearchContainer extends Component<Props, State> {
     const { actions, app } = this.props;
     this.handleOnSort(SORTABLE_PARTICIPANT_COLUMNS.STATUS.toUpperCase());
     if (app.get(APP_TYPE_FQNS.PEOPLE)) {
-      actions.getSentences();
+      actions.getDiversionPlans();
     }
   }
 
   componentDidUpdate(prevProps :Props) {
     const { app, actions, participants } = this.props;
     if (prevProps.app.count() !== app.count()) {
-      actions.getSentences();
+      actions.getDiversionPlans();
     }
     if (prevProps.participants.count() !== participants.count()) {
       this.handleOnSort(SORTABLE_PARTICIPANT_COLUMNS.STATUS.toUpperCase());
@@ -177,9 +177,9 @@ class ParticipantsSearchContainer extends Component<Props, State> {
     if (column === SORTABLE_PARTICIPANT_COLUMNS.NAME) {
       sortedPeople = this.sortByName(peopleList);
     }
-    if (column === SORTABLE_PARTICIPANT_COLUMNS.SENT_END_DATE) {
-      sortedPeople = this.sortBySentenceEndDate(peopleList);
-    }
+    // if (column === SORTABLE_PARTICIPANT_COLUMNS.SENT_END_DATE) {
+    //   sortedPeople = this.sortBySentenceEndDate(peopleList);
+    // }
     if (column === SORTABLE_PARTICIPANT_COLUMNS.STATUS) {
       sortedPeople = this.sortByStatus(peopleList);
     }
@@ -291,7 +291,7 @@ class ParticipantsSearchContainer extends Component<Props, State> {
     const {
       enrollmentByParticipant,
       getInitializeAppRequestState,
-      getSentencesRequestState,
+      getDiversionPlansRequestState,
       hoursWorked,
       infractionCountsByParticipant,
     } = this.props;
@@ -302,7 +302,7 @@ class ParticipantsSearchContainer extends Component<Props, State> {
     const warningMap :Map = infractionCountsByParticipant.map((count :Map) => count.get(WARNING));
     const violationMap :Map = infractionCountsByParticipant.map((count :Map) => count.get(VIOLATION));
 
-    if (getSentencesRequestState === RequestStates.PENDING || getInitializeAppRequestState === RequestStates.PENDING) {
+    if (getDiversionPlansRequestState === RequestStates.PENDING || getInitializeAppRequestState === RequestStates.PENDING) {
       return (
         <LogoLoader
             loadingText="Please wait..."
@@ -360,7 +360,7 @@ const mapStateToProps = (state :Map<*, *>) => {
     app,
     [ENROLLMENT_BY_PARTICIPANT]: people.get(ENROLLMENT_BY_PARTICIPANT),
     getInitializeAppRequestState: app.getIn([APP.ACTIONS, APP.INITIALIZE_APPLICATION, APP.REQUEST_STATE]),
-    getSentencesRequestState: people.getIn([PEOPLE.ACTIONS, PEOPLE.GET_SENTENCES, PEOPLE.REQUEST_STATE]),
+    getDiversionPlansRequestState: people.getIn([PEOPLE.ACTIONS, PEOPLE.GET_DIVERSION_PLANS, PEOPLE.REQUEST_STATE]),
     [HOURS_WORKED]: people.get(HOURS_WORKED),
     [INFRACTION_COUNTS_BY_PARTICIPANT]: people.get(INFRACTION_COUNTS_BY_PARTICIPANT),
     [PARTICIPANTS]: people.get(PARTICIPANTS),
@@ -369,7 +369,7 @@ const mapStateToProps = (state :Map<*, *>) => {
 
 const mapDispatchToProps = dispatch => ({
   actions: bindActionCreators({
-    getSentences,
+    getDiversionPlans,
     goToRoute,
   }, dispatch)
 });

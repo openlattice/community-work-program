@@ -2,7 +2,6 @@
  * @flow
  */
 
-import isNumber from 'lodash/isNumber';
 import { List, Map, fromJS } from 'immutable';
 import { RequestStates } from 'redux-reqseq';
 import type { SequenceAction } from 'redux-reqseq';
@@ -10,11 +9,11 @@ import type { FQN } from 'lattice';
 
 import {
   addParticipant,
+  getDiversionPlans,
   getEnrollmentStatuses,
   getHoursWorked,
   getInfractions,
   getParticipants,
-  getSentences,
   RESET_REQUEST_STATE,
 } from './ParticipantsActions';
 import { PEOPLE } from '../../utils/constants/ReduxStateConsts';
@@ -24,13 +23,14 @@ import { DIVERSION_PLAN_FQNS, ENTITY_KEY_ID } from '../../core/edm/constants/Ful
 const {
   ACTIONS,
   ADD_PARTICIPANT,
+  DIVERSION_PLANS_BY_PARTICIPANT,
   ENROLLMENT_BY_PARTICIPANT,
   ERRORS,
+  GET_DIVERSION_PLANS,
   GET_ENROLLMENT_STATUSES,
   GET_HOURS_WORKED,
   GET_INFRACTIONS,
   GET_PARTICIPANTS,
-  GET_SENTENCES,
   HOURS_WORKED,
   INFRACTIONS_BY_PARTICIPANT,
   INFRACTION_COUNTS_BY_PARTICIPANT,
@@ -41,7 +41,6 @@ const { REQUIRED_HOURS } = DIVERSION_PLAN_FQNS;
 
 const DIVERSION_PLAN = 'diversionPlan';
 const PERSON = 'person';
-const SENTENCE = 'sentence';
 
 const INITIAL_STATE :Map<*, *> = fromJS({
   [ACTIONS]: {
@@ -60,9 +59,6 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     [GET_PARTICIPANTS]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
-    [GET_SENTENCES]: {
-      [REQUEST_STATE]: RequestStates.STANDBY
-    },
   },
   [ENROLLMENT_BY_PARTICIPANT]: Map(),
   [ERRORS]: {
@@ -71,7 +67,6 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     [GET_HOURS_WORKED]: Map(),
     [GET_INFRACTIONS]: Map(),
     [GET_PARTICIPANTS]: Map(),
-    [GET_SENTENCES]: Map(),
   },
   [HOURS_WORKED]: Map(),
   [INFRACTIONS_BY_PARTICIPANT]: Map(),
@@ -109,7 +104,6 @@ export default function participantsReducer(state :Map<*, *> = INITIAL_STATE, ac
             const {
               diversionPlanESID,
               edm,
-              manualSentenceESID,
               personEKID,
               peopleESID,
             } = value;
@@ -118,7 +112,6 @@ export default function participantsReducer(state :Map<*, *> = INITIAL_STATE, ac
             const { entityData } :Object = storedValue;
             const storedEntities :Map = Map().withMutations((map :Map) => {
               map.set(PERSON, fromJS(entityData[peopleESID][0]));
-              map.set(SENTENCE, fromJS(entityData[manualSentenceESID][0]));
               map.set(DIVERSION_PLAN, fromJS(entityData[diversionPlanESID][0]));
             });
             let newEntities :Map = Map();
@@ -162,11 +155,9 @@ export default function participantsReducer(state :Map<*, *> = INITIAL_STATE, ac
       const seqAction :SequenceAction = (action :any);
       return getParticipants.reducer(state, action, {
 
-        REQUEST: () => {
-          return state
-            .setIn([ACTIONS, GET_PARTICIPANTS, seqAction.id], fromJS(seqAction))
-            .setIn([ACTIONS, GET_PARTICIPANTS, REQUEST_STATE], RequestStates.PENDING);
-        },
+        REQUEST: () => state
+          .setIn([ACTIONS, GET_PARTICIPANTS, seqAction.id], fromJS(seqAction))
+          .setIn([ACTIONS, GET_PARTICIPANTS, REQUEST_STATE], RequestStates.PENDING),
         SUCCESS: () => {
 
           if (!state.hasIn([ACTIONS, GET_PARTICIPANTS, seqAction.id])) {
@@ -179,63 +170,32 @@ export default function participantsReducer(state :Map<*, *> = INITIAL_STATE, ac
           }
 
           return state
-            .set(PARTICIPANTS, value)
+            .set(PARTICIPANTS, value.participants)
+            .set(DIVERSION_PLANS_BY_PARTICIPANT, value.diversionPlansByParticipant)
             .setIn([ACTIONS, GET_PARTICIPANTS, REQUEST_STATE], RequestStates.SUCCESS);
         },
-        FAILURE: () => {
-
-          const error = {};
-          const { value: axiosError } = seqAction;
-          if (axiosError && axiosError.response && isNumber(axiosError.response.status)) {
-            error.status = axiosError.response.status;
-          }
-
-          return state
-            .set(PARTICIPANTS, List())
-            .setIn([ERRORS, GET_PARTICIPANTS], error)
-            .setIn([ACTIONS, GET_PARTICIPANTS, REQUEST_STATE], RequestStates.FAILURE);
-        },
-        FINALLY: () => {
-          return state
-            .deleteIn([ACTIONS, GET_PARTICIPANTS, seqAction.id]);
-        },
+        FAILURE: () => state
+          .set(PARTICIPANTS, List())
+          .set(DIVERSION_PLANS_BY_PARTICIPANT, Map())
+          .setIn([ACTIONS, GET_PARTICIPANTS, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state
+          .deleteIn([ACTIONS, GET_PARTICIPANTS, seqAction.id]),
       });
     }
 
-    case getSentences.case(action.type): {
+    case getDiversionPlans.case(action.type): {
       const seqAction :SequenceAction = (action :any);
-      return getSentences.reducer(state, action, {
+      return getDiversionPlans.reducer(state, action, {
 
-        REQUEST: () => {
-          return state
-            .setIn([ACTIONS, GET_SENTENCES, seqAction.id], fromJS(seqAction))
-            .setIn([ACTIONS, GET_SENTENCES, REQUEST_STATE], RequestStates.PENDING);
-        },
-        SUCCESS: () => {
-
-          if (!state.hasIn([ACTIONS, GET_SENTENCES, seqAction.id])) {
-            return state;
-          }
-
-          return state
-            .setIn([ACTIONS, GET_SENTENCES, REQUEST_STATE], RequestStates.SUCCESS);
-        },
-        FAILURE: () => {
-
-          const error = {};
-          const { value: axiosError } = seqAction;
-          if (axiosError && axiosError.response && isNumber(axiosError.response.status)) {
-            error.status = axiosError.response.status;
-          }
-
-          return state
-            .setIn([ERRORS, GET_SENTENCES], error)
-            .setIn([ACTIONS, GET_SENTENCES, REQUEST_STATE], RequestStates.FAILURE);
-        },
-        FINALLY: () => {
-          return state
-            .deleteIn([ACTIONS, GET_SENTENCES, seqAction.id]);
-        },
+        REQUEST: () => state
+          .setIn([ACTIONS, GET_DIVERSION_PLANS, seqAction.id], fromJS(seqAction))
+          .setIn([ACTIONS, GET_DIVERSION_PLANS, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => state
+          .setIn([ACTIONS, GET_DIVERSION_PLANS, REQUEST_STATE], RequestStates.SUCCESS),
+        FAILURE: () => state
+          .setIn([ACTIONS, GET_DIVERSION_PLANS, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state
+          .deleteIn([ACTIONS, GET_DIVERSION_PLANS, seqAction.id]),
       });
     }
 
@@ -243,11 +203,9 @@ export default function participantsReducer(state :Map<*, *> = INITIAL_STATE, ac
       const seqAction :SequenceAction = (action :any);
       return getEnrollmentStatuses.reducer(state, action, {
 
-        REQUEST: () => {
-          return state
-            .setIn([ACTIONS, GET_ENROLLMENT_STATUSES, seqAction.id], fromJS(seqAction))
-            .setIn([ACTIONS, GET_ENROLLMENT_STATUSES, REQUEST_STATE], RequestStates.PENDING);
-        },
+        REQUEST: () => state
+          .setIn([ACTIONS, GET_ENROLLMENT_STATUSES, seqAction.id], fromJS(seqAction))
+          .setIn([ACTIONS, GET_ENROLLMENT_STATUSES, REQUEST_STATE], RequestStates.PENDING),
         SUCCESS: () => {
 
           if (!state.hasIn([ACTIONS, GET_ENROLLMENT_STATUSES, seqAction.id])) {
@@ -263,23 +221,11 @@ export default function participantsReducer(state :Map<*, *> = INITIAL_STATE, ac
             .set(ENROLLMENT_BY_PARTICIPANT, value)
             .setIn([ACTIONS, GET_ENROLLMENT_STATUSES, REQUEST_STATE], RequestStates.SUCCESS);
         },
-        FAILURE: () => {
-
-          const error = {};
-          const { value: axiosError } = seqAction;
-          if (axiosError && axiosError.response && isNumber(axiosError.response.status)) {
-            error.status = axiosError.response.status;
-          }
-
-          return state
-            .set(ENROLLMENT_BY_PARTICIPANT, List())
-            .setIn([ERRORS, GET_ENROLLMENT_STATUSES], error)
-            .setIn([ACTIONS, GET_ENROLLMENT_STATUSES, REQUEST_STATE], RequestStates.FAILURE);
-        },
-        FINALLY: () => {
-          return state
-            .deleteIn([ACTIONS, GET_ENROLLMENT_STATUSES, seqAction.id]);
-        },
+        FAILURE: () => state
+          .set(ENROLLMENT_BY_PARTICIPANT, List())
+          .setIn([ACTIONS, GET_ENROLLMENT_STATUSES, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state
+          .deleteIn([ACTIONS, GET_ENROLLMENT_STATUSES, seqAction.id]),
       });
     }
 
@@ -287,11 +233,9 @@ export default function participantsReducer(state :Map<*, *> = INITIAL_STATE, ac
       const seqAction :SequenceAction = (action :any);
       return getInfractions.reducer(state, action, {
 
-        REQUEST: () => {
-          return state
-            .setIn([ACTIONS, GET_INFRACTIONS, seqAction.id], fromJS(seqAction))
-            .setIn([ACTIONS, GET_INFRACTIONS, REQUEST_STATE], RequestStates.PENDING);
-        },
+        REQUEST: () => state
+          .setIn([ACTIONS, GET_INFRACTIONS, seqAction.id], fromJS(seqAction))
+          .setIn([ACTIONS, GET_INFRACTIONS, REQUEST_STATE], RequestStates.PENDING),
         SUCCESS: () => {
 
           if (!state.hasIn([ACTIONS, GET_INFRACTIONS, seqAction.id])) {
@@ -308,24 +252,12 @@ export default function participantsReducer(state :Map<*, *> = INITIAL_STATE, ac
             .set(INFRACTION_COUNTS_BY_PARTICIPANT, value.infractionCountMap)
             .setIn([ACTIONS, GET_INFRACTIONS, REQUEST_STATE], RequestStates.SUCCESS);
         },
-        FAILURE: () => {
-
-          const error = {};
-          const { value: axiosError } = seqAction;
-          if (axiosError && axiosError.response && isNumber(axiosError.response.status)) {
-            error.status = axiosError.response.status;
-          }
-
-          return state
-            .set(INFRACTIONS_BY_PARTICIPANT, Map())
-            .set(INFRACTION_COUNTS_BY_PARTICIPANT, Map())
-            .setIn([ERRORS, GET_INFRACTIONS], error)
-            .setIn([ACTIONS, GET_INFRACTIONS, REQUEST_STATE], RequestStates.FAILURE);
-        },
-        FINALLY: () => {
-          return state
-            .deleteIn([ACTIONS, GET_INFRACTIONS, seqAction.id]);
-        },
+        FAILURE: () => state
+          .set(INFRACTIONS_BY_PARTICIPANT, Map())
+          .set(INFRACTION_COUNTS_BY_PARTICIPANT, Map())
+          .setIn([ACTIONS, GET_INFRACTIONS, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state
+          .deleteIn([ACTIONS, GET_INFRACTIONS, seqAction.id]),
       });
     }
 
@@ -333,11 +265,9 @@ export default function participantsReducer(state :Map<*, *> = INITIAL_STATE, ac
       const seqAction :SequenceAction = (action :any);
       return getHoursWorked.reducer(state, action, {
 
-        REQUEST: () => {
-          return state
-            .setIn([ACTIONS, GET_HOURS_WORKED, seqAction.id], fromJS(seqAction))
-            .setIn([ACTIONS, GET_HOURS_WORKED, REQUEST_STATE], RequestStates.PENDING);
-        },
+        REQUEST: () => state
+          .setIn([ACTIONS, GET_HOURS_WORKED, seqAction.id], fromJS(seqAction))
+          .setIn([ACTIONS, GET_HOURS_WORKED, REQUEST_STATE], RequestStates.PENDING),
         SUCCESS: () => {
 
           if (!state.hasIn([ACTIONS, GET_HOURS_WORKED, seqAction.id])) {
@@ -353,23 +283,11 @@ export default function participantsReducer(state :Map<*, *> = INITIAL_STATE, ac
             .set(HOURS_WORKED, value)
             .setIn([ACTIONS, GET_HOURS_WORKED, REQUEST_STATE], RequestStates.SUCCESS);
         },
-        FAILURE: () => {
-
-          const error = {};
-          const { value: axiosError } = seqAction;
-          if (axiosError && axiosError.response && isNumber(axiosError.response.status)) {
-            error.status = axiosError.response.status;
-          }
-
-          return state
-            .set(HOURS_WORKED, Map())
-            .setIn([ERRORS, GET_HOURS_WORKED], error)
-            .setIn([ACTIONS, GET_HOURS_WORKED, REQUEST_STATE], RequestStates.FAILURE);
-        },
-        FINALLY: () => {
-          return state
-            .deleteIn([ACTIONS, GET_HOURS_WORKED, seqAction.id]);
-        },
+        FAILURE: () => state
+          .set(HOURS_WORKED, Map())
+          .setIn([ACTIONS, GET_HOURS_WORKED, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state
+          .deleteIn([ACTIONS, GET_HOURS_WORKED, seqAction.id]),
       });
     }
 

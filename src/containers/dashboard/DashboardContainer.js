@@ -12,7 +12,7 @@ import ParticipantsTable from '../../components/table/ParticipantsTable';
 import LogoLoader from '../../components/LogoLoader';
 
 import { ErrorMessage } from '../../components/Layout';
-import { getSentences } from '../participants/ParticipantsActions';
+import { getDiversionPlans } from '../participants/ParticipantsActions';
 import { goToRoute } from '../../core/router/RoutingActions';
 import { PARTICIPANT_PROFILE } from '../../core/router/Routes';
 import {
@@ -66,13 +66,13 @@ const RightWrapper = styled.div`
 
 type Props = {
   actions:{
-    getSentences :RequestSequence;
+    getDiversionPlans :RequestSequence;
     goToRoute :RequestSequence;
   };
   app :Map;
   enrollmentByParticipant :Map;
   getInitializeAppRequestState :RequestState;
-  getSentencesRequestState :RequestState;
+  getDiversionPlansRequestState :RequestState;
   hoursWorked :Map;
   infractionCountsByParticipant :Map;
   participants :List;
@@ -111,7 +111,7 @@ class DashboardContainer extends Component<Props, State> {
   componentDidUpdate(prevProps :Props) {
     const { actions, app, participants } = this.props;
     if (prevProps.app.count() !== app.count()) {
-      actions.getSentences();
+      actions.getDiversionPlans();
     }
     if (prevProps.participants.count() !== participants.count()) {
       this.setNewParticipants();
@@ -209,7 +209,7 @@ class DashboardContainer extends Component<Props, State> {
   render() {
     const {
       getInitializeAppRequestState,
-      getSentencesRequestState,
+      getDiversionPlansRequestState,
       hoursWorked,
     } = this.props;
     const {
@@ -219,7 +219,8 @@ class DashboardContainer extends Component<Props, State> {
       violationsWatch,
     } = this.state;
 
-    if (getSentencesRequestState === RequestStates.PENDING || getInitializeAppRequestState === RequestStates.PENDING) {
+    if (getDiversionPlansRequestState === RequestStates.PENDING
+        || getInitializeAppRequestState === RequestStates.PENDING) {
       return (
         <LogoLoader
             loadingText="Please wait..."
@@ -227,7 +228,7 @@ class DashboardContainer extends Component<Props, State> {
       );
     }
 
-    if (getSentencesRequestState === RequestStates.FAILURE) {
+    if (getDiversionPlansRequestState === RequestStates.FAILURE) {
       return (
         <ErrorMessage>
           Sorry, something went wrong. Please try refreshing the page, or contact support if the problem persists.
@@ -308,7 +309,7 @@ const mapStateToProps = (state :Map<*, *>) => {
     app,
     [ENROLLMENT_BY_PARTICIPANT]: people.get(ENROLLMENT_BY_PARTICIPANT),
     getInitializeAppRequestState: app.getIn([APP.ACTIONS, APP.INITIALIZE_APPLICATION, APP.REQUEST_STATE]),
-    getSentencesRequestState: people.getIn([PEOPLE.ACTIONS, PEOPLE.GET_SENTENCES, PEOPLE.REQUEST_STATE]),
+    getDiversionPlansRequestState: people.getIn([PEOPLE.ACTIONS, PEOPLE.GET_DIVERSION_PLANS, PEOPLE.REQUEST_STATE]),
     [HOURS_WORKED]: people.get(HOURS_WORKED),
     [INFRACTION_COUNTS_BY_PARTICIPANT]: people.get(INFRACTION_COUNTS_BY_PARTICIPANT),
     [PARTICIPANTS]: people.get(PARTICIPANTS),
@@ -317,7 +318,7 @@ const mapStateToProps = (state :Map<*, *>) => {
 
 const mapDispatchToProps = dispatch => ({
   actions: bindActionCreators({
-    getSentences,
+    getDiversionPlans,
     goToRoute,
   }, dispatch)
 });

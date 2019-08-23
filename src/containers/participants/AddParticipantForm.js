@@ -23,7 +23,6 @@ import {
   DATETIME_START,
   DIVERSION_PLAN_FQNS,
   ENROLLMENT_STATUS_FQNS,
-  SENTENCE_FQNS,
   PEOPLE_FQNS
 } from '../../core/edm/constants/FullyQualifiedNames';
 import { STATE } from '../../utils/constants/ReduxStateConsts';
@@ -45,10 +44,8 @@ const {
   DIVERSION_PLAN,
   ENROLLMENT_STATUS,
   MANUAL_SENTENCED_WITH,
-  MANUAL_SENTENCES,
   PEOPLE,
   RELATED_TO,
-  SENTENCED_WITH
 } = APP_TYPE_FQNS;
 const {
   COMPLETED,
@@ -58,7 +55,6 @@ const {
 } = DIVERSION_PLAN_FQNS;
 const { EFFECTIVE_DATE, STATUS } = ENROLLMENT_STATUS_FQNS;
 const { DOB, FIRST_NAME, LAST_NAME } = PEOPLE_FQNS;
-const { SENTENCE_CONDITIONS } = SENTENCE_FQNS;
 
 type Props = {
   actions:{
@@ -84,7 +80,6 @@ class AddParticipantForm extends Component<Props, State> {
           [getEntityAddressKey(0, DIVERSION_PLAN, COMPLETED)]: false,
           [getEntityAddressKey(0, DIVERSION_PLAN, NAME)]: CWP,
           [getEntityAddressKey(0, ENROLLMENT_STATUS, STATUS)]: ENROLLMENT_STATUSES.AWAITING_CHECKIN,
-          [getEntityAddressKey(0, MANUAL_SENTENCES, SENTENCE_CONDITIONS)]: 'COMMUNITY SERVICE',
         },
       }),
     };
@@ -96,19 +91,15 @@ class AddParticipantForm extends Component<Props, State> {
     const diversionPlanESID :UUID = getEntitySetIdFromApp(app, DIVERSION_PLAN);
     const enrollmentStatusESID :UUID = getEntitySetIdFromApp(app, ENROLLMENT_STATUS);
     const manualSentencedWithESID :UUID = getEntitySetIdFromApp(app, MANUAL_SENTENCED_WITH);
-    const manualSentencesESID :UUID = getEntitySetIdFromApp(app, MANUAL_SENTENCES);
     const peopleESID :UUID = getEntitySetIdFromApp(app, PEOPLE);
     const relatedToESID :UUID = getEntitySetIdFromApp(app, RELATED_TO);
-    const sentencedWithESID :UUID = getEntitySetIdFromApp(app, SENTENCED_WITH);
 
     return {
       [DIVERSION_PLAN]: diversionPlanESID,
       [ENROLLMENT_STATUS]: enrollmentStatusESID,
       [MANUAL_SENTENCED_WITH]: manualSentencedWithESID,
-      [MANUAL_SENTENCES]: manualSentencesESID,
       [PEOPLE]: peopleESID,
       [RELATED_TO]: relatedToESID,
-      [SENTENCED_WITH]: sentencedWithESID,
     };
   }
 
@@ -125,7 +116,6 @@ class AddParticipantForm extends Component<Props, State> {
     const namePTID :UUID = getPropertyTypeIdFromEdm(edm, NAME);
     const notesPTID :UUID = getPropertyTypeIdFromEdm(edm, NOTES);
     const requiredHoursPTID :UUID = getPropertyTypeIdFromEdm(edm, REQUIRED_HOURS);
-    const sentenceConditionsPTID :UUID = getPropertyTypeIdFromEdm(edm, SENTENCE_CONDITIONS);
     const statusPTID :UUID = getPropertyTypeIdFromEdm(edm, STATUS);
 
     return {
@@ -139,7 +129,6 @@ class AddParticipantForm extends Component<Props, State> {
       [NAME]: namePTID,
       [NOTES]: notesPTID,
       [REQUIRED_HOURS]: requiredHoursPTID,
-      [SENTENCE_CONDITIONS]: sentenceConditionsPTID,
       [STATUS]: statusPTID,
     };
   }
@@ -165,7 +154,6 @@ class AddParticipantForm extends Component<Props, State> {
 
     associations.push([MANUAL_SENTENCED_WITH, 0, PEOPLE, 0, DIVERSION_PLAN, {}]);
     associations.push([RELATED_TO, 0, DIVERSION_PLAN, 0, ENROLLMENT_STATUS, {}]);
-    associations.push([SENTENCED_WITH, 0, PEOPLE, 0, MANUAL_SENTENCES, {}]);
 
     // required hours is saved as a string and needs to be converted to number:
     const requiredHoursKey = getEntityAddressKey(0, DIVERSION_PLAN, REQUIRED_HOURS);

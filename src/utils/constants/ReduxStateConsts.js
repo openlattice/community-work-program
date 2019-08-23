@@ -28,19 +28,19 @@ export const APP = {
 export const PEOPLE = {
   ACTIONS: 'actions',
   ADD_PARTICIPANT: 'addParticipant',
+  DIVERSION_PLANS_BY_PARTICIPANT: 'diversionPlansByParticipant',
   ENROLLMENT_BY_PARTICIPANT: 'enrollmentByParticipant',
   ERRORS: 'errors',
+  GET_DIVERSION_PLANS: 'getDiversionPlans',
   GET_ENROLLMENT_STATUSES: 'getEnrollmentStatuses',
   GET_HOURS_WORKED: 'getHoursWorked',
   GET_INFRACTIONS: 'getInfractions',
   GET_PARTICIPANTS: 'getParticipants',
-  GET_SENTENCES: 'getSentences',
   HOURS_WORKED: 'hoursWorked',
   INFRACTIONS_BY_PARTICIPANT: 'infractionsByParticipant',
   INFRACTION_COUNTS_BY_PARTICIPANT: 'infractionCountsByParticipant',
   PARTICIPANTS: 'participants',
   REQUEST_STATE: 'requestState',
-  SENTENCE_EKIDS: 'sentenceEKIDs',
 };
 
 /* Person */
