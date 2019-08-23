@@ -12,7 +12,7 @@ import ParticipantsTable from '../../components/table/ParticipantsTable';
 import LogoLoader from '../../components/LogoLoader';
 
 import { ErrorMessage } from '../../components/Layout';
-import { getSentences } from '../participants/ParticipantsActions';
+import { getDiversionPlans } from '../participants/ParticipantsActions';
 import { goToRoute } from '../../core/router/RoutingActions';
 import { PARTICIPANT_PROFILE } from '../../core/router/Routes';
 import {
@@ -21,21 +21,22 @@ import {
 } from '../../core/style/Sizes';
 import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
 import { ENROLLMENT_STATUSES, HOURS_CONSTS, INFRACTIONS_CONSTS } from '../../core/edm/constants/DataModelConsts';
-import { DATETIME_START, ENROLLMENT_STATUS_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { DIVERSION_PLAN_FQNS, ENROLLMENT_STATUS_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { APP, PEOPLE, STATE } from '../../utils/constants/ReduxStateConsts';
 
 /* constants */
+const { DATETIME_RECEIVED } = DIVERSION_PLAN_FQNS;
 const { STATUS } = ENROLLMENT_STATUS_FQNS;
 const { REQUIRED, WORKED } = HOURS_CONSTS;
 const {
+  CURRENT_DIVERSION_PLANS_BY_PARTICIPANT,
   ENROLLMENT_BY_PARTICIPANT,
   HOURS_WORKED,
   INFRACTION_COUNTS_BY_PARTICIPANT,
   PARTICIPANTS,
-  SENTENCE_TERMS_BY_PARTICIPANT,
 } = PEOPLE;
 
-const NEW_PARTICIPANTS_COLUMNS = ['NAME', 'SENT. DATE', 'ENROLL. DEADLINE', 'REQ. HRS.'];
+const NEW_PARTICIPANTS_COLUMNS = ['NAME', 'SENT. DATE', 'CHECK-IN DEADLINE', 'REQ. HRS.'];
 const PENDING_PARTICIPANTS_COLUMNS = ['NAME', 'SENT. DATE', 'REQ. HRS.'];
 const VIOLATIONS_WATCH_COLUMNS = ['NAME', '# OF VIO.', 'HRS. SERVED'];
 
@@ -67,17 +68,17 @@ const RightWrapper = styled.div`
 
 type Props = {
   actions:{
-    getSentences :RequestSequence;
+    getDiversionPlans :RequestSequence;
     goToRoute :RequestSequence;
   };
   app :Map;
+  currentDiversionPlansByParticipant :Map;
   enrollmentByParticipant :Map;
   getInitializeAppRequestState :RequestState;
-  getSentencesRequestState :RequestState;
+  getDiversionPlansRequestState :RequestState;
   hoursWorked :Map;
   infractionCountsByParticipant :Map;
   participants :List;
-  sentenceTermsByParticipant :Map;
 };
 
 type State = {
@@ -113,7 +114,7 @@ class DashboardContainer extends Component<Props, State> {
   componentDidUpdate(prevProps :Props) {
     const { actions, app, participants } = this.props;
     if (prevProps.app.count() !== app.count()) {
-      actions.getSentences();
+      actions.getDiversionPlans();
     }
     if (prevProps.participants.count() !== participants.count()) {
       this.setNewParticipants();
@@ -129,7 +130,7 @@ class DashboardContainer extends Component<Props, State> {
 
   setNewParticipants = () => {
 
-    const { enrollmentByParticipant, participants, sentenceTermsByParticipant } = this.props;
+    const { enrollmentByParticipant, participants } = this.props;
     if (enrollmentByParticipant.count() > 0 && participants.count() > 0) {
 
       const newParticipants = participants.filter((participant :Map) => {
@@ -142,12 +143,9 @@ class DashboardContainer extends Component<Props, State> {
           .getIn([STATUS, 0]);
         const isAwaitingEnrollment :boolean = status === ENROLLMENT_STATUSES.AWAITING_CHECKIN
           || status === ENROLLMENT_STATUSES.AWAITING_ORIENTATION;
-        const hasActiveSentence :boolean = DateTime.local().diff(DateTime.fromISO(
-          sentenceTermsByParticipant.getIn([personEKID, DATETIME_START, 0])
-        ), 'days').days < 90;
 
         // if person was enrolled in CWP previously and is now enrolled again but doesn't have reflective status:
-        if (!isAwaitingEnrollment && hasActiveSentence) {
+        if (!isAwaitingEnrollment) {
           // filter out the people who are simply active in CWP:
           if (status === ENROLLMENT_STATUSES.ACTIVE
               || status === ENROLLMENT_STATUSES.ACTIVE_NONCOMPLIANT || status === ENROLLMENT_STATUSES.ACTIVE_REOPENED) {
@@ -213,10 +211,10 @@ class DashboardContainer extends Component<Props, State> {
 
   render() {
     const {
+      currentDiversionPlansByParticipant,
       getInitializeAppRequestState,
-      getSentencesRequestState,
+      getDiversionPlansRequestState,
       hoursWorked,
-      sentenceTermsByParticipant,
     } = this.props;
     const {
       newParticipants,
@@ -225,7 +223,8 @@ class DashboardContainer extends Component<Props, State> {
       violationsWatch,
     } = this.state;
 
-    if (getSentencesRequestState === RequestStates.PENDING || getInitializeAppRequestState === RequestStates.PENDING) {
+    if (getDiversionPlansRequestState === RequestStates.PENDING
+        || getInitializeAppRequestState === RequestStates.PENDING) {
       return (
         <LogoLoader
             loadingText="Please wait..."
@@ -233,7 +232,7 @@ class DashboardContainer extends Component<Props, State> {
       );
     }
 
-    if (getSentencesRequestState === RequestStates.FAILURE) {
+    if (getDiversionPlansRequestState === RequestStates.FAILURE) {
       return (
         <ErrorMessage>
           Sorry, something went wrong. Please try refreshing the page, or contact support if the problem persists.
@@ -256,11 +255,11 @@ class DashboardContainer extends Component<Props, State> {
                 includeStartDate: false,
                 includeWorkedHours: false
               }}
+              currentDiversionPlansMap={currentDiversionPlansByParticipant}
               handleSelect={this.handleOnSelectPerson}
               hours={hoursWorked}
               people={newParticipants}
               small
-              sentenceTerms={sentenceTermsByParticipant}
               totalTableItems={newParticipants.count()}
               width="600px" />
           <RightWrapper>
@@ -276,11 +275,11 @@ class DashboardContainer extends Component<Props, State> {
                   includeStartDate: false,
                   includeWorkedHours: false
                 }}
+                currentDiversionPlansMap={currentDiversionPlansByParticipant}
                 handleSelect={this.handleOnSelectPerson}
                 hours={hoursWorked}
                 people={pendingCompletionReview}
                 small
-                sentenceTerms={sentenceTermsByParticipant}
                 totalTableItems={pendingCompletionReview.count()}
                 width="600px" />
             <ParticipantsTable
@@ -314,19 +313,19 @@ const mapStateToProps = (state :Map<*, *>) => {
   const people = state.get(STATE.PEOPLE);
   return {
     app,
+    [CURRENT_DIVERSION_PLANS_BY_PARTICIPANT]: people.get(CURRENT_DIVERSION_PLANS_BY_PARTICIPANT),
     [ENROLLMENT_BY_PARTICIPANT]: people.get(ENROLLMENT_BY_PARTICIPANT),
     getInitializeAppRequestState: app.getIn([APP.ACTIONS, APP.INITIALIZE_APPLICATION, APP.REQUEST_STATE]),
-    getSentencesRequestState: people.getIn([PEOPLE.ACTIONS, PEOPLE.GET_SENTENCES, PEOPLE.REQUEST_STATE]),
+    getDiversionPlansRequestState: people.getIn([PEOPLE.ACTIONS, PEOPLE.GET_DIVERSION_PLANS, PEOPLE.REQUEST_STATE]),
     [HOURS_WORKED]: people.get(HOURS_WORKED),
     [INFRACTION_COUNTS_BY_PARTICIPANT]: people.get(INFRACTION_COUNTS_BY_PARTICIPANT),
     [PARTICIPANTS]: people.get(PARTICIPANTS),
-    [SENTENCE_TERMS_BY_PARTICIPANT]: people.get(SENTENCE_TERMS_BY_PARTICIPANT),
   };
 };
 
 const mapDispatchToProps = dispatch => ({
   actions: bindActionCreators({
-    getSentences,
+    getDiversionPlans,
     goToRoute,
   }, dispatch)
 });

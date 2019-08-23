@@ -10,36 +10,41 @@ const { OPENLATTICE_ID_FQN } = Constants;
 export const ENTITY_KEY_ID = OPENLATTICE_ID_FQN;
 
 export const APP_TYPE_FQNS = {
+  ADDRESS: new FullyQualifiedName('app.address'),
   ADDRESSES: new FullyQualifiedName('app.addresses'),
   APPEARS_IN: new FullyQualifiedName('app.appearsin'),
+  APPROVED_BY: new FullyQualifiedName('app.approvedby'),
   APPOINTMENT: new FullyQualifiedName('app.appointment'),
   APP_SETTINGS: new FullyQualifiedName('app.settings'),
   ASSIGNED_TO: new FullyQualifiedName('app.assignedto'),
   BASED_ON: new FullyQualifiedName('app.basedon'),
+  CHARGE_EVENT: new FullyQualifiedName('app.chargeevent'),
   CHARGED_WITH: new FullyQualifiedName('app.chargedwith'),
   CHECK_INS: new FullyQualifiedName('app.checkins'),
   CHECK_IN_DETAILS: new FullyQualifiedName('app.checkindetails'),
   CONTACT_INFORMATION: new FullyQualifiedName('app.contactinformation'),
   CONTACT_INFO_GIVEN: new FullyQualifiedName('app.contactinfogiven'),
-  COURT_CHARGES: new FullyQualifiedName('app.courtcharges'),
   COURT_PRETRIAL_CASES: new FullyQualifiedName('app.courtpretrialcases'),
   DIVERSION_PLAN: new FullyQualifiedName('app.diversionplan'),
-  EDITED_BY: new FullyQualifiedName('app.editedby'),
+  EMPLOYEE: new FullyQualifiedName('app.employee'),
+  EMPLOYED_BY: new FullyQualifiedName('app.employedby'),
+  EMPLOYMENT: new FullyQualifiedName('app.employment'),
   ENROLLMENT_STATUS: new FullyQualifiedName('app.enrollmentstatus'),
   FULFILLS: new FullyQualifiedName('app.fulfills'),
   HAS: new FullyQualifiedName('app.has'),
-  INCLUDES: new FullyQualifiedName('app.includes'),
   INFRACTIONS: new FullyQualifiedName('app.infractions'),
+  IS: new FullyQualifiedName('app.is'),
   INFRACTION_EVENT: new FullyQualifiedName('app.infractionevent'),
   JUDGES: new FullyQualifiedName('app.judges'),
+  LIVES_AT: new FullyQualifiedName('app.livesat'),
   LOCATED_AT: new FullyQualifiedName('app.locatedat'),
-  LOCATION: new FullyQualifiedName('app.location'),
-  MANUAL_PRETRIAL_CASES: new FullyQualifiedName('app.manualpretrialcases'),
+  MANUAL_COURT_CHARGES: new FullyQualifiedName('app.manualcourtcharges'),
+  MANUAL_PRETRIAL_COURT_CASES: new FullyQualifiedName('app.manualpretrialcourtcases'),
   MANUAL_SENTENCED_WITH: new FullyQualifiedName('app.manualsentencedwith'),
-  MANUAL_SENTENCES: new FullyQualifiedName('app.manualsentences'),
   OF_LENGTH: new FullyQualifiedName('app.oflength'),
   OPERATES: new FullyQualifiedName('app.operates'),
   ORGANIZATION: new FullyQualifiedName('app.organization'),
+  PART_OF: new FullyQualifiedName('app.partof'),
   PEOPLE: new FullyQualifiedName('app.people'),
   PROGRAM_OUTCOME: new FullyQualifiedName('app.programoutcome'),
   REGISTERED_FOR: new FullyQualifiedName('app.registeredfor'),
@@ -49,9 +54,9 @@ export const APP_TYPE_FQNS = {
   RESULTS_IN: new FullyQualifiedName('app.resultsin'),
   SENTENCED_WITH: new FullyQualifiedName('app.sentencedwith'),
   SENTENCES: new FullyQualifiedName('app.sentences'),
-  SENTENCE_TERM: new FullyQualifiedName('app.sentenceterm'),
   STAFF: new FullyQualifiedName('app.staff'),
   SUBJECT_OF: new FullyQualifiedName('app.subjectof'),
+  WARRANT_REQUEST: new FullyQualifiedName('app.warrantrequest'),
   WORKSITE: new FullyQualifiedName('app.worksite'),
   WORKSITE_PLAN: new FullyQualifiedName('app.worksiteplan'),
 };
@@ -88,10 +93,12 @@ export const DIVERSION_PLAN_FQNS = {
   COMPLETED: new FullyQualifiedName('ol.completed'),
   CONCURRENT: new FullyQualifiedName('ol.concurrent'),
   CONSECUTIVE: new FullyQualifiedName('ol.consecutive'),
+  DATETIME_RECEIVED: new FullyQualifiedName('datetime.received'),
   NAME: new FullyQualifiedName('ol.name'),
   NOTES: new FullyQualifiedName('ol.notes'),
   ORIENTATION_DATETIME: new FullyQualifiedName('ol.orientationdatetime'),
   REQUIRED_HOURS: new FullyQualifiedName('ol.requiredhours'),
+  REQUIRED_HOURS_TEXT: new FullyQualifiedName('ol.requiredhourstext'),
 };
 
 /* ol.enrollment */
@@ -113,11 +120,6 @@ export const INFRACTION_FQNS = {
 export const INFRACTION_EVENT_FQNS = {
   NOTES: new FullyQualifiedName('ol.notes'),
   TYPE: new FullyQualifiedName('ol.type'),
-};
-
-/* ol.location */
-export const LOCATION_FQNS = {
-  UNPARSED_ADDRESS: new FullyQualifiedName('location.address'),
 };
 
 /* ol.organization */
@@ -149,12 +151,6 @@ export const PEOPLE_FQNS = {
   ISSUING_JURISDICTION: new FullyQualifiedName('ol.idjurisdiction'),
   NOTES: new FullyQualifiedName('housing.notes'),
   GENDER: new FullyQualifiedName('bhr.gender'),
-};
-
-/* j.sentence */
-export const SENTENCE_FQNS = {
-  CONCURRENT_CONSECUTIVE: new FullyQualifiedName('justice.concurrentconsecutive'),
-  SENTENCE_CONDITIONS: new FullyQualifiedName('justice.sentenceconditions'),
 };
 
 /* ol.program */

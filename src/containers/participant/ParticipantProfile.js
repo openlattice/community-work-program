@@ -44,7 +44,7 @@ import {
   WORKSITES
 } from '../../utils/constants/ReduxStateConsts';
 
-const { ORIENTATION_DATETIME } = DIVERSION_PLAN_FQNS;
+const { DATETIME_RECEIVED, ORIENTATION_DATETIME } = DIVERSION_PLAN_FQNS;
 const { STATUS } = ENROLLMENT_STATUS_FQNS;
 const { FIRST_NAME, LAST_NAME } = PEOPLE_FQNS;
 const { NAME } = WORKSITE_FQNS;
@@ -60,7 +60,6 @@ const {
   PHONE,
   REQUEST_STATE,
   REQUIRED_HOURS,
-  SENTENCE_TERM,
   VIOLATIONS,
   WARNINGS,
   WORK_APPOINTMENTS_BY_WORKSITE_PLAN,
@@ -143,7 +142,6 @@ type Props = {
   personEKID :string;
   phone :string;
   requiredHours :number;
-  sentenceTerm :Map;
   violations :List;
   warnings :List;
   workAppointmentsByWorksitePlan :Map;
@@ -254,7 +252,6 @@ class ParticipantProfile extends Component<Props, State> {
       participant,
       phone,
       requiredHours,
-      sentenceTerm,
       violations,
       warnings,
       workAppointmentsByWorksitePlan,
@@ -286,7 +283,10 @@ class ParticipantProfile extends Component<Props, State> {
     if (!isDefined(status)) status = ENROLLMENT_STATUSES.AWAITING_CHECKIN;
 
     const diversionPlanEKID :UUID = getEntityKeyId(diversionPlan);
-    const { [ORIENTATION_DATETIME]: orientationDateTime } = getEntityProperties(diversionPlan, [ORIENTATION_DATETIME]);
+    const {
+      [DATETIME_RECEIVED]: sentenceDate,
+      [ORIENTATION_DATETIME]: orientationDateTime
+    } = getEntityProperties(diversionPlan, [DATETIME_RECEIVED, ORIENTATION_DATETIME]);
 
     return (
       <ProfileWrapper>
@@ -313,7 +313,7 @@ class ParticipantProfile extends Component<Props, State> {
             <InnerColumnWrapper>
               <KeyDates
                   orientationDateTime={orientationDateTime}
-                  sentenceTerm={sentenceTerm} />
+                  sentenceDateTime={sentenceDate} />
               <InnerRowWrapper>
                 <CaseInfo caseNumber={caseNumber} hours={requiredHours} />
                 <InfractionsDisplay violations={violations} warnings={warnings} />
@@ -390,7 +390,6 @@ const mapStateToProps = (state :Map<*, *>) => {
     [PARTICIPANT]: person.get(PARTICIPANT),
     [PHONE]: person.get(PHONE),
     [REQUIRED_HOURS]: person.get(REQUIRED_HOURS),
-    [SENTENCE_TERM]: person.get(SENTENCE_TERM),
     [VIOLATIONS]: person.get(VIOLATIONS),
     [WARNINGS]: person.get(WARNINGS),
     [WORK_APPOINTMENTS_BY_WORKSITE_PLAN]: person.get(WORK_APPOINTMENTS_BY_WORKSITE_PLAN),

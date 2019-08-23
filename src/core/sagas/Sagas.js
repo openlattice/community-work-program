@@ -52,22 +52,21 @@ export default function* sagas() :Generator<*, *, *> {
     fork(ParticipantSagas.getContactInfoWatcher),
     fork(ParticipantSagas.getEnrollmentStatusWatcher),
     fork(ParticipantSagas.getInfractionTypesWatcher),
-    fork(ParticipantSagas.getParticipantAddressWatcher),
+    // fork(ParticipantSagas.getParticipantAddressWatcher),
     fork(ParticipantSagas.getParticipantInfractionsWatcher),
     fork(ParticipantSagas.getParticipantWatcher),
     fork(ParticipantSagas.getRequiredHoursWatcher),
-    fork(ParticipantSagas.getSentenceTermWatcher),
     fork(ParticipantSagas.getWorkAppointmentsWatcher),
     fork(ParticipantSagas.getWorksiteByWorksitePlanWatcher),
     fork(ParticipantSagas.getWorksitePlansWatcher),
 
     // ParticipantsSagas
     fork(ParticipantsSagas.addParticipantWatcher),
+    fork(ParticipantsSagas.getDiversionPlansWatcher),
     fork(ParticipantsSagas.getEnrollmentStatusesWatcher),
     fork(ParticipantsSagas.getHoursWorkedWatcher),
     fork(ParticipantsSagas.getInfractionsWatcher),
     fork(ParticipantsSagas.getParticipantsWatcher),
-    fork(ParticipantsSagas.getSentencesWatcher),
 
     // WorksitesSagas
     fork(WorksitesSagas.addOrganizationWatcher),

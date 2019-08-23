@@ -40,14 +40,11 @@ const getInfractionTypes = newRequestSequence(GET_INFRACTION_TYPES);
 const GET_PARTICIPANT :'GET_PARTICIPANT' = 'GET_PARTICIPANT';
 const getParticipant = newRequestSequence(GET_PARTICIPANT);
 
-const GET_PARTICIPANT_ADDRESS :'GET_PARTICIPANT_ADDRESS' = 'GET_PARTICIPANT_ADDRESS';
-const getParticipantAddress = newRequestSequence(GET_PARTICIPANT_ADDRESS);
+// const GET_PARTICIPANT_ADDRESS :'GET_PARTICIPANT_ADDRESS' = 'GET_PARTICIPANT_ADDRESS';
+// const getParticipantAddress = newRequestSequence(GET_PARTICIPANT_ADDRESS);
 
 const GET_PARTICIPANT_INFRACTIONS :'GET_PARTICIPANT_INFRACTIONS' = 'GET_PARTICIPANT_INFRACTIONS';
 const getParticipantInfractions = newRequestSequence(GET_PARTICIPANT_INFRACTIONS);
-
-const GET_SENTENCE_TERM :'GET_SENTENCE_TERM' = 'GET_SENTENCE_TERM';
-const getSentenceTerm = newRequestSequence(GET_SENTENCE_TERM);
 
 const GET_WORKSITE_BY_WORKSITE_PLAN :'GET_WORKSITE_BY_WORKSITE_PLAN' = 'GET_WORKSITE_BY_WORKSITE_PLAN';
 const getWorksiteByWorksitePlan = newRequestSequence(GET_WORKSITE_BY_WORKSITE_PLAN);
@@ -74,10 +71,9 @@ export {
   GET_ENROLLMENT_STATUS,
   GET_INFRACTION_TYPES,
   GET_PARTICIPANT,
-  GET_PARTICIPANT_ADDRESS,
+  // GET_PARTICIPANT_ADDRESS,
   GET_PARTICIPANT_INFRACTIONS,
   GET_REQUIRED_HOURS,
-  GET_SENTENCE_TERM,
   GET_WORKSITE_BY_WORKSITE_PLAN,
   GET_WORKSITE_PLANS,
   GET_WORK_APPOINTMENTS,
@@ -94,10 +90,9 @@ export {
   getEnrollmentStatus,
   getInfractionTypes,
   getParticipant,
-  getParticipantAddress,
+  // getParticipantAddress,
   getParticipantInfractions,
   getRequiredHours,
-  getSentenceTerm,
   getWorkAppointments,
   getWorksiteByWorksitePlan,
   getWorksitePlans,
