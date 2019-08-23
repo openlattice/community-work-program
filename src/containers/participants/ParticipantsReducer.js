@@ -23,7 +23,7 @@ import { DIVERSION_PLAN_FQNS, ENTITY_KEY_ID } from '../../core/edm/constants/Ful
 const {
   ACTIONS,
   ADD_PARTICIPANT,
-  DIVERSION_PLANS_BY_PARTICIPANT,
+  CURRENT_DIVERSION_PLANS_BY_PARTICIPANT,
   ENROLLMENT_BY_PARTICIPANT,
   ERRORS,
   GET_DIVERSION_PLANS,
@@ -60,6 +60,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
       [REQUEST_STATE]: RequestStates.STANDBY
     },
   },
+  [CURRENT_DIVERSION_PLANS_BY_PARTICIPANT]: Map(),
   [ENROLLMENT_BY_PARTICIPANT]: Map(),
   [ERRORS]: {
     [ADD_PARTICIPANT]: Map(),
@@ -170,13 +171,11 @@ export default function participantsReducer(state :Map<*, *> = INITIAL_STATE, ac
           }
 
           return state
-            .set(PARTICIPANTS, value.participants)
-            .set(DIVERSION_PLANS_BY_PARTICIPANT, value.diversionPlansByParticipant)
+            .set(PARTICIPANTS, value)
             .setIn([ACTIONS, GET_PARTICIPANTS, REQUEST_STATE], RequestStates.SUCCESS);
         },
         FAILURE: () => state
           .set(PARTICIPANTS, List())
-          .set(DIVERSION_PLANS_BY_PARTICIPANT, Map())
           .setIn([ACTIONS, GET_PARTICIPANTS, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state
           .deleteIn([ACTIONS, GET_PARTICIPANTS, seqAction.id]),
@@ -218,11 +217,13 @@ export default function participantsReducer(state :Map<*, *> = INITIAL_STATE, ac
           }
 
           return state
-            .set(ENROLLMENT_BY_PARTICIPANT, value)
+            .set(ENROLLMENT_BY_PARTICIPANT, value.enrollmentMap)
+            .set(CURRENT_DIVERSION_PLANS_BY_PARTICIPANT, value.currentDiversionPlansByParticipant)
             .setIn([ACTIONS, GET_ENROLLMENT_STATUSES, REQUEST_STATE], RequestStates.SUCCESS);
         },
         FAILURE: () => state
           .set(ENROLLMENT_BY_PARTICIPANT, List())
+          .set(CURRENT_DIVERSION_PLANS_BY_PARTICIPANT, Map())
           .setIn([ACTIONS, GET_ENROLLMENT_STATUSES, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state
           .deleteIn([ACTIONS, GET_ENROLLMENT_STATUSES, seqAction.id]),

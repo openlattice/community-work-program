@@ -28,7 +28,8 @@ export const APP = {
 export const PEOPLE = {
   ACTIONS: 'actions',
   ADD_PARTICIPANT: 'addParticipant',
-  DIVERSION_PLANS_BY_PARTICIPANT: 'diversionPlansByParticipant',
+  ALL_DIVERSION_PLANS_BY_PARTICIPANT: 'allDiversionPlansByParticipant',
+  CURRENT_DIVERSION_PLANS_BY_PARTICIPANT: 'currentDiversionPlansByParticipant',
   ENROLLMENT_BY_PARTICIPANT: 'enrollmentByParticipant',
   ERRORS: 'errors',
   GET_DIVERSION_PLANS: 'getDiversionPlans',

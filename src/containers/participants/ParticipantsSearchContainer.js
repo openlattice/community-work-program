@@ -302,7 +302,8 @@ class ParticipantsSearchContainer extends Component<Props, State> {
     const warningMap :Map = infractionCountsByParticipant.map((count :Map) => count.get(WARNING));
     const violationMap :Map = infractionCountsByParticipant.map((count :Map) => count.get(VIOLATION));
 
-    if (getDiversionPlansRequestState === RequestStates.PENDING || getInitializeAppRequestState === RequestStates.PENDING) {
+    if (getDiversionPlansRequestState === RequestStates.PENDING
+        || getInitializeAppRequestState === RequestStates.PENDING) {
       return (
         <LogoLoader
             loadingText="Please wait..."
