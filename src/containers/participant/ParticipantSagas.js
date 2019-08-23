@@ -774,7 +774,7 @@ function* getEnrollmentStatusWorker(action :SequenceAction) :Generator<*, *, *> 
          * 4. Additionally, return relevant diversion plan.
          */
         const diversionPlanEKID :UUID = enrollmentStatusesByDiversionPlan
-          .findKey((status :Map) => status === enrollmentStatus);
+          .findKey((status :Map) => getEntityKeyId(status) === getEntityKeyId(enrollmentStatus));
         diversionPlan = diversionPlans.get(personEKID).find((plan :Map) => getEntityKeyId(plan) === diversionPlanEKID);
 
         /* Call getWorksitePlans() to find all worksite plans for current diversion plan */
