@@ -83,10 +83,12 @@ export const DIVERSION_PLAN_FQNS = {
   COMPLETED: new FullyQualifiedName('ol.completed'),
   CONCURRENT: new FullyQualifiedName('ol.concurrent'),
   CONSECUTIVE: new FullyQualifiedName('ol.consecutive'),
+  DATETIME_RECEIVED: new FullyQualifiedName('datetime.received'),
   NAME: new FullyQualifiedName('ol.name'),
   NOTES: new FullyQualifiedName('ol.notes'),
   ORIENTATION_DATETIME: new FullyQualifiedName('ol.orientationdatetime'),
   REQUIRED_HOURS: new FullyQualifiedName('ol.requiredhours'),
+  REQUIRED_HOURS_TEXT: new FullyQualifiedName('ol.requiredhourstext'),
 };
 
 /* ol.enrollment */

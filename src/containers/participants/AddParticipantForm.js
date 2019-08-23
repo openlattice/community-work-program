@@ -49,6 +49,7 @@ const {
 } = APP_TYPE_FQNS;
 const {
   COMPLETED,
+  DATETIME_RECEIVED,
   NAME,
   NOTES,
   REQUIRED_HOURS
@@ -108,6 +109,7 @@ class AddParticipantForm extends Component<Props, State> {
 
     const completedPTID :UUID = getPropertyTypeIdFromEdm(edm, COMPLETED);
     const datetimeCompletedPTID :UUID = getPropertyTypeIdFromEdm(edm, DATETIME_COMPLETED);
+    const datetimeReceivedPTID :UUID = getPropertyTypeIdFromEdm(edm, DATETIME_RECEIVED);
     const datetimeStartPTID :UUID = getPropertyTypeIdFromEdm(edm, DATETIME_START);
     const dobPTID :UUID = getPropertyTypeIdFromEdm(edm, DOB);
     const effectiveDatePTID :UUID = getPropertyTypeIdFromEdm(edm, EFFECTIVE_DATE);
@@ -121,6 +123,7 @@ class AddParticipantForm extends Component<Props, State> {
     return {
       [COMPLETED]: completedPTID,
       [DATETIME_COMPLETED]: datetimeCompletedPTID,
+      [DATETIME_RECEIVED]: datetimeReceivedPTID,
       [DATETIME_START]: datetimeStartPTID,
       [DOB]: dobPTID,
       [EFFECTIVE_DATE]: effectiveDatePTID,
@@ -204,13 +207,19 @@ class AddParticipantForm extends Component<Props, State> {
                 onChange={this.handleInputChange}
                 type="text" />
           </RowContent>
-        </FormRow>
-        <FormRow>
           <RowContent>
             <Label>Date of birth</Label>
             <DatePicker
                 name={getEntityAddressKey(0, PEOPLE, DOB)}
                 onChange={this.setDate(getEntityAddressKey(0, PEOPLE, DOB))} />
+          </RowContent>
+        </FormRow>
+        <FormRow>
+          <RowContent>
+            <Label>Sentence date</Label>
+            <DatePicker
+                name={getEntityAddressKey(0, DIVERSION_PLAN, DATETIME_RECEIVED)}
+                onChange={this.setDateTime(getEntityAddressKey(0, DIVERSION_PLAN, DATETIME_RECEIVED))} />
           </RowContent>
           <RowContent>
             <Label>Required hours</Label>
