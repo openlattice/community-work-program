@@ -87,12 +87,11 @@ const {
   APPOINTMENT,
   BASED_ON,
   CONTACT_INFORMATION,
-  COURT_PRETRIAL_CASES,
   DIVERSION_PLAN,
   ENROLLMENT_STATUS,
   INFRACTION_EVENT,
   INFRACTIONS,
-  MANUAL_PRETRIAL_CASES,
+  MANUAL_PRETRIAL_COURT_CASES,
   PEOPLE,
   REGISTERED_FOR,
   RESULTS_IN,
@@ -385,12 +384,11 @@ function* getCaseInfoWorker(action :SequenceAction) :Generator<*, *, *> {
     const { personEKID } = value;
     const app = yield select(getAppFromState);
     const peopleESID = getEntitySetIdFromApp(app, PEOPLE);
-    const casesESID = getEntitySetIdFromApp(app, COURT_PRETRIAL_CASES);
-    const manualCasesESID = getEntitySetIdFromApp(app, MANUAL_PRETRIAL_CASES);
+    const manualCourtCases = getEntitySetIdFromApp(app, MANUAL_PRETRIAL_COURT_CASES);
 
     const searchFilter :Object = {
       entityKeyIds: [personEKID],
-      destinationEntitySetIds: [casesESID, manualCasesESID],
+      destinationEntitySetIds: [manualCourtCases],
       sourceEntitySetIds: [],
     };
     response = yield call(
