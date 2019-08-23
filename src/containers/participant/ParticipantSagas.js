@@ -649,8 +649,8 @@ function* getWorksitePlansWorker(action :SequenceAction) :Generator<*, *, *> {
 
     const searchFilter :Object = {
       entityKeyIds: [diversionPlanEKID],
-      destinationEntitySetIds: [worksitePlanESID],
-      sourceEntitySetIds: [],
+      destinationEntitySetIds: [],
+      sourceEntitySetIds: [worksitePlanESID],
     };
     response = yield call(
       searchEntityNeighborsWithFilterWorker,
@@ -744,8 +744,8 @@ function* getEnrollmentStatusWorker(action :SequenceAction) :Generator<*, *, *> 
 
       const enrollmentFilter :Object = {
         entityKeyIds: diversionPlanEKIDs,
-        destinationEntitySetIds: [enrollmentStatusESID],
-        sourceEntitySetIds: [],
+        destinationEntitySetIds: [],
+        sourceEntitySetIds: [enrollmentStatusESID],
       };
       response = yield call(
         searchEntityNeighborsWithFilterWorker,

@@ -32,7 +32,6 @@ export const APP_TYPE_FQNS = {
   ENROLLMENT_STATUS: new FullyQualifiedName('app.enrollmentstatus'),
   FULFILLS: new FullyQualifiedName('app.fulfills'),
   HAS: new FullyQualifiedName('app.has'),
-  INCLUDES: new FullyQualifiedName('app.includes'),
   INFRACTIONS: new FullyQualifiedName('app.infractions'),
   IS: new FullyQualifiedName('app.is'),
   INFRACTION_EVENT: new FullyQualifiedName('app.infractionevent'),
@@ -45,6 +44,7 @@ export const APP_TYPE_FQNS = {
   OF_LENGTH: new FullyQualifiedName('app.oflength'),
   OPERATES: new FullyQualifiedName('app.operates'),
   ORGANIZATION: new FullyQualifiedName('app.organization'),
+  PART_OF: new FullyQualifiedName('app.partof'),
   PEOPLE: new FullyQualifiedName('app.people'),
   PROGRAM_OUTCOME: new FullyQualifiedName('app.programoutcome'),
   REGISTERED_FOR: new FullyQualifiedName('app.registeredfor'),
@@ -56,6 +56,7 @@ export const APP_TYPE_FQNS = {
   SENTENCES: new FullyQualifiedName('app.sentences'),
   STAFF: new FullyQualifiedName('app.staff'),
   SUBJECT_OF: new FullyQualifiedName('app.subjectof'),
+  WARRANT_REQUEST: new FullyQualifiedName('app.warrantrequest'),
   WORKSITE: new FullyQualifiedName('app.worksite'),
   WORKSITE_PLAN: new FullyQualifiedName('app.worksiteplan'),
 };

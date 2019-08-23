@@ -65,7 +65,6 @@ const {
   DIVERSION_PLAN,
   ENROLLMENT_STATUS,
   INFRACTION_EVENT,
-  INFRACTIONS,
   PEOPLE,
   WORKSITE_PLAN,
 } = APP_TYPE_FQNS;
@@ -170,8 +169,8 @@ function* getHoursWorkedWorker(action :SequenceAction) :Generator<*, *, *> {
       .toArray();
     const searchFilter = {
       entityKeyIds: diversionPlanEKIDs,
-      destinationEntitySetIds: [worksitePlanESID],
-      sourceEntitySetIds: [peopleESID],
+      destinationEntitySetIds: [],
+      sourceEntitySetIds: [peopleESID, worksitePlanESID],
     };
     response = yield call(
       searchEntityNeighborsWithFilterWorker,
@@ -306,8 +305,8 @@ function* getEnrollmentStatusesWorker(action :SequenceAction) :Generator<*, *, *
       const enrollmentStatusESID :UUID = getEntitySetIdFromApp(app, ENROLLMENT_STATUS);
       const enrollmentFilter :Object = {
         entityKeyIds: diversionPlanEKIDs,
-        destinationEntitySetIds: [enrollmentStatusESID],
-        sourceEntitySetIds: [],
+        destinationEntitySetIds: [],
+        sourceEntitySetIds: [enrollmentStatusESID],
       };
       response = yield call(
         searchEntityNeighborsWithFilterWorker,
