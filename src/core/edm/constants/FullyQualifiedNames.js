@@ -75,6 +75,11 @@ export const CASE_FQNS = {
   CASE_NUMBER_TEXT: new FullyQualifiedName('j.CaseNumberText'),
 };
 
+/* ol.encounter */
+export const CHECK_IN_FQNS = {
+  CHECKED_IN: new FullyQualifiedName('ol.checkedin'),
+};
+
 /* ol.contactinformation */
 export const CONTACT_INFO_FQNS = {
   CELL_PHONE: new FullyQualifiedName('contact.cellphone'),

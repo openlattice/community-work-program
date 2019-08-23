@@ -8,7 +8,9 @@ import {
   addInfraction,
   addNewDiversionPlanStatus,
   addWorksitePlan,
+  checkInForAppointment,
   createWorkAppointments,
+  getAppointmentCheckIns,
   getAllParticipantInfo,
   getCaseInfo,
   getContactInfo,
@@ -21,6 +23,7 @@ import {
   getWorkAppointments,
   getWorksiteByWorksitePlan,
   getWorksitePlans,
+  updateHoursWorked,
 } from './ParticipantActions';
 import { getEntityKeyId, getEntityProperties, getPropertyFqnFromEdm } from '../../utils/DataUtils';
 import { PERSON } from '../../utils/constants/ReduxStateConsts';
@@ -31,12 +34,14 @@ import {
   ENTITY_KEY_ID,
   INFRACTION_EVENT_FQNS,
   INFRACTION_FQNS,
+  WORKSITE_PLAN_FQNS,
 } from '../../core/edm/constants/FullyQualifiedNames';
 
 const { WORKSITE_PLAN } = APP_TYPE_FQNS;
 const { STATUS } = ENROLLMENT_STATUS_FQNS;
 const { TYPE } = INFRACTION_EVENT_FQNS;
 const { CATEGORY } = INFRACTION_FQNS;
+const { HOURS_WORKED } = WORKSITE_PLAN_FQNS;
 const {
   ACTIONS,
   ADD_INFRACTION_EVENT,
@@ -44,11 +49,14 @@ const {
   ADD_WORKSITE_PLAN,
   ADDRESS,
   CASE_NUMBER,
+  CHECK_INS_BY_APPOINTMENT,
+  CHECK_IN_FOR_APPOINTMENT,
   CREATE_WORK_APPOINTMENTS,
   DIVERSION_PLAN,
   EMAIL,
   ENROLLMENT_STATUS,
   ERRORS,
+  GET_APPOINTMENT_CHECK_INS,
   GET_ALL_PARTICIPANT_INFO,
   GET_CASE_INFO,
   GET_CONTACT_INFO,
@@ -67,6 +75,7 @@ const {
   PHONE,
   REQUEST_STATE,
   REQUIRED_HOURS,
+  UPDATE_HOURS_WORKED,
   VIOLATIONS,
   WARNINGS,
   WORKSITES_BY_WORKSITE_PLAN,
@@ -85,7 +94,13 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     [ADD_WORKSITE_PLAN]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
+    [CHECK_IN_FOR_APPOINTMENT]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
     [CREATE_WORK_APPOINTMENTS]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [GET_APPOINTMENT_CHECK_INS]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [GET_ALL_PARTICIPANT_INFO]: {
@@ -118,16 +133,22 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     [GET_WORK_APPOINTMENTS]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
+    [UPDATE_HOURS_WORKED]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
   },
   [ADDRESS]: '',
   [CASE_NUMBER]: List(),
+  [CHECK_INS_BY_APPOINTMENT]: Map(),
   [DIVERSION_PLAN]: Map(),
   [EMAIL]: '',
   [ENROLLMENT_STATUS]: Map(),
   [ERRORS]: {
     [ADD_INFRACTION_EVENT]: Map(),
     [ADD_NEW_DIVERSION_PLAN_STATUS]: Map(),
+    [CHECK_IN_FOR_APPOINTMENT]: Map(),
     [CREATE_WORK_APPOINTMENTS]: Map(),
+    [GET_APPOINTMENT_CHECK_INS]: Map(),
     [GET_ALL_PARTICIPANT_INFO]: Map(),
     [GET_CASE_INFO]: Map(),
     [GET_CONTACT_INFO]: Map(),
@@ -137,6 +158,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     // [GET_PARTICIPANT_ADDRESS]: Map(),
     [GET_PARTICIPANT_INFRACTIONS]: Map(),
     [GET_REQUIRED_HOURS]: Map(),
+    [UPDATE_HOURS_WORKED]: Map(),
   },
   [INFRACTIONS_INFO]: Map(),
   [INFRACTION_TYPES]: List(),
@@ -342,6 +364,60 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
       });
     }
 
+    case checkInForAppointment.case(action.type): {
+
+      return checkInForAppointment.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, CHECK_IN_FOR_APPOINTMENT, action.id], action)
+          .setIn([ACTIONS, CHECK_IN_FOR_APPOINTMENT, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+
+          const seqAction :SequenceAction = action;
+          const storedSeqAction :SequenceAction = state.getIn([ACTIONS, CHECK_IN_FOR_APPOINTMENT, seqAction.id]);
+
+          if (storedSeqAction) {
+
+            const successValue :Object = seqAction.value;
+            const {
+              appointmentEKID,
+              checkInDetailsESID,
+              checkInEKID,
+              checkInESID,
+              edm,
+            } = successValue;
+            const requestValue :Object = storedSeqAction.value;
+            const { entityData } = requestValue;
+
+            const storedCheckInEntity :Map = fromJS(entityData[checkInESID][0]);
+            const storedCheckInDetailsEntity :Map = fromJS(entityData[checkInDetailsESID][0]);
+
+            let newCheckIn :Map = Map();
+            storedCheckInEntity.forEach((value, id) => {
+              const propertyTypeFqn :FQN = getPropertyFqnFromEdm(edm, id);
+              newCheckIn = newCheckIn.set(propertyTypeFqn, value);
+            });
+            newCheckIn = newCheckIn.set(ENTITY_KEY_ID, checkInEKID);
+            const hoursWorked :number = storedCheckInDetailsEntity.getIn([HOURS_WORKED, 0]);
+            newCheckIn = newCheckIn.set(HOURS_WORKED, hoursWorked);
+
+            let checkInsByAppointment :Map = state.get(CHECK_INS_BY_APPOINTMENT);
+            checkInsByAppointment = checkInsByAppointment.set(appointmentEKID, newCheckIn);
+
+            return state
+              .set(CHECK_INS_BY_APPOINTMENT, checkInsByAppointment)
+              .setIn([ACTIONS, CHECK_IN_FOR_APPOINTMENT, REQUEST_STATE], RequestStates.SUCCESS);
+          }
+
+          return state
+            .setIn([ACTIONS, CHECK_IN_FOR_APPOINTMENT, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, CHECK_IN_FOR_APPOINTMENT, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, CHECK_IN_FOR_APPOINTMENT, action.id])
+      });
+    }
+
     case createWorkAppointments.case(action.type): {
 
       return createWorkAppointments.reducer(state, action, {
@@ -399,6 +475,41 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
         FAILURE: () => state
           .setIn([ACTIONS, CREATE_WORK_APPOINTMENTS, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, CREATE_WORK_APPOINTMENTS, action.id])
+      });
+    }
+
+    case getAppointmentCheckIns.case(action.type): {
+
+      return getAppointmentCheckIns.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, GET_APPOINTMENT_CHECK_INS, action.id], fromJS(action))
+          .setIn([ACTIONS, GET_APPOINTMENT_CHECK_INS, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+
+          if (!state.hasIn([ACTIONS, GET_APPOINTMENT_CHECK_INS, action.id])) {
+            return state;
+          }
+
+          const { value } = action;
+          if (value === null || value === undefined) {
+            return state;
+          }
+
+          return state
+            .set(CHECK_INS_BY_APPOINTMENT, value)
+            .setIn([ACTIONS, GET_APPOINTMENT_CHECK_INS, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => {
+
+          const { value } = action;
+
+          return state
+            .set(CHECK_INS_BY_APPOINTMENT, Map())
+            .setIn([ERRORS, GET_APPOINTMENT_CHECK_INS], value)
+            .setIn([ACTIONS, GET_APPOINTMENT_CHECK_INS, REQUEST_STATE], RequestStates.FAILURE);
+        },
+        FINALLY: () => state.deleteIn([ACTIONS, GET_APPOINTMENT_CHECK_INS, action.id])
       });
     }
 
@@ -818,6 +929,41 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
             .setIn([ACTIONS, GET_WORKSITE_BY_WORKSITE_PLAN, REQUEST_STATE], RequestStates.FAILURE);
         },
         FINALLY: () => state.deleteIn([ACTIONS, GET_WORKSITE_BY_WORKSITE_PLAN, action.id])
+      });
+    }
+
+    case updateHoursWorked.case(action.type): {
+
+      return updateHoursWorked.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, UPDATE_HOURS_WORKED, action.id], action)
+          .setIn([ACTIONS, UPDATE_HOURS_WORKED, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+
+          if (!state.hasIn([ACTIONS, UPDATE_HOURS_WORKED, action.id])) {
+            return state;
+          }
+
+          const { value } = action;
+          if (value === null || value === undefined) {
+            return state;
+          }
+
+          const worksitePlanEKID :UUID = getEntityKeyId(value);
+          let worksitePlans :List = state.get(WORKSITE_PLANS);
+          const worksitePlanToReplace :number = worksitePlans
+            .findKey((worksitePlan :Map) => worksitePlanEKID === getEntityKeyId(worksitePlan));
+          worksitePlans = worksitePlans.set(worksitePlanToReplace, value);
+
+          return state
+            .set(WORKSITE_PLANS, worksitePlans)
+            .setIn([ACTIONS, GET_WORKSITE_BY_WORKSITE_PLAN, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .set(WORKSITE_PLANS, List())
+          .setIn([ACTIONS, UPDATE_HOURS_WORKED, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, UPDATE_HOURS_WORKED, action.id]),
       });
     }
 
