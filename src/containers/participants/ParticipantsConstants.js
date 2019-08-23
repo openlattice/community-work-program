@@ -20,7 +20,7 @@ export const ALL_PARTICIPANTS_COLUMNS = [
 export const SORTABLE_PARTICIPANT_COLUMNS = {
   // COURT_TYPE: 'court type',
   NAME: 'name',
-  // SENT_END_DATE: 'sent. end date',
+  SENT_END_DATE: 'sent. end date',
   STATUS: 'status',
 };
 

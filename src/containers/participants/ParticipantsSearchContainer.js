@@ -2,7 +2,7 @@
 import React, { Component } from 'react';
 import styled from 'styled-components';
 import { List, Map } from 'immutable';
-// import { DateTime } from 'luxon';
+import { DateTime } from 'luxon';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { RequestStates } from 'redux-reqseq';
@@ -30,6 +30,7 @@ import { APP, PEOPLE, STATE } from '../../utils/constants/ReduxStateConsts';
 import { ENROLLMENT_STATUSES, INFRACTIONS_CONSTS } from '../../core/edm/constants/DataModelConsts';
 import {
   APP_TYPE_FQNS,
+  DIVERSION_PLAN_FQNS,
   ENROLLMENT_STATUS_FQNS,
   PEOPLE_FQNS,
 } from '../../core/edm/constants/FullyQualifiedNames';
@@ -44,6 +45,7 @@ const {
   INFRACTION_COUNTS_BY_PARTICIPANT,
   PARTICIPANTS,
 } = PEOPLE;
+const { DATETIME_RECEIVED } = DIVERSION_PLAN_FQNS;
 const { VIOLATION, WARNING } = INFRACTIONS_CONSTS;
 const { STATUS } = ENROLLMENT_STATUS_FQNS;
 const { FIRST_NAME, LAST_NAME } = PEOPLE_FQNS;
@@ -178,9 +180,9 @@ class ParticipantsSearchContainer extends Component<Props, State> {
     if (column === SORTABLE_PARTICIPANT_COLUMNS.NAME) {
       sortedPeople = this.sortByName(peopleList);
     }
-    // if (column === SORTABLE_PARTICIPANT_COLUMNS.SENT_END_DATE) {
-    //   sortedPeople = this.sortBySentenceEndDate(peopleList);
-    // }
+    if (column === SORTABLE_PARTICIPANT_COLUMNS.SENT_END_DATE) {
+      sortedPeople = this.sortBySentenceEndDate(peopleList);
+    }
     if (column === SORTABLE_PARTICIPANT_COLUMNS.STATUS) {
       sortedPeople = this.sortByStatus(peopleList);
     }
@@ -243,32 +245,33 @@ class ParticipantsSearchContainer extends Component<Props, State> {
     return sortedByName;
   }
 
-  // sortBySentenceEndDate = (people :List) => {
-  //   const { sentenceTermsByParticipant } = this.props;
-  //   const sortedBySentEndDate :List = people.sort((personA, personB) => {
-  //     const personAEKID :UUID = getEntityKeyId(personA);
-  //     const personBEKID :UUID = getEntityKeyId(personB);
-  //     const { [DATETIME_START]: personASentDate } = getEntityProperties(
-  //       sentenceTermsByParticipant.get(personAEKID), [DATETIME_START]
-  //     );
-  //     const { [DATETIME_START]: personBSentDate } = getEntityProperties(
-  //       sentenceTermsByParticipant.get(personBEKID), [DATETIME_START]
-  //     );
-  //     const sentEndDateA = DateTime.fromISO(personASentDate).plus({ days: 90 });
-  //     const sentEndDateB = DateTime.fromISO(personBSentDate).plus({ days: 90 });
-  //     if (sentEndDateB.isValid && !sentEndDateA.isValid) {
-  //       return -1;
-  //     }
-  //     if (sentEndDateA.isValid && !sentEndDateB.isValid) {
-  //       return 1;
-  //     }
-  //     if ((!sentEndDateA.isValid && !sentEndDateB.isValid) || (sentEndDateA.hasSame(sentEndDateB, 'millisecond'))) {
-  //       return 0;
-  //     }
-  //     return (sentEndDateA < sentEndDateB) ? 1 : -1;
-  //   });
-  //   return sortedBySentEndDate;
-  // }
+  sortBySentenceEndDate = (people :List) => {
+    const { currentDiversionPlansByParticipant } = this.props;
+
+    const sortedBySentEndDate :List = people.sort((personA, personB) => {
+      const personAEKID :UUID = getEntityKeyId(personA);
+      const personBEKID :UUID = getEntityKeyId(personB);
+      const { [DATETIME_RECEIVED]: personASentDate } = getEntityProperties(
+        currentDiversionPlansByParticipant.get(personAEKID), [DATETIME_RECEIVED]
+      );
+      const { [DATETIME_RECEIVED]: personBSentDate } = getEntityProperties(
+        currentDiversionPlansByParticipant.get(personBEKID), [DATETIME_RECEIVED]
+      );
+      const sentEndDateA = DateTime.fromISO(personASentDate).plus({ days: 90 });
+      const sentEndDateB = DateTime.fromISO(personBSentDate).plus({ days: 90 });
+      if (sentEndDateB.isValid && !sentEndDateA.isValid) {
+        return -1;
+      }
+      if (sentEndDateA.isValid && !sentEndDateB.isValid) {
+        return 1;
+      }
+      if ((!sentEndDateA.isValid && !sentEndDateB.isValid) || (sentEndDateA.hasSame(sentEndDateB, 'millisecond'))) {
+        return 0;
+      }
+      return (sentEndDateA < sentEndDateB) ? 1 : -1;
+    });
+    return sortedBySentEndDate;
+  }
 
   sortByStatus = (people :List) => {
     const { enrollmentByParticipant } = this.props;
