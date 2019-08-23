@@ -18,7 +18,6 @@ import {
   HeaderElement,
 } from './TableStyledComponents';
 import {
-  DATETIME_START,
   ENROLLMENT_STATUS_FQNS,
   ENTITY_KEY_ID,
 } from '../../core/edm/constants/FullyQualifiedNames';
@@ -70,7 +69,6 @@ type Props = {
   hours ? :Map;
   people :List;
   selectedSortOption ? :string;
-  sentenceTerms ? :Map;
   small :boolean;
   sortByColumn ? :(header :string) => void;
   totalTableItems :number;
@@ -91,7 +89,6 @@ const ParticipantsTable = ({
   hours,
   people,
   selectedSortOption,
-  sentenceTerms,
   small,
   sortByColumn,
   totalTableItems,
@@ -132,9 +129,7 @@ const ParticipantsTable = ({
           // Dates
           // if sentenceTerms is defined and we need to include sentenceData:
           // get sentenceDate from sentenceTerms, and if doesn't exist, return empty ''
-          const sentenceDate = (isDefined(sentenceTerms) && includeSentenceDate)
-            ? sentenceTerms.getIn([personEntityKeyId, DATETIME_START, 0], '')
-            : undefined;
+          const sentenceDate = '';
           // can only provide a valid sentenceEndDate if we have a valid sentenceDate
           // need to provide empty '' if sentenceEnd required but we don't have valid sentenceDate
           const sentenceDateObj = DateTime.fromISO(sentenceDate);
@@ -217,7 +212,6 @@ ParticipantsTable.defaultProps = {
   enrollment: undefined,
   hours: Map(),
   selectedSortOption: '',
-  sentenceTerms: Map(),
   sortByColumn: () => {},
   violations: undefined,
   warnings: undefined,

@@ -2,7 +2,7 @@
 import React, { Component } from 'react';
 import styled from 'styled-components';
 import { List, Map } from 'immutable';
-import { DateTime } from 'luxon';
+// import { DateTime } from 'luxon';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { RequestStates } from 'redux-reqseq';
@@ -43,7 +43,6 @@ const {
   HOURS_WORKED,
   INFRACTION_COUNTS_BY_PARTICIPANT,
   PARTICIPANTS,
-  SENTENCE_TERMS_BY_PARTICIPANT,
 } = PEOPLE;
 const { VIOLATION, WARNING } = INFRACTIONS_CONSTS;
 const { STATUS } = ENROLLMENT_STATUS_FQNS;
@@ -92,7 +91,6 @@ type Props = {
   hoursWorked :Map;
   infractionCountsByParticipant :Map;
   participants :List;
-  sentenceTermsByParticipant :Map;
 };
 
 type State = {
@@ -244,32 +242,32 @@ class ParticipantsSearchContainer extends Component<Props, State> {
     return sortedByName;
   }
 
-  sortBySentenceEndDate = (people :List) => {
-    const { sentenceTermsByParticipant } = this.props;
-    const sortedBySentEndDate :List = people.sort((personA, personB) => {
-      const personAEKID :UUID = getEntityKeyId(personA);
-      const personBEKID :UUID = getEntityKeyId(personB);
-      const { [DATETIME_START]: personASentDate } = getEntityProperties(
-        sentenceTermsByParticipant.get(personAEKID), [DATETIME_START]
-      );
-      const { [DATETIME_START]: personBSentDate } = getEntityProperties(
-        sentenceTermsByParticipant.get(personBEKID), [DATETIME_START]
-      );
-      const sentEndDateA = DateTime.fromISO(personASentDate).plus({ days: 90 });
-      const sentEndDateB = DateTime.fromISO(personBSentDate).plus({ days: 90 });
-      if (sentEndDateB.isValid && !sentEndDateA.isValid) {
-        return -1;
-      }
-      if (sentEndDateA.isValid && !sentEndDateB.isValid) {
-        return 1;
-      }
-      if ((!sentEndDateA.isValid && !sentEndDateB.isValid) || (sentEndDateA.hasSame(sentEndDateB, 'millisecond'))) {
-        return 0;
-      }
-      return (sentEndDateA < sentEndDateB) ? 1 : -1;
-    });
-    return sortedBySentEndDate;
-  }
+  // sortBySentenceEndDate = (people :List) => {
+  //   const { sentenceTermsByParticipant } = this.props;
+  //   const sortedBySentEndDate :List = people.sort((personA, personB) => {
+  //     const personAEKID :UUID = getEntityKeyId(personA);
+  //     const personBEKID :UUID = getEntityKeyId(personB);
+  //     const { [DATETIME_START]: personASentDate } = getEntityProperties(
+  //       sentenceTermsByParticipant.get(personAEKID), [DATETIME_START]
+  //     );
+  //     const { [DATETIME_START]: personBSentDate } = getEntityProperties(
+  //       sentenceTermsByParticipant.get(personBEKID), [DATETIME_START]
+  //     );
+  //     const sentEndDateA = DateTime.fromISO(personASentDate).plus({ days: 90 });
+  //     const sentEndDateB = DateTime.fromISO(personBSentDate).plus({ days: 90 });
+  //     if (sentEndDateB.isValid && !sentEndDateA.isValid) {
+  //       return -1;
+  //     }
+  //     if (sentEndDateA.isValid && !sentEndDateB.isValid) {
+  //       return 1;
+  //     }
+  //     if ((!sentEndDateA.isValid && !sentEndDateB.isValid) || (sentEndDateA.hasSame(sentEndDateB, 'millisecond'))) {
+  //       return 0;
+  //     }
+  //     return (sentEndDateA < sentEndDateB) ? 1 : -1;
+  //   });
+  //   return sortedBySentEndDate;
+  // }
 
   sortByStatus = (people :List) => {
     const { enrollmentByParticipant } = this.props;
@@ -296,7 +294,6 @@ class ParticipantsSearchContainer extends Component<Props, State> {
       getSentencesRequestState,
       hoursWorked,
       infractionCountsByParticipant,
-      sentenceTermsByParticipant
     } = this.props;
     const { showAddParticipant, peopleToRender, selectedSortOption } = this.state;
     const onSelectFunctions = Map().withMutations((map :Map) => {
@@ -341,7 +338,6 @@ class ParticipantsSearchContainer extends Component<Props, State> {
               hours={hoursWorked}
               people={peopleToRender}
               selectedSortOption={selectedSortOption}
-              sentenceTerms={sentenceTermsByParticipant}
               small
               sortByColumn={this.handleOnSort}
               totalTableItems={peopleToRender.count()}
@@ -368,7 +364,6 @@ const mapStateToProps = (state :Map<*, *>) => {
     [HOURS_WORKED]: people.get(HOURS_WORKED),
     [INFRACTION_COUNTS_BY_PARTICIPANT]: people.get(INFRACTION_COUNTS_BY_PARTICIPANT),
     [PARTICIPANTS]: people.get(PARTICIPANTS),
-    [SENTENCE_TERMS_BY_PARTICIPANT]: people.get(SENTENCE_TERMS_BY_PARTICIPANT),
   };
 };
 

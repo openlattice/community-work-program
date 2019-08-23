@@ -32,7 +32,6 @@ const {
   HOURS_WORKED,
   INFRACTION_COUNTS_BY_PARTICIPANT,
   PARTICIPANTS,
-  SENTENCE_TERMS_BY_PARTICIPANT,
 } = PEOPLE;
 
 const NEW_PARTICIPANTS_COLUMNS = ['NAME', 'SENT. DATE', 'ENROLL. DEADLINE', 'REQ. HRS.'];
@@ -77,7 +76,6 @@ type Props = {
   hoursWorked :Map;
   infractionCountsByParticipant :Map;
   participants :List;
-  sentenceTermsByParticipant :Map;
 };
 
 type State = {
@@ -129,7 +127,7 @@ class DashboardContainer extends Component<Props, State> {
 
   setNewParticipants = () => {
 
-    const { enrollmentByParticipant, participants, sentenceTermsByParticipant } = this.props;
+    const { enrollmentByParticipant, participants } = this.props;
     if (enrollmentByParticipant.count() > 0 && participants.count() > 0) {
 
       const newParticipants = participants.filter((participant :Map) => {
@@ -142,12 +140,9 @@ class DashboardContainer extends Component<Props, State> {
           .getIn([STATUS, 0]);
         const isAwaitingEnrollment :boolean = status === ENROLLMENT_STATUSES.AWAITING_CHECKIN
           || status === ENROLLMENT_STATUSES.AWAITING_ORIENTATION;
-        const hasActiveSentence :boolean = DateTime.local().diff(DateTime.fromISO(
-          sentenceTermsByParticipant.getIn([personEKID, DATETIME_START, 0])
-        ), 'days').days < 90;
 
         // if person was enrolled in CWP previously and is now enrolled again but doesn't have reflective status:
-        if (!isAwaitingEnrollment && hasActiveSentence) {
+        if (!isAwaitingEnrollment) {
           // filter out the people who are simply active in CWP:
           if (status === ENROLLMENT_STATUSES.ACTIVE
               || status === ENROLLMENT_STATUSES.ACTIVE_NONCOMPLIANT || status === ENROLLMENT_STATUSES.ACTIVE_REOPENED) {
@@ -216,7 +211,6 @@ class DashboardContainer extends Component<Props, State> {
       getInitializeAppRequestState,
       getSentencesRequestState,
       hoursWorked,
-      sentenceTermsByParticipant,
     } = this.props;
     const {
       newParticipants,
@@ -260,7 +254,6 @@ class DashboardContainer extends Component<Props, State> {
               hours={hoursWorked}
               people={newParticipants}
               small
-              sentenceTerms={sentenceTermsByParticipant}
               totalTableItems={newParticipants.count()}
               width="600px" />
           <RightWrapper>
@@ -280,7 +273,6 @@ class DashboardContainer extends Component<Props, State> {
                 hours={hoursWorked}
                 people={pendingCompletionReview}
                 small
-                sentenceTerms={sentenceTermsByParticipant}
                 totalTableItems={pendingCompletionReview.count()}
                 width="600px" />
             <ParticipantsTable
@@ -320,7 +312,6 @@ const mapStateToProps = (state :Map<*, *>) => {
     [HOURS_WORKED]: people.get(HOURS_WORKED),
     [INFRACTION_COUNTS_BY_PARTICIPANT]: people.get(INFRACTION_COUNTS_BY_PARTICIPANT),
     [PARTICIPANTS]: people.get(PARTICIPANTS),
-    [SENTENCE_TERMS_BY_PARTICIPANT]: people.get(SENTENCE_TERMS_BY_PARTICIPANT),
   };
 };
 

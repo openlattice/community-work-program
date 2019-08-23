@@ -34,7 +34,6 @@ import {
   GET_PARTICIPANT_ADDRESS,
   GET_PARTICIPANT_INFRACTIONS,
   GET_REQUIRED_HOURS,
-  GET_SENTENCE_TERM,
   GET_WORKSITE_BY_WORKSITE_PLAN,
   GET_WORKSITE_PLANS,
   GET_WORK_APPOINTMENTS,
@@ -51,7 +50,6 @@ import {
   getParticipantAddress,
   getParticipantInfractions,
   getRequiredHours,
-  getSentenceTerm,
   getWorkAppointments,
   getWorksiteByWorksitePlan,
   getWorksitePlans,
@@ -73,7 +71,6 @@ import {
   APP_TYPE_FQNS,
   CASE_FQNS,
   CONTACT_INFO_FQNS,
-  DATETIME_START,
   DIVERSION_PLAN_FQNS,
   ENROLLMENT_STATUS_FQNS,
   INFRACTION_EVENT_FQNS,
@@ -101,7 +98,6 @@ const {
   PEOPLE,
   REGISTERED_FOR,
   RESULTS_IN,
-  SENTENCE_TERM,
   WORKSITE,
   WORKSITE_PLAN,
 } = APP_TYPE_FQNS;
@@ -1093,67 +1089,6 @@ function* getRequiredHoursWatcher() :Generator<*, *, *> {
 
 /*
  *
- * ParticipantsActions.getSentenceTerm()
- *
- */
-
-function* getSentenceTermWorker(action :SequenceAction) :Generator<*, *, *> {
-
-  const { id, value } = action;
-  const workerResponse = {};
-  let response :Object = {};
-  let sentenceTerm :Map = Map();
-
-  try {
-    yield put(getSentenceTerm.request(id));
-    const { personEKID } = value;
-    if (value === null || value === undefined) {
-      throw ERR_ACTION_VALUE_NOT_DEFINED;
-    }
-    const app = yield select(getAppFromState);
-    const peopleESID = getEntitySetIdFromApp(app, PEOPLE);
-    const sentenceTermESID = getEntitySetIdFromApp(app, SENTENCE_TERM);
-
-    const searchFilter :Object = {
-      entityKeyIds: [personEKID],
-      destinationEntitySetIds: [sentenceTermESID],
-      sourceEntitySetIds: [],
-    };
-    response = yield call(
-      searchEntityNeighborsWithFilterWorker,
-      searchEntityNeighborsWithFilter({ entitySetId: peopleESID, filter: searchFilter })
-    );
-    if (response.error) {
-      throw response.error;
-    }
-
-    if (response.data[personEKID]) {
-      sentenceTerm = fromJS(response.data[personEKID])
-        .map((term :Map) => getNeighborDetails(term))
-        .sort((term1 :Map, term2 :Map) => term1.getIn([DATETIME_START, 0]) - term2.getIn([DATETIME_START, 0]))
-        .last();
-    }
-
-    yield put(getSentenceTerm.success(id, sentenceTerm));
-  }
-  catch (error) {
-    workerResponse.error = error;
-    LOG.error('caught exception in getSentenceTermWorker()', error);
-    yield put(getSentenceTerm.failure(id, error));
-  }
-  finally {
-    yield put(getSentenceTerm.finally(id));
-  }
-  return workerResponse;
-}
-
-function* getSentenceTermWatcher() :Generator<*, *, *> {
-
-  yield takeEvery(GET_SENTENCE_TERM, getSentenceTermWorker);
-}
-
-/*
- *
  * ParticipantsActions.getAllParticipantInfo()
  *
  */
@@ -1178,7 +1113,6 @@ function* getAllParticipantInfoWorker(action :SequenceAction) :Generator<*, *, *
       call(getParticipantInfractionsWorker, getParticipantInfractions({ personEKID })),
       call(getParticipantWorker, getParticipant({ personEKID })),
       call(getRequiredHoursWorker, getRequiredHours({ personEKID })),
-      call(getSentenceTermWorker, getSentenceTerm({ personEKID })),
       call(getWorksitesWorker, getWorksites()),
       call(getInfractionTypesWorker, getInfractionTypes()),
     ]);
@@ -1232,8 +1166,6 @@ export {
   getParticipantWorker,
   getRequiredHoursWatcher,
   getRequiredHoursWorker,
-  getSentenceTermWatcher,
-  getSentenceTermWorker,
   getWorkAppointmentsWatcher,
   getWorkAppointmentsWorker,
   getWorksiteByWorksitePlanWatcher,

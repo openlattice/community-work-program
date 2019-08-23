@@ -60,7 +60,6 @@ const {
   PHONE,
   REQUEST_STATE,
   REQUIRED_HOURS,
-  SENTENCE_TERM,
   VIOLATIONS,
   WARNINGS,
   WORK_APPOINTMENTS_BY_WORKSITE_PLAN,
@@ -143,7 +142,6 @@ type Props = {
   personEKID :string;
   phone :string;
   requiredHours :number;
-  sentenceTerm :Map;
   violations :List;
   warnings :List;
   workAppointmentsByWorksitePlan :Map;
@@ -254,7 +252,6 @@ class ParticipantProfile extends Component<Props, State> {
       participant,
       phone,
       requiredHours,
-      sentenceTerm,
       violations,
       warnings,
       workAppointmentsByWorksitePlan,
@@ -312,8 +309,7 @@ class ParticipantProfile extends Component<Props, State> {
                 status={status} />
             <InnerColumnWrapper>
               <KeyDates
-                  orientationDateTime={orientationDateTime}
-                  sentenceTerm={sentenceTerm} />
+                  orientationDateTime={orientationDateTime} />
               <InnerRowWrapper>
                 <CaseInfo caseNumber={caseNumber} hours={requiredHours} />
                 <InfractionsDisplay violations={violations} warnings={warnings} />
@@ -390,7 +386,6 @@ const mapStateToProps = (state :Map<*, *>) => {
     [PARTICIPANT]: person.get(PARTICIPANT),
     [PHONE]: person.get(PHONE),
     [REQUIRED_HOURS]: person.get(REQUIRED_HOURS),
-    [SENTENCE_TERM]: person.get(SENTENCE_TERM),
     [VIOLATIONS]: person.get(VIOLATIONS),
     [WARNINGS]: person.get(WARNINGS),
     [WORK_APPOINTMENTS_BY_WORKSITE_PLAN]: person.get(WORK_APPOINTMENTS_BY_WORKSITE_PLAN),

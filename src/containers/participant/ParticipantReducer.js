@@ -18,7 +18,6 @@ import {
   getParticipantAddress,
   getParticipantInfractions,
   getRequiredHours,
-  getSentenceTerm,
   getWorkAppointments,
   getWorksiteByWorksitePlan,
   getWorksitePlans,
@@ -59,7 +58,6 @@ const {
   GET_PARTICIPANT_ADDRESS,
   GET_PARTICIPANT_INFRACTIONS,
   GET_REQUIRED_HOURS,
-  GET_SENTENCE_TERM,
   GET_WORKSITE_BY_WORKSITE_PLAN,
   GET_WORKSITE_PLANS,
   GET_WORK_APPOINTMENTS,
@@ -69,7 +67,6 @@ const {
   PHONE,
   REQUEST_STATE,
   REQUIRED_HOURS,
-  SENTENCE_TERM,
   VIOLATIONS,
   WARNINGS,
   WORKSITES_BY_WORKSITE_PLAN,
@@ -118,9 +115,6 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     [GET_REQUIRED_HOURS]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
-    [GET_SENTENCE_TERM]: {
-      [REQUEST_STATE]: RequestStates.STANDBY
-    },
     [GET_WORK_APPOINTMENTS]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
@@ -143,14 +137,12 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     [GET_PARTICIPANT_ADDRESS]: Map(),
     [GET_PARTICIPANT_INFRACTIONS]: Map(),
     [GET_REQUIRED_HOURS]: Map(),
-    [GET_SENTENCE_TERM]: Map(),
   },
   [INFRACTIONS_INFO]: Map(),
   [INFRACTION_TYPES]: List(),
   [PARTICIPANT]: Map(),
   [PHONE]: '',
   [REQUIRED_HOURS]: 0,
-  [SENTENCE_TERM]: Map(),
   [VIOLATIONS]: List(),
   [WARNINGS]: List(),
   [WORKSITES_BY_WORKSITE_PLAN]: Map(),
@@ -721,41 +713,6 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
             .setIn([ACTIONS, GET_REQUIRED_HOURS, REQUEST_STATE], RequestStates.FAILURE);
         },
         FINALLY: () => state.deleteIn([ACTIONS, GET_REQUIRED_HOURS, action.id])
-      });
-    }
-
-    case getSentenceTerm.case(action.type): {
-
-      return getSentenceTerm.reducer(state, action, {
-
-        REQUEST: () => state
-          .setIn([ACTIONS, GET_SENTENCE_TERM, action.id], fromJS(action))
-          .setIn([ACTIONS, GET_SENTENCE_TERM, REQUEST_STATE], RequestStates.PENDING),
-        SUCCESS: () => {
-
-          if (!state.hasIn([ACTIONS, GET_SENTENCE_TERM, action.id])) {
-            return state;
-          }
-
-          const { value } = action;
-          if (value === null || value === undefined) {
-            return state;
-          }
-
-          return state
-            .set(SENTENCE_TERM, value)
-            .setIn([ACTIONS, GET_SENTENCE_TERM, REQUEST_STATE], RequestStates.SUCCESS);
-        },
-        FAILURE: () => {
-
-          const { value } = action;
-
-          return state
-            .set(SENTENCE_TERM, Map())
-            .setIn([ERRORS, GET_SENTENCE_TERM], value)
-            .setIn([ACTIONS, GET_SENTENCE_TERM, REQUEST_STATE], RequestStates.FAILURE);
-        },
-        FINALLY: () => state.deleteIn([ACTIONS, GET_SENTENCE_TERM, action.id])
       });
     }
 

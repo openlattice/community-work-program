@@ -48,7 +48,6 @@ const {
   MANUAL_SENTENCES,
   PEOPLE,
   RELATED_TO,
-  SENTENCE_TERM,
   SENTENCED_WITH
 } = APP_TYPE_FQNS;
 const {
@@ -100,7 +99,6 @@ class AddParticipantForm extends Component<Props, State> {
     const manualSentencesESID :UUID = getEntitySetIdFromApp(app, MANUAL_SENTENCES);
     const peopleESID :UUID = getEntitySetIdFromApp(app, PEOPLE);
     const relatedToESID :UUID = getEntitySetIdFromApp(app, RELATED_TO);
-    const sentenceTermESID :UUID = getEntitySetIdFromApp(app, SENTENCE_TERM);
     const sentencedWithESID :UUID = getEntitySetIdFromApp(app, SENTENCED_WITH);
 
     return {
@@ -111,7 +109,6 @@ class AddParticipantForm extends Component<Props, State> {
       [PEOPLE]: peopleESID,
       [RELATED_TO]: relatedToESID,
       [SENTENCED_WITH]: sentencedWithESID,
-      [SENTENCE_TERM]: sentenceTermESID,
     };
   }
 
@@ -168,7 +165,6 @@ class AddParticipantForm extends Component<Props, State> {
 
     associations.push([MANUAL_SENTENCED_WITH, 0, PEOPLE, 0, DIVERSION_PLAN, {}]);
     associations.push([RELATED_TO, 0, DIVERSION_PLAN, 0, ENROLLMENT_STATUS, {}]);
-    associations.push([MANUAL_SENTENCED_WITH, 0, PEOPLE, 0, SENTENCE_TERM, {}]);
     associations.push([SENTENCED_WITH, 0, PEOPLE, 0, MANUAL_SENTENCES, {}]);
 
     // required hours is saved as a string and needs to be converted to number:
@@ -220,19 +216,13 @@ class AddParticipantForm extends Component<Props, State> {
                 onChange={this.handleInputChange}
                 type="text" />
           </RowContent>
+        </FormRow>
+        <FormRow>
           <RowContent>
             <Label>Date of birth</Label>
             <DatePicker
                 name={getEntityAddressKey(0, PEOPLE, DOB)}
                 onChange={this.setDate(getEntityAddressKey(0, PEOPLE, DOB))} />
-          </RowContent>
-        </FormRow>
-        <FormRow>
-          <RowContent>
-            <Label>Sentence date</Label>
-            <DatePicker
-                name={getEntityAddressKey(0, SENTENCE_TERM, DATETIME_START)}
-                onChange={this.setDateTime(getEntityAddressKey(0, SENTENCE_TERM, DATETIME_START))} />
           </RowContent>
           <RowContent>
             <Label>Required hours</Label>

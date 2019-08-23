@@ -28,13 +28,11 @@ import {
   GET_INFRACTIONS,
   GET_PARTICIPANTS,
   GET_SENTENCES,
-  GET_SENTENCE_TERMS,
   addParticipant,
   getEnrollmentStatuses,
   getHoursWorked,
   getInfractions,
   getParticipants,
-  getSentenceTerms,
   getSentences,
 } from './ParticipantsActions';
 import { submitDataGraph } from '../../core/sagas/data/DataActions';
@@ -50,7 +48,6 @@ import {
 import { STATE } from '../../utils/constants/ReduxStateConsts';
 import {
   APP_TYPE_FQNS,
-  DATETIME_START,
   DIVERSION_PLAN_FQNS,
   ENROLLMENT_STATUS_FQNS,
   INFRACTION_FQNS,
@@ -72,7 +69,6 @@ const {
   MANUAL_SENTENCES,
   PEOPLE,
   SENTENCES,
-  SENTENCE_TERM,
   WORKSITE_PLAN,
 } = APP_TYPE_FQNS;
 const { SENTENCE_CONDITIONS } = SENTENCE_FQNS;
@@ -113,7 +109,6 @@ function* addParticipantWorker(action :SequenceAction) :Generator<*, *, *> {
     const peopleESID :UUID = getEntitySetIdFromApp(app, PEOPLE);
     const personEKID :UUID = entityKeyIds[peopleESID][0];
     const manualSentenceESID :UUID = getEntitySetIdFromApp(app, MANUAL_SENTENCES);
-    const sentenceTermESID :UUID = getEntitySetIdFromApp(app, SENTENCE_TERM);
     const diversionPlanESID :UUID = getEntitySetIdFromApp(app, DIVERSION_PLAN);
 
     yield put(addParticipant.success(id, {
@@ -122,7 +117,6 @@ function* addParticipantWorker(action :SequenceAction) :Generator<*, *, *> {
       manualSentenceESID,
       personEKID,
       peopleESID,
-      sentenceTermESID,
     }));
   }
   catch (error) {
@@ -478,63 +472,6 @@ function* getInfractionsWatcher() :Generator<*, *, *> {
 
 /*
  *
- * ParticipantsActions.getSentenceTerms()
- *
- */
-function* getSentenceTermsWorker(action :SequenceAction) :Generator<*, *, *> {
-
-  const { id, value } = action;
-  if (value === null || value === undefined) {
-    yield put(getHoursWorked.failure(id, ERR_ACTION_VALUE_NOT_DEFINED));
-    return;
-  }
-  let response :Object = {};
-
-  try {
-    yield put(getSentenceTerms.request(id));
-    const { participants, peopleESID } = value;
-
-    const app = yield select(getAppFromState);
-    const participantEKIDs :UUID[] = participants
-      .map((participant :Map) => getEntityKeyId(participant))
-      .toJS();
-    const sentenceTermESID :UUID = getEntitySetIdFromApp(app, SENTENCE_TERM);
-    const searchFilter = {
-      entityKeyIds: participantEKIDs,
-      destinationEntitySetIds: [sentenceTermESID],
-      sourceEntitySetIds: [],
-    };
-    response = yield call(
-      searchEntityNeighborsWithFilterWorker,
-      searchEntityNeighborsWithFilter({ entitySetId: peopleESID, filter: searchFilter })
-    );
-    if (response.error) {
-      throw response.error;
-    }
-    const sentenceTermsMap :Map = fromJS(response.data)
-      .map((terms :List) => terms
-        .map((term :Map) => getNeighborDetails(term))
-        .sort((term1 :Map, term2 :Map) => term1.getIn([DATETIME_START, 0]) - term2.getIn([DATETIME_START, 0]))
-        .last());
-
-    yield put(getSentenceTerms.success(id, sentenceTermsMap));
-  }
-  catch (error) {
-    LOG.error('caught exception in getSentenceTermsWorker()', error);
-    yield put(getSentenceTerms.failure(id, error));
-  }
-  finally {
-    yield put(getSentenceTerms.finally(id));
-  }
-}
-
-function* getSentenceTermsWatcher() :Generator<*, *, *> {
-
-  yield takeEvery(GET_SENTENCE_TERMS, getSentenceTermsWorker);
-}
-
-/*
- *
  * ParticipantsActions.getParticipants()
  *
  */
@@ -608,7 +545,6 @@ function* getParticipantsWorker(action :SequenceAction) :Generator<*, *, *> {
     if (participants.count() > 0) {
       const params = { participants, peopleESID };
       yield all([
-        call(getSentenceTermsWorker, getSentenceTerms(params)),
         call(getEnrollmentStatusesWorker, getEnrollmentStatuses(params)),
         call(getInfractionsWorker, getInfractions(params)),
         // call(getHoursWorkedWorker, getHoursWorked(params))
@@ -711,6 +647,4 @@ export {
   getParticipantsWorker,
   getSentencesWatcher,
   getSentencesWorker,
-  getSentenceTermsWatcher,
-  getSentenceTermsWorker,
 };
