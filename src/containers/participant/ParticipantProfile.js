@@ -44,7 +44,7 @@ import {
   WORKSITES
 } from '../../utils/constants/ReduxStateConsts';
 
-const { ORIENTATION_DATETIME } = DIVERSION_PLAN_FQNS;
+const { DATETIME_RECEIVED, ORIENTATION_DATETIME } = DIVERSION_PLAN_FQNS;
 const { STATUS } = ENROLLMENT_STATUS_FQNS;
 const { FIRST_NAME, LAST_NAME } = PEOPLE_FQNS;
 const { NAME } = WORKSITE_FQNS;
@@ -283,7 +283,10 @@ class ParticipantProfile extends Component<Props, State> {
     if (!isDefined(status)) status = ENROLLMENT_STATUSES.AWAITING_CHECKIN;
 
     const diversionPlanEKID :UUID = getEntityKeyId(diversionPlan);
-    const { [ORIENTATION_DATETIME]: orientationDateTime } = getEntityProperties(diversionPlan, [ORIENTATION_DATETIME]);
+    const {
+      [DATETIME_RECEIVED]: sentenceDate,
+      [ORIENTATION_DATETIME]: orientationDateTime
+    } = getEntityProperties(diversionPlan, [DATETIME_RECEIVED, ORIENTATION_DATETIME]);
 
     return (
       <ProfileWrapper>
@@ -309,7 +312,8 @@ class ParticipantProfile extends Component<Props, State> {
                 status={status} />
             <InnerColumnWrapper>
               <KeyDates
-                  orientationDateTime={orientationDateTime} />
+                  orientationDateTime={orientationDateTime}
+                  sentenceDateTime={sentenceDate} />
               <InnerRowWrapper>
                 <CaseInfo caseNumber={caseNumber} hours={requiredHours} />
                 <InfractionsDisplay violations={violations} warnings={warnings} />

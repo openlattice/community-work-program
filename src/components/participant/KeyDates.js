@@ -23,13 +23,13 @@ const DatesWrapper = styled.div`
 
 type Props = {
   orientationDateTime :string;
+  sentenceDateTime :string;
 };
 
-const KeyDates = ({ orientationDateTime } :Props) => {
+const KeyDates = ({ orientationDateTime, sentenceDateTime } :Props) => {
 
-  const sentDate = '';
-  const sentenceDate = sentDate ? formatAsDate(sentDate) : '----';
-  const sentenceDateObj = DateTime.fromISO(sentDate);
+  const sentenceDate = sentenceDateTime ? formatAsDate(sentenceDateTime) : '----';
+  const sentenceDateObj = DateTime.fromISO(sentenceDateTime);
   const checkInDeadline = sentenceDateObj.isValid
     ? sentenceDateObj.plus({ hours: 48 }).toLocaleString()
     : '----';
