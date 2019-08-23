@@ -75,7 +75,6 @@ import {
   ENROLLMENT_STATUS_FQNS,
   INFRACTION_EVENT_FQNS,
   INFRACTION_FQNS,
-  LOCATION_FQNS,
 } from '../../core/edm/constants/FullyQualifiedNames';
 import { INFRACTIONS_CONSTS } from '../../core/edm/constants/DataModelConsts';
 
@@ -93,7 +92,6 @@ const {
   ENROLLMENT_STATUS,
   INFRACTION_EVENT,
   INFRACTIONS,
-  LOCATION,
   MANUAL_PRETRIAL_CASES,
   PEOPLE,
   REGISTERED_FOR,
@@ -110,7 +108,6 @@ const { REQUIRED_HOURS } = DIVERSION_PLAN_FQNS;
 const { EFFECTIVE_DATE, STATUS } = ENROLLMENT_STATUS_FQNS;
 const { CATEGORY } = INFRACTION_FQNS;
 const { TYPE } = INFRACTION_EVENT_FQNS;
-const { UNPARSED_ADDRESS } = LOCATION_FQNS;
 
 const getAppFromState = state => state.get(STATE.APP, Map());
 
@@ -809,59 +806,65 @@ function* getEnrollmentStatusWatcher() :Generator<*, *, *> {
  *
  */
 
-function* getParticipantAddressWorker(action :SequenceAction) :Generator<*, *, *> {
+// function* getParticipantAddressWorker(action :SequenceAction) :Generator<*, *, *> {
+//
+//   const { id, value } = action;
+//   const workerResponse = {};
+//   let response :Object = {};
+//   let address :string = '';
+//
+//   try {
+//     yield put(getParticipantAddress.request(id));
+//     const { personEKID } = value;
+//     if (value === null || value === undefined) {
+//       throw ERR_ACTION_VALUE_NOT_DEFINED;
+//     }
+//     const app = yield select(getAppFromState);
+//     const peopleESID = getEntitySetIdFromApp(app, PEOPLE);
+//     const locationESID = getEntitySetIdFromApp(app, LOCATION);
+//
+//     const searchFilter :Object = {
+//       entityKeyIds: [personEKID],
+//       destinationEntitySetIds: [locationESID],
+//       sourceEntitySetIds: [],
+//     };
+//     response = yield call(
+//       searchEntityNeighborsWithFilterWorker,
+//       searchEntityNeighborsWithFilter({ entitySetId: peopleESID, filter: searchFilter })
+//     );
+//     if (response.error) {
+//       throw response.error;
+//     }
+//     // TODO: handle case of having multiple addresses for a person
+//     if (response.data[personEKID]) {
+//       address = fromJS(response.data[personEKID])
+//         .map((locationNeighbor :Map) => getNeighborDetails(locationNeighbor))
+//         .getIn([0, UNPARSED_ADDRESS, 0]);
+//     }
+//
+//     yield put(getParticipantAddress.success(id, address));
+//   }
+//   catch (error) {
+//     workerResponse.error = error;
+//     LOG.error('caught exception in getParticipantAddressWorker()', error);
+//     yield put(getParticipantAddress.failure(id, error));
+//   }
+//   finally {
+//     yield put(getParticipantAddress.finally(id));
+//   }
+//   return workerResponse;
+// }
+//
+// function* getParticipantAddressWatcher() :Generator<*, *, *> {
+//
+//   yield takeEvery(GET_PARTICIPANT_ADDRESS, getParticipantAddressWorker);
+// }
 
-  const { id, value } = action;
-  const workerResponse = {};
-  let response :Object = {};
-  let address :string = '';
-
-  try {
-    yield put(getParticipantAddress.request(id));
-    const { personEKID } = value;
-    if (value === null || value === undefined) {
-      throw ERR_ACTION_VALUE_NOT_DEFINED;
-    }
-    const app = yield select(getAppFromState);
-    const peopleESID = getEntitySetIdFromApp(app, PEOPLE);
-    const locationESID = getEntitySetIdFromApp(app, LOCATION);
-
-    const searchFilter :Object = {
-      entityKeyIds: [personEKID],
-      destinationEntitySetIds: [locationESID],
-      sourceEntitySetIds: [],
-    };
-    response = yield call(
-      searchEntityNeighborsWithFilterWorker,
-      searchEntityNeighborsWithFilter({ entitySetId: peopleESID, filter: searchFilter })
-    );
-    if (response.error) {
-      throw response.error;
-    }
-    // TODO: handle case of having multiple addresses for a person
-    if (response.data[personEKID]) {
-      address = fromJS(response.data[personEKID])
-        .map((locationNeighbor :Map) => getNeighborDetails(locationNeighbor))
-        .getIn([0, UNPARSED_ADDRESS, 0]);
-    }
-
-    yield put(getParticipantAddress.success(id, address));
-  }
-  catch (error) {
-    workerResponse.error = error;
-    LOG.error('caught exception in getParticipantAddressWorker()', error);
-    yield put(getParticipantAddress.failure(id, error));
-  }
-  finally {
-    yield put(getParticipantAddress.finally(id));
-  }
-  return workerResponse;
-}
-
-function* getParticipantAddressWatcher() :Generator<*, *, *> {
-
-  yield takeEvery(GET_PARTICIPANT_ADDRESS, getParticipantAddressWorker);
-}
+/*
+ *
+ * ParticipantsActions.getInfractionTypes()
+ *
+ */
 
 function* getInfractionTypesWorker(action :SequenceAction) :Generator<*, *, *> {
 
@@ -1109,7 +1112,7 @@ function* getAllParticipantInfoWorker(action :SequenceAction) :Generator<*, *, *
       call(getCaseInfoWorker, getCaseInfo({ personEKID })),
       call(getContactInfoWorker, getContactInfo({ personEKID })),
       call(getEnrollmentStatusWorker, getEnrollmentStatus({ personEKID })),
-      call(getParticipantAddressWorker, getParticipantAddress({ personEKID })),
+      // call(getParticipantAddressWorker, getParticipantAddress({ personEKID })),
       call(getParticipantInfractionsWorker, getParticipantInfractions({ personEKID })),
       call(getParticipantWorker, getParticipant({ personEKID })),
       call(getRequiredHoursWorker, getRequiredHours({ personEKID })),
@@ -1158,8 +1161,6 @@ export {
   getEnrollmentStatusWorker,
   getInfractionTypesWatcher,
   getInfractionTypesWorker,
-  getParticipantAddressWatcher,
-  getParticipantAddressWorker,
   getParticipantInfractionsWatcher,
   getParticipantInfractionsWorker,
   getParticipantWatcher,

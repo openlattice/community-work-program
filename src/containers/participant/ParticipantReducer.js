@@ -15,7 +15,7 @@ import {
   getEnrollmentStatus,
   getInfractionTypes,
   getParticipant,
-  getParticipantAddress,
+  // getParticipantAddress,
   getParticipantInfractions,
   getRequiredHours,
   getWorkAppointments,
@@ -55,7 +55,7 @@ const {
   GET_ENROLLMENT_STATUS,
   GET_INFRACTION_TYPES,
   GET_PARTICIPANT,
-  GET_PARTICIPANT_ADDRESS,
+  // GET_PARTICIPANT_ADDRESS,
   GET_PARTICIPANT_INFRACTIONS,
   GET_REQUIRED_HOURS,
   GET_WORKSITE_BY_WORKSITE_PLAN,
@@ -106,9 +106,9 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     [GET_PARTICIPANT]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
-    [GET_PARTICIPANT_ADDRESS]: {
-      [REQUEST_STATE]: RequestStates.STANDBY
-    },
+    // [GET_PARTICIPANT_ADDRESS]: {
+    //   [REQUEST_STATE]: RequestStates.STANDBY
+    // },
     [GET_PARTICIPANT_INFRACTIONS]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
@@ -134,7 +134,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     [GET_ENROLLMENT_STATUS]: Map(),
     [GET_INFRACTION_TYPES]: Map(),
     [GET_PARTICIPANT]: Map(),
-    [GET_PARTICIPANT_ADDRESS]: Map(),
+    // [GET_PARTICIPANT_ADDRESS]: Map(),
     [GET_PARTICIPANT_INFRACTIONS]: Map(),
     [GET_REQUIRED_HOURS]: Map(),
   },
@@ -646,40 +646,40 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
       });
     }
 
-    case getParticipantAddress.case(action.type): {
-
-      return getParticipantAddress.reducer(state, action, {
-
-        REQUEST: () => state
-          .setIn([ACTIONS, GET_PARTICIPANT_ADDRESS, action.id], fromJS(action))
-          .setIn([ACTIONS, GET_PARTICIPANT_ADDRESS, REQUEST_STATE], RequestStates.PENDING),
-        SUCCESS: () => {
-
-          if (!state.hasIn([ACTIONS, GET_PARTICIPANT_ADDRESS, action.id])) {
-            return state;
-          }
-
-          const { value } = action;
-          if (value === null || value === undefined) {
-            return state;
-          }
-
-          return state
-            .set(ADDRESS, value)
-            .setIn([ACTIONS, GET_PARTICIPANT_ADDRESS, REQUEST_STATE], RequestStates.SUCCESS);
-        },
-        FAILURE: () => {
-
-          const { value } = action;
-
-          return state
-            .set(ADDRESS, '')
-            .setIn([ERRORS, GET_PARTICIPANT_ADDRESS], value)
-            .setIn([ACTIONS, GET_PARTICIPANT_ADDRESS, REQUEST_STATE], RequestStates.FAILURE);
-        },
-        FINALLY: () => state.deleteIn([ACTIONS, GET_PARTICIPANT_ADDRESS, action.id])
-      });
-    }
+    // case getParticipantAddress.case(action.type): {
+    //
+    //   return getParticipantAddress.reducer(state, action, {
+    //
+    //     REQUEST: () => state
+    //       .setIn([ACTIONS, GET_PARTICIPANT_ADDRESS, action.id], fromJS(action))
+    //       .setIn([ACTIONS, GET_PARTICIPANT_ADDRESS, REQUEST_STATE], RequestStates.PENDING),
+    //     SUCCESS: () => {
+    //
+    //       if (!state.hasIn([ACTIONS, GET_PARTICIPANT_ADDRESS, action.id])) {
+    //         return state;
+    //       }
+    //
+    //       const { value } = action;
+    //       if (value === null || value === undefined) {
+    //         return state;
+    //       }
+    //
+    //       return state
+    //         .set(ADDRESS, value)
+    //         .setIn([ACTIONS, GET_PARTICIPANT_ADDRESS, REQUEST_STATE], RequestStates.SUCCESS);
+    //     },
+    //     FAILURE: () => {
+    //
+    //       const { value } = action;
+    //
+    //       return state
+    //         .set(ADDRESS, '')
+    //         .setIn([ERRORS, GET_PARTICIPANT_ADDRESS], value)
+    //         .setIn([ACTIONS, GET_PARTICIPANT_ADDRESS, REQUEST_STATE], RequestStates.FAILURE);
+    //     },
+    //     FINALLY: () => state.deleteIn([ACTIONS, GET_PARTICIPANT_ADDRESS, action.id])
+    //   });
+    // }
 
     case getRequiredHours.case(action.type): {
 
