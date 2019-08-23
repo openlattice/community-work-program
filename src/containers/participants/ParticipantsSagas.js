@@ -41,7 +41,6 @@ import {
   getEntityKeyId,
   getEntityProperties,
   getEntitySetIdFromApp,
-  getFirstNeighborValue,
   getNeighborDetails,
   getNeighborESID,
   sortEntitiesByDateProperty,
@@ -55,7 +54,7 @@ import {
   WORKSITE_PLAN_FQNS,
 } from '../../core/edm/constants/FullyQualifiedNames';
 import { isDefined } from '../../utils/LangUtils';
-import { INFRACTIONS_CONSTS, NEIGHBOR_ENTITY_SET } from '../../core/edm/constants/DataModelConsts';
+import { INFRACTIONS_CONSTS } from '../../core/edm/constants/DataModelConsts';
 
 const { getEntitySetData } = DataApiActions;
 const { getEntitySetDataWorker } = DataApiSagas;
@@ -65,6 +64,7 @@ const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
 const {
   DIVERSION_PLAN,
   ENROLLMENT_STATUS,
+  INFRACTION_EVENT,
   INFRACTIONS,
   PEOPLE,
   WORKSITE_PLAN,
@@ -405,11 +405,11 @@ function* getInfractionsWorker(action :SequenceAction) :Generator<*, *, *> {
       .map((participant :Map) => getEntityKeyId(participant))
       .toJS();
     const app = yield select(getAppFromState);
-    const infractionsESID :UUID = getEntitySetIdFromApp(app, INFRACTIONS);
+    const infractionEventESID :UUID = getEntitySetIdFromApp(app, INFRACTION_EVENT);
 
     const searchFilter = {
       entityKeyIds: participantEKIDs,
-      destinationEntitySetIds: [infractionsESID],
+      destinationEntitySetIds: [infractionEventESID],
       sourceEntitySetIds: [],
     };
     response = yield call(
@@ -518,7 +518,6 @@ function* getParticipantsWorker(action :SequenceAction) :Generator<*, *, *> {
       yield all([
         call(getEnrollmentStatusesWorker, getEnrollmentStatuses({ allDiversionPlansByParticipant })),
         call(getInfractionsWorker, getInfractions({ participants, peopleESID })),
-        // call(getHoursWorkedWorker, getHoursWorked({ diversionPlanESID, allDiversionPlansByParticipant, peopleESID })),
       ]);
     }
 
