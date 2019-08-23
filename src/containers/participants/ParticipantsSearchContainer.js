@@ -30,7 +30,6 @@ import { APP, PEOPLE, STATE } from '../../utils/constants/ReduxStateConsts';
 import { ENROLLMENT_STATUSES, INFRACTIONS_CONSTS } from '../../core/edm/constants/DataModelConsts';
 import {
   APP_TYPE_FQNS,
-  DATETIME_START,
   ENROLLMENT_STATUS_FQNS,
   PEOPLE_FQNS,
 } from '../../core/edm/constants/FullyQualifiedNames';
@@ -39,6 +38,7 @@ import {
  * constants
  */
 const {
+  CURRENT_DIVERSION_PLANS_BY_PARTICIPANT,
   ENROLLMENT_BY_PARTICIPANT,
   HOURS_WORKED,
   INFRACTION_COUNTS_BY_PARTICIPANT,
@@ -85,6 +85,7 @@ type Props = {
     goToRoute :RequestSequence;
   };
   app :Map;
+  currentDiversionPlansByParticipant :Map;
   enrollmentByParticipant :Map;
   getInitializeAppRequestState :RequestState;
   getDiversionPlansRequestState :RequestState;
@@ -289,6 +290,7 @@ class ParticipantsSearchContainer extends Component<Props, State> {
 
   render() {
     const {
+      currentDiversionPlansByParticipant,
       enrollmentByParticipant,
       getInitializeAppRequestState,
       getDiversionPlansRequestState,
@@ -334,6 +336,7 @@ class ParticipantsSearchContainer extends Component<Props, State> {
                 includeWorkedHours: true
               }}
               courtType=""
+              currentDiversionPlansMap={currentDiversionPlansByParticipant}
               enrollment={enrollmentByParticipant}
               handleSelect={this.handleOnSelectPerson}
               hours={hoursWorked}
@@ -359,6 +362,7 @@ const mapStateToProps = (state :Map<*, *>) => {
   const people = state.get(STATE.PEOPLE);
   return {
     app,
+    [CURRENT_DIVERSION_PLANS_BY_PARTICIPANT]: people.get(CURRENT_DIVERSION_PLANS_BY_PARTICIPANT),
     [ENROLLMENT_BY_PARTICIPANT]: people.get(ENROLLMENT_BY_PARTICIPANT),
     getInitializeAppRequestState: app.getIn([APP.ACTIONS, APP.INITIALIZE_APPLICATION, APP.REQUEST_STATE]),
     getDiversionPlansRequestState: people.getIn([PEOPLE.ACTIONS, PEOPLE.GET_DIVERSION_PLANS, PEOPLE.REQUEST_STATE]),

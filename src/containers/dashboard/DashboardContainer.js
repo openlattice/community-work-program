@@ -21,20 +21,22 @@ import {
 } from '../../core/style/Sizes';
 import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
 import { ENROLLMENT_STATUSES, HOURS_CONSTS, INFRACTIONS_CONSTS } from '../../core/edm/constants/DataModelConsts';
-import { DATETIME_START, ENROLLMENT_STATUS_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { DIVERSION_PLAN_FQNS, ENROLLMENT_STATUS_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { APP, PEOPLE, STATE } from '../../utils/constants/ReduxStateConsts';
 
 /* constants */
+const { DATETIME_RECEIVED } = DIVERSION_PLAN_FQNS;
 const { STATUS } = ENROLLMENT_STATUS_FQNS;
 const { REQUIRED, WORKED } = HOURS_CONSTS;
 const {
+  CURRENT_DIVERSION_PLANS_BY_PARTICIPANT,
   ENROLLMENT_BY_PARTICIPANT,
   HOURS_WORKED,
   INFRACTION_COUNTS_BY_PARTICIPANT,
   PARTICIPANTS,
 } = PEOPLE;
 
-const NEW_PARTICIPANTS_COLUMNS = ['NAME', 'SENT. DATE', 'ENROLL. DEADLINE', 'REQ. HRS.'];
+const NEW_PARTICIPANTS_COLUMNS = ['NAME', 'SENT. DATE', 'CHECK-IN DEADLINE', 'REQ. HRS.'];
 const PENDING_PARTICIPANTS_COLUMNS = ['NAME', 'SENT. DATE', 'REQ. HRS.'];
 const VIOLATIONS_WATCH_COLUMNS = ['NAME', '# OF VIO.', 'HRS. SERVED'];
 
@@ -70,6 +72,7 @@ type Props = {
     goToRoute :RequestSequence;
   };
   app :Map;
+  currentDiversionPlansByParticipant :Map;
   enrollmentByParticipant :Map;
   getInitializeAppRequestState :RequestState;
   getDiversionPlansRequestState :RequestState;
@@ -208,6 +211,7 @@ class DashboardContainer extends Component<Props, State> {
 
   render() {
     const {
+      currentDiversionPlansByParticipant,
       getInitializeAppRequestState,
       getDiversionPlansRequestState,
       hoursWorked,
@@ -251,6 +255,7 @@ class DashboardContainer extends Component<Props, State> {
                 includeStartDate: false,
                 includeWorkedHours: false
               }}
+              currentDiversionPlansMap={currentDiversionPlansByParticipant}
               handleSelect={this.handleOnSelectPerson}
               hours={hoursWorked}
               people={newParticipants}
@@ -270,6 +275,7 @@ class DashboardContainer extends Component<Props, State> {
                   includeStartDate: false,
                   includeWorkedHours: false
                 }}
+                currentDiversionPlansMap={currentDiversionPlansByParticipant}
                 handleSelect={this.handleOnSelectPerson}
                 hours={hoursWorked}
                 people={pendingCompletionReview}
@@ -307,6 +313,7 @@ const mapStateToProps = (state :Map<*, *>) => {
   const people = state.get(STATE.PEOPLE);
   return {
     app,
+    [CURRENT_DIVERSION_PLANS_BY_PARTICIPANT]: people.get(CURRENT_DIVERSION_PLANS_BY_PARTICIPANT),
     [ENROLLMENT_BY_PARTICIPANT]: people.get(ENROLLMENT_BY_PARTICIPANT),
     getInitializeAppRequestState: app.getIn([APP.ACTIONS, APP.INITIALIZE_APPLICATION, APP.REQUEST_STATE]),
     getDiversionPlansRequestState: people.getIn([PEOPLE.ACTIONS, PEOPLE.GET_DIVERSION_PLANS, PEOPLE.REQUEST_STATE]),
