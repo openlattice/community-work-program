@@ -5,9 +5,7 @@ import { fromJS, Map, OrderedMap } from 'immutable';
 import { DateTime } from 'luxon';
 import { Card, CardSegment, DataGrid } from 'lattice-ui-kit';
 
-import { getEntityProperties } from '../../utils/DataUtils';
 import { formatAsDate } from '../../utils/DateTimeUtils';
-import { DATETIME_START } from '../../core/edm/constants/FullyQualifiedNames';
 import { EMPTY_FIELD } from '../../containers/participants/ParticipantsConstants';
 
 const labelMap :OrderedMap = OrderedMap({
@@ -25,7 +23,7 @@ const DatesWrapper = styled.div`
 
 type Props = {
   orientationDateTime :string;
-  sentenceTerm :Map;
+  sentenceDateTime :string;
 };
 
 type State = {
@@ -40,11 +38,10 @@ class KeyDatesContainer extends Component<Props, State> {
 
   render() {
 
-    const { orientationDateTime, sentenceTerm } = this.props;
+    const { orientationDateTime, sentenceDateTime } = this.props;
 
-    const { [DATETIME_START]: sentDate } = getEntityProperties(sentenceTerm, [DATETIME_START]);
-    const sentenceDate = sentDate ? formatAsDate(sentDate) : EMPTY_FIELD;
-    const sentenceDateObj = DateTime.fromISO(sentDate);
+    const sentenceDate = sentenceDateTime ? formatAsDate(sentenceDateTime) : EMPTY_FIELD;
+    const sentenceDateObj = DateTime.fromISO(sentenceDateTime);
     const checkInDeadline = sentenceDateObj.isValid
       ? sentenceDateObj.plus({ hours: 48 }).toLocaleString()
       : EMPTY_FIELD;

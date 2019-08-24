@@ -255,7 +255,7 @@ class AddInfractionForm extends Component<Props, State> {
     if (infractionEKID) associations.push([REGISTERED_FOR, 0, INFRACTION_EVENT, infractionEKID, INFRACTIONS, {}]);
 
     if (newInfractionData.getIn([getPageSectionKey(1, 1), getEntityAddressKey(0, ENROLLMENT_STATUS, STATUS)])) {
-      associations.push([RELATED_TO, diversionPlanEKID, DIVERSION_PLAN, 0, ENROLLMENT_STATUS, {}]);
+      associations.push([RELATED_TO, 0, ENROLLMENT_STATUS, diversionPlanEKID, DIVERSION_PLAN, {}]);
       associations.push([RESULTS_IN, 0, INFRACTION_EVENT, 0, ENROLLMENT_STATUS, {}]);
       newInfractionData = newInfractionData
         .setIn([getPageSectionKey(1, 1), getEntityAddressKey(0, ENROLLMENT_STATUS, EFFECTIVE_DATE)], nowAsIso);

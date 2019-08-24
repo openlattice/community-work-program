@@ -11,7 +11,7 @@ import {
 } from 'lattice-ui-kit';
 import { DateTime } from 'luxon';
 
-import AppointmentBlock from '../../../components/schedule/AppointmentBlock';
+import AppointmentContainer from './AppointmentContainer';
 
 import { ContainerOuterWrapper } from '../../../components/Layout';
 import { getEntityKeyId, getEntityProperties, sortEntitiesByDateProperty } from '../../../utils/DataUtils';
@@ -127,7 +127,7 @@ class ParticipantWorkSchedule extends Component<Props, State> {
       const appointmentEKID = getEntityKeyId(appointment);
       const worksiteName :string = worksiteNamesByAppointmentEKID.get(appointmentEKID);
       return (
-        <AppointmentBlock
+        <AppointmentContainer
             key={appointmentEKID}
             appointment={appointment}
             worksiteName={worksiteName} />
