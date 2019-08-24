@@ -52,8 +52,6 @@ export const APP_TYPE_FQNS = {
   REMINDER_SENT: new FullyQualifiedName('app.remindersent'),
   REPORTED: new FullyQualifiedName('app.reported'),
   RESULTS_IN: new FullyQualifiedName('app.resultsin'),
-  SENTENCED_WITH: new FullyQualifiedName('app.sentencedwith'),
-  SENTENCES: new FullyQualifiedName('app.sentences'),
   STAFF: new FullyQualifiedName('app.staff'),
   SUBJECT_OF: new FullyQualifiedName('app.subjectof'),
   WARRANT_REQUEST: new FullyQualifiedName('app.warrantrequest'),
