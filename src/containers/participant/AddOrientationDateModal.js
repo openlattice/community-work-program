@@ -10,23 +10,21 @@ import AddOrientationDateForm from './AddOrientationDateForm';
 
 import { PERSON, STATE } from '../../utils/constants/ReduxStateConsts';
 
-const { ACTIONS, ADD_NEW_DIVERSION_PLAN_STATUS, REQUEST_STATE } = PERSON;
+const { ACTIONS, ADD_ORIENTATION_DATE, REQUEST_STATE } = PERSON;
 
 
 type Props = {
-  currentStatus :string;
+  addOrientationDateRequestState :RequestState;
   isOpen :boolean;
   onClose :() => void;
-  personName :string;
-  addNewEnrollmentStatusState :RequestState;
 };
 
 class AddOrientationDateModal extends Component<Props> {
 
   componentDidUpdate(prevProps :Props) {
-    const { addNewEnrollmentStatusState, onClose } = this.props;
-    const { addNewEnrollmentStatusState: prevSumbitState } = prevProps;
-    if (addNewEnrollmentStatusState === RequestStates.SUCCESS
+    const { addOrientationDateRequestState, onClose } = this.props;
+    const { addOrientationDateRequestState: prevSumbitState } = prevProps;
+    if (addOrientationDateRequestState === RequestStates.SUCCESS
       && prevSumbitState === RequestStates.PENDING) {
       onClose();
     }
@@ -34,11 +32,9 @@ class AddOrientationDateModal extends Component<Props> {
 
   render() {
     const {
-      currentStatus,
+      addOrientationDateRequestState,
       isOpen,
       onClose,
-      personName,
-      addNewEnrollmentStatusState,
     } = this.props;
     return (
       <Modal
@@ -47,17 +43,15 @@ class AddOrientationDateModal extends Component<Props> {
           textTitle="Add Orientation Date"
           viewportScrolling>
         <AddOrientationDateForm
-            currentStatus={currentStatus}
-            isLoading={addNewEnrollmentStatusState === RequestStates.PENDING}
-            onDiscard={onClose}
-            personName={personName} />
+            isLoading={addOrientationDateRequestState === RequestStates.PENDING}
+            onDiscard={onClose} />
       </Modal>
     );
   }
 }
 
 const mapStateToProps = (state :Map) => ({
-  addNewEnrollmentStatusState: state.getIn([STATE.PERSON, ACTIONS, ADD_NEW_DIVERSION_PLAN_STATUS, REQUEST_STATE]),
+  addOrientationDateRequestState: state.getIn([STATE.PERSON, ACTIONS, ADD_ORIENTATION_DATE, REQUEST_STATE]),
 });
 
 // $FlowFixMe
