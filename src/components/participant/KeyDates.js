@@ -22,8 +22,10 @@ const DatesWrapper = styled.div`
 `;
 
 type Props = {
+  // checkInDate :string;
   orientationDateTime :string;
   sentenceDateTime :string;
+  workStartDateTime :string;
 };
 
 type State = {
@@ -38,7 +40,7 @@ class KeyDatesContainer extends Component<Props, State> {
 
   render() {
 
-    const { orientationDateTime, sentenceDateTime } = this.props;
+    const { orientationDateTime, sentenceDateTime, workStartDateTime } = this.props;
 
     const sentenceDate = sentenceDateTime ? formatAsDate(sentenceDateTime) : EMPTY_FIELD;
     const sentenceDateObj = DateTime.fromISO(sentenceDateTime);
@@ -52,13 +54,14 @@ class KeyDatesContainer extends Component<Props, State> {
     const orientationDate = orientationDateObj.isValid
       ? orientationDateObj.toLocaleString(DateTime.DATE_SHORT)
       : EMPTY_FIELD;
+    const workStartDate = workStartDateTime ? formatAsDate(workStartDateTime) : EMPTY_FIELD;
 
     const data :Map = fromJS({
       sentenceDate,
       checkInDeadline,
       checkedInDate: EMPTY_FIELD,
       orientationDate,
-      workStartDate: EMPTY_FIELD,
+      workStartDate,
       sentenceEndDate,
     });
     return (
