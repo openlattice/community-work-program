@@ -7,6 +7,7 @@ import type { FQN } from 'lattice';
 import {
   addInfraction,
   addNewDiversionPlanStatus,
+  addOrientationDate,
   addWorksitePlan,
   checkInForAppointment,
   createWorkAppointments,
@@ -46,6 +47,7 @@ const {
   ACTIONS,
   ADD_INFRACTION_EVENT,
   ADD_NEW_DIVERSION_PLAN_STATUS,
+  ADD_ORIENTATION_DATE,
   ADD_WORKSITE_PLAN,
   ADDRESS,
   CASE_NUMBER,
@@ -89,6 +91,9 @@ const INITIAL_STATE :Map<*, *> = fromJS({
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [ADD_NEW_DIVERSION_PLAN_STATUS]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [ADD_ORIENTATION_DATE]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [ADD_WORKSITE_PLAN]: {
@@ -305,6 +310,47 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
         FAILURE: () => state
           .setIn([ACTIONS, ADD_NEW_DIVERSION_PLAN_STATUS, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, ADD_NEW_DIVERSION_PLAN_STATUS, action.id]),
+      });
+    }
+
+    case addOrientationDate.case(action.type): {
+
+      return addOrientationDate.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, ADD_ORIENTATION_DATE, action.id], action)
+          .setIn([ACTIONS, ADD_ORIENTATION_DATE, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+
+          const seqAction :SequenceAction = action;
+          const storedSeqAction :SequenceAction = state.getIn([ACTIONS, ADD_ORIENTATION_DATE, seqAction.id]);
+
+          if (storedSeqAction) {
+
+            const { value } :Object = seqAction;
+            const { diversionPlanESID, edm } = value;
+
+            const requestValue :Object = storedSeqAction.value;
+            const { entityData } :Object = requestValue;
+            const diversionPlanEKID = Object.keys(entityData[diversionPlanESID])[0];
+            const storedPropertyValueMap = entityData[diversionPlanESID][diversionPlanEKID];
+            const orientationDatePTID = Object.keys(storedPropertyValueMap)[0];
+            const orientationDate = Object.values(storedPropertyValueMap)[0];
+
+            let diversionPlan :Map = state.get(DIVERSION_PLAN);
+            const orientationDateTimeFqn :FQN = getPropertyFqnFromEdm(edm, orientationDatePTID);
+            diversionPlan = diversionPlan.set(orientationDateTimeFqn, orientationDate);
+
+            return state
+              .set(DIVERSION_PLAN, diversionPlan)
+              .setIn([ACTIONS, ADD_ORIENTATION_DATE, REQUEST_STATE], RequestStates.SUCCESS);
+          }
+
+          return state;
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, ADD_ORIENTATION_DATE, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, ADD_ORIENTATION_DATE, action.id]),
       });
     }
 

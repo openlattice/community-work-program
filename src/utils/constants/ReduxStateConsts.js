@@ -51,6 +51,7 @@ export const PERSON = {
   ADDRESS: 'address',
   ADD_INFRACTION_EVENT: 'addInfractionEvent',
   ADD_NEW_DIVERSION_PLAN_STATUS: 'addNewDiversionPlanStatus',
+  ADD_ORIENTATION_DATE: 'addOrientationDate',
   ADD_WORKSITE_PLAN: 'addWorksitePlan',
   CASE_NUMBER: 'caseNumber',
   CHECK_INS_BY_APPOINTMENT: 'checkInsByAppointment',
