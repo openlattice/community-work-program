@@ -48,10 +48,10 @@ const InfoWrapper = styled.div`
   border: 1px solid ${OL.GREY11};
   display: flex;
   flex-direction: column;
-  height: 420px;
+  height: 425px;
   justify-content: center;
   padding: 30px;
-  width: 400px;
+  width: 425px;
 `;
 
 const StyledPersonPhoto = styled(PersonPhoto)`

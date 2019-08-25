@@ -18,7 +18,7 @@ const labelMap :OrderedMap = OrderedMap({
 });
 
 const DatesWrapper = styled.div`
-  width: 600px;
+  width: 610px;
 `;
 
 type Props = {
