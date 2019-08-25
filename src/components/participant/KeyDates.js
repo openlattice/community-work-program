@@ -22,32 +22,43 @@ const DatesWrapper = styled.div`
 `;
 
 type Props = {
-  // checkInDate :string;
+  checkInDate :string;
   orientationDateTime :string;
   sentenceDateTime :string;
   workStartDateTime :string;
 };
 
-const KeyDates = ({ orientationDateTime, sentenceDateTime, workStartDateTime } :Props) => {
+const KeyDates = ({
+  checkInDate,
+  orientationDateTime,
+  sentenceDateTime,
+  workStartDateTime
+} :Props) => {
 
   const sentenceDate = sentenceDateTime ? formatAsDate(sentenceDateTime) : EMPTY_FIELD;
+
   const sentenceDateObj = DateTime.fromISO(sentenceDateTime);
   const checkInDeadline = sentenceDateObj.isValid
     ? sentenceDateObj.plus({ hours: 48 }).toLocaleString()
     : EMPTY_FIELD;
+
   const sentenceEndDate = sentenceDateObj.isValid
     ? sentenceDateObj.plus({ days: 90 }).toLocaleString()
     : EMPTY_FIELD;
+
   const orientationDateObj = DateTime.fromISO(orientationDateTime);
   const orientationDate = orientationDateObj.isValid
     ? orientationDateObj.toLocaleString(DateTime.DATE_SHORT)
     : EMPTY_FIELD;
+
   const workStartDate = workStartDateTime ? formatAsDate(workStartDateTime) : EMPTY_FIELD;
+
+  const checkedInDate = checkInDate ? formatAsDate(checkInDate) : EMPTY_FIELD;
 
   const data :Map = fromJS({
     sentenceDate,
     checkInDeadline,
-    checkedInDate: EMPTY_FIELD,
+    checkedInDate,
     orientationDate,
     workStartDate,
     sentenceEndDate,

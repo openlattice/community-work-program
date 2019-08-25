@@ -55,6 +55,7 @@ const {
   ACTIONS,
   ADDRESS,
   CASE_NUMBER,
+  CHECK_IN_DATE,
   CHECK_INS_BY_APPOINTMENT,
   DIVERSION_PLAN,
   EMAIL,
@@ -149,6 +150,7 @@ type Props = {
   address :string;
   app :Map;
   caseNumber :string;
+  checkInDate :string;
   checkInsByAppointment :Map;
   diversionPlan :Map;
   email :string;
@@ -299,6 +301,7 @@ class ParticipantProfile extends Component<Props, State> {
       actions,
       address,
       caseNumber,
+      checkInDate,
       diversionPlan,
       email,
       enrollmentStatus,
@@ -375,6 +378,7 @@ class ParticipantProfile extends Component<Props, State> {
                 status={status} />
             <InnerColumnWrapper>
               <KeyDates
+                  checkInDate={checkInDate}
                   orientationDateTime={orientationDateTime}
                   sentenceDateTime={sentenceDate}
                   workStartDateTime={workStartDateTime} />
@@ -449,6 +453,7 @@ const mapStateToProps = (state :Map<*, *>) => {
     [ADDRESS]: person.get(ADDRESS),
     app,
     [CASE_NUMBER]: person.get(CASE_NUMBER),
+    [CHECK_IN_DATE]: person.get(CHECK_IN_DATE),
     [CHECK_INS_BY_APPOINTMENT]: person.get(CHECK_INS_BY_APPOINTMENT),
     [DIVERSION_PLAN]: person.get(DIVERSION_PLAN),
     [EMAIL]: person.get(EMAIL),

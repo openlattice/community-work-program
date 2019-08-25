@@ -88,7 +88,7 @@ import {
   INFRACTION_FQNS,
   WORKSITE_PLAN_FQNS,
 } from '../../core/edm/constants/FullyQualifiedNames';
-import { INFRACTIONS_CONSTS } from '../../core/edm/constants/DataModelConsts';
+import { ENROLLMENT_STATUSES, INFRACTIONS_CONSTS } from '../../core/edm/constants/DataModelConsts';
 
 const { UpdateTypes } = Types;
 const { getEntityData, getEntitySetData, updateEntityData } = DataApiActions;
@@ -1008,6 +1008,7 @@ function* getEnrollmentStatusWorker(action :SequenceAction) :Generator<*, *, *> 
   let response :Object = {};
   let enrollmentStatus :Map = Map();
   let diversionPlan :Map = Map();
+  let statusWithCheckInDate = Map();
 
   try {
     yield put(getEnrollmentStatus.request(id));
@@ -1061,7 +1062,7 @@ function* getEnrollmentStatusWorker(action :SequenceAction) :Generator<*, *, *> 
       if (response.error) {
         throw response.error;
       }
-      let enrollmentStatusesByDiversionPlan :Map = fromJS(response.data)
+      const enrollmentStatusesByDiversionPlan :Map = fromJS(response.data)
         .map((enrollmentList :List) => enrollmentList.map((enrollment :Map) => getNeighborDetails(enrollment)));
 
       /*
@@ -1069,27 +1070,47 @@ function* getEnrollmentStatusWorker(action :SequenceAction) :Generator<*, *, *> 
        */
       if (enrollmentStatusesByDiversionPlan.count() > 0) {
 
-        enrollmentStatusesByDiversionPlan = enrollmentStatusesByDiversionPlan.map((statusList :List) => {
-          const sortedStatusList :List = sortEntitiesByDateProperty(statusList, EFFECTIVE_DATE);
-          return sortedStatusList.last();
-        });
+        const mostRecentEnrollmentStatusesByDiversionPlan :Map = enrollmentStatusesByDiversionPlan
+          .map((statusList :List) => {
+            const sortedStatusList :List = sortEntitiesByDateProperty(statusList, EFFECTIVE_DATE);
+            return sortedStatusList.last();
+          });
         enrollmentStatus = sortEntitiesByDateProperty(
-          enrollmentStatusesByDiversionPlan, EFFECTIVE_DATE
+          mostRecentEnrollmentStatusesByDiversionPlan, EFFECTIVE_DATE
         ).last();
-
         /*
          * 4. Additionally, return relevant diversion plan.
          */
-        const diversionPlanEKID :UUID = enrollmentStatusesByDiversionPlan
+        const diversionPlanEKID :UUID = mostRecentEnrollmentStatusesByDiversionPlan
           .findKey((status :Map) => getEntityKeyId(status) === getEntityKeyId(enrollmentStatus));
         diversionPlan = diversionPlans.get(personEKID).find((plan :Map) => getEntityKeyId(plan) === diversionPlanEKID);
+
+        /*
+         * 5. Lastly, get check-in date from 'Awaiting orientation' status.
+         */
+        const allStatusesForDiversionPlan :List = enrollmentStatusesByDiversionPlan.get(diversionPlanEKID);
+        const awaitingOrientationStatuses :List = allStatusesForDiversionPlan.filter((status :Map) => {
+          const { [STATUS]: statusName } = getEntityProperties(status, [STATUS]);
+          return statusName === ENROLLMENT_STATUSES.AWAITING_ORIENTATION;
+        });
+        let oldestAwaitingOrientationStatus = Map();
+        if (awaitingOrientationStatuses.count() === 1) {
+          oldestAwaitingOrientationStatus = awaitingOrientationStatuses.get(0);
+        }
+        else if (awaitingOrientationStatuses.count() > 1) {
+          const sortedStatuses = sortEntitiesByDateProperty(awaitingOrientationStatuses, EFFECTIVE_DATE);
+          oldestAwaitingOrientationStatus = sortedStatuses.first();
+        }
+        if (!oldestAwaitingOrientationStatus.isEmpty()) {
+          statusWithCheckInDate = oldestAwaitingOrientationStatus;
+        }
 
         /* Call getWorksitePlans() to find all worksite plans for current diversion plan */
         yield call(getWorksitePlansWorker, getWorksitePlans({ diversionPlan }));
       }
     }
 
-    yield put(getEnrollmentStatus.success(id, { diversionPlan, enrollmentStatus }));
+    yield put(getEnrollmentStatus.success(id, { diversionPlan, enrollmentStatus, statusWithCheckInDate }));
   }
   catch (error) {
     workerResponse.error = error;
