@@ -59,6 +59,7 @@ export const PERSON = {
   CHECK_IN_FOR_APPOINTMENT: 'checkInForAppointment',
   CREATE_WORK_APPOINTMENTS: 'createWorkAppointments',
   DIVERSION_PLAN: 'diversionPlan',
+  EDIT_SENTENCE_DATE: 'editSentenceDate',
   EMAIL: 'email',
   ENROLLMENT_STATUS: 'enrollmentStatus',
   ERRORS: 'errors',

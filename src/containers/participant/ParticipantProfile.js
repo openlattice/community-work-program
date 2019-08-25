@@ -20,6 +20,7 @@ import AssignWorksiteModal from './assignedworksites/AssignWorksiteModal';
 import InfractionsContainer from './infractions/InfractionsContainer';
 import CreateWorkAppointmentModal from './schedule/CreateAppointmentModal';
 import AddOrientationDateModal from './AddOrientationDateModal';
+import EditSentenceDateModal from './EditSentenceDateModal';
 import LogoLoader from '../../components/LogoLoader';
 
 import { getAllParticipantInfo } from './ParticipantActions';
@@ -138,7 +139,7 @@ const InnerRowWrapper = styled.div`
 
 const ButtonsWrapper = styled.div`
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   grid-gap: 0 10px;
 `;
 
@@ -174,6 +175,7 @@ type State = {
   showAssignWorksiteModal :boolean;
   showEnrollmentModal :boolean;
   showOrientationDateModal :boolean;
+  showSentenceDateModal :boolean;
   showWorkAppointmentModal :boolean;
   worksiteNamesByWorksitePlan :Map;
 };
@@ -188,6 +190,7 @@ class ParticipantProfile extends Component<Props, State> {
       showAssignWorksiteModal: false,
       showEnrollmentModal: false,
       showOrientationDateModal: false,
+      showSentenceDateModal: false,
       showWorkAppointmentModal: false,
       worksiteNamesByWorksitePlan: Map(),
     };
@@ -296,6 +299,18 @@ class ParticipantProfile extends Component<Props, State> {
     });
   }
 
+  handleShowSentenceDateModal = () => {
+    this.setState({
+      showSentenceDateModal: true
+    });
+  }
+
+  handleHideSentenceDateModal = () => {
+    this.setState({
+      showSentenceDateModal: false
+    });
+  }
+
   render() {
     const {
       actions,
@@ -321,6 +336,7 @@ class ParticipantProfile extends Component<Props, State> {
       showAssignWorksiteModal,
       showEnrollmentModal,
       showOrientationDateModal,
+      showSentenceDateModal,
       showWorkAppointmentModal,
       workStartDateTime,
       worksiteNamesByWorksitePlan
@@ -363,6 +379,8 @@ class ParticipantProfile extends Component<Props, State> {
               Back to Participants
             </BackNavButton>
             <ButtonsWrapper>
+              <Button onClick={this.handleShowSentenceDateModal}>Edit Sentence Date</Button>
+              <Button onClick={this.handleShowOrientationDateModal}>Edit Check-In Date</Button>
               <Button onClick={this.handleShowOrientationDateModal}>{ addOrEditButtonText }</Button>
               <Button mode="primary" onClick={this.handleShowEnrollmentModal}>
                 Change Enrollment Status
@@ -440,6 +458,9 @@ class ParticipantProfile extends Component<Props, State> {
         <AddOrientationDateModal
             isOpen={showOrientationDateModal}
             onClose={this.handleHideOrientationDateModal} />
+        <EditSentenceDateModal
+            isOpen={showSentenceDateModal}
+            onClose={this.handleHideSentenceDateModal} />
       </ProfileWrapper>
     );
   }

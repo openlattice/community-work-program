@@ -28,6 +28,7 @@ import {
   ADD_WORKSITE_PLAN,
   CHECK_IN_FOR_APPOINTMENT,
   CREATE_WORK_APPOINTMENTS,
+  EDIT_SENTENCE_DATE,
   GET_ALL_PARTICIPANT_INFO,
   GET_APPOINTMENT_CHECK_INS,
   GET_CASE_INFO,
@@ -48,6 +49,7 @@ import {
   addWorksitePlan,
   checkInForAppointment,
   createWorkAppointments,
+  editSentenceDate,
   getAllParticipantInfo,
   getAppointmentCheckIns,
   getCaseInfo,
@@ -273,6 +275,49 @@ function* addOrientationDateWorker(action :SequenceAction) :Generator<*, *, *> {
 function* addOrientationDateWatcher() :Generator<*, *, *> {
 
   yield takeEvery(ADD_ORIENTATION_DATE, addOrientationDateWorker);
+}
+
+/*
+ *
+ * ParticipantActions.editSentenceDate()
+ *
+ */
+
+function* editSentenceDateWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+  const workerResponse = {};
+  let response :Object = {};
+
+  try {
+    yield put(editSentenceDate.request(id, value));
+
+    response = yield call(submitPartialReplaceWorker, submitPartialReplace(value));
+    if (response.error) {
+      throw response.error;
+    }
+    const app = yield select(getAppFromState);
+    const diversionPlanESID = getEntitySetIdFromApp(app, DIVERSION_PLAN);
+    const edm = yield select(getEdmFromState);
+
+    yield put(editSentenceDate.success(id, {
+      diversionPlanESID,
+      edm,
+    }));
+  }
+  catch (error) {
+    workerResponse.error = error;
+    LOG.error('caught exception in editSentenceDateWorker()', error);
+    yield put(editSentenceDate.failure(id, error));
+  }
+  finally {
+    yield put(editSentenceDate.finally(id));
+  }
+}
+
+function* editSentenceDateWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(EDIT_SENTENCE_DATE, editSentenceDateWorker);
 }
 
 /*
@@ -1483,6 +1528,8 @@ export {
   checkInForAppointmentWorker,
   createWorkAppointmentsWatcher,
   createWorkAppointmentsWorker,
+  editSentenceDateWatcher,
+  editSentenceDateWorker,
   getAppointmentCheckInsWatcher,
   getAppointmentCheckInsWorker,
   getAllParticipantInfoWatcher,

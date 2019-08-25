@@ -11,6 +11,7 @@ import {
   addWorksitePlan,
   checkInForAppointment,
   createWorkAppointments,
+  editSentenceDate,
   getAppointmentCheckIns,
   getAllParticipantInfo,
   getCaseInfo,
@@ -56,6 +57,7 @@ const {
   CHECK_IN_FOR_APPOINTMENT,
   CREATE_WORK_APPOINTMENTS,
   DIVERSION_PLAN,
+  EDIT_SENTENCE_DATE,
   EMAIL,
   ENROLLMENT_STATUS,
   ERRORS,
@@ -105,6 +107,9 @@ const INITIAL_STATE :Map<*, *> = fromJS({
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [CREATE_WORK_APPOINTMENTS]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [EDIT_SENTENCE_DATE]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [GET_APPOINTMENT_CHECK_INS]: {
@@ -525,6 +530,47 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
         FAILURE: () => state
           .setIn([ACTIONS, CREATE_WORK_APPOINTMENTS, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, CREATE_WORK_APPOINTMENTS, action.id])
+      });
+    }
+
+    case editSentenceDate.case(action.type): {
+
+      return editSentenceDate.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, EDIT_SENTENCE_DATE, action.id], action)
+          .setIn([ACTIONS, EDIT_SENTENCE_DATE, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+
+          const seqAction :SequenceAction = action;
+          const storedSeqAction :SequenceAction = state.getIn([ACTIONS, EDIT_SENTENCE_DATE, seqAction.id]);
+
+          if (storedSeqAction) {
+
+            const { value } :Object = seqAction;
+            const { diversionPlanESID, edm } = value;
+
+            const requestValue :Object = storedSeqAction.value;
+            const { entityData } :Object = requestValue;
+            const diversionPlanEKID = Object.keys(entityData[diversionPlanESID])[0];
+            const storedPropertyValueMap = entityData[diversionPlanESID][diversionPlanEKID];
+            const sentenceDatePTID = Object.keys(storedPropertyValueMap)[0];
+            const sentenceDate = Object.values(storedPropertyValueMap)[0];
+
+            let diversionPlan :Map = state.get(DIVERSION_PLAN);
+            const sentenceDateTimeFqn :FQN = getPropertyFqnFromEdm(edm, sentenceDatePTID);
+            diversionPlan = diversionPlan.set(sentenceDateTimeFqn, sentenceDate);
+
+            return state
+              .set(DIVERSION_PLAN, diversionPlan)
+              .setIn([ACTIONS, EDIT_SENTENCE_DATE, REQUEST_STATE], RequestStates.SUCCESS);
+          }
+
+          return state;
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, EDIT_SENTENCE_DATE, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, EDIT_SENTENCE_DATE, action.id]),
       });
     }
 
