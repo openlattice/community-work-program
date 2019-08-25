@@ -316,6 +316,10 @@ class ParticipantProfile extends Component<Props, State> {
       [ORIENTATION_DATETIME]: orientationDateTime
     } = getEntityProperties(diversionPlan, [DATETIME_RECEIVED, ORIENTATION_DATETIME]);
 
+    const orientationDateAlreadyRecorded :boolean = isDefined(diversionPlan.get(ORIENTATION_DATETIME));
+    const addOrEditButtonText :string = orientationDateAlreadyRecorded
+      ? 'Edit Orientation Date'
+      : 'Add Orientation Date';
     return (
       <ProfileWrapper>
         <ProfileBody>
@@ -327,7 +331,7 @@ class ParticipantProfile extends Component<Props, State> {
               Back to Participants
             </BackNavButton>
             <ButtonsWrapper>
-              <Button onClick={this.handleShowOrientationDateModal}>Add Orientation Date</Button>
+              <Button onClick={this.handleShowOrientationDateModal}>{ addOrEditButtonText }</Button>
               <Button mode="primary" onClick={this.handleShowEnrollmentModal}>
                 Change Enrollment Status
               </Button>
