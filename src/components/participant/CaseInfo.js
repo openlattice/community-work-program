@@ -15,7 +15,7 @@ const CaseInfoWrapper = styled.div`
   height: 220px;
   justify-content: center;
   padding: 20px 0;
-  width: 258px;
+  width: 265px;
 `;
 
 const Header = styled.div`
