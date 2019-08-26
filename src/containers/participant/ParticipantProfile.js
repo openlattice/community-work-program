@@ -12,6 +12,7 @@ import GeneralInfo from '../../components/participant/GeneralInfo';
 import KeyDates from '../../components/participant/KeyDates';
 import CaseInfo from '../../components/participant/CaseInfo';
 import ParticipantWorkSchedule from './schedule/ParticipantWorkSchedule';
+import PlanNotes from '../../components/participant/PlanNotes';
 
 import AssignedWorksitesContainer from './assignedworksites/AssignedWorksitesContainer';
 import AddNewPlanStatusModal from './AddNewPlanStatusModal';
@@ -412,6 +413,8 @@ class ParticipantProfile extends Component<Props, State> {
                   hours={requiredHours}
                   warnings={warnings}
                   violations={violations} />
+              <PlanNotes
+                  notes={planNotes} />
             </InnerColumnWrapper>
           </BasicInfoWrapper>
         </ProfileBody>
@@ -477,7 +480,6 @@ class ParticipantProfile extends Component<Props, State> {
   }
 }
 
-// <InfractionsDisplay violations={violations} warnings={warnings} />
 const mapStateToProps = (state :Map<*, *>) => {
   const app = state.get(STATE.APP);
   const person = state.get(STATE.PERSON);
