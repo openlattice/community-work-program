@@ -28,6 +28,7 @@ import {
   ADD_WORKSITE_PLAN,
   CHECK_IN_FOR_APPOINTMENT,
   CREATE_WORK_APPOINTMENTS,
+  EDIT_CHECK_IN_DATE,
   EDIT_SENTENCE_DATE,
   GET_ALL_PARTICIPANT_INFO,
   GET_APPOINTMENT_CHECK_INS,
@@ -36,7 +37,7 @@ import {
   GET_ENROLLMENT_STATUS,
   GET_INFRACTION_TYPES,
   GET_PARTICIPANT,
-  GET_PARTICIPANT_ADDRESS,
+  // GET_PARTICIPANT_ADDRESS,
   GET_PARTICIPANT_INFRACTIONS,
   GET_REQUIRED_HOURS,
   GET_WORKSITE_BY_WORKSITE_PLAN,
@@ -49,6 +50,7 @@ import {
   addWorksitePlan,
   checkInForAppointment,
   createWorkAppointments,
+  editCheckInDate,
   editSentenceDate,
   getAllParticipantInfo,
   getAppointmentCheckIns,
@@ -57,7 +59,7 @@ import {
   getEnrollmentStatus,
   getInfractionTypes,
   getParticipant,
-  getParticipantAddress,
+  // getParticipantAddress,
   getParticipantInfractions,
   getRequiredHours,
   getWorkAppointments,
@@ -318,6 +320,49 @@ function* editSentenceDateWorker(action :SequenceAction) :Generator<*, *, *> {
 function* editSentenceDateWatcher() :Generator<*, *, *> {
 
   yield takeEvery(EDIT_SENTENCE_DATE, editSentenceDateWorker);
+}
+
+/*
+ *
+ * ParticipantActions.editCheckInDate()
+ *
+ */
+
+function* editCheckInDateWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+  const workerResponse = {};
+  let response :Object = {};
+
+  try {
+    yield put(editCheckInDate.request(id, value));
+
+    response = yield call(submitPartialReplaceWorker, submitPartialReplace(value));
+    if (response.error) {
+      throw response.error;
+    }
+    const app = yield select(getAppFromState);
+    const enrollmentStatusESID = getEntitySetIdFromApp(app, ENROLLMENT_STATUS);
+    const edm = yield select(getEdmFromState);
+
+    yield put(editCheckInDate.success(id, {
+      enrollmentStatusESID,
+      edm,
+    }));
+  }
+  catch (error) {
+    workerResponse.error = error;
+    LOG.error('caught exception in editCheckInDateWorker()', error);
+    yield put(editCheckInDate.failure(id, error));
+  }
+  finally {
+    yield put(editCheckInDate.finally(id));
+  }
+}
+
+function* editCheckInDateWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(EDIT_CHECK_IN_DATE, editCheckInDateWorker);
 }
 
 /*
@@ -1528,6 +1573,8 @@ export {
   checkInForAppointmentWorker,
   createWorkAppointmentsWatcher,
   createWorkAppointmentsWorker,
+  editCheckInDateWatcher,
+  editCheckInDateWorker,
   editSentenceDateWatcher,
   editSentenceDateWorker,
   getAppointmentCheckInsWatcher,

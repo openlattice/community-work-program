@@ -11,6 +11,7 @@ import {
   addWorksitePlan,
   checkInForAppointment,
   createWorkAppointments,
+  editCheckInDate,
   editSentenceDate,
   getAppointmentCheckIns,
   getAllParticipantInfo,
@@ -57,6 +58,7 @@ const {
   CHECK_IN_FOR_APPOINTMENT,
   CREATE_WORK_APPOINTMENTS,
   DIVERSION_PLAN,
+  EDIT_CHECK_IN_DATE,
   EDIT_SENTENCE_DATE,
   EMAIL,
   ENROLLMENT_STATUS,
@@ -107,6 +109,9 @@ const INITIAL_STATE :Map<*, *> = fromJS({
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [CREATE_WORK_APPOINTMENTS]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [EDIT_CHECK_IN_DATE]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [EDIT_SENTENCE_DATE]: {
@@ -530,6 +535,51 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
         FAILURE: () => state
           .setIn([ACTIONS, CREATE_WORK_APPOINTMENTS, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, CREATE_WORK_APPOINTMENTS, action.id])
+      });
+    }
+
+    case editCheckInDate.case(action.type): {
+
+      return editCheckInDate.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, EDIT_CHECK_IN_DATE, action.id], action)
+          .setIn([ACTIONS, EDIT_CHECK_IN_DATE, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+
+          const seqAction :SequenceAction = action;
+          const storedSeqAction :SequenceAction = state.getIn([ACTIONS, EDIT_CHECK_IN_DATE, seqAction.id]);
+
+          if (storedSeqAction) {
+
+            const { value } :Object = seqAction;
+            const { enrollmentStatusESID, edm } = value;
+
+            const requestValue :Object = storedSeqAction.value;
+            const { entityData } :Object = requestValue;
+            const enrollmentStatusEKID = Object.keys(entityData[enrollmentStatusESID])[0];
+            const storedPropertyValueMap = entityData[enrollmentStatusESID][enrollmentStatusEKID];
+            const checkInDatePTID = Object.keys(storedPropertyValueMap)[0];
+            const checkInDate = Object.values(storedPropertyValueMap)[0];
+
+            let statusWithCheckInDate :Map = state.get(STATUS_WITH_CHECK_IN_DATE);
+            const checkInDateTimeFqn :FQN = getPropertyFqnFromEdm(edm, checkInDatePTID);
+            statusWithCheckInDate = statusWithCheckInDate.set(checkInDateTimeFqn, checkInDate);
+
+            let checkInDateFromState = state.get(CHECK_IN_DATE);
+            checkInDateFromState = checkInDate;
+
+            return state
+              .set(STATUS_WITH_CHECK_IN_DATE, statusWithCheckInDate)
+              .set(CHECK_IN_DATE, checkInDateFromState)
+              .setIn([ACTIONS, EDIT_CHECK_IN_DATE, REQUEST_STATE], RequestStates.SUCCESS);
+          }
+
+          return state;
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, EDIT_CHECK_IN_DATE, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, EDIT_CHECK_IN_DATE, action.id]),
       });
     }
 

@@ -21,6 +21,7 @@ import InfractionsContainer from './infractions/InfractionsContainer';
 import CreateWorkAppointmentModal from './schedule/CreateAppointmentModal';
 import AddOrientationDateModal from './AddOrientationDateModal';
 import EditSentenceDateModal from './EditSentenceDateModal';
+import EditCheckInDateModal from './EditCheckInDateModal';
 import LogoLoader from '../../components/LogoLoader';
 
 import { getAllParticipantInfo } from './ParticipantActions';
@@ -173,6 +174,7 @@ type Props = {
 type State = {
   workStartDateTime :string;
   showAssignWorksiteModal :boolean;
+  showCheckInDateModal :boolean;
   showEnrollmentModal :boolean;
   showOrientationDateModal :boolean;
   showSentenceDateModal :boolean;
@@ -188,6 +190,7 @@ class ParticipantProfile extends Component<Props, State> {
     this.state = {
       workStartDateTime: '',
       showAssignWorksiteModal: false,
+      showCheckInDateModal: false,
       showEnrollmentModal: false,
       showOrientationDateModal: false,
       showSentenceDateModal: false,
@@ -311,6 +314,18 @@ class ParticipantProfile extends Component<Props, State> {
     });
   }
 
+  handleShowCheckInDateModal = () => {
+    this.setState({
+      showCheckInDateModal: true
+    });
+  }
+
+  handleHideCheckInDateModal = () => {
+    this.setState({
+      showCheckInDateModal: false
+    });
+  }
+
   render() {
     const {
       actions,
@@ -334,6 +349,7 @@ class ParticipantProfile extends Component<Props, State> {
     } = this.props;
     const {
       showAssignWorksiteModal,
+      showCheckInDateModal,
       showEnrollmentModal,
       showOrientationDateModal,
       showSentenceDateModal,
@@ -380,7 +396,7 @@ class ParticipantProfile extends Component<Props, State> {
             </BackNavButton>
             <ButtonsWrapper>
               <Button onClick={this.handleShowSentenceDateModal}>Edit Sentence Date</Button>
-              <Button onClick={this.handleShowOrientationDateModal}>Edit Check-In Date</Button>
+              <Button onClick={this.handleShowCheckInDateModal}>Edit Check-In Date</Button>
               <Button onClick={this.handleShowOrientationDateModal}>{ addOrEditButtonText }</Button>
               <Button mode="primary" onClick={this.handleShowEnrollmentModal}>
                 Change Enrollment Status
@@ -461,6 +477,9 @@ class ParticipantProfile extends Component<Props, State> {
         <EditSentenceDateModal
             isOpen={showSentenceDateModal}
             onClose={this.handleHideSentenceDateModal} />
+        <EditCheckInDateModal
+            isOpen={showCheckInDateModal}
+            onClose={this.handleHideCheckInDateModal} />
       </ProfileWrapper>
     );
   }
