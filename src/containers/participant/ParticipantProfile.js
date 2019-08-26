@@ -2,7 +2,7 @@
 import React, { Component } from 'react';
 import styled from 'styled-components';
 import { List, Map } from 'immutable';
-import { Button } from 'lattice-ui-kit';
+import { Button, Card, CardSegment } from 'lattice-ui-kit';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { RequestStates } from 'redux-reqseq';
@@ -12,7 +12,6 @@ import GeneralInfo from '../../components/participant/GeneralInfo';
 import KeyDates from '../../components/participant/KeyDates';
 import CaseInfo from '../../components/participant/CaseInfo';
 import ParticipantWorkSchedule from './schedule/ParticipantWorkSchedule';
-import InfractionsDisplay from '../../components/participant/InfractionsDisplay';
 
 import AssignedWorksitesContainer from './assignedworksites/AssignedWorksitesContainer';
 import AddNewPlanStatusModal from './AddNewPlanStatusModal';
@@ -49,7 +48,7 @@ import {
   WORKSITES
 } from '../../utils/constants/ReduxStateConsts';
 
-const { DATETIME_RECEIVED, ORIENTATION_DATETIME } = DIVERSION_PLAN_FQNS;
+const { DATETIME_RECEIVED, NOTES, ORIENTATION_DATETIME } = DIVERSION_PLAN_FQNS;
 const { STATUS } = ENROLLMENT_STATUS_FQNS;
 const { FIRST_NAME, LAST_NAME } = PEOPLE_FQNS;
 const { NAME } = WORKSITE_FQNS;
@@ -115,6 +114,7 @@ const NameHeader = styled.div`
 const BasicInfoWrapper = styled.div`
   margin-top: 15px;
   width: 100%;
+  height: 500px;
   display: flex;
   justify-content: space-between;
 `;
@@ -124,18 +124,8 @@ const InnerColumnWrapper = styled.div`
   flex-direction: column;
   justify-content: space-between;
   align-items: center;
-  /* display: grid;
-  grid-template-columns: 1fr; */
-
-`;
-
-const InnerRowWrapper = styled.div`
-  display: flex;
-  justify-content: space-between;
-  width: 100%;
-  /* display: grid;
-  grid-template-rows: repeat(2, 1fr);
-  width: 100%; */
+  height: 100%;
+  width: 610px;
 `;
 
 const ButtonsWrapper = styled.div`
@@ -377,8 +367,9 @@ class ParticipantProfile extends Component<Props, State> {
     const diversionPlanEKID :UUID = getEntityKeyId(diversionPlan);
     const {
       [DATETIME_RECEIVED]: sentenceDate,
-      [ORIENTATION_DATETIME]: orientationDateTime
-    } = getEntityProperties(diversionPlan, [DATETIME_RECEIVED, ORIENTATION_DATETIME]);
+      [ORIENTATION_DATETIME]: orientationDateTime,
+      [NOTES]: planNotes
+    } = getEntityProperties(diversionPlan, [DATETIME_RECEIVED, NOTES, ORIENTATION_DATETIME]);
 
     const orientationDateAlreadyRecorded :boolean = isDefined(diversionPlan.get(ORIENTATION_DATETIME));
     const addOrEditButtonText :string = orientationDateAlreadyRecorded
@@ -416,10 +407,11 @@ class ParticipantProfile extends Component<Props, State> {
                   orientationDateTime={orientationDateTime}
                   sentenceDateTime={sentenceDate}
                   workStartDateTime={workStartDateTime} />
-              <InnerRowWrapper>
-                <CaseInfo caseNumber={caseNumber} hours={requiredHours} />
-                <InfractionsDisplay violations={violations} warnings={warnings} />
-              </InnerRowWrapper>
+              <CaseInfo
+                  caseNumber={caseNumber}
+                  hours={requiredHours}
+                  warnings={warnings}
+                  violations={violations} />
             </InnerColumnWrapper>
           </BasicInfoWrapper>
         </ProfileBody>
@@ -485,6 +477,7 @@ class ParticipantProfile extends Component<Props, State> {
   }
 }
 
+// <InfractionsDisplay violations={violations} warnings={warnings} />
 const mapStateToProps = (state :Map<*, *>) => {
   const app = state.get(STATE.APP);
   const person = state.get(STATE.PERSON);
