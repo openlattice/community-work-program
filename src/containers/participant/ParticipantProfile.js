@@ -49,7 +49,7 @@ import {
   WORKSITES
 } from '../../utils/constants/ReduxStateConsts';
 
-const { DATETIME_RECEIVED, ORIENTATION_DATETIME } = DIVERSION_PLAN_FQNS;
+const { CHECK_IN_DATETIME, DATETIME_RECEIVED, ORIENTATION_DATETIME } = DIVERSION_PLAN_FQNS;
 const { STATUS } = ENROLLMENT_STATUS_FQNS;
 const { FIRST_NAME, LAST_NAME } = PEOPLE_FQNS;
 const { NAME } = WORKSITE_FQNS;
@@ -57,7 +57,6 @@ const {
   ACTIONS,
   ADDRESS,
   CASE_NUMBER,
-  CHECK_IN_DATE,
   CHECK_INS_BY_APPOINTMENT,
   DIVERSION_PLAN,
   EMAIL,
@@ -124,18 +123,12 @@ const InnerColumnWrapper = styled.div`
   flex-direction: column;
   justify-content: space-between;
   align-items: center;
-  /* display: grid;
-  grid-template-columns: 1fr; */
-
 `;
 
 const InnerRowWrapper = styled.div`
   display: flex;
   justify-content: space-between;
   width: 100%;
-  /* display: grid;
-  grid-template-rows: repeat(2, 1fr);
-  width: 100%; */
 `;
 
 const ButtonsWrapper = styled.div`
@@ -152,7 +145,6 @@ type Props = {
   address :string;
   app :Map;
   caseNumber :string;
-  checkInDate :string;
   checkInsByAppointment :Map;
   diversionPlan :Map;
   email :string;
@@ -331,7 +323,6 @@ class ParticipantProfile extends Component<Props, State> {
       actions,
       address,
       caseNumber,
-      checkInDate,
       diversionPlan,
       email,
       enrollmentStatus,
@@ -376,9 +367,10 @@ class ParticipantProfile extends Component<Props, State> {
 
     const diversionPlanEKID :UUID = getEntityKeyId(diversionPlan);
     const {
+      [CHECK_IN_DATETIME]: checkInDate,
       [DATETIME_RECEIVED]: sentenceDate,
       [ORIENTATION_DATETIME]: orientationDateTime
-    } = getEntityProperties(diversionPlan, [DATETIME_RECEIVED, ORIENTATION_DATETIME]);
+    } = getEntityProperties(diversionPlan, [CHECK_IN_DATETIME, DATETIME_RECEIVED, ORIENTATION_DATETIME]);
 
     const orientationDateAlreadyRecorded :boolean = isDefined(diversionPlan.get(ORIENTATION_DATETIME));
     const addOrEditButtonText :string = orientationDateAlreadyRecorded
@@ -493,7 +485,6 @@ const mapStateToProps = (state :Map<*, *>) => {
     [ADDRESS]: person.get(ADDRESS),
     app,
     [CASE_NUMBER]: person.get(CASE_NUMBER),
-    [CHECK_IN_DATE]: person.get(CHECK_IN_DATE),
     [CHECK_INS_BY_APPOINTMENT]: person.get(CHECK_INS_BY_APPOINTMENT),
     [DIVERSION_PLAN]: person.get(DIVERSION_PLAN),
     [EMAIL]: person.get(EMAIL),

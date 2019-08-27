@@ -342,11 +342,11 @@ function* editCheckInDateWorker(action :SequenceAction) :Generator<*, *, *> {
       throw response.error;
     }
     const app = yield select(getAppFromState);
-    const enrollmentStatusESID = getEntitySetIdFromApp(app, ENROLLMENT_STATUS);
+    const diversionPlanESID = getEntitySetIdFromApp(app, DIVERSION_PLAN);
     const edm = yield select(getEdmFromState);
 
     yield put(editCheckInDate.success(id, {
-      enrollmentStatusESID,
+      diversionPlanESID,
       edm,
     }));
   }

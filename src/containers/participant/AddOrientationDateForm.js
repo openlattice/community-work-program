@@ -7,6 +7,7 @@ import {
   Label,
   TimePicker,
 } from 'lattice-ui-kit';
+import { DateTime } from 'luxon';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import type { RequestSequence } from 'redux-reqseq';
@@ -69,7 +70,9 @@ class AddOrientationDateForm extends Component<Props, State> {
     } = this.props;
     const { orientationDate, orientationTime } = this.state;
 
-    const orientationDateTime :string = getCombinedDateTime(orientationDate, orientationTime);
+    const defaultOrientationDate = !orientationDate ? DateTime.local().toISODate() : orientationDate;
+
+    const orientationDateTime :string = getCombinedDateTime(defaultOrientationDate, orientationTime);
     const diversionPlanESID :UUID = getEntitySetIdFromApp(app, DIVERSION_PLAN);
     const diversionPlanEKID :UUID = getEntityKeyId(diversionPlan);
     const orientationDateTimePTID :UUID = getPropertyTypeIdFromEdm(edm, ORIENTATION_DATETIME);

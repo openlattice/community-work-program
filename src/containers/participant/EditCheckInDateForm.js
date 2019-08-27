@@ -1,6 +1,7 @@
 // @flow
 import React, { Component } from 'react';
 import { Map } from 'immutable';
+import { DateTime } from 'luxon';
 import {
   Button,
   DatePicker,
@@ -16,7 +17,7 @@ import { getEntityKeyId, getEntitySetIdFromApp, getPropertyTypeIdFromEdm } from 
 import { getCombinedDateTime } from '../../utils/ScheduleUtils';
 import {
   APP_TYPE_FQNS,
-  ENROLLMENT_STATUS_FQNS,
+  DIVERSION_PLAN_FQNS,
 } from '../../core/edm/constants/FullyQualifiedNames';
 import { PERSON, STATE } from '../../utils/constants/ReduxStateConsts';
 import {
@@ -26,18 +27,18 @@ import {
   RowContent
 } from '../../components/Layout';
 
-const { ENROLLMENT_STATUS } = APP_TYPE_FQNS;
-const { EFFECTIVE_DATE } = ENROLLMENT_STATUS_FQNS;
+const { DIVERSION_PLAN } = APP_TYPE_FQNS;
+const { CHECK_IN_DATETIME } = DIVERSION_PLAN_FQNS;
 
 type Props = {
   actions:{
     editCheckInDate :RequestSequence;
   };
   app :Map;
+  diversionPlan :Map;
   edm :Map;
   isLoading :boolean;
   onDiscard :() => void;
-  statusWithCheckInDate :Map;
 };
 
 type State = {
@@ -64,18 +65,20 @@ class EditCheckInDateForm extends Component<Props, State> {
     const {
       actions,
       app,
-      statusWithCheckInDate,
+      diversionPlan,
       edm
     } = this.props;
     const { checkInDate, checkInTime } = this.state;
 
-    const checkInDateTime :string = getCombinedDateTime(checkInDate, checkInTime);
-    const enrollmentStatusESID :UUID = getEntitySetIdFromApp(app, ENROLLMENT_STATUS);
-    const enrollmentStatusEKID :UUID = getEntityKeyId(statusWithCheckInDate);
-    const checkInDateTimePTID :UUID = getPropertyTypeIdFromEdm(edm, EFFECTIVE_DATE);
+    const defaultCheckInDate = !checkInDate ? DateTime.local().toISODate() : checkInDate;
+
+    const checkInDateTime :string = getCombinedDateTime(defaultCheckInDate, checkInTime);
+    const diversionPlanESID :UUID = getEntitySetIdFromApp(app, DIVERSION_PLAN);
+    const diversionPlanEKID :UUID = getEntityKeyId(diversionPlan);
+    const checkInDateTimePTID :UUID = getPropertyTypeIdFromEdm(edm, CHECK_IN_DATETIME);
     const entityData :{} = {
-      [enrollmentStatusESID]: {
-        [enrollmentStatusEKID]: {
+      [diversionPlanESID]: {
+        [diversionPlanEKID]: {
           [checkInDateTimePTID]: [checkInDateTime]
         }
       }
@@ -118,8 +121,8 @@ class EditCheckInDateForm extends Component<Props, State> {
 
 const mapStateToProps = (state :Map) => ({
   app: state.get(STATE.APP),
+  diversionPlan: state.getIn([STATE.PERSON, PERSON.DIVERSION_PLAN], Map()),
   edm: state.get(STATE.EDM),
-  statusWithCheckInDate: state.getIn([STATE.PERSON, PERSON.STATUS_WITH_CHECK_IN_DATE], Map()),
 });
 
 const mapDispatchToProps = dispatch => ({

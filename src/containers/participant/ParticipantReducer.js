@@ -553,25 +553,21 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
           if (storedSeqAction) {
 
             const { value } :Object = seqAction;
-            const { enrollmentStatusESID, edm } = value;
+            const { diversionPlanESID, edm } = value;
 
             const requestValue :Object = storedSeqAction.value;
             const { entityData } :Object = requestValue;
-            const enrollmentStatusEKID = Object.keys(entityData[enrollmentStatusESID])[0];
-            const storedPropertyValueMap = entityData[enrollmentStatusESID][enrollmentStatusEKID];
+            const diversionPlanEKID = Object.keys(entityData[diversionPlanESID])[0];
+            const storedPropertyValueMap = entityData[diversionPlanESID][diversionPlanEKID];
             const checkInDatePTID = Object.keys(storedPropertyValueMap)[0];
             const checkInDate = Object.values(storedPropertyValueMap)[0];
 
-            let statusWithCheckInDate :Map = state.get(STATUS_WITH_CHECK_IN_DATE);
-            const checkInDateTimeFqn :FQN = getPropertyFqnFromEdm(edm, checkInDatePTID);
-            statusWithCheckInDate = statusWithCheckInDate.set(checkInDateTimeFqn, checkInDate);
-
-            let checkInDateFromState = state.get(CHECK_IN_DATE);
-            checkInDateFromState = checkInDate;
+            let diversionPlan :Map = state.get(DIVERSION_PLAN);
+            const sentenceDateTimeFqn :FQN = getPropertyFqnFromEdm(edm, checkInDatePTID);
+            diversionPlan = diversionPlan.set(sentenceDateTimeFqn, checkInDate);
 
             return state
-              .set(STATUS_WITH_CHECK_IN_DATE, statusWithCheckInDate)
-              .set(CHECK_IN_DATE, checkInDateFromState)
+              .set(DIVERSION_PLAN, diversionPlan)
               .setIn([ACTIONS, EDIT_CHECK_IN_DATE, REQUEST_STATE], RequestStates.SUCCESS);
           }
 
