@@ -167,6 +167,7 @@ function* getHoursWorkedWorker(action :SequenceAction) :Generator<*, *, *> {
       .map((diversionPlan :Map) => getEntityKeyId(diversionPlan))
       .valueSeq()
       .toArray();
+    console.log('currentDiversionPlansByParticipant ', currentDiversionPlansByParticipant);
     const searchFilter = {
       entityKeyIds: diversionPlanEKIDs,
       destinationEntitySetIds: [],
@@ -362,7 +363,12 @@ function* getEnrollmentStatusesWorker(action :SequenceAction) :Generator<*, *, *
       enrollmentMap = enrollmentMap.set(ekid, Map());
     });
 
-    yield call(getHoursWorkedWorker, getHoursWorked({ currentDiversionPlansByParticipant}));
+    if (currentDiversionPlansByParticipant.count() === 0 && allDiversionPlansByParticipant.count() !== 0) {
+      currentDiversionPlansByParticipant = allDiversionPlansByParticipant
+        .map((planList :List) => planList.get(0));
+    }
+
+    yield call(getHoursWorkedWorker, getHoursWorked({ currentDiversionPlansByParticipant }));
 
     yield put(getEnrollmentStatuses.success(id, { currentDiversionPlansByParticipant, enrollmentMap }));
   }
