@@ -71,6 +71,7 @@ export const INCIDENT_START_DATETIME = new FullyQualifiedName('incident.startdat
 /* publicsafety.pretrialstatuscaseprocessings */
 export const CASE_FQNS = {
   CASE_NUMBER_TEXT: new FullyQualifiedName('j.CaseNumberText'),
+  COURT_CASE_TYPE: new FullyQualifiedName('justice.courtcasetype'),
 };
 
 /* ol.encounter */
@@ -88,6 +89,7 @@ export const CONTACT_INFO_FQNS = {
 
 /* ol.diversionplan */
 export const DIVERSION_PLAN_FQNS = {
+  CHECK_IN_DATETIME: new FullyQualifiedName('ol.checkindatetime'),
   COMPLETED: new FullyQualifiedName('ol.completed'),
   CONCURRENT: new FullyQualifiedName('ol.concurrent'),
   CONSECUTIVE: new FullyQualifiedName('ol.consecutive'),

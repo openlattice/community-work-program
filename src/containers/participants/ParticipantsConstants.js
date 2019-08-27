@@ -3,6 +3,8 @@ import { Map } from 'immutable';
 
 import { ENROLLMENT_STATUSES } from '../../core/edm/constants/DataModelConsts';
 
+export const EMPTY_FIELD = '----';
+
 export const ALL_PARTICIPANTS_COLUMNS = [
   'NAME',
   'AGE',
@@ -69,18 +71,18 @@ export const STATUS_FILTER_OPTIONS = [
     filter: FILTERS.STATUS,
   },
   {
-    label: ENROLLMENT_STATUSES.COMPLETED,
-    value: ENROLLMENT_STATUSES.COMPLETED,
-    filter: FILTERS.STATUS,
-  },
-  {
-    label: ENROLLMENT_STATUSES.NO_SHOW,
-    value: ENROLLMENT_STATUSES.NO_SHOW,
-    filter: FILTERS.STATUS,
-  },
-  {
     label: ENROLLMENT_STATUSES.REMOVED_NONCOMPLIANT,
     value: ENROLLMENT_STATUSES.REMOVED_NONCOMPLIANT,
+    filter: FILTERS.STATUS,
+  },
+  {
+    label: ENROLLMENT_STATUSES.SUCCESSFULLY_COMPLETED,
+    value: ENROLLMENT_STATUSES.SUCCESSFULLY_COMPLETED,
+    filter: FILTERS.STATUS,
+  },
+  {
+    label: ENROLLMENT_STATUSES.UNSUCCESSFUL,
+    value: ENROLLMENT_STATUSES.UNSUCCESSFUL,
     filter: FILTERS.STATUS,
   },
 ];

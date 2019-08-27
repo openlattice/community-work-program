@@ -167,7 +167,6 @@ function* getHoursWorkedWorker(action :SequenceAction) :Generator<*, *, *> {
       .map((diversionPlan :Map) => getEntityKeyId(diversionPlan))
       .valueSeq()
       .toArray();
-    console.log('currentDiversionPlansByParticipant ', currentDiversionPlansByParticipant);
     const searchFilter = {
       entityKeyIds: diversionPlanEKIDs,
       destinationEntitySetIds: [],

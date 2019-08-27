@@ -12,7 +12,7 @@ const ViolationsWrapper = styled.div`
   border-radius: 5px;
   border: 1px solid ${OL.GREY11};
   display: flex;
-  height: 200px;
+  height: 220px;
   justify-content: center;
   padding: 70px 0;
   width: 320px;

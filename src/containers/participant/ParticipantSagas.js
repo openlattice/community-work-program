@@ -24,9 +24,12 @@ import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../utils/Errors';
 import {
   ADD_INFRACTION,
   ADD_NEW_DIVERSION_PLAN_STATUS,
+  ADD_ORIENTATION_DATE,
   ADD_WORKSITE_PLAN,
   CHECK_IN_FOR_APPOINTMENT,
   CREATE_WORK_APPOINTMENTS,
+  EDIT_CHECK_IN_DATE,
+  EDIT_SENTENCE_DATE,
   GET_ALL_PARTICIPANT_INFO,
   GET_APPOINTMENT_CHECK_INS,
   GET_CASE_INFO,
@@ -34,7 +37,7 @@ import {
   GET_ENROLLMENT_STATUS,
   GET_INFRACTION_TYPES,
   GET_PARTICIPANT,
-  GET_PARTICIPANT_ADDRESS,
+  // GET_PARTICIPANT_ADDRESS,
   GET_PARTICIPANT_INFRACTIONS,
   GET_REQUIRED_HOURS,
   GET_WORKSITE_BY_WORKSITE_PLAN,
@@ -43,9 +46,12 @@ import {
   UPDATE_HOURS_WORKED,
   addInfraction,
   addNewDiversionPlanStatus,
+  addOrientationDate,
   addWorksitePlan,
   checkInForAppointment,
   createWorkAppointments,
+  editCheckInDate,
+  editSentenceDate,
   getAllParticipantInfo,
   getAppointmentCheckIns,
   getCaseInfo,
@@ -53,7 +59,7 @@ import {
   getEnrollmentStatus,
   getInfractionTypes,
   getParticipant,
-  getParticipantAddress,
+  // getParticipantAddress,
   getParticipantInfractions,
   getRequiredHours,
   getWorkAppointments,
@@ -61,8 +67,8 @@ import {
   getWorksitePlans,
   updateHoursWorked,
 } from './ParticipantActions';
-import { submitDataGraph } from '../../core/sagas/data/DataActions';
-import { submitDataGraphWorker } from '../../core/sagas/data/DataSagas';
+import { submitDataGraph, submitPartialReplace } from '../../core/sagas/data/DataActions';
+import { submitDataGraphWorker, submitPartialReplaceWorker } from '../../core/sagas/data/DataSagas';
 import { getWorksites } from '../worksites/WorksitesActions';
 import { getWorksitesWorker } from '../worksites/WorksitesSagas';
 import {
@@ -86,7 +92,7 @@ import {
   INFRACTION_FQNS,
   WORKSITE_PLAN_FQNS,
 } from '../../core/edm/constants/FullyQualifiedNames';
-import { INFRACTIONS_CONSTS } from '../../core/edm/constants/DataModelConsts';
+import { ENROLLMENT_STATUSES, INFRACTIONS_CONSTS } from '../../core/edm/constants/DataModelConsts';
 
 const { UpdateTypes } = Types;
 const { getEntityData, getEntitySetData, updateEntityData } = DataApiActions;
@@ -228,6 +234,135 @@ function* addNewDiversionPlanStatusWorker(action :SequenceAction) :Generator<*, 
 function* addNewDiversionPlanStatusWatcher() :Generator<*, *, *> {
 
   yield takeEvery(ADD_NEW_DIVERSION_PLAN_STATUS, addNewDiversionPlanStatusWorker);
+}
+
+/*
+ *
+ * ParticipantActions.addOrientationDate()
+ *
+ */
+
+function* addOrientationDateWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+  const workerResponse = {};
+  let response :Object = {};
+
+  try {
+    yield put(addOrientationDate.request(id, value));
+
+    response = yield call(submitPartialReplaceWorker, submitPartialReplace(value));
+    if (response.error) {
+      throw response.error;
+    }
+    const app = yield select(getAppFromState);
+    const diversionPlanESID = getEntitySetIdFromApp(app, DIVERSION_PLAN);
+    const edm = yield select(getEdmFromState);
+
+    yield put(addOrientationDate.success(id, {
+      diversionPlanESID,
+      edm,
+    }));
+  }
+  catch (error) {
+    workerResponse.error = error;
+    LOG.error('caught exception in addOrientationDateWorker()', error);
+    yield put(addOrientationDate.failure(id, error));
+  }
+  finally {
+    yield put(addOrientationDate.finally(id));
+  }
+}
+
+function* addOrientationDateWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(ADD_ORIENTATION_DATE, addOrientationDateWorker);
+}
+
+/*
+ *
+ * ParticipantActions.editSentenceDate()
+ *
+ */
+
+function* editSentenceDateWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+  const workerResponse = {};
+  let response :Object = {};
+
+  try {
+    yield put(editSentenceDate.request(id, value));
+
+    response = yield call(submitPartialReplaceWorker, submitPartialReplace(value));
+    if (response.error) {
+      throw response.error;
+    }
+    const app = yield select(getAppFromState);
+    const diversionPlanESID = getEntitySetIdFromApp(app, DIVERSION_PLAN);
+    const edm = yield select(getEdmFromState);
+
+    yield put(editSentenceDate.success(id, {
+      diversionPlanESID,
+      edm,
+    }));
+  }
+  catch (error) {
+    workerResponse.error = error;
+    LOG.error('caught exception in editSentenceDateWorker()', error);
+    yield put(editSentenceDate.failure(id, error));
+  }
+  finally {
+    yield put(editSentenceDate.finally(id));
+  }
+}
+
+function* editSentenceDateWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(EDIT_SENTENCE_DATE, editSentenceDateWorker);
+}
+
+/*
+ *
+ * ParticipantActions.editCheckInDate()
+ *
+ */
+
+function* editCheckInDateWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+  const workerResponse = {};
+  let response :Object = {};
+
+  try {
+    yield put(editCheckInDate.request(id, value));
+
+    response = yield call(submitPartialReplaceWorker, submitPartialReplace(value));
+    if (response.error) {
+      throw response.error;
+    }
+    const app = yield select(getAppFromState);
+    const diversionPlanESID = getEntitySetIdFromApp(app, DIVERSION_PLAN);
+    const edm = yield select(getEdmFromState);
+
+    yield put(editCheckInDate.success(id, {
+      diversionPlanESID,
+      edm,
+    }));
+  }
+  catch (error) {
+    workerResponse.error = error;
+    LOG.error('caught exception in editCheckInDateWorker()', error);
+    yield put(editCheckInDate.failure(id, error));
+  }
+  finally {
+    yield put(editCheckInDate.finally(id));
+  }
+}
+
+function* editCheckInDateWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(EDIT_CHECK_IN_DATE, editCheckInDateWorker);
 }
 
 /*
@@ -532,7 +667,7 @@ function* getCaseInfoWorker(action :SequenceAction) :Generator<*, *, *> {
   const { id, value } = action;
   const workerResponse = {};
   let response :Object = {};
-  let caseNumber :string = '';
+  let personCase :Map = Map();
 
   try {
     yield put(getCaseInfo.request(id));
@@ -557,16 +692,11 @@ function* getCaseInfoWorker(action :SequenceAction) :Generator<*, *, *> {
       throw response.error;
     }
     if (response.data[personEKID]) {
-      caseNumber = fromJS(response.data[personEKID])
-        .map((caseNeighbor :Map) => getNeighborDetails(caseNeighbor))
-        .map((caseObj :Map) => {
-          const { [CASE_NUMBER_TEXT]: caseNumberText } = getEntityProperties(caseObj, [CASE_NUMBER_TEXT]);
-          return caseNumberText;
-        })
-        .get(0);
+      const caseResult :Map = fromJS(response.data[personEKID][0]);
+      personCase = getNeighborDetails(caseResult);
     }
 
-    yield put(getCaseInfo.success(id, caseNumber));
+    yield put(getCaseInfo.success(id, personCase));
   }
   catch (error) {
     workerResponse.error = error;
@@ -1016,7 +1146,7 @@ function* getEnrollmentStatusWorker(action :SequenceAction) :Generator<*, *, *> 
       if (response.error) {
         throw response.error;
       }
-      let enrollmentStatusesByDiversionPlan :Map = fromJS(response.data)
+      const enrollmentStatusesByDiversionPlan :Map = fromJS(response.data)
         .map((enrollmentList :List) => enrollmentList.map((enrollment :Map) => getNeighborDetails(enrollment)));
 
       /*
@@ -1024,18 +1154,18 @@ function* getEnrollmentStatusWorker(action :SequenceAction) :Generator<*, *, *> 
        */
       if (enrollmentStatusesByDiversionPlan.count() > 0) {
 
-        enrollmentStatusesByDiversionPlan = enrollmentStatusesByDiversionPlan.map((statusList :List) => {
-          const sortedStatusList :List = sortEntitiesByDateProperty(statusList, EFFECTIVE_DATE);
-          return sortedStatusList.last();
-        });
+        const mostRecentEnrollmentStatusesByDiversionPlan :Map = enrollmentStatusesByDiversionPlan
+          .map((statusList :List) => {
+            const sortedStatusList :List = sortEntitiesByDateProperty(statusList, EFFECTIVE_DATE);
+            return sortedStatusList.last();
+          });
         enrollmentStatus = sortEntitiesByDateProperty(
-          enrollmentStatusesByDiversionPlan, EFFECTIVE_DATE
+          mostRecentEnrollmentStatusesByDiversionPlan, EFFECTIVE_DATE
         ).last();
-
         /*
          * 4. Additionally, return relevant diversion plan.
          */
-        const diversionPlanEKID :UUID = enrollmentStatusesByDiversionPlan
+        const diversionPlanEKID :UUID = mostRecentEnrollmentStatusesByDiversionPlan
           .findKey((status :Map) => getEntityKeyId(status) === getEntityKeyId(enrollmentStatus));
         diversionPlan = diversionPlans.get(personEKID).find((plan :Map) => getEntityKeyId(plan) === diversionPlanEKID);
 
@@ -1409,12 +1539,18 @@ export {
   addInfractionWorker,
   addNewDiversionPlanStatusWatcher,
   addNewDiversionPlanStatusWorker,
+  addOrientationDateWatcher,
+  addOrientationDateWorker,
   addWorksitePlanWatcher,
   addWorksitePlanWorker,
   checkInForAppointmentWatcher,
   checkInForAppointmentWorker,
   createWorkAppointmentsWatcher,
   createWorkAppointmentsWorker,
+  editCheckInDateWatcher,
+  editCheckInDateWorker,
+  editSentenceDateWatcher,
+  editSentenceDateWorker,
   getAppointmentCheckInsWatcher,
   getAppointmentCheckInsWorker,
   getAllParticipantInfoWatcher,

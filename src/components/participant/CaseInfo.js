@@ -1,65 +1,73 @@
 // @flow
 import React from 'react';
 import styled from 'styled-components';
+import {
+  fromJS,
+  List,
+  Map,
+  OrderedMap
+} from 'immutable';
+import { Card, CardSegment, DataGrid } from 'lattice-ui-kit';
 
+import { EMPTY_FIELD } from '../../containers/participants/ParticipantsConstants';
 import { formatNumericalValue } from '../../utils/FormattingUtils';
-import { OL } from '../../core/style/Colors';
+import { CASE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { getEntityProperties } from '../../utils/DataUtils';
+
+const { CASE_NUMBER_TEXT, COURT_CASE_TYPE } = CASE_FQNS;
 
 const CaseInfoWrapper = styled.div`
-  align-items: center;
-  background-color: ${OL.WHITE};
-  border-radius: 5px;
-  border: 1px solid ${OL.GREY11};
-  display: flex;
-  flex-direction: column;
-  height: 200px;
-  justify-content: center;
-  padding: 20px 0;
-  width: 258px;
+  width: 100%;
 `;
 
-const Header = styled.div`
-  color: ${OL.GREY02};
-  font-size: 16px;
-  font-weight: 600;
-  margin: 8px;
-`;
-
-const Number = styled.span`
-  color: ${OL.BLACK};
-  font-size: 18px;
-  font-weight: 600;
-  margin: 0 8px 0 0
-`;
-
-const NumberWrapper = styled.span`
-  align-items: center;
-  border-bottom: 1px solid ${OL.GREY08};
-  display: flex;
-  justify-content: center;
-  padding-bottom: 15px;
-  :last-of-type {
-    border: none;
-    padding-bottom: 0;
-  }
-`;
+const labelMap :OrderedMap = OrderedMap({
+  courtType: 'Court type',
+  docketNumber: 'Docket number',
+  reqHours: 'Required hours',
+  warnings: 'Warnings',
+  violations: 'Violations',
+});
 
 type Props = {
-  caseNumber :string;
+  personCase :string;
   hours :number;
+  violations :List;
+  warnings :List;
 };
 
-const CaseInfo = ({ caseNumber, hours } :Props) => (
-  <CaseInfoWrapper>
-    <Header>Case Number</Header>
-    <NumberWrapper>
-      <Number>{ caseNumber }</Number>
-    </NumberWrapper>
-    <Header>Required Hours</Header>
-    <NumberWrapper>
-      <Number>{ formatNumericalValue(hours) }</Number>
-    </NumberWrapper>
-  </CaseInfoWrapper>
-);
+const CaseInfo = ({
+  personCase,
+  hours,
+  violations,
+  warnings,
+} :Props) => {
+
+  const { [CASE_NUMBER_TEXT]: caseNumbers, [COURT_CASE_TYPE]: courtCaseType } = getEntityProperties(
+    personCase, [CASE_NUMBER_TEXT, COURT_CASE_TYPE]
+  );
+  const courtType = !courtCaseType ? EMPTY_FIELD : courtCaseType;
+  const docketNumber = !caseNumbers ? EMPTY_FIELD : caseNumbers;
+  const warningsCount = formatNumericalValue(warnings.count());
+  const violationsCount = formatNumericalValue(violations.count());
+  const data :Map = fromJS({
+    courtType,
+    docketNumber,
+    reqHours: formatNumericalValue(hours),
+    warnings: warningsCount,
+    violations: violationsCount,
+  });
+  return (
+    <CaseInfoWrapper>
+      <Card>
+        <CardSegment padding="lg" vertical>
+          <DataGrid
+              columns={3}
+              data={data}
+              labelMap={labelMap} />
+        </CardSegment>
+      </Card>
+    </CaseInfoWrapper>
+  );
+};
 
 export default CaseInfo;

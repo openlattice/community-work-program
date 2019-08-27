@@ -167,7 +167,7 @@ class DashboardContainer extends Component<Props, State> {
 
     const { enrollmentByParticipant, hoursWorked, participants } = this.props;
     const participantsWithHoursComplete :Map = hoursWorked
-      .filter((hours :Map) => (hours.get(WORKED) === hours.get(REQUIRED)));
+      .filter((hours :Map) => (hours.get(WORKED) === hours.get(REQUIRED)) && hours.get(REQUIRED) !== 0);
 
     let pendingCompletionReview :List = List();
     participantsWithHoursComplete.forEach((hours :Map, ekid :UUID) => {

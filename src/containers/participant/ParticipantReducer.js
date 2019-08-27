@@ -7,9 +7,12 @@ import type { FQN } from 'lattice';
 import {
   addInfraction,
   addNewDiversionPlanStatus,
+  addOrientationDate,
   addWorksitePlan,
   checkInForAppointment,
   createWorkAppointments,
+  editCheckInDate,
+  editSentenceDate,
   getAppointmentCheckIns,
   getAllParticipantInfo,
   getCaseInfo,
@@ -46,13 +49,15 @@ const {
   ACTIONS,
   ADD_INFRACTION_EVENT,
   ADD_NEW_DIVERSION_PLAN_STATUS,
+  ADD_ORIENTATION_DATE,
   ADD_WORKSITE_PLAN,
   ADDRESS,
-  CASE_NUMBER,
   CHECK_INS_BY_APPOINTMENT,
   CHECK_IN_FOR_APPOINTMENT,
   CREATE_WORK_APPOINTMENTS,
   DIVERSION_PLAN,
+  EDIT_CHECK_IN_DATE,
+  EDIT_SENTENCE_DATE,
   EMAIL,
   ENROLLMENT_STATUS,
   ERRORS,
@@ -72,6 +77,7 @@ const {
   INFRACTIONS_INFO,
   INFRACTION_TYPES,
   PARTICIPANT,
+  PERSON_CASE,
   PHONE,
   REQUEST_STATE,
   REQUIRED_HOURS,
@@ -91,6 +97,9 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     [ADD_NEW_DIVERSION_PLAN_STATUS]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
+    [ADD_ORIENTATION_DATE]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
     [ADD_WORKSITE_PLAN]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
@@ -98,6 +107,12 @@ const INITIAL_STATE :Map<*, *> = fromJS({
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [CREATE_WORK_APPOINTMENTS]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [EDIT_CHECK_IN_DATE]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [EDIT_SENTENCE_DATE]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [GET_APPOINTMENT_CHECK_INS]: {
@@ -138,7 +153,6 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     },
   },
   [ADDRESS]: '',
-  [CASE_NUMBER]: List(),
   [CHECK_INS_BY_APPOINTMENT]: Map(),
   [DIVERSION_PLAN]: Map(),
   [EMAIL]: '',
@@ -163,6 +177,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [INFRACTIONS_INFO]: Map(),
   [INFRACTION_TYPES]: List(),
   [PARTICIPANT]: Map(),
+  [PERSON_CASE]: Map(),
   [PHONE]: '',
   [REQUIRED_HOURS]: 0,
   [VIOLATIONS]: List(),
@@ -305,6 +320,47 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
         FAILURE: () => state
           .setIn([ACTIONS, ADD_NEW_DIVERSION_PLAN_STATUS, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, ADD_NEW_DIVERSION_PLAN_STATUS, action.id]),
+      });
+    }
+
+    case addOrientationDate.case(action.type): {
+
+      return addOrientationDate.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, ADD_ORIENTATION_DATE, action.id], action)
+          .setIn([ACTIONS, ADD_ORIENTATION_DATE, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+
+          const seqAction :SequenceAction = action;
+          const storedSeqAction :SequenceAction = state.getIn([ACTIONS, ADD_ORIENTATION_DATE, seqAction.id]);
+
+          if (storedSeqAction) {
+
+            const { value } :Object = seqAction;
+            const { diversionPlanESID, edm } = value;
+
+            const requestValue :Object = storedSeqAction.value;
+            const { entityData } :Object = requestValue;
+            const diversionPlanEKID = Object.keys(entityData[diversionPlanESID])[0];
+            const storedPropertyValueMap = entityData[diversionPlanESID][diversionPlanEKID];
+            const orientationDatePTID = Object.keys(storedPropertyValueMap)[0];
+            const orientationDate = Object.values(storedPropertyValueMap)[0];
+
+            let diversionPlan :Map = state.get(DIVERSION_PLAN);
+            const orientationDateTimeFqn :FQN = getPropertyFqnFromEdm(edm, orientationDatePTID);
+            diversionPlan = diversionPlan.set(orientationDateTimeFqn, orientationDate);
+
+            return state
+              .set(DIVERSION_PLAN, diversionPlan)
+              .setIn([ACTIONS, ADD_ORIENTATION_DATE, REQUEST_STATE], RequestStates.SUCCESS);
+          }
+
+          return state;
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, ADD_ORIENTATION_DATE, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, ADD_ORIENTATION_DATE, action.id]),
       });
     }
 
@@ -478,6 +534,88 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
       });
     }
 
+    case editCheckInDate.case(action.type): {
+
+      return editCheckInDate.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, EDIT_CHECK_IN_DATE, action.id], action)
+          .setIn([ACTIONS, EDIT_CHECK_IN_DATE, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+
+          const seqAction :SequenceAction = action;
+          const storedSeqAction :SequenceAction = state.getIn([ACTIONS, EDIT_CHECK_IN_DATE, seqAction.id]);
+
+          if (storedSeqAction) {
+
+            const { value } :Object = seqAction;
+            const { diversionPlanESID, edm } = value;
+
+            const requestValue :Object = storedSeqAction.value;
+            const { entityData } :Object = requestValue;
+            const diversionPlanEKID = Object.keys(entityData[diversionPlanESID])[0];
+            const storedPropertyValueMap = entityData[diversionPlanESID][diversionPlanEKID];
+            const checkInDatePTID = Object.keys(storedPropertyValueMap)[0];
+            const checkInDate = Object.values(storedPropertyValueMap)[0];
+
+            let diversionPlan :Map = state.get(DIVERSION_PLAN);
+            const sentenceDateTimeFqn :FQN = getPropertyFqnFromEdm(edm, checkInDatePTID);
+            diversionPlan = diversionPlan.set(sentenceDateTimeFqn, checkInDate);
+
+            return state
+              .set(DIVERSION_PLAN, diversionPlan)
+              .setIn([ACTIONS, EDIT_CHECK_IN_DATE, REQUEST_STATE], RequestStates.SUCCESS);
+          }
+
+          return state;
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, EDIT_CHECK_IN_DATE, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, EDIT_CHECK_IN_DATE, action.id]),
+      });
+    }
+
+    case editSentenceDate.case(action.type): {
+
+      return editSentenceDate.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, EDIT_SENTENCE_DATE, action.id], action)
+          .setIn([ACTIONS, EDIT_SENTENCE_DATE, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+
+          const seqAction :SequenceAction = action;
+          const storedSeqAction :SequenceAction = state.getIn([ACTIONS, EDIT_SENTENCE_DATE, seqAction.id]);
+
+          if (storedSeqAction) {
+
+            const { value } :Object = seqAction;
+            const { diversionPlanESID, edm } = value;
+
+            const requestValue :Object = storedSeqAction.value;
+            const { entityData } :Object = requestValue;
+            const diversionPlanEKID = Object.keys(entityData[diversionPlanESID])[0];
+            const storedPropertyValueMap = entityData[diversionPlanESID][diversionPlanEKID];
+            const sentenceDatePTID = Object.keys(storedPropertyValueMap)[0];
+            const sentenceDate = Object.values(storedPropertyValueMap)[0];
+
+            let diversionPlan :Map = state.get(DIVERSION_PLAN);
+            const sentenceDateTimeFqn :FQN = getPropertyFqnFromEdm(edm, sentenceDatePTID);
+            diversionPlan = diversionPlan.set(sentenceDateTimeFqn, sentenceDate);
+
+            return state
+              .set(DIVERSION_PLAN, diversionPlan)
+              .setIn([ACTIONS, EDIT_SENTENCE_DATE, REQUEST_STATE], RequestStates.SUCCESS);
+          }
+
+          return state;
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, EDIT_SENTENCE_DATE, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, EDIT_SENTENCE_DATE, action.id]),
+      });
+    }
+
     case getAppointmentCheckIns.case(action.type): {
 
       return getAppointmentCheckIns.reducer(state, action, {
@@ -560,14 +698,14 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
           }
 
           return state
-            .set(CASE_NUMBER, value)
+            .set(PERSON_CASE, value)
             .setIn([ACTIONS, GET_CASE_INFO, REQUEST_STATE], RequestStates.SUCCESS);
         },
         FAILURE: () => {
 
           const { value } = action;
           return state
-            .set(CASE_NUMBER, List())
+            .set(PERSON_CASE, Map())
             .setIn([ERRORS, GET_CASE_INFO], value)
             .setIn([ACTIONS, GET_CASE_INFO, REQUEST_STATE], RequestStates.FAILURE);
         },
