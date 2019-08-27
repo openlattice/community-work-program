@@ -103,6 +103,7 @@ function* initializeApplicationWatcher() :Generator<*, *, *> {
 function* switchOrganizationWorker(action :Object) :Generator<*, *, *> {
   AccountUtils.storeOrganizationId(action.org.orgId);
   yield put(push(Routes.DASHBOARD));
+  yield call(initializeApplicationWorker, initializeApplication());
 }
 
 function* switchOrganizationWatcher() :Generator<*, *, *> {

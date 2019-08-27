@@ -133,12 +133,15 @@ const ParticipantsTable = ({
           // Dates
           // if sentenceTerms is defined and we need to include sentenceData:
           // get sentenceDate from sentenceTerms, and if doesn't exist, return empty ''
-          const sentenceDate = (isDefined(currentDiversionPlansMap) && includeSentenceDate)
+          let sentenceDate = (isDefined(currentDiversionPlansMap) && includeSentenceDate)
             ? currentDiversionPlansMap.getIn([personEKID, DATETIME_RECEIVED, 0])
             : undefined;
           // can only provide a valid sentenceEndDate if we have a valid sentenceDate
           // need to provide empty '' if sentenceEnd required but we don't have valid sentenceDate
           const sentenceDateObj = DateTime.fromISO(sentenceDate);
+          if (!sentenceDateObj.isValid && includeSentenceDate) {
+            sentenceDate = '';
+          }
           let sentenceEndDate;
           if (sentenceDateObj.isValid && includeSentenceEndDate) {
             sentenceEndDate = sentenceDateObj.plus({ days: 90 }).toLocaleString();
