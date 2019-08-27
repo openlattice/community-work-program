@@ -1,6 +1,7 @@
 // @flow
 import React, { Component } from 'react';
 import { Map } from 'immutable';
+import { DateTime } from 'luxon';
 import {
   Button,
   DatePicker,
@@ -69,7 +70,9 @@ class EditSentenceDateForm extends Component<Props, State> {
     } = this.props;
     const { sentenceDate, sentenceTime } = this.state;
 
-    const sentenceDateTime :string = getCombinedDateTime(sentenceDate, sentenceTime);
+    const defaultSentenceDate = !sentenceDate ? DateTime.local().toISODate() : sentenceDate;
+
+    const sentenceDateTime :string = getCombinedDateTime(defaultSentenceDate, sentenceTime);
     const diversionPlanESID :UUID = getEntitySetIdFromApp(app, DIVERSION_PLAN);
     const diversionPlanEKID :UUID = getEntityKeyId(diversionPlan);
     const sentenceDateTimePTID :UUID = getPropertyTypeIdFromEdm(edm, DATETIME_RECEIVED);

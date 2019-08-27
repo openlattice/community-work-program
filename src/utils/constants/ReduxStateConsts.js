@@ -21,6 +21,7 @@ export const APP = {
   REQUEST_STATE: 'requestState',
   SELECTED_ORG_ID: 'selectedOrganizationId',
   SELECTED_ORG_TITLE: 'selectedOrganizationTitle',
+  SWITCH_ORGANIZATION: 'switchOrganization',
 };
 
 /* People */
@@ -53,7 +54,6 @@ export const PERSON = {
   ADD_NEW_DIVERSION_PLAN_STATUS: 'addNewDiversionPlanStatus',
   ADD_ORIENTATION_DATE: 'addOrientationDate',
   ADD_WORKSITE_PLAN: 'addWorksitePlan',
-  CHECK_IN_DATE: 'checkInDate',
   CHECK_INS_BY_APPOINTMENT: 'checkInsByAppointment',
   CHECK_IN_FOR_APPOINTMENT: 'checkInForAppointment',
   CREATE_WORK_APPOINTMENTS: 'createWorkAppointments',
@@ -81,7 +81,6 @@ export const PERSON = {
   PHONE: 'phone',
   REQUEST_STATE: 'requestState',
   REQUIRED_HOURS: 'requiredHours',
-  STATUS_WITH_CHECK_IN_DATE: 'statusWithCheckInDate',
   UPDATE_HOURS_WORKED: 'updateHoursWorked',
   VIOLATIONS: 'violations',
   WARNINGS: 'warnings',

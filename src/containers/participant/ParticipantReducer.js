@@ -41,7 +41,7 @@ import {
 } from '../../core/edm/constants/FullyQualifiedNames';
 
 const { WORKSITE_PLAN } = APP_TYPE_FQNS;
-const { EFFECTIVE_DATE, STATUS } = ENROLLMENT_STATUS_FQNS;
+const { STATUS } = ENROLLMENT_STATUS_FQNS;
 const { TYPE } = INFRACTION_EVENT_FQNS;
 const { CATEGORY } = INFRACTION_FQNS;
 const { HOURS_WORKED } = WORKSITE_PLAN_FQNS;
@@ -52,7 +52,6 @@ const {
   ADD_ORIENTATION_DATE,
   ADD_WORKSITE_PLAN,
   ADDRESS,
-  CHECK_IN_DATE,
   CHECK_INS_BY_APPOINTMENT,
   CHECK_IN_FOR_APPOINTMENT,
   CREATE_WORK_APPOINTMENTS,
@@ -82,7 +81,6 @@ const {
   PHONE,
   REQUEST_STATE,
   REQUIRED_HOURS,
-  STATUS_WITH_CHECK_IN_DATE,
   UPDATE_HOURS_WORKED,
   VIOLATIONS,
   WARNINGS,
@@ -155,8 +153,6 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     },
   },
   [ADDRESS]: '',
-  [PERSON_CASE]: Map(),
-  [CHECK_IN_DATE]: '',
   [CHECK_INS_BY_APPOINTMENT]: Map(),
   [DIVERSION_PLAN]: Map(),
   [EMAIL]: '',
@@ -181,9 +177,9 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [INFRACTIONS_INFO]: Map(),
   [INFRACTION_TYPES]: List(),
   [PARTICIPANT]: Map(),
+  [PERSON_CASE]: Map(),
   [PHONE]: '',
   [REQUIRED_HOURS]: 0,
-  [STATUS_WITH_CHECK_IN_DATE]: Map(),
   [VIOLATIONS]: List(),
   [WARNINGS]: List(),
   [WORKSITES_BY_WORKSITE_PLAN]: Map(),
@@ -553,25 +549,21 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
           if (storedSeqAction) {
 
             const { value } :Object = seqAction;
-            const { enrollmentStatusESID, edm } = value;
+            const { diversionPlanESID, edm } = value;
 
             const requestValue :Object = storedSeqAction.value;
             const { entityData } :Object = requestValue;
-            const enrollmentStatusEKID = Object.keys(entityData[enrollmentStatusESID])[0];
-            const storedPropertyValueMap = entityData[enrollmentStatusESID][enrollmentStatusEKID];
+            const diversionPlanEKID = Object.keys(entityData[diversionPlanESID])[0];
+            const storedPropertyValueMap = entityData[diversionPlanESID][diversionPlanEKID];
             const checkInDatePTID = Object.keys(storedPropertyValueMap)[0];
             const checkInDate = Object.values(storedPropertyValueMap)[0];
 
-            let statusWithCheckInDate :Map = state.get(STATUS_WITH_CHECK_IN_DATE);
-            const checkInDateTimeFqn :FQN = getPropertyFqnFromEdm(edm, checkInDatePTID);
-            statusWithCheckInDate = statusWithCheckInDate.set(checkInDateTimeFqn, checkInDate);
-
-            let checkInDateFromState = state.get(CHECK_IN_DATE);
-            checkInDateFromState = checkInDate;
+            let diversionPlan :Map = state.get(DIVERSION_PLAN);
+            const sentenceDateTimeFqn :FQN = getPropertyFqnFromEdm(edm, checkInDatePTID);
+            diversionPlan = diversionPlan.set(sentenceDateTimeFqn, checkInDate);
 
             return state
-              .set(STATUS_WITH_CHECK_IN_DATE, statusWithCheckInDate)
-              .set(CHECK_IN_DATE, checkInDateFromState)
+              .set(DIVERSION_PLAN, diversionPlan)
               .setIn([ACTIONS, EDIT_CHECK_IN_DATE, REQUEST_STATE], RequestStates.SUCCESS);
           }
 
@@ -776,13 +768,9 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
             return state;
           }
 
-          const { [EFFECTIVE_DATE]: checkInDate } = getEntityProperties(value.statusWithCheckInDate, [EFFECTIVE_DATE]);
-
           return state
             .set(ENROLLMENT_STATUS, value.enrollmentStatus)
             .set(DIVERSION_PLAN, value.diversionPlan)
-            .set(STATUS_WITH_CHECK_IN_DATE, value.statusWithCheckInDate)
-            .set(CHECK_IN_DATE, checkInDate)
             .setIn([ACTIONS, GET_ENROLLMENT_STATUS, REQUEST_STATE], RequestStates.SUCCESS);
         },
         FAILURE: () => {

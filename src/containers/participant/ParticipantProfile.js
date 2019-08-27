@@ -2,7 +2,7 @@
 import React, { Component } from 'react';
 import styled from 'styled-components';
 import { List, Map } from 'immutable';
-import { Button, Card, CardSegment } from 'lattice-ui-kit';
+import { Button } from 'lattice-ui-kit';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { RequestStates } from 'redux-reqseq';
@@ -49,14 +49,18 @@ import {
   WORKSITES
 } from '../../utils/constants/ReduxStateConsts';
 
-const { DATETIME_RECEIVED, NOTES, ORIENTATION_DATETIME } = DIVERSION_PLAN_FQNS;
+const {
+  CHECK_IN_DATETIME,
+  DATETIME_RECEIVED,
+  NOTES,
+  ORIENTATION_DATETIME
+} = DIVERSION_PLAN_FQNS;
 const { STATUS } = ENROLLMENT_STATUS_FQNS;
 const { FIRST_NAME, LAST_NAME } = PEOPLE_FQNS;
 const { NAME } = WORKSITE_FQNS;
 const {
   ACTIONS,
   ADDRESS,
-  CHECK_IN_DATE,
   CHECK_INS_BY_APPOINTMENT,
   DIVERSION_PLAN,
   EMAIL,
@@ -142,8 +146,6 @@ type Props = {
   };
   address :string;
   app :Map;
-  personCase :Map;
-  checkInDate :string;
   checkInsByAppointment :Map;
   diversionPlan :Map;
   email :string;
@@ -151,6 +153,7 @@ type Props = {
   getAllParticipantInfoRequestState :RequestState;
   getInitializeAppRequestState :RequestState;
   participant :Map;
+  personCase :Map;
   personEKID :string;
   phone :string;
   requiredHours :number;
@@ -321,14 +324,13 @@ class ParticipantProfile extends Component<Props, State> {
     const {
       actions,
       address,
-      personCase,
-      checkInDate,
       diversionPlan,
       email,
       enrollmentStatus,
       getAllParticipantInfoRequestState,
       getInitializeAppRequestState,
       participant,
+      personCase,
       phone,
       requiredHours,
       violations,
@@ -367,10 +369,11 @@ class ParticipantProfile extends Component<Props, State> {
 
     const diversionPlanEKID :UUID = getEntityKeyId(diversionPlan);
     const {
+      [CHECK_IN_DATETIME]: checkInDate,
       [DATETIME_RECEIVED]: sentenceDate,
       [ORIENTATION_DATETIME]: orientationDateTime,
       [NOTES]: planNotes
-    } = getEntityProperties(diversionPlan, [DATETIME_RECEIVED, NOTES, ORIENTATION_DATETIME]);
+    } = getEntityProperties(diversionPlan, [DATETIME_RECEIVED, NOTES, ORIENTATION_DATETIME, NOTES]);
 
     const orientationDateAlreadyRecorded :boolean = isDefined(diversionPlan.get(ORIENTATION_DATETIME));
     const addOrEditButtonText :string = orientationDateAlreadyRecorded
@@ -487,7 +490,6 @@ const mapStateToProps = (state :Map<*, *>) => {
   return {
     [ADDRESS]: person.get(ADDRESS),
     app,
-    [CHECK_IN_DATE]: person.get(CHECK_IN_DATE),
     [CHECK_INS_BY_APPOINTMENT]: person.get(CHECK_INS_BY_APPOINTMENT),
     [DIVERSION_PLAN]: person.get(DIVERSION_PLAN),
     [EMAIL]: person.get(EMAIL),

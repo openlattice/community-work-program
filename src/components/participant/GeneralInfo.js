@@ -116,9 +116,7 @@ const GeneralInfo = ({
             </StyledPersonPhoto>
           )
           : (
-            <>
-              <FontAwesomeIcon icon={faUserCircle} size="6x" color="#D8D8D8" />
-            </>
+            <FontAwesomeIcon icon={faUserCircle} size="6x" color="#D8D8D8" />
           )
       }
       <NameHeader>{ `${firstName} ${lastName}` }</NameHeader>

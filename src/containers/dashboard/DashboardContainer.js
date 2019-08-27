@@ -74,7 +74,7 @@ type Props = {
   app :Map;
   currentDiversionPlansByParticipant :Map;
   enrollmentByParticipant :Map;
-  getInitializeAppRequestState :RequestState;
+  initializeAppRequestState :RequestState;
   getDiversionPlansRequestState :RequestState;
   hoursWorked :Map;
   infractionCountsByParticipant :Map;
@@ -113,7 +113,8 @@ class DashboardContainer extends Component<Props, State> {
 
   componentDidUpdate(prevProps :Props) {
     const { actions, app, participants } = this.props;
-    if (prevProps.app.count() !== app.count()) {
+    if (prevProps.app.count() !== app.count()
+      || prevProps.app.get(APP.SELECTED_ORG_ID) !== app.get(APP.SELECTED_ORG_ID)) {
       actions.getDiversionPlans();
     }
     if (prevProps.participants.count() !== participants.count()) {
@@ -212,7 +213,7 @@ class DashboardContainer extends Component<Props, State> {
   render() {
     const {
       currentDiversionPlansByParticipant,
-      getInitializeAppRequestState,
+      initializeAppRequestState,
       getDiversionPlansRequestState,
       hoursWorked,
     } = this.props;
@@ -224,7 +225,7 @@ class DashboardContainer extends Component<Props, State> {
     } = this.state;
 
     if (getDiversionPlansRequestState === RequestStates.PENDING
-        || getInitializeAppRequestState === RequestStates.PENDING) {
+        || initializeAppRequestState === RequestStates.PENDING) {
       return (
         <LogoLoader
             loadingText="Please wait..."
@@ -315,10 +316,10 @@ const mapStateToProps = (state :Map<*, *>) => {
     app,
     [CURRENT_DIVERSION_PLANS_BY_PARTICIPANT]: people.get(CURRENT_DIVERSION_PLANS_BY_PARTICIPANT),
     [ENROLLMENT_BY_PARTICIPANT]: people.get(ENROLLMENT_BY_PARTICIPANT),
-    getInitializeAppRequestState: app.getIn([APP.ACTIONS, APP.INITIALIZE_APPLICATION, APP.REQUEST_STATE]),
     getDiversionPlansRequestState: people.getIn([PEOPLE.ACTIONS, PEOPLE.GET_DIVERSION_PLANS, PEOPLE.REQUEST_STATE]),
     [HOURS_WORKED]: people.get(HOURS_WORKED),
     [INFRACTION_COUNTS_BY_PARTICIPANT]: people.get(INFRACTION_COUNTS_BY_PARTICIPANT),
+    initializeAppRequestState: app.getIn([APP.ACTIONS, APP.INITIALIZE_APPLICATION, APP.REQUEST_STATE]),
     [PARTICIPANTS]: people.get(PARTICIPANTS),
   };
 };

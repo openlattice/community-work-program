@@ -5,8 +5,9 @@
 import React, { Component } from 'react';
 
 import styled from 'styled-components';
+import { Map } from 'immutable';
 import { AuthActions, AuthUtils } from 'lattice-auth';
-import { Button, Colors } from 'lattice-ui-kit';
+import { Button, Colors, Select } from 'lattice-ui-kit';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { withRouter } from 'react-router';
@@ -104,10 +105,19 @@ const DisplayName = styled.span`
   font-size: 12px;
 `;
 
+const SelectWrapper = styled.div`
+  min-width: 200px;
+  margin: 0 10px;
+`;
+
 type Props = {
   actions :{
     logout :() => void;
   };
+  loading :boolean;
+  organizations :Map<*, *>;
+  selectedOrg :string;
+  switchOrg :(organization :Object) => void;
 };
 
 class AppHeaderContainer extends Component<Props> {
@@ -120,6 +130,26 @@ class AppHeaderContainer extends Component<Props> {
     }
     return null;
   };
+
+  renderOrgSelector = () => {
+    const {
+      organizations,
+      selectedOrg,
+      switchOrg,
+      loading
+    } = this.props;
+
+    return (
+      <Select
+          value={organizations.find(option => option.value === selectedOrg)}
+          isClearable={false}
+          isLoading={loading}
+          isMulti={false}
+          onChange={switchOrg}
+          options={organizations.toJS()}
+          placeholder="Select..." />
+    );
+  }
 
   renderLeftSideContent = () => (
     <LeftSideContentWrapper>
@@ -138,6 +168,7 @@ class AppHeaderContainer extends Component<Props> {
     const { actions } = this.props;
     return (
       <RightSideContentWrapper>
+        <SelectWrapper>{ this.renderOrgSelector() }</SelectWrapper>
         { this.renderDisplayName() }
         <LogoutButton onClick={actions.logout}>
           Log Out
