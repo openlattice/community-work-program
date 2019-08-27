@@ -13,6 +13,7 @@ import { isDefined } from '../../utils/LangUtils';
 import { APP_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import {
   RESET_REQUEST_STATE,
+  SWITCH_ORGANIZATION,
   initializeApplication,
 } from './AppActions';
 
@@ -56,6 +57,12 @@ export default function appReducer(state :Map<*, *> = INITIAL_STATE, action :Obj
         return state.setIn([actionType, REQUEST_STATE], RequestStates.STANDBY);
       }
       return state;
+    }
+
+    case SWITCH_ORGANIZATION: {
+      return state
+        .set(APP.SELECTED_ORG_ID, action.org.orgId)
+        .set(APP.SELECTED_ORG_TITLE, action.org.title);
     }
 
     case initializeApplication.case(action.type): {

@@ -16,9 +16,17 @@ function resetRequestState(actionType :string) {
   };
 }
 
+const SWITCH_ORGANIZATION :string = 'SWITCH_ORGANIZATION';
+const switchOrganization = (org :Object) :Object => ({
+  org,
+  type: SWITCH_ORGANIZATION
+});
+
 export {
   INITIALIZE_APPLICATION,
   RESET_REQUEST_STATE,
+  SWITCH_ORGANIZATION,
   initializeApplication,
   resetRequestState,
+  switchOrganization,
 };

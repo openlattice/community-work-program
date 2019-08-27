@@ -21,6 +21,7 @@ export const APP = {
   REQUEST_STATE: 'requestState',
   SELECTED_ORG_ID: 'selectedOrganizationId',
   SELECTED_ORG_TITLE: 'selectedOrganizationTitle',
+  SWITCH_ORGANIZATION: 'switchOrganization',
 };
 
 /* People */
