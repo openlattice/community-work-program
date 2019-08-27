@@ -141,6 +141,7 @@ const mapDispatchToProps = dispatch => ({
     initializeApplication: AppActions.initializeApplication,
     logout,
     resetRequestState: ParticipantsActions.resetRequestState,
+    switchOrganization: AppActions.switchOrganization,
   }, dispatch)
 });
 
