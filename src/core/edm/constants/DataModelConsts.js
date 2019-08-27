@@ -28,9 +28,9 @@ export const ENROLLMENT_STATUSES = {
   AWAITING_CHECKIN: 'Awaiting check-in',
   AWAITING_ORIENTATION: 'Awaiting orientation',
   CLOSED: 'Closed',
-  COMPLETED: 'Completed',
-  NO_SHOW: 'No show',
-  REMOVED_NONCOMPLIANT: 'Removed noncompliant'
+  REMOVED_NONCOMPLIANT: 'Removed Noncompliant',
+  SUCCESSFULLY_COMPLETED: 'Successfully Completed',
+  UNSUCCESSFUL: 'Unsuccessful',
 };
 
 export const WORKSITE_ENROLLMENT_STATUSES = {
