@@ -3,6 +3,8 @@ import { Map } from 'immutable';
 
 import { ENROLLMENT_STATUSES } from '../../core/edm/constants/DataModelConsts';
 
+export const EMPTY_FIELD = '----';
+
 export const ALL_PARTICIPANTS_COLUMNS = [
   'NAME',
   'AGE',

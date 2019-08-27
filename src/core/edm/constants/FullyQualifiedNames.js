@@ -88,6 +88,7 @@ export const CONTACT_INFO_FQNS = {
 
 /* ol.diversionplan */
 export const DIVERSION_PLAN_FQNS = {
+  CHECK_IN_DATETIME: new FullyQualifiedName('ol.checkindatetime'),
   COMPLETED: new FullyQualifiedName('ol.completed'),
   CONCURRENT: new FullyQualifiedName('ol.concurrent'),
   CONSECUTIVE: new FullyQualifiedName('ol.consecutive'),

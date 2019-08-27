@@ -15,7 +15,12 @@ import { PEOPLE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { ENROLLMENT_STATUSES } from '../../core/edm/constants/DataModelConsts';
 
 const { getStyleVariation } = StyleUtils;
-const { DOB, MUGSHOT } = PEOPLE_FQNS;
+const {
+  DOB,
+  MUGSHOT,
+  FIRST_NAME,
+  LAST_NAME
+} = PEOPLE_FQNS;
 
 const statusColorVariation = getStyleVariation('status', {
   default: OL.GREY02,
@@ -29,6 +34,13 @@ const statusColorVariation = getStyleVariation('status', {
   [ENROLLMENT_STATUSES.REMOVED_NONCOMPLIANT]: ENROLLMENT_STATUS_COLORS.REMOVED_NONCOMPLIANT,
 });
 
+const NameHeader = styled.div`
+  font-size: 26px;
+  font-weight: 600;
+  color: ${OL.BLACK};
+  margin: 5px 0;
+`;
+
 const InfoWrapper = styled.div`
   align-items: center;
   background-color: ${OL.WHITE};
@@ -36,10 +48,10 @@ const InfoWrapper = styled.div`
   border: 1px solid ${OL.GREY11};
   display: flex;
   flex-direction: column;
-  height: 400px;
+  height: 425px;
   justify-content: center;
   padding: 30px;
-  width: 400px;
+  width: 425px;
 `;
 
 const StyledPersonPhoto = styled(PersonPhoto)`
@@ -47,12 +59,7 @@ const StyledPersonPhoto = styled(PersonPhoto)`
   display: flex;
   height: 100px;
   justify-content: center;
-  margin: 0 0 30px 0;
   width: 100px;
-`;
-
-const StyledPlaceholderPicture = styled.div`
-  margin: 0 0 30px 0;
 `;
 
 const InfoRow = styled.div`
@@ -99,7 +106,12 @@ const GeneralInfo = ({
   status
 } :Props) => {
 
-  const { [DOB]: dateOfBirth, [MUGSHOT]: mugshot } = getEntityProperties(person, [DOB, MUGSHOT]);
+  const {
+    [DOB]: dateOfBirth,
+    [FIRST_NAME]: firstName,
+    [LAST_NAME]: lastName,
+    [MUGSHOT]: mugshot,
+  } = getEntityProperties(person, [DOB, FIRST_NAME, LAST_NAME, MUGSHOT]);
   const dob = formatAsDate(dateOfBirth);
   return (
     <InfoWrapper>
@@ -111,11 +123,10 @@ const GeneralInfo = ({
             </StyledPersonPhoto>
           )
           : (
-            <StyledPlaceholderPicture>
-              <FontAwesomeIcon icon={faUserCircle} size="6x" color="#D8D8D8" />
-            </StyledPlaceholderPicture>
+            <FontAwesomeIcon icon={faUserCircle} size="6x" color="#D8D8D8" />
           )
       }
+      <NameHeader>{ `${firstName} ${lastName}` }</NameHeader>
       <InfoRow>
         <Title>Status</Title>
         <Value

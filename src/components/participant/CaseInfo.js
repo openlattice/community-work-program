@@ -12,10 +12,10 @@ const CaseInfoWrapper = styled.div`
   border: 1px solid ${OL.GREY11};
   display: flex;
   flex-direction: column;
-  height: 200px;
+  height: 220px;
   justify-content: center;
   padding: 20px 0;
-  width: 258px;
+  width: 265px;
 `;
 
 const Header = styled.div`
