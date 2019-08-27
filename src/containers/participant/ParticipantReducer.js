@@ -41,7 +41,7 @@ import {
 } from '../../core/edm/constants/FullyQualifiedNames';
 
 const { WORKSITE_PLAN } = APP_TYPE_FQNS;
-const { EFFECTIVE_DATE, STATUS } = ENROLLMENT_STATUS_FQNS;
+const { STATUS } = ENROLLMENT_STATUS_FQNS;
 const { TYPE } = INFRACTION_EVENT_FQNS;
 const { CATEGORY } = INFRACTION_FQNS;
 const { HOURS_WORKED } = WORKSITE_PLAN_FQNS;
@@ -53,7 +53,6 @@ const {
   ADD_WORKSITE_PLAN,
   ADDRESS,
   CASE_NUMBER,
-  CHECK_IN_DATE,
   CHECK_INS_BY_APPOINTMENT,
   CHECK_IN_FOR_APPOINTMENT,
   CREATE_WORK_APPOINTMENTS,
@@ -82,7 +81,6 @@ const {
   PHONE,
   REQUEST_STATE,
   REQUIRED_HOURS,
-  STATUS_WITH_CHECK_IN_DATE,
   UPDATE_HOURS_WORKED,
   VIOLATIONS,
   WARNINGS,
@@ -156,7 +154,6 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   },
   [ADDRESS]: '',
   [CASE_NUMBER]: List(),
-  [CHECK_IN_DATE]: '',
   [CHECK_INS_BY_APPOINTMENT]: Map(),
   [DIVERSION_PLAN]: Map(),
   [EMAIL]: '',
@@ -183,7 +180,6 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [PARTICIPANT]: Map(),
   [PHONE]: '',
   [REQUIRED_HOURS]: 0,
-  [STATUS_WITH_CHECK_IN_DATE]: Map(),
   [VIOLATIONS]: List(),
   [WARNINGS]: List(),
   [WORKSITES_BY_WORKSITE_PLAN]: Map(),
@@ -772,13 +768,9 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
             return state;
           }
 
-          const { [EFFECTIVE_DATE]: checkInDate } = getEntityProperties(value.statusWithCheckInDate, [EFFECTIVE_DATE]);
-
           return state
             .set(ENROLLMENT_STATUS, value.enrollmentStatus)
             .set(DIVERSION_PLAN, value.diversionPlan)
-            .set(STATUS_WITH_CHECK_IN_DATE, value.statusWithCheckInDate)
-            .set(CHECK_IN_DATE, checkInDate)
             .setIn([ACTIONS, GET_ENROLLMENT_STATUS, REQUEST_STATE], RequestStates.SUCCESS);
         },
         FAILURE: () => {

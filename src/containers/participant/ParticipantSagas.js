@@ -1098,7 +1098,6 @@ function* getEnrollmentStatusWorker(action :SequenceAction) :Generator<*, *, *> 
   let response :Object = {};
   let enrollmentStatus :Map = Map();
   let diversionPlan :Map = Map();
-  let statusWithCheckInDate = Map();
 
   try {
     yield put(getEnrollmentStatus.request(id));
@@ -1175,32 +1174,12 @@ function* getEnrollmentStatusWorker(action :SequenceAction) :Generator<*, *, *> 
           .findKey((status :Map) => getEntityKeyId(status) === getEntityKeyId(enrollmentStatus));
         diversionPlan = diversionPlans.get(personEKID).find((plan :Map) => getEntityKeyId(plan) === diversionPlanEKID);
 
-        /*
-         * 5. Lastly, get check-in date from 'Awaiting orientation' status.
-         */
-        const allStatusesForDiversionPlan :List = enrollmentStatusesByDiversionPlan.get(diversionPlanEKID);
-        const awaitingOrientationStatuses :List = allStatusesForDiversionPlan.filter((status :Map) => {
-          const { [STATUS]: statusName } = getEntityProperties(status, [STATUS]);
-          return statusName === ENROLLMENT_STATUSES.AWAITING_ORIENTATION;
-        });
-        let oldestAwaitingOrientationStatus = Map();
-        if (awaitingOrientationStatuses.count() === 1) {
-          oldestAwaitingOrientationStatus = awaitingOrientationStatuses.get(0);
-        }
-        else if (awaitingOrientationStatuses.count() > 1) {
-          const sortedStatuses = sortEntitiesByDateProperty(awaitingOrientationStatuses, EFFECTIVE_DATE);
-          oldestAwaitingOrientationStatus = sortedStatuses.first();
-        }
-        if (!oldestAwaitingOrientationStatus.isEmpty()) {
-          statusWithCheckInDate = oldestAwaitingOrientationStatus;
-        }
-
         /* Call getWorksitePlans() to find all worksite plans for current diversion plan */
         yield call(getWorksitePlansWorker, getWorksitePlans({ diversionPlan }));
       }
     }
 
-    yield put(getEnrollmentStatus.success(id, { diversionPlan, enrollmentStatus, statusWithCheckInDate }));
+    yield put(getEnrollmentStatus.success(id, { diversionPlan, enrollmentStatus }));
   }
   catch (error) {
     workerResponse.error = error;
