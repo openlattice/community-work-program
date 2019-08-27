@@ -71,6 +71,7 @@ export const INCIDENT_START_DATETIME = new FullyQualifiedName('incident.startdat
 /* publicsafety.pretrialstatuscaseprocessings */
 export const CASE_FQNS = {
   CASE_NUMBER_TEXT: new FullyQualifiedName('j.CaseNumberText'),
+  COURT_CASE_TYPE: new FullyQualifiedName('justice.courtcasetype'),
 };
 
 /* ol.encounter */

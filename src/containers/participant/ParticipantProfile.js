@@ -56,7 +56,6 @@ const { NAME } = WORKSITE_FQNS;
 const {
   ACTIONS,
   ADDRESS,
-  CASE_NUMBER,
   CHECK_IN_DATE,
   CHECK_INS_BY_APPOINTMENT,
   DIVERSION_PLAN,
@@ -64,6 +63,7 @@ const {
   ENROLLMENT_STATUS,
   GET_ALL_PARTICIPANT_INFO,
   PARTICIPANT,
+  PERSON_CASE,
   PHONE,
   REQUEST_STATE,
   REQUIRED_HOURS,
@@ -142,7 +142,7 @@ type Props = {
   };
   address :string;
   app :Map;
-  caseNumber :string;
+  personCase :Map;
   checkInDate :string;
   checkInsByAppointment :Map;
   diversionPlan :Map;
@@ -321,7 +321,7 @@ class ParticipantProfile extends Component<Props, State> {
     const {
       actions,
       address,
-      caseNumber,
+      personCase,
       checkInDate,
       diversionPlan,
       email,
@@ -409,8 +409,8 @@ class ParticipantProfile extends Component<Props, State> {
                   sentenceDateTime={sentenceDate}
                   workStartDateTime={workStartDateTime} />
               <CaseInfo
-                  caseNumber={caseNumber}
                   hours={requiredHours}
+                  personCase={personCase}
                   warnings={warnings}
                   violations={violations} />
               <PlanNotes
@@ -487,7 +487,6 @@ const mapStateToProps = (state :Map<*, *>) => {
   return {
     [ADDRESS]: person.get(ADDRESS),
     app,
-    [CASE_NUMBER]: person.get(CASE_NUMBER),
     [CHECK_IN_DATE]: person.get(CHECK_IN_DATE),
     [CHECK_INS_BY_APPOINTMENT]: person.get(CHECK_INS_BY_APPOINTMENT),
     [DIVERSION_PLAN]: person.get(DIVERSION_PLAN),
@@ -496,6 +495,7 @@ const mapStateToProps = (state :Map<*, *>) => {
     getAllParticipantInfoRequestState: person.getIn([ACTIONS, GET_ALL_PARTICIPANT_INFO, REQUEST_STATE]),
     getInitializeAppRequestState: app.getIn([APP.ACTIONS, APP.INITIALIZE_APPLICATION, APP.REQUEST_STATE]),
     [PARTICIPANT]: person.get(PARTICIPANT),
+    [PERSON_CASE]: person.get(PERSON_CASE),
     [PHONE]: person.get(PHONE),
     [REQUIRED_HOURS]: person.get(REQUIRED_HOURS),
     [VIOLATIONS]: person.get(VIOLATIONS),
