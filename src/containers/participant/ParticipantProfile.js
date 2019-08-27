@@ -12,7 +12,7 @@ import GeneralInfo from '../../components/participant/GeneralInfo';
 import KeyDates from '../../components/participant/KeyDates';
 import CaseInfo from '../../components/participant/CaseInfo';
 import ParticipantWorkSchedule from './schedule/ParticipantWorkSchedule';
-import InfractionsDisplay from '../../components/participant/InfractionsDisplay';
+import PlanNotes from '../../components/participant/PlanNotes';
 
 import AssignedWorksitesContainer from './assignedworksites/AssignedWorksitesContainer';
 import AddNewPlanStatusModal from './AddNewPlanStatusModal';
@@ -49,20 +49,25 @@ import {
   WORKSITES
 } from '../../utils/constants/ReduxStateConsts';
 
-const { CHECK_IN_DATETIME, DATETIME_RECEIVED, ORIENTATION_DATETIME } = DIVERSION_PLAN_FQNS;
+const {
+  CHECK_IN_DATETIME,
+  DATETIME_RECEIVED,
+  NOTES,
+  ORIENTATION_DATETIME
+} = DIVERSION_PLAN_FQNS;
 const { STATUS } = ENROLLMENT_STATUS_FQNS;
 const { FIRST_NAME, LAST_NAME } = PEOPLE_FQNS;
 const { NAME } = WORKSITE_FQNS;
 const {
   ACTIONS,
   ADDRESS,
-  CASE_NUMBER,
   CHECK_INS_BY_APPOINTMENT,
   DIVERSION_PLAN,
   EMAIL,
   ENROLLMENT_STATUS,
   GET_ALL_PARTICIPANT_INFO,
   PARTICIPANT,
+  PERSON_CASE,
   PHONE,
   REQUEST_STATE,
   REQUIRED_HOURS,
@@ -114,6 +119,7 @@ const NameHeader = styled.div`
 const BasicInfoWrapper = styled.div`
   margin-top: 15px;
   width: 100%;
+  height: 500px;
   display: flex;
   justify-content: space-between;
 `;
@@ -123,12 +129,8 @@ const InnerColumnWrapper = styled.div`
   flex-direction: column;
   justify-content: space-between;
   align-items: center;
-`;
-
-const InnerRowWrapper = styled.div`
-  display: flex;
-  justify-content: space-between;
-  width: 100%;
+  height: 100%;
+  width: 610px;
 `;
 
 const ButtonsWrapper = styled.div`
@@ -144,7 +146,6 @@ type Props = {
   };
   address :string;
   app :Map;
-  caseNumber :string;
   checkInsByAppointment :Map;
   diversionPlan :Map;
   email :string;
@@ -152,6 +153,7 @@ type Props = {
   getAllParticipantInfoRequestState :RequestState;
   getInitializeAppRequestState :RequestState;
   participant :Map;
+  personCase :Map;
   personEKID :string;
   phone :string;
   requiredHours :number;
@@ -322,13 +324,13 @@ class ParticipantProfile extends Component<Props, State> {
     const {
       actions,
       address,
-      caseNumber,
       diversionPlan,
       email,
       enrollmentStatus,
       getAllParticipantInfoRequestState,
       getInitializeAppRequestState,
       participant,
+      personCase,
       phone,
       requiredHours,
       violations,
@@ -369,8 +371,9 @@ class ParticipantProfile extends Component<Props, State> {
     const {
       [CHECK_IN_DATETIME]: checkInDate,
       [DATETIME_RECEIVED]: sentenceDate,
-      [ORIENTATION_DATETIME]: orientationDateTime
-    } = getEntityProperties(diversionPlan, [CHECK_IN_DATETIME, DATETIME_RECEIVED, ORIENTATION_DATETIME]);
+      [ORIENTATION_DATETIME]: orientationDateTime,
+      [NOTES]: planNotes
+    } = getEntityProperties(diversionPlan, [DATETIME_RECEIVED, NOTES, ORIENTATION_DATETIME, NOTES]);
 
     const orientationDateAlreadyRecorded :boolean = isDefined(diversionPlan.get(ORIENTATION_DATETIME));
     const addOrEditButtonText :string = orientationDateAlreadyRecorded
@@ -408,10 +411,13 @@ class ParticipantProfile extends Component<Props, State> {
                   orientationDateTime={orientationDateTime}
                   sentenceDateTime={sentenceDate}
                   workStartDateTime={workStartDateTime} />
-              <InnerRowWrapper>
-                <CaseInfo caseNumber={caseNumber} hours={requiredHours} />
-                <InfractionsDisplay violations={violations} warnings={warnings} />
-              </InnerRowWrapper>
+              <CaseInfo
+                  hours={requiredHours}
+                  personCase={personCase}
+                  warnings={warnings}
+                  violations={violations} />
+              <PlanNotes
+                  notes={planNotes} />
             </InnerColumnWrapper>
           </BasicInfoWrapper>
         </ProfileBody>
@@ -484,7 +490,6 @@ const mapStateToProps = (state :Map<*, *>) => {
   return {
     [ADDRESS]: person.get(ADDRESS),
     app,
-    [CASE_NUMBER]: person.get(CASE_NUMBER),
     [CHECK_INS_BY_APPOINTMENT]: person.get(CHECK_INS_BY_APPOINTMENT),
     [DIVERSION_PLAN]: person.get(DIVERSION_PLAN),
     [EMAIL]: person.get(EMAIL),
@@ -492,6 +497,7 @@ const mapStateToProps = (state :Map<*, *>) => {
     getAllParticipantInfoRequestState: person.getIn([ACTIONS, GET_ALL_PARTICIPANT_INFO, REQUEST_STATE]),
     getInitializeAppRequestState: app.getIn([APP.ACTIONS, APP.INITIALIZE_APPLICATION, APP.REQUEST_STATE]),
     [PARTICIPANT]: person.get(PARTICIPANT),
+    [PERSON_CASE]: person.get(PERSON_CASE),
     [PHONE]: person.get(PHONE),
     [REQUIRED_HOURS]: person.get(REQUIRED_HOURS),
     [VIOLATIONS]: person.get(VIOLATIONS),

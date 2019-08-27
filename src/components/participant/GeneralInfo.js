@@ -2,7 +2,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import { Map } from 'immutable';
-import { StyleUtils } from 'lattice-ui-kit';
+import { Label, StyleUtils } from 'lattice-ui-kit';
 import { faUserCircle } from '@fortawesome/pro-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { withRouter } from 'react-router-dom';
@@ -29,16 +29,16 @@ const statusColorVariation = getStyleVariation('status', {
   [ENROLLMENT_STATUSES.ACTIVE_REOPENED]: ENROLLMENT_STATUS_COLORS.ACTIVE_REOPENED,
   [ENROLLMENT_STATUSES.AWAITING_CHECKIN]: ENROLLMENT_STATUS_COLORS.AWAITING_CHECKIN,
   [ENROLLMENT_STATUSES.AWAITING_ORIENTATION]: ENROLLMENT_STATUS_COLORS.AWAITING_ORIENTATION,
-  [ENROLLMENT_STATUSES.COMPLETED]: ENROLLMENT_STATUS_COLORS.COMPLETED,
-  [ENROLLMENT_STATUSES.NO_SHOW]: ENROLLMENT_STATUS_COLORS.NO_SHOW,
   [ENROLLMENT_STATUSES.REMOVED_NONCOMPLIANT]: ENROLLMENT_STATUS_COLORS.REMOVED_NONCOMPLIANT,
+  [ENROLLMENT_STATUSES.SUCCESSFULLY_COMPLETED]: ENROLLMENT_STATUS_COLORS.SUCCESSFULLY_COMPLETED,
+  [ENROLLMENT_STATUSES.UNSUCCESSFUL]: ENROLLMENT_STATUS_COLORS.UNSUCCESSFUL,
 });
 
 const NameHeader = styled.div`
   font-size: 26px;
   font-weight: 600;
   color: ${OL.BLACK};
-  margin: 5px 0;
+  margin: 15px 0;
 `;
 
 const InfoWrapper = styled.div`
@@ -48,7 +48,7 @@ const InfoWrapper = styled.div`
   border: 1px solid ${OL.GREY11};
   display: flex;
   flex-direction: column;
-  height: 425px;
+  height: 100%;
   justify-content: center;
   padding: 30px;
   width: 425px;
@@ -74,13 +74,6 @@ const InfoRow = styled.div`
   :last-of-type {
     border: none;
   }
-`;
-
-const Title = styled.div`
-  color: ${OL.GREY02};
-  font-weight: 600;
-  text-align: left;
-  width: 40%;
 `;
 
 const Value = styled.div`
@@ -128,26 +121,26 @@ const GeneralInfo = ({
       }
       <NameHeader>{ `${firstName} ${lastName}` }</NameHeader>
       <InfoRow>
-        <Title>Status</Title>
+        <Label subtle>Status</Label>
         <Value
             status={status}>
           { status }
         </Value>
       </InfoRow>
       <InfoRow>
-        <Title>Date of Birth</Title>
+        <Label subtle>Date of Birth</Label>
         <Value>{ dob }</Value>
       </InfoRow>
       <InfoRow>
-        <Title>Phone #</Title>
+        <Label subtle>Phone #</Label>
         <Value>{ phone }</Value>
       </InfoRow>
       <InfoRow>
-        <Title>Address</Title>
+        <Label subtle>Address</Label>
         <Value>{ address }</Value>
       </InfoRow>
       <InfoRow>
-        <Title>Email</Title>
+        <Label subtle>Email</Label>
         <Value>{ email }</Value>
       </InfoRow>
     </InfoWrapper>

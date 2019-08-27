@@ -667,7 +667,7 @@ function* getCaseInfoWorker(action :SequenceAction) :Generator<*, *, *> {
   const { id, value } = action;
   const workerResponse = {};
   let response :Object = {};
-  let caseNumber :string = '';
+  let personCase :Map = Map();
 
   try {
     yield put(getCaseInfo.request(id));
@@ -692,16 +692,11 @@ function* getCaseInfoWorker(action :SequenceAction) :Generator<*, *, *> {
       throw response.error;
     }
     if (response.data[personEKID]) {
-      caseNumber = fromJS(response.data[personEKID])
-        .map((caseNeighbor :Map) => getNeighborDetails(caseNeighbor))
-        .map((caseObj :Map) => {
-          const { [CASE_NUMBER_TEXT]: caseNumberText } = getEntityProperties(caseObj, [CASE_NUMBER_TEXT]);
-          return caseNumberText;
-        })
-        .get(0);
+      const caseResult :Map = fromJS(response.data[personEKID][0]);
+      personCase = getNeighborDetails(caseResult);
     }
 
-    yield put(getCaseInfo.success(id, caseNumber));
+    yield put(getCaseInfo.success(id, personCase));
   }
   catch (error) {
     workerResponse.error = error;

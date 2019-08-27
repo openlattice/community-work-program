@@ -52,7 +52,6 @@ const {
   ADD_ORIENTATION_DATE,
   ADD_WORKSITE_PLAN,
   ADDRESS,
-  CASE_NUMBER,
   CHECK_INS_BY_APPOINTMENT,
   CHECK_IN_FOR_APPOINTMENT,
   CREATE_WORK_APPOINTMENTS,
@@ -78,6 +77,7 @@ const {
   INFRACTIONS_INFO,
   INFRACTION_TYPES,
   PARTICIPANT,
+  PERSON_CASE,
   PHONE,
   REQUEST_STATE,
   REQUIRED_HOURS,
@@ -153,7 +153,6 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     },
   },
   [ADDRESS]: '',
-  [CASE_NUMBER]: List(),
   [CHECK_INS_BY_APPOINTMENT]: Map(),
   [DIVERSION_PLAN]: Map(),
   [EMAIL]: '',
@@ -178,6 +177,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [INFRACTIONS_INFO]: Map(),
   [INFRACTION_TYPES]: List(),
   [PARTICIPANT]: Map(),
+  [PERSON_CASE]: Map(),
   [PHONE]: '',
   [REQUIRED_HOURS]: 0,
   [VIOLATIONS]: List(),
@@ -698,14 +698,14 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
           }
 
           return state
-            .set(CASE_NUMBER, value)
+            .set(PERSON_CASE, value)
             .setIn([ACTIONS, GET_CASE_INFO, REQUEST_STATE], RequestStates.SUCCESS);
         },
         FAILURE: () => {
 
           const { value } = action;
           return state
-            .set(CASE_NUMBER, List())
+            .set(PERSON_CASE, Map())
             .setIn([ERRORS, GET_CASE_INFO], value)
             .setIn([ACTIONS, GET_CASE_INFO, REQUEST_STATE], RequestStates.FAILURE);
         },
