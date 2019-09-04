@@ -10,7 +10,7 @@ import type { RequestSequence, RequestState } from 'redux-reqseq';
 
 import GeneralInfo from '../../components/participant/GeneralInfo';
 import KeyDates from '../../components/participant/KeyDates';
-import CaseInfo from '../../components/participant/CaseInfo';
+import CaseInfo from './cases/CaseInfo';
 import ParticipantWorkSchedule from './schedule/ParticipantWorkSchedule';
 import PlanNotes from '../../components/participant/PlanNotes';
 
@@ -53,7 +53,8 @@ const {
   CHECK_IN_DATETIME,
   DATETIME_RECEIVED,
   NOTES,
-  ORIENTATION_DATETIME
+  ORIENTATION_DATETIME,
+  REQUIRED_HOURS,
 } = DIVERSION_PLAN_FQNS;
 const { STATUS } = ENROLLMENT_STATUS_FQNS;
 const { FIRST_NAME, LAST_NAME } = PEOPLE_FQNS;
@@ -70,7 +71,6 @@ const {
   PERSON_CASE,
   PHONE,
   REQUEST_STATE,
-  REQUIRED_HOURS,
   VIOLATIONS,
   WARNINGS,
   WORK_APPOINTMENTS_BY_WORKSITE_PLAN,
@@ -82,6 +82,14 @@ const { WORKSITES_LIST } = WORKSITES;
 const ENROLLMENT_STATUSES_EXCLUDING_PREENROLLMENT = Object.values(ENROLLMENT_STATUSES)
   .filter(status => status !== ENROLLMENT_STATUSES.AWAITING_CHECKIN
     && status !== ENROLLMENT_STATUSES.AWAITING_ORIENTATION);
+
+/* Constants for Modals */
+const ASSIGN_WORKSITE = 'AssignWorksite';
+const CHECK_IN_DATE = 'CheckInDate';
+const ENROLLMENT = 'Enrollment';
+const ORIENTATION_DATE = 'OrientationDate';
+const SENTENCE_DATE = 'SentenceDate';
+const WORK_APPOINTMENT = 'WorkAppointment';
 
 const ProfileWrapper = styled.div`
   display: flex;
@@ -156,7 +164,6 @@ type Props = {
   personCase :Map;
   personEKID :string;
   phone :string;
-  requiredHours :number;
   violations :List;
   warnings :List;
   workAppointmentsByWorksitePlan :Map;
@@ -248,75 +255,17 @@ class ParticipantProfile extends Component<Props, State> {
     }
   }
 
-  handleShowEnrollmentModal = () => {
+  handleShowModal = (modalName :string) => {
+    const stateToChange = `show${modalName}Modal`;
     this.setState({
-      showEnrollmentModal: true
+      [stateToChange]: true,
     });
   }
 
-  handleHideEnrollmentModal = () => {
+  handleHideModal = (modalName :string) => {
+    const stateToChange = `hide${modalName}Modal`;
     this.setState({
-      showEnrollmentModal: false
-    });
-  }
-
-  handleShowAssignWorksiteModal = () => {
-    this.setState({
-      showAssignWorksiteModal: true
-    });
-  }
-
-  handleHideAssignWorksiteModal = () => {
-    this.setState({
-      showAssignWorksiteModal: false
-    });
-  }
-
-  handleShowWorkAppointmentModal = () => {
-    this.setState({
-      showWorkAppointmentModal: true
-    });
-  }
-
-  handleHideWorkAppointmentModal = () => {
-    this.setState({
-      showWorkAppointmentModal: false
-    });
-  }
-
-  handleShowOrientationDateModal = () => {
-    this.setState({
-      showOrientationDateModal: true
-    });
-  }
-
-  handleHideOrientationDateModal = () => {
-    this.setState({
-      showOrientationDateModal: false
-    });
-  }
-
-  handleShowSentenceDateModal = () => {
-    this.setState({
-      showSentenceDateModal: true
-    });
-  }
-
-  handleHideSentenceDateModal = () => {
-    this.setState({
-      showSentenceDateModal: false
-    });
-  }
-
-  handleShowCheckInDateModal = () => {
-    this.setState({
-      showCheckInDateModal: true
-    });
-  }
-
-  handleHideCheckInDateModal = () => {
-    this.setState({
-      showCheckInDateModal: false
+      [stateToChange]: false,
     });
   }
 
@@ -332,7 +281,6 @@ class ParticipantProfile extends Component<Props, State> {
       participant,
       personCase,
       phone,
-      requiredHours,
       violations,
       warnings,
       workAppointmentsByWorksitePlan,
@@ -372,8 +320,15 @@ class ParticipantProfile extends Component<Props, State> {
       [CHECK_IN_DATETIME]: checkInDate,
       [DATETIME_RECEIVED]: sentenceDate,
       [ORIENTATION_DATETIME]: orientationDateTime,
-      [NOTES]: planNotes
-    } = getEntityProperties(diversionPlan, [DATETIME_RECEIVED, NOTES, ORIENTATION_DATETIME, NOTES]);
+      [NOTES]: planNotes,
+      [REQUIRED_HOURS]: requiredHours,
+    } = getEntityProperties(diversionPlan, [
+      CHECK_IN_DATETIME,
+      DATETIME_RECEIVED,
+      NOTES,
+      ORIENTATION_DATETIME,
+      REQUIRED_HOURS,
+    ]);
 
     const orientationDateAlreadyRecorded :boolean = isDefined(diversionPlan.get(ORIENTATION_DATETIME));
     const addOrEditButtonText :string = orientationDateAlreadyRecorded
@@ -390,10 +345,10 @@ class ParticipantProfile extends Component<Props, State> {
               Back to Participants
             </BackNavButton>
             <ButtonsWrapper>
-              <Button onClick={this.handleShowSentenceDateModal}>Edit Sentence Date</Button>
-              <Button onClick={this.handleShowCheckInDateModal}>Edit Check-In Date</Button>
-              <Button onClick={this.handleShowOrientationDateModal}>{ addOrEditButtonText }</Button>
-              <Button mode="primary" onClick={this.handleShowEnrollmentModal}>
+              <Button onClick={() => this.handleShowModal(SENTENCE_DATE)}>Edit Sentence Date</Button>
+              <Button onClick={() => this.handleShowModal(CHECK_IN_DATE)}>Edit Check-In Date</Button>
+              <Button onClick={() => this.handleShowModal(ORIENTATION_DATE)}>{ addOrEditButtonText }</Button>
+              <Button mode="primary" onClick={() => this.handleShowModal(ENROLLMENT)}>
                 Change Enrollment Status
               </Button>
             </ButtonsWrapper>
@@ -427,7 +382,7 @@ class ParticipantProfile extends Component<Props, State> {
               <ProfileBody>
                 <NameRowWrapper>
                   <NameHeader>Assigned Work Sites</NameHeader>
-                  <Button onClick={this.handleShowAssignWorksiteModal}>Add Work Site</Button>
+                  <Button onClick={() => this.handleShowModal(ASSIGN_WORKSITE)}>Add Work Site</Button>
                 </NameRowWrapper>
                 <AssignedWorksitesContainer
                     worksitePlans={worksitePlans}
@@ -439,7 +394,7 @@ class ParticipantProfile extends Component<Props, State> {
         <ProfileBody>
           <NameRowWrapper>
             <NameHeader>Work Schedule</NameHeader>
-            <Button onClick={this.handleShowWorkAppointmentModal}>Create Appointment</Button>
+            <Button onClick={() => this.handleShowModal(WORK_APPOINTMENT)}>Create Appointment</Button>
           </NameRowWrapper>
           <ParticipantWorkSchedule
               workAppointmentsByWorksitePlan={workAppointmentsByWorksitePlan}
@@ -457,27 +412,27 @@ class ParticipantProfile extends Component<Props, State> {
         <AddNewPlanStatusModal
             currentStatus={status}
             isOpen={showEnrollmentModal}
-            onClose={this.handleHideEnrollmentModal}
+            onClose={() => this.handleHideModal(ENROLLMENT)}
             personName={firstName} />
         <AssignWorksiteModal
             diversionPlanEKID={diversionPlanEKID}
             isOpen={showAssignWorksiteModal}
-            onClose={this.handleHideAssignWorksiteModal}
+            onClose={() => this.handleHideModal(ASSIGN_WORKSITE)}
             personEKID={personEKID}
             worksites={worksitesList} />
         <CreateWorkAppointmentModal
             isOpen={showWorkAppointmentModal}
-            onClose={this.handleHideWorkAppointmentModal}
+            onClose={() => this.handleHideModal(WORK_APPOINTMENT)}
             personEKID={personEKID} />
         <AddOrientationDateModal
             isOpen={showOrientationDateModal}
-            onClose={this.handleHideOrientationDateModal} />
+            onClose={() => this.handleHideModal(ORIENTATION_DATE)} />
         <EditSentenceDateModal
             isOpen={showSentenceDateModal}
-            onClose={this.handleHideSentenceDateModal} />
+            onClose={() => this.handleHideModal(SENTENCE_DATE)} />
         <EditCheckInDateModal
             isOpen={showCheckInDateModal}
-            onClose={this.handleHideCheckInDateModal} />
+            onClose={() => this.handleHideModal(CHECK_IN_DATE)} />
       </ProfileWrapper>
     );
   }
@@ -499,7 +454,6 @@ const mapStateToProps = (state :Map<*, *>) => {
     [PARTICIPANT]: person.get(PARTICIPANT),
     [PERSON_CASE]: person.get(PERSON_CASE),
     [PHONE]: person.get(PHONE),
-    [REQUIRED_HOURS]: person.get(REQUIRED_HOURS),
     [VIOLATIONS]: person.get(VIOLATIONS),
     [WARNINGS]: person.get(WARNINGS),
     [WORK_APPOINTMENTS_BY_WORKSITE_PLAN]: person.get(WORK_APPOINTMENTS_BY_WORKSITE_PLAN),
