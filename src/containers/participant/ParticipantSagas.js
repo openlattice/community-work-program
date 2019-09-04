@@ -28,6 +28,7 @@ import {
   ADD_WORKSITE_PLAN,
   CHECK_IN_FOR_APPOINTMENT,
   CREATE_WORK_APPOINTMENTS,
+  EDIT_CASE_AND_HOURS,
   EDIT_CHECK_IN_DATE,
   EDIT_SENTENCE_DATE,
   GET_ALL_PARTICIPANT_INFO,
@@ -49,6 +50,7 @@ import {
   addWorksitePlan,
   checkInForAppointment,
   createWorkAppointments,
+  editCaseAndHours,
   editCheckInDate,
   editSentenceDate,
   getAllParticipantInfo,
@@ -90,7 +92,7 @@ import {
   INFRACTION_FQNS,
   WORKSITE_PLAN_FQNS,
 } from '../../core/edm/constants/FullyQualifiedNames';
-import { ENROLLMENT_STATUSES, INFRACTIONS_CONSTS } from '../../core/edm/constants/DataModelConsts';
+import { INFRACTIONS_CONSTS } from '../../core/edm/constants/DataModelConsts';
 
 const { UpdateTypes } = Types;
 const { getEntityData, getEntitySetData, updateEntityData } = DataApiActions;
@@ -275,6 +277,51 @@ function* addOrientationDateWorker(action :SequenceAction) :Generator<*, *, *> {
 function* addOrientationDateWatcher() :Generator<*, *, *> {
 
   yield takeEvery(ADD_ORIENTATION_DATE, addOrientationDateWorker);
+}
+
+/*
+ *
+ * ParticipantActions.editCaseAndHours()
+ *
+ */
+
+function* editCaseAndHoursWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+  const workerResponse = {};
+  let response :Object = {};
+
+  try {
+    yield put(editCaseAndHours.request(id, value));
+
+    response = yield call(submitPartialReplaceWorker, submitPartialReplace(value));
+    if (response.error) {
+      throw response.error;
+    }
+    const app = yield select(getAppFromState);
+    const caseESID = getEntitySetIdFromApp(app, MANUAL_PRETRIAL_COURT_CASES);
+    const diversionPlanESID = getEntitySetIdFromApp(app, DIVERSION_PLAN);
+    const edm = yield select(getEdmFromState);
+
+    yield put(editCaseAndHours.success(id, {
+      caseESID,
+      diversionPlanESID,
+      edm,
+    }));
+  }
+  catch (error) {
+    workerResponse.error = error;
+    LOG.error('caught exception in editCaseAndHoursWorker()', error);
+    yield put(editCaseAndHours.failure(id, error));
+  }
+  finally {
+    yield put(editCaseAndHours.finally(id));
+  }
+}
+
+function* editCaseAndHoursWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(EDIT_CASE_AND_HOURS, editCaseAndHoursWorker);
 }
 
 /*
@@ -1483,6 +1530,8 @@ export {
   checkInForAppointmentWorker,
   createWorkAppointmentsWatcher,
   createWorkAppointmentsWorker,
+  editCaseAndHoursWatcher,
+  editCaseAndHoursWorker,
   editCheckInDateWatcher,
   editCheckInDateWorker,
   editSentenceDateWatcher,
