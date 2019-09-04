@@ -39,7 +39,6 @@ import {
   GET_PARTICIPANT,
   // GET_PARTICIPANT_ADDRESS,
   GET_PARTICIPANT_INFRACTIONS,
-  GET_REQUIRED_HOURS,
   GET_WORKSITE_BY_WORKSITE_PLAN,
   GET_WORKSITE_PLANS,
   GET_WORK_APPOINTMENTS,
@@ -61,7 +60,6 @@ import {
   getParticipant,
   // getParticipantAddress,
   getParticipantInfractions,
-  getRequiredHours,
   getWorkAppointments,
   getWorksiteByWorksitePlan,
   getWorksitePlans,
@@ -1423,67 +1421,6 @@ function* getParticipantInfractionsWatcher() :Generator<*, *, *> {
 
 /*
  *
- * ParticipantsActions.getRequiredHours()
- *
- */
-
-function* getRequiredHoursWorker(action :SequenceAction) :Generator<*, *, *> {
-
-  const { id, value } = action;
-  const workerResponse = {};
-  let response :Object = {};
-  let requiredHours :number = 0;
-
-  try {
-    yield put(getRequiredHours.request(id));
-    const { personEKID } = value;
-    if (value === null || value === undefined) {
-      throw ERR_ACTION_VALUE_NOT_DEFINED;
-    }
-    const app = yield select(getAppFromState);
-    const peopleESID = getEntitySetIdFromApp(app, PEOPLE);
-    const diversionPlanESID = getEntitySetIdFromApp(app, DIVERSION_PLAN);
-
-    const searchFilter :Object = {
-      entityKeyIds: [personEKID],
-      destinationEntitySetIds: [diversionPlanESID],
-      sourceEntitySetIds: [],
-    };
-    response = yield call(
-      searchEntityNeighborsWithFilterWorker,
-      searchEntityNeighborsWithFilter({ entitySetId: peopleESID, filter: searchFilter })
-    );
-    if (response.error) {
-      throw response.error;
-    }
-
-    if (response.data[personEKID]) {
-      let activeDiversionPlan :Map = fromJS(response.data[personEKID])
-        .last();
-      activeDiversionPlan = getNeighborDetails(activeDiversionPlan);
-      requiredHours = activeDiversionPlan.getIn([REQUIRED_HOURS, 0], 0);
-    }
-
-    yield put(getRequiredHours.success(id, requiredHours));
-  }
-  catch (error) {
-    workerResponse.error = error;
-    LOG.error('caught exception in getRequiredHoursWorker()', error);
-    yield put(getRequiredHours.failure(id, error));
-  }
-  finally {
-    yield put(getRequiredHours.finally(id));
-  }
-  return workerResponse;
-}
-
-function* getRequiredHoursWatcher() :Generator<*, *, *> {
-
-  yield takeEvery(GET_REQUIRED_HOURS, getRequiredHoursWorker);
-}
-
-/*
- *
  * ParticipantsActions.getAllParticipantInfo()
  *
  */
@@ -1507,7 +1444,6 @@ function* getAllParticipantInfoWorker(action :SequenceAction) :Generator<*, *, *
       // call(getParticipantAddressWorker, getParticipantAddress({ personEKID })),
       call(getParticipantInfractionsWorker, getParticipantInfractions({ personEKID })),
       call(getParticipantWorker, getParticipant({ personEKID })),
-      call(getRequiredHoursWorker, getRequiredHours({ personEKID })),
       call(getWorksitesWorker, getWorksites()),
       call(getInfractionTypesWorker, getInfractionTypes()),
     ]);
@@ -1567,8 +1503,6 @@ export {
   getParticipantInfractionsWorker,
   getParticipantWatcher,
   getParticipantWorker,
-  getRequiredHoursWatcher,
-  getRequiredHoursWorker,
   getWorkAppointmentsWatcher,
   getWorkAppointmentsWorker,
   getWorksiteByWorksitePlanWatcher,

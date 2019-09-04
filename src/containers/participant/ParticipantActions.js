@@ -37,9 +37,6 @@ const getCaseInfo = newRequestSequence(GET_CASE_INFO);
 const GET_CONTACT_INFO :'GET_CONTACT_INFO' = 'GET_CONTACT_INFO';
 const getContactInfo = newRequestSequence(GET_CONTACT_INFO);
 
-const GET_REQUIRED_HOURS :'GET_REQUIRED_HOURS' = 'GET_REQUIRED_HOURS';
-const getRequiredHours = newRequestSequence(GET_REQUIRED_HOURS);
-
 const GET_ENROLLMENT_STATUS :'GET_ENROLLMENT_STATUS' = 'GET_ENROLLMENT_STATUS';
 const getEnrollmentStatus = newRequestSequence(GET_ENROLLMENT_STATUS);
 
@@ -85,7 +82,6 @@ export {
   GET_PARTICIPANT,
   // GET_PARTICIPANT_ADDRESS,
   GET_PARTICIPANT_INFRACTIONS,
-  GET_REQUIRED_HOURS,
   GET_WORKSITE_BY_WORKSITE_PLAN,
   GET_WORKSITE_PLANS,
   GET_WORK_APPOINTMENTS,
@@ -107,7 +103,6 @@ export {
   getParticipant,
   // getParticipantAddress,
   getParticipantInfractions,
-  getRequiredHours,
   getWorkAppointments,
   getWorksiteByWorksitePlan,
   getWorksitePlans,

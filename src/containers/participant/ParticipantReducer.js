@@ -22,7 +22,6 @@ import {
   getParticipant,
   // getParticipantAddress,
   getParticipantInfractions,
-  getRequiredHours,
   getWorkAppointments,
   getWorksiteByWorksitePlan,
   getWorksitePlans,
@@ -70,7 +69,6 @@ const {
   GET_PARTICIPANT,
   // GET_PARTICIPANT_ADDRESS,
   GET_PARTICIPANT_INFRACTIONS,
-  GET_REQUIRED_HOURS,
   GET_WORKSITE_BY_WORKSITE_PLAN,
   GET_WORKSITE_PLANS,
   GET_WORK_APPOINTMENTS,
@@ -80,7 +78,6 @@ const {
   PERSON_CASE,
   PHONE,
   REQUEST_STATE,
-  REQUIRED_HOURS,
   UPDATE_HOURS_WORKED,
   VIOLATIONS,
   WARNINGS,
@@ -142,9 +139,6 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     [GET_PARTICIPANT_INFRACTIONS]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
-    [GET_REQUIRED_HOURS]: {
-      [REQUEST_STATE]: RequestStates.STANDBY
-    },
     [GET_WORK_APPOINTMENTS]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
@@ -171,7 +165,6 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     [GET_PARTICIPANT]: Map(),
     // [GET_PARTICIPANT_ADDRESS]: Map(),
     [GET_PARTICIPANT_INFRACTIONS]: Map(),
-    [GET_REQUIRED_HOURS]: Map(),
     [UPDATE_HOURS_WORKED]: Map(),
   },
   [INFRACTIONS_INFO]: Map(),
@@ -179,7 +172,6 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [PARTICIPANT]: Map(),
   [PERSON_CASE]: Map(),
   [PHONE]: '',
-  [REQUIRED_HOURS]: 0,
   [VIOLATIONS]: List(),
   [WARNINGS]: List(),
   [WORKSITES_BY_WORKSITE_PLAN]: Map(),
@@ -929,41 +921,6 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
     //     FINALLY: () => state.deleteIn([ACTIONS, GET_PARTICIPANT_ADDRESS, action.id])
     //   });
     // }
-
-    case getRequiredHours.case(action.type): {
-
-      return getRequiredHours.reducer(state, action, {
-
-        REQUEST: () => state
-          .setIn([ACTIONS, GET_REQUIRED_HOURS, action.id], fromJS(action))
-          .setIn([ACTIONS, GET_REQUIRED_HOURS, REQUEST_STATE], RequestStates.PENDING),
-        SUCCESS: () => {
-
-          if (!state.hasIn([ACTIONS, GET_REQUIRED_HOURS, action.id])) {
-            return state;
-          }
-
-          const { value } = action;
-          if (value === null || value === undefined) {
-            return state;
-          }
-
-          return state
-            .set(REQUIRED_HOURS, value)
-            .setIn([ACTIONS, GET_REQUIRED_HOURS, REQUEST_STATE], RequestStates.SUCCESS);
-        },
-        FAILURE: () => {
-
-          const { value } = action;
-
-          return state
-            .set(REQUIRED_HOURS, 0)
-            .setIn([ERRORS, GET_REQUIRED_HOURS], value)
-            .setIn([ACTIONS, GET_REQUIRED_HOURS, REQUEST_STATE], RequestStates.FAILURE);
-        },
-        FINALLY: () => state.deleteIn([ACTIONS, GET_REQUIRED_HOURS, action.id])
-      });
-    }
 
     case getWorkAppointments.case(action.type): {
 
