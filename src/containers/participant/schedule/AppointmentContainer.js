@@ -3,7 +3,12 @@ import React, { Component } from 'react';
 import styled from 'styled-components';
 import { Map } from 'immutable';
 import { DateTime } from 'luxon';
-import { Button, Card, CardSegment } from 'lattice-ui-kit';
+import {
+  Button,
+  Card,
+  CardSegment,
+  IconButton
+} from 'lattice-ui-kit';
 import { connect } from 'react-redux';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCheckCircle, faTrash } from '@fortawesome/pro-solid-svg-icons';
@@ -48,13 +53,6 @@ const Text = styled.span`
 
 const CheckWrapper = styled(ButtonWrapper)`
   margin: 0;
-`;
-
-const TrashWrapper = styled(ButtonWrapper)`
-  align-items: center;
-  display: flex;
-  justify-content: center;
-  margin: 0 10px;
 `;
 
 type Props = {
@@ -135,9 +133,10 @@ class AppointmentContainer extends Component<Props, State> {
                 null
               )
               : (
-                <TrashWrapper onClick={() => this.handleShowModal(DELETE_APPOINTMENT)}>
-                  <FontAwesomeIcon icon={faTrash} color={OL.GREY04} size="sm" />
-                </TrashWrapper>
+                <IconButton
+                    icon={<FontAwesomeIcon icon={faTrash} color={OL.GREY04} size="sm" />}
+                    mode="subtle"
+                    onClick={() => this.handleShowModal(DELETE_APPOINTMENT)} />
               )
           }
           {
