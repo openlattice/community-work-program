@@ -28,7 +28,12 @@ import {
   getWorksitePlans,
   updateHoursWorked,
 } from './ParticipantActions';
-import { getEntityKeyId, getEntityProperties, getPropertyFqnFromEdm } from '../../utils/DataUtils';
+import {
+  getEntityKeyId,
+  getEntityProperties,
+  getPropertyFqnFromEdm,
+  getPropertyTypeIdFromEdm,
+} from '../../utils/DataUtils';
 import { PERSON } from '../../utils/constants/ReduxStateConsts';
 import { INFRACTIONS_CONSTS } from '../../core/edm/constants/DataModelConsts';
 import {
@@ -256,7 +261,8 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
               ? infractionTypes.find((type :Map) => getEntityKeyId(type) === infractionEKID)
               : Map();
             const { [CATEGORY]: category } = getEntityProperties(infractionEntity, [CATEGORY]);
-            const { [STATUS]: status } = getEntityProperties(storedEnrollmentStatusEntity, [STATUS]);
+            const statusPTID = getPropertyTypeIdFromEdm(edm, STATUS);
+            const status = storedEnrollmentStatusEntity.getIn([statusPTID, 0], '');
             const info :Map = fromJS({
               [CATEGORY]: category,
               [STATUS]: status,
