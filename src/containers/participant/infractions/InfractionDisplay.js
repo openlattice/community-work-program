@@ -26,6 +26,7 @@ import {
   INFRACTION_EVENT_FQNS,
   WORKSITE_FQNS,
 } from '../../../core/edm/constants/FullyQualifiedNames';
+import { EMPTY_FIELD } from '../../participants/ParticipantsConstants';
 
 const { WORKSITE_PLAN } = APP_TYPE_FQNS;
 const { STATUS } = ENROLLMENT_STATUS_FQNS;
@@ -67,13 +68,15 @@ const InfractionDisplay = ({
     [NOTES]: infractionNotes,
     [TYPE]: infractionType
   } = getEntityProperties(infraction, [DATETIME_COMPLETED, NOTES, TYPE]);
-  const date :string = formatAsDate(infractionDateTime);
-  const time :string = formatAsTime(infractionDateTime);
+  const date :string = infractionDateTime ? formatAsDate(infractionDateTime) : EMPTY_FIELD;
+  const time :string = infractionDateTime ? formatAsTime(infractionDateTime) : EMPTY_FIELD;
+  const notes :string = !infractionNotes ? EMPTY_FIELD : infractionNotes;
 
-  const violationCategory :string = infractionInfo ? infractionInfo.get(CATEGORY, '') : '';
+  const violationCategory :string = infractionInfo ? infractionInfo.get(CATEGORY, EMPTY_FIELD) : EMPTY_FIELD;
   const worksiteEntity :Map = infractionInfo ? worksitesByWorksitePlan.get(infractionInfo.get(WORKSITE_PLAN)) : Map();
-  const { [NAME]: worksiteName } = getEntityProperties(worksiteEntity, [NAME]);
-  const status :string = infractionInfo ? infractionInfo.get(STATUS, '') : '';
+  let { [NAME]: worksiteName } = getEntityProperties(worksiteEntity, [NAME]);
+  worksiteName = !worksiteName ? EMPTY_FIELD : worksiteName;
+  const status :string = infractionInfo ? infractionInfo.get(STATUS, EMPTY_FIELD) : EMPTY_FIELD;
   const data :List = fromJS({
     date,
     infractionType,
@@ -93,7 +96,7 @@ const InfractionDisplay = ({
             labelMap={labelMap} />
         <NotesWrapper>
           <Label subtle>Notes</Label>
-          <span>{ infractionNotes }</span>
+          <span>{ notes }</span>
         </NotesWrapper>
       </CardSegment>
     </Card>
