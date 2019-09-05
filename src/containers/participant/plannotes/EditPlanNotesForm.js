@@ -102,9 +102,9 @@ class EditPlanNotesForm extends Component<Props, State> {
           <RowContent>
             <TextAreaWrapper>
               <TextArea
+                  defaultValue={notes}
                   name="newDocketNumber"
-                  onChange={this.handleInputChange}
-                  placeholder={notes} />
+                  onChange={this.handleInputChange} />
             </TextAreaWrapper>
           </RowContent>
         </FormRow>
