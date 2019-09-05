@@ -10,7 +10,7 @@ import EditPlanNotesForm from './EditPlanNotesForm';
 
 import { PERSON, STATE } from '../../../utils/constants/ReduxStateConsts';
 
-const { ACTIONS, EDIT_CASE_AND_HOURS, REQUEST_STATE } = PERSON;
+const { ACTIONS, EDIT_PLAN_NOTES, REQUEST_STATE } = PERSON;
 
 
 type Props = {
@@ -51,7 +51,7 @@ class EditPlanNotesModal extends Component<Props> {
 }
 
 const mapStateToProps = (state :Map) => ({
-  editPlanNotesRequestState: state.getIn([STATE.PERSON, ACTIONS, EDIT_CASE_AND_HOURS, REQUEST_STATE]),
+  editPlanNotesRequestState: state.getIn([STATE.PERSON, ACTIONS, EDIT_PLAN_NOTES, REQUEST_STATE]),
 });
 
 // $FlowFixMe

@@ -10,7 +10,7 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import type { RequestSequence } from 'redux-reqseq';
 
-// import { editCaseAndHours } from '../ParticipantActions';
+import { editPlanNotes } from '../ParticipantActions';
 import {
   getEntityKeyId,
   getEntityProperties,
@@ -38,7 +38,7 @@ const TextAreaWrapper = styled.div`
 
 type Props = {
   actions:{
-    editCaseAndHours :RequestSequence;
+    editPlanNotes :RequestSequence;
   };
   app :Map;
   diversionPlan :Map;
@@ -85,7 +85,7 @@ class EditPlanNotesForm extends Component<Props, State> {
       }
     };
 
-    // actions.editCaseAndHours({ entityData });
+    actions.editPlanNotes({ entityData });
   }
 
   render() {
@@ -130,7 +130,7 @@ const mapStateToProps = (state :Map) => ({
 
 const mapDispatchToProps = dispatch => ({
   actions: bindActionCreators({
-    // editCaseAndHours,
+    editPlanNotes,
   }, dispatch)
 });
 

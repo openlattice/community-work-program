@@ -22,6 +22,9 @@ const createWorkAppointments = newRequestSequence(CREATE_WORK_APPOINTMENTS);
 const EDIT_CHECK_IN_DATE:'EDIT_CHECK_IN_DATE' = 'EDIT_CHECK_IN_DATE';
 const editCheckInDate = newRequestSequence(EDIT_CHECK_IN_DATE);
 
+const EDIT_PLAN_NOTES:'EDIT_PLAN_NOTES' = 'EDIT_PLAN_NOTES';
+const editPlanNotes = newRequestSequence(EDIT_PLAN_NOTES);
+
 const EDIT_SENTENCE_DATE:'EDIT_SENTENCE_DATE' = 'EDIT_SENTENCE_DATE';
 const editSentenceDate = newRequestSequence(EDIT_SENTENCE_DATE);
 
@@ -75,6 +78,7 @@ export {
   CHECK_IN_FOR_APPOINTMENT,
   CREATE_WORK_APPOINTMENTS,
   EDIT_CHECK_IN_DATE,
+  EDIT_PLAN_NOTES,
   EDIT_SENTENCE_DATE,
   GET_ALL_PARTICIPANT_INFO,
   GET_APPOINTMENT_CHECK_INS,
@@ -97,6 +101,7 @@ export {
   checkInForAppointment,
   createWorkAppointments,
   editCheckInDate,
+  editPlanNotes,
   editSentenceDate,
   getAllParticipantInfo,
   getAppointmentCheckIns,

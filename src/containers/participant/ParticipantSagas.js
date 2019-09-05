@@ -29,6 +29,7 @@ import {
   CHECK_IN_FOR_APPOINTMENT,
   CREATE_WORK_APPOINTMENTS,
   EDIT_CHECK_IN_DATE,
+  EDIT_PLAN_NOTES,
   EDIT_SENTENCE_DATE,
   GET_ALL_PARTICIPANT_INFO,
   GET_APPOINTMENT_CHECK_INS,
@@ -51,6 +52,7 @@ import {
   checkInForAppointment,
   createWorkAppointments,
   editCheckInDate,
+  editPlanNotes,
   editSentenceDate,
   getAllParticipantInfo,
   getAppointmentCheckIns,
@@ -277,6 +279,46 @@ function* addOrientationDateWorker(action :SequenceAction) :Generator<*, *, *> {
 function* addOrientationDateWatcher() :Generator<*, *, *> {
 
   yield takeEvery(ADD_ORIENTATION_DATE, addOrientationDateWorker);
+}
+
+/*
+ *
+ * ParticipantActions.editPlanNotes()
+ *
+ */
+
+function* editPlanNotesWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+  const workerResponse = {};
+  let response :Object = {};
+
+  try {
+    yield put(editPlanNotes.request(id, value));
+
+    response = yield call(submitPartialReplaceWorker, submitPartialReplace(value));
+    if (response.error) {
+      throw response.error;
+    }
+    const app = yield select(getAppFromState);
+    const diversionPlanESID = getEntitySetIdFromApp(app, DIVERSION_PLAN);
+    const edm = yield select(getEdmFromState);
+
+    yield put(editPlanNotes.success(id, { diversionPlanESID, edm }));
+  }
+  catch (error) {
+    workerResponse.error = error;
+    LOG.error('caught exception in editPlanNotesWorker()', error);
+    yield put(editPlanNotes.failure(id, error));
+  }
+  finally {
+    yield put(editPlanNotes.finally(id));
+  }
+}
+
+function* editPlanNotesWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(EDIT_PLAN_NOTES, editPlanNotesWorker);
 }
 
 /*
@@ -1549,6 +1591,8 @@ export {
   createWorkAppointmentsWorker,
   editCheckInDateWatcher,
   editCheckInDateWorker,
+  editPlanNotesWatcher,
+  editPlanNotesWorker,
   editSentenceDateWatcher,
   editSentenceDateWorker,
   getAppointmentCheckInsWatcher,
