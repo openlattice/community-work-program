@@ -36,7 +36,7 @@ const { NAME } = WORKSITE_FQNS;
 
 const labelMap :OrderedMap = OrderedMap({
   infractionType: 'Infraction type',
-  violationCategory: 'Violation category, if applicable',
+  category: 'Violation category, if applicable',
   worksiteName: 'Work Site, if applicable',
   date: 'Date',
   time: 'Time',
@@ -72,17 +72,19 @@ const InfractionDisplay = ({
   const time :string = infractionDateTime ? formatAsTime(infractionDateTime) : EMPTY_FIELD;
   const notes :string = !infractionNotes ? EMPTY_FIELD : infractionNotes;
 
-  const violationCategory :string = infractionInfo ? infractionInfo.get(CATEGORY, EMPTY_FIELD) : EMPTY_FIELD;
+  const infractionCategory :string = infractionInfo ? infractionInfo.get(CATEGORY, '') : '';
+  const category = !infractionCategory ? EMPTY_FIELD : infractionCategory;
+
   const worksiteEntity :Map = infractionInfo ? worksitesByWorksitePlan.get(infractionInfo.get(WORKSITE_PLAN)) : Map();
   let { [NAME]: worksiteName } = getEntityProperties(worksiteEntity, [NAME]);
   worksiteName = !worksiteName ? EMPTY_FIELD : worksiteName;
   const status :string = infractionInfo ? infractionInfo.get(STATUS, EMPTY_FIELD) : EMPTY_FIELD;
   const data :List = fromJS({
+    category,
     date,
     infractionType,
     status,
     time,
-    violationCategory,
     worksiteName,
   });
 
