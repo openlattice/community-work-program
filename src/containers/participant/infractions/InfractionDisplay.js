@@ -36,7 +36,7 @@ const { NAME } = WORKSITE_FQNS;
 
 const labelMap :OrderedMap = OrderedMap({
   infractionType: 'Infraction type',
-  category: 'Violation category, if applicable',
+  category: 'Infraction category',
   worksiteName: 'Work Site, if applicable',
   date: 'Date',
   time: 'Time',
