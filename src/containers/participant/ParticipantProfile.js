@@ -263,7 +263,7 @@ class ParticipantProfile extends Component<Props, State> {
   }
 
   handleHideModal = (modalName :string) => {
-    const stateToChange = `hide${modalName}Modal`;
+    const stateToChange = `show${modalName}Modal`;
     this.setState({
       [stateToChange]: false,
     });
