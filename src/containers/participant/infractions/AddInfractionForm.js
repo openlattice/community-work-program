@@ -252,7 +252,12 @@ class AddInfractionForm extends Component<Props, State> {
       ], datetimeOfInfraction);
 
     associations.push([SUBJECT_OF, personEKID, PEOPLE, 0, INFRACTION_EVENT, {}]);
-    if (infractionEKID) associations.push([REGISTERED_FOR, 0, INFRACTION_EVENT, infractionEKID, INFRACTIONS, {}]);
+    if (infractionEKID) {
+      associations.push([REGISTERED_FOR, 0, INFRACTION_EVENT, infractionEKID, INFRACTIONS, {}]);
+      if (worksitePlanEKID) {
+        associations.push([RESULTS_IN, worksitePlanEKID, WORKSITE_PLAN, infractionEKID, INFRACTIONS, {}]);
+      }
+    }
 
     if (newInfractionData.getIn([getPageSectionKey(1, 1), getEntityAddressKey(0, ENROLLMENT_STATUS, STATUS)])) {
       associations.push([RELATED_TO, 0, ENROLLMENT_STATUS, diversionPlanEKID, DIVERSION_PLAN, {}]);
@@ -282,17 +287,13 @@ class AddInfractionForm extends Component<Props, State> {
       isLoading,
       onDiscard,
     } = this.props;
-    const { newInfractionData, workAppointmentList, workInfraction } = this.state;
+    const { workAppointmentList, workInfraction } = this.state;
 
     const VIOLATION_TYPE_OPTIONS = infractionTypes.map((infractionEntity :Map) => {
       const { [CATEGORY]: category } = getEntityProperties(infractionEntity, [CATEGORY]);
       const infractionEKID :UUID = getEntityKeyId(infractionEntity);
       return { label: category, value: infractionEKID };
     });
-    const isViolation :boolean = newInfractionData.getIn([
-      getPageSectionKey(1, 1),
-      getEntityAddressKey(0, INFRACTION_EVENT, TYPE)
-    ]) === INFRACTIONS_CONSTS.VIOLATION;
     return (
       <FormWrapper>
         <FormRow>
@@ -318,9 +319,8 @@ class AddInfractionForm extends Component<Props, State> {
                 options={INFRACTION_TYPE_OPTIONS} />
           </RowContent>
           <RowContent>
-            <Label>If violation, add category:</Label>
+            <Label>Infraction category</Label>
             <Select
-                isDisabled={!isViolation}
                 name={CATEGORY}
                 onChange={this.handleSelectChange}
                 options={VIOLATION_TYPE_OPTIONS} />
