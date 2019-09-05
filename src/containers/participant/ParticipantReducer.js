@@ -11,6 +11,7 @@ import {
   addWorksitePlan,
   checkInForAppointment,
   createWorkAppointments,
+  deleteAppointment,
   editCheckInDate,
   editSentenceDate,
   getAppointmentCheckIns,
@@ -29,6 +30,7 @@ import {
   updateHoursWorked,
 } from './ParticipantActions';
 import { getEntityKeyId, getEntityProperties, getPropertyFqnFromEdm } from '../../utils/DataUtils';
+import { isDefined } from '../../utils/LangUtils';
 import { PERSON } from '../../utils/constants/ReduxStateConsts';
 import { INFRACTIONS_CONSTS } from '../../core/edm/constants/DataModelConsts';
 import {
@@ -55,6 +57,7 @@ const {
   CHECK_INS_BY_APPOINTMENT,
   CHECK_IN_FOR_APPOINTMENT,
   CREATE_WORK_APPOINTMENTS,
+  DELETE_APPOINTMENT,
   DIVERSION_PLAN,
   EDIT_CHECK_IN_DATE,
   EDIT_SENTENCE_DATE,
@@ -107,6 +110,9 @@ const INITIAL_STATE :Map<*, *> = fromJS({
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [CREATE_WORK_APPOINTMENTS]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [DELETE_APPOINTMENT]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [EDIT_CHECK_IN_DATE]: {
@@ -531,6 +537,54 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
         FAILURE: () => state
           .setIn([ACTIONS, CREATE_WORK_APPOINTMENTS, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, CREATE_WORK_APPOINTMENTS, action.id])
+      });
+    }
+
+    case deleteAppointment.case(action.type): {
+
+      return deleteAppointment.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, DELETE_APPOINTMENT, action.id], action)
+          .setIn([ACTIONS, DELETE_APPOINTMENT, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+
+          const seqAction :SequenceAction = action;
+          const storedSeqAction :SequenceAction = state.getIn([ACTIONS, DELETE_APPOINTMENT, seqAction.id]);
+
+          if (storedSeqAction) {
+
+            const requestValue :Object = storedSeqAction.value;
+            const { entityKeyId } :Object = requestValue[0];
+
+            let workAppointmentsByWorksitePlan = state.get(WORK_APPOINTMENTS_BY_WORKSITE_PLAN);
+            let worksitePlanEKID = '';
+            let indexToDelete = 0;
+            workAppointmentsByWorksitePlan.forEach((workAppointmentCollection :List, ekid :UUID) => {
+              const deletedAppointment = workAppointmentCollection
+                .find((appointment :Map) => getEntityKeyId(appointment) === entityKeyId);
+
+              if (isDefined(deletedAppointment)) {
+                worksitePlanEKID = ekid;
+                indexToDelete = workAppointmentCollection.indexOf(deletedAppointment);
+                return false;
+              }
+              return true;
+            });
+            let collection = workAppointmentsByWorksitePlan.get(worksitePlanEKID);
+            collection = collection.delete(indexToDelete);
+            workAppointmentsByWorksitePlan = workAppointmentsByWorksitePlan.set(worksitePlanEKID, collection);
+
+            return state
+              .set(WORK_APPOINTMENTS_BY_WORKSITE_PLAN, workAppointmentsByWorksitePlan)
+              .setIn([ACTIONS, DELETE_APPOINTMENT, REQUEST_STATE], RequestStates.SUCCESS);
+          }
+
+          return state;
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, DELETE_APPOINTMENT, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, DELETE_APPOINTMENT, action.id]),
       });
     }
 

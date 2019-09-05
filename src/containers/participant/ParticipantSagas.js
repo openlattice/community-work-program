@@ -28,6 +28,7 @@ import {
   ADD_WORKSITE_PLAN,
   CHECK_IN_FOR_APPOINTMENT,
   CREATE_WORK_APPOINTMENTS,
+  DELETE_APPOINTMENT,
   EDIT_CHECK_IN_DATE,
   EDIT_SENTENCE_DATE,
   GET_ALL_PARTICIPANT_INFO,
@@ -50,6 +51,7 @@ import {
   addWorksitePlan,
   checkInForAppointment,
   createWorkAppointments,
+  deleteAppointment,
   editCheckInDate,
   editSentenceDate,
   getAllParticipantInfo,
@@ -67,8 +69,12 @@ import {
   getWorksitePlans,
   updateHoursWorked,
 } from './ParticipantActions';
-import { submitDataGraph, submitPartialReplace } from '../../core/sagas/data/DataActions';
-import { submitDataGraphWorker, submitPartialReplaceWorker } from '../../core/sagas/data/DataSagas';
+import { deleteEntities, submitDataGraph, submitPartialReplace } from '../../core/sagas/data/DataActions';
+import {
+  deleteEntitiesWorker,
+  submitDataGraphWorker,
+  submitPartialReplaceWorker
+} from '../../core/sagas/data/DataSagas';
 import { getWorksites } from '../worksites/WorksitesActions';
 import { getWorksitesWorker } from '../worksites/WorksitesSagas';
 import {
@@ -92,7 +98,7 @@ import {
   INFRACTION_FQNS,
   WORKSITE_PLAN_FQNS,
 } from '../../core/edm/constants/FullyQualifiedNames';
-import { ENROLLMENT_STATUSES, INFRACTIONS_CONSTS } from '../../core/edm/constants/DataModelConsts';
+import { INFRACTIONS_CONSTS } from '../../core/edm/constants/DataModelConsts';
 
 const { UpdateTypes } = Types;
 const { getEntityData, getEntitySetData, updateEntityData } = DataApiActions;
@@ -608,6 +614,41 @@ function* createWorkAppointmentsWorker(action :SequenceAction) :Generator<*, *, 
 function* createWorkAppointmentsWatcher() :Generator<*, *, *> {
 
   yield takeEvery(CREATE_WORK_APPOINTMENTS, createWorkAppointmentsWorker);
+}
+
+/*
+ *
+ * ParticipantActions.deleteAppointment()
+ *
+ */
+
+function* deleteAppointmentWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+  let response :Object = {};
+
+  try {
+    yield put(deleteAppointment.request(id, value));
+
+    response = yield call(deleteEntitiesWorker, deleteEntities(value));
+    if (response.error) {
+      throw response.error;
+    }
+
+    yield put(deleteAppointment.success(id));
+  }
+  catch (error) {
+    LOG.error('caught exception in deleteAppointmentWorker()', error);
+    yield put(deleteAppointment.failure(id, error));
+  }
+  finally {
+    yield put(deleteAppointment.finally(id));
+  }
+}
+
+function* deleteAppointmentWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(DELETE_APPOINTMENT, deleteAppointmentWorker);
 }
 
 /*
@@ -1547,6 +1588,8 @@ export {
   checkInForAppointmentWorker,
   createWorkAppointmentsWatcher,
   createWorkAppointmentsWorker,
+  deleteAppointmentWatcher,
+  deleteAppointmentWorker,
   editCheckInDateWatcher,
   editCheckInDateWorker,
   editSentenceDateWatcher,

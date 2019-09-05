@@ -10,7 +10,7 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import type { RequestSequence } from 'redux-reqseq';
 
-// import { deleteEntities } from '../ParticipantActions';
+import { deleteAppointment } from '../ParticipantActions';
 import { getEntitySetIdFromApp } from '../../../utils/DataUtils';
 import { APP_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { STATE } from '../../../utils/constants/ReduxStateConsts';
@@ -30,7 +30,7 @@ const ColoredText = styled.div`
 
 type Props = {
   actions:{
-    deleteEntities :RequestSequence;
+    deleteAppointment :RequestSequence;
   };
   app :Map;
   appointment :Object;
@@ -53,7 +53,7 @@ class DeleteAppointmentForm extends Component<Props, State> {
       entitySetId: appointmentESID,
       entityKeyId: appointmentEKID
     }];
-    actions.deleteEntities(appointmentToDelete);
+    actions.deleteAppointment(appointmentToDelete);
   }
 
   render() {
@@ -101,7 +101,7 @@ const mapStateToProps = (state :Map) => ({
 
 const mapDispatchToProps = dispatch => ({
   actions: bindActionCreators({
-    // deleteEntities,
+    deleteAppointment,
   }, dispatch)
 });
 
