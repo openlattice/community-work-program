@@ -244,7 +244,7 @@ class AddInfractionForm extends Component<Props, State> {
     const diversionPlanEKID :UUID = getEntityKeyId(diversionPlan);
     const nowAsIso = DateTime.local().toISO();
 
-    const datetimeOfInfraction = getCombinedDateTime(date, time);
+    const datetimeOfInfraction = date ? getCombinedDateTime(date, time) : nowAsIso;
     newInfractionData = newInfractionData
       .setIn([
         getPageSectionKey(1, 1),
