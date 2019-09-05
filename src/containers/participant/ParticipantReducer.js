@@ -230,7 +230,7 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
               ? fromJS(entityData[enrollmentStatusESID][0])
               : Map();
 
-            const worksitePlan :Map = associationEntityData[registeredForESID]
+            const worksitePlan :Map = associationEntityData[resultsInESID]
               ? fromJS(associationEntityData[resultsInESID])
                 .find((association :Map) => association.get('srcEntitySetId') === worksitePlanESID)
               : Map();
