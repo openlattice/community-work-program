@@ -166,6 +166,7 @@ class AppointmentContainer extends Component<Props, State> {
             onClose={() => this.handleHideModal(CHECK_IN_DETAILS)} />
         <DeleteAppointmentModal
             appointment={appointmentOverview}
+            appointmentEKID={appointmentEKID}
             isOpen={isDeleteAppointmentModalVisible}
             onClose={() => this.handleHideModal(DELETE_APPOINTMENT)} />
       </Card>

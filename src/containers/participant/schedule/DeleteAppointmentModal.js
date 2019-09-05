@@ -14,6 +14,7 @@ const { ACTIONS, DELETE_APPOINTMENT, REQUEST_STATE } = PERSON;
 
 type Props = {
   appointment :Object;
+  appointmentEKID :UUID;
   deleteAppointmentRequestState :RequestState;
   isOpen :boolean;
   onClose :() => void;
@@ -33,6 +34,7 @@ class DeleteAppointmentModal extends Component<Props> {
   render() {
     const {
       appointment,
+      appointmentEKID,
       deleteAppointmentRequestState,
       isOpen,
       onClose,
@@ -45,6 +47,7 @@ class DeleteAppointmentModal extends Component<Props> {
           viewportScrolling>
         <DeleteAppointmentForm
             appointment={appointment}
+            appointmentEKID={appointmentEKID}
             isLoading={deleteAppointmentRequestState === RequestStates.PENDING}
             onDiscard={onClose} />
       </Modal>
