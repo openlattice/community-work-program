@@ -153,6 +153,13 @@ export const PEOPLE_FQNS = {
   GENDER: new FullyQualifiedName('bhr.gender'),
 };
 
+/* ol.programoutcome */
+export const PROGRAM_OUTCOME_FQNS = {
+  DESCRIPTION: new FullyQualifiedName('ol.description'),
+  HOURS_WORKED: new FullyQualifiedName('ol.hoursworked'),
+};
+
+
 /* ol.program */
 export const WORKSITE_FQNS = {
   DATETIME_END: new FullyQualifiedName('ol.datetimeend'),
