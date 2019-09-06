@@ -155,6 +155,7 @@ export const PEOPLE_FQNS = {
 
 /* ol.programoutcome */
 export const PROGRAM_OUTCOME_FQNS = {
+  COMPLETED: new FullyQualifiedName('ol.completed'),
   DESCRIPTION: new FullyQualifiedName('ol.description'),
   HOURS_WORKED: new FullyQualifiedName('ol.hoursworked'),
 };

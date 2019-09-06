@@ -49,7 +49,7 @@ const {
   RESULTS_IN,
 } = APP_TYPE_FQNS;
 const { EFFECTIVE_DATE, STATUS } = ENROLLMENT_STATUS_FQNS;
-const { DESCRIPTION, HOURS_WORKED } = PROGRAM_OUTCOME_FQNS;
+const { COMPLETED, DESCRIPTION, HOURS_WORKED } = PROGRAM_OUTCOME_FQNS;
 
 const ENROLLMENT_STATUS_OPTIONS :Object[] = STATUS_FILTER_OPTIONS
   .slice(1)
@@ -154,6 +154,9 @@ class AddNewPlanStatusForm extends Component<Props, State> {
         ? getCombinedDateTime(savedDate, now.toLocaleString(DateTime.TIME_24_SIMPLE))
         : now.toISO();
       newEnrollmentData = newEnrollmentData.setIn(datePath, datetimeToSubmit);
+
+      newEnrollmentData = newEnrollmentData
+        .setIn([getPageSectionKey(1, 2), getEntityAddressKey(0, PROGRAM_OUTCOME, COMPLETED)], true);
 
       associations.push([RESULTS_IN, diversionPlanEKID, DIVERSION_PLAN, 0, PROGRAM_OUTCOME, {}]);
     }
