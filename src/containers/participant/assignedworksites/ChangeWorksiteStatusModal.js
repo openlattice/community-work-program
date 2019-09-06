@@ -6,7 +6,7 @@ import { connect } from 'react-redux';
 import { RequestStates } from 'redux-reqseq';
 import type { RequestState } from 'redux-reqseq';
 
-import AssignWorksiteForm from './AssignWorksiteForm';
+import ChangeWorksiteStatusForm from './ChangeWorksiteStatusForm';
 
 import { PERSON, STATE } from '../../../utils/constants/ReduxStateConsts';
 
@@ -14,7 +14,7 @@ const { ACTIONS, ADD_WORKSITE_PLAN, REQUEST_STATE } = PERSON;
 
 
 type Props = {
-  addWorksitePlanRequestState :RequestState;
+  addNewWorkSiteStatusRequestState :RequestState;
   diversionPlanEKID :UUID;
   isOpen :boolean;
   onClose :() => void;
@@ -22,12 +22,12 @@ type Props = {
   worksites :List;
 };
 
-class AssignWorksiteModal extends Component<Props> {
+class ChangeWorksiteStatusModal extends Component<Props> {
 
   componentDidUpdate(prevProps :Props) {
-    const { addWorksitePlanRequestState, onClose } = this.props;
-    const { addWorksitePlanRequestState: prevSumbitState } = prevProps;
-    if (addWorksitePlanRequestState === RequestStates.SUCCESS
+    const { addNewWorkSiteStatusRequestState, onClose } = this.props;
+    const { addNewWorkSiteStatusRequestState: prevSumbitState } = prevProps;
+    if (addNewWorkSiteStatusRequestState === RequestStates.SUCCESS
       && prevSumbitState === RequestStates.PENDING) {
       onClose();
     }
@@ -35,7 +35,7 @@ class AssignWorksiteModal extends Component<Props> {
 
   render() {
     const {
-      addWorksitePlanRequestState,
+      addNewWorkSiteStatusRequestState,
       diversionPlanEKID,
       isOpen,
       onClose,
@@ -48,9 +48,9 @@ class AssignWorksiteModal extends Component<Props> {
           onClose={onClose}
           textTitle="Assign to Worksite"
           viewportScrolling>
-        <AssignWorksiteForm
+        <ChangeWorksiteStatusForm
             diversionPlanEKID={diversionPlanEKID}
-            isLoading={addWorksitePlanRequestState === RequestStates.PENDING}
+            isLoading={addNewWorkSiteStatusRequestState === RequestStates.PENDING}
             onDiscard={onClose}
             personEKID={personEKID}
             worksites={worksites} />
@@ -60,8 +60,8 @@ class AssignWorksiteModal extends Component<Props> {
 }
 
 const mapStateToProps = (state :Map) => ({
-  addWorksitePlanRequestState: state.getIn([STATE.PERSON, ACTIONS, ADD_WORKSITE_PLAN, REQUEST_STATE]),
+  addNewWorkSiteStatusRequestState: state.getIn([STATE.PERSON, ACTIONS, ADD_WORKSITE_PLAN, REQUEST_STATE]),
 });
 
 // $FlowFixMe
-export default connect(mapStateToProps)(AssignWorksiteModal);
+export default connect(mapStateToProps)(ChangeWorksiteStatusModal);

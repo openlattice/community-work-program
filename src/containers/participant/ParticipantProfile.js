@@ -22,6 +22,7 @@ import CreateWorkAppointmentModal from './schedule/CreateAppointmentModal';
 import AddOrientationDateModal from './AddOrientationDateModal';
 import EditSentenceDateModal from './EditSentenceDateModal';
 import EditCheckInDateModal from './EditCheckInDateModal';
+import ChangeWorksiteStatusModal from './assignedworksites/ChangeWorksiteStatusModal';
 import LogoLoader from '../../components/LogoLoader';
 
 import { getAllParticipantInfo } from './ParticipantActions';
@@ -173,7 +174,7 @@ type State = {
   workStartDateTime :string;
   showAssignWorksiteModal :boolean;
   showCheckInDateModal :boolean;
-  showDeleteWorksitePlanModal :boolean;
+  showWorksiteStatusModal :boolean;
   showEnrollmentModal :boolean;
   showOrientationDateModal :boolean;
   showSentenceDateModal :boolean;
@@ -190,7 +191,7 @@ class ParticipantProfile extends Component<Props, State> {
       workStartDateTime: '',
       showAssignWorksiteModal: false,
       showCheckInDateModal: false,
-      showDeleteWorksitePlanModal: false,
+      showWorksiteStatusModal: false,
       showEnrollmentModal: false,
       showOrientationDateModal: false,
       showSentenceDateModal: false,
@@ -326,15 +327,15 @@ class ParticipantProfile extends Component<Props, State> {
     });
   }
 
-  handleShowDeleteWorksitePlanModal = () => {
+  handleShowWorksiteStatusModal = () => {
     this.setState({
-      showDeleteWorksitePlanModal: true
+      showWorksiteStatusModal: true
     });
   }
 
-  handleHideDeleteWorksitePlanModal = () => {
+  handleHideWorksiteStatusModal = () => {
     this.setState({
-      showDeleteWorksitePlanModal: false
+      showWorksiteStatusModal: false
     });
   }
 
@@ -365,6 +366,7 @@ class ParticipantProfile extends Component<Props, State> {
       showOrientationDateModal,
       showSentenceDateModal,
       showWorkAppointmentModal,
+      showWorksiteStatusModal,
       workStartDateTime,
       worksiteNamesByWorksitePlan
     } = this.state;
@@ -446,7 +448,7 @@ class ParticipantProfile extends Component<Props, State> {
                 <NameRowWrapper>
                   <NameHeader>Assigned Work Sites</NameHeader>
                   <SmallerButtonsWrapper>
-                    <Button onClick={this.handleShowDeleteWorksitePlanModal}>Delete Work Site</Button>
+                    <Button onClick={this.handleShowWorksiteStatusModal}>Change Status</Button>
                     <Button onClick={this.handleShowAssignWorksiteModal}>Add Work Site</Button>
                   </SmallerButtonsWrapper>
                 </NameRowWrapper>
@@ -499,6 +501,9 @@ class ParticipantProfile extends Component<Props, State> {
         <EditCheckInDateModal
             isOpen={showCheckInDateModal}
             onClose={this.handleHideCheckInDateModal} />
+        <ChangeWorksiteStatusModal
+            isOpen={showWorksiteStatusModal}
+            onClose={this.handleHideWorksiteStatusModal} />
       </ProfileWrapper>
     );
   }
