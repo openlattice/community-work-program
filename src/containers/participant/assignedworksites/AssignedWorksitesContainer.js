@@ -24,32 +24,30 @@ type Props = {
   worksitesByWorksitePlan :Map;
 };
 
-const AssignedWorksitesContainer = ({ worksitePlans, worksitesByWorksitePlan } :Props) => {
-  return (
-    <OuterWrapper>
-      <Card>
-        {
-          worksitePlans.count() === 0
-            ? (
-              <CardSegment>
-                <IconSplash
-                    caption="No Assigned Work Sites"
-                    icon={faTools}
-                    size="3x" />
-              </CardSegment>
-            )
-            : (
-              <AssignedWorksitesTable
-                  columnHeaders={WORKSITES_COLUMN_HEADERS}
-                  small={false}
-                  tableMargin="25px 0"
-                  worksitesByWorksitePlan={worksitesByWorksitePlan}
-                  worksitePlans={worksitePlans} />
-            )
-        }
-      </Card>
-    </OuterWrapper>
-  );
-};
+const AssignedWorksitesContainer = ({ worksitePlans, worksitesByWorksitePlan } :Props) => (
+  <OuterWrapper>
+    <Card>
+      {
+        worksitePlans.count() === 0
+          ? (
+            <CardSegment>
+              <IconSplash
+                  caption="No Assigned Work Sites"
+                  icon={faTools}
+                  size="3x" />
+            </CardSegment>
+          )
+          : (
+            <AssignedWorksitesTable
+                columnHeaders={WORKSITES_COLUMN_HEADERS}
+                small={false}
+                tableMargin="25px 0"
+                worksitesByWorksitePlan={worksitesByWorksitePlan}
+                worksitePlans={worksitePlans} />
+          )
+      }
+    </Card>
+  </OuterWrapper>
+);
 
 export default AssignedWorksitesContainer;

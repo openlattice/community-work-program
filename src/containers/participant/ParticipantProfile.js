@@ -139,6 +139,10 @@ const ButtonsWrapper = styled.div`
   grid-gap: 0 10px;
 `;
 
+const SmallerButtonsWrapper = styled(ButtonsWrapper)`
+  grid-template-columns: repeat(2, 1fr);
+`;
+
 type Props = {
   actions:{
     getAllParticipantInfo :RequestSequence;
@@ -169,6 +173,7 @@ type State = {
   workStartDateTime :string;
   showAssignWorksiteModal :boolean;
   showCheckInDateModal :boolean;
+  showDeleteWorksitePlanModal :boolean;
   showEnrollmentModal :boolean;
   showOrientationDateModal :boolean;
   showSentenceDateModal :boolean;
@@ -185,6 +190,7 @@ class ParticipantProfile extends Component<Props, State> {
       workStartDateTime: '',
       showAssignWorksiteModal: false,
       showCheckInDateModal: false,
+      showDeleteWorksitePlanModal: false,
       showEnrollmentModal: false,
       showOrientationDateModal: false,
       showSentenceDateModal: false,
@@ -320,6 +326,18 @@ class ParticipantProfile extends Component<Props, State> {
     });
   }
 
+  handleShowDeleteWorksitePlanModal = () => {
+    this.setState({
+      showDeleteWorksitePlanModal: true
+    });
+  }
+
+  handleHideDeleteWorksitePlanModal = () => {
+    this.setState({
+      showDeleteWorksitePlanModal: false
+    });
+  }
+
   render() {
     const {
       actions,
@@ -427,7 +445,10 @@ class ParticipantProfile extends Component<Props, State> {
               <ProfileBody>
                 <NameRowWrapper>
                   <NameHeader>Assigned Work Sites</NameHeader>
-                  <Button onClick={this.handleShowAssignWorksiteModal}>Add Work Site</Button>
+                  <SmallerButtonsWrapper>
+                    <Button onClick={this.handleShowDeleteWorksitePlanModal}>Delete Work Site</Button>
+                    <Button onClick={this.handleShowAssignWorksiteModal}>Add Work Site</Button>
+                  </SmallerButtonsWrapper>
                 </NameRowWrapper>
                 <AssignedWorksitesContainer
                     worksitePlans={worksitePlans}
