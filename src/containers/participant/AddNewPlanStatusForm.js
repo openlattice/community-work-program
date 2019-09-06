@@ -16,7 +16,7 @@ import { bindActionCreators } from 'redux';
 import type { RequestSequence } from 'redux-reqseq';
 import type { FQN } from 'lattice';
 
-import { addNewDiversionPlanStatus } from './ParticipantActions';
+import { addNewDiversionPlanStatus, markDiversionPlanAsComplete } from './ParticipantActions';
 import { getEntityKeyId, getEntitySetIdFromApp, getPropertyTypeIdFromEdm } from '../../utils/DataUtils';
 import { getCombinedDateTime } from '../../utils/ScheduleUtils';
 import { STATUS_FILTER_OPTIONS } from '../participants/ParticipantsConstants';
@@ -60,6 +60,7 @@ const ENROLLMENT_STATUS_OPTIONS :Object[] = STATUS_FILTER_OPTIONS
 type Props = {
   actions:{
     addNewDiversionPlanStatus :RequestSequence;
+    markDiversionPlanAsComplete :RequestSequence;
   };
   app :Map;
   currentStatus :string;
@@ -100,6 +101,7 @@ class AddNewPlanStatusForm extends Component<Props, State> {
   createPropertyTypeIdsMap = () => {
     const { edm } = this.props;
     return {
+      [COMPLETED]: getPropertyTypeIdFromEdm(edm, COMPLETED),
       [DATETIME_COMPLETED]: getPropertyTypeIdFromEdm(edm, DATETIME_COMPLETED),
       [DESCRIPTION]: getPropertyTypeIdFromEdm(edm, DESCRIPTION),
       [EFFECTIVE_DATE]: getPropertyTypeIdFromEdm(edm, EFFECTIVE_DATE),
@@ -127,7 +129,12 @@ class AddNewPlanStatusForm extends Component<Props, State> {
   }
 
   handleOnSubmit = () => {
-    const { actions, diversionPlan } = this.props;
+    const {
+      actions,
+      app,
+      diversionPlan,
+      edm
+    } = this.props;
     let { newEnrollmentData } = this.state;
 
     const associations = [];
@@ -159,6 +166,18 @@ class AddNewPlanStatusForm extends Component<Props, State> {
         .setIn([getPageSectionKey(1, 2), getEntityAddressKey(0, PROGRAM_OUTCOME, COMPLETED)], true);
 
       associations.push([RESULTS_IN, diversionPlanEKID, DIVERSION_PLAN, 0, PROGRAM_OUTCOME, {}]);
+
+      // need to update diversion plan completed property to true
+      const diversionPlanESID :UUID = getEntitySetIdFromApp(app, DIVERSION_PLAN);
+      const completedPTID :UUID = getPropertyTypeIdFromEdm(edm, COMPLETED);
+      const diversionPlanDataToUpdate = {
+        [diversionPlanESID]: {
+          [diversionPlanEKID]: {
+            [completedPTID]: [true],
+          }
+        }
+      };
+      actions.markDiversionPlanAsComplete({ entityData: diversionPlanDataToUpdate });
     }
 
     const entitySetIds :Object = this.createEntitySetIdsMap();
@@ -257,6 +276,7 @@ const mapStateToProps = (state :Map) => ({
 const mapDispatchToProps = dispatch => ({
   actions: bindActionCreators({
     addNewDiversionPlanStatus,
+    markDiversionPlanAsComplete,
   }, dispatch)
 });
 

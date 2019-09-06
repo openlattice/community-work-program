@@ -64,6 +64,9 @@ const getWorksitePlans = newRequestSequence(GET_WORKSITE_PLANS);
 const GET_WORK_APPOINTMENTS :'GET_WORK_APPOINTMENTS' = 'GET_WORK_APPOINTMENTS';
 const getWorkAppointments = newRequestSequence(GET_WORK_APPOINTMENTS);
 
+const MARK_DIVERSION_PLAN_AS_COMPLETE :'MARK_DIVERSION_PLAN_AS_COMPLETE' = 'MARK_DIVERSION_PLAN_AS_COMPLETE';
+const markDiversionPlanAsComplete = newRequestSequence(MARK_DIVERSION_PLAN_AS_COMPLETE);
+
 const UPDATE_HOURS_WORKED :'UPDATE_HOURS_WORKED' = 'UPDATE_HOURS_WORKED';
 const updateHoursWorked = newRequestSequence(UPDATE_HOURS_WORKED);
 
@@ -89,6 +92,7 @@ export {
   GET_WORKSITE_BY_WORKSITE_PLAN,
   GET_WORKSITE_PLANS,
   GET_WORK_APPOINTMENTS,
+  MARK_DIVERSION_PLAN_AS_COMPLETE,
   UPDATE_HOURS_WORKED,
   addInfraction,
   addNewDiversionPlanStatus,
@@ -111,5 +115,6 @@ export {
   getWorkAppointments,
   getWorksiteByWorksitePlan,
   getWorksitePlans,
+  markDiversionPlanAsComplete,
   updateHoursWorked,
 };

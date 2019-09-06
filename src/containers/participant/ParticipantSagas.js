@@ -43,6 +43,7 @@ import {
   GET_WORKSITE_BY_WORKSITE_PLAN,
   GET_WORKSITE_PLANS,
   GET_WORK_APPOINTMENTS,
+  MARK_DIVERSION_PLAN_AS_COMPLETE,
   UPDATE_HOURS_WORKED,
   addInfraction,
   addNewDiversionPlanStatus,
@@ -65,6 +66,7 @@ import {
   getWorkAppointments,
   getWorksiteByWorksitePlan,
   getWorksitePlans,
+  markDiversionPlanAsComplete,
   updateHoursWorked,
 } from './ParticipantActions';
 import { submitDataGraph, submitPartialReplace } from '../../core/sagas/data/DataActions';
@@ -415,6 +417,43 @@ function* addWorksitePlanWorker(action :SequenceAction) :Generator<*, *, *> {
 function* addWorksitePlanWatcher() :Generator<*, *, *> {
 
   yield takeEvery(ADD_WORKSITE_PLAN, addWorksitePlanWorker);
+}
+
+/*
+ *
+ * ParticipantActions.markDiversionPlanAsComplete()
+ *
+ */
+
+function* markDiversionPlanAsCompleteWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+  const workerResponse = {};
+  let response :Object = {};
+
+  try {
+    yield put(markDiversionPlanAsComplete.request(id));
+
+    response = yield call(submitPartialReplaceWorker, submitPartialReplace(value));
+    if (response.error) {
+      throw response.error;
+    }
+
+    yield put(markDiversionPlanAsComplete.success(id));
+  }
+  catch (error) {
+    workerResponse.error = error;
+    LOG.error('caught exception in markDiversionPlanAsCompleteWorker()', error);
+    yield put(markDiversionPlanAsComplete.failure(id, error));
+  }
+  finally {
+    yield put(markDiversionPlanAsComplete.finally(id));
+  }
+}
+
+function* markDiversionPlanAsCompleteWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(MARK_DIVERSION_PLAN_AS_COMPLETE, markDiversionPlanAsCompleteWorker);
 }
 
 /*
@@ -1575,6 +1614,8 @@ export {
   getWorksiteByWorksitePlanWorker,
   getWorksitePlansWatcher,
   getWorksitePlansWorker,
+  markDiversionPlanAsCompleteWatcher,
+  markDiversionPlanAsCompleteWorker,
   updateHoursWorkedWatcher,
   updateHoursWorkedWorker,
 };
