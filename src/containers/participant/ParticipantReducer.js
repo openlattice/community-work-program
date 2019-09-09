@@ -26,6 +26,7 @@ import {
   getWorkAppointments,
   getWorksiteByWorksitePlan,
   getWorksitePlans,
+  markDiversionPlanAsComplete,
   updateHoursWorked,
 } from './ParticipantActions';
 import { getEntityKeyId, getEntityProperties, getPropertyFqnFromEdm } from '../../utils/DataUtils';
@@ -33,6 +34,7 @@ import { PERSON } from '../../utils/constants/ReduxStateConsts';
 import { INFRACTIONS_CONSTS } from '../../core/edm/constants/DataModelConsts';
 import {
   APP_TYPE_FQNS,
+  DIVERSION_PLAN_FQNS,
   ENROLLMENT_STATUS_FQNS,
   ENTITY_KEY_ID,
   INFRACTION_EVENT_FQNS,
@@ -41,6 +43,7 @@ import {
 } from '../../core/edm/constants/FullyQualifiedNames';
 
 const { WORKSITE_PLAN } = APP_TYPE_FQNS;
+const { COMPLETED } = DIVERSION_PLAN_FQNS;
 const { STATUS } = ENROLLMENT_STATUS_FQNS;
 const { TYPE } = INFRACTION_EVENT_FQNS;
 const { CATEGORY } = INFRACTION_FQNS;
@@ -76,9 +79,11 @@ const {
   GET_WORK_APPOINTMENTS,
   INFRACTIONS_INFO,
   INFRACTION_TYPES,
+  MARK_DIVERSION_PLAN_AS_COMPLETE,
   PARTICIPANT,
   PERSON_CASE,
   PHONE,
+  PROGRAM_OUTCOME,
   REQUEST_STATE,
   REQUIRED_HOURS,
   UPDATE_HOURS_WORKED,
@@ -131,6 +136,9 @@ const INITIAL_STATE :Map<*, *> = fromJS({
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [GET_INFRACTION_TYPES]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [MARK_DIVERSION_PLAN_AS_COMPLETE]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [GET_PARTICIPANT]: {
@@ -929,6 +937,30 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
     //     FINALLY: () => state.deleteIn([ACTIONS, GET_PARTICIPANT_ADDRESS, action.id])
     //   });
     // }
+
+    case markDiversionPlanAsComplete.case(action.type): {
+
+      return markDiversionPlanAsComplete.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, MARK_DIVERSION_PLAN_AS_COMPLETE, action.id], action)
+          .setIn([ACTIONS, MARK_DIVERSION_PLAN_AS_COMPLETE, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+
+          let diversionPlan :Map = state.get(DIVERSION_PLAN);
+          let isCompleted = diversionPlan.getIn([COMPLETED, 0], true);
+          isCompleted = true;
+          diversionPlan = diversionPlan.setIn([COMPLETED, 0], isCompleted);
+
+          return state
+            .set(DIVERSION_PLAN, diversionPlan)
+            .setIn([ACTIONS, MARK_DIVERSION_PLAN_AS_COMPLETE, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, MARK_DIVERSION_PLAN_AS_COMPLETE, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, MARK_DIVERSION_PLAN_AS_COMPLETE, action.id]),
+      });
+    }
 
     case getRequiredHours.case(action.type): {
 
