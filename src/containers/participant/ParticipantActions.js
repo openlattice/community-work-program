@@ -55,6 +55,9 @@ const getParticipant = newRequestSequence(GET_PARTICIPANT);
 const GET_PARTICIPANT_INFRACTIONS :'GET_PARTICIPANT_INFRACTIONS' = 'GET_PARTICIPANT_INFRACTIONS';
 const getParticipantInfractions = newRequestSequence(GET_PARTICIPANT_INFRACTIONS);
 
+const GET_PROGRAM_OUTCOME :'GET_PROGRAM_OUTCOME' = 'GET_PROGRAM_OUTCOME';
+const getProgramOutcome = newRequestSequence(GET_PROGRAM_OUTCOME);
+
 const GET_WORKSITE_BY_WORKSITE_PLAN :'GET_WORKSITE_BY_WORKSITE_PLAN' = 'GET_WORKSITE_BY_WORKSITE_PLAN';
 const getWorksiteByWorksitePlan = newRequestSequence(GET_WORKSITE_BY_WORKSITE_PLAN);
 
@@ -88,6 +91,7 @@ export {
   GET_PARTICIPANT,
   // GET_PARTICIPANT_ADDRESS,
   GET_PARTICIPANT_INFRACTIONS,
+  GET_PROGRAM_OUTCOME,
   GET_REQUIRED_HOURS,
   GET_WORKSITE_BY_WORKSITE_PLAN,
   GET_WORKSITE_PLANS,
@@ -111,6 +115,7 @@ export {
   getParticipant,
   // getParticipantAddress,
   getParticipantInfractions,
+  getProgramOutcome,
   getRequiredHours,
   getWorkAppointments,
   getWorksiteByWorksitePlan,

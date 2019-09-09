@@ -39,6 +39,7 @@ import {
   GET_PARTICIPANT,
   // GET_PARTICIPANT_ADDRESS,
   GET_PARTICIPANT_INFRACTIONS,
+  GET_PROGRAM_OUTCOME,
   GET_REQUIRED_HOURS,
   GET_WORKSITE_BY_WORKSITE_PLAN,
   GET_WORKSITE_PLANS,
@@ -62,6 +63,7 @@ import {
   getParticipant,
   // getParticipantAddress,
   getParticipantInfractions,
+  getProgramOutcome,
   getRequiredHours,
   getWorkAppointments,
   getWorksiteByWorksitePlan,
@@ -1131,6 +1133,61 @@ function* getWorksitePlansWatcher() :Generator<*, *, *> {
 
 /*
  *
+ * ParticipantsActions.getProgramOutcome()
+ *
+ */
+
+function* getProgramOutcomeWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+  let response :Object = {};
+  let programOutcome :Map = Map();
+
+  try {
+    yield put(getProgramOutcome.request(id));
+    if (value === null || value === undefined) {
+      throw ERR_ACTION_VALUE_NOT_DEFINED;
+    }
+    const { diversionPlan } = value;
+    const app = yield select(getAppFromState);
+    const diversionPlanEKID :UUID = getEntityKeyId(diversionPlan);
+    const diversionPlanESID :UUID = getEntitySetIdFromApp(app, DIVERSION_PLAN);
+    const programOutcomeESID :UUID = getEntitySetIdFromApp(app, PROGRAM_OUTCOME);
+
+    const searchFilter :Object = {
+      entityKeyIds: [diversionPlanEKID],
+      destinationEntitySetIds: [programOutcomeESID],
+      sourceEntitySetIds: [],
+    };
+    response = yield call(
+      searchEntityNeighborsWithFilterWorker,
+      searchEntityNeighborsWithFilter({ entitySetId: diversionPlanESID, filter: searchFilter })
+    );
+    if (response.error) {
+      throw response.error;
+    }
+    if (Object.keys(response.data).length > 0) {
+      programOutcome = getNeighborDetails(fromJS(response.data[diversionPlanEKID][0]));
+    }
+
+    yield put(getProgramOutcome.success(id, programOutcome));
+  }
+  catch (error) {
+    LOG.error('caught exception in getProgramOutcomeWorker()', error);
+    yield put(getProgramOutcome.failure(id, error));
+  }
+  finally {
+    yield put(getProgramOutcome.finally(id));
+  }
+}
+
+function* getProgramOutcomeWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(GET_PROGRAM_OUTCOME, getProgramOutcomeWorker);
+}
+
+/*
+ *
  * ParticipantsActions.getEnrollmentStatus()
  *
  */
@@ -1219,7 +1276,10 @@ function* getEnrollmentStatusWorker(action :SequenceAction) :Generator<*, *, *> 
         diversionPlan = diversionPlans.get(personEKID).find((plan :Map) => getEntityKeyId(plan) === diversionPlanEKID);
 
         /* Call getWorksitePlans() to find all worksite plans for current diversion plan */
-        yield call(getWorksitePlansWorker, getWorksitePlans({ diversionPlan }));
+        yield all([
+          call(getWorksitePlansWorker, getWorksitePlans({ diversionPlan })),
+          call(getProgramOutcomeWorker, getProgramOutcome({ diversionPlan })),
+        ]);
       }
     }
 
@@ -1550,15 +1610,15 @@ function* getAllParticipantInfoWorker(action :SequenceAction) :Generator<*, *, *
     const { personEKID } = value;
 
     const workerResponses = yield all([
+      // call(getParticipantAddressWorker, getParticipantAddress({ personEKID })),
       call(getCaseInfoWorker, getCaseInfo({ personEKID })),
       call(getContactInfoWorker, getContactInfo({ personEKID })),
       call(getEnrollmentStatusWorker, getEnrollmentStatus({ personEKID })),
-      // call(getParticipantAddressWorker, getParticipantAddress({ personEKID })),
+      call(getInfractionTypesWorker, getInfractionTypes()),
       call(getParticipantInfractionsWorker, getParticipantInfractions({ personEKID })),
       call(getParticipantWorker, getParticipant({ personEKID })),
       call(getRequiredHoursWorker, getRequiredHours({ personEKID })),
       call(getWorksitesWorker, getWorksites()),
-      call(getInfractionTypesWorker, getInfractionTypes()),
     ]);
     const responseError = workerResponses.reduce(
       (error, workerResponse) => (error ? error : workerResponse.error),
@@ -1616,6 +1676,8 @@ export {
   getParticipantInfractionsWorker,
   getParticipantWatcher,
   getParticipantWorker,
+  getProgramOutcomeWatcher,
+  getProgramOutcomeWorker,
   getRequiredHoursWatcher,
   getRequiredHoursWorker,
   getWorkAppointmentsWatcher,

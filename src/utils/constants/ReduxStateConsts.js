@@ -71,6 +71,7 @@ export const PERSON = {
   GET_INFRACTION_TYPES: 'getInfractionTypes',
   GET_PARTICIPANT: 'getParticipant',
   GET_PARTICIPANT_ADDRESS: 'getParticipantAddress',
+  GET_PROGRAM_OUTCOME: 'getProgramOutcome',
   GET_REQUIRED_HOURS: 'getRequiredHours',
   GET_WORKSITE_PLANS: 'getWorksitePlans',
   GET_WORK_APPOINTMENTS: 'getWorkAppointments',

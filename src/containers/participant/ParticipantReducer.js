@@ -22,6 +22,7 @@ import {
   getParticipant,
   // getParticipantAddress,
   getParticipantInfractions,
+  getProgramOutcome,
   getRequiredHours,
   getWorkAppointments,
   getWorksiteByWorksitePlan,
@@ -73,6 +74,7 @@ const {
   GET_PARTICIPANT,
   // GET_PARTICIPANT_ADDRESS,
   GET_PARTICIPANT_INFRACTIONS,
+  GET_PROGRAM_OUTCOME,
   GET_REQUIRED_HOURS,
   GET_WORKSITE_BY_WORKSITE_PLAN,
   GET_WORKSITE_PLANS,
@@ -136,6 +138,9 @@ const INITIAL_STATE :Map<*, *> = fromJS({
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [GET_INFRACTION_TYPES]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [GET_PROGRAM_OUTCOME]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [MARK_DIVERSION_PLAN_AS_COMPLETE]: {
@@ -955,6 +960,41 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
     //     FINALLY: () => state.deleteIn([ACTIONS, GET_PARTICIPANT_ADDRESS, action.id])
     //   });
     // }
+
+    case getProgramOutcome.case(action.type): {
+
+      return getProgramOutcome.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, GET_PROGRAM_OUTCOME, action.id], fromJS(action))
+          .setIn([ACTIONS, GET_PROGRAM_OUTCOME, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+
+          if (!state.hasIn([ACTIONS, GET_PROGRAM_OUTCOME, action.id])) {
+            return state;
+          }
+
+          const { value } = action;
+          if (value === null || value === undefined) {
+            return state;
+          }
+
+          return state
+            .set(PROGRAM_OUTCOME, value)
+            .setIn([ACTIONS, GET_PROGRAM_OUTCOME, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => {
+
+          const { value } = action;
+
+          return state
+            .set(PROGRAM_OUTCOME, Map())
+            .setIn([ERRORS, GET_PROGRAM_OUTCOME], value)
+            .setIn([ACTIONS, GET_PROGRAM_OUTCOME, REQUEST_STATE], RequestStates.FAILURE);
+        },
+        FINALLY: () => state.deleteIn([ACTIONS, GET_PROGRAM_OUTCOME, action.id])
+      });
+    }
 
     case markDiversionPlanAsComplete.case(action.type): {
 
