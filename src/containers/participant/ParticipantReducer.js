@@ -187,6 +187,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [PARTICIPANT]: Map(),
   [PERSON_CASE]: Map(),
   [PHONE]: '',
+  [PROGRAM_OUTCOME]: Map(),
   [REQUIRED_HOURS]: 0,
   [VIOLATIONS]: List(),
   [WARNINGS]: List(),
@@ -304,12 +305,18 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
           if (storedSeqAction) {
 
             const { value } :Object = seqAction;
-            const { edm, enrollmentStatusEKID, enrollmentStatusESID } = value;
+            const {
+              edm,
+              enrollmentStatusEKID,
+              enrollmentStatusESID,
+              programOutcomeEKID,
+              programOutcomeESID,
+            } = value;
 
             const requestValue :Object = storedSeqAction.value;
             const { entityData } :Object = requestValue;
             const storedEnrollmentEntity :Map = fromJS(entityData[enrollmentStatusESID][0]);
-
+            const storedProgramOutcomeEntity :Map = fromJS(entityData[programOutcomeESID][0]);
 
             let newEnrollmentStatus :Map = Map();
             storedEnrollmentEntity.forEach((enrollmentValue, id) => {
@@ -318,8 +325,19 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
             });
             newEnrollmentStatus = newEnrollmentStatus.set(ENTITY_KEY_ID, enrollmentStatusEKID);
 
+            let programOutcome :Map = state.get(PROGRAM_OUTCOME, Map());
+            if (!storedProgramOutcomeEntity.isEmpty()) {
+
+              storedProgramOutcomeEntity.forEach((outcomeValue, id) => {
+                const propertyTypeFqn :FQN = getPropertyFqnFromEdm(edm, id);
+                programOutcome = programOutcome.set(propertyTypeFqn, outcomeValue);
+              });
+              programOutcome = programOutcome.set(ENTITY_KEY_ID, programOutcomeEKID);
+            }
+
             return state
               .set(ENROLLMENT_STATUS, newEnrollmentStatus)
+              .set(PROGRAM_OUTCOME, programOutcome)
               .setIn([ACTIONS, ADD_NEW_DIVERSION_PLAN_STATUS, REQUEST_STATE], RequestStates.SUCCESS);
           }
 

@@ -115,6 +115,7 @@ const {
   INFRACTIONS,
   MANUAL_PRETRIAL_COURT_CASES,
   PEOPLE,
+  PROGRAM_OUTCOME,
   REGISTERED_FOR,
   RESULTS_IN,
   WORKSITE,
@@ -217,11 +218,20 @@ function* addNewDiversionPlanStatusWorker(action :SequenceAction) :Generator<*, 
     const { data } :Object = response;
     const { entityKeyIds } :Object = data;
 
+    const app = yield select(getAppFromState);
     const edm = yield select(getEdmFromState);
-    const enrollmentStatusESID = Object.keys(entityKeyIds)[0];
-    const enrollmentStatusEKID = Object.values(entityKeyIds)[0];
+    const enrollmentStatusESID = getEntitySetIdFromApp(app, ENROLLMENT_STATUS);
+    const programOutcomeESID = getEntitySetIdFromApp(app, PROGRAM_OUTCOME);
+    const enrollmentStatusEKID = entityKeyIds[enrollmentStatusESID][0];
+    const programOutcomeEKID = entityKeyIds[programOutcomeESID] ? entityKeyIds[programOutcomeESID][0] : '';
 
-    yield put(addNewDiversionPlanStatus.success(id, { edm, enrollmentStatusEKID, enrollmentStatusESID }));
+    yield put(addNewDiversionPlanStatus.success(id, {
+      edm,
+      enrollmentStatusEKID,
+      enrollmentStatusESID,
+      programOutcomeEKID,
+      programOutcomeESID,
+    }));
   }
   catch (error) {
     workerResponse.error = error;
