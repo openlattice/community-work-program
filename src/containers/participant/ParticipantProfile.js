@@ -84,12 +84,12 @@ const ENROLLMENT_STATUSES_EXCLUDING_PREENROLLMENT = Object.values(ENROLLMENT_STA
     && status !== ENROLLMENT_STATUSES.AWAITING_ORIENTATION);
 
 /* Constants for Modals */
-const ASSIGN_WORKSITE = 'AssignWorksite';
-const CHECK_IN_DATE = 'CheckInDate';
-const ENROLLMENT = 'Enrollment';
-const ORIENTATION_DATE = 'OrientationDate';
-const SENTENCE_DATE = 'SentenceDate';
-const WORK_APPOINTMENT = 'WorkAppointment';
+const ASSIGN_WORKSITE = 'showAssignWorksiteModal';
+const CHECK_IN_DATE = 'showCheckInDateModal';
+const ENROLLMENT = 'showEnrollmentModal';
+const ORIENTATION_DATE = 'showOrientationDateModal';
+const SENTENCE_DATE = 'showSentenceDateModal';
+const WORK_APPOINTMENT = 'showWorkAppointmentModal';
 
 const ProfileWrapper = styled.div`
   display: flex;
@@ -190,12 +190,12 @@ class ParticipantProfile extends Component<Props, State> {
 
     this.state = {
       workStartDateTime: '',
-      showAssignWorksiteModal: false,
-      showCheckInDateModal: false,
-      showEnrollmentModal: false,
-      showOrientationDateModal: false,
-      showSentenceDateModal: false,
-      showWorkAppointmentModal: false,
+      [ASSIGN_WORKSITE]: false,
+      [CHECK_IN_DATE]: false,
+      [ENROLLMENT]: false,
+      [ORIENTATION_DATE]: false,
+      [SENTENCE_DATE]: false,
+      [WORK_APPOINTMENT]: false,
       worksiteNamesByWorksitePlan: Map(),
     };
   }
@@ -256,16 +256,14 @@ class ParticipantProfile extends Component<Props, State> {
   }
 
   handleShowModal = (modalName :string) => {
-    const stateToChange = `show${modalName}Modal`;
     this.setState({
-      [stateToChange]: true,
+      [modalName]: true,
     });
   }
 
   handleHideModal = (modalName :string) => {
-    const stateToChange = `show${modalName}Modal`;
     this.setState({
-      [stateToChange]: false,
+      [modalName]: false,
     });
   }
 

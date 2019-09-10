@@ -288,13 +288,11 @@ function* addOrientationDateWatcher() :Generator<*, *, *> {
 function* editCaseAndHoursWorker(action :SequenceAction) :Generator<*, *, *> {
 
   const { id, value } = action;
-  const workerResponse = {};
-  let response :Object = {};
 
   try {
     yield put(editCaseAndHours.request(id, value));
 
-    response = yield call(submitPartialReplaceWorker, submitPartialReplace(value));
+    const response = yield call(submitPartialReplaceWorker, submitPartialReplace(value));
     if (response.error) {
       throw response.error;
     }
@@ -310,7 +308,6 @@ function* editCaseAndHoursWorker(action :SequenceAction) :Generator<*, *, *> {
     }));
   }
   catch (error) {
-    workerResponse.error = error;
     LOG.error('caught exception in editCaseAndHoursWorker()', error);
     yield put(editCaseAndHours.failure(id, error));
   }
