@@ -198,6 +198,9 @@ export const ButtonsRow = styled(FormRow)`
 
 export const RowContent = styled.div`
   flex-grow: 1;
-  margin: 0 20px 10px 20px;
+  margin: 0 20px 10px 0;
   min-width: 250px;
+  :last-of-type {
+    margin-right: 0;
+  }
 `;
