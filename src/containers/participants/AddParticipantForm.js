@@ -8,6 +8,7 @@ import {
   DatePicker,
   Input,
   Label,
+  Select,
   TextArea
 } from 'lattice-ui-kit';
 import { connect } from 'react-redux';
@@ -19,6 +20,7 @@ import { addParticipant } from './ParticipantsActions';
 import { getEntitySetIdFromApp, getPropertyTypeIdFromEdm } from '../../utils/DataUtils';
 import {
   APP_TYPE_FQNS,
+  CASE_FQNS,
   DATETIME_COMPLETED,
   DATETIME_START,
   DIVERSION_PLAN_FQNS,
@@ -27,6 +29,7 @@ import {
 } from '../../core/edm/constants/FullyQualifiedNames';
 import { STATE } from '../../utils/constants/ReduxStateConsts';
 import { CWP, ENROLLMENT_STATUSES } from '../../core/edm/constants/DataModelConsts';
+import { COURT_TYPE_OPTIONS } from '../participant/cases/EditCaseAndHoursForm';
 import {
   ButtonsRow,
   FormRow,
@@ -41,12 +44,15 @@ const {
   processEntityData
 } = DataProcessingUtils;
 const {
+  APPEARS_IN,
   DIVERSION_PLAN,
   ENROLLMENT_STATUS,
+  MANUAL_PRETRIAL_COURT_CASES,
   MANUAL_SENTENCED_WITH,
   PEOPLE,
   RELATED_TO,
 } = APP_TYPE_FQNS;
+const { CASE_NUMBER_TEXT, COURT_CASE_TYPE } = CASE_FQNS;
 const {
   COMPLETED,
   DATETIME_RECEIVED,
@@ -81,6 +87,7 @@ class AddParticipantForm extends Component<Props, State> {
           [getEntityAddressKey(0, DIVERSION_PLAN, COMPLETED)]: false,
           [getEntityAddressKey(0, DIVERSION_PLAN, NAME)]: CWP,
           [getEntityAddressKey(0, ENROLLMENT_STATUS, STATUS)]: ENROLLMENT_STATUSES.AWAITING_CHECKIN,
+          [getEntityAddressKey(0, MANUAL_PRETRIAL_COURT_CASES, CASE_NUMBER_TEXT)]: '',
         },
       }),
     };
@@ -89,15 +96,19 @@ class AddParticipantForm extends Component<Props, State> {
   createEntitySetIdsMap = () => {
     const { app } = this.props;
 
+    const appearsInESID :UUID = getEntitySetIdFromApp(app, APPEARS_IN);
     const diversionPlanESID :UUID = getEntitySetIdFromApp(app, DIVERSION_PLAN);
     const enrollmentStatusESID :UUID = getEntitySetIdFromApp(app, ENROLLMENT_STATUS);
+    const manualCasesESID :UUID = getEntitySetIdFromApp(app, MANUAL_PRETRIAL_COURT_CASES);
     const manualSentencedWithESID :UUID = getEntitySetIdFromApp(app, MANUAL_SENTENCED_WITH);
     const peopleESID :UUID = getEntitySetIdFromApp(app, PEOPLE);
     const relatedToESID :UUID = getEntitySetIdFromApp(app, RELATED_TO);
 
     return {
+      [APPEARS_IN]: appearsInESID,
       [DIVERSION_PLAN]: diversionPlanESID,
       [ENROLLMENT_STATUS]: enrollmentStatusESID,
+      [MANUAL_PRETRIAL_COURT_CASES]: manualCasesESID,
       [MANUAL_SENTENCED_WITH]: manualSentencedWithESID,
       [PEOPLE]: peopleESID,
       [RELATED_TO]: relatedToESID,
@@ -107,7 +118,9 @@ class AddParticipantForm extends Component<Props, State> {
   createPropertyTypeIdsMap = () => {
     const { edm } = this.props;
 
+    const caseNumberTextPTID :UUID = getPropertyTypeIdFromEdm(edm, CASE_NUMBER_TEXT);
     const completedPTID :UUID = getPropertyTypeIdFromEdm(edm, COMPLETED);
+    const courtCaseTypePTID :UUID = getPropertyTypeIdFromEdm(edm, COURT_CASE_TYPE);
     const datetimeCompletedPTID :UUID = getPropertyTypeIdFromEdm(edm, DATETIME_COMPLETED);
     const datetimeReceivedPTID :UUID = getPropertyTypeIdFromEdm(edm, DATETIME_RECEIVED);
     const datetimeStartPTID :UUID = getPropertyTypeIdFromEdm(edm, DATETIME_START);
@@ -121,7 +134,9 @@ class AddParticipantForm extends Component<Props, State> {
     const statusPTID :UUID = getPropertyTypeIdFromEdm(edm, STATUS);
 
     return {
+      [CASE_NUMBER_TEXT]: caseNumberTextPTID,
       [COMPLETED]: completedPTID,
+      [COURT_CASE_TYPE]: courtCaseTypePTID,
       [DATETIME_COMPLETED]: datetimeCompletedPTID,
       [DATETIME_RECEIVED]: datetimeReceivedPTID,
       [DATETIME_START]: datetimeStartPTID,
@@ -142,9 +157,10 @@ class AddParticipantForm extends Component<Props, State> {
     this.setState({ newParticipantData: newParticipantData.setIn([getPageSectionKey(1, 1), name], value) });
   }
 
-  handleSelectChange = (value :string, e :Object) => {
+  handleSelectChange = (option :Object, e :Object) => {
     const { newParticipantData } = this.state;
     const { name } = e;
+    const { value } = option;
     this.setState({ newParticipantData: newParticipantData.setIn([getPageSectionKey(1, 1), name], value) });
   }
 
@@ -157,6 +173,7 @@ class AddParticipantForm extends Component<Props, State> {
 
     associations.push([MANUAL_SENTENCED_WITH, 0, PEOPLE, 0, DIVERSION_PLAN, {}]);
     associations.push([RELATED_TO, 0, ENROLLMENT_STATUS, 0, DIVERSION_PLAN, {}]);
+    associations.push([APPEARS_IN, 0, PEOPLE, 0, MANUAL_PRETRIAL_COURT_CASES, {}]);
 
     // required hours is saved as a string and needs to be converted to number:
     const requiredHoursKey = getEntityAddressKey(0, DIVERSION_PLAN, REQUIRED_HOURS);
@@ -227,6 +244,21 @@ class AddParticipantForm extends Component<Props, State> {
                 name={getEntityAddressKey(0, DIVERSION_PLAN, REQUIRED_HOURS)}
                 onChange={this.handleInputChange}
                 type="text" />
+          </RowContent>
+        </FormRow>
+        <FormRow>
+          <RowContent>
+            <Label>Court type</Label>
+            <Select
+                name={getEntityAddressKey(0, MANUAL_PRETRIAL_COURT_CASES, COURT_CASE_TYPE)}
+                onChange={this.handleSelectChange}
+                options={COURT_TYPE_OPTIONS} />
+          </RowContent>
+          <RowContent>
+            <Label>Docket number</Label>
+            <Input
+                name={getEntityAddressKey(0, MANUAL_PRETRIAL_COURT_CASES, CASE_NUMBER_TEXT)}
+                onChange={this.handleInputChange} />
           </RowContent>
         </FormRow>
         <FormRow>

@@ -35,7 +35,7 @@ const { DIVERSION_PLAN, MANUAL_PRETRIAL_COURT_CASES } = APP_TYPE_FQNS;
 const { CASE_NUMBER_TEXT, COURT_CASE_TYPE } = CASE_FQNS;
 const { REQUIRED_HOURS } = DIVERSION_PLAN_FQNS;
 
-const COURT_TYPE_OPTIONS = [
+export const COURT_TYPE_OPTIONS = [
   {
     label: 'Sentenced',
     value: 'Sentenced'
