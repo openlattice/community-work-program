@@ -625,12 +625,11 @@ function* createWorkAppointmentsWatcher() :Generator<*, *, *> {
 function* deleteAppointmentWorker(action :SequenceAction) :Generator<*, *, *> {
 
   const { id, value } = action;
-  let response :Object = {};
 
   try {
     yield put(deleteAppointment.request(id, value));
 
-    response = yield call(deleteEntitiesWorker, deleteEntities(value));
+    const response :Object = yield call(deleteEntitiesWorker, deleteEntities(value));
     if (response.error) {
       throw response.error;
     }

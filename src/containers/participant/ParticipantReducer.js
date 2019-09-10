@@ -559,25 +559,25 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
 
             let workAppointmentsByWorksitePlan = state.get(WORK_APPOINTMENTS_BY_WORKSITE_PLAN);
             let worksitePlanEKID = '';
-            let indexToDelete = 0;
-            workAppointmentsByWorksitePlan.forEach((workAppointmentCollection :List, ekid :UUID) => {
-              const deletedAppointment = workAppointmentCollection
-                .find((appointment :Map) => getEntityKeyId(appointment) === entityKeyId);
-
-              if (isDefined(deletedAppointment)) {
+            let indexToDelete = -1;
+            workAppointmentsByWorksitePlan.forEach((appointments :List, ekid :UUID) => {
+              const targetIndex :number = appointments.findIndex(
+                (appointment :Map) => getEntityKeyId(appointment) === entityKeyId
+              );
+              if (targetIndex !== -1) {
                 worksitePlanEKID = ekid;
-                indexToDelete = workAppointmentCollection.indexOf(deletedAppointment);
+                indexToDelete = targetIndex;
                 return false;
               }
               return true;
             });
-            let collection = workAppointmentsByWorksitePlan.get(worksitePlanEKID);
-            collection = collection.delete(indexToDelete);
-            workAppointmentsByWorksitePlan = workAppointmentsByWorksitePlan.set(worksitePlanEKID, collection);
-
-            return state
-              .set(WORK_APPOINTMENTS_BY_WORKSITE_PLAN, workAppointmentsByWorksitePlan)
-              .setIn([ACTIONS, DELETE_APPOINTMENT, REQUEST_STATE], RequestStates.SUCCESS);
+            if (indexToDelete !== -1) {
+              workAppointmentsByWorksitePlan = workAppointmentsByWorksitePlan
+                .deleteIn([worksitePlanEKID, indexToDelete]);
+              return state
+                .set(WORK_APPOINTMENTS_BY_WORKSITE_PLAN, workAppointmentsByWorksitePlan)
+                .setIn([ACTIONS, DELETE_APPOINTMENT, REQUEST_STATE], RequestStates.SUCCESS);
+            }
           }
 
           return state;

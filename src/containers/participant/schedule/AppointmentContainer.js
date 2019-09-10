@@ -26,9 +26,9 @@ import { ButtonWrapper } from '../../../components/Layout';
 
 const { CHECK_INS_BY_APPOINTMENT } = PERSON;
 
-const CHECK_IN = 'CheckIn';
-const CHECK_IN_DETAILS = 'CheckInDetails';
-const DELETE_APPOINTMENT = 'DeleteAppointment';
+const CHECK_IN = 'isCheckInModalVisible';
+const CHECK_IN_DETAILS = 'isCheckInDetailsModalVisible';
+const DELETE_APPOINTMENT = 'isDeleteAppointmentModalVisible';
 
 const InfoWrapper = styled.div`
   display: grid;
@@ -70,22 +70,20 @@ type State = {
 class AppointmentContainer extends Component<Props, State> {
 
   state = {
-    isCheckInDetailsModalVisible: false,
-    isCheckInModalVisible: false,
-    isDeleteAppointmentModalVisible: false,
+    [CHECK_IN]: false,
+    [CHECK_IN_DETAILS]: false,
+    [DELETE_APPOINTMENT]: false,
   };
 
   handleShowModal = (modalName :string) => {
-    const stateToChange = `is${modalName}ModalVisible`;
     this.setState({
-      [stateToChange]: true,
+      [modalName]: true,
     });
   }
 
   handleHideModal = (modalName :string) => {
-    const stateToChange = `is${modalName}ModalVisible`;
     this.setState({
-      [stateToChange]: false,
+      [modalName]: false,
     });
   }
 
@@ -128,16 +126,12 @@ class AppointmentContainer extends Component<Props, State> {
             <Text>{ hours }</Text>
           </InfoWrapper>
           {
-            checkedIn
-              ? (
-                null
-              )
-              : (
-                <IconButton
-                    icon={<FontAwesomeIcon icon={faTrash} color={OL.GREY04} size="sm" />}
-                    mode="subtle"
-                    onClick={() => this.handleShowModal(DELETE_APPOINTMENT)} />
-              )
+            !checkedIn && (
+              <IconButton
+                  icon={<FontAwesomeIcon icon={faTrash} color={OL.GREY04} size="sm" />}
+                  mode="subtle"
+                  onClick={() => this.handleShowModal(DELETE_APPOINTMENT)} />
+            )
           }
           {
             checkedIn
