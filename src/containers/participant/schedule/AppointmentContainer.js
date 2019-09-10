@@ -3,13 +3,19 @@ import React, { Component } from 'react';
 import styled from 'styled-components';
 import { Map } from 'immutable';
 import { DateTime } from 'luxon';
-import { Button, Card, CardSegment } from 'lattice-ui-kit';
+import {
+  Button,
+  Card,
+  CardSegment,
+  IconButton
+} from 'lattice-ui-kit';
 import { connect } from 'react-redux';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCheckCircle } from '@fortawesome/pro-solid-svg-icons';
+import { faCheckCircle, faTrash } from '@fortawesome/pro-solid-svg-icons';
 
 import CheckInModal from './CheckInModal';
 import CheckInDetailsModal from './CheckInDetailsModal';
+import DeleteAppointmentModal from './DeleteAppointmentModal';
 
 import { getEntityKeyId, getEntityProperties } from '../../../utils/DataUtils';
 import { isDefined } from '../../../utils/LangUtils';
@@ -20,9 +26,13 @@ import { ButtonWrapper } from '../../../components/Layout';
 
 const { CHECK_INS_BY_APPOINTMENT } = PERSON;
 
+const CHECK_IN = 'isCheckInModalVisible';
+const CHECK_IN_DETAILS = 'isCheckInDetailsModalVisible';
+const DELETE_APPOINTMENT = 'isDeleteAppointmentModalVisible';
+
 const InfoWrapper = styled.div`
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: 200px 200px 200px 1fr 1fr;
   grid-gap: 5px 40px;
   width: 100%;
 `;
@@ -54,34 +64,32 @@ type Props = {
 type State = {
   isCheckInDetailsModalVisible :boolean;
   isCheckInModalVisible :boolean;
+  isDeleteAppointmentModalVisible :boolean;
 };
 
 class AppointmentContainer extends Component<Props, State> {
 
   state = {
-    isCheckInDetailsModalVisible: false,
-    isCheckInModalVisible: false,
+    [CHECK_IN]: false,
+    [CHECK_IN_DETAILS]: false,
+    [DELETE_APPOINTMENT]: false,
   };
 
-  showCheckInModal = () => {
-    this.setState({ isCheckInModalVisible: true });
+  handleShowModal = (modalName :string) => {
+    this.setState({
+      [modalName]: true,
+    });
   }
 
-  hideCheckInModal = () => {
-    this.setState({ isCheckInModalVisible: false });
-  }
-
-  showCheckInDetailsModal = () => {
-    this.setState({ isCheckInDetailsModalVisible: true });
-  }
-
-  hideCheckInDetailsModal = () => {
-    this.setState({ isCheckInDetailsModalVisible: false });
+  handleHideModal = (modalName :string) => {
+    this.setState({
+      [modalName]: false,
+    });
   }
 
   render() {
     const { appointment, checkInsByAppointment, worksiteName } = this.props;
-    const { isCheckInDetailsModalVisible, isCheckInModalVisible } = this.state;
+    const { isCheckInDetailsModalVisible, isCheckInModalVisible, isDeleteAppointmentModalVisible } = this.state;
 
     const {
       [DATETIME_END]: datetimeEnd,
@@ -99,6 +107,13 @@ class AppointmentContainer extends Component<Props, State> {
     const checkIn :Map = checkInsByAppointment.get(appointmentEKID);
     const checkedIn :boolean = isDefined(checkIn);
 
+    const appointmentOverview :{} = {
+      date,
+      hours,
+      weekday,
+      worksiteName,
+    };
+
     return (
       <Card>
         <CardSegment padding="sm">
@@ -111,15 +126,23 @@ class AppointmentContainer extends Component<Props, State> {
             <Text>{ hours }</Text>
           </InfoWrapper>
           {
+            !checkedIn && (
+              <IconButton
+                  icon={<FontAwesomeIcon icon={faTrash} color={OL.GREY04} size="sm" />}
+                  mode="subtle"
+                  onClick={() => this.handleShowModal(DELETE_APPOINTMENT)} />
+            )
+          }
+          {
             checkedIn
               ? (
-                <CheckWrapper onClick={this.showCheckInDetailsModal}>
+                <CheckWrapper onClick={() => this.handleShowModal(CHECK_IN_DETAILS)}>
                   <FontAwesomeIcon icon={faCheckCircle} color={OL.PURPLE02} size="lg" />
                 </CheckWrapper>
               )
               : (
                 <Button
-                    onClick={this.showCheckInModal}
+                    onClick={() => this.handleShowModal(CHECK_IN)}
                     mode="subtle">
                   Check in
                 </Button>
@@ -129,11 +152,16 @@ class AppointmentContainer extends Component<Props, State> {
         <CheckInModal
             appointment={appointment}
             isOpen={isCheckInModalVisible}
-            onClose={this.hideCheckInModal} />
+            onClose={() => this.handleHideModal(CHECK_IN)} />
         <CheckInDetailsModal
             checkIn={checkIn}
             isOpen={isCheckInDetailsModalVisible}
-            onClose={this.hideCheckInDetailsModal} />
+            onClose={() => this.handleHideModal(CHECK_IN_DETAILS)} />
+        <DeleteAppointmentModal
+            appointment={appointmentOverview}
+            appointmentEKID={appointmentEKID}
+            isOpen={isDeleteAppointmentModalVisible}
+            onClose={() => this.handleHideModal(DELETE_APPOINTMENT)} />
       </Card>
     );
   }
@@ -146,4 +174,5 @@ const mapStateToProps = (state :Map) => {
   });
 };
 
+// $FlowFixMe
 export default connect(mapStateToProps)(AppointmentContainer);

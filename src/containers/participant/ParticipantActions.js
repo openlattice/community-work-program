@@ -13,16 +13,22 @@ const addOrientationDate = newRequestSequence(ADD_ORIENTATION_DATE);
 const ADD_WORKSITE_PLAN :'ADD_WORKSITE_PLAN' = 'ADD_WORKSITE_PLAN';
 const addWorksitePlan = newRequestSequence(ADD_WORKSITE_PLAN);
 
-const CHECK_IN_FOR_APPOINTMENT:'CHECK_IN_FOR_APPOINTMENT' = 'CHECK_IN_FOR_APPOINTMENT';
+const CHECK_IN_FOR_APPOINTMENT :'CHECK_IN_FOR_APPOINTMENT' = 'CHECK_IN_FOR_APPOINTMENT';
 const checkInForAppointment = newRequestSequence(CHECK_IN_FOR_APPOINTMENT);
 
-const CREATE_WORK_APPOINTMENTS:'CREATE_WORK_APPOINTMENTS' = 'CREATE_WORK_APPOINTMENTS';
+const CREATE_WORK_APPOINTMENTS :'CREATE_WORK_APPOINTMENTS' = 'CREATE_WORK_APPOINTMENTS';
 const createWorkAppointments = newRequestSequence(CREATE_WORK_APPOINTMENTS);
+
+const DELETE_APPOINTMENT :'DELETE_APPOINTMENT' = 'DELETE_APPOINTMENT';
+const deleteAppointment = newRequestSequence(DELETE_APPOINTMENT);
+
+const EDIT_CASE_AND_HOURS:'EDIT_CASE_AND_HOURS' = 'EDIT_CASE_AND_HOURS';
+const editCaseAndHours = newRequestSequence(EDIT_CASE_AND_HOURS);
 
 const EDIT_CHECK_IN_DATE:'EDIT_CHECK_IN_DATE' = 'EDIT_CHECK_IN_DATE';
 const editCheckInDate = newRequestSequence(EDIT_CHECK_IN_DATE);
 
-const EDIT_SENTENCE_DATE:'EDIT_SENTENCE_DATE' = 'EDIT_SENTENCE_DATE';
+const EDIT_SENTENCE_DATE :'EDIT_SENTENCE_DATE' = 'EDIT_SENTENCE_DATE';
 const editSentenceDate = newRequestSequence(EDIT_SENTENCE_DATE);
 
 const GET_APPOINTMENT_CHECK_INS :'GET_APPOINTMENT_CHECK_INS' = 'GET_APPOINTMENT_CHECK_INS';
@@ -36,9 +42,6 @@ const getCaseInfo = newRequestSequence(GET_CASE_INFO);
 
 const GET_CONTACT_INFO :'GET_CONTACT_INFO' = 'GET_CONTACT_INFO';
 const getContactInfo = newRequestSequence(GET_CONTACT_INFO);
-
-const GET_REQUIRED_HOURS :'GET_REQUIRED_HOURS' = 'GET_REQUIRED_HOURS';
-const getRequiredHours = newRequestSequence(GET_REQUIRED_HOURS);
 
 const GET_ENROLLMENT_STATUS :'GET_ENROLLMENT_STATUS' = 'GET_ENROLLMENT_STATUS';
 const getEnrollmentStatus = newRequestSequence(GET_ENROLLMENT_STATUS);
@@ -74,6 +77,8 @@ export {
   ADD_WORKSITE_PLAN,
   CHECK_IN_FOR_APPOINTMENT,
   CREATE_WORK_APPOINTMENTS,
+  DELETE_APPOINTMENT,
+  EDIT_CASE_AND_HOURS,
   EDIT_CHECK_IN_DATE,
   EDIT_SENTENCE_DATE,
   GET_ALL_PARTICIPANT_INFO,
@@ -85,7 +90,6 @@ export {
   GET_PARTICIPANT,
   // GET_PARTICIPANT_ADDRESS,
   GET_PARTICIPANT_INFRACTIONS,
-  GET_REQUIRED_HOURS,
   GET_WORKSITE_BY_WORKSITE_PLAN,
   GET_WORKSITE_PLANS,
   GET_WORK_APPOINTMENTS,
@@ -96,6 +100,8 @@ export {
   addWorksitePlan,
   checkInForAppointment,
   createWorkAppointments,
+  deleteAppointment,
+  editCaseAndHours,
   editCheckInDate,
   editSentenceDate,
   getAllParticipantInfo,
@@ -107,7 +113,6 @@ export {
   getParticipant,
   // getParticipantAddress,
   getParticipantInfractions,
-  getRequiredHours,
   getWorkAppointments,
   getWorksiteByWorksitePlan,
   getWorksitePlans,

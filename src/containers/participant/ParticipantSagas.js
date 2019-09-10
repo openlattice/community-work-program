@@ -28,6 +28,8 @@ import {
   ADD_WORKSITE_PLAN,
   CHECK_IN_FOR_APPOINTMENT,
   CREATE_WORK_APPOINTMENTS,
+  DELETE_APPOINTMENT,
+  EDIT_CASE_AND_HOURS,
   EDIT_CHECK_IN_DATE,
   EDIT_SENTENCE_DATE,
   GET_ALL_PARTICIPANT_INFO,
@@ -39,7 +41,6 @@ import {
   GET_PARTICIPANT,
   // GET_PARTICIPANT_ADDRESS,
   GET_PARTICIPANT_INFRACTIONS,
-  GET_REQUIRED_HOURS,
   GET_WORKSITE_BY_WORKSITE_PLAN,
   GET_WORKSITE_PLANS,
   GET_WORK_APPOINTMENTS,
@@ -50,6 +51,8 @@ import {
   addWorksitePlan,
   checkInForAppointment,
   createWorkAppointments,
+  deleteAppointment,
+  editCaseAndHours,
   editCheckInDate,
   editSentenceDate,
   getAllParticipantInfo,
@@ -61,14 +64,17 @@ import {
   getParticipant,
   // getParticipantAddress,
   getParticipantInfractions,
-  getRequiredHours,
   getWorkAppointments,
   getWorksiteByWorksitePlan,
   getWorksitePlans,
   updateHoursWorked,
 } from './ParticipantActions';
-import { submitDataGraph, submitPartialReplace } from '../../core/sagas/data/DataActions';
-import { submitDataGraphWorker, submitPartialReplaceWorker } from '../../core/sagas/data/DataSagas';
+import { deleteEntities, submitDataGraph, submitPartialReplace } from '../../core/sagas/data/DataActions';
+import {
+  deleteEntitiesWorker,
+  submitDataGraphWorker,
+  submitPartialReplaceWorker
+} from '../../core/sagas/data/DataSagas';
 import { getWorksites } from '../worksites/WorksitesActions';
 import { getWorksitesWorker } from '../worksites/WorksitesSagas';
 import {
@@ -92,7 +98,7 @@ import {
   INFRACTION_FQNS,
   WORKSITE_PLAN_FQNS,
 } from '../../core/edm/constants/FullyQualifiedNames';
-import { ENROLLMENT_STATUSES, INFRACTIONS_CONSTS } from '../../core/edm/constants/DataModelConsts';
+import { INFRACTIONS_CONSTS } from '../../core/edm/constants/DataModelConsts';
 
 const { UpdateTypes } = Types;
 const { getEntityData, getEntitySetData, updateEntityData } = DataApiActions;
@@ -277,6 +283,48 @@ function* addOrientationDateWorker(action :SequenceAction) :Generator<*, *, *> {
 function* addOrientationDateWatcher() :Generator<*, *, *> {
 
   yield takeEvery(ADD_ORIENTATION_DATE, addOrientationDateWorker);
+}
+
+/*
+ *
+ * ParticipantActions.editCaseAndHours()
+ *
+ */
+
+function* editCaseAndHoursWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+
+  try {
+    yield put(editCaseAndHours.request(id, value));
+
+    const response = yield call(submitPartialReplaceWorker, submitPartialReplace(value));
+    if (response.error) {
+      throw response.error;
+    }
+    const app = yield select(getAppFromState);
+    const caseESID = getEntitySetIdFromApp(app, MANUAL_PRETRIAL_COURT_CASES);
+    const diversionPlanESID = getEntitySetIdFromApp(app, DIVERSION_PLAN);
+    const edm = yield select(getEdmFromState);
+
+    yield put(editCaseAndHours.success(id, {
+      caseESID,
+      diversionPlanESID,
+      edm,
+    }));
+  }
+  catch (error) {
+    LOG.error('caught exception in editCaseAndHoursWorker()', error);
+    yield put(editCaseAndHours.failure(id, error));
+  }
+  finally {
+    yield put(editCaseAndHours.finally(id));
+  }
+}
+
+function* editCaseAndHoursWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(EDIT_CASE_AND_HOURS, editCaseAndHoursWorker);
 }
 
 /*
@@ -608,6 +656,40 @@ function* createWorkAppointmentsWorker(action :SequenceAction) :Generator<*, *, 
 function* createWorkAppointmentsWatcher() :Generator<*, *, *> {
 
   yield takeEvery(CREATE_WORK_APPOINTMENTS, createWorkAppointmentsWorker);
+}
+
+/*
+ *
+ * ParticipantActions.deleteAppointment()
+ *
+ */
+
+function* deleteAppointmentWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+
+  try {
+    yield put(deleteAppointment.request(id, value));
+
+    const response :Object = yield call(deleteEntitiesWorker, deleteEntities(value));
+    if (response.error) {
+      throw response.error;
+    }
+
+    yield put(deleteAppointment.success(id));
+  }
+  catch (error) {
+    LOG.error('caught exception in deleteAppointmentWorker()', error);
+    yield put(deleteAppointment.failure(id, error));
+  }
+  finally {
+    yield put(deleteAppointment.finally(id));
+  }
+}
+
+function* deleteAppointmentWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(DELETE_APPOINTMENT, deleteAppointmentWorker);
 }
 
 /*
@@ -1423,67 +1505,6 @@ function* getParticipantInfractionsWatcher() :Generator<*, *, *> {
 
 /*
  *
- * ParticipantsActions.getRequiredHours()
- *
- */
-
-function* getRequiredHoursWorker(action :SequenceAction) :Generator<*, *, *> {
-
-  const { id, value } = action;
-  const workerResponse = {};
-  let response :Object = {};
-  let requiredHours :number = 0;
-
-  try {
-    yield put(getRequiredHours.request(id));
-    const { personEKID } = value;
-    if (value === null || value === undefined) {
-      throw ERR_ACTION_VALUE_NOT_DEFINED;
-    }
-    const app = yield select(getAppFromState);
-    const peopleESID = getEntitySetIdFromApp(app, PEOPLE);
-    const diversionPlanESID = getEntitySetIdFromApp(app, DIVERSION_PLAN);
-
-    const searchFilter :Object = {
-      entityKeyIds: [personEKID],
-      destinationEntitySetIds: [diversionPlanESID],
-      sourceEntitySetIds: [],
-    };
-    response = yield call(
-      searchEntityNeighborsWithFilterWorker,
-      searchEntityNeighborsWithFilter({ entitySetId: peopleESID, filter: searchFilter })
-    );
-    if (response.error) {
-      throw response.error;
-    }
-
-    if (response.data[personEKID]) {
-      let activeDiversionPlan :Map = fromJS(response.data[personEKID])
-        .last();
-      activeDiversionPlan = getNeighborDetails(activeDiversionPlan);
-      requiredHours = activeDiversionPlan.getIn([REQUIRED_HOURS, 0], 0);
-    }
-
-    yield put(getRequiredHours.success(id, requiredHours));
-  }
-  catch (error) {
-    workerResponse.error = error;
-    LOG.error('caught exception in getRequiredHoursWorker()', error);
-    yield put(getRequiredHours.failure(id, error));
-  }
-  finally {
-    yield put(getRequiredHours.finally(id));
-  }
-  return workerResponse;
-}
-
-function* getRequiredHoursWatcher() :Generator<*, *, *> {
-
-  yield takeEvery(GET_REQUIRED_HOURS, getRequiredHoursWorker);
-}
-
-/*
- *
  * ParticipantsActions.getAllParticipantInfo()
  *
  */
@@ -1507,7 +1528,6 @@ function* getAllParticipantInfoWorker(action :SequenceAction) :Generator<*, *, *
       // call(getParticipantAddressWorker, getParticipantAddress({ personEKID })),
       call(getParticipantInfractionsWorker, getParticipantInfractions({ personEKID })),
       call(getParticipantWorker, getParticipant({ personEKID })),
-      call(getRequiredHoursWorker, getRequiredHours({ personEKID })),
       call(getWorksitesWorker, getWorksites()),
       call(getInfractionTypesWorker, getInfractionTypes()),
     ]);
@@ -1547,6 +1567,10 @@ export {
   checkInForAppointmentWorker,
   createWorkAppointmentsWatcher,
   createWorkAppointmentsWorker,
+  deleteAppointmentWatcher,
+  deleteAppointmentWorker,
+  editCaseAndHoursWatcher,
+  editCaseAndHoursWorker,
   editCheckInDateWatcher,
   editCheckInDateWorker,
   editSentenceDateWatcher,
@@ -1567,8 +1591,6 @@ export {
   getParticipantInfractionsWorker,
   getParticipantWatcher,
   getParticipantWorker,
-  getRequiredHoursWatcher,
-  getRequiredHoursWorker,
   getWorkAppointmentsWatcher,
   getWorkAppointmentsWorker,
   getWorksiteByWorksitePlanWatcher,
