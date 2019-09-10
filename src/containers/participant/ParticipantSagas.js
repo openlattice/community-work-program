@@ -28,6 +28,7 @@ import {
   ADD_WORKSITE_PLAN,
   CHECK_IN_FOR_APPOINTMENT,
   CREATE_WORK_APPOINTMENTS,
+  DELETE_APPOINTMENT,
   EDIT_CASE_AND_HOURS,
   EDIT_CHECK_IN_DATE,
   EDIT_SENTENCE_DATE,
@@ -50,6 +51,7 @@ import {
   addWorksitePlan,
   checkInForAppointment,
   createWorkAppointments,
+  deleteAppointment,
   editCaseAndHours,
   editCheckInDate,
   editSentenceDate,
@@ -67,8 +69,12 @@ import {
   getWorksitePlans,
   updateHoursWorked,
 } from './ParticipantActions';
-import { submitDataGraph, submitPartialReplace } from '../../core/sagas/data/DataActions';
-import { submitDataGraphWorker, submitPartialReplaceWorker } from '../../core/sagas/data/DataSagas';
+import { deleteEntities, submitDataGraph, submitPartialReplace } from '../../core/sagas/data/DataActions';
+import {
+  deleteEntitiesWorker,
+  submitDataGraphWorker,
+  submitPartialReplaceWorker
+} from '../../core/sagas/data/DataSagas';
 import { getWorksites } from '../worksites/WorksitesActions';
 import { getWorksitesWorker } from '../worksites/WorksitesSagas';
 import {
@@ -650,6 +656,40 @@ function* createWorkAppointmentsWorker(action :SequenceAction) :Generator<*, *, 
 function* createWorkAppointmentsWatcher() :Generator<*, *, *> {
 
   yield takeEvery(CREATE_WORK_APPOINTMENTS, createWorkAppointmentsWorker);
+}
+
+/*
+ *
+ * ParticipantActions.deleteAppointment()
+ *
+ */
+
+function* deleteAppointmentWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+
+  try {
+    yield put(deleteAppointment.request(id, value));
+
+    const response :Object = yield call(deleteEntitiesWorker, deleteEntities(value));
+    if (response.error) {
+      throw response.error;
+    }
+
+    yield put(deleteAppointment.success(id));
+  }
+  catch (error) {
+    LOG.error('caught exception in deleteAppointmentWorker()', error);
+    yield put(deleteAppointment.failure(id, error));
+  }
+  finally {
+    yield put(deleteAppointment.finally(id));
+  }
+}
+
+function* deleteAppointmentWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(DELETE_APPOINTMENT, deleteAppointmentWorker);
 }
 
 /*
@@ -1527,6 +1567,8 @@ export {
   checkInForAppointmentWorker,
   createWorkAppointmentsWatcher,
   createWorkAppointmentsWorker,
+  deleteAppointmentWatcher,
+  deleteAppointmentWorker,
   editCaseAndHoursWatcher,
   editCaseAndHoursWorker,
   editCheckInDateWatcher,

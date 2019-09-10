@@ -11,6 +11,7 @@ import {
   addWorksitePlan,
   checkInForAppointment,
   createWorkAppointments,
+  deleteAppointment,
   editCaseAndHours,
   editCheckInDate,
   editSentenceDate,
@@ -28,6 +29,7 @@ import {
   getWorksitePlans,
   updateHoursWorked,
 } from './ParticipantActions';
+import { isDefined } from '../../utils/LangUtils';
 import {
   getEntityKeyId,
   getEntityProperties,
@@ -62,6 +64,7 @@ const {
   CHECK_INS_BY_APPOINTMENT,
   CHECK_IN_FOR_APPOINTMENT,
   CREATE_WORK_APPOINTMENTS,
+  DELETE_APPOINTMENT,
   DIVERSION_PLAN,
   EDIT_CASE_AND_HOURS,
   EDIT_CHECK_IN_DATE,
@@ -113,6 +116,9 @@ const INITIAL_STATE :Map<*, *> = fromJS({
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [CREATE_WORK_APPOINTMENTS]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [DELETE_APPOINTMENT]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [EDIT_CASE_AND_HOURS]: {
@@ -535,6 +541,54 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
         FAILURE: () => state
           .setIn([ACTIONS, CREATE_WORK_APPOINTMENTS, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, CREATE_WORK_APPOINTMENTS, action.id])
+      });
+    }
+
+    case deleteAppointment.case(action.type): {
+
+      return deleteAppointment.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, DELETE_APPOINTMENT, action.id], action)
+          .setIn([ACTIONS, DELETE_APPOINTMENT, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+
+          const seqAction :SequenceAction = action;
+          const storedSeqAction :SequenceAction = state.getIn([ACTIONS, DELETE_APPOINTMENT, seqAction.id]);
+
+          if (storedSeqAction) {
+
+            const requestValue :Object = storedSeqAction.value;
+            const { entityKeyId } :Object = requestValue[0];
+
+            let workAppointmentsByWorksitePlan = state.get(WORK_APPOINTMENTS_BY_WORKSITE_PLAN);
+            let worksitePlanEKID = '';
+            let indexToDelete = -1;
+            workAppointmentsByWorksitePlan.forEach((appointments :List, ekid :UUID) => {
+              const targetIndex :number = appointments.findIndex(
+                (appointment :Map) => getEntityKeyId(appointment) === entityKeyId
+              );
+              if (targetIndex !== -1) {
+                worksitePlanEKID = ekid;
+                indexToDelete = targetIndex;
+                return false;
+              }
+              return true;
+            });
+            if (indexToDelete !== -1) {
+              workAppointmentsByWorksitePlan = workAppointmentsByWorksitePlan
+                .deleteIn([worksitePlanEKID, indexToDelete]);
+              return state
+                .set(WORK_APPOINTMENTS_BY_WORKSITE_PLAN, workAppointmentsByWorksitePlan)
+                .setIn([ACTIONS, DELETE_APPOINTMENT, REQUEST_STATE], RequestStates.SUCCESS);
+            }
+          }
+
+          return state;
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, DELETE_APPOINTMENT, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, DELETE_APPOINTMENT, action.id]),
       });
     }
 
