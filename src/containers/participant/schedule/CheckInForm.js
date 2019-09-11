@@ -120,7 +120,7 @@ class CheckInForm extends Component<Props, State> {
   handleInputChange = (e :SyntheticEvent<HTMLInputElement>) => {
     const { newCheckInData } = this.state;
     const { name, value } = e.currentTarget;
-    const valueToInteger = parseInt(value, 10);
+    const valueToInteger = parseFloat(value);
     this.setState({ newCheckInData: newCheckInData.setIn([getPageSectionKey(1, 1), name], valueToInteger) });
   }
 
