@@ -465,7 +465,8 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
               newCheckIn = newCheckIn.set(propertyTypeFqn, value);
             });
             newCheckIn = newCheckIn.set(ENTITY_KEY_ID, checkInEKID);
-            const hoursWorked :number = storedCheckInDetailsEntity.getIn([HOURS_WORKED, 0]);
+            const hoursWorkedPTID :UUID = getPropertyTypeIdFromEdm(edm, HOURS_WORKED);
+            const hoursWorked :number = storedCheckInDetailsEntity.getIn([hoursWorkedPTID, 0]);
             newCheckIn = newCheckIn.set(HOURS_WORKED, hoursWorked);
 
             let checkInsByAppointment :Map = state.get(CHECK_INS_BY_APPOINTMENT);
