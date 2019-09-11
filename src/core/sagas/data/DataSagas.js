@@ -15,21 +15,25 @@ import type { SequenceAction } from 'redux-reqseq';
 import Logger from '../../../utils/Logger';
 import { ERR_ACTION_VALUE_NOT_DEFINED, ERR_WORKER_SAGA } from '../../../utils/Errors';
 import {
+  DELETE_ENTITIES,
   SUBMIT_DATA_GRAPH,
   SUBMIT_PARTIAL_REPLACE,
+  deleteEntities,
   submitDataGraph,
   submitPartialReplace,
 } from './DataActions';
 
 const LOG = new Logger('DataSagas');
 const { DataGraphBuilder } = Models;
-const { UpdateTypes } = Types;
+const { DeleteTypes, UpdateTypes } = Types;
 const {
   createEntityAndAssociationData,
+  deleteEntity,
   updateEntityData,
 } = DataApiActions;
 const {
   createEntityAndAssociationDataWorker,
+  deleteEntityWorker,
   updateEntityDataWorker,
 } = DataApiSagas;
 
@@ -149,7 +153,62 @@ function* submitPartialReplaceWatcher() :Generator<*, *, *> {
   yield takeEvery(SUBMIT_PARTIAL_REPLACE, submitPartialReplaceWorker);
 }
 
+/*
+ *
+ * DataActions.deleteEntities()
+ *
+ */
+
+function* deleteEntitiesWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const workerResponse :Object = {};
+
+  const { id, value } = action;
+  if (value === null || value === undefined) {
+    workerResponse.error = ERR_ACTION_VALUE_NOT_DEFINED;
+    yield put(deleteEntities.failure(id, workerResponse.error));
+    return workerResponse;
+  }
+
+  try {
+    yield put(deleteEntities.request(action.id, value));
+
+    const deleteRequests = value.map((dataObject) => {
+
+      const { entitySetId, entityKeyId } = dataObject;
+      return call(deleteEntityWorker, deleteEntity({
+        entityKeyId,
+        entitySetId,
+        deleteType: DeleteTypes.SOFT,
+      }));
+    });
+
+    const deleteResponses = yield all(deleteRequests);
+    const reducedError = deleteResponses.reduce((acc, response) => acc.error || response.error, {});
+    if (reducedError) throw reducedError;
+
+    yield put(deleteEntities.success(action.id));
+  }
+  catch (error) {
+    workerResponse.error = error;
+    LOG.error(ERR_WORKER_SAGA, error);
+    yield put(deleteEntities.failure(action.id, error));
+  }
+  finally {
+    yield put(deleteEntities.finally(action.id));
+  }
+
+  return workerResponse;
+}
+
+function* deleteEntitiesWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(DELETE_ENTITIES, deleteEntitiesWorker);
+}
+
 export {
+  deleteEntitiesWatcher,
+  deleteEntitiesWorker,
   submitDataGraphWatcher,
   submitDataGraphWorker,
   submitPartialReplaceWatcher,
