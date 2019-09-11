@@ -120,8 +120,8 @@ class CheckInForm extends Component<Props, State> {
   handleInputChange = (e :SyntheticEvent<HTMLInputElement>) => {
     const { newCheckInData } = this.state;
     const { name, value } = e.currentTarget;
-    const valueToInteger = parseFloat(value);
-    this.setState({ newCheckInData: newCheckInData.setIn([getPageSectionKey(1, 1), name], valueToInteger) });
+    const valueToFloat = parseFloat(value);
+    this.setState({ newCheckInData: newCheckInData.setIn([getPageSectionKey(1, 1), name], valueToFloat) });
   }
 
   handleRadioChange = (option :Object) => {
