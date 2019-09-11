@@ -359,10 +359,10 @@ class ParticipantProfile extends Component<Props, State> {
                 Back to Participants
               </BackNavButton>
               <ButtonsWrapper>
-                <Button onClick={this.handleShowModal(SENTENCE_DATE)}>Edit Sentence Date</Button>
-                <Button onClick={this.handleShowModal(CHECK_IN_DATE)}>Edit Check-In Date</Button>
-                <Button onClick={this.handleShowModal(ORIENTATION_DATE)}>{ addOrEditButtonText }</Button>
-                <Button mode="primary" onClick={this.handleShowModal(ENROLLMENT)}>
+                <Button onClick={() => this.handleShowModal(SENTENCE_DATE)}>Edit Sentence Date</Button>
+                <Button onClick={() => this.handleShowModal(CHECK_IN_DATE)}>Edit Check-In Date</Button>
+                <Button onClick={() => this.handleShowModal(ORIENTATION_DATE)}>{ addOrEditButtonText }</Button>
+                <Button mode="primary" onClick={() => this.handleShowModal(ENROLLMENT)}>
                   Change Enrollment Status
                 </Button>
               </ButtonsWrapper>
@@ -396,7 +396,7 @@ class ParticipantProfile extends Component<Props, State> {
                 <ProfileBody>
                   <NameRowWrapper>
                     <NameHeader>Assigned Work Sites</NameHeader>
-                    <Button onClick={this.handleShowModal(ASSIGN_WORKSITE)}>Add Work Site</Button>
+                    <Button onClick={() => this.handleShowModal(ASSIGN_WORKSITE)}>Add Work Site</Button>
                   </NameRowWrapper>
                   <AssignedWorksitesContainer
                       worksitePlans={worksitePlans}
@@ -408,7 +408,7 @@ class ParticipantProfile extends Component<Props, State> {
           <ProfileBody>
             <NameRowWrapper>
               <NameHeader>Work Schedule</NameHeader>
-              <Button onClick={this.handleShowModal(WORK_APPOINTMENT)}>Create Appointment</Button>
+              <Button onClick={() => this.handleShowModal(WORK_APPOINTMENT)}>Create Appointment</Button>
             </NameRowWrapper>
             <ParticipantWorkSchedule
                 workAppointmentsByWorksitePlan={workAppointmentsByWorksitePlan}
@@ -426,27 +426,27 @@ class ParticipantProfile extends Component<Props, State> {
           <AddNewPlanStatusModal
               currentStatus={status}
               isOpen={showEnrollmentModal}
-              onClose={this.handleHideModal(ENROLLMENT)}
+              onClose={() => this.handleHideModal(ENROLLMENT)}
               personName={firstName} />
           <AssignWorksiteModal
               diversionPlanEKID={diversionPlanEKID}
               isOpen={showAssignWorksiteModal}
-              onClose={this.handleHideModal(ASSIGN_WORKSITE)}
+              onClose={() => this.handleHideModal(ASSIGN_WORKSITE)}
               personEKID={personEKID}
               worksites={worksitesList} />
           <CreateWorkAppointmentModal
               isOpen={showWorkAppointmentModal}
-              onClose={this.handleHideModal(WORK_APPOINTMENT)}
+              onClose={() => this.handleHideModal(WORK_APPOINTMENT)}
               personEKID={personEKID} />
           <AddOrientationDateModal
               isOpen={showOrientationDateModal}
-              onClose={this.handleHideModal(ORIENTATION_DATE)} />
+              onClose={() => this.handleHideModal(ORIENTATION_DATE)} />
           <EditSentenceDateModal
               isOpen={showSentenceDateModal}
-              onClose={this.handleHideModal(SENTENCE_DATE)} />
+              onClose={() => this.handleHideModal(SENTENCE_DATE)} />
           <EditCheckInDateModal
               isOpen={showCheckInDateModal}
-              onClose={this.handleHideModal(CHECK_IN_DATE)} />
+              onClose={() => this.handleHideModal(CHECK_IN_DATE)} />
         </ProfileWrapper>
       </>
     );
