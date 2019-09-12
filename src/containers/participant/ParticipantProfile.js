@@ -12,7 +12,7 @@ import GeneralInfo from '../../components/participant/GeneralInfo';
 import KeyDates from '../../components/participant/KeyDates';
 import CaseInfo from './cases/CaseInfo';
 import ParticipantWorkSchedule from './schedule/ParticipantWorkSchedule';
-import PlanNotes from '../../components/participant/PlanNotes';
+import PlanNotes from './plannotes/PlanNotes';
 import ProgramCompletionBanner from './ProgramCompletionBanner';
 
 import AssignedWorksitesContainer from './assignedworksites/AssignedWorksitesContainer';
