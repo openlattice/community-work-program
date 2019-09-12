@@ -332,7 +332,9 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
             const requestValue :Object = storedSeqAction.value;
             const { entityData } :Object = requestValue;
             const storedEnrollmentEntity :Map = fromJS(entityData[enrollmentStatusESID][0]);
-            const storedProgramOutcomeEntity :Map = fromJS(entityData[programOutcomeESID][0]);
+            const storedProgramOutcomeEntity :Map = entityData[programOutcomeESID]
+              ? fromJS(entityData[programOutcomeESID][0])
+              : Map();
 
             let newEnrollmentStatus :Map = Map();
             storedEnrollmentEntity.forEach((enrollmentValue, id) => {
