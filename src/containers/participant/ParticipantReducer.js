@@ -14,6 +14,7 @@ import {
   deleteAppointment,
   editCaseAndHours,
   editCheckInDate,
+  editPlanNotes,
   editSentenceDate,
   getAppointmentCheckIns,
   getAllParticipantInfo,
@@ -29,7 +30,6 @@ import {
   getWorksitePlans,
   updateHoursWorked,
 } from './ParticipantActions';
-import { isDefined } from '../../utils/LangUtils';
 import {
   getEntityKeyId,
   getEntityProperties,
@@ -40,6 +40,7 @@ import { PERSON } from '../../utils/constants/ReduxStateConsts';
 import { INFRACTIONS_CONSTS } from '../../core/edm/constants/DataModelConsts';
 import {
   APP_TYPE_FQNS,
+  DIVERSION_PLAN_FQNS,
   CASE_FQNS,
   ENROLLMENT_STATUS_FQNS,
   ENTITY_KEY_ID,
@@ -50,6 +51,7 @@ import {
 
 const { WORKSITE_PLAN } = APP_TYPE_FQNS;
 const { CASE_NUMBER_TEXT, COURT_CASE_TYPE } = CASE_FQNS;
+const { NOTES } = DIVERSION_PLAN_FQNS;
 const { STATUS } = ENROLLMENT_STATUS_FQNS;
 const { TYPE } = INFRACTION_EVENT_FQNS;
 const { CATEGORY } = INFRACTION_FQNS;
@@ -68,6 +70,7 @@ const {
   DIVERSION_PLAN,
   EDIT_CASE_AND_HOURS,
   EDIT_CHECK_IN_DATE,
+  EDIT_PLAN_NOTES,
   EDIT_SENTENCE_DATE,
   EMAIL,
   ENROLLMENT_STATUS,
@@ -125,6 +128,9 @@ const INITIAL_STATE :Map<*, *> = fromJS({
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [EDIT_CHECK_IN_DATE]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [EDIT_PLAN_NOTES]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [EDIT_SENTENCE_DATE]: {
@@ -591,6 +597,49 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
         FAILURE: () => state
           .setIn([ACTIONS, DELETE_APPOINTMENT, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, DELETE_APPOINTMENT, action.id]),
+      });
+    }
+
+    case editPlanNotes.case(action.type): {
+
+      return editPlanNotes.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, EDIT_PLAN_NOTES, action.id], action)
+          .setIn([ACTIONS, EDIT_PLAN_NOTES, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+
+          const seqAction :SequenceAction = action;
+          const storedSeqAction :SequenceAction = state.getIn([ACTIONS, EDIT_PLAN_NOTES, seqAction.id]);
+
+          if (storedSeqAction) {
+
+            const { value } :Object = seqAction;
+            const { diversionPlanESID } = value;
+
+            const requestValue :Object = storedSeqAction.value;
+            const { entityData } :Object = requestValue;
+
+            let diversionPlan :Map = state.get(DIVERSION_PLAN);
+
+            const diversionPlanEKID = Object.keys(entityData[diversionPlanESID])[0];
+            const storedPropertyValueMap = entityData[diversionPlanESID][diversionPlanEKID];
+            const planNotes = Object.values(storedPropertyValueMap)[0];
+
+            let planNotesPlaceholder = diversionPlan.get(NOTES, 0);
+            planNotesPlaceholder = planNotes[0];
+            diversionPlan = diversionPlan.set(NOTES, planNotesPlaceholder);
+
+            return state
+              .set(DIVERSION_PLAN, diversionPlan)
+              .setIn([ACTIONS, EDIT_PLAN_NOTES, REQUEST_STATE], RequestStates.SUCCESS);
+          }
+
+          return state;
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, EDIT_PLAN_NOTES, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, EDIT_PLAN_NOTES, action.id]),
       });
     }
 
