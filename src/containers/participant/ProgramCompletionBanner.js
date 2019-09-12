@@ -18,6 +18,7 @@ import { OL } from '../../core/style/Colors';
 
 const { DESCRIPTION, HOURS_WORKED } = PROGRAM_OUTCOME_FQNS;
 
+const successfulStatuses = [ENROLLMENT_STATUSES.COMPLETED, ENROLLMENT_STATUSES.SUCCESSFUL];
 
 const labelMap :OrderedMap = OrderedMap({
   result: 'Result',
@@ -115,9 +116,10 @@ class ProgramCompletionBanner extends Component<Props, State> {
     const { [DATETIME_COMPLETED]: datetimeCompleted } = getEntityProperties(programOutcome, [DATETIME_COMPLETED]);
     const dateCompleted = DateTime.fromISO(datetimeCompleted).toLocaleString(DateTime.DATE_SHORT);
     const outcomeStatement = `This participant was marked ${resultingStatus} on ${dateCompleted}.`;
+    const bannerMode = successfulStatuses.includes(resultingStatus) ? 'success' : 'default';
     return (
       <BannerWrapper>
-        <Banner isOpen mode="default">
+        <Banner isOpen mode={bannerMode}>
           <BannerInnerWrapper>
             <BannerText>{ outcomeStatement }</BannerText>
             <Button
