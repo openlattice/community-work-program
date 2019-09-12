@@ -101,13 +101,15 @@ const ProfileWrapper = styled.div`
 `;
 
 const ProfileBody = styled.div`
+  align-items: flex-start;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  align-items: flex-start;
-  overflow-y: auto;
-  width: 100%;
   margin-bottom: 30px;
+  overflow-x: visible;
+  overflow-y: auto;
+  overflow-y: visible;
+  width: 100%;
 `;
 
 const NameRowWrapper = styled.div`

@@ -241,7 +241,7 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
               ? fromJS(entityData[enrollmentStatusESID][0])
               : Map();
 
-            const worksitePlan :Map = associationEntityData[registeredForESID]
+            const worksitePlan :Map = associationEntityData[resultsInESID]
               ? fromJS(associationEntityData[resultsInESID])
                 .find((association :Map) => association.get('srcEntitySetId') === worksitePlanESID)
               : Map();
@@ -272,7 +272,8 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
               ? infractionTypes.find((type :Map) => getEntityKeyId(type) === infractionEKID)
               : Map();
             const { [CATEGORY]: category } = getEntityProperties(infractionEntity, [CATEGORY]);
-            const { [STATUS]: status } = getEntityProperties(storedEnrollmentStatusEntity, [STATUS]);
+            const statusPTID = getPropertyTypeIdFromEdm(edm, STATUS);
+            const status = storedEnrollmentStatusEntity.getIn([statusPTID, 0], '');
             const info :Map = fromJS({
               [CATEGORY]: category,
               [STATUS]: status,
@@ -470,7 +471,8 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
               newCheckIn = newCheckIn.set(propertyTypeFqn, value);
             });
             newCheckIn = newCheckIn.set(ENTITY_KEY_ID, checkInEKID);
-            const hoursWorked :number = storedCheckInDetailsEntity.getIn([HOURS_WORKED, 0]);
+            const hoursWorkedPTID :UUID = getPropertyTypeIdFromEdm(edm, HOURS_WORKED);
+            const hoursWorked :number = storedCheckInDetailsEntity.getIn([hoursWorkedPTID, 0]);
             newCheckIn = newCheckIn.set(HOURS_WORKED, hoursWorked);
 
             let checkInsByAppointment :Map = state.get(CHECK_INS_BY_APPOINTMENT);
