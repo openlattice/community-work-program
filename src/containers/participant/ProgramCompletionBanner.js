@@ -13,16 +13,16 @@ import { DateTime } from 'luxon';
 
 import { getEntityProperties } from '../../utils/DataUtils';
 import { DATETIME_COMPLETED, PROGRAM_OUTCOME_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { ENROLLMENT_STATUSES } from '../../core/edm/constants/DataModelConsts';
 import { OL } from '../../core/style/Colors';
-import { PARTICIPANT_PROFILE_WIDTH } from '../../core/style/Sizes';
 
 const { DESCRIPTION, HOURS_WORKED } = PROGRAM_OUTCOME_FQNS;
 
 
 const labelMap :OrderedMap = OrderedMap({
   result: 'Result',
-  hoursCompleted: 'Hours completed',
   date: 'Date',
+  hoursCompleted: 'Hours completed',
 });
 
 const BannerWrapper = styled.div`
@@ -36,9 +36,9 @@ const ModalInnerWrapper = styled.div`
 
 const BannerInnerWrapper = styled.div`
   align-items: center;
+  align-self: center;
   display: flex;
   justify-content: space-between;
-  width: ${PARTICIPANT_PROFILE_WIDTH}px;
 `;
 
 const DataGridWithMargin = styled(DataGrid)`
@@ -48,7 +48,10 @@ const DataGridWithMargin = styled(DataGrid)`
 const BannerText = styled.div`
   color: ${OL.WHITE};
   font-size: 12px;
-  /* margin-right: 30px; */
+`;
+
+const NotesSection = styled.div`
+  max-width: 300px;
 `;
 
 type Props = {
@@ -85,9 +88,9 @@ class ProgramCompletionBanner extends Component<Props, State> {
     const dateCompleted = DateTime.fromISO(datetimeCompleted).toLocaleString(DateTime.DATE_SHORT);
 
     const data :Map = fromJS({
-      result: resultingStatus,
       date: dateCompleted,
       hoursCompleted: totalHoursWorked,
+      result: resultingStatus,
     });
     return (
       <Modal
@@ -97,11 +100,11 @@ class ProgramCompletionBanner extends Component<Props, State> {
           viewportScrolling>
         <ModalInnerWrapper>
           <DataGridWithMargin
-              columns={3}
+              columns={1}
               data={data}
               labelMap={labelMap} />
           <Label subtle>Notes</Label>
-          <div>{ description }</div>
+          <NotesSection>{ description }</NotesSection>
         </ModalInnerWrapper>
       </Modal>
     );
@@ -118,7 +121,8 @@ class ProgramCompletionBanner extends Component<Props, State> {
           <BannerInnerWrapper>
             <BannerText>{ outcomeStatement }</BannerText>
             <Button
-                mode="default"
+                fontColor={OL.WHITE}
+                mode="neutral"
                 onClick={this.showOutcomeReportModal}>
               View Outcome Report
             </Button>
