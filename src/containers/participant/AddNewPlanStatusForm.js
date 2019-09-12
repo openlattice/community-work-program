@@ -22,6 +22,7 @@ import { getCombinedDateTime } from '../../utils/ScheduleUtils';
 import { STATUS_FILTER_OPTIONS } from '../participants/ParticipantsConstants';
 import {
   APP_TYPE_FQNS,
+  DATETIME_COMPLETED,
   ENROLLMENT_STATUS_FQNS,
   PROGRAM_OUTCOME_FQNS,
 } from '../../core/edm/constants/FullyQualifiedNames';
@@ -200,9 +201,10 @@ class AddNewPlanStatusForm extends Component<Props, State> {
     const selectedStatus = newEnrollmentData
       .getIn([getPageSectionKey(1, 1), getEntityAddressKey(0, ENROLLMENT_STATUS, STATUS)]);
     const statusIsCompletionStatus :boolean = [
+      ENROLLMENT_STATUSES.COMPLETED,
       ENROLLMENT_STATUSES.CLOSED,
       ENROLLMENT_STATUSES.REMOVED_NONCOMPLIANT,
-      ENROLLMENT_STATUSES.SUCCESSFULLY_COMPLETED,
+      ENROLLMENT_STATUSES.SUCCESSFUL,
       ENROLLMENT_STATUSES.UNSUCCESSFUL
     ].includes(selectedStatus);
 
