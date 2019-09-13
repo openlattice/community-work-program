@@ -77,6 +77,7 @@ const {
   WORK_APPOINTMENTS_BY_WORKSITE_PLAN,
   WORKSITES_BY_WORKSITE_PLAN,
   WORKSITE_PLANS,
+  WORKSITE_PLAN_STATUSES,
 } = PERSON;
 const { WORKSITES_LIST } = WORKSITES;
 
@@ -167,6 +168,7 @@ type Props = {
   workAppointmentsByWorksitePlan :Map;
   worksitesByWorksitePlan :Map;
   worksitePlans :List;
+  worksitePlanStatuses :Map;
   worksitesList :List;
 };
 
@@ -357,6 +359,7 @@ class ParticipantProfile extends Component<Props, State> {
       workAppointmentsByWorksitePlan,
       worksitesByWorksitePlan,
       worksitePlans,
+      worksitePlanStatuses,
       worksitesList,
     } = this.props;
     const {
@@ -454,6 +457,7 @@ class ParticipantProfile extends Component<Props, State> {
                 </NameRowWrapper>
                 <AssignedWorksitesContainer
                     worksitePlans={worksitePlans}
+                    worksitePlanStatuses={worksitePlanStatuses}
                     worksitesByWorksitePlan={worksitesByWorksitePlan} />
               </ProfileBody>
             )
@@ -531,6 +535,7 @@ const mapStateToProps = (state :Map<*, *>) => {
     [WORK_APPOINTMENTS_BY_WORKSITE_PLAN]: person.get(WORK_APPOINTMENTS_BY_WORKSITE_PLAN),
     [WORKSITES_BY_WORKSITE_PLAN]: person.get(WORKSITES_BY_WORKSITE_PLAN),
     [WORKSITE_PLANS]: person.get(WORKSITE_PLANS),
+    [WORKSITE_PLAN_STATUSES]: person.get(WORKSITE_PLAN_STATUSES),
     [WORKSITES_LIST]: worksites.get(WORKSITES_LIST),
   };
 };

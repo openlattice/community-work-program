@@ -61,6 +61,9 @@ const getWorksiteByWorksitePlan = newRequestSequence(GET_WORKSITE_BY_WORKSITE_PL
 const GET_WORKSITE_PLANS :'GET_WORKSITE_PLANS' = 'GET_WORKSITE_PLANS';
 const getWorksitePlans = newRequestSequence(GET_WORKSITE_PLANS);
 
+const GET_WORKSITE_PLAN_STATUSES :'GET_WORKSITE_PLAN_STATUSES' = 'GET_WORKSITE_PLAN_STATUSES';
+const getWorksitePlanStatuses = newRequestSequence(GET_WORKSITE_PLAN_STATUSES);
+
 const GET_WORK_APPOINTMENTS :'GET_WORK_APPOINTMENTS' = 'GET_WORK_APPOINTMENTS';
 const getWorkAppointments = newRequestSequence(GET_WORK_APPOINTMENTS);
 
@@ -68,6 +71,8 @@ const UPDATE_HOURS_WORKED :'UPDATE_HOURS_WORKED' = 'UPDATE_HOURS_WORKED';
 const updateHoursWorked = newRequestSequence(UPDATE_HOURS_WORKED);
 
 export {
+  // GET_PARTICIPANT_ADDRESS,
+  // getParticipantAddress,
   ADD_INFRACTION,
   ADD_NEW_DIVERSION_PLAN_STATUS,
   ADD_ORIENTATION_DATE,
@@ -83,11 +88,11 @@ export {
   GET_ENROLLMENT_STATUS,
   GET_INFRACTION_TYPES,
   GET_PARTICIPANT,
-  // GET_PARTICIPANT_ADDRESS,
   GET_PARTICIPANT_INFRACTIONS,
   GET_REQUIRED_HOURS,
   GET_WORKSITE_BY_WORKSITE_PLAN,
   GET_WORKSITE_PLANS,
+  GET_WORKSITE_PLAN_STATUSES,
   GET_WORK_APPOINTMENTS,
   UPDATE_HOURS_WORKED,
   addInfraction,
@@ -105,11 +110,11 @@ export {
   getEnrollmentStatus,
   getInfractionTypes,
   getParticipant,
-  // getParticipantAddress,
   getParticipantInfractions,
   getRequiredHours,
   getWorkAppointments,
   getWorksiteByWorksitePlan,
+  getWorksitePlanStatuses,
   getWorksitePlans,
   updateHoursWorked,
 };

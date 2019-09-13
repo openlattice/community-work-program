@@ -13,7 +13,7 @@ import AssignedWorksitesTable from '../../../components/table/AssignedWorksitesT
 
 import { ContainerOuterWrapper } from '../../../components/Layout';
 
-const WORKSITES_COLUMN_HEADERS :string[] = ['WORK SITE NAME', 'HOURS WORKED', 'REQ. HOURS'];
+const WORKSITES_COLUMN_HEADERS :string[] = ['WORK SITE NAME', 'HOURS WORKED', 'REQ. HOURS', 'STATUS'];
 
 const OuterWrapper = styled(ContainerOuterWrapper)`
   width: 100%;
@@ -21,10 +21,11 @@ const OuterWrapper = styled(ContainerOuterWrapper)`
 
 type Props = {
   worksitePlans :List;
+  worksitePlanStatuses :Map;
   worksitesByWorksitePlan :Map;
 };
 
-const AssignedWorksitesContainer = ({ worksitePlans, worksitesByWorksitePlan } :Props) => (
+const AssignedWorksitesContainer = ({ worksitePlans, worksitePlanStatuses, worksitesByWorksitePlan } :Props) => (
   <OuterWrapper>
     <Card>
       {
@@ -43,7 +44,8 @@ const AssignedWorksitesContainer = ({ worksitePlans, worksitesByWorksitePlan } :
                 small={false}
                 tableMargin="25px 0"
                 worksitesByWorksitePlan={worksitesByWorksitePlan}
-                worksitePlans={worksitePlans} />
+                worksitePlans={worksitePlans}
+                worksitePlanStatuses={worksitePlanStatuses} />
           )
       }
     </Card>

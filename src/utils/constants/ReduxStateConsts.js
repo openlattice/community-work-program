@@ -73,6 +73,7 @@ export const PERSON = {
   GET_PARTICIPANT_ADDRESS: 'getParticipantAddress',
   GET_REQUIRED_HOURS: 'getRequiredHours',
   GET_WORKSITE_PLANS: 'getWorksitePlans',
+  GET_WORKSITE_PLAN_STATUSES: 'getWorksitePlanStatuses',
   GET_WORK_APPOINTMENTS: 'getWorkAppointments',
   INFRACTIONS_INFO: 'infractionsInfo',
   INFRACTION_TYPES: 'infractionTypes',
@@ -86,6 +87,7 @@ export const PERSON = {
   WARNINGS: 'warnings',
   WORKSITES_BY_WORKSITE_PLAN: 'worksitesByWorksitePlan',
   WORKSITE_PLANS: 'worksitePlans',
+  WORKSITE_PLAN_STATUSES: 'worksitePlanStatuses',
   WORK_APPOINTMENTS_BY_WORKSITE_PLAN: 'workAppointmentsByWorksitePlan',
 };
 

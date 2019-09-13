@@ -22,6 +22,8 @@ import type { SequenceAction } from 'redux-reqseq';
 import Logger from '../../utils/Logger';
 import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../utils/Errors';
 import {
+  // GET_PARTICIPANT_ADDRESS,
+  // getParticipantAddress,
   ADD_INFRACTION,
   ADD_NEW_DIVERSION_PLAN_STATUS,
   ADD_ORIENTATION_DATE,
@@ -37,11 +39,11 @@ import {
   GET_ENROLLMENT_STATUS,
   GET_INFRACTION_TYPES,
   GET_PARTICIPANT,
-  // GET_PARTICIPANT_ADDRESS,
   GET_PARTICIPANT_INFRACTIONS,
   GET_REQUIRED_HOURS,
   GET_WORKSITE_BY_WORKSITE_PLAN,
   GET_WORKSITE_PLANS,
+  GET_WORKSITE_PLAN_STATUSES,
   GET_WORK_APPOINTMENTS,
   UPDATE_HOURS_WORKED,
   addInfraction,
@@ -59,11 +61,11 @@ import {
   getEnrollmentStatus,
   getInfractionTypes,
   getParticipant,
-  // getParticipantAddress,
   getParticipantInfractions,
   getRequiredHours,
   getWorkAppointments,
   getWorksiteByWorksitePlan,
+  getWorksitePlanStatuses,
   getWorksitePlans,
   updateHoursWorked,
 } from './ParticipantActions';
@@ -1018,6 +1020,74 @@ function* getWorkAppointmentsWatcher() :Generator<*, *, *> {
 
 /*
  *
+ * ParticipantActions.getWorksitePlanStatuses()
+ *
+ */
+function* getWorksitePlanStatusesWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+  let response :Object = {};
+  let worksitePlanStatuses :List = List();
+
+  try {
+    yield put(getWorksitePlanStatuses.request(id));
+    if (value === null || value === undefined) {
+      throw ERR_ACTION_VALUE_NOT_DEFINED;
+    }
+    const { worksitePlans } = value;
+    const app = yield select(getAppFromState);
+    const enrollmentStatusESID :UUID = getEntitySetIdFromApp(app, ENROLLMENT_STATUS);
+    const worksitePlanESID :UUID = getEntitySetIdFromApp(app, WORKSITE_PLAN);
+    const worksitePlanEKIDs :string[] = [];
+    worksitePlans.forEach((worksitePlan :Map) => {
+      worksitePlanEKIDs.push(getEntityKeyId(worksitePlan));
+    });
+
+    const params :Object = {
+      entitySetId: worksitePlanESID,
+      filter: {
+        entityKeyIds: worksitePlanEKIDs,
+        destinationEntitySetIds: [enrollmentStatusESID],
+        sourceEntitySetIds: [],
+      }
+    };
+    response = yield call(searchEntityNeighborsWithFilterWorker, searchEntityNeighborsWithFilter(params));
+    if (response.error) {
+      throw response.error;
+    }
+    worksitePlanStatuses = fromJS(response.data);
+
+    if (!worksitePlanStatuses.isEmpty()) {
+      worksitePlanStatuses = worksitePlanStatuses
+        .map((statusList :List) => statusList
+          .map((status :Map) => getNeighborDetails(status)));
+
+      // get most recent status for each work site plan:
+      worksitePlanStatuses = worksitePlanStatuses
+        .map((statusList :List) => {
+          const sortedStatusList :List = sortEntitiesByDateProperty(statusList, EFFECTIVE_DATE);
+          return sortedStatusList.last();
+        });
+    }
+
+    yield put(getWorksitePlanStatuses.success(id, worksitePlanStatuses));
+  }
+  catch (error) {
+    LOG.error('caught exception in getWorksitePlanStatusesWorker()', error);
+    yield put(getWorksitePlanStatuses.failure(id, error));
+  }
+  finally {
+    yield put(getWorksitePlanStatuses.finally(id));
+  }
+}
+
+function* getWorksitePlanStatusesWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(GET_WORKSITE_PLAN_STATUSES, getWorksitePlanStatusesWorker);
+}
+
+/*
+ *
  * ParticipantActions.getWorksitePlans()
  *
  */
@@ -1059,6 +1129,7 @@ function* getWorksitePlansWorker(action :SequenceAction) :Generator<*, *, *> {
       yield all([
         call(getWorksiteByWorksitePlanWorker, getWorksiteByWorksitePlan({ worksitePlans })),
         call(getWorkAppointmentsWorker, getWorkAppointments({ worksitePlans })),
+        call(getWorksitePlanStatusesWorker, getWorksitePlanStatuses({ worksitePlans })),
       ]);
     }
 
@@ -1575,6 +1646,8 @@ export {
   getWorksiteByWorksitePlanWorker,
   getWorksitePlansWatcher,
   getWorksitePlansWorker,
+  getWorksitePlanStatusesWatcher,
+  getWorksitePlanStatusesWorker,
   updateHoursWorkedWatcher,
   updateHoursWorkedWorker,
 };

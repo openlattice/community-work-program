@@ -5,6 +5,7 @@ import type { SequenceAction } from 'redux-reqseq';
 import type { FQN } from 'lattice';
 
 import {
+  // getParticipantAddress,
   addInfraction,
   addNewDiversionPlanStatus,
   addOrientationDate,
@@ -13,18 +14,18 @@ import {
   createWorkAppointments,
   editCheckInDate,
   editSentenceDate,
-  getAppointmentCheckIns,
   getAllParticipantInfo,
+  getAppointmentCheckIns,
   getCaseInfo,
   getContactInfo,
   getEnrollmentStatus,
   getInfractionTypes,
   getParticipant,
-  // getParticipantAddress,
   getParticipantInfractions,
   getRequiredHours,
   getWorkAppointments,
   getWorksiteByWorksitePlan,
+  getWorksitePlanStatuses,
   getWorksitePlans,
   updateHoursWorked,
 } from './ParticipantActions';
@@ -73,6 +74,7 @@ const {
   GET_REQUIRED_HOURS,
   GET_WORKSITE_BY_WORKSITE_PLAN,
   GET_WORKSITE_PLANS,
+  GET_WORKSITE_PLAN_STATUSES,
   GET_WORK_APPOINTMENTS,
   INFRACTIONS_INFO,
   INFRACTION_TYPES,
@@ -86,6 +88,7 @@ const {
   WARNINGS,
   WORKSITES_BY_WORKSITE_PLAN,
   WORKSITE_PLANS,
+  WORKSITE_PLAN_STATUSES,
   WORK_APPOINTMENTS_BY_WORKSITE_PLAN,
 } = PERSON;
 
@@ -148,6 +151,9 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     [GET_WORK_APPOINTMENTS]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
+    [GET_WORKSITE_PLAN_STATUSES]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
     [UPDATE_HOURS_WORKED]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
@@ -184,6 +190,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [WARNINGS]: List(),
   [WORKSITES_BY_WORKSITE_PLAN]: Map(),
   [WORKSITE_PLANS]: List(),
+  [WORKSITE_PLAN_STATUSES]: Map(),
   [WORK_APPOINTMENTS_BY_WORKSITE_PLAN]: Map(),
 });
 
@@ -1067,6 +1074,40 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
             .setIn([ACTIONS, GET_WORKSITE_BY_WORKSITE_PLAN, REQUEST_STATE], RequestStates.FAILURE);
         },
         FINALLY: () => state.deleteIn([ACTIONS, GET_WORKSITE_BY_WORKSITE_PLAN, action.id])
+      });
+    }
+
+    case getWorksitePlanStatuses.case(action.type): {
+
+      return getWorksitePlanStatuses.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, GET_WORKSITE_PLAN_STATUSES, action.id], fromJS(action))
+          .setIn([ACTIONS, GET_WORKSITE_PLAN_STATUSES, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+
+          if (!state.hasIn([ACTIONS, GET_WORKSITE_PLAN_STATUSES, action.id])) {
+            return state;
+          }
+
+          const { value } = action;
+          if (value === null || value === undefined) {
+            return state;
+          }
+
+          return state
+            .set(WORKSITE_PLAN_STATUSES, value)
+            .setIn([ACTIONS, GET_WORKSITE_PLAN_STATUSES, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => {
+
+          const { value } = action;
+          return state
+            .set(WORKSITE_PLAN_STATUSES, Map())
+            .setIn([ERRORS, GET_WORKSITE_PLAN_STATUSES], value)
+            .setIn([ACTIONS, GET_WORKSITE_PLAN_STATUSES, REQUEST_STATE], RequestStates.FAILURE);
+        },
+        FINALLY: () => state.deleteIn([ACTIONS, GET_WORKSITE_PLAN_STATUSES, action.id])
       });
     }
 
