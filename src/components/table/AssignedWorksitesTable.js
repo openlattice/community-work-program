@@ -14,9 +14,8 @@ import {
   HeaderElement,
 } from './TableStyledComponents';
 import { getEntityKeyId } from '../../utils/DataUtils';
-import { ENROLLMENT_STATUS_FQNS, WORKSITE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { WORKSITE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 
-const { STATUS } = ENROLLMENT_STATUS_FQNS;
 const { NAME } = WORKSITE_FQNS;
 
 const WorksiteTableWrapper = styled(TableWrapper)`
@@ -42,20 +41,20 @@ const Headers = ({ columnHeaders } :HeaderProps) => (
 
 type Props = {
   columnHeaders :string[];
-  worksitesByWorksitePlan :Map;
-  worksitePlans :List;
-  worksitePlanStatuses :Map;
   small :boolean;
   tableMargin ? :string;
+  worksitePlanStatuses :Map;
+  worksitePlans :List;
+  worksitesByWorksitePlan :Map;
 };
 
 const WorksitesTable = ({
   columnHeaders,
-  worksitesByWorksitePlan,
-  worksitePlans,
-  worksitePlanStatuses,
   small,
   tableMargin,
+  worksitePlanStatuses,
+  worksitePlans,
+  worksitesByWorksitePlan,
 } :Props) => (
   <WorksiteTableWrapper margin={tableMargin} width="100%">
     <Table>
@@ -64,11 +63,11 @@ const WorksitesTable = ({
         worksitePlans.map((worksitePlan :Map) => {
           const worksitePlanEKID :UUID = getEntityKeyId(worksitePlan);
           const worksiteName :string = worksitesByWorksitePlan.getIn([worksitePlanEKID, NAME, 0], '');
-          const status :string = worksitePlanStatuses.getIn([worksitePlanEKID, STATUS, 0], '');
+          const worksitePlanStatus :Map = worksitePlanStatuses.get(worksitePlanEKID, Map());
           return (
             <AssignedWorksitesTableRow
                 key={worksitePlanEKID}
-                status={status}
+                worksitePlanStatus={worksitePlanStatus}
                 worksiteName={worksiteName}
                 worksitePlan={worksitePlan}
                 small={small} />
