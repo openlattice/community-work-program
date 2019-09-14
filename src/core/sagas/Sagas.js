@@ -35,6 +35,7 @@ export default function* sagas() :Generator<*, *, *> {
     fork(AppSagas.switchOrganizationWatcher),
 
     // DataSagas
+    fork(DataSagas.deleteEntitiesWatcher),
     fork(DataSagas.submitDataGraphWatcher),
     fork(DataSagas.submitPartialReplaceWatcher),
 
@@ -49,7 +50,10 @@ export default function* sagas() :Generator<*, *, *> {
     fork(ParticipantSagas.addWorksitePlanWatcher),
     fork(ParticipantSagas.checkInForAppointmentWatcher),
     fork(ParticipantSagas.createWorkAppointmentsWatcher),
+    fork(ParticipantSagas.deleteAppointmentWatcher),
+    fork(ParticipantSagas.editCaseAndHoursWatcher),
     fork(ParticipantSagas.editCheckInDateWatcher),
+    fork(ParticipantSagas.editPlanNotesWatcher),
     fork(ParticipantSagas.editSentenceDateWatcher),
     fork(ParticipantSagas.getAppointmentCheckInsWatcher),
     fork(ParticipantSagas.getAllParticipantInfoWatcher),
@@ -60,7 +64,6 @@ export default function* sagas() :Generator<*, *, *> {
     // fork(ParticipantSagas.getParticipantAddressWatcher),
     fork(ParticipantSagas.getParticipantInfractionsWatcher),
     fork(ParticipantSagas.getParticipantWatcher),
-    fork(ParticipantSagas.getRequiredHoursWatcher),
     fork(ParticipantSagas.getWorkAppointmentsWatcher),
     fork(ParticipantSagas.getWorksiteByWorksitePlanWatcher),
     fork(ParticipantSagas.getWorksitePlansWatcher),
