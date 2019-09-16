@@ -4,6 +4,7 @@ import { Switch, Route } from 'react-router-dom';
 import type { Match } from 'react-router';
 
 import ParticipantProfile from './ParticipantProfile';
+import PrintWorkScheduleContainer from './print/PrintWorkScheduleContainer';
 import * as Routes from '../../core/router/Routes';
 
 type Props = {
@@ -13,12 +14,13 @@ type Props = {
 const ParticipantProfileContainer = (props :Props) => {
   const {
     match: {
-      params: { subjectId: personEntityKeyId }
+      params: { subjectId: personEKID }
     }
   } = props;
   return (
     <Switch>
-      <Route path={Routes.PARTICIPANT_PROFILE} render={() => <ParticipantProfile personEKID={personEntityKeyId} />} />
+      <Route path={Routes.PRINT_PARTICIPANT_SCHEDULE} component={PrintWorkScheduleContainer} />
+      <Route path={Routes.PARTICIPANT_PROFILE} render={() => <ParticipantProfile personEKID={personEKID} />} />
     </Switch>
   );
 };

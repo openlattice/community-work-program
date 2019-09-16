@@ -149,6 +149,10 @@ const ButtonsWrapper = styled.div`
   grid-gap: 0 10px;
 `;
 
+const ScheduleButtonsWrapper = styled(ButtonsWrapper)`
+  grid-template-columns: repeat(2, 1fr);
+`;
+
 type Props = {
   actions:{
     getAllParticipantInfo :RequestSequence;
@@ -394,7 +398,14 @@ class ParticipantProfile extends Component<Props, State> {
         <ProfileBody>
           <NameRowWrapper>
             <NameHeader>Work Schedule</NameHeader>
-            <Button onClick={() => this.handleShowModal(WORK_APPOINTMENT)}>Create Appointment</Button>
+            <ScheduleButtonsWrapper>
+              <Button onClick={() => {
+                actions.goToRoute(Routes.PRINT_PARTICIPANT_SCHEDULE.replace(':subjectId', personEKID));
+              }}>
+                Print Schedule
+              </Button>
+              <Button onClick={() => this.handleShowModal(WORK_APPOINTMENT)}>Create Appointment</Button>
+            </ScheduleButtonsWrapper>
           </NameRowWrapper>
           <ParticipantWorkSchedule
               workAppointmentsByWorksitePlan={workAppointmentsByWorksitePlan}
