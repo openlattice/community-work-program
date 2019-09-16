@@ -21,11 +21,9 @@ import {
   initializeApplication,
 } from './AppActions';
 import {
-  getEntitySetIds,
   getEntityDataModelTypes,
 } from '../../core/edm/EDMActions';
 import {
-  getEntitySetIdsWorker,
   getEntityDataModelTypesWorker,
 } from '../../core/edm/EDMSagas';
 import { APP_NAME } from '../../core/edm/constants/DataModelConsts';
@@ -55,7 +53,6 @@ function* initializeApplicationWorker(action :SequenceAction) :Generator<*, *, *
     // we need to wait for these to complete before proceeding
     yield all([
       // TODO: we should have a saga that runs these on a schedule to refresh the data
-      call(getEntitySetIdsWorker, getEntitySetIds()),
       call(getEntityDataModelTypesWorker, getEntityDataModelTypes()),
     ]);
 

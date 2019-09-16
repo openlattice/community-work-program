@@ -12,31 +12,24 @@ import { EntityDataModelApiActions, EntityDataModelApiSagas } from 'lattice-saga
 import type { SequenceAction } from 'redux-reqseq';
 
 import Logger from '../../utils/Logger';
-import { EntitySetNames } from './constants';
 import { ERR_WORKER_SAGA } from '../../utils/Errors';
 import {
   GET_EDM_TYPES,
-  GET_ENTITY_SET_IDS,
   getEntityDataModelTypes,
-  getEntitySetIds,
 } from './EDMActions';
 
 const LOG = new Logger('EDMSagas');
-
-const { ENTITY_SET_NAMES_LIST } = EntitySetNames;
 
 const {
   getAllAssociationTypes,
   getAllEntityTypes,
   getAllPropertyTypes,
-  getEntitySetId,
 } = EntityDataModelApiActions;
 
 const {
   getAllAssociationTypesWorker,
   getAllEntityTypesWorker,
   getAllPropertyTypesWorker,
-  getEntitySetIdWorker,
 } = EntityDataModelApiSagas;
 
 /*
@@ -77,61 +70,7 @@ function* getEntityDataModelTypesWatcher() :Generator<*, *, *> {
   yield takeEvery(GET_EDM_TYPES, getEntityDataModelTypesWorker);
 }
 
-/*
- *
- * EDMActions.getEntitySetIds()
- *
- */
-
-function* getEntitySetIdsWorker(action :SequenceAction) :Generator<*, *, *> {
-
-  try {
-    yield put(getEntitySetIds.request(action.id));
-
-    const callMap = ENTITY_SET_NAMES_LIST.reduce((map :Object, entitySetName :string) => {
-      // https://github.com/airbnb/javascript/issues/719
-      /* eslint-disable-next-line no-param-reassign */
-      map[entitySetName] = call(getEntitySetIdWorker, getEntitySetId(entitySetName));
-      return map;
-    }, {});
-
-    const responses :Object = yield all(callMap);
-    const responseError = Object.keys(responses).reduce(
-      (error :any, entitySetName :string) => responses[entitySetName].error,
-      undefined,
-    );
-
-    // all requests must succeed
-    if (responseError) {
-      throw responseError;
-    }
-
-    const entitySetNameToIdMap = Object.keys(responses).reduce((map :Object, entitySetName :string) => {
-      // https://github.com/airbnb/javascript/issues/719
-      /* eslint-disable-next-line no-param-reassign */
-      map[entitySetName] = responses[entitySetName].data;
-      return map;
-    }, {});
-
-    yield put(getEntitySetIds.success(action.id, entitySetNameToIdMap));
-  }
-  catch (error) {
-    LOG.error(ERR_WORKER_SAGA, error);
-    yield put(getEntitySetIds.failure(action.id, error));
-  }
-  finally {
-    yield put(getEntitySetIds.finally(action.id));
-  }
-}
-
-function* getEntitySetIdsWatcher() :Generator<*, *, *> {
-
-  yield takeEvery(GET_ENTITY_SET_IDS, getEntitySetIdsWorker);
-}
-
 export {
   getEntityDataModelTypesWatcher,
   getEntityDataModelTypesWorker,
-  getEntitySetIdsWatcher,
-  getEntitySetIdsWorker,
 };
