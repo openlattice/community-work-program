@@ -2,10 +2,12 @@
  * @flow
  */
 
-import React from 'react';
+import React, { Component } from 'react';
 import styled from 'styled-components';
 import { Map } from 'immutable';
 import { EditButton, StyleUtils } from 'lattice-ui-kit';
+
+import EditWorksitePlanModal from '../../containers/participant/assignedworksites/EditWorksitePlanModal';
 
 import { Cell, Row } from './TableStyledComponents';
 import { getEntityProperties } from '../../utils/DataUtils';
@@ -52,37 +54,62 @@ const ButtonCell = styled(Cell)`
 `;
 
 type Props = {
+  small ? :boolean,
   worksiteName :string,
   worksitePlan :Map;
-  small ? :boolean,
   worksitePlanStatus :Map;
 };
 
-const TableRow = ({
-  worksiteName,
-  worksitePlan,
-  small,
-  worksitePlanStatus,
-} :Props) => {
-
-  const {
-    [HOURS_WORKED]: hoursWorked,
-    [REQUIRED_HOURS]: requiredHours
-  } = getEntityProperties(worksitePlan, [HOURS_WORKED, REQUIRED_HOURS]);
-  const { [STATUS]: status } = getEntityProperties(worksitePlanStatus, [STATUS]);
-  return (
-    <WorksitesRow>
-      <WorksitesCell small={small} />
-      <WorksitesCell small={small}>{ worksiteName }</WorksitesCell>
-      <WorksitesCell small={small}>{ hoursWorked }</WorksitesCell>
-      <WorksitesCell small={small}>{ requiredHours }</WorksitesCell>
-      <ButtonCell small={small}>
-        <Status statusType={status}>{ status }</Status>
-        <EditButton onClick={() => {}} />
-      </ButtonCell>
-    </WorksitesRow>
-  );
+type State = {
+  isEditModalVisible :boolean;
 };
+
+class TableRow extends Component<Props, State> {
+
+  state = {
+    isEditModalVisible: false,
+  };
+
+  showEditModal = () => {
+    this.setState({ isEditModalVisible: true });
+  }
+
+  hideEditModal = () => {
+    this.setState({ isEditModalVisible: false });
+  }
+
+  render() {
+    const {
+      small,
+      worksiteName,
+      worksitePlan,
+      worksitePlanStatus,
+    } = this.props;
+    const { isEditModalVisible } = this.state;
+    const {
+      [HOURS_WORKED]: hoursWorked,
+      [REQUIRED_HOURS]: requiredHours
+    } = getEntityProperties(worksitePlan, [HOURS_WORKED, REQUIRED_HOURS]);
+    const { [STATUS]: status } = getEntityProperties(worksitePlanStatus, [STATUS]);
+    return (
+      <WorksitesRow>
+        <WorksitesCell small={small} />
+        <WorksitesCell small={small}>{ worksiteName }</WorksitesCell>
+        <WorksitesCell small={small}>{ hoursWorked }</WorksitesCell>
+        <WorksitesCell small={small}>{ requiredHours }</WorksitesCell>
+        <ButtonCell small={small}>
+          <Status statusType={status}>{ status }</Status>
+          <EditButton onClick={this.showEditModal} />
+        </ButtonCell>
+        <EditWorksitePlanModal
+            isOpen={isEditModalVisible}
+            onClose={this.hideEditModal}
+            worksitePlan={worksitePlan}
+            worksitePlanStatus={worksitePlanStatus} />
+      </WorksitesRow>
+    );
+  }
+}
 
 TableRow.defaultProps = {
   small: false,
