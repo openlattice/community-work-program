@@ -32,9 +32,12 @@ export default function* sagas() :Generator<*, *, *> {
 
     // AppSagas
     fork(AppSagas.initializeApplicationWatcher),
+    fork(AppSagas.switchOrganizationWatcher),
 
     // DataSagas
+    fork(DataSagas.deleteEntitiesWatcher),
     fork(DataSagas.submitDataGraphWatcher),
+    fork(DataSagas.submitPartialReplaceWatcher),
 
     // EDMSagas
     fork(EDMSagas.getEntityDataModelTypesWatcher),
@@ -42,28 +45,35 @@ export default function* sagas() :Generator<*, *, *> {
     // ParticipantSagas
     fork(ParticipantSagas.addInfractionWatcher),
     fork(ParticipantSagas.addNewDiversionPlanStatusWatcher),
+    fork(ParticipantSagas.addOrientationDateWatcher),
     fork(ParticipantSagas.addWorksitePlanWatcher),
+    fork(ParticipantSagas.checkInForAppointmentWatcher),
+    fork(ParticipantSagas.createWorkAppointmentsWatcher),
+    fork(ParticipantSagas.deleteAppointmentWatcher),
+    fork(ParticipantSagas.editCaseAndHoursWatcher),
+    fork(ParticipantSagas.editCheckInDateWatcher),
+    fork(ParticipantSagas.editPlanNotesWatcher),
+    fork(ParticipantSagas.editSentenceDateWatcher),
+    fork(ParticipantSagas.getAppointmentCheckInsWatcher),
     fork(ParticipantSagas.getAllParticipantInfoWatcher),
     fork(ParticipantSagas.getCaseInfoWatcher),
     fork(ParticipantSagas.getContactInfoWatcher),
     fork(ParticipantSagas.getEnrollmentStatusWatcher),
     fork(ParticipantSagas.getInfractionTypesWatcher),
-    fork(ParticipantSagas.getParticipantAddressWatcher),
+    // fork(ParticipantSagas.getParticipantAddressWatcher),
     fork(ParticipantSagas.getParticipantInfractionsWatcher),
     fork(ParticipantSagas.getParticipantWatcher),
-    fork(ParticipantSagas.getRequiredHoursWatcher),
-    fork(ParticipantSagas.getSentenceTermWatcher),
     fork(ParticipantSagas.getWorkAppointmentsWatcher),
     fork(ParticipantSagas.getWorksiteByWorksitePlanWatcher),
     fork(ParticipantSagas.getWorksitePlansWatcher),
 
     // ParticipantsSagas
     fork(ParticipantsSagas.addParticipantWatcher),
+    fork(ParticipantsSagas.getDiversionPlansWatcher),
     fork(ParticipantsSagas.getEnrollmentStatusesWatcher),
     fork(ParticipantsSagas.getHoursWorkedWatcher),
     fork(ParticipantsSagas.getInfractionsWatcher),
     fork(ParticipantsSagas.getParticipantsWatcher),
-    fork(ParticipantsSagas.getSentencesWatcher),
 
     // WorksitesSagas
     fork(WorksitesSagas.addOrganizationWatcher),

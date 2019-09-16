@@ -54,7 +54,7 @@ const {
   DIVERSION_PLAN,
   ENROLLMENT_STATUS,
   HAS,
-  INCLUDES,
+  PART_OF,
   PEOPLE,
   RELATED_TO,
   WORKSITE,
@@ -147,7 +147,7 @@ class AssignWorksiteForm extends Component<Props, State> {
       [DATETIME]: [nowAsIso]
     }]);
     associations.push([BASED_ON, 0, WORKSITE_PLAN, worksiteEKID, WORKSITE, {}]);
-    associations.push([INCLUDES, diversionPlanEKID, DIVERSION_PLAN, 0, WORKSITE_PLAN, {}]);
+    associations.push([PART_OF, 0, WORKSITE_PLAN, diversionPlanEKID, DIVERSION_PLAN, {}]);
     associations.push([RELATED_TO, worksiteEKID, WORKSITE, 0, ENROLLMENT_STATUS, {}]);
     associations.push([HAS, personEKID, PEOPLE, 0, ENROLLMENT_STATUS, {}]);
 
@@ -157,7 +157,7 @@ class AssignWorksiteForm extends Component<Props, State> {
       [DIVERSION_PLAN]: getEntitySetIdFromApp(app, DIVERSION_PLAN),
       [ENROLLMENT_STATUS]: getEntitySetIdFromApp(app, ENROLLMENT_STATUS),
       [HAS]: getEntitySetIdFromApp(app, HAS),
-      [INCLUDES]: getEntitySetIdFromApp(app, INCLUDES),
+      [PART_OF]: getEntitySetIdFromApp(app, PART_OF),
       [PEOPLE]: getEntitySetIdFromApp(app, PEOPLE),
       [RELATED_TO]: getEntitySetIdFromApp(app, RELATED_TO),
       [WORKSITE]: getEntitySetIdFromApp(app, WORKSITE),

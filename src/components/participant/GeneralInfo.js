@@ -2,7 +2,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import { Map } from 'immutable';
-import { StyleUtils } from 'lattice-ui-kit';
+import { Label, StyleUtils } from 'lattice-ui-kit';
 import { faUserCircle } from '@fortawesome/pro-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { withRouter } from 'react-router-dom';
@@ -15,19 +15,32 @@ import { PEOPLE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { ENROLLMENT_STATUSES } from '../../core/edm/constants/DataModelConsts';
 
 const { getStyleVariation } = StyleUtils;
-const { DOB, MUGSHOT } = PEOPLE_FQNS;
+const {
+  DOB,
+  MUGSHOT,
+  FIRST_NAME,
+  LAST_NAME
+} = PEOPLE_FQNS;
 
 const statusColorVariation = getStyleVariation('status', {
   default: OL.GREY02,
   [ENROLLMENT_STATUSES.ACTIVE]: ENROLLMENT_STATUS_COLORS.ACTIVE,
-  [ENROLLMENT_STATUSES.ACTIVE_NONCOMPLIANT]: ENROLLMENT_STATUS_COLORS.ACTIVE_NONCOMPLIANT,
   [ENROLLMENT_STATUSES.ACTIVE_REOPENED]: ENROLLMENT_STATUS_COLORS.ACTIVE_REOPENED,
   [ENROLLMENT_STATUSES.AWAITING_CHECKIN]: ENROLLMENT_STATUS_COLORS.AWAITING_CHECKIN,
   [ENROLLMENT_STATUSES.AWAITING_ORIENTATION]: ENROLLMENT_STATUS_COLORS.AWAITING_ORIENTATION,
   [ENROLLMENT_STATUSES.COMPLETED]: ENROLLMENT_STATUS_COLORS.COMPLETED,
-  [ENROLLMENT_STATUSES.NO_SHOW]: ENROLLMENT_STATUS_COLORS.NO_SHOW,
+  [ENROLLMENT_STATUSES.JOB_SEARCH]: ENROLLMENT_STATUS_COLORS.JOB_SEARCH,
   [ENROLLMENT_STATUSES.REMOVED_NONCOMPLIANT]: ENROLLMENT_STATUS_COLORS.REMOVED_NONCOMPLIANT,
+  [ENROLLMENT_STATUSES.SUCCESSFUL]: ENROLLMENT_STATUS_COLORS.SUCCESSFUL,
+  [ENROLLMENT_STATUSES.UNSUCCESSFUL]: ENROLLMENT_STATUS_COLORS.UNSUCCESSFUL,
 });
+
+const NameHeader = styled.div`
+  font-size: 26px;
+  font-weight: 600;
+  color: ${OL.BLACK};
+  margin: 15px 0;
+`;
 
 const InfoWrapper = styled.div`
   align-items: center;
@@ -36,10 +49,10 @@ const InfoWrapper = styled.div`
   border: 1px solid ${OL.GREY11};
   display: flex;
   flex-direction: column;
-  height: 400px;
+  height: 100%;
   justify-content: center;
   padding: 30px;
-  width: 400px;
+  width: 425px;
 `;
 
 const StyledPersonPhoto = styled(PersonPhoto)`
@@ -47,12 +60,7 @@ const StyledPersonPhoto = styled(PersonPhoto)`
   display: flex;
   height: 100px;
   justify-content: center;
-  margin: 0 0 30px 0;
   width: 100px;
-`;
-
-const StyledPlaceholderPicture = styled.div`
-  margin: 0 0 30px 0;
 `;
 
 const InfoRow = styled.div`
@@ -67,13 +75,6 @@ const InfoRow = styled.div`
   :last-of-type {
     border: none;
   }
-`;
-
-const Title = styled.div`
-  color: ${OL.GREY02};
-  font-weight: 600;
-  text-align: left;
-  width: 40%;
 `;
 
 const Value = styled.div`
@@ -99,7 +100,12 @@ const GeneralInfo = ({
   status
 } :Props) => {
 
-  const { [DOB]: dateOfBirth, [MUGSHOT]: mugshot } = getEntityProperties(person, [DOB, MUGSHOT]);
+  const {
+    [DOB]: dateOfBirth,
+    [FIRST_NAME]: firstName,
+    [LAST_NAME]: lastName,
+    [MUGSHOT]: mugshot,
+  } = getEntityProperties(person, [DOB, FIRST_NAME, LAST_NAME, MUGSHOT]);
   const dob = formatAsDate(dateOfBirth);
   return (
     <InfoWrapper>
@@ -111,32 +117,31 @@ const GeneralInfo = ({
             </StyledPersonPhoto>
           )
           : (
-            <StyledPlaceholderPicture>
-              <FontAwesomeIcon icon={faUserCircle} size="6x" color="#D8D8D8" />
-            </StyledPlaceholderPicture>
+            <FontAwesomeIcon icon={faUserCircle} size="6x" color="#D8D8D8" />
           )
       }
+      <NameHeader>{ `${firstName} ${lastName}` }</NameHeader>
       <InfoRow>
-        <Title>Status</Title>
+        <Label subtle>Status</Label>
         <Value
             status={status}>
           { status }
         </Value>
       </InfoRow>
       <InfoRow>
-        <Title>Date of Birth</Title>
+        <Label subtle>Date of Birth</Label>
         <Value>{ dob }</Value>
       </InfoRow>
       <InfoRow>
-        <Title>Phone #</Title>
+        <Label subtle>Phone #</Label>
         <Value>{ phone }</Value>
       </InfoRow>
       <InfoRow>
-        <Title>Address</Title>
+        <Label subtle>Address</Label>
         <Value>{ address }</Value>
       </InfoRow>
       <InfoRow>
-        <Title>Email</Title>
+        <Label subtle>Email</Label>
         <Value>{ email }</Value>
       </InfoRow>
     </InfoWrapper>

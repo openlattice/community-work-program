@@ -23,14 +23,15 @@ export const CWP = 'Community Work Program';
 
 export const ENROLLMENT_STATUSES = {
   ACTIVE: 'Active',
-  ACTIVE_NONCOMPLIANT: 'Active noncompliant',
-  ACTIVE_REOPENED: 'Active reopened',
-  AWAITING_CHECKIN: 'Awaiting check-in',
-  AWAITING_ORIENTATION: 'Awaiting orientation',
+  ACTIVE_REOPENED: 'Active Reopened',
+  AWAITING_CHECKIN: 'Awaiting Check-in',
+  AWAITING_ORIENTATION: 'Awaiting Orientation',
   CLOSED: 'Closed',
   COMPLETED: 'Completed',
-  NO_SHOW: 'No show',
-  REMOVED_NONCOMPLIANT: 'Removed noncompliant'
+  JOB_SEARCH: 'Job Search',
+  REMOVED_NONCOMPLIANT: 'Removed Noncompliant',
+  SUCCESSFUL: 'Successful',
+  UNSUCCESSFUL: 'Unsuccessful',
 };
 
 export const WORKSITE_ENROLLMENT_STATUSES = {
