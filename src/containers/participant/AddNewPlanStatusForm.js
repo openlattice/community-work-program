@@ -1,6 +1,6 @@
 // @flow
 import React, { Component } from 'react';
-import { fromJS, Map } from 'immutable';
+import { fromJS, List, Map } from 'immutable';
 import { DateTime } from 'luxon';
 import { DataProcessingUtils } from 'lattice-fabricate';
 import {
@@ -27,7 +27,7 @@ import {
   PROGRAM_OUTCOME_FQNS,
 } from '../../core/edm/constants/FullyQualifiedNames';
 import { PERSON, STATE } from '../../utils/constants/ReduxStateConsts';
-import { ENROLLMENT_STATUSES } from '../../core/edm/constants/DataModelConsts';
+import { ENROLLMENT_STATUSES, WORKSITE_ENROLLMENT_STATUSES } from '../../core/edm/constants/DataModelConsts';
 import {
   ButtonsRow,
   FormRow,
@@ -47,6 +47,7 @@ const {
   PROGRAM_OUTCOME,
   RELATED_TO,
   RESULTS_IN,
+  WORKSITE_PLAN,
 } = APP_TYPE_FQNS;
 const { EFFECTIVE_DATE, STATUS } = ENROLLMENT_STATUS_FQNS;
 const { COMPLETED, DESCRIPTION, HOURS_WORKED } = PROGRAM_OUTCOME_FQNS;
@@ -69,6 +70,7 @@ type Props = {
   isLoading :boolean;
   onDiscard :() => void;
   personName :string;
+  worksitePlans :List;
 };
 
 type State = {
@@ -83,6 +85,7 @@ class AddNewPlanStatusForm extends Component<Props, State> {
       newEnrollmentData: fromJS({
         [getPageSectionKey(1, 1)]: {},
         [getPageSectionKey(1, 2)]: {},
+        [getPageSectionKey(1, 3)]: {},
       }),
     };
   }
@@ -95,6 +98,7 @@ class AddNewPlanStatusForm extends Component<Props, State> {
       [PROGRAM_OUTCOME]: getEntitySetIdFromApp(app, PROGRAM_OUTCOME),
       [RELATED_TO]: getEntitySetIdFromApp(app, RELATED_TO),
       [RESULTS_IN]: getEntitySetIdFromApp(app, RESULTS_IN),
+      [WORKSITE_PLAN]: getEntitySetIdFromApp(app, WORKSITE_PLAN),
     };
   }
 
@@ -133,7 +137,8 @@ class AddNewPlanStatusForm extends Component<Props, State> {
       actions,
       app,
       diversionPlan,
-      edm
+      edm,
+      worksitePlans,
     } = this.props;
     let { newEnrollmentData } = this.state;
 
@@ -148,13 +153,13 @@ class AddNewPlanStatusForm extends Component<Props, State> {
 
     if (!newEnrollmentData.get(getPageSectionKey(1, 2)).isEmpty()) {
 
-      // hours worked is saved as a string and needs to be converted to number:
+      /* 1. hours worked is saved as a string and needs to be converted to number: */
       const hoursWorkedPath = [getPageSectionKey(1, 2), getEntityAddressKey(0, PROGRAM_OUTCOME, HOURS_WORKED)];
       let hoursWorked = newEnrollmentData.getIn(hoursWorkedPath, '0');
       hoursWorked = parseInt(hoursWorked, 10);
       newEnrollmentData = newEnrollmentData.setIn(hoursWorkedPath, hoursWorked);
 
-      // date completed is save as a date and needs to be converted to datetime:
+      /* 2. date completed is save as a date and needs to be converted to datetime: */
       const datePath = [getPageSectionKey(1, 2), getEntityAddressKey(0, PROGRAM_OUTCOME, DATETIME_COMPLETED)];
       const savedDate = newEnrollmentData.getIn(datePath, '');
       const datetimeToSubmit = savedDate
@@ -162,12 +167,48 @@ class AddNewPlanStatusForm extends Component<Props, State> {
         : now.toISO();
       newEnrollmentData = newEnrollmentData.setIn(datePath, datetimeToSubmit);
 
-      newEnrollmentData = newEnrollmentData
-        .setIn([getPageSectionKey(1, 2), getEntityAddressKey(0, PROGRAM_OUTCOME, COMPLETED)], true);
+      /* 3. program outcome marked as completed if status is completed or successful,
+            and not completed if status is removed noncompliant or unsuccessful or closed */
+      const resultingStatus :string = newEnrollmentData
+        .getIn([getPageSectionKey(1, 1), getEntityAddressKey(0, ENROLLMENT_STATUS, STATUS)]);
+      const successfulStatuses = [ENROLLMENT_STATUSES.COMPLETED, ENROLLMENT_STATUSES.SUCCESSFUL];
+      const unsuccessfulStatuses = [
+        ENROLLMENT_STATUSES.CLOSED,
+        ENROLLMENT_STATUSES.REMOVED_NONCOMPLIANT,
+        ENROLLMENT_STATUSES.UNSUCCESSFUL
+      ];
+
+      if (successfulStatuses.includes(resultingStatus)) {
+        newEnrollmentData = newEnrollmentData
+          .setIn([getPageSectionKey(1, 2), getEntityAddressKey(0, PROGRAM_OUTCOME, COMPLETED)], true);
+      }
+      if (unsuccessfulStatuses.includes(resultingStatus)) {
+        newEnrollmentData = newEnrollmentData
+          .setIn([getPageSectionKey(1, 2), getEntityAddressKey(0, PROGRAM_OUTCOME, COMPLETED)], false);
+      }
+
+      /* 4. date completed is save as a date and needs to be converted to datetime: */
+      const worksitePlanStatus = successfulStatuses.includes(resultingStatus)
+        ? WORKSITE_ENROLLMENT_STATUSES.COMPLETED
+        : WORKSITE_ENROLLMENT_STATUSES.CANCELED;
+      worksitePlans.forEach((worksitePlan :Map, index :number) => {
+
+        newEnrollmentData = newEnrollmentData.setIn([
+          getPageSectionKey(1, 3),
+          getEntityAddressKey(index + 1, ENROLLMENT_STATUS, EFFECTIVE_DATE)],
+        now.toISO());
+        newEnrollmentData = newEnrollmentData.setIn([
+          getPageSectionKey(1, 3),
+          getEntityAddressKey(index + 1, ENROLLMENT_STATUS, STATUS)],
+        worksitePlanStatus);
+
+        const worksitePlanEKID :UUID = getEntityKeyId(worksitePlan);
+        associations.push([RELATED_TO, worksitePlanEKID, WORKSITE_PLAN, index + 1, ENROLLMENT_STATUS, {}]);
+      });
 
       associations.push([RESULTS_IN, diversionPlanEKID, DIVERSION_PLAN, 0, PROGRAM_OUTCOME, {}]);
 
-      // need to update diversion plan completed property to true
+      /* 5. in addition to submitting new data, we need to update diversion plan completed property to true */
       const diversionPlanESID :UUID = getEntitySetIdFromApp(app, DIVERSION_PLAN);
       const completedPTID :UUID = getPropertyTypeIdFromEdm(edm, COMPLETED);
       const diversionPlanDataToUpdate = {
@@ -272,6 +313,7 @@ const mapStateToProps = (state :Map) => ({
   app: state.get(STATE.APP),
   diversionPlan: state.getIn([STATE.PERSON, PERSON.DIVERSION_PLAN]),
   edm: state.get(STATE.EDM),
+  worksitePlans: state.getIn([STATE.PERSON, PERSON.WORKSITE_PLANS]),
 });
 
 const mapDispatchToProps = dispatch => ({
