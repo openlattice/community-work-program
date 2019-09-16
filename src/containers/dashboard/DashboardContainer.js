@@ -149,7 +149,7 @@ class DashboardContainer extends Component<Props, State> {
         if (!isAwaitingEnrollment) {
           // filter out the people who are simply active in CWP:
           if (status === ENROLLMENT_STATUSES.ACTIVE
-              || status === ENROLLMENT_STATUSES.ACTIVE_NONCOMPLIANT || status === ENROLLMENT_STATUSES.ACTIVE_REOPENED) {
+              || status === ENROLLMENT_STATUSES.ACTIVE_REOPENED || status === ENROLLMENT_STATUSES.JOB_SEARCH) {
             return false;
           }
           return true;
@@ -201,7 +201,7 @@ class DashboardContainer extends Component<Props, State> {
       const participantEnrollment = enrollmentByParticipant.get(getEntityKeyId(participant));
       const { [STATUS]: status } = getEntityProperties(participantEnrollment, [STATUS]);
       return violationMap.get(personEKID)
-        && (status === ENROLLMENT_STATUSES.ACTIVE || status === ENROLLMENT_STATUSES.ACTIVE_NONCOMPLIANT);
+        && (status === ENROLLMENT_STATUSES.ACTIVE || status === ENROLLMENT_STATUSES.JOB_SEARCH);
     });
 
     this.setState({
