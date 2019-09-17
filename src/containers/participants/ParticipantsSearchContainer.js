@@ -188,8 +188,10 @@ class ParticipantsSearchContainer extends Component<Props, State> {
     if (column === SORTABLE_PARTICIPANT_COLUMNS.STATUS) {
       sortedPeople = this.sortByStatus(peopleList);
     }
+    if (column === SORTABLE_PARTICIPANT_COLUMNS.COURT_TYPE) {
+      sortedPeople = this.sortByCourtType(peopleList);
+    }
     if (Object.values(SORTABLE_PARTICIPANT_COLUMNS).indexOf(column) === -1) {
-      // TODO: sort by court type when the data model accomodates court type
       return;
     }
 
@@ -291,6 +293,19 @@ class ParticipantsSearchContainer extends Component<Props, State> {
       return personAStatus.localeCompare(personBStatus, undefined, { sensitivity: 'base' });
     });
     return sortedByStatus;
+  }
+
+  sortByCourtType = (people :List) => {
+    const { courtTypeByParticipant } = this.props;
+
+    const sortedByCourtType :List = people.sort((personA, personB) => {
+      const personAEKID :UUID = getEntityKeyId(personA);
+      const personBEKID :UUID = getEntityKeyId(personB);
+      const courtTypeA :string = courtTypeByParticipant.get(personAEKID);
+      const courtTypeB :string = courtTypeByParticipant.get(personBEKID);
+      return courtTypeA.localeCompare(courtTypeB, undefined, { sensitivity: 'base' });
+    });
+    return sortedByCourtType;
   }
 
   render() {
