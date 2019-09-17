@@ -1,23 +1,40 @@
 // @flow
 import React, { Component } from 'react';
-import { List, Map } from 'immutable';
-import { Card, CardSegment } from 'lattice-ui-kit';
-import { RequestStates } from 'redux-reqseq';
-import type { RequestSequence, RequestState } from 'lattice';
+import {
+  fromJS,
+  List,
+  Map,
+  OrderedMap
+} from 'immutable';
+import { DateTime } from 'luxon';
+import { Card, CardSegment, DataGrid } from 'lattice-ui-kit';
 
-import LogoLoader from '../../../components/LogoLoader';
-
-import { PEOPLE_FQNS, WORKSITE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
-import { getEntityKeyId, getEntityProperties } from '../../../utils/DataUtils';
+import {
+  DATETIME_END,
+  INCIDENT_START_DATETIME,
+  PEOPLE_FQNS,
+  WORKSITE_FQNS,
+} from '../../../core/edm/constants/FullyQualifiedNames';
+import { getEntityKeyId, getEntityProperties, sortEntitiesByDateProperty } from '../../../utils/DataUtils';
 
 const { FIRST_NAME, LAST_NAME } = PEOPLE_FQNS;
 const { NAME } = WORKSITE_FQNS;
 
+const headerLabelMap :OrderedMap = OrderedMap({
+  worksiteName: 'Worksite',
+  day: 'Weekday',
+  date: 'Date',
+  hours: 'Hours',
+});
+
+const appointmentLabelMap :OrderedMap = OrderedMap({
+  worksiteName: '',
+  day: '',
+  date: '',
+  hours: '',
+});
+
 type Props = {
-  actions:{
-    getParticipant :RequestSequence;
-  };
-  getParticipantRequestState :RequestState;
   participant :Map;
   workAppointmentsByWorksitePlan :Map;
   worksitesByWorksitePlan :Map;
@@ -43,7 +60,7 @@ class PrintWorkScheduleContainer extends Component<Props, State> {
   setAppointments = () => {
     const { workAppointmentsByWorksitePlan } = this.props;
 
-    const appointments :List = List().withMutations((list :List) => {
+    let appointments :List = List().withMutations((list :List) => {
 
       workAppointmentsByWorksitePlan.forEach((appointmentsList :List) => {
         appointmentsList.forEach((appointment :Map) => {
@@ -52,6 +69,7 @@ class PrintWorkScheduleContainer extends Component<Props, State> {
       });
     });
 
+    appointments = sortEntitiesByDateProperty(appointments, INCIDENT_START_DATETIME);
     this.setState({ appointments });
   }
 
@@ -74,17 +92,9 @@ class PrintWorkScheduleContainer extends Component<Props, State> {
 
   render() {
     const {
-      getParticipantRequestState,
       participant,
     } = this.props;
-
-    if (getParticipantRequestState === RequestStates.PENDING) {
-      return (
-        <LogoLoader
-            loadingText="Please wait..."
-            size={60} />
-      );
-    }
+    const { appointments, appointmentsByWorksiteName } = this.state;
 
     const {
       [FIRST_NAME]: firstName,
@@ -94,9 +104,53 @@ class PrintWorkScheduleContainer extends Component<Props, State> {
 
     return (
       <Card>
-        <CardSegment padding="lg" vertical>
-          { personFullName }
+        <CardSegment padding="sm" vertical>
+          { personFullName } Schedule
         </CardSegment>
+        <CardSegment padding="sm">
+          <DataGrid
+              columns={4}
+              data={fromJS({
+                worksiteName: ' ',
+                day: ' ',
+                date: ' ',
+                hours: ' ',
+              })}
+              labelMap={headerLabelMap} />
+        </CardSegment>
+        {
+          appointments.map((appointment :Map) => {
+            const appointmentEKID :UUID = getEntityKeyId(appointment);
+            const worksiteName :string = appointmentsByWorksiteName.get(appointmentEKID);
+
+            const {
+              [DATETIME_END]: datetimeEnd,
+              [INCIDENT_START_DATETIME]: datetimeStart
+            } = getEntityProperties(appointment, [DATETIME_END, INCIDENT_START_DATETIME]);
+
+            const startDateObj :DateTime = DateTime.fromISO(datetimeStart);
+            const day :string = startDateObj.weekdayShort;
+            const date :string = startDateObj.toLocaleString(DateTime.DATE_SHORT);
+            const startTime :string = startDateObj.toLocaleString(DateTime.TIME_SIMPLE);
+            const endTime :string = DateTime.fromISO(datetimeEnd).toLocaleString(DateTime.TIME_SIMPLE);
+            const hours :string = `${startTime} - ${endTime}`;
+
+            const data = fromJS({
+              worksiteName,
+              day,
+              date,
+              hours,
+            });
+            return (
+              <CardSegment key={appointmentEKID} padding="sm">
+                <DataGrid
+                    columns={4}
+                    data={data}
+                    labelMap={appointmentLabelMap} />
+              </CardSegment>
+            );
+          })
+        }
       </Card>
     );
   }
