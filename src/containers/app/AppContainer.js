@@ -106,7 +106,7 @@ class AppContainer extends Component<Props> {
     const { app, initializeAppRequestState, location } = this.props;
 
     const { pathname } = location;
-    const isPrintScheduleView :boolean = pathname.split('/')[3] === 'printschedule';
+    const isPrintView :boolean = pathname.substring(pathname.lastIndexOf('/')) === '/print';
 
     const selectedOrg = app.get(APP.SELECTED_ORG_ID, '');
     const orgList = app.get(APP.ORGS).entrySeq().map(([value, organization]) => {
@@ -117,15 +117,13 @@ class AppContainer extends Component<Props> {
     return (
       <AppContainerWrapper>
         {
-          !isPrintScheduleView
-            ? (
-              <AppHeaderContainer
-                  loading={loading}
-                  organizations={orgList}
-                  selectedOrg={selectedOrg}
-                  switchOrg={this.switchOrganization} />
-            )
-            : null
+          !isPrintView && (
+            <AppHeaderContainer
+                loading={loading}
+                organizations={orgList}
+                selectedOrg={selectedOrg}
+                switchOrg={this.switchOrganization} />
+          )
         }
         <AppContentOuterWrapper>
           <AppContentInnerWrapper>

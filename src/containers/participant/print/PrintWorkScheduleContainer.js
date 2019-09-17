@@ -20,18 +20,26 @@ import { getEntityKeyId, getEntityProperties, sortEntitiesByDateProperty } from 
 const { FIRST_NAME, LAST_NAME } = PEOPLE_FQNS;
 const { NAME } = WORKSITE_FQNS;
 
+const EMPTY_STRING = '';
+const SPACED_STRING = ' ';
+
 const headerLabelMap :OrderedMap = OrderedMap({
   worksiteName: 'Worksite',
   day: 'Weekday',
   date: 'Date',
   hours: 'Hours',
 });
-
 const appointmentLabelMap :OrderedMap = OrderedMap({
-  worksiteName: '',
-  day: '',
-  date: '',
-  hours: '',
+  worksiteName: EMPTY_STRING,
+  day: EMPTY_STRING,
+  date: EMPTY_STRING,
+  hours: EMPTY_STRING,
+});
+const headerDataMap :Map = Map({
+  worksiteName: SPACED_STRING,
+  day: SPACED_STRING,
+  date: SPACED_STRING,
+  hours: SPACED_STRING,
 });
 
 type Props = {
@@ -47,14 +55,15 @@ type State = {
 
 class PrintWorkScheduleContainer extends Component<Props, State> {
 
-  state = {
-    appointments: List(),
-    appointmentsByWorksiteName: Map(),
-  };
+  constructor(props :Props) {
+    super(props);
 
-  componentDidMount() {
-    this.setAppointments();
-    this.setWorksiteNames();
+    const appointments = this.setAppointments();
+    const appointmentsByWorksiteName = this.setWorksiteNames();
+    this.state = {
+      appointments,
+      appointmentsByWorksiteName,
+    };
   }
 
   setAppointments = () => {
@@ -70,7 +79,7 @@ class PrintWorkScheduleContainer extends Component<Props, State> {
     });
 
     appointments = sortEntitiesByDateProperty(appointments, INCIDENT_START_DATETIME);
-    this.setState({ appointments });
+    return appointments;
   }
 
   setWorksiteNames = () => {
@@ -87,7 +96,7 @@ class PrintWorkScheduleContainer extends Component<Props, State> {
       });
     });
 
-    this.setState({ appointmentsByWorksiteName });
+    return appointmentsByWorksiteName;
   }
 
   render() {
@@ -110,12 +119,7 @@ class PrintWorkScheduleContainer extends Component<Props, State> {
         <CardSegment padding="sm">
           <DataGrid
               columns={4}
-              data={fromJS({
-                worksiteName: ' ',
-                day: ' ',
-                date: ' ',
-                hours: ' ',
-              })}
+              data={headerDataMap}
               labelMap={headerLabelMap} />
         </CardSegment>
         {

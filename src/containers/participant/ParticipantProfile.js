@@ -273,6 +273,11 @@ class ParticipantProfile extends Component<Props, State> {
     });
   }
 
+  goToPrintSchedule = () => {
+    const { actions, personEKID } = this.props;
+    actions.goToRoute(Routes.PRINT_PARTICIPANT_SCHEDULE.replace(':subjectId', personEKID));
+  }
+
   render() {
     const {
       actions,
@@ -397,9 +402,7 @@ class ParticipantProfile extends Component<Props, State> {
           <NameRowWrapper>
             <NameHeader>Work Schedule</NameHeader>
             <ScheduleButtonsWrapper>
-              <Button onClick={() => {
-                actions.goToRoute(Routes.PRINT_PARTICIPANT_SCHEDULE.replace(':subjectId', personEKID));
-              }}>
+              <Button onClick={this.goToPrintSchedule}>
                 Print Schedule
               </Button>
               <Button onClick={() => this.handleShowModal(WORK_APPOINTMENT)}>Create Appointment</Button>
