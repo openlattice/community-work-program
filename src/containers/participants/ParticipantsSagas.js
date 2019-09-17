@@ -23,12 +23,14 @@ import Logger from '../../utils/Logger';
 import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../utils/Errors';
 import {
   ADD_PARTICIPANT,
+  GET_COURT_TYPE,
   GET_DIVERSION_PLANS,
   GET_ENROLLMENT_STATUSES,
   GET_HOURS_WORKED,
   GET_INFRACTIONS,
   GET_PARTICIPANTS,
   addParticipant,
+  getCourtType,
   getDiversionPlans,
   getEnrollmentStatuses,
   getHoursWorked,
@@ -48,6 +50,7 @@ import {
 import { STATE } from '../../utils/constants/ReduxStateConsts';
 import {
   APP_TYPE_FQNS,
+  CASE_FQNS,
   DIVERSION_PLAN_FQNS,
   ENROLLMENT_STATUS_FQNS,
   INFRACTION_FQNS,
@@ -65,9 +68,11 @@ const {
   DIVERSION_PLAN,
   ENROLLMENT_STATUS,
   INFRACTION_EVENT,
+  MANUAL_PRETRIAL_COURT_CASES,
   PEOPLE,
   WORKSITE_PLAN,
 } = APP_TYPE_FQNS;
+const { COURT_CASE_TYPE } = CASE_FQNS;
 const { TYPE } = INFRACTION_FQNS;
 const { COMPLETED, REQUIRED_HOURS } = DIVERSION_PLAN_FQNS;
 const { HOURS_WORKED } = WORKSITE_PLAN_FQNS;
@@ -194,7 +199,6 @@ function* getHoursWorkedWorker(action :SequenceAction) :Generator<*, *, *> {
         const { [HOURS_WORKED]: hoursWorkedFound } = getEntityProperties(worksitePlan, [HOURS_WORKED]);
         hoursWorked = hoursWorkedFound;
       }
-      console.log('worksitePlans: ', worksitePlans.toJS());
       if (worksitePlans.count() > 1) {
         hoursWorked = worksitePlans
           .reduce((totalHours :number, worksitePlanNeighbor :Map) => {
@@ -222,6 +226,78 @@ function* getHoursWorkedWorker(action :SequenceAction) :Generator<*, *, *> {
 function* getHoursWorkedWatcher() :Generator<*, *, *> {
 
   yield takeEvery(GET_HOURS_WORKED, getHoursWorkedWorker);
+}
+
+/*
+ *
+ * ParticipantsActions.getCourtType()
+ *
+ */
+
+function* getCourtTypeWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+  if (value === null || value === undefined) {
+    yield put(getCourtType.failure(id, ERR_ACTION_VALUE_NOT_DEFINED));
+    return;
+  }
+  let response :Object = {};
+  let courtTypeByParticipant :Map = Map();
+
+  try {
+    yield put(getCourtType.request(id));
+    const { currentDiversionPlansByParticipant } = value;
+
+    const app = yield select(getAppFromState);
+    const manualCasesESID :UUID = getEntitySetIdFromApp(app, MANUAL_PRETRIAL_COURT_CASES);
+    const diversionPlanESID :UUID = getEntitySetIdFromApp(app, DIVERSION_PLAN);
+    const peopleESID :UUID = getEntitySetIdFromApp(app, PEOPLE);
+
+    const diversionPlanEKIDs :UUID[] = [];
+    currentDiversionPlansByParticipant.forEach((diversionPlan :Map) => {
+      diversionPlanEKIDs.push(getEntityKeyId(diversionPlan));
+    });
+
+    const searchFilter = {
+      entityKeyIds: diversionPlanEKIDs,
+      destinationEntitySetIds: [manualCasesESID],
+      sourceEntitySetIds: [peopleESID],
+    };
+    response = yield call(
+      searchEntityNeighborsWithFilterWorker,
+      searchEntityNeighborsWithFilter({ entitySetId: diversionPlanESID, filter: searchFilter })
+    );
+    if (response.error) {
+      throw response.error;
+    }
+    const casesAndPeopleByDiversionPlan = fromJS(response.data);
+    if (!casesAndPeopleByDiversionPlan.isEmpty()) {
+
+      casesAndPeopleByDiversionPlan.forEach((caseAndPersonNeighbors :List) => {
+        const person :Map = caseAndPersonNeighbors.find((neighbor :Map) => getNeighborESID(neighbor) === peopleESID);
+        const personEKID :UUID = getEntityKeyId(getNeighborDetails(person));
+        const courtCaseObj :Map = caseAndPersonNeighbors
+          .find((neighbor :Map) => getNeighborESID(neighbor) === manualCasesESID);
+        const courtCase :Map = getNeighborDetails(courtCaseObj);
+        const { [COURT_CASE_TYPE]: courtCaseType } = getEntityProperties(courtCase, [COURT_CASE_TYPE]);
+        courtTypeByParticipant = courtTypeByParticipant.set(personEKID, courtCaseType);
+      });
+    }
+
+    yield put(getCourtType.success(id, courtTypeByParticipant));
+  }
+  catch (error) {
+    LOG.error('caught exception in getCourtTypeWorker()', error);
+    yield put(getCourtType.failure(id, error));
+  }
+  finally {
+    yield put(getCourtType.finally(id));
+  }
+}
+
+function* getCourtTypeWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(GET_COURT_TYPE, getCourtTypeWorker);
 }
 
 /*
@@ -367,6 +443,7 @@ function* getEnrollmentStatusesWorker(action :SequenceAction) :Generator<*, *, *
     }
 
     yield call(getHoursWorkedWorker, getHoursWorked({ currentDiversionPlansByParticipant }));
+    yield call(getCourtTypeWorker, getCourtType({ currentDiversionPlansByParticipant }));
 
     yield put(getEnrollmentStatuses.success(id, { currentDiversionPlansByParticipant, enrollmentMap }));
   }
@@ -585,6 +662,8 @@ function* getDiversionPlansWatcher() :Generator<*, *, *> {
 export {
   addParticipantWatcher,
   addParticipantWorker,
+  getCourtTypeWatcher,
+  getCourtTypeWorker,
   getDiversionPlansWatcher,
   getDiversionPlansWorker,
   getEnrollmentStatusesWatcher,
