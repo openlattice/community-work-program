@@ -313,9 +313,7 @@ class ParticipantProfile extends Component<Props, State> {
     }
 
     const personEKID :UUID = getEntityKeyId(participant);
-    const { [FIRST_NAME]: firstName } = getEntityProperties(
-      participant, [FIRST_NAME, LAST_NAME]
-    );
+    const { [FIRST_NAME]: firstName } = getEntityProperties(participant, [FIRST_NAME]);
     let { [STATUS]: status } = getEntityProperties(enrollmentStatus, [STATUS]);
     if (!isDefined(status)) status = ENROLLMENT_STATUSES.AWAITING_CHECKIN;
 
