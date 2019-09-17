@@ -69,6 +69,7 @@ type Props = {
   },
   app :Map;
   initializeAppRequestState :RequestState;
+  location :Object;
 };
 
 class AppContainer extends Component<Props> {
@@ -102,7 +103,10 @@ class AppContainer extends Component<Props> {
   );
 
   render() {
-    const { app, initializeAppRequestState } = this.props;
+    const { app, initializeAppRequestState, location } = this.props;
+
+    const { pathname } = location;
+    const isPrintScheduleView :boolean = pathname.split('/')[3] === 'printschedule';
 
     const selectedOrg = app.get(APP.SELECTED_ORG_ID, '');
     const orgList = app.get(APP.ORGS).entrySeq().map(([value, organization]) => {
@@ -110,14 +114,19 @@ class AppContainer extends Component<Props> {
       return { label, value };
     });
     const loading = initializeAppRequestState === RequestStates.PENDING;
-
     return (
       <AppContainerWrapper>
-        <AppHeaderContainer
-            loading={loading}
-            organizations={orgList}
-            selectedOrg={selectedOrg}
-            switchOrg={this.switchOrganization} />
+        {
+          !isPrintScheduleView
+            ? (
+              <AppHeaderContainer
+                  loading={loading}
+                  organizations={orgList}
+                  selectedOrg={selectedOrg}
+                  switchOrg={this.switchOrganization} />
+            )
+            : null
+        }
         <AppContentOuterWrapper>
           <AppContentInnerWrapper>
             { this.renderAppContent() }
