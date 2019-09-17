@@ -194,14 +194,13 @@ function* getHoursWorkedWorker(action :SequenceAction) :Generator<*, *, *> {
         const { [HOURS_WORKED]: hoursWorkedFound } = getEntityProperties(worksitePlan, [HOURS_WORKED]);
         hoursWorked = hoursWorkedFound;
       }
+      console.log('worksitePlans: ', worksitePlans.toJS());
       if (worksitePlans.count() > 1) {
         hoursWorked = worksitePlans
-          .reduce((worksitePlanNeighborA :Map, worksitePlanNeighborB :Map) => {
-            const worksitePlanA = getNeighborDetails(worksitePlanNeighborA);
-            const worksitePlanB = getNeighborDetails(worksitePlanNeighborB);
-            const { [HOURS_WORKED]: hoursA } = getEntityProperties(worksitePlanA, [HOURS_WORKED]);
-            const { [HOURS_WORKED]: hoursB } = getEntityProperties(worksitePlanB, [HOURS_WORKED]);
-            return hoursA + hoursB;
+          .reduce((totalHours :number, worksitePlanNeighbor :Map) => {
+            const worksitePlan = getNeighborDetails(worksitePlanNeighbor);
+            const { [HOURS_WORKED]: hours } = getEntityProperties(worksitePlan, [HOURS_WORKED]);
+            return hours + totalHours;
           }, hoursWorked);
       }
       const reqHoursFromMap :number = requiredHours.get(personEKID) ? requiredHours.get(personEKID) : 0;
