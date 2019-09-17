@@ -58,15 +58,15 @@ class PrintWorkScheduleContainer extends Component<Props, State> {
   constructor(props :Props) {
     super(props);
 
-    const appointments = this.setAppointments();
-    const appointmentsByWorksiteName = this.setWorksiteNames();
+    const appointments = this.getAppointments();
+    const appointmentsByWorksiteName = this.getWorksiteNames();
     this.state = {
       appointments,
       appointmentsByWorksiteName,
     };
   }
 
-  setAppointments = () => {
+  getAppointments = () => {
     const { workAppointmentsByWorksitePlan } = this.props;
 
     let appointments :List = List().withMutations((list :List) => {
@@ -82,7 +82,7 @@ class PrintWorkScheduleContainer extends Component<Props, State> {
     return appointments;
   }
 
-  setWorksiteNames = () => {
+  getWorksiteNames = () => {
     const { workAppointmentsByWorksitePlan, worksitesByWorksitePlan } = this.props;
 
     let appointmentsByWorksiteName :Map = Map();
