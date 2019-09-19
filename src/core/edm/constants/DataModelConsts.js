@@ -17,6 +17,7 @@ export const TYPE_IDS_BY_FQNS = 'typeIdsByFqn';
 export const TYPES_BY_ID = 'typesById';
 export const NEIGHBOR_DETAILS = 'neighborDetails';
 export const NEIGHBOR_ENTITY_SET = 'neighborEntitySet';
+export const SEARCH_PREFIX = 'entity';
 
 /* Miscellaneous Constants */
 export const CWP = 'Community Work Program';

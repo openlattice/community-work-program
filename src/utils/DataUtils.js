@@ -9,6 +9,7 @@ import type { FQN } from 'lattice';
 import {
   NEIGHBOR_DETAILS,
   NEIGHBOR_ENTITY_SET,
+  SEARCH_PREFIX,
   TYPE_IDS_BY_FQNS,
   TYPES_BY_ID
 } from '../core/edm/constants/DataModelConsts';
@@ -90,3 +91,8 @@ export const sortEntitiesByDateProperty = (
   });
 
 export const getNeighborESID = (neighbor :Map) => (neighbor.getIn([NEIGHBOR_ENTITY_SET, 'id']));
+
+export const getSearchTerm = (
+  propertyTypeId :UUID,
+  searchString :string
+) => `${SEARCH_PREFIX}.${propertyTypeId}:"${searchString}"`;
