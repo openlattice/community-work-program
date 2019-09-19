@@ -151,6 +151,10 @@ const ButtonsWrapper = styled.div`
   grid-gap: 0 10px;
 `;
 
+const ScheduleButtonsWrapper = styled(ButtonsWrapper)`
+  grid-template-columns: repeat(2, 1fr);
+`;
+
 type Props = {
   actions:{
     getAllParticipantInfo :RequestSequence;
@@ -272,6 +276,11 @@ class ParticipantProfile extends Component<Props, State> {
     });
   }
 
+  goToPrintSchedule = () => {
+    const { actions, personEKID } = this.props;
+    actions.goToRoute(Routes.PRINT_PARTICIPANT_SCHEDULE.replace(':subjectId', personEKID));
+  }
+
   render() {
     const {
       actions,
@@ -313,9 +322,7 @@ class ParticipantProfile extends Component<Props, State> {
     }
 
     const personEKID :UUID = getEntityKeyId(participant);
-    const { [FIRST_NAME]: firstName } = getEntityProperties(
-      participant, [FIRST_NAME, LAST_NAME]
-    );
+    const { [FIRST_NAME]: firstName } = getEntityProperties(participant, [FIRST_NAME]);
     let { [STATUS]: status } = getEntityProperties(enrollmentStatus, [STATUS]);
     if (!isDefined(status)) status = ENROLLMENT_STATUSES.AWAITING_CHECKIN;
 
@@ -408,7 +415,12 @@ class ParticipantProfile extends Component<Props, State> {
           <ProfileBody>
             <NameRowWrapper>
               <NameHeader>Work Schedule</NameHeader>
-              <Button onClick={() => this.handleShowModal(WORK_APPOINTMENT)}>Create Appointment</Button>
+              <ScheduleButtonsWrapper>
+                <Button onClick={this.goToPrintSchedule}>
+                  Print Schedule
+                </Button>
+                <Button onClick={() => this.handleShowModal(WORK_APPOINTMENT)}>Create Appointment</Button>
+              </ScheduleButtonsWrapper>
             </NameRowWrapper>
             <ParticipantWorkSchedule
                 workAppointmentsByWorksitePlan={workAppointmentsByWorksitePlan}
