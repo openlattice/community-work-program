@@ -2,6 +2,7 @@
 import React, { Component } from 'react';
 import styled from 'styled-components';
 import { List, Map } from 'immutable';
+import { DateTime } from 'luxon';
 import {
   Button,
   CardSegment,
@@ -16,11 +17,12 @@ import type { RequestSequence } from 'redux-reqseq';
 
 import ParticipantWorkSchedule from '../participant/schedule/ParticipantWorkSchedule';
 
-import { getWorksites } from '../worksites/WorksitesActions';
+import { findAppointments } from './WorkScheduleActions';
 import { ContainerHeader } from '../../components/Layout';
 import { SEARCH_CONTAINER_WIDTH } from '../../core/style/Sizes';
 import { STATE, WORKSITES } from '../../utils/constants/ReduxStateConsts';
 import { APP_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { timePeriods } from './WorkScheduleConstants';
 
 const { WORKSITES_LIST } = WORKSITES;
 
@@ -63,7 +65,7 @@ const FieldsWrapper = styled.div`
 
 type Props = {
   actions:{
-    getWorksites :RequestSequence;
+    findAppointments :RequestSequence;
   };
   app :Map;
   worksitesList :List;
@@ -73,20 +75,20 @@ class WorkScheduleContainer extends Component<Props> {
 
   componentDidUpdate(prevProps :Props) {
     const { app, actions } = this.props;
-    if (!prevProps.app.get(APP_TYPE_FQNS.WORKSITE) && app.get(APP_TYPE_FQNS.WORKSITE)) {
-      actions.getWorksites();
+    if (!prevProps.app.get(APP_TYPE_FQNS.APPOINTMENT) && app.get(APP_TYPE_FQNS.APPOINTMENT)) {
+      const today = DateTime.local().toISODate();
+      actions.findAppointments({ selectedDate: today, timePeriod: timePeriods.DAY });
     }
   }
 
   renderFields = () => {
-    const { worksitesList } = this.props;
-    console.log('worksitesList: ', worksitesList.toJS());
     return (
       <FieldsRowWrapper>
         <FieldsWrapper>
           <div>
             <Label>Date</Label>
-            <DatePicker />
+            <DatePicker
+                onChange={date => console.log(date)} />
           </div>
           <div>
             <Label>Time Period</Label>
@@ -145,7 +147,7 @@ const mapStateToProps = (state :Map) => {
 
 const mapDispatchToProps = (dispatch :Function) :Object => ({
   actions: bindActionCreators({
-    getWorksites,
+    findAppointments,
   }, dispatch)
 });
 
