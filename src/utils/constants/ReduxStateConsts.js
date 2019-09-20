@@ -91,6 +91,15 @@ export const PERSON = {
   WORK_APPOINTMENTS_BY_WORKSITE_PLAN: 'workAppointmentsByWorksitePlan',
 };
 
+/* Work Schedule */
+
+export const WORK_SCHEDULE = {
+  ACTIONS: 'actions',
+  APPOINTMENTS: 'appointments',
+  FIND_APPOINTMENTS: 'findAppointments',
+  REQUEST_STATE: 'requestState',
+};
+
 /* Worksites (and organizations) */
 
 export const WORKSITES = {

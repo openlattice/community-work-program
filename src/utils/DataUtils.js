@@ -96,3 +96,22 @@ export const getSearchTerm = (
   propertyTypeId :UUID,
   searchString :string
 ) => `${SEARCH_PREFIX}.${propertyTypeId}:"${searchString}"`;
+
+export const getSearchTermNotExact = (
+  propertyTypeId :UUID,
+  searchString :string
+) => `${SEARCH_PREFIX}.${propertyTypeId}:${searchString}`;
+
+export const getUTCDateRangeSearchString = (PTID :UUID, timeUnits :string, startDate :DateTime, endDate :?DateTime) => {
+  let start = startDate.toUTC().toISO();
+  let end;
+  if (!endDate) {
+    start = startDate.startOf(timeUnits).toUTC().toISO();
+    end = startDate.endOf(timeUnits).toUTC().toISO();
+  }
+  else {
+    end = endDate.toUTC().toISO();
+  }
+  const dateRangeString = `[${start} TO ${end}]`;
+  return getSearchTermNotExact(PTID, dateRangeString);
+};
