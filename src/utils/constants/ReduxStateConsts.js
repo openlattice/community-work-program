@@ -2,10 +2,11 @@ export const STATE = {
   APP: 'app',
   DATA: 'data',
   EDM: 'edm',
+  ORGANIZATION: 'organization',
   PEOPLE: 'people',
   PERSON: 'person',
-  ORGANIZATION: 'organization',
   WORKSITES: 'worksites',
+  WORK_SCHEDULE: 'workSchedule',
 };
 
 // App
