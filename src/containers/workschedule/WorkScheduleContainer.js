@@ -5,7 +5,6 @@ import { List, Map } from 'immutable';
 import { DateTime } from 'luxon';
 import {
   Button,
-  CardSegment,
   CheckboxSelect,
   DatePicker,
   Label,
@@ -13,18 +12,28 @@ import {
 } from 'lattice-ui-kit';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import type { RequestSequence } from 'redux-reqseq';
+import { RequestStates } from 'redux-reqseq';
+import type { RequestSequence, RequestState } from 'redux-reqseq';
 
-import ParticipantWorkSchedule from '../participant/schedule/ParticipantWorkSchedule';
+import AppointmentListContainer from './AppointmentListContainer';
 
 import { findAppointments } from './WorkScheduleActions';
+import { getWorksites } from '../worksites/WorksitesActions';
+import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
 import { ContainerHeader } from '../../components/Layout';
 import { SEARCH_CONTAINER_WIDTH } from '../../core/style/Sizes';
-import { STATE, WORKSITES } from '../../utils/constants/ReduxStateConsts';
-import { APP_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
-import { timePeriods } from './WorkScheduleConstants';
+import { STATE, WORKSITES, WORK_SCHEDULE } from '../../utils/constants/ReduxStateConsts';
+import { APP_TYPE_FQNS, WORKSITE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { timePeriods, TIME_PERIOD_OPTIONS } from './WorkScheduleConstants';
 
 const { WORKSITES_LIST } = WORKSITES;
+const {
+  ACTIONS,
+  APPOINTMENTS,
+  FIND_APPOINTMENTS,
+  REQUEST_STATE
+} = WORK_SCHEDULE;
+const { NAME } = WORKSITE_FQNS;
 
 const ScheduleOuterWrapper = styled.div`
   display: flex;
@@ -66,61 +75,123 @@ const FieldsWrapper = styled.div`
 type Props = {
   actions:{
     findAppointments :RequestSequence;
+    getWorksites :RequestSequence;
   };
   app :Map;
+  appointments :List;
+  findAppointmentsRequestState :RequestState;
   worksitesList :List;
 };
 
-class WorkScheduleContainer extends Component<Props> {
+type State = {
+  selectedDate :string;
+  timePeriod :string;
+  worksites :string[];
+};
 
-  componentDidUpdate(prevProps :Props) {
-    const { app, actions } = this.props;
-    if (!prevProps.app.get(APP_TYPE_FQNS.APPOINTMENT) && app.get(APP_TYPE_FQNS.APPOINTMENT)) {
-      const today = DateTime.local().toISODate();
-      actions.findAppointments({ selectedDate: today, timePeriod: timePeriods.DAY });
+class WorkScheduleContainer extends Component<Props, State> {
+
+  constructor(props :Props) {
+    super(props);
+
+    const today = DateTime.local().toISODate();
+    this.state = {
+      selectedDate: today,
+      timePeriod: '',
+      worksites: [],
+    };
+  }
+
+  componentDidMount() {
+    const { app } = this.props;
+    if (app.get(APP_TYPE_FQNS.APPOINTMENT)) {
+      this.loadDefaultSchedule();
     }
   }
 
+  componentDidUpdate(prevProps :Props) {
+    const { app } = this.props;
+    if (!prevProps.app.get(APP_TYPE_FQNS.APPOINTMENT) && app.get(APP_TYPE_FQNS.APPOINTMENT)) {
+      this.loadDefaultSchedule();
+    }
+  }
+
+  loadDefaultSchedule = () => {
+    const { actions } = this.props;
+    const { selectedDate } = this.state;
+    actions.findAppointments({ selectedDate, timePeriod: timePeriods.DAY });
+    actions.getWorksites();
+  }
+
+  getDate = (name :string) => (date :string) => {
+    this.setState({ [name]: date });
+  }
+
+  handleSelectChange = (option :Object, event :Object) => {
+    const { name } = event;
+    const { value } = option;
+    this.setState({ [name]: value });
+  }
+
+  handleChange = (event :SyntheticInputEvent<*>) => {
+    this.handleCheckboxSelectChange(event);
+  }
+
+  handleCheckboxSelectChange = (event :SyntheticInputEvent<*>) => {
+  }
+
+  getAppointments = () => {
+    const { actions } = this.props;
+    const { selectedDate, timePeriod } = this.state;
+    actions.findAppointments({ selectedDate, timePeriod });
+  }
+
   renderFields = () => {
+    const { worksitesList } = this.props;
+    const { worksites } = this.state;
+
+    const WORKSITES_OPTIONS :Object[] = [];
+    worksitesList.forEach((worksite :Map) => {
+      const { [NAME]: worksiteName } = getEntityProperties(worksite, [NAME]);
+      const worksiteEKID :UUID = getEntityKeyId(worksite);
+      WORKSITES_OPTIONS.push({ label: worksiteName, value: worksiteEKID });
+    });
     return (
       <FieldsRowWrapper>
         <FieldsWrapper>
           <div>
             <Label>Date</Label>
             <DatePicker
-                onChange={date => console.log(date)} />
+                name="selectedDate"
+                onChange={this.getDate('selectedDate')}
+                placeholder={DateTime.local().toLocaleString(DateTime.DATE_SHORT)} />
           </div>
           <div>
             <Label>Time Period</Label>
             <Select
                 id="timePeriod"
-                name="Time Period"
-                onChange={() => {}}
-                options={[
-                  { label: 'Day', value: 'Day' },
-                  { label: 'Week', value: 'Week' },
-                  { label: 'Month', value: 'Month' }
-                ]} />
+                name="timePeriod"
+                onChange={this.handleSelectChange}
+                options={TIME_PERIOD_OPTIONS} />
           </div>
           <div>
             <Label>Work Site</Label>
             <CheckboxSelect
                 id="worksite"
-                name="Work Site"
-                onChange={() => {}}
-                options={[
-                  { label: 'Garden', value: 'Garden' },
-                  { label: 'B&G', value: 'B&G' },
-                  { label: '24/7', value: '24/7' }
-                ]} />
+                name="worksites"
+                onFocus={this.handleCheckboxSelectChange}
+                options={WORKSITES_OPTIONS}
+                value={worksites} />
           </div>
         </FieldsWrapper>
-        <Button mode="primary" onClick={() => {}}>Display Appointments</Button>
+        <Button mode="primary" onClick={this.getAppointments}>Display Appointments</Button>
       </FieldsRowWrapper>
     );
   }
 
   render() {
+    const { appointments, findAppointmentsRequestState } = this.props;
+    const isLoading :boolean = findAppointmentsRequestState === RequestStates.PENDING;
     return (
       <ScheduleOuterWrapper>
         <ScheduleInnerWrapper>
@@ -128,9 +199,9 @@ class WorkScheduleContainer extends Component<Props> {
             <ContainerHeader>Work Schedule</ContainerHeader>
           </HeaderWrapper>
           { this.renderFields() }
-          <ParticipantWorkSchedule
-              workAppointmentsByWorksitePlan={Map()}
-              worksiteNamesByWorksitePlan={Map()} />
+          <AppointmentListContainer
+              appointments={appointments}
+              isLoading={isLoading} />
         </ScheduleInnerWrapper>
       </ScheduleOuterWrapper>
     );
@@ -139,8 +210,11 @@ class WorkScheduleContainer extends Component<Props> {
 
 const mapStateToProps = (state :Map) => {
   const app = state.get(STATE.APP);
+  const workSchedule = state.get(STATE.WORK_SCHEDULE);
   return ({
     app,
+    [APPOINTMENTS]: workSchedule.get(APPOINTMENTS),
+    findAppointmentsRequestState: workSchedule.getIn([ACTIONS, FIND_APPOINTMENTS, REQUEST_STATE]),
     [WORKSITES_LIST]: state.getIn([STATE.WORKSITES, WORKSITES_LIST]),
   });
 };
@@ -148,6 +222,7 @@ const mapStateToProps = (state :Map) => {
 const mapDispatchToProps = (dispatch :Function) :Object => ({
   actions: bindActionCreators({
     findAppointments,
+    getWorksites,
   }, dispatch)
 });
 
