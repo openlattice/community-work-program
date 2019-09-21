@@ -13,6 +13,7 @@ import {
   SearchApiActions,
   SearchApiSagas
 } from 'lattice-sagas';
+import { DateTime } from 'luxon';
 import type { SequenceAction } from 'redux-reqseq';
 
 import Logger from '../../utils/Logger';
@@ -88,7 +89,8 @@ function* findAppointmentsWorker(action :SequenceAction) :Generator<*, *, *> {
       });
     }
     if (timePeriod === timePeriods.WEEK || timePeriod === timePeriods.MONTH) {
-      searchTerm = getUTCDateRangeSearchString(startDatetimePTID, timePeriod, selectedDate);
+      const selectedDateAsDateTime :DateTime = DateTime.fromISO(selectedDate);
+      searchTerm = getUTCDateRangeSearchString(startDatetimePTID, timePeriod, selectedDateAsDateTime);
       searchOptions.constraints[0].constraints.push({
         searchTerm,
         fuzzy: false
@@ -100,7 +102,6 @@ function* findAppointmentsWorker(action :SequenceAction) :Generator<*, *, *> {
       throw response.error;
     }
     appointments = fromJS(response.data.hits);
-    console.log('appointments: ', response.data.hits);
 
     yield put(findAppointments.success(id, appointments));
   }
