@@ -18,14 +18,25 @@ import type { SequenceAction } from 'redux-reqseq';
 
 import Logger from '../../utils/Logger';
 import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../utils/Errors';
-import { APP_TYPE_FQNS, INCIDENT_START_DATETIME } from '../../core/edm/constants/FullyQualifiedNames';
+import {
+  APP_TYPE_FQNS,
+  INCIDENT_START_DATETIME,
+  PEOPLE_FQNS,
+  WORKSITE_FQNS
+} from '../../core/edm/constants/FullyQualifiedNames';
 import { STATE } from '../../utils/constants/ReduxStateConsts';
 import {
   FIND_APPOINTMENTS,
+  GET_WORKSITE_AND_PERSON_NAMES,
   findAppointments,
+  getWorksiteAndPersonNames,
 } from './WorkScheduleActions';
 import {
+  getEntityKeyId,
+  getEntityProperties,
   getEntitySetIdFromApp,
+  getNeighborDetails,
+  getNeighborESID,
   getPropertyTypeIdFromEdm,
   getSearchTerm,
   getUTCDateRangeSearchString
@@ -33,10 +44,17 @@ import {
 import { timePeriods } from './WorkScheduleConstants';
 
 const LOG = new Logger('WorkScheduleSagas');
-const { executeSearch } = SearchApiActions;
-const { executeSearchWorker } = SearchApiSagas;
+const { executeSearch, searchEntityNeighborsWithFilter } = SearchApiActions;
+const { executeSearchWorker, searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
 
-const { APPOINTMENT } = APP_TYPE_FQNS;
+const {
+  APPOINTMENT,
+  PEOPLE,
+  WORKSITE,
+  WORKSITE_PLAN
+} = APP_TYPE_FQNS;
+const { FIRST_NAME, LAST_NAME } = PEOPLE_FQNS;
+const { NAME } = WORKSITE_FQNS;
 
 const getAppFromState = state => state.get(STATE.APP, Map());
 const getEdmFromState = state => state.get(STATE.EDM, Map());
@@ -45,6 +63,124 @@ const getEdmFromState = state => state.get(STATE.EDM, Map());
 appointment -> addresses -> work site plan -> based on -> work site
 work site plan -> related to -> enrollment status
 */
+
+/*
+ *
+ * WorkScheduleActions.getWorksiteAndPersonNames()
+ *
+ */
+
+function* getWorksiteAndPersonNamesWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+  let response :Object = {};
+  let worksiteNamesByAppointmentEKID :Map = Map();
+  let personNamesByAppointmentEKID :Map = Map();
+
+  try {
+    yield put(getWorksiteAndPersonNames.request(id, value));
+    if (value === null || value === undefined) {
+      throw ERR_ACTION_VALUE_NOT_DEFINED;
+    }
+    const { appointments } = value;
+    const appointmentEKIDs :UUID[] = [];
+    appointments.forEach((appt :Map) => {
+      const apptEKID :UUID = getEntityKeyId(appt);
+      appointmentEKIDs.push(apptEKID);
+    });
+
+    const app = yield select(getAppFromState);
+    const appointmentESID :UUID = getEntitySetIdFromApp(app, APPOINTMENT);
+    const worksitePlanESID :UUID = getEntitySetIdFromApp(app, WORKSITE_PLAN);
+
+    const worksitePlanSearchFilter = {
+      entityKeyIds: appointmentEKIDs,
+      destinationEntitySetIds: [worksitePlanESID],
+      sourceEntitySetIds: [],
+    };
+    response = yield call(
+      searchEntityNeighborsWithFilterWorker,
+      searchEntityNeighborsWithFilter({ entitySetId: appointmentESID, filter: worksitePlanSearchFilter })
+    );
+    if (response.error) {
+      throw response.error;
+    }
+    const worksitePlans :Map = fromJS(response.data);
+    const setOfWorksitePlanEKIDs :Set<*> = new Set();
+    let appointmentWorksitePlanEKIDMap :Map = Map();
+
+    worksitePlans.forEach((worksitePlanList :List, appointmentEKID :UUID) => {
+      const worksitePlan :Map = getNeighborDetails(worksitePlanList.get(0));
+      const worksitePlanEKID :UUID = getEntityKeyId(worksitePlan);
+      setOfWorksitePlanEKIDs.add(worksitePlanEKID);
+      appointmentWorksitePlanEKIDMap = appointmentWorksitePlanEKIDMap.set(appointmentEKID, worksitePlanEKID);
+    });
+    const worksitePlanEKIDs :UUID[] = Array.from(setOfWorksitePlanEKIDs);
+
+    const worksiteESID :UUID = getEntitySetIdFromApp(app, WORKSITE);
+    const peopleESID :UUID = getEntitySetIdFromApp(app, PEOPLE);
+    const worksiteFilter = {
+      entityKeyIds: worksitePlanEKIDs,
+      destinationEntitySetIds: [worksiteESID],
+      sourceEntitySetIds: [peopleESID],
+    };
+    response = yield call(
+      searchEntityNeighborsWithFilterWorker,
+      searchEntityNeighborsWithFilter({ entitySetId: worksitePlanESID, filter: worksiteFilter })
+    );
+    if (response.error) {
+      throw response.error;
+    }
+    let worksitesByWorksitePlan :Map = Map();
+    let peopleByWorksitePlan :Map = Map();
+
+    fromJS(response.data)
+      .forEach((neighborsList :List, worksitePlanEKID :UUID) => {
+        neighborsList.forEach((neighbor) => {
+          const entity = getNeighborDetails(neighbor);
+          if (getNeighborESID(neighbor) === worksiteESID) {
+            worksitesByWorksitePlan = worksitesByWorksitePlan.set(worksitePlanEKID, entity);
+          }
+          if (getNeighborESID(neighbor) === peopleESID) {
+            peopleByWorksitePlan = peopleByWorksitePlan.set(worksitePlanEKID, entity);
+          }
+        });
+      });
+
+    appointmentWorksitePlanEKIDMap.forEach((worksitePlanEKID :UUID, appointmentEKID :UUID) => {
+      const worksite :Map = worksitesByWorksitePlan.get(worksitePlanEKID);
+      const { [NAME]: worksiteName } = getEntityProperties(worksite, [NAME]);
+      worksiteNamesByAppointmentEKID = worksiteNamesByAppointmentEKID.set(appointmentEKID, worksiteName);
+
+      const person :Map = peopleByWorksitePlan.get(worksitePlanEKID);
+      const {
+        [FIRST_NAME]: personFirstName,
+        [LAST_NAME]: personLastName
+      } = getEntityProperties(person, [FIRST_NAME, LAST_NAME]);
+      personNamesByAppointmentEKID = personNamesByAppointmentEKID.set(
+        appointmentEKID,
+        `${personFirstName} ${personLastName}`
+      );
+    });
+
+    yield put(getWorksiteAndPersonNames.success(id, {
+      personNamesByAppointmentEKID,
+      worksiteNamesByAppointmentEKID
+    }));
+  }
+  catch (error) {
+    LOG.error('caught exception in getWorksiteAndPersonNamesWorker()', error);
+    yield put(getWorksiteAndPersonNames.failure(id, error));
+  }
+  finally {
+    yield put(getWorksiteAndPersonNames.finally(id));
+  }
+}
+
+function* getWorksiteAndPersonNamesWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(GET_WORKSITE_AND_PERSON_NAMES, getWorksiteAndPersonNamesWorker);
+}
 
 /*
  *
@@ -103,6 +239,10 @@ function* findAppointmentsWorker(action :SequenceAction) :Generator<*, *, *> {
     }
     appointments = fromJS(response.data.hits);
 
+    if (!appointments.isEmpty()) {
+      yield call(getWorksiteAndPersonNamesWorker, getWorksiteAndPersonNames({ appointments }));
+    }
+
     yield put(findAppointments.success(id, appointments));
   }
   catch (error) {
@@ -122,4 +262,6 @@ function* findAppointmentsWatcher() :Generator<*, *, *> {
 export {
   findAppointmentsWatcher,
   findAppointmentsWorker,
+  getWorksiteAndPersonNamesWatcher,
+  getWorksiteAndPersonNamesWorker,
 };

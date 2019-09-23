@@ -98,7 +98,10 @@ export const WORK_SCHEDULE = {
   ACTIONS: 'actions',
   APPOINTMENTS: 'appointments',
   FIND_APPOINTMENTS: 'findAppointments',
+  GET_WORKSITE_AND_PERSON_NAMES: 'getWorksiteAndPersonNames',
   REQUEST_STATE: 'requestState',
+  PERSON_NAMES_BY_APPOINTMENT_EKID: 'personNamesByAppointmentEKID',
+  WORKSITE_NAMES_BY_APPOINTMENT_EKID: 'worksiteNamesByAppointmentEKID',
 };
 
 /* Worksites (and organizations) */
