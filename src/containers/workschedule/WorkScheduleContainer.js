@@ -31,7 +31,9 @@ const {
   ACTIONS,
   APPOINTMENTS,
   FIND_APPOINTMENTS,
-  REQUEST_STATE
+  PERSON_NAMES_BY_APPOINTMENT_EKID,
+  REQUEST_STATE,
+  WORKSITE_NAMES_BY_APPOINTMENT_EKID,
 } = WORK_SCHEDULE;
 const { NAME } = WORKSITE_FQNS;
 
@@ -80,6 +82,8 @@ type Props = {
   app :Map;
   appointments :List;
   findAppointmentsRequestState :RequestState;
+  personNamesByAppointmentEKID :Map;
+  worksiteNamesByAppointmentEKID :Map;
   worksitesList :List;
 };
 
@@ -190,7 +194,12 @@ class WorkScheduleContainer extends Component<Props, State> {
   }
 
   render() {
-    const { appointments, findAppointmentsRequestState } = this.props;
+    const {
+      appointments,
+      findAppointmentsRequestState,
+      personNamesByAppointmentEKID,
+      worksiteNamesByAppointmentEKID
+    } = this.props;
     const isLoading :boolean = findAppointmentsRequestState === RequestStates.PENDING;
     return (
       <ScheduleOuterWrapper>
@@ -201,7 +210,9 @@ class WorkScheduleContainer extends Component<Props, State> {
           { this.renderFields() }
           <AppointmentListContainer
               appointments={appointments}
-              isLoading={isLoading} />
+              isLoading={isLoading}
+              personNamesByAppointmentEKID={personNamesByAppointmentEKID}
+              worksiteNamesByAppointmentEKID={worksiteNamesByAppointmentEKID} />
         </ScheduleInnerWrapper>
       </ScheduleOuterWrapper>
     );
@@ -214,8 +225,10 @@ const mapStateToProps = (state :Map) => {
   return ({
     app,
     [APPOINTMENTS]: workSchedule.get(APPOINTMENTS),
-    findAppointmentsRequestState: workSchedule.getIn([ACTIONS, FIND_APPOINTMENTS, REQUEST_STATE]),
+    [PERSON_NAMES_BY_APPOINTMENT_EKID]: workSchedule.get(PERSON_NAMES_BY_APPOINTMENT_EKID),
     [WORKSITES_LIST]: state.getIn([STATE.WORKSITES, WORKSITES_LIST]),
+    [WORKSITE_NAMES_BY_APPOINTMENT_EKID]: workSchedule.get(WORKSITE_NAMES_BY_APPOINTMENT_EKID),
+    findAppointmentsRequestState: workSchedule.getIn([ACTIONS, FIND_APPOINTMENTS, REQUEST_STATE]),
   });
 };
 
