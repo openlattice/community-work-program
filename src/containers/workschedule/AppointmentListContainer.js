@@ -23,8 +23,8 @@ const OuterWrapper = styled.div`
 type Props = {
   appointments :List;
   isLoading :boolean;
-  personNamesByAppointmentEKID ?:Map;
-  worksiteNamesByAppointmentEKID ?:Map;
+  personNamesByAppointmentEKID :Map;
+  worksiteNamesByAppointmentEKID :Map;
 };
 
 type State = {
@@ -94,10 +94,5 @@ class AppointmentListContainer extends Component<Props, State> {
     );
   }
 }
-
-AppointmentListContainer.defaultProps = {
-  personNamesByAppointmentEKID: Map(),
-  worksiteNamesByAppointmentEKID: Map(),
-};
 
 export default AppointmentListContainer;
