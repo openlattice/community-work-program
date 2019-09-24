@@ -15,7 +15,7 @@ import NoAppointmentsScheduled from './NoAppointmentsScheduled';
 
 import { isDefined } from '../../utils/LangUtils';
 import { getEntityKeyId, getEntityProperties, sortEntitiesByDateProperty } from '../../utils/DataUtils';
-import { INCIDENT_START_DATETIME, DATETIME_END } from '../../core/edm/constants/FullyQualifiedNames';
+import { DATETIME_END, ENTITY_KEY_ID, INCIDENT_START_DATETIME } from '../../core/edm/constants/FullyQualifiedNames';
 import { EMPTY_FIELD } from '../participants/ParticipantsConstants';
 
 const OuterWrapper = styled.div`
@@ -87,10 +87,11 @@ class AppointmentListContainer extends Component<Props, State> {
       }
 
       const fullWorkAppointment :OrderedMap = fromJS({
+        [ENTITY_KEY_ID]: appointmentEKID,
         day,
+        hours,
         personName,
         worksiteName,
-        hours,
       });
       fullWorkAppointments = fullWorkAppointments.push(fullWorkAppointment);
     });
