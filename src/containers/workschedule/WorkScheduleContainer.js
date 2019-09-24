@@ -2,6 +2,7 @@
 import React, { Component } from 'react';
 import styled from 'styled-components';
 import { List, Map } from 'immutable';
+import startCase from 'lodash/startCase';
 import { DateTime } from 'luxon';
 import {
   Button,
@@ -101,7 +102,7 @@ class WorkScheduleContainer extends Component<Props, State> {
     const today = DateTime.local().toISODate();
     this.state = {
       selectedDate: today,
-      timePeriod: '',
+      timePeriod: timePeriods.DAY,
       worksites: Map(),
     };
   }
@@ -174,7 +175,8 @@ class WorkScheduleContainer extends Component<Props, State> {
                 id="timePeriod"
                 name="timePeriod"
                 onChange={this.handleSelectChange}
-                options={TIME_PERIOD_OPTIONS} />
+                options={TIME_PERIOD_OPTIONS}
+                placeholder={startCase(timePeriods.DAY)} />
           </div>
           <div>
             <Label>Work Site</Label>
@@ -197,7 +199,9 @@ class WorkScheduleContainer extends Component<Props, State> {
       personNamesByAppointmentEKID,
       worksiteNamesByAppointmentEKID
     } = this.props;
+    const { worksites } = this.state;
     const isLoading :boolean = findAppointmentsRequestState === RequestStates.PENDING;
+    const worksitesToInclude :Object[] | void = worksites.get('worksites');
     return (
       <ScheduleOuterWrapper>
         <ScheduleInnerWrapper>
@@ -209,7 +213,8 @@ class WorkScheduleContainer extends Component<Props, State> {
               appointments={appointments}
               isLoading={isLoading}
               personNamesByAppointmentEKID={personNamesByAppointmentEKID}
-              worksiteNamesByAppointmentEKID={worksiteNamesByAppointmentEKID} />
+              worksiteNamesByAppointmentEKID={worksiteNamesByAppointmentEKID}
+              worksitesToInclude={worksitesToInclude} />
         </ScheduleInnerWrapper>
       </ScheduleOuterWrapper>
     );

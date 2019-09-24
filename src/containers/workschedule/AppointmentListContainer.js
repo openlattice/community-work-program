@@ -12,6 +12,7 @@ import { DateTime } from 'luxon';
 
 import AppointmentContainer from './AppointmentContainer';
 
+import { isDefined } from '../../utils/LangUtils';
 import { getEntityKeyId, getEntityProperties, sortEntitiesByDateProperty } from '../../utils/DataUtils';
 import { INCIDENT_START_DATETIME, DATETIME_END } from '../../core/edm/constants/FullyQualifiedNames';
 import { EMPTY_FIELD } from '../participants/ParticipantsConstants';
@@ -25,6 +26,7 @@ type Props = {
   isLoading :boolean;
   personNamesByAppointmentEKID :Map;
   worksiteNamesByAppointmentEKID :Map;
+  worksitesToInclude ?:Object[];
 };
 
 type State = {
@@ -52,6 +54,12 @@ class AppointmentListContainer extends Component<Props, State> {
 
   setFullWorkAppointments = (appointments :List) => {
     const { personNamesByAppointmentEKID, worksiteNamesByAppointmentEKID } = this.props;
+    let { worksitesToInclude } = this.props;
+
+    if (isDefined(worksitesToInclude)) {
+      worksitesToInclude = worksitesToInclude.map((option :Object) => option.label);
+    }
+
     let fullWorkAppointments :List = List();
     appointments.forEach((appointmentEntity :Map) => {
 
@@ -69,6 +77,12 @@ class AppointmentListContainer extends Component<Props, State> {
 
       const personName :string = personNamesByAppointmentEKID.get(appointmentEKID, EMPTY_FIELD);
       const worksiteName :string = worksiteNamesByAppointmentEKID.get(appointmentEKID, EMPTY_FIELD);
+
+      if (isDefined(worksitesToInclude) && worksitesToInclude.length) {
+        if (!worksitesToInclude.includes(worksiteName)) {
+          return;
+        }
+      }
 
       const fullWorkAppointment :OrderedMap = fromJS({
         day,
@@ -94,5 +108,10 @@ class AppointmentListContainer extends Component<Props, State> {
     );
   }
 }
+
+// $FlowFixMe
+AppointmentListContainer.defaultProps = {
+  worksitesToInclude: undefined,
+};
 
 export default AppointmentListContainer;
