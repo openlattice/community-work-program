@@ -50,7 +50,7 @@ const ScheduleInnerWrapper = styled.div`
   align-items: center;
   flex-direction: column;
   margin-top: 30px;
-  min-width: ${SEARCH_CONTAINER_WIDTH}px;
+  width: ${SEARCH_CONTAINER_WIDTH}px;
   position: relative;
   align-self: center;
 `;
