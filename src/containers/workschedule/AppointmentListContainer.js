@@ -11,6 +11,7 @@ import { SearchResults } from 'lattice-ui-kit';
 import { DateTime } from 'luxon';
 
 import AppointmentContainer from './AppointmentContainer';
+import NoAppointmentsScheduled from './NoAppointmentsScheduled';
 
 import { isDefined } from '../../utils/LangUtils';
 import { getEntityKeyId, getEntityProperties, sortEntitiesByDateProperty } from '../../utils/DataUtils';
@@ -23,6 +24,7 @@ const OuterWrapper = styled.div`
 
 type Props = {
   appointments :List;
+  hasSearched :boolean;
   isLoading :boolean;
   personNamesByAppointmentEKID :Map;
   worksiteNamesByAppointmentEKID :Map;
@@ -96,12 +98,14 @@ class AppointmentListContainer extends Component<Props, State> {
   }
 
   render() {
-    const { isLoading } = this.props;
+    const { hasSearched, isLoading } = this.props;
     const { fullWorkAppointments } = this.state;
     return (
       <OuterWrapper>
         <SearchResults
+            hasSearched={hasSearched}
             isLoading={isLoading}
+            noResults={NoAppointmentsScheduled}
             resultComponent={AppointmentContainer}
             results={fullWorkAppointments} />
       </OuterWrapper>

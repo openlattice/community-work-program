@@ -28,14 +28,6 @@ const InnerWrapper = styled.div`
   grid-gap: 5px 40px;
 `;
 
-// const DateText = styled.span`
-//   align-items: center;
-//   display: flex;
-//   font-size: 18px;
-//   font-weight: 600;
-//   margin-left: 20px;
-// `;
-
 const Text = styled.span`
   align-items: center;
   display: flex;
@@ -68,12 +60,6 @@ class AppointmentContainer extends Component<Props, State> {
 
   render() {
     const { result } = this.props;
-    // const {
-    //   day,
-    //   personName,
-    //   worksiteName,
-    //   hours,
-    // } = result;
     const day = result.get('day');
     const personName = result.get('personName');
     const worksiteName = result.get('worksiteName');
