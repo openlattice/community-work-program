@@ -90,7 +90,7 @@ type Props = {
 type State = {
   selectedDate :string;
   timePeriod :string;
-  worksites :string[];
+  worksites :Map;
 };
 
 class WorkScheduleContainer extends Component<Props, State> {
@@ -102,7 +102,7 @@ class WorkScheduleContainer extends Component<Props, State> {
     this.state = {
       selectedDate: today,
       timePeriod: '',
-      worksites: [],
+      worksites: Map(),
     };
   }
 
@@ -137,11 +137,10 @@ class WorkScheduleContainer extends Component<Props, State> {
     this.setState({ [name]: value });
   }
 
-  handleChange = (event :SyntheticInputEvent<*>) => {
-    this.handleCheckboxSelectChange(event);
-  }
-
-  handleCheckboxSelectChange = (event :SyntheticInputEvent<*>) => {
+  handleCheckboxSelectChange = (option :Object[], event :Object) => {
+    const { worksites } = this.state;
+    const { name } = event;
+    this.setState({ worksites: worksites.set(name, option) });
   }
 
   getAppointments = () => {
@@ -152,7 +151,6 @@ class WorkScheduleContainer extends Component<Props, State> {
 
   renderFields = () => {
     const { worksitesList } = this.props;
-    const { worksites } = this.state;
 
     const WORKSITES_OPTIONS :Object[] = [];
     worksitesList.forEach((worksite :Map) => {
@@ -183,9 +181,8 @@ class WorkScheduleContainer extends Component<Props, State> {
             <CheckboxSelect
                 id="worksite"
                 name="worksites"
-                onFocus={this.handleCheckboxSelectChange}
-                options={WORKSITES_OPTIONS}
-                value={worksites} />
+                onChange={this.handleCheckboxSelectChange}
+                options={WORKSITES_OPTIONS} />
           </div>
         </FieldsWrapper>
         <Button mode="primary" onClick={this.getAppointments}>Display Appointments</Button>
