@@ -26,7 +26,7 @@ type Props = {
   appointments :List;
   hasSearched :boolean;
   isLoading :boolean;
-  personNamesByAppointmentEKID :Map;
+  personNamesByAppointmentEKID ?:Map;
   worksiteNamesByAppointmentEKID :Map;
   worksitesToInclude ?:Object[];
 };
@@ -77,7 +77,9 @@ class AppointmentListContainer extends Component<Props, State> {
       const endTime :string = DateTime.fromISO(datetimeEnd).toLocaleString(DateTime.TIME_SIMPLE);
       const hours :string = `${startTime} - ${endTime}`;
 
-      const personName :string = personNamesByAppointmentEKID.get(appointmentEKID, EMPTY_FIELD);
+      const personName :string = isDefined(personNamesByAppointmentEKID)
+        ? personNamesByAppointmentEKID.get(appointmentEKID, EMPTY_FIELD)
+        : '';
       const worksiteName :string = worksiteNamesByAppointmentEKID.get(appointmentEKID, EMPTY_FIELD);
 
       if (isDefined(worksitesToInclude) && worksitesToInclude.length) {
@@ -116,6 +118,7 @@ class AppointmentListContainer extends Component<Props, State> {
 
 // $FlowFixMe
 AppointmentListContainer.defaultProps = {
+  personNamesByAppointmentEKID: undefined,
   worksitesToInclude: undefined,
 };
 

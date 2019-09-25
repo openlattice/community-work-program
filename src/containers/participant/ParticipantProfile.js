@@ -11,7 +11,7 @@ import type { RequestSequence, RequestState } from 'redux-reqseq';
 import GeneralInfo from '../../components/participant/GeneralInfo';
 import KeyDates from '../../components/participant/KeyDates';
 import CaseInfo from './cases/CaseInfo';
-import ParticipantWorkSchedule from './schedule/ParticipantWorkSchedule';
+import ParticipantWorkScheduleContainer from './schedule/ParticipantWorkScheduleContainer';
 import PlanNotes from './plannotes/PlanNotes';
 
 import AssignedWorksitesContainer from './assignedworksites/AssignedWorksitesContainer';
@@ -67,6 +67,7 @@ const {
   EMAIL,
   ENROLLMENT_STATUS,
   GET_ALL_PARTICIPANT_INFO,
+  GET_WORK_APPOINTMENTS,
   PARTICIPANT,
   PERSON_CASE,
   PHONE,
@@ -166,6 +167,7 @@ type Props = {
   enrollmentStatus :Map;
   getAllParticipantInfoRequestState :RequestState;
   getInitializeAppRequestState :RequestState;
+  getWorkAppointmentsRequestState :RequestState;
   participant :Map;
   personCase :Map;
   personEKID :string;
@@ -287,6 +289,7 @@ class ParticipantProfile extends Component<Props, State> {
       enrollmentStatus,
       getAllParticipantInfoRequestState,
       getInitializeAppRequestState,
+      getWorkAppointmentsRequestState,
       participant,
       personCase,
       phone,
@@ -408,9 +411,8 @@ class ParticipantProfile extends Component<Props, State> {
               <Button onClick={() => this.handleShowModal(WORK_APPOINTMENT)}>Create Appointment</Button>
             </ScheduleButtonsWrapper>
           </NameRowWrapper>
-          <ParticipantWorkSchedule
+          <ParticipantWorkScheduleContainer
               workAppointmentsByWorksitePlan={workAppointmentsByWorksitePlan}
-              worksitesByWorksitePlan={worksitesByWorksitePlan}
               worksiteNamesByWorksitePlan={worksiteNamesByWorksitePlan} />
         </ProfileBody>
         <ProfileBody>
@@ -463,6 +465,7 @@ const mapStateToProps = (state :Map<*, *>) => {
     [ENROLLMENT_STATUS]: person.get(ENROLLMENT_STATUS),
     getAllParticipantInfoRequestState: person.getIn([ACTIONS, GET_ALL_PARTICIPANT_INFO, REQUEST_STATE]),
     getInitializeAppRequestState: app.getIn([APP.ACTIONS, APP.INITIALIZE_APPLICATION, APP.REQUEST_STATE]),
+    getWorkAppointmentsRequestState: person.getIn([ACTIONS, GET_WORK_APPOINTMENTS, REQUEST_STATE]),
     [PARTICIPANT]: person.get(PARTICIPANT),
     [PERSON_CASE]: person.get(PERSON_CASE),
     [PHONE]: person.get(PHONE),
