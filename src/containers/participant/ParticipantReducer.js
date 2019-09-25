@@ -592,7 +592,8 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
             }
           }
 
-          return state;
+          return state
+            .setIn([ACTIONS, DELETE_APPOINTMENT, REQUEST_STATE], RequestStates.SUCCESS);
         },
         FAILURE: () => state
           .setIn([ACTIONS, DELETE_APPOINTMENT, REQUEST_STATE], RequestStates.FAILURE),

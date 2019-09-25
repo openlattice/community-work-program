@@ -97,6 +97,7 @@ export const PERSON = {
 export const WORK_SCHEDULE = {
   ACTIONS: 'actions',
   APPOINTMENTS: 'appointments',
+  DELETE_APPOINTMENT: 'deleteAppointment',
   FIND_APPOINTMENTS: 'findAppointments',
   GET_WORKSITE_AND_PERSON_NAMES: 'getWorksiteAndPersonNames',
   REQUEST_STATE: 'requestState',

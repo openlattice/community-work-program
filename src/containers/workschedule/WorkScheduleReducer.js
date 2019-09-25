@@ -10,6 +10,8 @@ import {
   findAppointments,
   getWorksiteAndPersonNames,
 } from './WorkScheduleActions';
+import { DELETE_APPOINTMENT, deleteAppointment } from '../participant/ParticipantActions';
+import { getEntityKeyId } from '../../utils/DataUtils';
 import { WORK_SCHEDULE } from '../../utils/constants/ReduxStateConsts';
 
 const {
@@ -24,6 +26,9 @@ const {
 
 const INITIAL_STATE :Map<*, *> = fromJS({
   [ACTIONS]: {
+    [WORK_SCHEDULE.DELETE_APPOINTMENT]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
     [FIND_APPOINTMENTS]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
@@ -39,6 +44,48 @@ const INITIAL_STATE :Map<*, *> = fromJS({
 export default function worksitesReducer(state :Map<*, *> = INITIAL_STATE, action :SequenceAction) :Map<*, *> {
 
   switch (action.type) {
+
+    case deleteAppointment.case(action.type): {
+
+      return deleteAppointment.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, DELETE_APPOINTMENT, action.id], action)
+          .setIn([ACTIONS, DELETE_APPOINTMENT, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+
+          const seqAction :SequenceAction = action;
+          const storedSeqAction :SequenceAction = state.getIn([ACTIONS, DELETE_APPOINTMENT, seqAction.id]);
+
+          if (storedSeqAction) {
+
+            const requestValue :Object = storedSeqAction.value;
+            const { entityKeyId } :Object = requestValue[0];
+
+            let workScheduleAppointments = state.get(APPOINTMENTS);
+            let indexToDeleteInWorkSchedule = -1;
+
+            indexToDeleteInWorkSchedule = workScheduleAppointments.findIndex(
+              (appointment :Map) => getEntityKeyId(appointment) === entityKeyId
+            );
+
+            if (indexToDeleteInWorkSchedule !== -1) {
+              workScheduleAppointments = workScheduleAppointments.delete(indexToDeleteInWorkSchedule);
+              return state
+                .set(APPOINTMENTS, workScheduleAppointments)
+                .setIn([ACTIONS, DELETE_APPOINTMENT, REQUEST_STATE], RequestStates.SUCCESS);
+            }
+          }
+
+          return state
+            .setIn([ACTIONS, DELETE_APPOINTMENT, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .set(APPOINTMENTS, List())
+          .setIn([ACTIONS, DELETE_APPOINTMENT, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, DELETE_APPOINTMENT, action.id]),
+      });
+    }
 
     case findAppointments.case(action.type): {
 
