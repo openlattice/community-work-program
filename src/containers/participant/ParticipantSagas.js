@@ -92,9 +92,7 @@ import { isDefined } from '../../utils/LangUtils';
 import { STATE, WORKSITES } from '../../utils/constants/ReduxStateConsts';
 import {
   APP_TYPE_FQNS,
-  CASE_FQNS,
   CONTACT_INFO_FQNS,
-  DIVERSION_PLAN_FQNS,
   ENROLLMENT_STATUS_FQNS,
   INFRACTION_EVENT_FQNS,
   INFRACTION_FQNS,
