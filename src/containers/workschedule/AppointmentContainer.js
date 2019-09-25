@@ -12,7 +12,6 @@ import { connect } from 'react-redux';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCheckCircle, faPen, faTrash } from '@fortawesome/pro-solid-svg-icons';
 import { faCalendarAlt } from '@fortawesome/pro-light-svg-icons';
-import type { Match } from 'react-router';
 
 import CheckInModal from '../participant/schedule/CheckInModal';
 import CheckInDetailsModal from '../participant/schedule/CheckInDetailsModal';

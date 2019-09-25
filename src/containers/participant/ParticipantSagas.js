@@ -131,12 +131,10 @@ const {
   PHONE_NUMBER,
   PREFERRED,
 } = CONTACT_INFO_FQNS;
-const { REQUIRED_HOURS } = DIVERSION_PLAN_FQNS;
 const { EFFECTIVE_DATE, STATUS } = ENROLLMENT_STATUS_FQNS;
 const { CATEGORY } = INFRACTION_FQNS;
 const { TYPE } = INFRACTION_EVENT_FQNS;
 const { HOURS_WORKED } = WORKSITE_PLAN_FQNS;
-const { CASE_NUMBER_TEXT } = CASE_FQNS;
 
 const getAppFromState = state => state.get(STATE.APP, Map());
 const getEdmFromState = state => state.get(STATE.EDM, Map());
