@@ -34,6 +34,7 @@ import {
   CHECK_IN_FQNS,
   DATETIME_START,
   DATETIME_END,
+  ENTITY_KEY_ID,
   PEOPLE_FQNS,
   WORKSITE_PLAN_FQNS,
 } from '../../../core/edm/constants/FullyQualifiedNames';
@@ -146,8 +147,8 @@ class CheckInForm extends Component<Props, State> {
     newCheckInData = newCheckInData
       .setIn([getPageSectionKey(1, 1), getEntityAddressKey(0, CHECK_INS, CHECKED_IN)], participantCheckedIn);
 
-    const { [DATETIME_END]: appointmentDateTimeEnd } = getEntityProperties(appointment, [DATETIME_END]);
-    const appointmentDate :string = DateTime.fromISO(appointmentDateTimeEnd).toISODate();
+    const appointmentDateToISO :string = new Date(appointment.get('day')).toISOString();
+    const appointmentDate :string = DateTime.fromISO(appointmentDateToISO).toISODate();
     const dateTimeCheckedIn :string = getCombinedDateTime(appointmentDate, timeIn);
     const dateTimeCheckedOut :string = getCombinedDateTime(appointmentDate, timeOut);
     newCheckInData = newCheckInData
@@ -156,7 +157,7 @@ class CheckInForm extends Component<Props, State> {
       .setIn([getPageSectionKey(1, 1), getEntityAddressKey(0, CHECK_INS, DATETIME_END)], dateTimeCheckedOut);
 
     const personEKID :UUID = getEntityKeyId(participant);
-    const appointmentEKID :UUID = getEntityKeyId(appointment);
+    const appointmentEKID :UUID = appointment.get(ENTITY_KEY_ID);
     const associations = [];
 
     associations.push([HAS, personEKID, PEOPLE, 0, CHECK_INS, {}]);
