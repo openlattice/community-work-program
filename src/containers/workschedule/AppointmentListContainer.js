@@ -15,8 +15,15 @@ import NoAppointmentsScheduled from './NoAppointmentsScheduled';
 
 import { isDefined } from '../../utils/LangUtils';
 import { getEntityKeyId, getEntityProperties, sortEntitiesByDateProperty } from '../../utils/DataUtils';
-import { DATETIME_END, ENTITY_KEY_ID, INCIDENT_START_DATETIME } from '../../core/edm/constants/FullyQualifiedNames';
+import {
+  DATETIME_END,
+  ENTITY_KEY_ID,
+  INCIDENT_START_DATETIME,
+  PEOPLE_FQNS,
+} from '../../core/edm/constants/FullyQualifiedNames';
 import { EMPTY_FIELD } from '../participants/ParticipantsConstants';
+
+const { FIRST_NAME, LAST_NAME } = PEOPLE_FQNS;
 
 const OuterWrapper = styled.div`
   width: 100%;
@@ -26,7 +33,7 @@ type Props = {
   appointments :List;
   hasSearched :boolean;
   isLoading :boolean;
-  personNamesByAppointmentEKID ?:Map;
+  personByAppointmentEKID ?:Map;
   worksiteNamesByAppointmentEKID :Map;
   worksitesToInclude ?:Object[];
 };
@@ -55,7 +62,7 @@ class AppointmentListContainer extends Component<Props, State> {
   );
 
   setFullWorkAppointments = (appointments :List) => {
-    const { personNamesByAppointmentEKID, worksiteNamesByAppointmentEKID } = this.props;
+    const { personByAppointmentEKID, worksiteNamesByAppointmentEKID } = this.props;
     let { worksitesToInclude } = this.props;
 
     if (isDefined(worksitesToInclude)) {
@@ -77,9 +84,12 @@ class AppointmentListContainer extends Component<Props, State> {
       const endTime :string = DateTime.fromISO(datetimeEnd).toLocaleString(DateTime.TIME_SIMPLE);
       const hours :string = `${startTime} - ${endTime}`;
 
-      const personName :string = isDefined(personNamesByAppointmentEKID)
-        ? personNamesByAppointmentEKID.get(appointmentEKID, EMPTY_FIELD)
-        : '';
+      let personName :string = '';
+      if (isDefined(personByAppointmentEKID)) {
+        const person :Map = personByAppointmentEKID.get(appointmentEKID);
+        const { [FIRST_NAME]: firstName, [LAST_NAME]: lastName } = getEntityProperties(person, [FIRST_NAME, LAST_NAME]);
+        personName = `${firstName} ${lastName}`;
+      }
       const worksiteName :string = worksiteNamesByAppointmentEKID.get(appointmentEKID, EMPTY_FIELD);
 
       if (isDefined(worksitesToInclude) && worksitesToInclude.length) {
@@ -118,7 +128,7 @@ class AppointmentListContainer extends Component<Props, State> {
 
 // $FlowFixMe
 AppointmentListContainer.defaultProps = {
-  personNamesByAppointmentEKID: undefined,
+  personByAppointmentEKID: undefined,
   worksitesToInclude: undefined,
 };
 

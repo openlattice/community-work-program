@@ -12,18 +12,22 @@ import { connect } from 'react-redux';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCheckCircle, faPen, faTrash } from '@fortawesome/pro-solid-svg-icons';
 import { faCalendarAlt } from '@fortawesome/pro-light-svg-icons';
+import type { Match } from 'react-router';
 
 import CheckInModal from '../participant/schedule/CheckInModal';
 import CheckInDetailsModal from '../participant/schedule/CheckInDetailsModal';
 import DeleteAppointmentModal from '../participant/schedule/DeleteAppointmentModal';
 
 import { isDefined } from '../../utils/LangUtils';
-import { PERSON, STATE } from '../../utils/constants/ReduxStateConsts';
-import { ENTITY_KEY_ID } from '../../core/edm/constants/FullyQualifiedNames';
+import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
+import { PERSON, STATE, WORK_SCHEDULE } from '../../utils/constants/ReduxStateConsts';
+import { ENTITY_KEY_ID, PEOPLE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { OL } from '../../core/style/Colors';
 import { ButtonWrapper } from '../../components/Layout';
 
-const { CHECK_INS_BY_APPOINTMENT } = PERSON;
+const { CHECK_INS_BY_APPOINTMENT, PARTICIPANT } = PERSON;
+const { PERSON_BY_APPOINTMENT_EKID } = WORK_SCHEDULE;
+const { FIRST_NAME, LAST_NAME } = PEOPLE_FQNS;
 
 const CHECK_IN = 'isCheckInModalVisible';
 const CHECK_IN_DETAILS = 'isCheckInDetailsModalVisible';
@@ -63,6 +67,8 @@ const ActionButtonsWrapper = styled.div`
 
 type Props = {
   checkInsByAppointment :Map;
+  participant :Map;
+  personByAppointmentEKID :Map;
   result :Map;
 };
 
@@ -95,7 +101,12 @@ class AppointmentContainer extends Component<Props, State> {
   }
 
   render() {
-    const { checkInsByAppointment, result } = this.props;
+    const {
+      checkInsByAppointment,
+      participant,
+      personByAppointmentEKID,
+      result,
+    } = this.props;
     const {
       isCheckInDetailsModalVisible,
       isCheckInModalVisible,
@@ -111,6 +122,23 @@ class AppointmentContainer extends Component<Props, State> {
     const appointmentEKID :UUID = result.get(ENTITY_KEY_ID);
     const checkIn :Map = checkInsByAppointment.get(appointmentEKID);
     const checkedIn :boolean = isDefined(checkIn);
+
+    let personEKID :UUID = '';
+    if (isDefined(personByAppointmentEKID)) {
+      personEKID = getEntityKeyId(personByAppointmentEKID.get(appointmentEKID));
+    }
+    if (!isDefined(personByAppointmentEKID.get(appointmentEKID)) || personByAppointmentEKID.isEmpty()) {
+      personEKID = getEntityKeyId(participant);
+    }
+
+    let modalDisplayOfPersonName = personName;
+    if (!personName) {
+      const {
+        [FIRST_NAME]: firstName,
+        [LAST_NAME]: lastName
+      } = getEntityProperties(participant, [FIRST_NAME, LAST_NAME]);
+      modalDisplayOfPersonName = `${firstName} ${lastName}`;
+    }
 
     return (
       <OuterWrapper>
@@ -165,7 +193,9 @@ class AppointmentContainer extends Component<Props, State> {
         <CheckInModal
             appointment={result}
             isOpen={isCheckInModalVisible}
-            onClose={() => this.handleHideModal(CHECK_IN)} />
+            onClose={() => this.handleHideModal(CHECK_IN)}
+            personEKID={personEKID}
+            personName={modalDisplayOfPersonName} />
         <CheckInDetailsModal
             checkIn={checkIn}
             isOpen={isCheckInDetailsModalVisible}
@@ -182,8 +212,11 @@ class AppointmentContainer extends Component<Props, State> {
 
 const mapStateToProps = (state :Map) => {
   const person = state.get(STATE.PERSON);
+  const workSchedule = state.get(STATE.WORK_SCHEDULE);
   return ({
     [CHECK_INS_BY_APPOINTMENT]: person.get(CHECK_INS_BY_APPOINTMENT),
+    [PARTICIPANT]: person.get(PARTICIPANT),
+    [PERSON_BY_APPOINTMENT_EKID]: workSchedule.get(PERSON_BY_APPOINTMENT_EKID),
   });
 };
 

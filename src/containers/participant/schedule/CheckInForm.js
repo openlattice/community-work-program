@@ -18,8 +18,6 @@ import type { RequestSequence } from 'redux-reqseq';
 import { checkInForAppointment } from '../ParticipantActions';
 import { getCombinedDateTime } from '../../../utils/ScheduleUtils';
 import {
-  getEntityKeyId,
-  getEntityProperties,
   getEntitySetIdFromApp,
   getPropertyTypeIdFromEdm
 } from '../../../utils/DataUtils';
@@ -35,7 +33,6 @@ import {
   DATETIME_START,
   DATETIME_END,
   ENTITY_KEY_ID,
-  PEOPLE_FQNS,
   WORKSITE_PLAN_FQNS,
 } from '../../../core/edm/constants/FullyQualifiedNames';
 import { PERSON, STATE } from '../../../utils/constants/ReduxStateConsts';
@@ -49,7 +46,6 @@ const {
   PEOPLE,
 } = APP_TYPE_FQNS;
 const { CHECKED_IN } = CHECK_IN_FQNS;
-const { FIRST_NAME, LAST_NAME } = PEOPLE_FQNS;
 const { HOURS_WORKED } = WORKSITE_PLAN_FQNS;
 const { PARTICIPANT } = PERSON;
 
@@ -75,7 +71,8 @@ type Props = {
   edm :Map;
   isLoading :boolean;
   onDiscard :() => void;
-  participant :Map;
+  personEKID :UUID;
+  personName :string;
 };
 
 type State = {
@@ -138,7 +135,7 @@ class CheckInForm extends Component<Props, State> {
   }
 
   handleOnSubmit = () => {
-    const { actions, appointment, participant } = this.props;
+    const { actions, appointment, personEKID } = this.props;
     const { checkedIn, timeIn, timeOut } = this.state;
     let { newCheckInData } = this.state;
 
@@ -156,7 +153,6 @@ class CheckInForm extends Component<Props, State> {
     newCheckInData = newCheckInData
       .setIn([getPageSectionKey(1, 1), getEntityAddressKey(0, CHECK_INS, DATETIME_END)], dateTimeCheckedOut);
 
-    const personEKID :UUID = getEntityKeyId(participant);
     const appointmentEKID :UUID = appointment.get(ENTITY_KEY_ID);
     const associations = [];
 
@@ -173,15 +169,10 @@ class CheckInForm extends Component<Props, State> {
   }
 
   render() {
-    const { isLoading, onDiscard, participant } = this.props;
+    const { isLoading, onDiscard, personName } = this.props;
     const { checkedIn } = this.state;
 
-    const { [FIRST_NAME]: firstName, [LAST_NAME]: lastName } = getEntityProperties(
-      participant, [FIRST_NAME, LAST_NAME]
-    );
-    const personFullName :string = `${firstName} ${lastName}`;
-
-    const checkInQuestion = `Did ${personFullName} appear for this work appointment?`;
+    const checkInQuestion = `Did ${personName} appear for this work appointment?`;
     return (
       <FormWrapper>
         <FormRow>

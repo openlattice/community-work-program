@@ -32,7 +32,7 @@ const {
   ACTIONS,
   APPOINTMENTS,
   FIND_APPOINTMENTS,
-  PERSON_NAMES_BY_APPOINTMENT_EKID,
+  PERSON_BY_APPOINTMENT_EKID,
   REQUEST_STATE,
   WORKSITE_NAMES_BY_APPOINTMENT_EKID,
 } = WORK_SCHEDULE;
@@ -83,7 +83,7 @@ type Props = {
   app :Map;
   appointments :List;
   findAppointmentsRequestState :RequestState;
-  personNamesByAppointmentEKID :Map;
+  personByAppointmentEKID :Map;
   worksiteNamesByAppointmentEKID :Map;
   worksitesList :List;
 };
@@ -196,7 +196,7 @@ class WorkScheduleContainer extends Component<Props, State> {
     const {
       appointments,
       findAppointmentsRequestState,
-      personNamesByAppointmentEKID,
+      personByAppointmentEKID,
       worksiteNamesByAppointmentEKID
     } = this.props;
     const { worksites } = this.state;
@@ -215,7 +215,7 @@ class WorkScheduleContainer extends Component<Props, State> {
               appointments={appointments}
               hasSearched={hasSearched}
               isLoading={isLoading}
-              personNamesByAppointmentEKID={personNamesByAppointmentEKID}
+              personByAppointmentEKID={personByAppointmentEKID}
               worksiteNamesByAppointmentEKID={worksiteNamesByAppointmentEKID}
               worksitesToInclude={worksitesToInclude} />
         </ScheduleInnerWrapper>
@@ -230,7 +230,7 @@ const mapStateToProps = (state :Map) => {
   return ({
     app,
     [APPOINTMENTS]: workSchedule.get(APPOINTMENTS),
-    [PERSON_NAMES_BY_APPOINTMENT_EKID]: workSchedule.get(PERSON_NAMES_BY_APPOINTMENT_EKID),
+    [PERSON_BY_APPOINTMENT_EKID]: workSchedule.get(PERSON_BY_APPOINTMENT_EKID),
     [WORKSITES_LIST]: state.getIn([STATE.WORKSITES, WORKSITES_LIST]),
     [WORKSITE_NAMES_BY_APPOINTMENT_EKID]: workSchedule.get(WORKSITE_NAMES_BY_APPOINTMENT_EKID),
     findAppointmentsRequestState: workSchedule.getIn([ACTIONS, FIND_APPOINTMENTS, REQUEST_STATE]),

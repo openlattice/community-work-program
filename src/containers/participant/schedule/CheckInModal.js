@@ -17,6 +17,8 @@ type Props = {
   checkInForAppointmentState :RequestState;
   isOpen :boolean;
   onClose :() => void;
+  personEKID :UUID;
+  personName :string;
 };
 
 class CheckInModal extends Component<Props> {
@@ -36,6 +38,8 @@ class CheckInModal extends Component<Props> {
       checkInForAppointmentState,
       isOpen,
       onClose,
+      personEKID,
+      personName,
     } = this.props;
 
     return (
@@ -47,7 +51,9 @@ class CheckInModal extends Component<Props> {
         <CheckInForm
             appointment={appointment}
             isLoading={checkInForAppointmentState === RequestStates.PENDING}
-            onDiscard={onClose} />
+            onDiscard={onClose}
+            personEKID={personEKID}
+            personName={personName} />
       </Modal>
     );
   }

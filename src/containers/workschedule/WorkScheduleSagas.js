@@ -21,7 +21,6 @@ import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../utils/Errors';
 import {
   APP_TYPE_FQNS,
   INCIDENT_START_DATETIME,
-  PEOPLE_FQNS,
   WORKSITE_FQNS
 } from '../../core/edm/constants/FullyQualifiedNames';
 import { STATE } from '../../utils/constants/ReduxStateConsts';
@@ -53,7 +52,6 @@ const {
   WORKSITE,
   WORKSITE_PLAN
 } = APP_TYPE_FQNS;
-const { FIRST_NAME, LAST_NAME } = PEOPLE_FQNS;
 const { NAME } = WORKSITE_FQNS;
 
 const getAppFromState = state => state.get(STATE.APP, Map());
@@ -75,7 +73,7 @@ function* getWorksiteAndPersonNamesWorker(action :SequenceAction) :Generator<*, 
   const { id, value } = action;
   let response :Object = {};
   let worksiteNamesByAppointmentEKID :Map = Map();
-  let personNamesByAppointmentEKID :Map = Map();
+  let personByAppointmentEKID :Map = Map();
 
   try {
     yield put(getWorksiteAndPersonNames.request(id, value));
@@ -153,18 +151,11 @@ function* getWorksiteAndPersonNamesWorker(action :SequenceAction) :Generator<*, 
       worksiteNamesByAppointmentEKID = worksiteNamesByAppointmentEKID.set(appointmentEKID, worksiteName);
 
       const person :Map = peopleByWorksitePlan.get(worksitePlanEKID);
-      const {
-        [FIRST_NAME]: personFirstName,
-        [LAST_NAME]: personLastName
-      } = getEntityProperties(person, [FIRST_NAME, LAST_NAME]);
-      personNamesByAppointmentEKID = personNamesByAppointmentEKID.set(
-        appointmentEKID,
-        `${personFirstName} ${personLastName}`
-      );
+      personByAppointmentEKID = personByAppointmentEKID.set(appointmentEKID, person);
     });
 
     yield put(getWorksiteAndPersonNames.success(id, {
-      personNamesByAppointmentEKID,
+      personByAppointmentEKID,
       worksiteNamesByAppointmentEKID
     }));
   }

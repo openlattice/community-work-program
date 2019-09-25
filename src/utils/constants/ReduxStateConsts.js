@@ -100,7 +100,7 @@ export const WORK_SCHEDULE = {
   FIND_APPOINTMENTS: 'findAppointments',
   GET_WORKSITE_AND_PERSON_NAMES: 'getWorksiteAndPersonNames',
   REQUEST_STATE: 'requestState',
-  PERSON_NAMES_BY_APPOINTMENT_EKID: 'personNamesByAppointmentEKID',
+  PERSON_BY_APPOINTMENT_EKID: 'personByAppointmentEKID',
   WORKSITE_NAMES_BY_APPOINTMENT_EKID: 'worksiteNamesByAppointmentEKID',
 };
 

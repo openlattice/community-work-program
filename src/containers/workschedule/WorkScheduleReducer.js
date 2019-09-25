@@ -18,7 +18,7 @@ const {
   FIND_APPOINTMENTS,
   GET_WORKSITE_NAMES_FOR_APPOINTMENTS,
   REQUEST_STATE,
-  PERSON_NAMES_BY_APPOINTMENT_EKID,
+  PERSON_BY_APPOINTMENT_EKID,
   WORKSITE_NAMES_BY_APPOINTMENT_EKID,
 } = WORK_SCHEDULE;
 
@@ -32,7 +32,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     },
   },
   [APPOINTMENTS]: List(),
-  [PERSON_NAMES_BY_APPOINTMENT_EKID]: Map(),
+  [PERSON_BY_APPOINTMENT_EKID]: Map(),
   [WORKSITE_NAMES_BY_APPOINTMENT_EKID]: Map(),
 });
 
@@ -88,12 +88,12 @@ export default function worksitesReducer(state :Map<*, *> = INITIAL_STATE, actio
           }
 
           return state
-            .set(PERSON_NAMES_BY_APPOINTMENT_EKID, value.personNamesByAppointmentEKID)
+            .set(PERSON_BY_APPOINTMENT_EKID, value.personByAppointmentEKID)
             .set(WORKSITE_NAMES_BY_APPOINTMENT_EKID, value.worksiteNamesByAppointmentEKID)
             .setIn([ACTIONS, GET_WORKSITE_NAMES_FOR_APPOINTMENTS, REQUEST_STATE], RequestStates.SUCCESS);
         },
         FAILURE: () => state
-          .set(PERSON_NAMES_BY_APPOINTMENT_EKID, Map())
+          .set(PERSON_BY_APPOINTMENT_EKID, Map())
           .set(WORKSITE_NAMES_BY_APPOINTMENT_EKID, Map())
           .setIn([ACTIONS, GET_WORKSITE_NAMES_FOR_APPOINTMENTS, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, GET_WORKSITE_NAMES_FOR_APPOINTMENTS, action.id]),
