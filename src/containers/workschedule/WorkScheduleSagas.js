@@ -4,6 +4,7 @@
 
 import { List, Map, fromJS } from 'immutable';
 import {
+  all,
   call,
   put,
   select,
@@ -30,6 +31,8 @@ import {
   findAppointments,
   getWorksiteAndPersonNames,
 } from './WorkScheduleActions';
+import { getAppointmentCheckIns } from '../participant/ParticipantActions';
+import { getAppointmentCheckInsWorker } from '../participant/ParticipantSagas';
 import {
   getEntityKeyId,
   getEntityProperties,
@@ -59,7 +62,10 @@ const getEdmFromState = state => state.get(STATE.EDM, Map());
 
 /*
 appointment -> addresses -> work site plan -> based on -> work site
-work site plan -> related to -> enrollment status
+person -> has -> check-in -> fulfills -> appointment
+check-in -> has -> check-in details
+person -> assigned to -> work site plan
+person -> assigned to -> work site
 */
 
 /*
@@ -80,19 +86,14 @@ function* getWorksiteAndPersonNamesWorker(action :SequenceAction) :Generator<*, 
     if (value === null || value === undefined) {
       throw ERR_ACTION_VALUE_NOT_DEFINED;
     }
-    const { appointments } = value;
-    const appointmentEKIDs :UUID[] = [];
-    appointments.forEach((appt :Map) => {
-      const apptEKID :UUID = getEntityKeyId(appt);
-      appointmentEKIDs.push(apptEKID);
-    });
+    const { workAppointmentEKIDs } = value;
 
     const app = yield select(getAppFromState);
     const appointmentESID :UUID = getEntitySetIdFromApp(app, APPOINTMENT);
     const worksitePlanESID :UUID = getEntitySetIdFromApp(app, WORKSITE_PLAN);
 
     const worksitePlanSearchFilter = {
-      entityKeyIds: appointmentEKIDs,
+      entityKeyIds: workAppointmentEKIDs,
       destinationEntitySetIds: [worksitePlanESID],
       sourceEntitySetIds: [],
     };
@@ -231,7 +232,16 @@ function* findAppointmentsWorker(action :SequenceAction) :Generator<*, *, *> {
     appointments = fromJS(response.data.hits);
 
     if (!appointments.isEmpty()) {
-      yield call(getWorksiteAndPersonNamesWorker, getWorksiteAndPersonNames({ appointments }));
+      const workAppointmentEKIDs :UUID[] = [];
+      appointments.forEach((appt :Map) => {
+        const apptEKID :UUID = getEntityKeyId(appt);
+        workAppointmentEKIDs.push(apptEKID);
+      });
+
+      yield all([
+        call(getWorksiteAndPersonNamesWorker, getWorksiteAndPersonNames({ workAppointmentEKIDs })),
+        call(getAppointmentCheckInsWorker, getAppointmentCheckIns({ workAppointmentEKIDs }))
+      ]);
     }
 
     yield put(findAppointments.success(id, appointments));
