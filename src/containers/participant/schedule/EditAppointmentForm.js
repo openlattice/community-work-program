@@ -21,6 +21,7 @@ import { STATE } from '../../../utils/constants/ReduxStateConsts';
 const {
   getPageSectionKey,
   getEntityAddressKey,
+  processEntityData,
   processEntityDataForPartialReplace,
   processAssociationEntityData
 } = DataProcessingUtils;
@@ -90,17 +91,16 @@ class EditAppointmentForm extends Component<Props, State> {
 
     const date = appointment.get('day').split(' ')[1].split('/').join(' '); // fmt: 9 25 2019
     const dateAsISODate :DateTime = DateTime.fromFormat(date, 'M dd yyyy').toISODate();
-    console.log(DateTime.fromFormat(date, 'M dd yyyy'));
 
     const hoursSplit :string[] = appointment.get('hours').split('-');
     const startTime :string = DateTime.fromFormat(hoursSplit[0].trim(), 't');
     // console.log(DateTime.local())
     // 1:30 PM
-    console.log('THING THAT SHOULD WORK------------', DateTime.fromFormat('9:07 AM', 't'));
+    // console.log('THING THAT SHOULD WORK------------', DateTime.fromFormat('9:07 AM', 't'));
     const endTime :string = DateTime.fromFormat(hoursSplit[1].trim(), 't').toISOTime();
-    console.log('startTime: ', startTime);
+    // console.log('startTime: ', startTime);
     const startDateTime :string = getCombinedDateTime(dateAsISODate, startTime);
-    console.log('startDateTime: ', DateTime.fromSQL(`${dateAsISODate} ${startTime}`));
+    // console.log('startDateTime: ', DateTime.fromSQL(`${dateAsISODate} ${startTime}`));
     const endDateTime :string = getCombinedDateTime(dateAsISODate, endTime);
 
     const appointmentEKID :UUID = appointment.get(ENTITY_KEY_ID);
@@ -114,6 +114,7 @@ class EditAppointmentForm extends Component<Props, State> {
   }
 
   handleOnSubmit = ({ formData } :Object) => {
+    console.log('formData in handleOnSubmit: ', formData);
 
     const entitySetIds :{} = this.createEntitySetIdsMap();
     const propertyTypeIds :{} = this.createPropertyTypeIdsMap();
@@ -124,6 +125,8 @@ class EditAppointmentForm extends Component<Props, State> {
   render() {
     const { actions } = this.props;
     const { formData } = this.state;
+
+    console.log('this.state.formData: ', formData);
 
     const formContext :{} = {
       addActions: {
@@ -136,8 +139,7 @@ class EditAppointmentForm extends Component<Props, State> {
       mappers: {},
       propertyTypeIds: this.createPropertyTypeIdsMap(),
     };
-    console.log('formData: ', formData);
-    console.log('test: ', this.getOriginalAppointmentData())
+    // console.log('formData: ', formData);
     return (
       <Form
           formContext={formContext}
