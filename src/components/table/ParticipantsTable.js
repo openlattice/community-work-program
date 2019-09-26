@@ -65,7 +65,7 @@ type Props = {
   bannerText :string;
   columnHeaders :string[];
   config :Object;
-  courtType ? :string;
+  courtTypeByParticipant ? :Map;
   currentDiversionPlansMap ? :Map;
   enrollment ? :Map;
   handleSelect :(personEKID :string) => void;
@@ -86,7 +86,7 @@ const ParticipantsTable = ({
   bannerText,
   columnHeaders,
   config,
-  courtType,
+  courtTypeByParticipant,
   currentDiversionPlansMap,
   enrollment,
   handleSelect,
@@ -192,7 +192,9 @@ const ParticipantsTable = ({
             : undefined;
 
           // Court type
-          // TODO: more information is needed on this—for now just an empty column in All Participants table
+          const courtType = (isDefined(courtTypeByParticipant) && courtTypeByParticipant.get(personEKID))
+            ? courtTypeByParticipant.get(personEKID)
+            : undefined;
 
           return (
             <ParticipantsTableRow
@@ -217,7 +219,7 @@ const ParticipantsTable = ({
 
 ParticipantsTable.defaultProps = {
   alignCenter: false,
-  courtType: undefined,
+  courtTypeByParticipant: Map(),
   currentDiversionPlansMap: undefined,
   enrollment: undefined,
   hours: Map(),

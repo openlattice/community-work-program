@@ -61,6 +61,9 @@ const getParticipant = newRequestSequence(GET_PARTICIPANT);
 const GET_PARTICIPANT_INFRACTIONS :'GET_PARTICIPANT_INFRACTIONS' = 'GET_PARTICIPANT_INFRACTIONS';
 const getParticipantInfractions = newRequestSequence(GET_PARTICIPANT_INFRACTIONS);
 
+const GET_PROGRAM_OUTCOME :'GET_PROGRAM_OUTCOME' = 'GET_PROGRAM_OUTCOME';
+const getProgramOutcome = newRequestSequence(GET_PROGRAM_OUTCOME);
+
 const GET_WORKSITE_BY_WORKSITE_PLAN :'GET_WORKSITE_BY_WORKSITE_PLAN' = 'GET_WORKSITE_BY_WORKSITE_PLAN';
 const getWorksiteByWorksitePlan = newRequestSequence(GET_WORKSITE_BY_WORKSITE_PLAN);
 
@@ -72,6 +75,9 @@ const getWorksitePlanStatuses = newRequestSequence(GET_WORKSITE_PLAN_STATUSES);
 
 const GET_WORK_APPOINTMENTS :'GET_WORK_APPOINTMENTS' = 'GET_WORK_APPOINTMENTS';
 const getWorkAppointments = newRequestSequence(GET_WORK_APPOINTMENTS);
+
+const MARK_DIVERSION_PLAN_AS_COMPLETE :'MARK_DIVERSION_PLAN_AS_COMPLETE' = 'MARK_DIVERSION_PLAN_AS_COMPLETE';
+const markDiversionPlanAsComplete = newRequestSequence(MARK_DIVERSION_PLAN_AS_COMPLETE);
 
 const UPDATE_HOURS_WORKED :'UPDATE_HOURS_WORKED' = 'UPDATE_HOURS_WORKED';
 const updateHoursWorked = newRequestSequence(UPDATE_HOURS_WORKED);
@@ -98,10 +104,12 @@ export {
   GET_INFRACTION_TYPES,
   GET_PARTICIPANT,
   GET_PARTICIPANT_INFRACTIONS,
+  GET_PROGRAM_OUTCOME,
   GET_WORKSITE_BY_WORKSITE_PLAN,
   GET_WORKSITE_PLANS,
   GET_WORKSITE_PLAN_STATUSES,
   GET_WORK_APPOINTMENTS,
+  MARK_DIVERSION_PLAN_AS_COMPLETE,
   UPDATE_HOURS_WORKED,
   addInfraction,
   addNewDiversionPlanStatus,
@@ -122,9 +130,11 @@ export {
   getInfractionTypes,
   getParticipant,
   getParticipantInfractions,
+  getProgramOutcome,
   getWorkAppointments,
   getWorksiteByWorksitePlan,
   getWorksitePlanStatuses,
   getWorksitePlans,
+  markDiversionPlanAsComplete,
   updateHoursWorked,
 };

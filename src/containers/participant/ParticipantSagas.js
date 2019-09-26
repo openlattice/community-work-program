@@ -43,10 +43,12 @@ import {
   GET_INFRACTION_TYPES,
   GET_PARTICIPANT,
   GET_PARTICIPANT_INFRACTIONS,
+  GET_PROGRAM_OUTCOME,
   GET_WORKSITE_BY_WORKSITE_PLAN,
   GET_WORKSITE_PLANS,
   GET_WORKSITE_PLAN_STATUSES,
   GET_WORK_APPOINTMENTS,
+  MARK_DIVERSION_PLAN_AS_COMPLETE,
   UPDATE_HOURS_WORKED,
   addInfraction,
   addNewDiversionPlanStatus,
@@ -67,10 +69,12 @@ import {
   getInfractionTypes,
   getParticipant,
   getParticipantInfractions,
+  getProgramOutcome,
   getWorkAppointments,
   getWorksiteByWorksitePlan,
   getWorksitePlanStatuses,
   getWorksitePlans,
+  markDiversionPlanAsComplete,
   updateHoursWorked,
 } from './ParticipantActions';
 import { deleteEntities, submitDataGraph, submitPartialReplace } from '../../core/sagas/data/DataActions';
@@ -123,6 +127,7 @@ const {
   INFRACTIONS,
   MANUAL_PRETRIAL_COURT_CASES,
   PEOPLE,
+  PROGRAM_OUTCOME,
   REGISTERED_FOR,
   RESULTS_IN,
   WORKSITE,
@@ -133,12 +138,10 @@ const {
   PHONE_NUMBER,
   PREFERRED,
 } = CONTACT_INFO_FQNS;
-const { REQUIRED_HOURS } = DIVERSION_PLAN_FQNS;
 const { EFFECTIVE_DATE, STATUS } = ENROLLMENT_STATUS_FQNS;
 const { CATEGORY } = INFRACTION_FQNS;
 const { TYPE } = INFRACTION_EVENT_FQNS;
 const { HOURS_WORKED } = WORKSITE_PLAN_FQNS;
-const { CASE_NUMBER_TEXT } = CASE_FQNS;
 
 const getAppFromState = state => state.get(STATE.APP, Map());
 const getEdmFromState = state => state.get(STATE.EDM, Map());
@@ -225,11 +228,20 @@ function* addNewDiversionPlanStatusWorker(action :SequenceAction) :Generator<*, 
     const { data } :Object = response;
     const { entityKeyIds } :Object = data;
 
+    const app = yield select(getAppFromState);
     const edm = yield select(getEdmFromState);
-    const enrollmentStatusESID = Object.keys(entityKeyIds)[0];
-    const enrollmentStatusEKID = Object.values(entityKeyIds)[0];
+    const enrollmentStatusESID = getEntitySetIdFromApp(app, ENROLLMENT_STATUS);
+    const programOutcomeESID = getEntitySetIdFromApp(app, PROGRAM_OUTCOME);
+    const enrollmentStatusEKID = entityKeyIds[enrollmentStatusESID][0];
+    const programOutcomeEKID = entityKeyIds[programOutcomeESID] ? entityKeyIds[programOutcomeESID][0] : '';
 
-    yield put(addNewDiversionPlanStatus.success(id, { edm, enrollmentStatusEKID, enrollmentStatusESID }));
+    yield put(addNewDiversionPlanStatus.success(id, {
+      edm,
+      enrollmentStatusEKID,
+      enrollmentStatusESID,
+      programOutcomeEKID,
+      programOutcomeESID,
+    }));
   }
   catch (error) {
     workerResponse.error = error;
@@ -507,6 +519,43 @@ function* addWorksitePlanWorker(action :SequenceAction) :Generator<*, *, *> {
 function* addWorksitePlanWatcher() :Generator<*, *, *> {
 
   yield takeEvery(ADD_WORKSITE_PLAN, addWorksitePlanWorker);
+}
+
+/*
+ *
+ * ParticipantActions.markDiversionPlanAsComplete()
+ *
+ */
+
+function* markDiversionPlanAsCompleteWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+  const workerResponse = {};
+  let response :Object = {};
+
+  try {
+    yield put(markDiversionPlanAsComplete.request(id));
+
+    response = yield call(submitPartialReplaceWorker, submitPartialReplace(value));
+    if (response.error) {
+      throw response.error;
+    }
+
+    yield put(markDiversionPlanAsComplete.success(id));
+  }
+  catch (error) {
+    workerResponse.error = error;
+    LOG.error('caught exception in markDiversionPlanAsCompleteWorker()', error);
+    yield put(markDiversionPlanAsComplete.failure(id, error));
+  }
+  finally {
+    yield put(markDiversionPlanAsComplete.finally(id));
+  }
+}
+
+function* markDiversionPlanAsCompleteWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(MARK_DIVERSION_PLAN_AS_COMPLETE, markDiversionPlanAsCompleteWorker);
 }
 
 /*
@@ -1277,6 +1326,61 @@ function* getWorksitePlansWatcher() :Generator<*, *, *> {
 
 /*
  *
+ * ParticipantsActions.getProgramOutcome()
+ *
+ */
+
+function* getProgramOutcomeWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+  let response :Object = {};
+  let programOutcome :Map = Map();
+
+  try {
+    yield put(getProgramOutcome.request(id));
+    if (value === null || value === undefined) {
+      throw ERR_ACTION_VALUE_NOT_DEFINED;
+    }
+    const { diversionPlan } = value;
+    const app = yield select(getAppFromState);
+    const diversionPlanEKID :UUID = getEntityKeyId(diversionPlan);
+    const diversionPlanESID :UUID = getEntitySetIdFromApp(app, DIVERSION_PLAN);
+    const programOutcomeESID :UUID = getEntitySetIdFromApp(app, PROGRAM_OUTCOME);
+
+    const searchFilter :Object = {
+      entityKeyIds: [diversionPlanEKID],
+      destinationEntitySetIds: [programOutcomeESID],
+      sourceEntitySetIds: [],
+    };
+    response = yield call(
+      searchEntityNeighborsWithFilterWorker,
+      searchEntityNeighborsWithFilter({ entitySetId: diversionPlanESID, filter: searchFilter })
+    );
+    if (response.error) {
+      throw response.error;
+    }
+    if (Object.keys(response.data).length > 0) {
+      programOutcome = getNeighborDetails(fromJS(response.data[diversionPlanEKID][0]));
+    }
+
+    yield put(getProgramOutcome.success(id, programOutcome));
+  }
+  catch (error) {
+    LOG.error('caught exception in getProgramOutcomeWorker()', error);
+    yield put(getProgramOutcome.failure(id, error));
+  }
+  finally {
+    yield put(getProgramOutcome.finally(id));
+  }
+}
+
+function* getProgramOutcomeWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(GET_PROGRAM_OUTCOME, getProgramOutcomeWorker);
+}
+
+/*
+ *
  * ParticipantsActions.getEnrollmentStatus()
  *
  */
@@ -1365,7 +1469,10 @@ function* getEnrollmentStatusWorker(action :SequenceAction) :Generator<*, *, *> 
         diversionPlan = diversionPlans.get(personEKID).find((plan :Map) => getEntityKeyId(plan) === diversionPlanEKID);
 
         /* Call getWorksitePlans() to find all worksite plans for current diversion plan */
-        yield call(getWorksitePlansWorker, getWorksitePlans({ diversionPlan }));
+        yield all([
+          call(getWorksitePlansWorker, getWorksitePlans({ diversionPlan })),
+          call(getProgramOutcomeWorker, getProgramOutcome({ diversionPlan })),
+        ]);
       }
     }
 
@@ -1635,14 +1742,14 @@ function* getAllParticipantInfoWorker(action :SequenceAction) :Generator<*, *, *
     const { personEKID } = value;
 
     const workerResponses = yield all([
+      // call(getParticipantAddressWorker, getParticipantAddress({ personEKID })),
       call(getCaseInfoWorker, getCaseInfo({ personEKID })),
       call(getContactInfoWorker, getContactInfo({ personEKID })),
       call(getEnrollmentStatusWorker, getEnrollmentStatus({ personEKID })),
-      // call(getParticipantAddressWorker, getParticipantAddress({ personEKID })),
+      call(getInfractionTypesWorker, getInfractionTypes()),
       call(getParticipantInfractionsWorker, getParticipantInfractions({ personEKID })),
       call(getParticipantWorker, getParticipant({ personEKID })),
       call(getWorksitesWorker, getWorksites()),
-      call(getInfractionTypesWorker, getInfractionTypes()),
     ]);
     const responseError = workerResponses.reduce(
       (error, workerResponse) => (error ? error : workerResponse.error),
@@ -1706,6 +1813,8 @@ export {
   getParticipantInfractionsWorker,
   getParticipantWatcher,
   getParticipantWorker,
+  getProgramOutcomeWatcher,
+  getProgramOutcomeWorker,
   getWorkAppointmentsWatcher,
   getWorkAppointmentsWorker,
   getWorksiteByWorksitePlanWatcher,
@@ -1714,6 +1823,8 @@ export {
   getWorksitePlansWorker,
   getWorksitePlanStatusesWatcher,
   getWorksitePlanStatusesWorker,
+  markDiversionPlanAsCompleteWatcher,
+  markDiversionPlanAsCompleteWorker,
   updateHoursWorkedWatcher,
   updateHoursWorkedWorker,
 };

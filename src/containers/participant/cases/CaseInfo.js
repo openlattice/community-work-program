@@ -94,7 +94,7 @@ class CaseInfo extends Component<Props, State> {
     return (
       <CaseInfoWrapper>
         <Card>
-          <CardSegment padding="lg">
+          <CardSegment padding="md">
             <DataGrid
                 columns={3}
                 data={data}

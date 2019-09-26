@@ -11,10 +11,8 @@ import {
 } from './AppSagas';
 import {
   GET_EDM_TYPES,
-  GET_ENTITY_SET_IDS,
 } from '../../core/edm/EDMActions';
 import {
-  getEntitySetIdsWorker,
   getEntityDataModelTypesWorker,
 } from '../../core/edm/EDMSagas';
 import {
@@ -63,7 +61,6 @@ describe('AppSagas', () => {
       step = iterator.next();
       expect(step.value).toEqual(
         all([
-          call(getEntitySetIdsWorker, { id: expect.any(String), type: GET_ENTITY_SET_IDS, value: {} }),
           call(getEntityDataModelTypesWorker, { id: expect.any(String), type: GET_EDM_TYPES, value: {} }),
         ])
       );

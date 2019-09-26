@@ -9,6 +9,7 @@ import type { FQN } from 'lattice';
 
 import {
   addParticipant,
+  getCourtType,
   getDiversionPlans,
   getEnrollmentStatuses,
   getHoursWorked,
@@ -23,9 +24,11 @@ import { DIVERSION_PLAN_FQNS, ENTITY_KEY_ID } from '../../core/edm/constants/Ful
 const {
   ACTIONS,
   ADD_PARTICIPANT,
+  COURT_TYPE_BY_PARTICIPANT,
   CURRENT_DIVERSION_PLANS_BY_PARTICIPANT,
   ENROLLMENT_BY_PARTICIPANT,
   ERRORS,
+  GET_COURT_TYPE,
   GET_DIVERSION_PLANS,
   GET_ENROLLMENT_STATUSES,
   GET_HOURS_WORKED,
@@ -47,6 +50,9 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     [ADD_PARTICIPANT]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
+    [GET_COURT_TYPE]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
     [GET_ENROLLMENT_STATUSES]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
@@ -60,6 +66,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
       [REQUEST_STATE]: RequestStates.STANDBY
     },
   },
+  [COURT_TYPE_BY_PARTICIPANT]: Map(),
   [CURRENT_DIVERSION_PLANS_BY_PARTICIPANT]: Map(),
   [ENROLLMENT_BY_PARTICIPANT]: Map(),
   [ERRORS]: {
@@ -179,6 +186,36 @@ export default function participantsReducer(state :Map<*, *> = INITIAL_STATE, ac
           .setIn([ACTIONS, GET_PARTICIPANTS, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state
           .deleteIn([ACTIONS, GET_PARTICIPANTS, seqAction.id]),
+      });
+    }
+
+    case getCourtType.case(action.type): {
+      const seqAction :SequenceAction = (action :any);
+      return getCourtType.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, GET_COURT_TYPE, seqAction.id], fromJS(seqAction))
+          .setIn([ACTIONS, GET_COURT_TYPE, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+
+          if (!state.hasIn([ACTIONS, GET_COURT_TYPE, seqAction.id])) {
+            return state;
+          }
+
+          const { value } = seqAction;
+          if (value === null || value === undefined) {
+            return state;
+          }
+
+          return state
+            .set(COURT_TYPE_BY_PARTICIPANT, value)
+            .setIn([ACTIONS, GET_COURT_TYPE, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .set(COURT_TYPE_BY_PARTICIPANT, Map())
+          .setIn([ACTIONS, GET_COURT_TYPE, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state
+          .deleteIn([ACTIONS, GET_COURT_TYPE, seqAction.id]),
       });
     }
 
