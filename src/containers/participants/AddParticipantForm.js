@@ -174,6 +174,7 @@ class AddParticipantForm extends Component<Props, State> {
     associations.push([MANUAL_SENTENCED_WITH, 0, PEOPLE, 0, DIVERSION_PLAN, {}]);
     associations.push([RELATED_TO, 0, ENROLLMENT_STATUS, 0, DIVERSION_PLAN, {}]);
     associations.push([APPEARS_IN, 0, PEOPLE, 0, MANUAL_PRETRIAL_COURT_CASES, {}]);
+    associations.push([RELATED_TO, 0, DIVERSION_PLAN, 0, MANUAL_PRETRIAL_COURT_CASES, {}]);
 
     // required hours is saved as a string and needs to be converted to number:
     const requiredHoursKey = getEntityAddressKey(0, DIVERSION_PLAN, REQUIRED_HOURS);
