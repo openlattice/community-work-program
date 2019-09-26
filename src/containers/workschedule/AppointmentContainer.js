@@ -16,6 +16,7 @@ import { faCalendarAlt } from '@fortawesome/pro-light-svg-icons';
 import CheckInModal from '../participant/schedule/CheckInModal';
 import CheckInDetailsModal from '../participant/schedule/CheckInDetailsModal';
 import DeleteAppointmentModal from '../participant/schedule/DeleteAppointmentModal';
+import EditAppointmentModal from '../participant/schedule/EditAppointmentModal';
 
 import { isDefined } from '../../utils/LangUtils';
 import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
@@ -204,6 +205,11 @@ class AppointmentContainer extends Component<Props, State> {
             appointmentEKID={appointmentEKID}
             isOpen={isDeleteAppointmentModalVisible}
             onClose={() => this.handleHideModal(DELETE_APPOINTMENT)} />
+        <EditAppointmentModal
+            appointment={result}
+            appointmentEKID={appointmentEKID}
+            isOpen={isEditAppointmentModalVisible}
+            onClose={() => this.handleHideModal(EDIT_APPOINTMENT)} />
       </OuterWrapper>
     );
   }
