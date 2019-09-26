@@ -167,8 +167,8 @@ class AddNewPlanStatusForm extends Component<Props, State> {
         : now.toISO();
       newEnrollmentData = newEnrollmentData.setIn(datePath, datetimeToSubmit);
 
-      /* 3. program outcome marked as completed if status is completed or successful,
-            and not completed if status is removed noncompliant or unsuccessful or closed */
+      /* 3. program outcome marked as completed (true) if status is completed or successful,
+            and not completed (false) if status is removed noncompliant or unsuccessful or closed */
       const resultingStatus :string = newEnrollmentData
         .getIn([getPageSectionKey(1, 1), getEntityAddressKey(0, ENROLLMENT_STATUS, STATUS)]);
       const successfulStatuses = [ENROLLMENT_STATUSES.COMPLETED, ENROLLMENT_STATUSES.SUCCESSFUL];
@@ -187,7 +187,7 @@ class AddNewPlanStatusForm extends Component<Props, State> {
           .setIn([getPageSectionKey(1, 2), getEntityAddressKey(0, PROGRAM_OUTCOME, COMPLETED)], false);
       }
 
-      /* 4. date completed is save as a date and needs to be converted to datetime: */
+      /* 4. work site statuses need to be updated to either completed or canceled: */
       const worksitePlanStatus = successfulStatuses.includes(resultingStatus)
         ? WORKSITE_ENROLLMENT_STATUSES.COMPLETED
         : WORKSITE_ENROLLMENT_STATUSES.CANCELED;
