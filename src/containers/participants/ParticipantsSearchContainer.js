@@ -39,6 +39,7 @@ import {
  * constants
  */
 const {
+  COURT_TYPE_BY_PARTICIPANT,
   CURRENT_DIVERSION_PLANS_BY_PARTICIPANT,
   ENROLLMENT_BY_PARTICIPANT,
   HOURS_WORKED,
@@ -87,6 +88,7 @@ type Props = {
     goToRoute :RequestSequence;
   };
   app :Map;
+  courtTypeByParticipant :Map;
   currentDiversionPlansByParticipant :Map;
   enrollmentByParticipant :Map;
   getInitializeAppRequestState :RequestState;
@@ -186,8 +188,10 @@ class ParticipantsSearchContainer extends Component<Props, State> {
     if (column === SORTABLE_PARTICIPANT_COLUMNS.STATUS) {
       sortedPeople = this.sortByStatus(peopleList);
     }
+    if (column === SORTABLE_PARTICIPANT_COLUMNS.COURT_TYPE) {
+      sortedPeople = this.sortByCourtType(peopleList);
+    }
     if (Object.values(SORTABLE_PARTICIPANT_COLUMNS).indexOf(column) === -1) {
-      // TODO: sort by court type when the data model accomodates court type
       return;
     }
 
@@ -291,8 +295,22 @@ class ParticipantsSearchContainer extends Component<Props, State> {
     return sortedByStatus;
   }
 
+  sortByCourtType = (people :List) => {
+    const { courtTypeByParticipant } = this.props;
+
+    const sortedByCourtType :List = people.sort((personA, personB) => {
+      const personAEKID :UUID = getEntityKeyId(personA);
+      const personBEKID :UUID = getEntityKeyId(personB);
+      const courtTypeA :string = courtTypeByParticipant.get(personAEKID);
+      const courtTypeB :string = courtTypeByParticipant.get(personBEKID);
+      return courtTypeA.localeCompare(courtTypeB, undefined, { sensitivity: 'base' });
+    });
+    return sortedByCourtType;
+  }
+
   render() {
     const {
+      courtTypeByParticipant,
       currentDiversionPlansByParticipant,
       enrollmentByParticipant,
       getInitializeAppRequestState,
@@ -301,11 +319,6 @@ class ParticipantsSearchContainer extends Component<Props, State> {
       infractionCountsByParticipant,
     } = this.props;
     const { showAddParticipant, peopleToRender, selectedSortOption } = this.state;
-    const onSelectFunctions = Map().withMutations((map :Map) => {
-      map.set(FILTERS.STATUS, this.handleOnFilter);
-    });
-    const warningMap :Map = infractionCountsByParticipant.map((count :Map) => count.get(WARNING));
-    const violationMap :Map = infractionCountsByParticipant.map((count :Map) => count.get(VIOLATION));
 
     if (getDiversionPlansRequestState === RequestStates.PENDING
         || getInitializeAppRequestState === RequestStates.PENDING) {
@@ -315,6 +328,12 @@ class ParticipantsSearchContainer extends Component<Props, State> {
             size={60} />
       );
     }
+
+    const onSelectFunctions = Map().withMutations((map :Map) => {
+      map.set(FILTERS.STATUS, this.handleOnFilter);
+    });
+    const warningMap :Map = infractionCountsByParticipant.map((count :Map) => count.get(WARNING));
+    const violationMap :Map = infractionCountsByParticipant.map((count :Map) => count.get(VIOLATION));
 
     return (
       <ParticipantSearchOuterWrapper>
@@ -338,7 +357,7 @@ class ParticipantsSearchContainer extends Component<Props, State> {
                 includeStartDate: false,
                 includeWorkedHours: true
               }}
-              courtType=""
+              courtTypeByParticipant={courtTypeByParticipant}
               currentDiversionPlansMap={currentDiversionPlansByParticipant}
               enrollment={enrollmentByParticipant}
               handleSelect={this.handleOnSelectPerson}
@@ -365,6 +384,7 @@ const mapStateToProps = (state :Map<*, *>) => {
   const people = state.get(STATE.PEOPLE);
   return {
     app,
+    [COURT_TYPE_BY_PARTICIPANT]: people.get(COURT_TYPE_BY_PARTICIPANT),
     [CURRENT_DIVERSION_PLANS_BY_PARTICIPANT]: people.get(CURRENT_DIVERSION_PLANS_BY_PARTICIPANT),
     [ENROLLMENT_BY_PARTICIPANT]: people.get(ENROLLMENT_BY_PARTICIPANT),
     getInitializeAppRequestState: app.getIn([APP.ACTIONS, APP.INITIALIZE_APPLICATION, APP.REQUEST_STATE]),
