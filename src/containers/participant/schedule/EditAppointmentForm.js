@@ -9,9 +9,11 @@ import type { RequestSequence } from 'redux-reqseq';
 
 import { schema, uiSchema } from './schemas/EditAppointmentSchemas';
 import { getEntitySetIdFromApp, getPropertyTypeIdFromEdm } from '../../../utils/DataUtils';
+import { getCombinedDateTime } from '../../../utils/ScheduleUtils';
 import {
   APP_TYPE_FQNS,
   DATETIME_END,
+  ENTITY_KEY_ID,
   INCIDENT_START_DATETIME
 } from '../../../core/edm/constants/FullyQualifiedNames';
 import { STATE } from '../../../utils/constants/ReduxStateConsts';
@@ -83,6 +85,34 @@ class EditAppointmentForm extends Component<Props, State> {
     };
   };
 
+  getOriginalAppointmentData = () => {
+    const { appointment } = this.props;
+
+    const date = appointment.get('day').split(' ')[1].split('/').join(' '); // fmt: 9 25 2019
+    const dateAsISODate :DateTime = DateTime.fromFormat(date, 'M dd yyyy').toISODate();
+    console.log(DateTime.fromFormat(date, 'M dd yyyy'));
+
+    const hoursSplit :string[] = appointment.get('hours').split('-');
+    const startTime :string = DateTime.fromFormat(hoursSplit[0].trim(), 't');
+    // console.log(DateTime.local())
+    // 1:30 PM
+    console.log('THING THAT SHOULD WORK------------', DateTime.fromFormat('9:07 AM', 't'));
+    const endTime :string = DateTime.fromFormat(hoursSplit[1].trim(), 't').toISOTime();
+    console.log('startTime: ', startTime);
+    const startDateTime :string = getCombinedDateTime(dateAsISODate, startTime);
+    console.log('startDateTime: ', DateTime.fromSQL(`${dateAsISODate} ${startTime}`));
+    const endDateTime :string = getCombinedDateTime(dateAsISODate, endTime);
+
+    const appointmentEKID :UUID = appointment.get(ENTITY_KEY_ID);
+
+    const originalAppointment :Map = Map().withMutations((map) => {
+      map.set(INCIDENT_START_DATETIME, startDateTime);
+      map.set(DATETIME_END, endDateTime);
+      map.set(ENTITY_KEY_ID, appointmentEKID);
+    });
+    return originalAppointment;
+  }
+
   handleOnSubmit = ({ formData } :Object) => {
 
     const entitySetIds :{} = this.createEntitySetIdsMap();
@@ -107,6 +137,7 @@ class EditAppointmentForm extends Component<Props, State> {
       propertyTypeIds: this.createPropertyTypeIdsMap(),
     };
     console.log('formData: ', formData);
+    console.log('test: ', this.getOriginalAppointmentData())
     return (
       <Form
           formContext={formContext}
