@@ -13,7 +13,6 @@ import { DateTime } from 'luxon';
 
 import { getEntityProperties } from '../../utils/DataUtils';
 import { formatNumericalValue } from '../../utils/FormattingUtils';
-import { isDefined } from '../../utils/LangUtils';
 import { DATETIME_COMPLETED, PROGRAM_OUTCOME_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { ENROLLMENT_STATUSES } from '../../core/edm/constants/DataModelConsts';
 import { OL } from '../../core/style/Colors';
