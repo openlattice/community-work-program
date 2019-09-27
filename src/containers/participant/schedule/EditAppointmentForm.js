@@ -28,6 +28,20 @@ const {
 
 const { APPOINTMENT } = APP_TYPE_FQNS;
 
+const getInfoFromTimeRange = (timeString :string) :Object => {
+  const start :string = timeString.split('-')[0].trim().split(':').join(' ');
+  const end :string = timeString.split('-')[1].trim().split(':').join(' ');
+  return { start, end };
+};
+
+const get24HourTimeFromString = (timeString :string) :string => {
+  /* https://moment.github.io/luxon/docs/manual/parsing.html#table-of-tokens */
+  const inputFormat :string = 'h mm a';
+  const time :DateTime = DateTime.fromFormat(timeString, inputFormat).toLocaleString(DateTime.TIME_SIMPLE);
+  const timeIn24Hour :string = time.toLowerCase().split(' ').join('');
+  return timeIn24Hour;
+};
+
 type Props = {
   actions:{
     editAppointment :RequestSequence;
@@ -57,8 +71,9 @@ class EditAppointmentForm extends Component<Props, State> {
 
     const date = appointment.get('day').split(' ')[1];
     const hours = appointment.get('hours');
-    const startTime = hours.split('-')[0].trim();
-    const endTime = hours.split('-')[1].trim();
+    const { start, end } = getInfoFromTimeRange(hours);
+    const startTime :string = get24HourTimeFromString(start);
+    const endTime :string = get24HourTimeFromString(end);
     const formData :{} = {
       [getPageSectionKey(1, 1)]: {
         person: appointment.get('personName'),
@@ -85,33 +100,6 @@ class EditAppointmentForm extends Component<Props, State> {
       [DATETIME_END]: getPropertyTypeIdFromEdm(edm, DATETIME_END),
     };
   };
-
-  getOriginalAppointmentData = () => {
-    const { appointment } = this.props;
-
-    const date = appointment.get('day').split(' ')[1].split('/').join(' '); // fmt: 9 25 2019
-    const dateAsISODate :DateTime = DateTime.fromFormat(date, 'M dd yyyy').toISODate();
-
-    const hoursSplit :string[] = appointment.get('hours').split('-');
-    const startTime :string = DateTime.fromFormat(hoursSplit[0].trim(), 't');
-    // console.log(DateTime.local())
-    // 1:30 PM
-    // console.log('THING THAT SHOULD WORK------------', DateTime.fromFormat('9:07 AM', 't'));
-    const endTime :string = DateTime.fromFormat(hoursSplit[1].trim(), 't').toISOTime();
-    // console.log('startTime: ', startTime);
-    const startDateTime :string = getCombinedDateTime(dateAsISODate, startTime);
-    // console.log('startDateTime: ', DateTime.fromSQL(`${dateAsISODate} ${startTime}`));
-    const endDateTime :string = getCombinedDateTime(dateAsISODate, endTime);
-
-    const appointmentEKID :UUID = appointment.get(ENTITY_KEY_ID);
-
-    const originalAppointment :Map = Map().withMutations((map) => {
-      map.set(INCIDENT_START_DATETIME, startDateTime);
-      map.set(DATETIME_END, endDateTime);
-      map.set(ENTITY_KEY_ID, appointmentEKID);
-    });
-    return originalAppointment;
-  }
 
   handleOnSubmit = ({ formData } :Object) => {
     console.log('formData in handleOnSubmit: ', formData);
