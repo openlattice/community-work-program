@@ -65,6 +65,7 @@ export const PERSON = {
   EDIT_CHECK_IN_DATE: 'editCheckInDate',
   EDIT_PLAN_NOTES: 'editPlanNotes',
   EDIT_SENTENCE_DATE: 'editSentenceDate',
+  EDIT_WORKSITE_PLAN: 'editWorksitePlan',
   EMAIL: 'email',
   ENROLLMENT_STATUS: 'enrollmentStatus',
   ERRORS: 'errors',
