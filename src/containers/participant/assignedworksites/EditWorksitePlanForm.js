@@ -1,6 +1,6 @@
 // @flow
 import React, { Component } from 'react';
-import { fromJS, List, Map } from 'immutable';
+import { fromJS, Map } from 'immutable';
 import { DateTime } from 'luxon';
 import { DataProcessingUtils } from 'lattice-fabricate';
 import {
@@ -12,12 +12,11 @@ import {
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import type { RequestSequence } from 'redux-reqseq';
-import type { FQN } from 'lattice';
 
-import { addWorksitePlan } from '../ParticipantActions';
+import { editWorksitePlan } from '../ParticipantActions';
+import { isDefined } from '../../../utils/LangUtils';
 import {
   getEntityKeyId,
-  getEntityProperties,
   getEntitySetIdFromApp,
   getPropertyTypeIdFromEdm
 } from '../../../utils/DataUtils';
@@ -26,6 +25,7 @@ import {
   ENROLLMENT_STATUS_FQNS,
   WORKSITE_PLAN_FQNS,
 } from '../../../core/edm/constants/FullyQualifiedNames';
+import { WORKSITE_ENROLLMENT_STATUSES } from '../../../core/edm/constants/DataModelConsts';
 import { STATE } from '../../../utils/constants/ReduxStateConsts';
 import {
   ButtonsRow,
@@ -48,22 +48,25 @@ const {
 const { EFFECTIVE_DATE, STATUS } = ENROLLMENT_STATUS_FQNS;
 const { HOURS_WORKED, REQUIRED_HOURS } = WORKSITE_PLAN_FQNS;
 
+const STATUS_OPTIONS :Object[] = Object.values(WORKSITE_ENROLLMENT_STATUSES)
+  .map((statusName :string) => ({ label: statusName, value: statusName }));
+
 type Props = {
   actions:{
-    addWorksitePlan :RequestSequence;
+    editWorksitePlan :RequestSequence;
   };
   app :Map;
   edm :Map;
   isLoading :boolean;
   onDiscard :() => void;
   worksitePlan :Map;
-  worksitePlanStatus :Map;
+  worksitePlanStatus :string;
 };
 
 type State = {
-  hoursWorked :string;
+  hoursWorked :number | null;
   newStatus :string;
-  requiredHours :string;
+  requiredHours :number | null;
 };
 
 class EditWorksitePlanForm extends Component<Props, State> {
@@ -71,9 +74,9 @@ class EditWorksitePlanForm extends Component<Props, State> {
   constructor(props :Props) {
     super(props);
     this.state = {
-      hoursWorked: '',
+      hoursWorked: null,
       newStatus: '',
-      requiredHours: '',
+      requiredHours: null,
     };
   }
 
@@ -104,14 +107,20 @@ class EditWorksitePlanForm extends Component<Props, State> {
     const hoursWorkedPTID :UUID = getPropertyTypeIdFromEdm(edm, HOURS_WORKED);
     const requiredHoursPTID :UUID = getPropertyTypeIdFromEdm(edm, REQUIRED_HOURS);
 
+    let statusEntityData :{} = {};
+    let statusAssociationData :{} = {};
     const worksitePlanDataToEdit :{} = {
       [worksitePlanESID]: {
-        [worksitePlanEKID]: {
-          [hoursWorkedPTID]: [hoursWorked],
-          [requiredHoursPTID]: [requiredHours],
-        }
+        [worksitePlanEKID]: {}
       }
     };
+
+    if (isDefined(hoursWorked)) {
+      worksitePlanDataToEdit[worksitePlanESID][worksitePlanEKID][hoursWorkedPTID] = [hoursWorked];
+    }
+    if (isDefined(requiredHours)) {
+      worksitePlanDataToEdit[worksitePlanESID][worksitePlanEKID][requiredHoursPTID] = [requiredHours];
+    }
 
     if (newStatus) {
 
@@ -134,23 +143,24 @@ class EditWorksitePlanForm extends Component<Props, State> {
         [STATUS]: getPropertyTypeIdFromEdm(edm, STATUS),
       };
 
-      const entityData :{} = processEntityData(newStatusData, entitySetIds, propertyTypeIds);
-      const associationEntityData :{} = processAssociationEntityData(
+      statusEntityData = processEntityData(newStatusData, entitySetIds, propertyTypeIds);
+      statusAssociationData = processAssociationEntityData(
         fromJS(associations),
         entitySetIds,
         propertyTypeIds
       );
-      // actions.addWorkSitePlanStatus({ associationEntityData, entityData });
     }
 
-    // actions.editWorksitePlan({ entityData: worksitePlanDataToEdit });
+    actions.editWorksitePlan({
+      statusEntityData,
+      statusAssociationData,
+      worksitePlanEKID,
+      worksitePlanDataToEdit
+    });
   }
 
   render() {
     const { isLoading, onDiscard, worksitePlanStatus } = this.props;
-
-    const { [STATUS]: currentStatus } = getEntityProperties(worksitePlanStatus, [STATUS]);
-
     return (
       <FormWrapper>
         <FormRow>
@@ -166,7 +176,7 @@ class EditWorksitePlanForm extends Component<Props, State> {
           <RowContent>
             <Label>Required hours at site</Label>
             <Input
-                name={getEntityAddressKey(0, WORKSITE_PLAN, REQUIRED_HOURS)}
+                name="requiredHours"
                 onChange={this.handleInputChange}
                 type="text" />
           </RowContent>
@@ -175,10 +185,10 @@ class EditWorksitePlanForm extends Component<Props, State> {
           <RowContent>
             <Label>Current status</Label>
             <Select
-                name="requiredHours"
+                name="newStatus"
                 onChange={this.handleSelectChange}
-                options={[]}
-                placeholder={currentStatus} />
+                options={STATUS_OPTIONS}
+                placeholder={worksitePlanStatus} />
           </RowContent>
         </FormRow>
         <ButtonsRow>
@@ -202,7 +212,7 @@ const mapStateToProps = (state :Map) => ({
 
 const mapDispatchToProps = dispatch => ({
   actions: bindActionCreators({
-    addWorksitePlan,
+    editWorksitePlan,
   }, dispatch)
 });
 

@@ -20,9 +20,8 @@ const {
   WORKSITES_BY_WORKSITE_PLAN,
 } = PERSON;
 
-
 type Props = {
-  addWorkSitePlanStatusRequestState :RequestState;
+  editWorksitePlanRequestState :RequestState;
   isOpen :boolean;
   onClose :() => void;
   worksitePlan :Map;
@@ -33,9 +32,9 @@ type Props = {
 class EditWorksitePlanModal extends Component<Props> {
 
   componentDidUpdate(prevProps :Props) {
-    const { addWorkSitePlanStatusRequestState, onClose } = this.props;
-    const { addWorkSitePlanStatusRequestState: prevSumbitState } = prevProps;
-    if (addWorkSitePlanStatusRequestState === RequestStates.SUCCESS
+    const { editWorksitePlanRequestState, onClose } = this.props;
+    const { editWorksitePlanRequestState: prevSumbitState } = prevProps;
+    if (editWorksitePlanRequestState === RequestStates.SUCCESS
       && prevSumbitState === RequestStates.PENDING) {
       onClose();
     }
@@ -43,7 +42,7 @@ class EditWorksitePlanModal extends Component<Props> {
 
   render() {
     const {
-      addWorkSitePlanStatusRequestState,
+      editWorksitePlanRequestState,
       isOpen,
       onClose,
       worksitePlan,
@@ -60,7 +59,7 @@ class EditWorksitePlanModal extends Component<Props> {
           textTitle={`Edit Details for ${worksiteName}`}
           viewportScrolling>
         <EditWorksitePlanForm
-            isLoading={addWorkSitePlanStatusRequestState === RequestStates.PENDING}
+            isLoading={editWorksitePlanRequestState === RequestStates.PENDING}
             onDiscard={onClose}
             worksitePlan={worksitePlan}
             worksitePlanStatus={worksitePlanStatus} />
@@ -70,7 +69,7 @@ class EditWorksitePlanModal extends Component<Props> {
 }
 
 const mapStateToProps = (state :Map) => ({
-  addWorkSitePlanStatusRequestState: state.getIn([STATE.PERSON, ACTIONS, EDIT_WORKSITE_PLAN, REQUEST_STATE]),
+  editWorksitePlanRequestState: state.getIn([STATE.PERSON, ACTIONS, EDIT_WORKSITE_PLAN, REQUEST_STATE]),
   [WORKSITES_BY_WORKSITE_PLAN]: state.getIn([STATE.PERSON, WORKSITES_BY_WORKSITE_PLAN]),
 });
 
