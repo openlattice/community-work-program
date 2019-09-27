@@ -83,7 +83,7 @@ const AssignedWorksite = ({ status, worksite, worksitePlan } :Props) => {
 
     const { [STATUS]: statusName } = getEntityProperties(status, [STATUS]);
     setWorksitePlanStatus(statusName);
-  });
+  }, [worksitePlan, status]);
 
   return (
     <OuterWrapper>
