@@ -21,7 +21,7 @@ import ParticipantWorkSchedule from './schedule/ParticipantWorkSchedule';
 import PlanNotes from './plannotes/PlanNotes';
 import ProgramCompletionBanner from './ProgramCompletionBanner';
 
-import AssignedWorksiteContainer from './assignedworksites/AssignedWorksiteContainer';
+import AssignedWorksite from './assignedworksites/AssignedWorksite';
 import AddNewPlanStatusModal from './AddNewPlanStatusModal';
 import AssignWorksiteModal from './assignedworksites/AssignWorksiteModal';
 import InfractionsContainer from './infractions/InfractionsContainer';
@@ -64,7 +64,7 @@ const {
   REQUIRED_HOURS,
 } = DIVERSION_PLAN_FQNS;
 const { STATUS } = ENROLLMENT_STATUS_FQNS;
-const { FIRST_NAME, LAST_NAME } = PEOPLE_FQNS;
+const { FIRST_NAME } = PEOPLE_FQNS;
 const { NAME } = WORKSITE_FQNS;
 const {
   ACTIONS,
@@ -418,10 +418,6 @@ class ParticipantProfile extends Component<Props, State> {
                     <NameHeader>Assigned Work Sites</NameHeader>
                     <Button onClick={() => this.handleShowModal(ASSIGN_WORKSITE)}>Add Work Site</Button>
                   </NameRowWrapper>
-                  {/* <AssignedWorksitesContainer
-                      worksitePlans={worksitePlans}
-                      worksitePlanStatuses={worksitePlanStatuses}
-                    worksitesByWorksitePlan={worksitesByWorksitePlan} /> */}
                   {
                     worksitePlans.isEmpty()
                       ? (
@@ -440,7 +436,7 @@ class ParticipantProfile extends Component<Props, State> {
                               const worksite :Map = worksitesByWorksitePlan.get(worksitePlanEKID);
                               const worksitePlanStatus :Map = worksitePlanStatuses.get(worksitePlanEKID);
                               return (
-                                <AssignedWorksiteContainer
+                                <AssignedWorksite
                                     key={worksitePlanEKID}
                                     status={worksitePlanStatus}
                                     worksite={worksite}
