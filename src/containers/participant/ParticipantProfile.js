@@ -2,7 +2,13 @@
 import React, { Component } from 'react';
 import styled from 'styled-components';
 import { List, Map } from 'immutable';
-import { Button } from 'lattice-ui-kit';
+import {
+  Button,
+  CardSegment,
+  CardStack,
+  IconSplash,
+} from 'lattice-ui-kit';
+import { faTools } from '@fortawesome/pro-light-svg-icons';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { RequestStates } from 'redux-reqseq';
@@ -15,7 +21,7 @@ import ParticipantWorkSchedule from './schedule/ParticipantWorkSchedule';
 import PlanNotes from './plannotes/PlanNotes';
 import ProgramCompletionBanner from './ProgramCompletionBanner';
 
-import AssignedWorksitesContainer from './assignedworksites/AssignedWorksitesContainer';
+import AssignedWorksiteContainer from './assignedworksites/AssignedWorksiteContainer';
 import AddNewPlanStatusModal from './AddNewPlanStatusModal';
 import AssignWorksiteModal from './assignedworksites/AssignWorksiteModal';
 import InfractionsContainer from './infractions/InfractionsContainer';
@@ -154,6 +160,10 @@ const ButtonsWrapper = styled.div`
 
 const ScheduleButtonsWrapper = styled(ButtonsWrapper)`
   grid-template-columns: repeat(2, 1fr);
+`;
+
+const AssignedWorksitesStack = styled(CardStack)`
+  width: 100%;
 `;
 
 type Props = {
@@ -408,10 +418,39 @@ class ParticipantProfile extends Component<Props, State> {
                     <NameHeader>Assigned Work Sites</NameHeader>
                     <Button onClick={() => this.handleShowModal(ASSIGN_WORKSITE)}>Add Work Site</Button>
                   </NameRowWrapper>
-                  <AssignedWorksitesContainer
+                  {/* <AssignedWorksitesContainer
                       worksitePlans={worksitePlans}
                       worksitePlanStatuses={worksitePlanStatuses}
-                      worksitesByWorksitePlan={worksitesByWorksitePlan} />
+                    worksitesByWorksitePlan={worksitesByWorksitePlan} /> */}
+                  {
+                    worksitePlans.isEmpty()
+                      ? (
+                        <CardSegment>
+                          <IconSplash
+                              caption="No Assigned Work Sites"
+                              icon={faTools}
+                              size="3x" />
+                        </CardSegment>
+                      )
+                      : (
+                        <AssignedWorksitesStack>
+                          {
+                            worksitePlans.map((worksitePlan :Map) => {
+                              const worksitePlanEKID :UUID = getEntityKeyId(worksitePlan);
+                              const worksite :Map = worksitesByWorksitePlan.get(worksitePlanEKID);
+                              const worksitePlanStatus :Map = worksitePlanStatuses.get(worksitePlanEKID);
+                              return (
+                                <AssignedWorksiteContainer
+                                    key={worksitePlanEKID}
+                                    status={worksitePlanStatus}
+                                    worksite={worksite}
+                                    worksitePlan={worksitePlan} />
+                              );
+                            })
+                          }
+                        </AssignedWorksitesStack>
+                      )
+                  }
                 </ProfileBody>
               )
               : null
