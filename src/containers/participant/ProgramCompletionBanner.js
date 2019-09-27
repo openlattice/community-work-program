@@ -13,7 +13,6 @@ import { DateTime } from 'luxon';
 
 import { getEntityProperties } from '../../utils/DataUtils';
 import { formatNumericalValue } from '../../utils/FormattingUtils';
-import { isDefined } from '../../utils/LangUtils';
 import { DATETIME_COMPLETED, PROGRAM_OUTCOME_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { ENROLLMENT_STATUSES } from '../../core/edm/constants/DataModelConsts';
 import { OL } from '../../core/style/Colors';
@@ -94,7 +93,7 @@ class ProgramCompletionBanner extends Component<Props, State> {
       ? DateTime.fromISO(datetimeCompleted).toLocaleString(DateTime.DATE_SHORT)
       : EMPTY_FIELD;
     const notes = description || EMPTY_FIELD;
-    const hours = isDefined(totalHoursWorked) ? formatNumericalValue(totalHoursWorked) : EMPTY_FIELD;
+    const hours = totalHoursWorked ? formatNumericalValue(totalHoursWorked) : EMPTY_FIELD;
 
     const data :Map = fromJS({
       date: dateCompleted,
@@ -122,8 +121,15 @@ class ProgramCompletionBanner extends Component<Props, State> {
   render() {
     const { programOutcome, resultingStatus } = this.props;
     const { [DATETIME_COMPLETED]: datetimeCompleted } = getEntityProperties(programOutcome, [DATETIME_COMPLETED]);
-    const dateCompleted = DateTime.fromISO(datetimeCompleted).toLocaleString(DateTime.DATE_SHORT);
-    const outcomeStatement = `This participant was marked ${resultingStatus} on ${dateCompleted}.`;
+    const dateCompleted = DateTime.fromISO(datetimeCompleted);
+    let outcomeStatement = '';
+    if (dateCompleted.isValid) {
+      const date :string = dateCompleted.toLocaleString(DateTime.DATE_SHORT);
+      outcomeStatement = `This participant was marked ${resultingStatus} on ${date}.`;
+    }
+    else {
+      outcomeStatement = `This participant was marked ${resultingStatus}.`;
+    }
     const bannerMode = successfulStatuses.includes(resultingStatus) ? 'success' : 'default';
     return (
       <BannerWrapper>

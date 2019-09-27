@@ -1535,13 +1535,16 @@ function* getEnrollmentStatusWorker(action :SequenceAction) :Generator<*, *, *> 
         const diversionPlanEKID :UUID = mostRecentEnrollmentStatusesByDiversionPlan
           .findKey((status :Map) => getEntityKeyId(status) === getEntityKeyId(enrollmentStatus));
         diversionPlan = diversionPlans.get(personEKID).find((plan :Map) => getEntityKeyId(plan) === diversionPlanEKID);
-
-        /* Call getWorksitePlans() to find all worksite plans for current diversion plan */
-        yield all([
-          call(getWorksitePlansWorker, getWorksitePlans({ diversionPlan })),
-          call(getProgramOutcomeWorker, getProgramOutcome({ diversionPlan })),
-        ]);
       }
+
+      // some integrated people won't have enrollment statuses but will have a diversion plan:
+      if (diversionPlan.isEmpty()) diversionPlan = diversionPlans.getIn([personEKID, 0]);
+
+      /* Call getWorksitePlans() to find all worksite plans for current diversion plan */
+      yield all([
+        call(getWorksitePlansWorker, getWorksitePlans({ diversionPlan })),
+        call(getProgramOutcomeWorker, getProgramOutcome({ diversionPlan })),
+      ]);
     }
 
     yield put(getEnrollmentStatus.success(id, { diversionPlan, enrollmentStatus }));

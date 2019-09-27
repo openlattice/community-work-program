@@ -192,8 +192,8 @@ const ParticipantsTable = ({
             : undefined;
 
           // Court type
-          const courtType = (isDefined(courtTypeByParticipant) && courtTypeByParticipant.get(personEKID))
-            ? courtTypeByParticipant.get(personEKID)
+          const courtType = (isDefined(courtTypeByParticipant))
+            ? courtTypeByParticipant.get(personEKID, '')
             : undefined;
 
           return (

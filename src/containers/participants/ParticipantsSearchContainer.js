@@ -301,8 +301,8 @@ class ParticipantsSearchContainer extends Component<Props, State> {
     const sortedByCourtType :List = people.sort((personA, personB) => {
       const personAEKID :UUID = getEntityKeyId(personA);
       const personBEKID :UUID = getEntityKeyId(personB);
-      const courtTypeA :string = courtTypeByParticipant.get(personAEKID);
-      const courtTypeB :string = courtTypeByParticipant.get(personBEKID);
+      const courtTypeA :string = courtTypeByParticipant.get(personAEKID) || '';
+      const courtTypeB :string = courtTypeByParticipant.get(personBEKID) || '';
       return courtTypeA.localeCompare(courtTypeB, undefined, { sensitivity: 'base' });
     });
     return sortedByCourtType;
