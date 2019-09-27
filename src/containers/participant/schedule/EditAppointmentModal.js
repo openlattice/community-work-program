@@ -18,6 +18,7 @@ type Props = {
   editAppointmentRequestState :RequestState;
   isOpen :boolean;
   onClose :() => void;
+  personName :string;
 };
 
 class DeleteAppointmentModal extends Component<Props> {
@@ -38,6 +39,7 @@ class DeleteAppointmentModal extends Component<Props> {
       editAppointmentRequestState,
       isOpen,
       onClose,
+      personName,
     } = this.props;
     return (
       <Modal
@@ -49,7 +51,8 @@ class DeleteAppointmentModal extends Component<Props> {
             appointment={appointment}
             appointmentEKID={appointmentEKID}
             isLoading={editAppointmentRequestState === RequestStates.PENDING}
-            onDiscard={onClose} />
+            onDiscard={onClose}
+            personName={personName} />
       </Modal>
     );
   }

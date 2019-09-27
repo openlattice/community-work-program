@@ -50,6 +50,7 @@ type Props = {
   appointment :Object;
   appointmentEKID :UUID;
   edm :Map;
+  personName :string;
 };
 
 type State = {
@@ -67,16 +68,17 @@ class EditAppointmentForm extends Component<Props, State> {
   }
 
   prepopulateFormData = () => {
-    const { appointment } = this.props;
+    const { appointment, personName } = this.props;
 
     const date = appointment.get('day').split(' ')[1];
     const hours = appointment.get('hours');
     const { start, end } = getInfoFromTimeRange(hours);
     const startTime :string = get24HourTimeFromString(start);
     const endTime :string = get24HourTimeFromString(end);
+
     const formData :{} = {
       [getPageSectionKey(1, 1)]: {
-        person: appointment.get('personName'),
+        person: appointment.get('personName') || personName,
         worksite: appointment.get('worksiteName'),
         date,
         startTime,
@@ -102,7 +104,7 @@ class EditAppointmentForm extends Component<Props, State> {
   };
 
   handleOnSubmit = ({ formData } :Object) => {
-    console.log('formData in handleOnSubmit: ', formData);
+    // console.log('formData in handleOnSubmit: ', formData);
 
     const entitySetIds :{} = this.createEntitySetIdsMap();
     const propertyTypeIds :{} = this.createPropertyTypeIdsMap();
@@ -114,7 +116,7 @@ class EditAppointmentForm extends Component<Props, State> {
     const { actions } = this.props;
     const { formData } = this.state;
 
-    console.log('this.state.formData: ', formData);
+    // console.log('this.state.formData: ', formData);
 
     const formContext :{} = {
       addActions: {

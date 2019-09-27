@@ -139,7 +139,6 @@ class AppointmentContainer extends Component<Props, State> {
       } = getEntityProperties(participant, [FIRST_NAME, LAST_NAME]);
       modalDisplayOfPersonName = `${firstName} ${lastName}`;
     }
-
     return (
       <OuterWrapper>
         <Card>
@@ -209,7 +208,8 @@ class AppointmentContainer extends Component<Props, State> {
             appointment={result}
             appointmentEKID={appointmentEKID}
             isOpen={isEditAppointmentModalVisible}
-            onClose={() => this.handleHideModal(EDIT_APPOINTMENT)} />
+            onClose={() => this.handleHideModal(EDIT_APPOINTMENT)}
+            personName={modalDisplayOfPersonName} />
       </OuterWrapper>
     );
   }
