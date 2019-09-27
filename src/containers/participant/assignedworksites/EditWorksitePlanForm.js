@@ -16,6 +16,7 @@ import type { RequestSequence } from 'redux-reqseq';
 import { editWorksitePlan } from '../ParticipantActions';
 import { isDefined } from '../../../utils/LangUtils';
 import {
+  getEntityProperties,
   getEntityKeyId,
   getEntitySetIdFromApp,
   getPropertyTypeIdFromEdm
@@ -160,13 +161,23 @@ class EditWorksitePlanForm extends Component<Props, State> {
   }
 
   render() {
-    const { isLoading, onDiscard, worksitePlanStatus } = this.props;
+    const {
+      isLoading,
+      onDiscard,
+      worksitePlan,
+      worksitePlanStatus
+    } = this.props;
+    const {
+      [HOURS_WORKED]: hoursWorked,
+      [REQUIRED_HOURS]: requiredHours
+    } = getEntityProperties(worksitePlan, [HOURS_WORKED, REQUIRED_HOURS]);
     return (
       <FormWrapper>
         <FormRow>
           <RowContent>
             <Label>Hours worked at site</Label>
             <Input
+                defaultValue={hoursWorked}
                 name="hoursWorked"
                 onChange={this.handleInputChange}
                 type="text" />
@@ -176,6 +187,7 @@ class EditWorksitePlanForm extends Component<Props, State> {
           <RowContent>
             <Label>Required hours at site</Label>
             <Input
+                defaultValue={requiredHours}
                 name="requiredHours"
                 onChange={this.handleInputChange}
                 type="text" />
