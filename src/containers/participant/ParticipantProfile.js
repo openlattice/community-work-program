@@ -111,7 +111,7 @@ const ProfileWrapper = styled.div`
 `;
 
 const ProfileBody = styled.div`
-  align-items: flex-start;
+  align-items: stretch;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -161,14 +161,6 @@ const ButtonsWrapper = styled.div`
 
 const ScheduleButtonsWrapper = styled(ButtonsWrapper)`
   grid-template-columns: repeat(2, 1fr);
-`;
-
-const AssignedWorksitesStack = styled(CardStack)`
-  width: 100%;
-`;
-
-const CardWrapper = styled.div`
-  width: 100%;
 `;
 
 type Props = {
@@ -416,49 +408,45 @@ class ParticipantProfile extends Component<Props, State> {
             </BasicInfoWrapper>
           </ProfileBody>
           {
-            ENROLLMENT_STATUSES_EXCLUDING_PREENROLLMENT.includes(status)
-              ? (
-                <ProfileBody>
-                  <NameRowWrapper>
-                    <NameHeader>Assigned Work Sites</NameHeader>
-                    <Button onClick={() => this.handleShowModal(ASSIGN_WORKSITE)}>Add Work Site</Button>
-                  </NameRowWrapper>
-                  {
-                    worksitePlans.isEmpty()
-                      ? (
-                        <CardWrapper>
-                          <Card>
-                            <CardSegment>
-                              <IconSplash
-                                  caption="No Assigned Work Sites"
-                                  icon={faTools}
-                                  size="3x" />
-                            </CardSegment>
-                          </Card>
-                        </CardWrapper>
-                      )
-                      : (
-                        <AssignedWorksitesStack>
-                          {
-                            worksitePlans.map((worksitePlan :Map) => {
-                              const worksitePlanEKID :UUID = getEntityKeyId(worksitePlan);
-                              const worksite :Map = worksitesByWorksitePlan.get(worksitePlanEKID);
-                              const worksitePlanStatus :Map = worksitePlanStatuses.get(worksitePlanEKID);
-                              return (
-                                <AssignedWorksite
-                                    key={worksitePlanEKID}
-                                    status={worksitePlanStatus}
-                                    worksite={worksite}
-                                    worksitePlan={worksitePlan} />
-                              );
-                            })
-                          }
-                        </AssignedWorksitesStack>
-                      )
-                  }
-                </ProfileBody>
-              )
-              : null
+            ENROLLMENT_STATUSES_EXCLUDING_PREENROLLMENT.includes(status) && (
+              <ProfileBody>
+                <NameRowWrapper>
+                  <NameHeader>Assigned Work Sites</NameHeader>
+                  <Button onClick={() => this.handleShowModal(ASSIGN_WORKSITE)}>Add Work Site</Button>
+                </NameRowWrapper>
+                {
+                  worksitePlans.isEmpty()
+                    ? (
+                      <Card>
+                        <CardSegment>
+                          <IconSplash
+                              caption="No Assigned Work Sites"
+                              icon={faTools}
+                              size="3x" />
+                        </CardSegment>
+                      </Card>
+                    )
+                    : (
+                      <CardStack>
+                        {
+                          worksitePlans.map((worksitePlan :Map) => {
+                            const worksitePlanEKID :UUID = getEntityKeyId(worksitePlan);
+                            const worksite :Map = worksitesByWorksitePlan.get(worksitePlanEKID);
+                            const worksitePlanStatus :Map = worksitePlanStatuses.get(worksitePlanEKID);
+                            return (
+                              <AssignedWorksite
+                                  key={worksitePlanEKID}
+                                  status={worksitePlanStatus}
+                                  worksite={worksite}
+                                  worksitePlan={worksitePlan} />
+                            );
+                          })
+                        }
+                      </CardStack>
+                    )
+                }
+              </ProfileBody>
+            )
           }
           {
             !worksitePlans.isEmpty() && (
