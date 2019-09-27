@@ -451,21 +451,25 @@ class ParticipantProfile extends Component<Props, State> {
               )
               : null
           }
-          <ProfileBody>
-            <NameRowWrapper>
-              <NameHeader>Work Schedule</NameHeader>
-              <ScheduleButtonsWrapper>
-                <Button onClick={this.goToPrintSchedule}>
-                  Print Schedule
-                </Button>
-                <Button onClick={() => this.handleShowModal(WORK_APPOINTMENT)}>Create Appointment</Button>
-              </ScheduleButtonsWrapper>
-            </NameRowWrapper>
-            <ParticipantWorkSchedule
-                workAppointmentsByWorksitePlan={workAppointmentsByWorksitePlan}
-                worksitesByWorksitePlan={worksitesByWorksitePlan}
-                worksiteNamesByWorksitePlan={worksiteNamesByWorksitePlan} />
-          </ProfileBody>
+          {
+            !worksitePlans.isEmpty() && (
+              <ProfileBody>
+                <NameRowWrapper>
+                  <NameHeader>Work Schedule</NameHeader>
+                  <ScheduleButtonsWrapper>
+                    <Button onClick={this.goToPrintSchedule}>
+                      Print Schedule
+                    </Button>
+                    <Button onClick={() => this.handleShowModal(WORK_APPOINTMENT)}>Create Appointment</Button>
+                  </ScheduleButtonsWrapper>
+                </NameRowWrapper>
+                <ParticipantWorkSchedule
+                    workAppointmentsByWorksitePlan={workAppointmentsByWorksitePlan}
+                    worksitesByWorksitePlan={worksitesByWorksitePlan}
+                    worksiteNamesByWorksitePlan={worksiteNamesByWorksitePlan} />
+              </ProfileBody>
+            )
+          }
           <ProfileBody>
             <NameRowWrapper>
               <NameHeader>Warnings & Violations</NameHeader>
