@@ -4,6 +4,7 @@ import styled from 'styled-components';
 import { List, Map } from 'immutable';
 import {
   Button,
+  Card,
   CardSegment,
   CardStack,
   IconSplash,
@@ -163,6 +164,10 @@ const ScheduleButtonsWrapper = styled(ButtonsWrapper)`
 `;
 
 const AssignedWorksitesStack = styled(CardStack)`
+  width: 100%;
+`;
+
+const CardWrapper = styled.div`
   width: 100%;
 `;
 
@@ -421,12 +426,16 @@ class ParticipantProfile extends Component<Props, State> {
                   {
                     worksitePlans.isEmpty()
                       ? (
-                        <CardSegment>
-                          <IconSplash
-                              caption="No Assigned Work Sites"
-                              icon={faTools}
-                              size="3x" />
-                        </CardSegment>
+                        <CardWrapper>
+                          <Card>
+                            <CardSegment>
+                              <IconSplash
+                                  caption="No Assigned Work Sites"
+                                  icon={faTools}
+                                  size="3x" />
+                            </CardSegment>
+                          </Card>
+                        </CardWrapper>
                       )
                       : (
                         <AssignedWorksitesStack>
