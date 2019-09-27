@@ -66,7 +66,7 @@ const KeyDates = ({
   return (
     <DatesWrapper>
       <Card>
-        <CardSegment padding="lg" vertical>
+        <CardSegment padding="md" vertical>
           <DataGrid
               columns={3}
               data={data}

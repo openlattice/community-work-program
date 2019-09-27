@@ -25,9 +25,11 @@ import {
   getParticipant,
   // getParticipantAddress,
   getParticipantInfractions,
+  getProgramOutcome,
   getWorkAppointments,
   getWorksiteByWorksitePlan,
   getWorksitePlans,
+  markDiversionPlanAsComplete,
   updateHoursWorked,
 } from './ParticipantActions';
 import {
@@ -50,6 +52,7 @@ import {
 } from '../../core/edm/constants/FullyQualifiedNames';
 
 const { WORKSITE_PLAN } = APP_TYPE_FQNS;
+const { COMPLETED } = DIVERSION_PLAN_FQNS;
 const { CASE_NUMBER_TEXT, COURT_CASE_TYPE } = CASE_FQNS;
 const { NOTES } = DIVERSION_PLAN_FQNS;
 const { STATUS } = ENROLLMENT_STATUS_FQNS;
@@ -84,14 +87,17 @@ const {
   GET_PARTICIPANT,
   // GET_PARTICIPANT_ADDRESS,
   GET_PARTICIPANT_INFRACTIONS,
+  GET_PROGRAM_OUTCOME,
   GET_WORKSITE_BY_WORKSITE_PLAN,
   GET_WORKSITE_PLANS,
   GET_WORK_APPOINTMENTS,
   INFRACTIONS_INFO,
   INFRACTION_TYPES,
+  MARK_DIVERSION_PLAN_AS_COMPLETE,
   PARTICIPANT,
   PERSON_CASE,
   PHONE,
+  PROGRAM_OUTCOME,
   REQUEST_STATE,
   UPDATE_HOURS_WORKED,
   VIOLATIONS,
@@ -154,6 +160,12 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     [GET_INFRACTION_TYPES]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
+    [GET_PROGRAM_OUTCOME]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [MARK_DIVERSION_PLAN_AS_COMPLETE]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
     [GET_PARTICIPANT]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
@@ -196,6 +208,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [PARTICIPANT]: Map(),
   [PERSON_CASE]: Map(),
   [PHONE]: '',
+  [PROGRAM_OUTCOME]: Map(),
   [VIOLATIONS]: List(),
   [WARNINGS]: List(),
   [WORKSITES_BY_WORKSITE_PLAN]: Map(),
@@ -313,12 +326,20 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
           if (storedSeqAction) {
 
             const { value } :Object = seqAction;
-            const { edm, enrollmentStatusEKID, enrollmentStatusESID } = value;
+            const {
+              edm,
+              enrollmentStatusEKID,
+              enrollmentStatusESID,
+              programOutcomeEKID,
+              programOutcomeESID,
+            } = value;
 
             const requestValue :Object = storedSeqAction.value;
             const { entityData } :Object = requestValue;
             const storedEnrollmentEntity :Map = fromJS(entityData[enrollmentStatusESID][0]);
-
+            const storedProgramOutcomeEntity :Map = entityData[programOutcomeESID]
+              ? fromJS(entityData[programOutcomeESID][0])
+              : Map();
 
             let newEnrollmentStatus :Map = Map();
             storedEnrollmentEntity.forEach((enrollmentValue, id) => {
@@ -327,8 +348,19 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
             });
             newEnrollmentStatus = newEnrollmentStatus.set(ENTITY_KEY_ID, enrollmentStatusEKID);
 
+            let programOutcome :Map = state.get(PROGRAM_OUTCOME, Map());
+            if (!storedProgramOutcomeEntity.isEmpty()) {
+
+              storedProgramOutcomeEntity.forEach((outcomeValue, id) => {
+                const propertyTypeFqn :FQN = getPropertyFqnFromEdm(edm, id);
+                programOutcome = programOutcome.set(propertyTypeFqn, outcomeValue);
+              });
+              programOutcome = programOutcome.set(ENTITY_KEY_ID, programOutcomeEKID);
+            }
+
             return state
               .set(ENROLLMENT_STATUS, newEnrollmentStatus)
+              .set(PROGRAM_OUTCOME, programOutcome)
               .setIn([ACTIONS, ADD_NEW_DIVERSION_PLAN_STATUS, REQUEST_STATE], RequestStates.SUCCESS);
           }
 
@@ -1106,6 +1138,65 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
     //     FINALLY: () => state.deleteIn([ACTIONS, GET_PARTICIPANT_ADDRESS, action.id])
     //   });
     // }
+
+    case getProgramOutcome.case(action.type): {
+
+      return getProgramOutcome.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, GET_PROGRAM_OUTCOME, action.id], fromJS(action))
+          .setIn([ACTIONS, GET_PROGRAM_OUTCOME, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+
+          if (!state.hasIn([ACTIONS, GET_PROGRAM_OUTCOME, action.id])) {
+            return state;
+          }
+
+          const { value } = action;
+          if (value === null || value === undefined) {
+            return state;
+          }
+
+          return state
+            .set(PROGRAM_OUTCOME, value)
+            .setIn([ACTIONS, GET_PROGRAM_OUTCOME, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => {
+
+          const { value } = action;
+
+          return state
+            .set(PROGRAM_OUTCOME, Map())
+            .setIn([ERRORS, GET_PROGRAM_OUTCOME], value)
+            .setIn([ACTIONS, GET_PROGRAM_OUTCOME, REQUEST_STATE], RequestStates.FAILURE);
+        },
+        FINALLY: () => state.deleteIn([ACTIONS, GET_PROGRAM_OUTCOME, action.id])
+      });
+    }
+
+    case markDiversionPlanAsComplete.case(action.type): {
+
+      return markDiversionPlanAsComplete.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, MARK_DIVERSION_PLAN_AS_COMPLETE, action.id], action)
+          .setIn([ACTIONS, MARK_DIVERSION_PLAN_AS_COMPLETE, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+
+          let diversionPlan :Map = state.get(DIVERSION_PLAN);
+          let isCompleted = diversionPlan.getIn([COMPLETED, 0], true);
+          isCompleted = true;
+          diversionPlan = diversionPlan.setIn([COMPLETED, 0], isCompleted);
+
+          return state
+            .set(DIVERSION_PLAN, diversionPlan)
+            .setIn([ACTIONS, MARK_DIVERSION_PLAN_AS_COMPLETE, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, MARK_DIVERSION_PLAN_AS_COMPLETE, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, MARK_DIVERSION_PLAN_AS_COMPLETE, action.id]),
+      });
+    }
 
     case getWorkAppointments.case(action.type): {
 

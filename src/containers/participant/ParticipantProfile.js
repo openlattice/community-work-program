@@ -13,6 +13,7 @@ import KeyDates from '../../components/participant/KeyDates';
 import CaseInfo from './cases/CaseInfo';
 import ParticipantWorkSchedule from './schedule/ParticipantWorkSchedule';
 import PlanNotes from './plannotes/PlanNotes';
+import ProgramCompletionBanner from './ProgramCompletionBanner';
 
 import AssignedWorksitesContainer from './assignedworksites/AssignedWorksitesContainer';
 import AddNewPlanStatusModal from './AddNewPlanStatusModal';
@@ -70,6 +71,7 @@ const {
   PARTICIPANT,
   PERSON_CASE,
   PHONE,
+  PROGRAM_OUTCOME,
   REQUEST_STATE,
   VIOLATIONS,
   WARNINGS,
@@ -149,6 +151,10 @@ const ButtonsWrapper = styled.div`
   grid-gap: 0 10px;
 `;
 
+const ScheduleButtonsWrapper = styled(ButtonsWrapper)`
+  grid-template-columns: repeat(2, 1fr);
+`;
+
 type Props = {
   actions:{
     getAllParticipantInfo :RequestSequence;
@@ -166,6 +172,7 @@ type Props = {
   personCase :Map;
   personEKID :string;
   phone :string;
+  programOutcome :Map;
   violations :List;
   warnings :List;
   workAppointmentsByWorksitePlan :Map;
@@ -269,6 +276,11 @@ class ParticipantProfile extends Component<Props, State> {
     });
   }
 
+  goToPrintSchedule = () => {
+    const { actions, personEKID } = this.props;
+    actions.goToRoute(Routes.PRINT_PARTICIPANT_SCHEDULE.replace(':subjectId', personEKID));
+  }
+
   render() {
     const {
       actions,
@@ -281,6 +293,7 @@ class ParticipantProfile extends Component<Props, State> {
       participant,
       personCase,
       phone,
+      programOutcome,
       violations,
       warnings,
       workAppointmentsByWorksitePlan,
@@ -309,9 +322,7 @@ class ParticipantProfile extends Component<Props, State> {
     }
 
     const personEKID :UUID = getEntityKeyId(participant);
-    const { [FIRST_NAME]: firstName } = getEntityProperties(
-      participant, [FIRST_NAME, LAST_NAME]
-    );
+    const { [FIRST_NAME]: firstName } = getEntityProperties(participant, [FIRST_NAME]);
     let { [STATUS]: status } = getEntityProperties(enrollmentStatus, [STATUS]);
     if (!isDefined(status)) status = ENROLLMENT_STATUSES.AWAITING_CHECKIN;
 
@@ -335,105 +346,121 @@ class ParticipantProfile extends Component<Props, State> {
       ? 'Edit Orientation Date'
       : 'Add Orientation Date';
     return (
-      <ProfileWrapper>
-        <ProfileBody>
-          <NameRowWrapper>
-            <BackNavButton
-                onClick={() => {
-                  actions.goToRoute(Routes.PARTICIPANTS);
-                }}>
-              Back to Participants
-            </BackNavButton>
-            <ButtonsWrapper>
-              <Button onClick={() => this.handleShowModal(SENTENCE_DATE)}>Edit Sentence Date</Button>
-              <Button onClick={() => this.handleShowModal(CHECK_IN_DATE)}>Edit Check-In Date</Button>
-              <Button onClick={() => this.handleShowModal(ORIENTATION_DATE)}>{ addOrEditButtonText }</Button>
-              <Button mode="primary" onClick={() => this.handleShowModal(ENROLLMENT)}>
-                Change Enrollment Status
-              </Button>
-            </ButtonsWrapper>
-          </NameRowWrapper>
-          <BasicInfoWrapper>
-            <GeneralInfo
-                address={address}
-                email={email}
-                person={participant}
-                phone={phone}
-                status={status} />
-            <InnerColumnWrapper>
-              <KeyDates
-                  checkInDate={checkInDate}
-                  orientationDateTime={orientationDateTime}
-                  sentenceDateTime={sentenceDate}
-                  workStartDateTime={workStartDateTime} />
-              <CaseInfo
-                  hours={requiredHours}
-                  personCase={personCase}
-                  warnings={warnings}
-                  violations={violations} />
-              <PlanNotes
-                  notes={planNotes} />
-            </InnerColumnWrapper>
-          </BasicInfoWrapper>
-        </ProfileBody>
+      <>
         {
-          ENROLLMENT_STATUSES_EXCLUDING_PREENROLLMENT.includes(status)
-            ? (
-              <ProfileBody>
-                <NameRowWrapper>
-                  <NameHeader>Assigned Work Sites</NameHeader>
-                  <Button onClick={() => this.handleShowModal(ASSIGN_WORKSITE)}>Add Work Site</Button>
-                </NameRowWrapper>
-                <AssignedWorksitesContainer
-                    worksitePlans={worksitePlans}
-                    worksitesByWorksitePlan={worksitesByWorksitePlan} />
-              </ProfileBody>
+          programOutcome.isEmpty()
+            ? null
+            : (
+              <ProgramCompletionBanner
+                  programOutcome={programOutcome}
+                  resultingStatus={status} />
             )
-            : null
         }
-        <ProfileBody>
-          <NameRowWrapper>
-            <NameHeader>Work Schedule</NameHeader>
-            <Button onClick={() => this.handleShowModal(WORK_APPOINTMENT)}>Create Appointment</Button>
-          </NameRowWrapper>
-          <ParticipantWorkSchedule
-              workAppointmentsByWorksitePlan={workAppointmentsByWorksitePlan}
-              worksitesByWorksitePlan={worksitesByWorksitePlan}
-              worksiteNamesByWorksitePlan={worksiteNamesByWorksitePlan} />
-        </ProfileBody>
-        <ProfileBody>
-          <NameRowWrapper>
-            <NameHeader>Warnings & Violations</NameHeader>
-          </NameRowWrapper>
-          <InfractionsContainer
+        <ProfileWrapper>
+          <ProfileBody>
+            <NameRowWrapper>
+              <BackNavButton
+                  onClick={() => {
+                    actions.goToRoute(Routes.PARTICIPANTS);
+                  }}>
+                Back to Participants
+              </BackNavButton>
+              <ButtonsWrapper>
+                <Button onClick={() => this.handleShowModal(SENTENCE_DATE)}>Edit Sentence Date</Button>
+                <Button onClick={() => this.handleShowModal(CHECK_IN_DATE)}>Edit Check-In Date</Button>
+                <Button onClick={() => this.handleShowModal(ORIENTATION_DATE)}>{ addOrEditButtonText }</Button>
+                <Button mode="primary" onClick={() => this.handleShowModal(ENROLLMENT)}>
+                  Change Enrollment Status
+                </Button>
+              </ButtonsWrapper>
+            </NameRowWrapper>
+            <BasicInfoWrapper>
+              <GeneralInfo
+                  address={address}
+                  email={email}
+                  person={participant}
+                  phone={phone}
+                  status={status} />
+              <InnerColumnWrapper>
+                <KeyDates
+                    checkInDate={checkInDate}
+                    orientationDateTime={orientationDateTime}
+                    sentenceDateTime={sentenceDate}
+                    workStartDateTime={workStartDateTime} />
+                <CaseInfo
+                    hours={requiredHours}
+                    personCase={personCase}
+                    warnings={warnings}
+                    violations={violations} />
+                <PlanNotes
+                    notes={planNotes} />
+              </InnerColumnWrapper>
+            </BasicInfoWrapper>
+          </ProfileBody>
+          {
+            ENROLLMENT_STATUSES_EXCLUDING_PREENROLLMENT.includes(status)
+              ? (
+                <ProfileBody>
+                  <NameRowWrapper>
+                    <NameHeader>Assigned Work Sites</NameHeader>
+                    <Button onClick={() => this.handleShowModal(ASSIGN_WORKSITE)}>Add Work Site</Button>
+                  </NameRowWrapper>
+                  <AssignedWorksitesContainer
+                      worksitePlans={worksitePlans}
+                      worksitesByWorksitePlan={worksitesByWorksitePlan} />
+                </ProfileBody>
+              )
+              : null
+          }
+          <ProfileBody>
+            <NameRowWrapper>
+              <NameHeader>Work Schedule</NameHeader>
+              <ScheduleButtonsWrapper>
+                <Button onClick={this.goToPrintSchedule}>
+                  Print Schedule
+                </Button>
+                <Button onClick={() => this.handleShowModal(WORK_APPOINTMENT)}>Create Appointment</Button>
+              </ScheduleButtonsWrapper>
+            </NameRowWrapper>
+            <ParticipantWorkSchedule
+                workAppointmentsByWorksitePlan={workAppointmentsByWorksitePlan}
+                worksitesByWorksitePlan={worksitesByWorksitePlan}
+                worksiteNamesByWorksitePlan={worksiteNamesByWorksitePlan} />
+          </ProfileBody>
+          <ProfileBody>
+            <NameRowWrapper>
+              <NameHeader>Warnings & Violations</NameHeader>
+            </NameRowWrapper>
+            <InfractionsContainer
+                currentStatus={status}
+                personEKID={personEKID} />
+          </ProfileBody>
+          <AddNewPlanStatusModal
               currentStatus={status}
+              isOpen={showEnrollmentModal}
+              onClose={() => this.handleHideModal(ENROLLMENT)}
+              personName={firstName} />
+          <AssignWorksiteModal
+              diversionPlanEKID={diversionPlanEKID}
+              isOpen={showAssignWorksiteModal}
+              onClose={() => this.handleHideModal(ASSIGN_WORKSITE)}
+              personEKID={personEKID}
+              worksites={worksitesList} />
+          <CreateWorkAppointmentModal
+              isOpen={showWorkAppointmentModal}
+              onClose={() => this.handleHideModal(WORK_APPOINTMENT)}
               personEKID={personEKID} />
-        </ProfileBody>
-        <AddNewPlanStatusModal
-            currentStatus={status}
-            isOpen={showEnrollmentModal}
-            onClose={() => this.handleHideModal(ENROLLMENT)}
-            personName={firstName} />
-        <AssignWorksiteModal
-            diversionPlanEKID={diversionPlanEKID}
-            isOpen={showAssignWorksiteModal}
-            onClose={() => this.handleHideModal(ASSIGN_WORKSITE)}
-            personEKID={personEKID}
-            worksites={worksitesList} />
-        <CreateWorkAppointmentModal
-            isOpen={showWorkAppointmentModal}
-            onClose={() => this.handleHideModal(WORK_APPOINTMENT)}
-            personEKID={personEKID} />
-        <AddOrientationDateModal
-            isOpen={showOrientationDateModal}
-            onClose={() => this.handleHideModal(ORIENTATION_DATE)} />
-        <EditSentenceDateModal
-            isOpen={showSentenceDateModal}
-            onClose={() => this.handleHideModal(SENTENCE_DATE)} />
-        <EditCheckInDateModal
-            isOpen={showCheckInDateModal}
-            onClose={() => this.handleHideModal(CHECK_IN_DATE)} />
-      </ProfileWrapper>
+          <AddOrientationDateModal
+              isOpen={showOrientationDateModal}
+              onClose={() => this.handleHideModal(ORIENTATION_DATE)} />
+          <EditSentenceDateModal
+              isOpen={showSentenceDateModal}
+              onClose={() => this.handleHideModal(SENTENCE_DATE)} />
+          <EditCheckInDateModal
+              isOpen={showCheckInDateModal}
+              onClose={() => this.handleHideModal(CHECK_IN_DATE)} />
+        </ProfileWrapper>
+      </>
     );
   }
 }
@@ -454,6 +481,7 @@ const mapStateToProps = (state :Map<*, *>) => {
     [PARTICIPANT]: person.get(PARTICIPANT),
     [PERSON_CASE]: person.get(PERSON_CASE),
     [PHONE]: person.get(PHONE),
+    [PROGRAM_OUTCOME]: person.get(PROGRAM_OUTCOME),
     [VIOLATIONS]: person.get(VIOLATIONS),
     [WARNINGS]: person.get(WARNINGS),
     [WORK_APPOINTMENTS_BY_WORKSITE_PLAN]: person.get(WORK_APPOINTMENTS_BY_WORKSITE_PLAN),
