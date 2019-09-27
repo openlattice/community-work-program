@@ -65,9 +65,11 @@ export const uiSchema = {
     },
     startTime: {
       classNames: 'column-span-12',
+      'ui:widget': 'TimeWidget',
     },
     endTime: {
       classNames: 'column-span-12',
+      'ui:widget': 'TimeWidget',
     },
   },
   'ui:options': { editable: true },
