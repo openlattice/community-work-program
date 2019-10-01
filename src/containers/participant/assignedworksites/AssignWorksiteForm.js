@@ -148,7 +148,7 @@ class AssignWorksiteForm extends Component<Props, State> {
     }]);
     associations.push([BASED_ON, 0, WORKSITE_PLAN, worksiteEKID, WORKSITE, {}]);
     associations.push([PART_OF, 0, WORKSITE_PLAN, diversionPlanEKID, DIVERSION_PLAN, {}]);
-    associations.push([RELATED_TO, worksiteEKID, WORKSITE, 0, ENROLLMENT_STATUS, {}]);
+    associations.push([RELATED_TO, 0, WORKSITE_PLAN, 0, ENROLLMENT_STATUS, {}]);
     associations.push([HAS, personEKID, PEOPLE, 0, ENROLLMENT_STATUS, {}]);
 
     const entitySetIds :Object = {

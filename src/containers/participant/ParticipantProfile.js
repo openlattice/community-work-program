@@ -2,7 +2,14 @@
 import React, { Component } from 'react';
 import styled from 'styled-components';
 import { List, Map } from 'immutable';
-import { Button } from 'lattice-ui-kit';
+import {
+  Button,
+  Card,
+  CardSegment,
+  CardStack,
+  IconSplash,
+} from 'lattice-ui-kit';
+import { faTools } from '@fortawesome/pro-light-svg-icons';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { RequestStates } from 'redux-reqseq';
@@ -15,7 +22,7 @@ import ParticipantWorkScheduleContainer from './schedule/ParticipantWorkSchedule
 import PlanNotes from './plannotes/PlanNotes';
 import ProgramCompletionBanner from './ProgramCompletionBanner';
 
-import AssignedWorksitesContainer from './assignedworksites/AssignedWorksitesContainer';
+import AssignedWorksite from './assignedworksites/AssignedWorksite';
 import AddNewPlanStatusModal from './AddNewPlanStatusModal';
 import AssignWorksiteModal from './assignedworksites/AssignWorksiteModal';
 import InfractionsContainer from './infractions/InfractionsContainer';
@@ -58,7 +65,7 @@ const {
   REQUIRED_HOURS,
 } = DIVERSION_PLAN_FQNS;
 const { STATUS } = ENROLLMENT_STATUS_FQNS;
-const { FIRST_NAME, LAST_NAME } = PEOPLE_FQNS;
+const { FIRST_NAME } = PEOPLE_FQNS;
 const { NAME } = WORKSITE_FQNS;
 const {
   ACTIONS,
@@ -79,6 +86,7 @@ const {
   WORK_APPOINTMENTS_BY_WORKSITE_PLAN,
   WORKSITES_BY_WORKSITE_PLAN,
   WORKSITE_PLANS,
+  WORKSITE_PLAN_STATUSES,
 } = PERSON;
 const { WORKSITES_LIST } = WORKSITES;
 
@@ -104,7 +112,7 @@ const ProfileWrapper = styled.div`
 `;
 
 const ProfileBody = styled.div`
-  align-items: flex-start;
+  align-items: stretch;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -180,6 +188,7 @@ type Props = {
   workAppointmentsByWorksitePlan :Map;
   worksitesByWorksitePlan :Map;
   worksitePlans :List;
+  worksitePlanStatuses :Map;
   worksitesList :List;
 };
 
@@ -302,6 +311,7 @@ class ParticipantProfile extends Component<Props, State> {
       workAppointmentsByWorksitePlan,
       worksitesByWorksitePlan,
       worksitePlans,
+      worksitePlanStatuses,
       worksitesList,
     } = this.props;
     const {
@@ -401,34 +411,65 @@ class ParticipantProfile extends Component<Props, State> {
             </BasicInfoWrapper>
           </ProfileBody>
           {
-            ENROLLMENT_STATUSES_EXCLUDING_PREENROLLMENT.includes(status)
-              ? (
-                <ProfileBody>
-                  <NameRowWrapper>
-                    <NameHeader>Assigned Work Sites</NameHeader>
-                    <Button onClick={() => this.handleShowModal(ASSIGN_WORKSITE)}>Add Work Site</Button>
-                  </NameRowWrapper>
-                  <AssignedWorksitesContainer
-                      worksitePlans={worksitePlans}
-                      worksitesByWorksitePlan={worksitesByWorksitePlan} />
-                </ProfileBody>
-              )
-              : null
+            ENROLLMENT_STATUSES_EXCLUDING_PREENROLLMENT.includes(status) && (
+              <ProfileBody>
+                <NameRowWrapper>
+                  <NameHeader>Assigned Work Sites</NameHeader>
+                  <Button onClick={() => this.handleShowModal(ASSIGN_WORKSITE)}>Add Work Site</Button>
+                </NameRowWrapper>
+                {
+                  worksitePlans.isEmpty()
+                    ? (
+                      <Card>
+                        <CardSegment>
+                          <IconSplash
+                              caption="No Assigned Work Sites"
+                              icon={faTools}
+                              size="3x" />
+                        </CardSegment>
+                      </Card>
+                    )
+                    : (
+                      <CardStack>
+                        {
+                          worksitePlans.map((worksitePlan :Map) => {
+                            const worksitePlanEKID :UUID = getEntityKeyId(worksitePlan);
+                            const worksite :Map = worksitesByWorksitePlan.get(worksitePlanEKID);
+                            const worksitePlanStatus :Map = worksitePlanStatuses.get(worksitePlanEKID);
+                            return (
+                              <AssignedWorksite
+                                  key={worksitePlanEKID}
+                                  status={worksitePlanStatus}
+                                  worksite={worksite}
+                                  worksitePlan={worksitePlan} />
+                            );
+                          })
+                        }
+                      </CardStack>
+                    )
+                }
+              </ProfileBody>
+            )
           }
-          <ProfileBody>
-            <NameRowWrapper>
-              <NameHeader>Work Schedule</NameHeader>
-              <ScheduleButtonsWrapper>
-                <Button onClick={this.goToPrintSchedule}>
-                  Print Schedule
-                </Button>
-                <Button onClick={() => this.handleShowModal(WORK_APPOINTMENT)}>Create Appointment</Button>
-              </ScheduleButtonsWrapper>
-            </NameRowWrapper>
-            <ParticipantWorkScheduleContainer
-                workAppointmentsByWorksitePlan={workAppointmentsByWorksitePlan}
-                worksiteNamesByWorksitePlan={worksiteNamesByWorksitePlan} />
-          </ProfileBody>
+          {
+            !worksitePlans.isEmpty() && (
+              <ProfileBody>
+                <NameRowWrapper>
+                  <NameHeader>Work Schedule</NameHeader>
+                  <ScheduleButtonsWrapper>
+                    <Button onClick={this.goToPrintSchedule}>
+                      Print Schedule
+                    </Button>
+                    <Button onClick={() => this.handleShowModal(WORK_APPOINTMENT)}>Create Appointment</Button>
+                  </ScheduleButtonsWrapper>
+                </NameRowWrapper>
+                <ParticipantWorkScheduleContainer
+                    workAppointmentsByWorksitePlan={workAppointmentsByWorksitePlan}
+                    worksitesByWorksitePlan={worksitesByWorksitePlan}
+                    worksiteNamesByWorksitePlan={worksiteNamesByWorksitePlan} />
+              </ProfileBody>
+            )
+          }
           <ProfileBody>
             <NameRowWrapper>
               <NameHeader>Warnings & Violations</NameHeader>
@@ -490,6 +531,7 @@ const mapStateToProps = (state :Map<*, *>) => {
     [WORK_APPOINTMENTS_BY_WORKSITE_PLAN]: person.get(WORK_APPOINTMENTS_BY_WORKSITE_PLAN),
     [WORKSITES_BY_WORKSITE_PLAN]: person.get(WORKSITES_BY_WORKSITE_PLAN),
     [WORKSITE_PLANS]: person.get(WORKSITE_PLANS),
+    [WORKSITE_PLAN_STATUSES]: person.get(WORKSITE_PLAN_STATUSES),
     [WORKSITES_LIST]: worksites.get(WORKSITES_LIST),
   };
 };

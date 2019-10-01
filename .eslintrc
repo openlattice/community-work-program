@@ -8,7 +8,8 @@
     "flowtype",
     "import",
     "jest",
-    "react"
+    "react",
+    "react-hooks"
   ],
   "env": {
     "browser": true,
@@ -144,6 +145,8 @@
     ],
     "react/sort-comp": "off",
     "react/state-in-constructor": ["warn", "always"],
-    "react/static-property-placement": ["error", "static public field"]
+    "react/static-property-placement": ["error", "static public field"],
+    "react-hooks/rules-of-hooks": "error",
+    "react-hooks/exhaustive-deps": "warn"
   }
 }
