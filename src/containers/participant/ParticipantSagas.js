@@ -22,6 +22,8 @@ import type { SequenceAction } from 'redux-reqseq';
 import Logger from '../../utils/Logger';
 import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../utils/Errors';
 import {
+  // GET_PARTICIPANT_ADDRESS,
+  // getParticipantAddress,
   ADD_INFRACTION,
   ADD_NEW_DIVERSION_PLAN_STATUS,
   ADD_ORIENTATION_DATE,
@@ -33,6 +35,7 @@ import {
   EDIT_CHECK_IN_DATE,
   EDIT_PLAN_NOTES,
   EDIT_SENTENCE_DATE,
+  EDIT_WORKSITE_PLAN,
   GET_ALL_PARTICIPANT_INFO,
   GET_APPOINTMENT_CHECK_INS,
   GET_CASE_INFO,
@@ -40,11 +43,11 @@ import {
   GET_ENROLLMENT_STATUS,
   GET_INFRACTION_TYPES,
   GET_PARTICIPANT,
-  // GET_PARTICIPANT_ADDRESS,
   GET_PARTICIPANT_INFRACTIONS,
   GET_PROGRAM_OUTCOME,
   GET_WORKSITE_BY_WORKSITE_PLAN,
   GET_WORKSITE_PLANS,
+  GET_WORKSITE_PLAN_STATUSES,
   GET_WORK_APPOINTMENTS,
   MARK_DIVERSION_PLAN_AS_COMPLETE,
   UPDATE_HOURS_WORKED,
@@ -59,6 +62,7 @@ import {
   editCheckInDate,
   editPlanNotes,
   editSentenceDate,
+  editWorksitePlan,
   getAllParticipantInfo,
   getAppointmentCheckIns,
   getCaseInfo,
@@ -66,11 +70,11 @@ import {
   getEnrollmentStatus,
   getInfractionTypes,
   getParticipant,
-  // getParticipantAddress,
   getParticipantInfractions,
   getProgramOutcome,
   getWorkAppointments,
   getWorksiteByWorksitePlan,
+  getWorksitePlanStatuses,
   getWorksitePlans,
   markDiversionPlanAsComplete,
   updateHoursWorked,
@@ -465,6 +469,72 @@ function* editCheckInDateWorker(action :SequenceAction) :Generator<*, *, *> {
 function* editCheckInDateWatcher() :Generator<*, *, *> {
 
   yield takeEvery(EDIT_CHECK_IN_DATE, editCheckInDateWorker);
+}
+
+function* editWorksitePlanWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+  let response :Object = {};
+  let worksitePlanStatusEKID :string[] = [''];
+
+  try {
+    yield put(editWorksitePlan.request(id, value));
+
+    const {
+      statusEntityData,
+      statusAssociationData,
+      worksitePlanEKID,
+      worksitePlanDataToEdit
+    } = value;
+
+    if (Object.keys(statusEntityData).length) {
+
+      response = yield call(submitDataGraphWorker, submitDataGraph({
+        entityData: statusEntityData,
+        associationEntityData: statusAssociationData
+      }));
+      if (response.error) {
+        throw response.error;
+      }
+      const { data } :Object = response;
+      const { entityKeyIds } :Object = data;
+      worksitePlanStatusEKID = Object.values(entityKeyIds)[0];
+    }
+
+    const app = yield select(getAppFromState);
+    const worksitePlanESID :UUID = getEntitySetIdFromApp(app, WORKSITE_PLAN);
+
+    if (Object.keys(worksitePlanDataToEdit[worksitePlanESID][worksitePlanEKID]).length) {
+
+      response = yield call(submitPartialReplaceWorker, submitPartialReplace({ entityData: worksitePlanDataToEdit }));
+      if (response.error) {
+        throw response.error;
+      }
+    }
+
+    const enrollmentStatusESID :UUID = getEntitySetIdFromApp(app, ENROLLMENT_STATUS);
+    const edm = yield select(getEdmFromState);
+
+    yield put(editWorksitePlan.success(id, {
+      edm,
+      enrollmentStatusESID,
+      worksitePlanEKID,
+      worksitePlanESID,
+      worksitePlanStatusEKID,
+    }));
+  }
+  catch (error) {
+    LOG.error('caught exception in editWorksitePlanWorker()', error);
+    yield put(editWorksitePlan.failure(id, error));
+  }
+  finally {
+    yield put(editWorksitePlan.finally(id));
+  }
+}
+
+function* editWorksitePlanWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(EDIT_WORKSITE_PLAN, editWorksitePlanWorker);
 }
 
 /*
@@ -1191,6 +1261,74 @@ function* getWorkAppointmentsWatcher() :Generator<*, *, *> {
 
 /*
  *
+ * ParticipantActions.getWorksitePlanStatuses()
+ *
+ */
+function* getWorksitePlanStatusesWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+  let response :Object = {};
+  let worksitePlanStatuses :List = List();
+
+  try {
+    yield put(getWorksitePlanStatuses.request(id));
+    if (value === null || value === undefined) {
+      throw ERR_ACTION_VALUE_NOT_DEFINED;
+    }
+    const { worksitePlans } = value;
+    const app = yield select(getAppFromState);
+    const enrollmentStatusESID :UUID = getEntitySetIdFromApp(app, ENROLLMENT_STATUS);
+    const worksitePlanESID :UUID = getEntitySetIdFromApp(app, WORKSITE_PLAN);
+    const worksitePlanEKIDs :string[] = [];
+    worksitePlans.forEach((worksitePlan :Map) => {
+      worksitePlanEKIDs.push(getEntityKeyId(worksitePlan));
+    });
+
+    const params :Object = {
+      entitySetId: worksitePlanESID,
+      filter: {
+        entityKeyIds: worksitePlanEKIDs,
+        destinationEntitySetIds: [enrollmentStatusESID],
+        sourceEntitySetIds: [],
+      }
+    };
+    response = yield call(searchEntityNeighborsWithFilterWorker, searchEntityNeighborsWithFilter(params));
+    if (response.error) {
+      throw response.error;
+    }
+    worksitePlanStatuses = fromJS(response.data);
+
+    if (!worksitePlanStatuses.isEmpty()) {
+      worksitePlanStatuses = worksitePlanStatuses
+        .map((statusList :List) => statusList
+          .map((status :Map) => getNeighborDetails(status)));
+
+      // get most recent status for each work site plan:
+      worksitePlanStatuses = worksitePlanStatuses
+        .map((statusList :List) => {
+          const sortedStatusList :List = sortEntitiesByDateProperty(statusList, EFFECTIVE_DATE);
+          return sortedStatusList.last();
+        });
+    }
+
+    yield put(getWorksitePlanStatuses.success(id, worksitePlanStatuses));
+  }
+  catch (error) {
+    LOG.error('caught exception in getWorksitePlanStatusesWorker()', error);
+    yield put(getWorksitePlanStatuses.failure(id, error));
+  }
+  finally {
+    yield put(getWorksitePlanStatuses.finally(id));
+  }
+}
+
+function* getWorksitePlanStatusesWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(GET_WORKSITE_PLAN_STATUSES, getWorksitePlanStatusesWorker);
+}
+
+/*
+ *
  * ParticipantActions.getWorksitePlans()
  *
  */
@@ -1232,6 +1370,7 @@ function* getWorksitePlansWorker(action :SequenceAction) :Generator<*, *, *> {
       yield all([
         call(getWorksiteByWorksitePlanWorker, getWorksiteByWorksitePlan({ worksitePlans })),
         call(getWorkAppointmentsWorker, getWorkAppointments({ worksitePlans })),
+        call(getWorksitePlanStatusesWorker, getWorksitePlanStatuses({ worksitePlans })),
       ]);
     }
 
@@ -1729,6 +1868,8 @@ export {
   editPlanNotesWorker,
   editSentenceDateWatcher,
   editSentenceDateWorker,
+  editWorksitePlanWatcher,
+  editWorksitePlanWorker,
   getAppointmentCheckInsWatcher,
   getAppointmentCheckInsWorker,
   getAllParticipantInfoWatcher,
@@ -1753,6 +1894,8 @@ export {
   getWorksiteByWorksitePlanWorker,
   getWorksitePlansWatcher,
   getWorksitePlansWorker,
+  getWorksitePlanStatusesWatcher,
+  getWorksitePlanStatusesWorker,
   markDiversionPlanAsCompleteWatcher,
   markDiversionPlanAsCompleteWorker,
   updateHoursWorkedWatcher,

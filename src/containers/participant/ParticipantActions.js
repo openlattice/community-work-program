@@ -34,6 +34,9 @@ const editPlanNotes = newRequestSequence(EDIT_PLAN_NOTES);
 const EDIT_SENTENCE_DATE:'EDIT_SENTENCE_DATE' = 'EDIT_SENTENCE_DATE';
 const editSentenceDate = newRequestSequence(EDIT_SENTENCE_DATE);
 
+const EDIT_WORKSITE_PLAN:'EDIT_WORKSITE_PLAN' = 'EDIT_WORKSITE_PLAN';
+const editWorksitePlan = newRequestSequence(EDIT_WORKSITE_PLAN);
+
 const GET_APPOINTMENT_CHECK_INS :'GET_APPOINTMENT_CHECK_INS' = 'GET_APPOINTMENT_CHECK_INS';
 const getAppointmentCheckIns = newRequestSequence(GET_APPOINTMENT_CHECK_INS);
 
@@ -70,6 +73,9 @@ const getWorksiteByWorksitePlan = newRequestSequence(GET_WORKSITE_BY_WORKSITE_PL
 const GET_WORKSITE_PLANS :'GET_WORKSITE_PLANS' = 'GET_WORKSITE_PLANS';
 const getWorksitePlans = newRequestSequence(GET_WORKSITE_PLANS);
 
+const GET_WORKSITE_PLAN_STATUSES :'GET_WORKSITE_PLAN_STATUSES' = 'GET_WORKSITE_PLAN_STATUSES';
+const getWorksitePlanStatuses = newRequestSequence(GET_WORKSITE_PLAN_STATUSES);
+
 const GET_WORK_APPOINTMENTS :'GET_WORK_APPOINTMENTS' = 'GET_WORK_APPOINTMENTS';
 const getWorkAppointments = newRequestSequence(GET_WORK_APPOINTMENTS);
 
@@ -80,6 +86,8 @@ const UPDATE_HOURS_WORKED :'UPDATE_HOURS_WORKED' = 'UPDATE_HOURS_WORKED';
 const updateHoursWorked = newRequestSequence(UPDATE_HOURS_WORKED);
 
 export {
+  // GET_PARTICIPANT_ADDRESS,
+  // getParticipantAddress,
   ADD_INFRACTION,
   ADD_NEW_DIVERSION_PLAN_STATUS,
   ADD_ORIENTATION_DATE,
@@ -91,6 +99,7 @@ export {
   EDIT_CHECK_IN_DATE,
   EDIT_PLAN_NOTES,
   EDIT_SENTENCE_DATE,
+  EDIT_WORKSITE_PLAN,
   GET_ALL_PARTICIPANT_INFO,
   GET_APPOINTMENT_CHECK_INS,
   GET_CASE_INFO,
@@ -98,11 +107,11 @@ export {
   GET_ENROLLMENT_STATUS,
   GET_INFRACTION_TYPES,
   GET_PARTICIPANT,
-  // GET_PARTICIPANT_ADDRESS,
   GET_PARTICIPANT_INFRACTIONS,
   GET_PROGRAM_OUTCOME,
   GET_WORKSITE_BY_WORKSITE_PLAN,
   GET_WORKSITE_PLANS,
+  GET_WORKSITE_PLAN_STATUSES,
   GET_WORK_APPOINTMENTS,
   MARK_DIVERSION_PLAN_AS_COMPLETE,
   UPDATE_HOURS_WORKED,
@@ -117,6 +126,7 @@ export {
   editCheckInDate,
   editPlanNotes,
   editSentenceDate,
+  editWorksitePlan,
   getAllParticipantInfo,
   getAppointmentCheckIns,
   getCaseInfo,
@@ -124,11 +134,11 @@ export {
   getEnrollmentStatus,
   getInfractionTypes,
   getParticipant,
-  // getParticipantAddress,
   getParticipantInfractions,
   getProgramOutcome,
   getWorkAppointments,
   getWorksiteByWorksitePlan,
+  getWorksitePlanStatuses,
   getWorksitePlans,
   markDiversionPlanAsComplete,
   updateHoursWorked,

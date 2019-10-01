@@ -65,6 +65,7 @@ export const PERSON = {
   EDIT_CHECK_IN_DATE: 'editCheckInDate',
   EDIT_PLAN_NOTES: 'editPlanNotes',
   EDIT_SENTENCE_DATE: 'editSentenceDate',
+  EDIT_WORKSITE_PLAN: 'editWorksitePlan',
   EMAIL: 'email',
   ENROLLMENT_STATUS: 'enrollmentStatus',
   ERRORS: 'errors',
@@ -79,6 +80,7 @@ export const PERSON = {
   GET_PROGRAM_OUTCOME: 'getProgramOutcome',
   GET_REQUIRED_HOURS: 'getRequiredHours',
   GET_WORKSITE_PLANS: 'getWorksitePlans',
+  GET_WORKSITE_PLAN_STATUSES: 'getWorksitePlanStatuses',
   GET_WORK_APPOINTMENTS: 'getWorkAppointments',
   INFRACTIONS_INFO: 'infractionsInfo',
   INFRACTION_TYPES: 'infractionTypes',
@@ -94,6 +96,7 @@ export const PERSON = {
   WARNINGS: 'warnings',
   WORKSITES_BY_WORKSITE_PLAN: 'worksitesByWorksitePlan',
   WORKSITE_PLANS: 'worksitePlans',
+  WORKSITE_PLAN_STATUSES: 'worksitePlanStatuses',
   WORK_APPOINTMENTS_BY_WORKSITE_PLAN: 'workAppointmentsByWorksitePlan',
 };
 
