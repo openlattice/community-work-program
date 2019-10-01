@@ -10,9 +10,15 @@ import {
   findAppointments,
   getWorksiteAndPersonNames,
 } from './WorkScheduleActions';
-import { DELETE_APPOINTMENT, deleteAppointment } from '../participant/ParticipantActions';
-import { getEntityKeyId } from '../../utils/DataUtils';
+import {
+  DELETE_APPOINTMENT,
+  EDIT_APPOINTMENT,
+  deleteAppointment,
+  editAppointment,
+} from '../participant/ParticipantActions';
+import { getEntityKeyId, getPropertyTypeIdFromEdm } from '../../utils/DataUtils';
 import { WORK_SCHEDULE } from '../../utils/constants/ReduxStateConsts';
+import { DATETIME_END, INCIDENT_START_DATETIME } from '../../core/edm/constants/FullyQualifiedNames';
 
 const {
   ACTIONS,
@@ -84,6 +90,72 @@ export default function worksitesReducer(state :Map<*, *> = INITIAL_STATE, actio
           .set(APPOINTMENTS, List())
           .setIn([ACTIONS, DELETE_APPOINTMENT, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, DELETE_APPOINTMENT, action.id]),
+      });
+    }
+
+    case editAppointment.case(action.type): {
+
+      return editAppointment.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, EDIT_APPOINTMENT, action.id], action)
+          .setIn([ACTIONS, EDIT_APPOINTMENT, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+
+          const seqAction :SequenceAction = action;
+          const storedSeqAction :SequenceAction = state.getIn([ACTIONS, EDIT_APPOINTMENT, seqAction.id]);
+
+          if (storedSeqAction) {
+
+            const successValue :Object = seqAction.value;
+            const { appointmentESID, edm } = successValue;
+
+            const requestValue :Object = storedSeqAction.value;
+            const { entityData } :Object = requestValue;
+            const appointmentEKID = Object.keys(entityData[appointmentESID])[0];
+
+            let workScheduleAppointments = state.get(APPOINTMENTS);
+            let indexOfAppointmentToEdit :number = -1;
+
+            indexOfAppointmentToEdit = workScheduleAppointments.findIndex(
+              (appointment :Map) => getEntityKeyId(appointment) === appointmentEKID
+            );
+
+            if (indexOfAppointmentToEdit !== -1) {
+
+              const newAppointmentData :Map = fromJS(entityData[appointmentESID][appointmentEKID]);
+              const startDateTimePTID :UUID = getPropertyTypeIdFromEdm(edm, INCIDENT_START_DATETIME);
+              const newStartDateTime :string = newAppointmentData.getIn([startDateTimePTID, 0]);
+
+              const endDateTimePTID :UUID = getPropertyTypeIdFromEdm(edm, DATETIME_END);
+              const newEndDateTime :string = newAppointmentData.getIn([endDateTimePTID, 0]);
+
+              if (newStartDateTime) {
+                workScheduleAppointments = workScheduleAppointments.setIn([
+                  indexOfAppointmentToEdit,
+                  INCIDENT_START_DATETIME,
+                ], List([newStartDateTime]));
+              }
+              if (newEndDateTime) {
+                workScheduleAppointments = workScheduleAppointments.setIn([
+                  indexOfAppointmentToEdit,
+                  DATETIME_END,
+                ], List([newEndDateTime]));
+              }
+
+              return state
+                .set(APPOINTMENTS, workScheduleAppointments)
+                .setIn([ACTIONS, EDIT_APPOINTMENT, REQUEST_STATE], RequestStates.SUCCESS);
+            }
+          }
+
+          return state
+            .setIn([ACTIONS, EDIT_APPOINTMENT, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .set(APPOINTMENTS, List())
+          .setIn([ACTIONS, EDIT_APPOINTMENT, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, EDIT_APPOINTMENT, action.id]),
       });
     }
 
