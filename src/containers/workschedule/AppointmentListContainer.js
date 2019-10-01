@@ -7,8 +7,11 @@ import {
   Map,
   OrderedMap
 } from 'immutable';
+import { connect } from 'react-redux';
 import { SearchResults } from 'lattice-ui-kit';
 import { DateTime } from 'luxon';
+import { RequestStates } from 'redux-reqseq';
+import type { RequestState } from 'redux-reqseq';
 
 import AppointmentContainer from './AppointmentContainer';
 import NoAppointmentsScheduled from './NoAppointmentsScheduled';
@@ -21,6 +24,7 @@ import {
   INCIDENT_START_DATETIME,
   PEOPLE_FQNS,
 } from '../../core/edm/constants/FullyQualifiedNames';
+import { PERSON, STATE } from '../../utils/constants/ReduxStateConsts';
 import { EMPTY_FIELD } from '../participants/ParticipantsConstants';
 
 const { FIRST_NAME, LAST_NAME } = PEOPLE_FQNS;
@@ -31,6 +35,7 @@ const OuterWrapper = styled.div`
 
 type Props = {
   appointments :List;
+  editAppointmentsRequestState :RequestState;
   hasSearched :boolean;
   isLoading :boolean;
   personByAppointmentEKID ?:Map;
@@ -49,9 +54,11 @@ class AppointmentListContainer extends Component<Props, State> {
   };
 
   componentDidUpdate(prevProps :Props) {
-    const { appointments, isLoading } = this.props;
+    const { appointments, editAppointmentsRequestState, isLoading } = this.props;
     if (prevProps.appointments.count() !== appointments.count()
-      || (prevProps.isLoading && !isLoading)) {
+      || (prevProps.isLoading && !isLoading)
+      || (prevProps.editAppointmentsRequestState === RequestStates.PENDING
+        && editAppointmentsRequestState !== RequestStates.PENDING)) {
       const sortedAppointments :List = this.sortAppointmentsByDate(appointments);
       this.setFullWorkAppointments(sortedAppointments);
     }
@@ -132,4 +139,12 @@ AppointmentListContainer.defaultProps = {
   worksitesToInclude: undefined,
 };
 
-export default AppointmentListContainer;
+const mapStateToProps = (state :Map) => {
+  const person = state.get(STATE.PERSON);
+  return ({
+    editAppointmentsRequestState: person.getIn([PERSON.ACTIONS, PERSON.EDIT_APPOINTMENT, PERSON.REQUEST_STATE]),
+  });
+};
+
+// $FlowFixMe
+export default connect(mapStateToProps)(AppointmentListContainer);
