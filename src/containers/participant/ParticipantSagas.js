@@ -29,6 +29,7 @@ import {
   CHECK_IN_FOR_APPOINTMENT,
   CREATE_WORK_APPOINTMENTS,
   DELETE_APPOINTMENT,
+  EDIT_APPOINTMENT,
   EDIT_CASE_AND_HOURS,
   EDIT_CHECK_IN_DATE,
   EDIT_PLAN_NOTES,
@@ -55,6 +56,7 @@ import {
   checkInForAppointment,
   createWorkAppointments,
   deleteAppointment,
+  editAppointment,
   editCaseAndHours,
   editCheckInDate,
   editPlanNotes,
@@ -779,6 +781,46 @@ function* deleteAppointmentWorker(action :SequenceAction) :Generator<*, *, *> {
 function* deleteAppointmentWatcher() :Generator<*, *, *> {
 
   yield takeEvery(DELETE_APPOINTMENT, deleteAppointmentWorker);
+}
+
+/*
+ *
+ * ParticipantActions.editAppointment()
+ *
+ */
+
+function* editAppointmentWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+
+  try {
+    yield put(editAppointment.request(id, value));
+
+    const response = yield call(submitPartialReplaceWorker, submitPartialReplace(value));
+    if (response.error) {
+      throw response.error;
+    }
+    const app = yield select(getAppFromState);
+    const appointmentESID :UUID = getEntitySetIdFromApp(app, APPOINTMENT);
+    const edm = yield select(getEdmFromState);
+
+    yield put(editAppointment.success(id, {
+      appointmentESID,
+      edm,
+    }));
+  }
+  catch (error) {
+    LOG.error('caught exception in editAppointmentWorker()', error);
+    yield put(editAppointment.failure(id, error));
+  }
+  finally {
+    yield put(editAppointment.finally(id));
+  }
+}
+
+function* editAppointmentWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(EDIT_APPOINTMENT, editAppointmentWorker);
 }
 
 /*
@@ -1719,6 +1761,8 @@ export {
   createWorkAppointmentsWorker,
   deleteAppointmentWatcher,
   deleteAppointmentWorker,
+  editAppointmentWatcher,
+  editAppointmentWorker,
   editCaseAndHoursWatcher,
   editCaseAndHoursWorker,
   editCheckInDateWatcher,
