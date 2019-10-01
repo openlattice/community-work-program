@@ -1,19 +1,19 @@
 // @flow
 import React, { Component } from 'react';
-import { Map } from 'immutable';
+import { fromJS, Map } from 'immutable';
 import { DateTime } from 'luxon';
 import { Form, DataProcessingUtils } from 'lattice-fabricate';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import type { RequestSequence } from 'redux-reqseq';
 
+import { editAppointment } from '../ParticipantActions';
 import { schema, uiSchema } from './schemas/EditAppointmentSchemas';
 import { getEntitySetIdFromApp, getPropertyTypeIdFromEdm } from '../../../utils/DataUtils';
 import { getCombinedDateTime } from '../../../utils/ScheduleUtils';
 import {
   APP_TYPE_FQNS,
   DATETIME_END,
-  ENTITY_KEY_ID,
   INCIDENT_START_DATETIME
 } from '../../../core/edm/constants/FullyQualifiedNames';
 import { STATE } from '../../../utils/constants/ReduxStateConsts';
@@ -22,8 +22,6 @@ const {
   getPageSectionKey,
   getEntityAddressKey,
   processEntityData,
-  processEntityDataForPartialReplace,
-  processAssociationEntityData
 } = DataProcessingUtils;
 
 const { APPOINTMENT } = APP_TYPE_FQNS;
@@ -41,6 +39,10 @@ const get24HourTimeFromString = (timeString :string) :string => {
   const timeIn24Hour :string = time.toLowerCase().split(' ').join('');
   return timeIn24Hour;
 };
+
+const getDateInISOFormat = (dateString :string) => (
+  DateTime.fromFormat(dateString.split('/').join(' '), 'M d yyyy').toISODate()
+);
 
 type Props = {
   actions:{
@@ -70,7 +72,8 @@ class EditAppointmentForm extends Component<Props, State> {
   prepopulateFormData = () => {
     const { appointment, personName } = this.props;
 
-    const date = appointment.get('day').split(' ')[1];
+    const rawDateString = appointment.get('day').split(' ')[1];
+    const date = getDateInISOFormat(rawDateString);
     const hours = appointment.get('hours');
     const { start, end } = getInfoFromTimeRange(hours);
     const startTime :string = get24HourTimeFromString(start);
@@ -103,38 +106,55 @@ class EditAppointmentForm extends Component<Props, State> {
     };
   };
 
+  handleOnChange = ({ formData } :Object) => {
+    this.setState({ formData });
+  }
+
   handleOnSubmit = ({ formData } :Object) => {
-    // console.log('formData in handleOnSubmit: ', formData);
+    const { actions, app, appointmentEKID } = this.props;
+
+    let formDataToProcess :Map = fromJS({
+      [getPageSectionKey(1, 1)]: {}
+    });
+
+    const startDateTime :string = getCombinedDateTime(
+      formData[getPageSectionKey(1, 1)].date,
+      formData[getPageSectionKey(1, 1)].startTime
+    );
+    const endDateTime :string = getCombinedDateTime(
+      formData[getPageSectionKey(1, 1)].date,
+      formData[getPageSectionKey(1, 1)].endTime
+    );
+
+    formDataToProcess = formDataToProcess.setIn([
+      getPageSectionKey(1, 1),
+      getEntityAddressKey(0, APPOINTMENT, INCIDENT_START_DATETIME)
+    ], startDateTime);
+    formDataToProcess = formDataToProcess.setIn([
+      getPageSectionKey(1, 1),
+      getEntityAddressKey(0, APPOINTMENT, DATETIME_END)
+    ], endDateTime);
 
     const entitySetIds :{} = this.createEntitySetIdsMap();
     const propertyTypeIds :{} = this.createPropertyTypeIdsMap();
-    // const entityData = processEntityDataForPartialReplace(formData, originalData, entitySetIds, propertyTypeIds, {});
-    // actions.editAppointment({ entityData });
+    const processedData = processEntityData(formDataToProcess, entitySetIds, propertyTypeIds);
+
+    const appointmentESID :UUID = getEntitySetIdFromApp(app, APPOINTMENT);
+    const entityData :{} = {
+      [appointmentESID]: {
+        [appointmentEKID]: processedData[appointmentESID][0],
+      }
+    };
+    actions.editAppointment({ entityData });
   }
 
   render() {
-    const { actions } = this.props;
     const { formData } = this.state;
-
-    // console.log('this.state.formData: ', formData);
-
-    const formContext :{} = {
-      addActions: {
-        addTaskItem: () => {}
-      },
-      deleteAction: () => {},
-      editAction: () => {},
-      entityIndexToIdMap: Map(),
-      entitySetIds: this.createEntitySetIdsMap(),
-      mappers: {},
-      propertyTypeIds: this.createPropertyTypeIdsMap(),
-    };
-    // console.log('formData: ', formData);
     return (
       <Form
-          formContext={formContext}
+          formContext={{}}
           formData={formData}
-          onChange={() => {}}
+          onChange={this.handleOnChange}
           onSubmit={this.handleOnSubmit}
           schema={schema}
           uiSchema={uiSchema} />
@@ -151,5 +171,12 @@ const mapStateToProps = (state :Map) => {
   });
 };
 
+const mapDispatchToProps = dispatch => ({
+  actions: bindActionCreators({
+    editAppointment,
+  }, dispatch)
+});
+
+
 // $FlowFixMe
-export default connect(mapStateToProps)(EditAppointmentForm);
+export default connect(mapStateToProps, mapDispatchToProps)(EditAppointmentForm);
