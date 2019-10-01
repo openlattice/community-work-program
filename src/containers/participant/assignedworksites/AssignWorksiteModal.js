@@ -22,7 +22,7 @@ type Props = {
   worksites :List;
 };
 
-class AddParticipantModal extends Component<Props> {
+class AssignWorksiteModal extends Component<Props> {
 
   componentDidUpdate(prevProps :Props) {
     const { addWorksitePlanRequestState, onClose } = this.props;
@@ -64,4 +64,4 @@ const mapStateToProps = (state :Map) => ({
 });
 
 // $FlowFixMe
-export default connect(mapStateToProps)(AddParticipantModal);
+export default connect(mapStateToProps)(AssignWorksiteModal);
