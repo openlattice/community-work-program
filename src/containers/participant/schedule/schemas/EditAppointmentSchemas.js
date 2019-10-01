@@ -1,17 +1,7 @@
 // @flow
 import { DataProcessingUtils } from 'lattice-fabricate';
 
-import {
-  APP_TYPE_FQNS,
-  DATETIME_END,
-  INCIDENT_START_DATETIME
-} from '../../../../core/edm/constants/FullyQualifiedNames';
-
-const { getEntityAddressKey, getPageSectionKey } = DataProcessingUtils;
-
-const {
-  APPOINTMENT,
-} = APP_TYPE_FQNS;
+const { getPageSectionKey } = DataProcessingUtils;
 
 export const schema = {
   type: 'object',
@@ -37,12 +27,10 @@ export const schema = {
         startTime: {
           type: 'string',
           title: 'Start time',
-          format: 'time',
         },
         endTime: {
           type: 'string',
           title: 'End time',
-          format: 'time',
         }
       }
     },
