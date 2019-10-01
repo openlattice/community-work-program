@@ -1,5 +1,5 @@
 // @flow
-import React, { Component } from 'react';
+import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { Map } from 'immutable';
 import {
@@ -28,11 +28,6 @@ import { ButtonWrapper } from '../../components/Layout';
 const { CHECK_INS_BY_APPOINTMENT, PARTICIPANT } = PERSON;
 const { PERSON_BY_APPOINTMENT_EKID } = WORK_SCHEDULE;
 const { FIRST_NAME, LAST_NAME } = PEOPLE_FQNS;
-
-const CHECK_IN = 'isCheckInModalVisible';
-const CHECK_IN_DETAILS = 'isCheckInDetailsModalVisible';
-const DELETE_APPOINTMENT = 'isDeleteAppointmentModalVisible';
-const EDIT_APPOINTMENT = 'isEditAppointmentModalVisible';
 
 const OuterWrapper = styled.div`
   width: 100%;
@@ -72,148 +67,126 @@ type Props = {
   result :Map;
 };
 
-type State = {
-  isCheckInDetailsModalVisible :boolean;
-  isCheckInModalVisible :boolean;
-  isDeleteAppointmentModalVisible :boolean;
-  isEditAppointmentModalVisible :boolean;
+const AppointmentContainer = ({
+  checkInsByAppointment,
+  participant,
+  personByAppointmentEKID,
+  result,
+} :Props) => {
+
+  const [isCheckInModalVisible, handleCheckInModalVisibility] = useState(false);
+  const [isCheckInDetailsModalVisible, handleCheckInDetailsModalVisibility] = useState(false);
+  const [isDeleteAppointmentModalVisible, handleDeleteAppointmentModalVisibility] = useState(false);
+  const [isEditAppointmentModalVisible, handleEditAppointmentModalVisibility] = useState(false);
+
+  const [day, setDay] = useState('');
+  const [hours, setHours] = useState('');
+
+  // use effect for editable properties
+  useEffect(() => {
+    const storedDay = result.get('day');
+    const storedHours = result.get('hours');
+    setDay(storedDay);
+    setHours(storedHours);
+  });
+
+  const personName = result.get('personName');
+  const worksiteName = result.get('worksiteName');
+
+  const appointmentEKID :UUID = result.get(ENTITY_KEY_ID);
+  const checkIn :Map = checkInsByAppointment.get(appointmentEKID);
+  const checkedIn :boolean = isDefined(checkIn);
+
+  let personEKID :UUID = '';
+  if (isDefined(personByAppointmentEKID)) {
+    personEKID = getEntityKeyId(personByAppointmentEKID.get(appointmentEKID));
+  }
+  if (!isDefined(personByAppointmentEKID.get(appointmentEKID)) || personByAppointmentEKID.isEmpty()) {
+    personEKID = getEntityKeyId(participant);
+  }
+
+  let modalDisplayOfPersonName = personName;
+  if (!personName) {
+    const {
+      [FIRST_NAME]: firstName,
+      [LAST_NAME]: lastName
+    } = getEntityProperties(participant, [FIRST_NAME, LAST_NAME]);
+    modalDisplayOfPersonName = `${firstName} ${lastName}`;
+  }
+  return (
+    <OuterWrapper>
+      <Card>
+        <AppointmentCardSegment padding="sm">
+          <InnerWrapper>
+            <Text>
+              <FontAwesomeIcon icon={faCalendarAlt} size="sm" />
+            </Text>
+            <Text>{ day }</Text>
+            {
+              personName && (
+                <Text>{ personName }</Text>
+              )
+            }
+            <Text>{ worksiteName }</Text>
+            <Text>{ hours }</Text>
+          </InnerWrapper>
+          <ActionButtonsWrapper>
+            {
+              checkedIn
+                ? (
+                  <CheckWrapper onClick={() => handleCheckInDetailsModalVisibility(true)}>
+                    <FontAwesomeIcon icon={faCheckCircle} color={OL.PURPLE02} size="lg" />
+                  </CheckWrapper>
+                )
+                : (
+                  <Button
+                      onClick={() => handleCheckInModalVisibility(true)}
+                      mode="subtle">
+                    Check in
+                  </Button>
+                )
+            }
+            {
+              !checkedIn && (
+                <ActionButtonsWrapper>
+                  <IconButton
+                      icon={<FontAwesomeIcon icon={faPen} color={OL.GREY04} size="sm" />}
+                      mode="subtle"
+                      onClick={() => handleEditAppointmentModalVisibility(true)} />
+                  <IconButton
+                      icon={<FontAwesomeIcon icon={faTrash} color={OL.GREY04} size="sm" />}
+                      mode="subtle"
+                      onClick={() => handleDeleteAppointmentModalVisibility(true)} />
+                </ActionButtonsWrapper>
+              )
+            }
+          </ActionButtonsWrapper>
+        </AppointmentCardSegment>
+      </Card>
+      <CheckInModal
+          appointment={result}
+          isOpen={isCheckInModalVisible}
+          onClose={() => handleCheckInModalVisibility(false)}
+          personEKID={personEKID}
+          personName={modalDisplayOfPersonName} />
+      <CheckInDetailsModal
+          checkIn={checkIn}
+          isOpen={isCheckInDetailsModalVisible}
+          onClose={() => handleCheckInDetailsModalVisibility(false)} />
+      <DeleteAppointmentModal
+          appointment={result}
+          appointmentEKID={appointmentEKID}
+          isOpen={isDeleteAppointmentModalVisible}
+          onClose={() => handleDeleteAppointmentModalVisibility(false)} />
+      <EditAppointmentModal
+          appointment={result}
+          appointmentEKID={appointmentEKID}
+          isOpen={isEditAppointmentModalVisible}
+          onClose={() => handleEditAppointmentModalVisibility(false)}
+          personName={modalDisplayOfPersonName} />
+    </OuterWrapper>
+  );
 };
-
-class AppointmentContainer extends Component<Props, State> {
-
-  state = {
-    [CHECK_IN]: false,
-    [CHECK_IN_DETAILS]: false,
-    [DELETE_APPOINTMENT]: false,
-    [EDIT_APPOINTMENT]: false,
-  };
-
-  handleShowModal = (modalName :string) => {
-    this.setState({
-      [modalName]: true,
-    });
-  }
-
-  handleHideModal = (modalName :string) => {
-    this.setState({
-      [modalName]: false,
-    });
-  }
-
-  render() {
-    const {
-      checkInsByAppointment,
-      participant,
-      personByAppointmentEKID,
-      result,
-    } = this.props;
-    const {
-      isCheckInDetailsModalVisible,
-      isCheckInModalVisible,
-      isDeleteAppointmentModalVisible,
-      isEditAppointmentModalVisible,
-    } = this.state;
-
-    const day = result.get('day');
-    const personName = result.get('personName');
-    const worksiteName = result.get('worksiteName');
-    const hours = result.get('hours');
-
-    const appointmentEKID :UUID = result.get(ENTITY_KEY_ID);
-    const checkIn :Map = checkInsByAppointment.get(appointmentEKID);
-    const checkedIn :boolean = isDefined(checkIn);
-
-    let personEKID :UUID = '';
-    if (isDefined(personByAppointmentEKID)) {
-      personEKID = getEntityKeyId(personByAppointmentEKID.get(appointmentEKID));
-    }
-    if (!isDefined(personByAppointmentEKID.get(appointmentEKID)) || personByAppointmentEKID.isEmpty()) {
-      personEKID = getEntityKeyId(participant);
-    }
-
-    let modalDisplayOfPersonName = personName;
-    if (!personName) {
-      const {
-        [FIRST_NAME]: firstName,
-        [LAST_NAME]: lastName
-      } = getEntityProperties(participant, [FIRST_NAME, LAST_NAME]);
-      modalDisplayOfPersonName = `${firstName} ${lastName}`;
-    }
-    return (
-      <OuterWrapper>
-        <Card>
-          <AppointmentCardSegment padding="sm">
-            <InnerWrapper>
-              <Text>
-                <FontAwesomeIcon icon={faCalendarAlt} size="sm" />
-              </Text>
-              <Text>{ day }</Text>
-              {
-                personName && (
-                  <Text>{ personName }</Text>
-                )
-              }
-              <Text>{ worksiteName }</Text>
-              <Text>{ hours }</Text>
-            </InnerWrapper>
-            <ActionButtonsWrapper>
-              {
-                checkedIn
-                  ? (
-                    <CheckWrapper onClick={() => this.handleShowModal(CHECK_IN_DETAILS)}>
-                      <FontAwesomeIcon icon={faCheckCircle} color={OL.PURPLE02} size="lg" />
-                    </CheckWrapper>
-                  )
-                  : (
-                    <Button
-                        onClick={() => this.handleShowModal(CHECK_IN)}
-                        mode="subtle">
-                      Check in
-                    </Button>
-                  )
-              }
-              {
-                !checkedIn && (
-                  <ActionButtonsWrapper>
-                    <IconButton
-                        icon={<FontAwesomeIcon icon={faPen} color={OL.GREY04} size="sm" />}
-                        mode="subtle"
-                        onClick={() => this.handleShowModal(EDIT_APPOINTMENT)} />
-                    <IconButton
-                        icon={<FontAwesomeIcon icon={faTrash} color={OL.GREY04} size="sm" />}
-                        mode="subtle"
-                        onClick={() => this.handleShowModal(DELETE_APPOINTMENT)} />
-                  </ActionButtonsWrapper>
-                )
-              }
-            </ActionButtonsWrapper>
-          </AppointmentCardSegment>
-        </Card>
-        <CheckInModal
-            appointment={result}
-            isOpen={isCheckInModalVisible}
-            onClose={() => this.handleHideModal(CHECK_IN)}
-            personEKID={personEKID}
-            personName={modalDisplayOfPersonName} />
-        <CheckInDetailsModal
-            checkIn={checkIn}
-            isOpen={isCheckInDetailsModalVisible}
-            onClose={() => this.handleHideModal(CHECK_IN_DETAILS)} />
-        <DeleteAppointmentModal
-            appointment={result}
-            appointmentEKID={appointmentEKID}
-            isOpen={isDeleteAppointmentModalVisible}
-            onClose={() => this.handleHideModal(DELETE_APPOINTMENT)} />
-        <EditAppointmentModal
-            appointment={result}
-            appointmentEKID={appointmentEKID}
-            isOpen={isEditAppointmentModalVisible}
-            onClose={() => this.handleHideModal(EDIT_APPOINTMENT)}
-            personName={modalDisplayOfPersonName} />
-      </OuterWrapper>
-    );
-  }
-}
 
 const mapStateToProps = (state :Map) => {
   const person = state.get(STATE.PERSON);
