@@ -15,6 +15,7 @@ import {
   deleteAppointment,
   editCaseAndHours,
   editCheckInDate,
+  editPersonNotes,
   editPlanNotes,
   editSentenceDate,
   editWorksitePlan,
@@ -50,6 +51,7 @@ import {
   ENTITY_KEY_ID,
   INFRACTION_EVENT_FQNS,
   INFRACTION_FQNS,
+  PEOPLE_FQNS,
   WORKSITE_PLAN_FQNS,
 } from '../../core/edm/constants/FullyQualifiedNames';
 
@@ -60,6 +62,7 @@ const { NOTES } = DIVERSION_PLAN_FQNS;
 const { STATUS } = ENROLLMENT_STATUS_FQNS;
 const { TYPE } = INFRACTION_EVENT_FQNS;
 const { CATEGORY } = INFRACTION_FQNS;
+const { PERSON_NOTES } = PEOPLE_FQNS;
 const { HOURS_WORKED, REQUIRED_HOURS } = WORKSITE_PLAN_FQNS;
 const {
   ACTIONS,
@@ -75,6 +78,7 @@ const {
   DIVERSION_PLAN,
   EDIT_CASE_AND_HOURS,
   EDIT_CHECK_IN_DATE,
+  EDIT_PERSON_NOTES,
   EDIT_PLAN_NOTES,
   EDIT_SENTENCE_DATE,
   EDIT_WORKSITE_PLAN,
@@ -139,6 +143,9 @@ const INITIAL_STATE :Map<*, *> = fromJS({
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [EDIT_CHECK_IN_DATE]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [EDIT_PERSON_NOTES]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [EDIT_PLAN_NOTES]: {
@@ -641,6 +648,49 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
         FAILURE: () => state
           .setIn([ACTIONS, DELETE_APPOINTMENT, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, DELETE_APPOINTMENT, action.id]),
+      });
+    }
+
+    case editPersonNotes.case(action.type): {
+
+      return editPersonNotes.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, EDIT_PLAN_NOTES, action.id], action)
+          .setIn([ACTIONS, EDIT_PLAN_NOTES, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+
+          const seqAction :SequenceAction = action;
+          const storedSeqAction :SequenceAction = state.getIn([ACTIONS, EDIT_PLAN_NOTES, seqAction.id]);
+
+          if (storedSeqAction) {
+
+            const { value } :Object = seqAction;
+            const { peopleESID } = value;
+
+            const requestValue :Object = storedSeqAction.value;
+            const { entityData } :Object = requestValue;
+
+            let person :Map = state.get(PARTICIPANT);
+
+            const personEKID = Object.keys(entityData[peopleESID])[0];
+            const storedPropertyValueMap = entityData[peopleESID][personEKID];
+            const personNotes = Object.values(storedPropertyValueMap)[0];
+
+            let personNotesPlaceholder = person.get(PERSON_NOTES, 0);
+            personNotesPlaceholder = personNotes[0];
+            person = person.set(PERSON_NOTES, personNotesPlaceholder);
+
+            return state
+              .set(PARTICIPANT, person)
+              .setIn([ACTIONS, EDIT_PLAN_NOTES, REQUEST_STATE], RequestStates.SUCCESS);
+          }
+
+          return state;
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, EDIT_PLAN_NOTES, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, EDIT_PLAN_NOTES, action.id]),
       });
     }
 
