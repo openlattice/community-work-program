@@ -57,11 +57,15 @@ const {
   COMPLETED,
   DATETIME_RECEIVED,
   NAME,
-  NOTES,
   REQUIRED_HOURS
 } = DIVERSION_PLAN_FQNS;
 const { EFFECTIVE_DATE, STATUS } = ENROLLMENT_STATUS_FQNS;
-const { DOB, FIRST_NAME, LAST_NAME } = PEOPLE_FQNS;
+const {
+  DOB,
+  FIRST_NAME,
+  LAST_NAME,
+  PERSON_NOTES,
+} = PEOPLE_FQNS;
 
 type Props = {
   actions:{
@@ -129,7 +133,7 @@ class AddParticipantForm extends Component<Props, State> {
     const firstNamePTID :UUID = getPropertyTypeIdFromEdm(edm, FIRST_NAME);
     const lastNamePTID :UUID = getPropertyTypeIdFromEdm(edm, LAST_NAME);
     const namePTID :UUID = getPropertyTypeIdFromEdm(edm, NAME);
-    const notesPTID :UUID = getPropertyTypeIdFromEdm(edm, NOTES);
+    const personNotesPTID :UUID = getPropertyTypeIdFromEdm(edm, PERSON_NOTES);
     const requiredHoursPTID :UUID = getPropertyTypeIdFromEdm(edm, REQUIRED_HOURS);
     const statusPTID :UUID = getPropertyTypeIdFromEdm(edm, STATUS);
 
@@ -145,7 +149,7 @@ class AddParticipantForm extends Component<Props, State> {
       [FIRST_NAME]: firstNamePTID,
       [LAST_NAME]: lastNamePTID,
       [NAME]: namePTID,
-      [NOTES]: notesPTID,
+      [PERSON_NOTES]: personNotesPTID,
       [REQUIRED_HOURS]: requiredHoursPTID,
       [STATUS]: statusPTID,
     };
@@ -266,7 +270,7 @@ class AddParticipantForm extends Component<Props, State> {
           <RowContent>
             <Label>Notes</Label>
             <TextArea
-                name={getEntityAddressKey(0, DIVERSION_PLAN, NOTES)}
+                name={getEntityAddressKey(0, PEOPLE, PERSON_NOTES)}
                 onChange={this.handleInputChange} />
           </RowContent>
         </FormRow>
