@@ -27,7 +27,6 @@ import ParticipantWorkSchedule from './schedule/ParticipantWorkSchedule';
 import ProgramCompletionBanner from './ProgramCompletionBanner';
 
 import AssignedWorksite from './assignedworksites/AssignedWorksite';
-import AddNewPlanStatusModal from './AddNewPlanStatusModal';
 import AssignWorksiteModal from './assignedworksites/AssignWorksiteModal';
 import InfractionsContainer from './infractions/InfractionsContainer';
 import CreateWorkAppointmentModal from './schedule/CreateAppointmentModal';
@@ -100,7 +99,6 @@ const ENROLLMENT_STATUSES_EXCLUDING_PREENROLLMENT = Object.values(ENROLLMENT_STA
 /* Constants for Modals */
 const ASSIGN_WORKSITE = 'showAssignWorksiteModal';
 const CHECK_IN_DATE = 'showCheckInDateModal';
-const ENROLLMENT = 'showEnrollmentModal';
 const ORIENTATION_DATE = 'showOrientationDateModal';
 const SENTENCE_DATE = 'showSentenceDateModal';
 const WORK_APPOINTMENT = 'showWorkAppointmentModal';
@@ -205,7 +203,6 @@ type State = {
   workStartDateTime :string;
   showAssignWorksiteModal :boolean;
   showCheckInDateModal :boolean;
-  showEnrollmentModal :boolean;
   showOrientationDateModal :boolean;
   showSentenceDateModal :boolean;
   showWorkAppointmentModal :boolean;
@@ -221,7 +218,6 @@ class ParticipantProfile extends Component<Props, State> {
       workStartDateTime: '',
       [ASSIGN_WORKSITE]: false,
       [CHECK_IN_DATE]: false,
-      [ENROLLMENT]: false,
       [ORIENTATION_DATE]: false,
       [SENTENCE_DATE]: false,
       [WORK_APPOINTMENT]: false,
@@ -325,7 +321,6 @@ class ParticipantProfile extends Component<Props, State> {
     const {
       showAssignWorksiteModal,
       showCheckInDateModal,
-      showEnrollmentModal,
       showOrientationDateModal,
       showSentenceDateModal,
       showWorkAppointmentModal,
@@ -481,11 +476,6 @@ class ParticipantProfile extends Component<Props, State> {
                 currentStatus={status}
                 personEKID={personEKID} />
           </ProfileBody>
-          <AddNewPlanStatusModal
-              currentStatus={status}
-              isOpen={showEnrollmentModal}
-              onClose={() => this.handleHideModal(ENROLLMENT)}
-              personName={firstName} />
           <AssignWorksiteModal
               diversionPlanEKID={diversionPlanEKID}
               isOpen={showAssignWorksiteModal}
