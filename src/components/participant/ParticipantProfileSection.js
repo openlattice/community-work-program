@@ -69,6 +69,7 @@ const PersonValue = styled.div`
 
 type Props = {
   address :string;
+  edit :() => void;
   email :string;
   person :Map;
   phone :string;
@@ -76,6 +77,7 @@ type Props = {
 
 const ParticipantProfileSection = ({
   address,
+  edit,
   email,
   person,
   phone,
@@ -101,7 +103,7 @@ const ParticipantProfileSection = ({
     <SectionWrapper>
       <SectionNameRow>
         <SectionLabel subtle>Participant Profile</SectionLabel>
-        <SmallEditButton mode="subtle" onClick={() => {}} />
+        <SmallEditButton mode="subtle" onClick={edit} />
       </SectionNameRow>
       <PersonCard>
         <PersonHeaderRow>

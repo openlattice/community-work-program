@@ -297,6 +297,11 @@ class ParticipantProfile extends Component<Props, State> {
     actions.goToRoute(Routes.PRINT_PARTICIPANT_SCHEDULE.replace(':subjectId', personEKID));
   }
 
+  editParticipant = () => {
+    const { actions, personEKID } = this.props;
+    actions.goToRoute(Routes.EDIT_PARTICIPANT.replace(':subjectId', personEKID));
+  }
+
   render() {
     const {
       actions,
@@ -384,6 +389,7 @@ class ParticipantProfile extends Component<Props, State> {
             <ProfileInfoColumnWrapper>
               <ParticipantProfileSection
                   address={address}
+                  edit={this.editParticipant}
                   email={email}
                   person={participant}
                   phone={phone} />
