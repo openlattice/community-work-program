@@ -15,11 +15,15 @@ import { bindActionCreators } from 'redux';
 import { RequestStates } from 'redux-reqseq';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
-import GeneralInfo from '../../components/participant/GeneralInfo';
-import KeyDates from '../../components/participant/KeyDates';
-import CaseInfo from './cases/CaseInfo';
+import {
+  CaseInfoSection,
+  EnrollmentDates,
+  EnrollmentStatusSection,
+  ParticipantProfileSection,
+  PersonNotes,
+  ProgramNotes,
+} from '../../components/participant/index';
 import ParticipantWorkSchedule from './schedule/ParticipantWorkSchedule';
-import PlanNotes from './plannotes/PlanNotes';
 import ProgramCompletionBanner from './ProgramCompletionBanner';
 
 import AssignedWorksite from './assignedworksites/AssignedWorksite';
@@ -65,7 +69,7 @@ const {
   REQUIRED_HOURS,
 } = DIVERSION_PLAN_FQNS;
 const { STATUS } = ENROLLMENT_STATUS_FQNS;
-const { FIRST_NAME } = PEOPLE_FQNS;
+const { FIRST_NAME, PERSON_NOTES } = PEOPLE_FQNS;
 const { NAME } = WORKSITE_FQNS;
 const {
   ACTIONS,
@@ -122,6 +126,30 @@ const ProfileBody = styled.div`
   width: 100%;
 `;
 
+const GeneralInfoSection = styled(ProfileBody)`
+  height: 790px;
+  align-items: center;
+  flex-direction: row;
+`;
+
+const ProfileInfoColumnWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  height: 100%;
+  width: 383px;
+`;
+
+const ProgramInfoColumnWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  height: 100%;
+  width: 547px;
+`;
+
 const NameRowWrapper = styled.div`
   margin: 15px 0;
   width: 100%;
@@ -134,23 +162,6 @@ const NameHeader = styled.div`
   font-size: 26px;
   font-weight: 600;
   color: ${OL.BLACK};
-`;
-
-const BasicInfoWrapper = styled.div`
-  margin-top: 15px;
-  width: 100%;
-  height: 500px;
-  display: flex;
-  justify-content: space-between;
-`;
-
-const InnerColumnWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  align-items: center;
-  height: 100%;
-  width: 610px;
 `;
 
 const ButtonsWrapper = styled.div`
@@ -332,7 +343,10 @@ class ParticipantProfile extends Component<Props, State> {
     }
 
     const personEKID :UUID = getEntityKeyId(participant);
-    const { [FIRST_NAME]: firstName } = getEntityProperties(participant, [FIRST_NAME]);
+    const {
+      [FIRST_NAME]: firstName,
+      [PERSON_NOTES]: personNotes
+    } = getEntityProperties(participant, [FIRST_NAME, PERSON_NOTES]);
     let { [STATUS]: status } = getEntityProperties(enrollmentStatus, [STATUS]);
     if (!isDefined(status)) status = ENROLLMENT_STATUSES.AWAITING_CHECKIN;
 
@@ -351,10 +365,6 @@ class ParticipantProfile extends Component<Props, State> {
       REQUIRED_HOURS,
     ]);
 
-    const orientationDateAlreadyRecorded :boolean = isDefined(diversionPlan.get(ORIENTATION_DATETIME));
-    const addOrEditButtonText :string = orientationDateAlreadyRecorded
-      ? 'Edit Orientation Date'
-      : 'Add Orientation Date';
     return (
       <>
         {
@@ -367,46 +377,42 @@ class ParticipantProfile extends Component<Props, State> {
             )
         }
         <ProfileWrapper>
-          <ProfileBody>
-            <NameRowWrapper>
-              <BackNavButton
-                  onClick={() => {
-                    actions.goToRoute(Routes.PARTICIPANTS);
-                  }}>
-                Back to Participants
-              </BackNavButton>
-              <ButtonsWrapper>
-                <Button onClick={() => this.handleShowModal(SENTENCE_DATE)}>Edit Sentence Date</Button>
-                <Button onClick={() => this.handleShowModal(CHECK_IN_DATE)}>Edit Check-In Date</Button>
-                <Button onClick={() => this.handleShowModal(ORIENTATION_DATE)}>{ addOrEditButtonText }</Button>
-                <Button mode="primary" onClick={() => this.handleShowModal(ENROLLMENT)}>
-                  Change Enrollment Status
-                </Button>
-              </ButtonsWrapper>
-            </NameRowWrapper>
-            <BasicInfoWrapper>
-              <GeneralInfo
+          <NameRowWrapper>
+            <BackNavButton
+                onClick={() => {
+                  actions.goToRoute(Routes.PARTICIPANTS);
+                }}>
+              Back to Participants
+            </BackNavButton>
+          </NameRowWrapper>
+          <GeneralInfoSection>
+            <ProfileInfoColumnWrapper>
+              <ParticipantProfileSection
                   address={address}
                   email={email}
                   person={participant}
-                  phone={phone}
-                  status={status} />
-              <InnerColumnWrapper>
-                <KeyDates
-                    checkInDate={checkInDate}
-                    orientationDateTime={orientationDateTime}
-                    sentenceDateTime={sentenceDate}
-                    workStartDateTime={workStartDateTime} />
-                <CaseInfo
-                    hours={requiredHours}
-                    personCase={personCase}
-                    warnings={warnings}
-                    violations={violations} />
-                <PlanNotes
-                    notes={planNotes} />
-              </InnerColumnWrapper>
-            </BasicInfoWrapper>
-          </ProfileBody>
+                  phone={phone} />
+              <PersonNotes
+                  notes={personNotes} />
+            </ProfileInfoColumnWrapper>
+            <ProgramInfoColumnWrapper>
+              <EnrollmentStatusSection
+                  enrollmentStatus={enrollmentStatus}
+                  firstName={firstName}
+                  violations={violations}
+                  warnings={warnings} />
+              <EnrollmentDates
+                  checkInDate={checkInDate}
+                  orientationDateTime={orientationDateTime}
+                  sentenceDateTime={sentenceDate}
+                  workStartDateTime={workStartDateTime} />
+              <CaseInfoSection
+                  personCase={personCase}
+                  hours={requiredHours} />
+              <ProgramNotes
+                  notes={planNotes} />
+            </ProgramInfoColumnWrapper>
+          </GeneralInfoSection>
           {
             ENROLLMENT_STATUSES_EXCLUDING_PREENROLLMENT.includes(status) && (
               <ProfileBody>
