@@ -5,6 +5,12 @@ import { fromJS, Map, OrderedMap } from 'immutable';
 import { DateTime } from 'luxon';
 import { Card, CardSegment, DataGrid } from 'lattice-ui-kit';
 
+import {
+  SectionLabel,
+  SectionNameRow,
+  SectionWrapper,
+  SmallEditButton,
+} from './SectionStyledComponents';
 import { formatAsDate } from '../../utils/DateTimeUtils';
 import { EMPTY_FIELD } from '../../containers/participants/ParticipantsConstants';
 
@@ -17,8 +23,8 @@ const labelMap :OrderedMap = OrderedMap({
   sentenceEndDate: 'Sentence end date',
 });
 
-const DatesWrapper = styled.div`
-  width: 610px;
+const DatesCard = styled(Card)`
+  height: 190px;
 `;
 
 type Props = {
@@ -28,7 +34,7 @@ type Props = {
   workStartDateTime :string;
 };
 
-const KeyDates = ({
+const EnrollmentDates = ({
   checkInDate,
   orientationDateTime,
   sentenceDateTime,
@@ -64,17 +70,21 @@ const KeyDates = ({
     sentenceEndDate,
   });
   return (
-    <DatesWrapper>
-      <Card>
+    <SectionWrapper>
+      <SectionNameRow>
+        <SectionLabel subtle>Enrollment Dates</SectionLabel>
+        <SmallEditButton mode="subtle" onClick={() => {}} />
+      </SectionNameRow>
+      <DatesCard>
         <CardSegment padding="md" vertical>
           <DataGrid
               columns={3}
               data={data}
               labelMap={labelMap} />
         </CardSegment>
-      </Card>
-    </DatesWrapper>
+      </DatesCard>
+    </SectionWrapper>
   );
 };
 
-export default KeyDates;
+export default EnrollmentDates;
