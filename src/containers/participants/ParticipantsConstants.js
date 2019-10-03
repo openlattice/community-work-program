@@ -96,3 +96,28 @@ export const statusFilterDropdown :Map = Map().withMutations((map :Map) => {
   map.set('title', FILTERS.STATUS);
   map.set('enums', STATUS_FILTER_OPTIONS);
 });
+
+/* Demographics */
+
+const generateOptions = (list :string[]) :Object[] => list.map(value => ({
+  label: value,
+  value
+}));
+
+export const SEX_VALUES = [
+  'Female',
+  'Male',
+  'Unknown'
+];
+export const sexOptions = generateOptions(SEX_VALUES);
+
+export const RACE_VALUES = [
+  'American Indian',
+  'Asian / Pacific Islander',
+  'Black / African American',
+  'Hispanic / Latino (Non-White)',
+  'White',
+  'Unknown',
+  'Other Not Specified',
+];
+export const raceOptions = generateOptions(RACE_VALUES);
