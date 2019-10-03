@@ -699,9 +699,6 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
           const seqAction :SequenceAction = action;
           const successValue :Object = seqAction.value;
           const { newAddressData, newEmailData, newPhoneData } = successValue;
-          console.log('newEmailData: ', newEmailData.toJS());
-          console.log('newAddressData: ', newAddressData.toJS());
-          console.log('newPhoneData: ', newPhoneData.toJS());
 
           let address :Map = state.get(ADDRESS);
           let email :Map = state.get(EMAIL);
@@ -716,8 +713,6 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
           newPhoneData.forEach((value, fqn) => {
             phone = phone.set(fqn, value);
           });
-
-          console.log(address.toJS(), ' ', email.toJS(), ' ', phone.toJS());
 
           return state
             .set(ADDRESS, address)
