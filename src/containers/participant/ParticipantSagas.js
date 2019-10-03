@@ -18,14 +18,14 @@ import {
 } from 'lattice-sagas';
 import { Types } from 'lattice';
 import type { SequenceAction } from 'redux-reqseq';
+import type { FQN } from 'lattice';
 
 import Logger from '../../utils/Logger';
 import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../utils/Errors';
 import {
-  // GET_PARTICIPANT_ADDRESS,
-  // getParticipantAddress,
   ADD_INFRACTION,
   ADD_NEW_DIVERSION_PLAN_STATUS,
+  ADD_NEW_PARTICIPANT_CONTACTS,
   ADD_ORIENTATION_DATE,
   ADD_WORKSITE_PLAN,
   CHECK_IN_FOR_APPOINTMENT,
@@ -44,6 +44,7 @@ import {
   GET_ENROLLMENT_STATUS,
   GET_INFRACTION_TYPES,
   GET_PARTICIPANT,
+  GET_PARTICIPANT_ADDRESS,
   GET_PARTICIPANT_INFRACTIONS,
   GET_PROGRAM_OUTCOME,
   GET_WORKSITE_BY_WORKSITE_PLAN,
@@ -72,6 +73,7 @@ import {
   getEnrollmentStatus,
   getInfractionTypes,
   getParticipant,
+  getParticipantAddress,
   getParticipantInfractions,
   getProgramOutcome,
   getWorkAppointments,
@@ -118,6 +120,7 @@ const { getEntityDataWorker, getEntitySetDataWorker, updateEntityDataWorker } = 
 const { searchEntityNeighborsWithFilter } = SearchApiActions;
 const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
 const {
+  ADDRESS,
   ADDRESSES,
   APPOINTMENT,
   BASED_ON,
@@ -1010,10 +1013,8 @@ function* getContactInfoWorker(action :SequenceAction) :Generator<*, *, *> {
   const { id, value } = action;
   const workerResponse = {};
   let response :Object = {};
-  let contactInfo :Map = Map().withMutations((map :Map) => {
-    map.set('email', '');
-    map.set('phone', '');
-  });
+  const contactInfo :Object = {};
+
   try {
     yield put(getContactInfo.request(id));
     if (value === null || value === undefined) {
@@ -1038,8 +1039,8 @@ function* getContactInfoWorker(action :SequenceAction) :Generator<*, *, *> {
     if (response.error) {
       throw response.error;
     }
-    let email = '';
-    let phone = '';
+    let email = Map();
+    let phone = Map();
     if (response.data[personEKID]) {
       fromJS(response.data[personEKID])
         .map((contactInfoNeighbor :Map) => getNeighborDetails(contactInfoNeighbor))
@@ -1048,15 +1049,15 @@ function* getContactInfoWorker(action :SequenceAction) :Generator<*, *, *> {
             contact, [EMAIL, PHONE_NUMBER, PREFERRED]
           );
           if (phoneFound && preferred) {
-            phone = phoneFound;
+            phone = contact;
           }
           if (emailFound && preferred) {
-            email = emailFound;
+            email = contact;
           }
         });
     }
-    contactInfo = contactInfo.set('email', email);
-    contactInfo = contactInfo.set('phone', phone);
+    contactInfo.email = email;
+    contactInfo.phone = phone;
     yield put(getContactInfo.success(id, contactInfo));
   }
   catch (error) {
@@ -1613,59 +1614,58 @@ function* getEnrollmentStatusWatcher() :Generator<*, *, *> {
  *
  */
 
-// function* getParticipantAddressWorker(action :SequenceAction) :Generator<*, *, *> {
-//
-//   const { id, value } = action;
-//   const workerResponse = {};
-//   let response :Object = {};
-//   let address :string = '';
-//
-//   try {
-//     yield put(getParticipantAddress.request(id));
-//     const { personEKID } = value;
-//     if (value === null || value === undefined) {
-//       throw ERR_ACTION_VALUE_NOT_DEFINED;
-//     }
-//     const app = yield select(getAppFromState);
-//     const peopleESID = getEntitySetIdFromApp(app, PEOPLE);
-//     const locationESID = getEntitySetIdFromApp(app, LOCATION);
-//
-//     const searchFilter :Object = {
-//       entityKeyIds: [personEKID],
-//       destinationEntitySetIds: [locationESID],
-//       sourceEntitySetIds: [],
-//     };
-//     response = yield call(
-//       searchEntityNeighborsWithFilterWorker,
-//       searchEntityNeighborsWithFilter({ entitySetId: peopleESID, filter: searchFilter })
-//     );
-//     if (response.error) {
-//       throw response.error;
-//     }
-//     // TODO: handle case of having multiple addresses for a person
-//     if (response.data[personEKID]) {
-//       address = fromJS(response.data[personEKID])
-//         .map((locationNeighbor :Map) => getNeighborDetails(locationNeighbor))
-//         .getIn([0, UNPARSED_ADDRESS, 0]);
-//     }
-//
-//     yield put(getParticipantAddress.success(id, address));
-//   }
-//   catch (error) {
-//     workerResponse.error = error;
-//     LOG.error('caught exception in getParticipantAddressWorker()', error);
-//     yield put(getParticipantAddress.failure(id, error));
-//   }
-//   finally {
-//     yield put(getParticipantAddress.finally(id));
-//   }
-//   return workerResponse;
-// }
-//
-// function* getParticipantAddressWatcher() :Generator<*, *, *> {
-//
-//   yield takeEvery(GET_PARTICIPANT_ADDRESS, getParticipantAddressWorker);
-// }
+function* getParticipantAddressWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+  const workerResponse = {};
+  let response :Object = {};
+  let address :Map = Map();
+
+  try {
+    yield put(getParticipantAddress.request(id));
+    const { personEKID } = value;
+    if (value === null || value === undefined) {
+      throw ERR_ACTION_VALUE_NOT_DEFINED;
+    }
+    const app = yield select(getAppFromState);
+    const peopleESID = getEntitySetIdFromApp(app, PEOPLE);
+    const addressESID = getEntitySetIdFromApp(app, ADDRESS);
+
+    const searchFilter :Object = {
+      entityKeyIds: [personEKID],
+      destinationEntitySetIds: [addressESID],
+      sourceEntitySetIds: [],
+    };
+    response = yield call(
+      searchEntityNeighborsWithFilterWorker,
+      searchEntityNeighborsWithFilter({ entitySetId: peopleESID, filter: searchFilter })
+    );
+    if (response.error) {
+      throw response.error;
+    }
+    // TODO: handle case of having multiple addresses for a person
+    if (response.data[personEKID]) {
+      const addressNeighbor = fromJS(response.data[personEKID][0]);
+      address = getNeighborDetails(addressNeighbor);
+    }
+
+    yield put(getParticipantAddress.success(id, address));
+  }
+  catch (error) {
+    workerResponse.error = error;
+    LOG.error('caught exception in getParticipantAddressWorker()', error);
+    yield put(getParticipantAddress.failure(id, error));
+  }
+  finally {
+    yield put(getParticipantAddress.finally(id));
+  }
+  return workerResponse;
+}
+
+function* getParticipantAddressWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(GET_PARTICIPANT_ADDRESS, getParticipantAddressWorker);
+}
 
 /*
  *
@@ -1855,11 +1855,11 @@ function* getAllParticipantInfoWorker(action :SequenceAction) :Generator<*, *, *
     const { personEKID } = value;
 
     const workerResponses = yield all([
-      // call(getParticipantAddressWorker, getParticipantAddress({ personEKID })),
       call(getCaseInfoWorker, getCaseInfo({ personEKID })),
       call(getContactInfoWorker, getContactInfo({ personEKID })),
       call(getEnrollmentStatusWorker, getEnrollmentStatus({ personEKID })),
       call(getInfractionTypesWorker, getInfractionTypes()),
+      call(getParticipantAddressWorker, getParticipantAddress({ personEKID })),
       call(getParticipantInfractionsWorker, getParticipantInfractions({ personEKID })),
       call(getParticipantWorker, getParticipant({ personEKID })),
       call(getWorksitesWorker, getWorksites()),
@@ -1926,6 +1926,8 @@ export {
   getEnrollmentStatusWorker,
   getInfractionTypesWatcher,
   getInfractionTypesWorker,
+  getParticipantAddressWatcher,
+  getParticipantAddressWorker,
   getParticipantInfractionsWatcher,
   getParticipantInfractionsWorker,
   getParticipantWatcher,

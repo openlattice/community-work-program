@@ -5,9 +5,9 @@ import type { SequenceAction } from 'redux-reqseq';
 import type { FQN } from 'lattice';
 
 import {
-  // getParticipantAddress,
   addInfraction,
   addNewDiversionPlanStatus,
+  addNewParticipantContacts,
   addOrientationDate,
   addWorksitePlan,
   checkInForAppointment,
@@ -26,6 +26,7 @@ import {
   getEnrollmentStatus,
   getInfractionTypes,
   getParticipant,
+  getParticipantAddress,
   getParticipantInfractions,
   getProgramOutcome,
   getWorkAppointments,
@@ -92,7 +93,7 @@ const {
   GET_ENROLLMENT_STATUS,
   GET_INFRACTION_TYPES,
   GET_PARTICIPANT,
-  // GET_PARTICIPANT_ADDRESS,
+  GET_PARTICIPANT_ADDRESS,
   GET_PARTICIPANT_INFRACTIONS,
   GET_PROGRAM_OUTCOME,
   GET_WORKSITE_BY_WORKSITE_PLAN,
@@ -184,9 +185,9 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     [GET_PARTICIPANT]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
-    // [GET_PARTICIPANT_ADDRESS]: {
-    //   [REQUEST_STATE]: RequestStates.STANDBY
-    // },
+    [GET_PARTICIPANT_ADDRESS]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
     [GET_PARTICIPANT_INFRACTIONS]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
@@ -200,10 +201,10 @@ const INITIAL_STATE :Map<*, *> = fromJS({
       [REQUEST_STATE]: RequestStates.STANDBY
     },
   },
-  [ADDRESS]: '',
+  [ADDRESS]: Map(),
   [CHECK_INS_BY_APPOINTMENT]: Map(),
   [DIVERSION_PLAN]: Map(),
-  [EMAIL]: '',
+  [EMAIL]: Map(),
   [ENROLLMENT_STATUS]: Map(),
   [ERRORS]: {
     [ADD_INFRACTION_EVENT]: Map(),
@@ -225,7 +226,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [INFRACTION_TYPES]: List(),
   [PARTICIPANT]: Map(),
   [PERSON_CASE]: Map(),
-  [PHONE]: '',
+  [PHONE]: Map(),
   [PROGRAM_OUTCOME]: Map(),
   [VIOLATIONS]: List(),
   [WARNINGS]: List(),
@@ -1080,8 +1081,8 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
           }
 
           return state
-            .set(EMAIL, value.get('email'))
-            .set(PHONE, value.get('phone'))
+            .set(EMAIL, value.email)
+            .set(PHONE, value.phone)
             .setIn([ACTIONS, GET_CONTACT_INFO, REQUEST_STATE], RequestStates.SUCCESS);
         },
         FAILURE: () => {
@@ -1089,8 +1090,8 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
           const { value } = action;
 
           return state
-            .set(EMAIL, '')
-            .set(PHONE, '')
+            .set(EMAIL, Map())
+            .set(PHONE, Map())
             .setIn([ERRORS, GET_CONTACT_INFO], value)
             .setIn([ACTIONS, GET_CONTACT_INFO, REQUEST_STATE], RequestStates.FAILURE);
         },
@@ -1243,40 +1244,34 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
       });
     }
 
-    // case getParticipantAddress.case(action.type): {
-    //
-    //   return getParticipantAddress.reducer(state, action, {
-    //
-    //     REQUEST: () => state
-    //       .setIn([ACTIONS, GET_PARTICIPANT_ADDRESS, action.id], fromJS(action))
-    //       .setIn([ACTIONS, GET_PARTICIPANT_ADDRESS, REQUEST_STATE], RequestStates.PENDING),
-    //     SUCCESS: () => {
-    //
-    //       if (!state.hasIn([ACTIONS, GET_PARTICIPANT_ADDRESS, action.id])) {
-    //         return state;
-    //       }
-    //
-    //       const { value } = action;
-    //       if (value === null || value === undefined) {
-    //         return state;
-    //       }
-    //
-    //       return state
-    //         .set(ADDRESS, value)
-    //         .setIn([ACTIONS, GET_PARTICIPANT_ADDRESS, REQUEST_STATE], RequestStates.SUCCESS);
-    //     },
-    //     FAILURE: () => {
-    //
-    //       const { value } = action;
-    //
-    //       return state
-    //         .set(ADDRESS, '')
-    //         .setIn([ERRORS, GET_PARTICIPANT_ADDRESS], value)
-    //         .setIn([ACTIONS, GET_PARTICIPANT_ADDRESS, REQUEST_STATE], RequestStates.FAILURE);
-    //     },
-    //     FINALLY: () => state.deleteIn([ACTIONS, GET_PARTICIPANT_ADDRESS, action.id])
-    //   });
-    // }
+    case getParticipantAddress.case(action.type): {
+
+      return getParticipantAddress.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, GET_PARTICIPANT_ADDRESS, action.id], fromJS(action))
+          .setIn([ACTIONS, GET_PARTICIPANT_ADDRESS, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+
+          if (!state.hasIn([ACTIONS, GET_PARTICIPANT_ADDRESS, action.id])) {
+            return state;
+          }
+
+          const { value } = action;
+          if (value === null || value === undefined) {
+            return state;
+          }
+
+          return state
+            .set(ADDRESS, value)
+            .setIn([ACTIONS, GET_PARTICIPANT_ADDRESS, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .set(ADDRESS, Map())
+          .setIn([ACTIONS, GET_PARTICIPANT_ADDRESS, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, GET_PARTICIPANT_ADDRESS, action.id])
+      });
+    }
 
     case getProgramOutcome.case(action.type): {
 
@@ -1300,15 +1295,9 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
             .set(PROGRAM_OUTCOME, value)
             .setIn([ACTIONS, GET_PROGRAM_OUTCOME, REQUEST_STATE], RequestStates.SUCCESS);
         },
-        FAILURE: () => {
-
-          const { value } = action;
-
-          return state
-            .set(PROGRAM_OUTCOME, Map())
-            .setIn([ERRORS, GET_PROGRAM_OUTCOME], value)
-            .setIn([ACTIONS, GET_PROGRAM_OUTCOME, REQUEST_STATE], RequestStates.FAILURE);
-        },
+        FAILURE: () => state
+          .set(PROGRAM_OUTCOME, Map())
+          .setIn([ACTIONS, GET_PROGRAM_OUTCOME, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, GET_PROGRAM_OUTCOME, action.id])
       });
     }

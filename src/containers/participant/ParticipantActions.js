@@ -61,8 +61,8 @@ const getInfractionTypes = newRequestSequence(GET_INFRACTION_TYPES);
 const GET_PARTICIPANT :'GET_PARTICIPANT' = 'GET_PARTICIPANT';
 const getParticipant = newRequestSequence(GET_PARTICIPANT);
 
-// const GET_PARTICIPANT_ADDRESS :'GET_PARTICIPANT_ADDRESS' = 'GET_PARTICIPANT_ADDRESS';
-// const getParticipantAddress = newRequestSequence(GET_PARTICIPANT_ADDRESS);
+const GET_PARTICIPANT_ADDRESS :'GET_PARTICIPANT_ADDRESS' = 'GET_PARTICIPANT_ADDRESS';
+const getParticipantAddress = newRequestSequence(GET_PARTICIPANT_ADDRESS);
 
 const GET_PARTICIPANT_INFRACTIONS :'GET_PARTICIPANT_INFRACTIONS' = 'GET_PARTICIPANT_INFRACTIONS';
 const getParticipantInfractions = newRequestSequence(GET_PARTICIPANT_INFRACTIONS);
@@ -89,8 +89,6 @@ const UPDATE_HOURS_WORKED :'UPDATE_HOURS_WORKED' = 'UPDATE_HOURS_WORKED';
 const updateHoursWorked = newRequestSequence(UPDATE_HOURS_WORKED);
 
 export {
-  // GET_PARTICIPANT_ADDRESS,
-  // getParticipantAddress,
   ADD_INFRACTION,
   ADD_NEW_DIVERSION_PLAN_STATUS,
   ADD_ORIENTATION_DATE,
@@ -111,6 +109,7 @@ export {
   GET_ENROLLMENT_STATUS,
   GET_INFRACTION_TYPES,
   GET_PARTICIPANT,
+  GET_PARTICIPANT_ADDRESS,
   GET_PARTICIPANT_INFRACTIONS,
   GET_PROGRAM_OUTCOME,
   GET_WORKSITE_BY_WORKSITE_PLAN,
@@ -139,6 +138,7 @@ export {
   getEnrollmentStatus,
   getInfractionTypes,
   getParticipant,
+  getParticipantAddress,
   getParticipantInfractions,
   getProgramOutcome,
   getWorkAppointments,

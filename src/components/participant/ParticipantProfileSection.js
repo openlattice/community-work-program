@@ -21,9 +21,11 @@ import { OL } from '../../core/style/Colors';
 import { PersonPhoto, PersonPicture } from '../picture/PersonPicture';
 import { formatAsDate } from '../../utils/DateTimeUtils';
 import { getEntityProperties } from '../../utils/DataUtils';
-import { PEOPLE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { ADDRESS_FQNS, CONTACT_INFO_FQNS, PEOPLE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { EMPTY_FIELD } from '../../containers/participants/ParticipantsConstants';
 
+const { LOCATION_ADDRESS } = ADDRESS_FQNS;
+const { EMAIL, PHONE_NUMBER } = CONTACT_INFO_FQNS;
 const {
   DOB,
   ETHNICITY,
@@ -68,11 +70,11 @@ const PersonValue = styled.div`
 `;
 
 type Props = {
-  address :string;
+  address :Map;
   edit :() => void;
-  email :string;
+  email :Map;
   person :Map;
-  phone :string;
+  phone :Map;
 };
 
 const ParticipantProfileSection = ({
@@ -98,6 +100,10 @@ const ParticipantProfileSection = ({
   const raceAndEthnicity = (race && ethnicity)
     ? `${race}/${ethnicity}`
     : (`${race}` || `${ethnicity}` || EMPTY_FIELD);
+
+  const { [PHONE_NUMBER]: phoneNumber } = getEntityProperties(phone, [PHONE_NUMBER]);
+  const { [EMAIL]: emailAddress } = getEntityProperties(email, [EMAIL]);
+  const { [LOCATION_ADDRESS]: personAddress } = getEntityProperties(address, [LOCATION_ADDRESS]);
 
   return (
     <SectionWrapper>
@@ -141,19 +147,19 @@ const ParticipantProfileSection = ({
         <CardSegment noBleed padding="0">
           <PersonInfoRow>
             <Label subtle>Phone #</Label>
-            <PersonValue>{ phone || EMPTY_FIELD }</PersonValue>
+            <PersonValue>{ phoneNumber || EMPTY_FIELD }</PersonValue>
           </PersonInfoRow>
         </CardSegment>
         <CardSegment noBleed padding="0">
           <PersonInfoRow>
             <Label subtle>Email</Label>
-            <PersonValue>{ email || EMPTY_FIELD }</PersonValue>
+            <PersonValue>{ emailAddress || EMPTY_FIELD }</PersonValue>
           </PersonInfoRow>
         </CardSegment>
         <CardSegment noBleed padding="0">
           <PersonInfoRow>
             <Label subtle>Address</Label>
-            <PersonValue>{ address || EMPTY_FIELD }</PersonValue>
+            <PersonValue>{ personAddress || EMPTY_FIELD }</PersonValue>
           </PersonInfoRow>
         </CardSegment>
       </PersonCard>

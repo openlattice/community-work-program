@@ -128,6 +128,7 @@ const GeneralInfoSection = styled(ProfileBody)`
   height: 790px;
   align-items: center;
   flex-direction: row;
+  font-size: 12px;
 `;
 
 const ProfileInfoColumnWrapper = styled.div`
@@ -177,18 +178,18 @@ type Props = {
     getAllParticipantInfo :RequestSequence;
     goToRoute :RequestSequence;
   };
-  address :string;
+  address :Map;
   app :Map;
   checkInsByAppointment :Map;
   diversionPlan :Map;
-  email :string;
+  email :Map;
   enrollmentStatus :Map;
   getAllParticipantInfoRequestState :RequestState;
   getInitializeAppRequestState :RequestState;
   participant :Map;
   personCase :Map;
   personEKID :string;
-  phone :string;
+  phone :Map;
   programOutcome :Map;
   violations :List;
   warnings :List;
