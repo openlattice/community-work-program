@@ -69,6 +69,7 @@ const {
   ACTIONS,
   ADD_INFRACTION_EVENT,
   ADD_NEW_DIVERSION_PLAN_STATUS,
+  ADD_NEW_PARTICIPANT_CONTACTS,
   ADD_ORIENTATION_DATE,
   ADD_WORKSITE_PLAN,
   ADDRESS,
@@ -218,7 +219,6 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     [GET_ENROLLMENT_STATUS]: Map(),
     [GET_INFRACTION_TYPES]: Map(),
     [GET_PARTICIPANT]: Map(),
-    // [GET_PARTICIPANT_ADDRESS]: Map(),
     [GET_PARTICIPANT_INFRACTIONS]: Map(),
     [UPDATE_HOURS_WORKED]: Map(),
   },
@@ -389,6 +389,34 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
         FAILURE: () => state
           .setIn([ACTIONS, ADD_NEW_DIVERSION_PLAN_STATUS, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, ADD_NEW_DIVERSION_PLAN_STATUS, action.id]),
+      });
+    }
+
+    case addNewParticipantContacts.case(action.type): {
+
+      return addNewParticipantContacts.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, ADD_NEW_PARTICIPANT_CONTACTS, action.id], action)
+          .setIn([ACTIONS, ADD_NEW_PARTICIPANT_CONTACTS, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+
+          const seqAction :SequenceAction = action;
+          const successValue :Object = seqAction.value;
+          const { newAddress, newPhone, newEmail } = successValue;
+
+          return state
+            .set(ADDRESS, newAddress)
+            .set(PHONE, newPhone)
+            .set(EMAIL, newEmail)
+            .setIn([ACTIONS, ADD_NEW_PARTICIPANT_CONTACTS, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .set(ADDRESS, Map())
+          .set(PHONE, Map())
+          .set(EMAIL, Map())
+          .setIn([ACTIONS, ADD_NEW_PARTICIPANT_CONTACTS, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, ADD_NEW_PARTICIPANT_CONTACTS, action.id]),
       });
     }
 

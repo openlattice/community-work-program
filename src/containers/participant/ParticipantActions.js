@@ -7,6 +7,9 @@ const addInfraction = newRequestSequence(ADD_INFRACTION);
 const ADD_NEW_DIVERSION_PLAN_STATUS :'ADD_NEW_DIVERSION_PLAN_STATUS' = 'ADD_NEW_DIVERSION_PLAN_STATUS';
 const addNewDiversionPlanStatus = newRequestSequence(ADD_NEW_DIVERSION_PLAN_STATUS);
 
+const ADD_NEW_PARTICIPANT_CONTACTS :'ADD_NEW_PARTICIPANT_CONTACTS' = 'ADD_NEW_PARTICIPANT_CONTACTS';
+const addNewParticipantContacts = newRequestSequence(ADD_NEW_PARTICIPANT_CONTACTS);
+
 const ADD_ORIENTATION_DATE :'ADD_ORIENTATION_DATE' = 'ADD_ORIENTATION_DATE';
 const addOrientationDate = newRequestSequence(ADD_ORIENTATION_DATE);
 
@@ -91,6 +94,7 @@ const updateHoursWorked = newRequestSequence(UPDATE_HOURS_WORKED);
 export {
   ADD_INFRACTION,
   ADD_NEW_DIVERSION_PLAN_STATUS,
+  ADD_NEW_PARTICIPANT_CONTACTS,
   ADD_ORIENTATION_DATE,
   ADD_WORKSITE_PLAN,
   CHECK_IN_FOR_APPOINTMENT,
@@ -120,6 +124,7 @@ export {
   UPDATE_HOURS_WORKED,
   addInfraction,
   addNewDiversionPlanStatus,
+  addNewParticipantContacts,
   addOrientationDate,
   addWorksitePlan,
   checkInForAppointment,

@@ -55,6 +55,7 @@ import {
   UPDATE_HOURS_WORKED,
   addInfraction,
   addNewDiversionPlanStatus,
+  addNewParticipantContacts,
   addOrientationDate,
   addWorksitePlan,
   checkInForAppointment,
@@ -97,6 +98,7 @@ import {
   getEntitySetIdFromApp,
   getNeighborDetails,
   getNeighborESID,
+  getPropertyFqnFromEdm,
   getPropertyTypeIdFromEdm,
   sortEntitiesByDateProperty,
 } from '../../utils/DataUtils';
@@ -104,9 +106,7 @@ import { isDefined } from '../../utils/LangUtils';
 import { STATE, WORKSITES } from '../../utils/constants/ReduxStateConsts';
 import {
   APP_TYPE_FQNS,
-  CASE_FQNS,
   CONTACT_INFO_FQNS,
-  DIVERSION_PLAN_FQNS,
   ENROLLMENT_STATUS_FQNS,
   INFRACTION_EVENT_FQNS,
   INFRACTION_FQNS,
@@ -428,6 +428,75 @@ function* editPersonNotesWorker(action :SequenceAction) :Generator<*, *, *> {
 function* editPersonNotesWatcher() :Generator<*, *, *> {
 
   yield takeEvery(EDIT_PERSON_NOTES, editPersonNotesWorker);
+}
+
+/*
+ *
+ * ParticipantActions.addNewParticipantContacts()
+ *
+ */
+
+function* addNewParticipantContactsWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+  let response :Object = {};
+
+  try {
+    yield put(addNewParticipantContacts.request(id, value));
+
+    response = yield call(submitDataGraphWorker, submitDataGraph(value));
+    if (response.error) {
+      throw response.error;
+    }
+
+    const { entityData } = value;
+    const app = yield select(getAppFromState);
+    const edm = yield select(getEdmFromState);
+    const contactInfoESID = getEntitySetIdFromApp(app, CONTACT_INFORMATION);
+    const addressESID = getEntitySetIdFromApp(app, ADDRESS);
+
+    const storedAddressData = fromJS(entityData[addressESID][0]);
+    let newAddress :Map = Map();
+    storedAddressData.forEach((enrollmentValue, propertyTypeId) => {
+      const propertyTypeFqn :FQN = getPropertyFqnFromEdm(edm, propertyTypeId);
+      newAddress = newAddress.set(propertyTypeFqn, enrollmentValue);
+    });
+
+    const storedContactData = fromJS(entityData[contactInfoESID]);
+
+    let newPhone :Map = Map();
+    let newEmail :Map = Map();
+    storedContactData.forEach((contactEntity :Map) => {
+      contactEntity.forEach((enrollmentValue, propertyTypeId) => {
+        if (propertyTypeId === getPropertyTypeIdFromEdm(edm, PHONE_NUMBER)) {
+          newPhone = newPhone.set(PHONE_NUMBER, enrollmentValue);
+        }
+        else if (propertyTypeId === getPropertyTypeIdFromEdm(edm, EMAIL)) {
+          newEmail = newEmail.set(EMAIL, enrollmentValue);
+        }
+        else {
+          return false;
+        }
+        return true;
+      });
+    });
+    if (!newPhone.isEmpty()) newPhone = newPhone.set(PREFERRED, true);
+    if (!newEmail.isEmpty()) newEmail = newEmail.set(PREFERRED, true);
+
+    yield put(addNewParticipantContacts.success(id, { newAddress, newPhone, newEmail }));
+  }
+  catch (error) {
+    LOG.error('caught exception in addNewParticipantContactsWorker()', error);
+    yield put(addNewParticipantContacts.failure(id, error));
+  }
+  finally {
+    yield put(addNewParticipantContacts.finally(id));
+  }
+}
+
+function* addNewParticipantContactsWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(ADD_NEW_PARTICIPANT_CONTACTS, addNewParticipantContactsWorker);
 }
 
 /*
@@ -1892,6 +1961,8 @@ export {
   addInfractionWorker,
   addNewDiversionPlanStatusWatcher,
   addNewDiversionPlanStatusWorker,
+  addNewParticipantContactsWatcher,
+  addNewParticipantContactsWorker,
   addOrientationDateWatcher,
   addOrientationDateWorker,
   addWorksitePlanWatcher,
