@@ -128,7 +128,7 @@ const GeneralInfoSection = styled(ProfileBody)`
   height: 790px;
   align-items: center;
   flex-direction: row;
-  font-size: 12px;
+  font-size: 13px;
 `;
 
 const ProfileInfoColumnWrapper = styled.div`
