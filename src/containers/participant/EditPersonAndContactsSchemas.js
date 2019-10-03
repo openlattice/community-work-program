@@ -22,7 +22,7 @@ const {
   SEX,
 } = PEOPLE_FQNS;
 
-export const schema = {
+export const personSchema = {
   type: 'object',
   title: '',
   properties: {
@@ -63,28 +63,10 @@ export const schema = {
         },
       }
     },
-    [getPageSectionKey(1, 3)]: {
-      type: 'object',
-      title: '',
-      properties: {
-        [getEntityAddressKey(0, CONTACT_INFORMATION, PHONE_NUMBER)]: {
-          type: 'string',
-          title: 'Phone number',
-        },
-        [getEntityAddressKey(0, CONTACT_INFORMATION, EMAIL)]: {
-          type: 'string',
-          title: 'Email',
-        },
-        [getEntityAddressKey(0, ADDRESS, LOCATION_ADDRESS)]: {
-          type: 'string',
-          title: 'Address',
-        },
-      }
-    },
   },
 };
 
-export const uiSchema = {
+export const personUiSchema = {
   [getPageSectionKey(1, 1)]: {
     classNames: 'column-span-12 grid-container',
     [getEntityAddressKey(0, PEOPLE, FIRST_NAME)]: {
@@ -109,12 +91,41 @@ export const uiSchema = {
       classNames: 'column-span-4',
     },
   },
-  [getPageSectionKey(1, 3)]: {
+  'ui:options': { editable: true },
+};
+
+export const contactsSchema = {
+  type: 'object',
+  title: '',
+  properties: {
+    [getPageSectionKey(1, 1)]: {
+      type: 'object',
+      title: '',
+      properties: {
+        [getEntityAddressKey(0, CONTACT_INFORMATION, PHONE_NUMBER)]: {
+          type: 'string',
+          title: 'Phone number',
+        },
+        [getEntityAddressKey(1, CONTACT_INFORMATION, EMAIL)]: {
+          type: 'string',
+          title: 'Email',
+        },
+        [getEntityAddressKey(0, ADDRESS, LOCATION_ADDRESS)]: {
+          type: 'string',
+          title: 'Address',
+        },
+      }
+    },
+  }
+};
+
+export const contactsUiSchema = {
+  [getPageSectionKey(1, 1)]: {
     classNames: 'column-span-12 grid-container',
     [getEntityAddressKey(0, CONTACT_INFORMATION, PHONE_NUMBER)]: {
       classNames: 'column-span-4',
     },
-    [getEntityAddressKey(0, CONTACT_INFORMATION, EMAIL)]: {
+    [getEntityAddressKey(1, CONTACT_INFORMATION, EMAIL)]: {
       classNames: 'column-span-4',
     },
     [getEntityAddressKey(0, ADDRESS, LOCATION_ADDRESS)]: {
