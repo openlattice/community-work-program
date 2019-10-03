@@ -33,6 +33,7 @@ import {
   DELETE_APPOINTMENT,
   EDIT_CASE_AND_HOURS,
   EDIT_CHECK_IN_DATE,
+  EDIT_PARTICIPANT_CONTACTS,
   EDIT_PERSON_DETAILS,
   EDIT_PERSON_NOTES,
   EDIT_PLAN_NOTES,
@@ -64,6 +65,7 @@ import {
   deleteAppointment,
   editCaseAndHours,
   editCheckInDate,
+  editParticipantContacts,
   editPersonDetails,
   editPersonNotes,
   editPlanNotes,
@@ -110,6 +112,7 @@ import {
   APP_TYPE_FQNS,
   CONTACT_INFO_FQNS,
   ENROLLMENT_STATUS_FQNS,
+  ENTITY_KEY_ID,
   INFRACTION_EVENT_FQNS,
   INFRACTION_FQNS,
   WORKSITE_PLAN_FQNS,
@@ -567,14 +570,43 @@ function* editParticipantContactsWorker(action :SequenceAction) :Generator<*, *,
     }
     const { entityData } = value;
     const app = yield select(getAppFromState);
-    const peopleESID :UUID = getEntitySetIdFromApp(app, PEOPLE);
     const contactInfoESID :UUID = getEntitySetIdFromApp(app, CONTACT_INFORMATION);
+    const addressESID :UUID = getEntitySetIdFromApp(app, ADDRESS);
     const edm = yield select(getEdmFromState);
 
-    yield put(editParticipantContacts.success(id, {
-      diversionPlanESID,
-      edm,
-    }));
+    const addressEKID :UUID = entityData[addressESID] ? Object.keys(entityData[addressESID])[0] : '';
+    let newAddressData :Map = Map();
+    if (addressEKID) {
+      const storedAddressData :Map = fromJS(entityData[addressESID][addressEKID]);
+      storedAddressData.forEach((personValue, propertyTypeId) => {
+        const propertyTypeFqn = getPropertyFqnFromEdm(edm, propertyTypeId);
+        newAddressData = newAddressData.set(propertyTypeFqn, personValue);
+      });
+    }
+
+    const storedContactData :Map = entityData[contactInfoESID] ? fromJS(entityData[contactInfoESID]) : Map();
+    let newPhoneData :Map = Map();
+    let newEmailData :Map = Map();
+    if (!storedContactData.isEmpty()) {
+      storedContactData.forEach((valueMap :Map, ekid :UUID) => {
+        valueMap.forEach((entityValue, propertyTypeId) => {
+          if (propertyTypeId === getPropertyTypeIdFromEdm(edm, PHONE_NUMBER)) {
+            newPhoneData = newPhoneData.set(PHONE_NUMBER, entityValue);
+            newPhoneData = newPhoneData.set(ENTITY_KEY_ID, ekid);
+          }
+          else if (propertyTypeId === getPropertyTypeIdFromEdm(edm, EMAIL)) {
+            newEmailData = newEmailData.set(EMAIL, entityValue);
+            newEmailData = newEmailData.set(ENTITY_KEY_ID, ekid);
+          }
+          else {
+            return false;
+          }
+          return true;
+        });
+      });
+    }
+
+    yield put(editParticipantContacts.success(id, { newAddressData, newEmailData, newPhoneData }));
   }
   catch (error) {
     LOG.error('caught exception in editParticipantContactsWorker()', error);
@@ -2068,6 +2100,8 @@ export {
   editCaseAndHoursWorker,
   editCheckInDateWatcher,
   editCheckInDateWorker,
+  editParticipantContactsWatcher,
+  editParticipantContactsWorker,
   editPersonDetailsWatcher,
   editPersonDetailsWorker,
   editPersonNotesWatcher,

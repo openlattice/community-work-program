@@ -9,7 +9,7 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import type { RequestSequence } from 'redux-reqseq';
 
-import { addNewParticipantContacts, editPersonDetails } from './ParticipantActions';
+import { addNewParticipantContacts, editParticipantContacts, editPersonDetails } from './ParticipantActions';
 import { goToRoute } from '../../core/router/RoutingActions';
 import {
   contactsSchema,
@@ -76,6 +76,7 @@ const ButtonWrapper = styled.div`
 type Props = {
   actions:{
     addNewParticipantContacts :RequestSequence;
+    editParticipantContacts :RequestSequence;
     editPersonDetails :RequestSequence;
     goToRoute :RequestSequence;
   },
@@ -283,7 +284,7 @@ class EditPersonAndContactsForm extends Component<Props, State> {
       propertyTypeIds,
     };
     const contactsFormContext :Object = {
-      editAction: () => {},
+      editAction: actions.editParticipantContacts,
       entityIndexToIdMap,
       entitySetIds,
       propertyTypeIds,
@@ -306,7 +307,6 @@ class EditPersonAndContactsForm extends Component<Props, State> {
                 disabled={personPrepopulated}
                 formContext={personFormContext}
                 formData={personFormData}
-                onChange={this.handleOnChangePerson}
                 schema={personSchema}
                 uiSchema={personUiSchema} />
           </Card>
@@ -316,7 +316,6 @@ class EditPersonAndContactsForm extends Component<Props, State> {
                 disabled={contactsPrepopulated}
                 formContext={contactsFormContext}
                 formData={contactsFormData}
-                onChange={this.handleOnChangeContacts}
                 onSubmit={this.handleOnSubmitContacts}
                 schema={contactsSchema}
                 uiSchema={contactsUiSchema} />
@@ -335,8 +334,9 @@ const mapStateToProps = (state :Map) => ({
 const mapDispatchToProps = dispatch => ({
   actions: bindActionCreators({
     addNewParticipantContacts,
-    goToRoute,
+    editParticipantContacts,
     editPersonDetails,
+    goToRoute,
   }, dispatch)
 });
 

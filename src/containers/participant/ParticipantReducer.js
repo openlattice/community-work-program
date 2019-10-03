@@ -15,6 +15,7 @@ import {
   deleteAppointment,
   editCaseAndHours,
   editCheckInDate,
+  editParticipantContacts,
   editPersonDetails,
   editPersonNotes,
   editPlanNotes,
@@ -81,6 +82,7 @@ const {
   DIVERSION_PLAN,
   EDIT_CASE_AND_HOURS,
   EDIT_CHECK_IN_DATE,
+  EDIT_PARTICIPANT_CONTACTS,
   EDIT_PERSON_DETAILS,
   EDIT_PERSON_NOTES,
   EDIT_PLAN_NOTES,
@@ -682,6 +684,50 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
         FAILURE: () => state
           .setIn([ACTIONS, DELETE_APPOINTMENT, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, DELETE_APPOINTMENT, action.id]),
+      });
+    }
+
+    case editParticipantContacts.case(action.type): {
+
+      return editParticipantContacts.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, EDIT_PARTICIPANT_CONTACTS, action.id], action)
+          .setIn([ACTIONS, EDIT_PARTICIPANT_CONTACTS, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+
+          const seqAction :SequenceAction = action;
+          const successValue :Object = seqAction.value;
+          const { newAddressData, newEmailData, newPhoneData } = successValue;
+          console.log('newEmailData: ', newEmailData.toJS());
+          console.log('newAddressData: ', newAddressData.toJS());
+          console.log('newPhoneData: ', newPhoneData.toJS());
+
+          let address :Map = state.get(ADDRESS);
+          let email :Map = state.get(EMAIL);
+          let phone :Map = state.get(PHONE);
+
+          newAddressData.forEach((value, fqn) => {
+            address = address.set(fqn, value);
+          });
+          newEmailData.forEach((value, fqn) => {
+            email = email.set(fqn, value);
+          });
+          newPhoneData.forEach((value, fqn) => {
+            phone = phone.set(fqn, value);
+          });
+
+          console.log(address.toJS(), ' ', email.toJS(), ' ', phone.toJS());
+
+          return state
+            .set(ADDRESS, address)
+            .set(EMAIL, email)
+            .set(PHONE, phone)
+            .setIn([ACTIONS, EDIT_PARTICIPANT_CONTACTS, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, EDIT_PARTICIPANT_CONTACTS, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, EDIT_PARTICIPANT_CONTACTS, action.id]),
       });
     }
 
