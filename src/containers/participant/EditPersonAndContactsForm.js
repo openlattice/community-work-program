@@ -3,31 +3,63 @@ import React, { Component } from 'react';
 import styled from 'styled-components';
 import { fromJS, Map } from 'immutable';
 import { DateTime } from 'luxon';
-import { Card, CardHeader } from 'lattice-ui-kit';
+import { Card, CardHeader, CardStack } from 'lattice-ui-kit';
 import { Form, DataProcessingUtils } from 'lattice-fabricate';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import type { RequestSequence } from 'redux-reqseq';
 
-// import { editAppointment } from '../ParticipantActions';
-import { schema, uiSchema } from './EditPersonAndContactsSchema';
-import { getEntitySetIdFromApp, getPropertyTypeIdFromEdm } from '../../utils/DataUtils';
+import { addNewParticipantContacts } from './ParticipantActions';
+import { goToRoute } from '../../core/router/RoutingActions';
+import {
+  contactsSchema,
+  contactsUiSchema,
+  personSchema,
+  personUiSchema,
+} from './EditPersonAndContactsSchemas';
+import {
+  getEntityKeyId,
+  getEntityProperties,
+  getEntitySetIdFromApp,
+  getPropertyTypeIdFromEdm
+} from '../../utils/DataUtils';
 // import { getCombinedDateTime } from '../../../utils/ScheduleUtils';
+import { BackNavButton } from '../../components/controls/index';
 import { PARTICIPANT_PROFILE_WIDTH } from '../../core/style/Sizes';
 import {
+  ADDRESS_FQNS,
   APP_TYPE_FQNS,
-  DATETIME_END,
-  INCIDENT_START_DATETIME
+  CONTACT_INFO_FQNS,
+  PEOPLE_FQNS,
 } from '../../core/edm/constants/FullyQualifiedNames';
 import { STATE } from '../../utils/constants/ReduxStateConsts';
+import * as Routes from '../../core/router/Routes';
 
-// const {
-//   getPageSectionKey,
-//   getEntityAddressKey,
-//   processEntityData,
-// } = DataProcessingUtils;
+const {
+  getEntityAddressKey,
+  getPageSectionKey,
+  processAssociationEntityData,
+  processEntityData,
+} = DataProcessingUtils;
 
-const { APPOINTMENT } = APP_TYPE_FQNS;
+const { LOCATION_ADDRESS } = ADDRESS_FQNS;
+const {
+  ADDRESS,
+  CONTACT_INFORMATION,
+  CONTACT_INFO_GIVEN,
+  LOCATED_AT,
+  PEOPLE
+} = APP_TYPE_FQNS;
+const { EMAIL, PHONE_NUMBER, PREFERRED } = CONTACT_INFO_FQNS;
+const {
+  DOB,
+  ETHNICITY,
+  FIRST_NAME,
+  LAST_NAME,
+  MUGSHOT,
+  RACE,
+  SEX,
+} = PEOPLE_FQNS;
 
 // const getInfoFromTimeRange = (timeString :string) :Object => {
 //   const start :string = timeString.split('-')[0].trim().split(':').join(' ');
@@ -56,87 +88,252 @@ const FormWrapper = styled.div`
   position: relative;
 `;
 
+const ButtonWrapper = styled.div`
+  margin-bottom: 30px;
+`;
+
 type Props = {
   actions:{
-    editAppointment :RequestSequence;
+    addNewParticipantContacts :RequestSequence;
+    goToRoute :RequestSequence;
   },
+  address :Map;
   app :Map;
-  appointment :Object;
-  appointmentEKID :UUID;
   edm :Map;
-  personName :string;
+  email :Map;
+  participant :Map;
+  phone :Map;
 };
 
 type State = {
-  formData :Object;
-}
+  contactsFormData :Object;
+  contactsPrepopulated :boolean;
+  personFormData :Object;
+  personPrepopulated :boolean;
+};
 
 class EditPersonAndContactsForm extends Component<Props, State> {
 
-  state = {
-    formData: {},
-  };
+  constructor(props :Props) {
+    super(props);
 
-  componentDidMount() {
-    this.prepopulateFormData();
+    const { personFormData, contactsFormData } = this.constructOriginalData();
+    const personPrepopulated :boolean = !personFormData.isEmpty();
+    const contactsPrepopulated :boolean = !contactsFormData.isEmpty();
+
+    this.state = {
+      contactsFormData: contactsPrepopulated ? contactsFormData.toJS() : {},
+      contactsPrepopulated,
+      personFormData: personPrepopulated ? personFormData.toJS() : {},
+      personPrepopulated,
+    };
+  }
+
+  componentDidUpdate(prevProps :Props) {
+    const { address, email, phone } = this.props;
+    if (!prevProps.address.equals(address) || !prevProps.email.equals(email) || !prevProps.phone.equals(phone)) {
+      this.prepopulateFormData();
+    }
   }
 
   prepopulateFormData = () => {
+    const { personFormData, contactsFormData } = this.constructOriginalData();
+    const personPrepopulated = !personFormData.isEmpty();
+    const contactsPrepopulated = !contactsFormData.isEmpty();
+
+    this.setState({
+      contactsFormData: contactsPrepopulated ? contactsFormData.toJS() : {},
+      contactsPrepopulated,
+      personFormData: personPrepopulated ? personFormData.toJS() : {},
+      personPrepopulated,
+    });
+  }
+
+  constructOriginalData = () => {
+    const {
+      address,
+      email,
+      participant,
+      phone
+    } = this.props;
+
+    const {
+      [DOB]: dateOfBirth,
+      [ETHNICITY]: ethnicity,
+      [FIRST_NAME]: firstName,
+      [LAST_NAME]: lastName,
+      [RACE]: race,
+      [SEX]: sex,
+    } = getEntityProperties(participant, [DOB, ETHNICITY, FIRST_NAME, LAST_NAME, MUGSHOT, RACE, SEX]);
+
+    const personFormData :Map = Map().withMutations((map :Map) => {
+      if (firstName) map.setIn([getPageSectionKey(1, 1), getEntityAddressKey(0, PEOPLE, FIRST_NAME)], firstName);
+      if (lastName) map.setIn([getPageSectionKey(1, 1), getEntityAddressKey(0, PEOPLE, LAST_NAME)], lastName);
+      if (dateOfBirth) map.setIn([getPageSectionKey(1, 1), getEntityAddressKey(0, PEOPLE, DOB)], dateOfBirth);
+      if (race) map.setIn([getPageSectionKey(1, 2), getEntityAddressKey(0, PEOPLE, RACE)], race);
+      if (ethnicity) map.setIn([getPageSectionKey(1, 2), getEntityAddressKey(0, PEOPLE, ETHNICITY)], ethnicity);
+      if (sex) map.setIn([getPageSectionKey(1, 2), getEntityAddressKey(0, PEOPLE, SEX)], sex);
+    });
+
+    const { [PHONE_NUMBER]: phoneNumber } = getEntityProperties(phone, [PHONE_NUMBER]);
+    const { [EMAIL]: emailAddress } = getEntityProperties(email, [EMAIL]);
+    const { [LOCATION_ADDRESS]: personAddress } = getEntityProperties(address, [LOCATION_ADDRESS]);
+
+    const contactsFormData :Map = Map().withMutations((map :Map) => {
+      if (phoneNumber) {
+        map.setIn([getPageSectionKey(1, 1), getEntityAddressKey(0, CONTACT_INFORMATION, PHONE_NUMBER)], phoneNumber);
+      }
+      if (emailAddress) {
+        map.setIn([getPageSectionKey(1, 1), getEntityAddressKey(1, CONTACT_INFORMATION, EMAIL)], emailAddress);
+      }
+      if (personAddress) {
+        map.setIn([getPageSectionKey(1, 1), getEntityAddressKey(0, ADDRESS, LOCATION_ADDRESS)], personAddress);
+      }
+    });
+    return { personFormData, contactsFormData };
   }
 
   createEntitySetIdsMap = () => {
     const { app } = this.props;
     return {
-      [APPOINTMENT]: getEntitySetIdFromApp(app, APPOINTMENT),
+      [ADDRESS]: getEntitySetIdFromApp(app, ADDRESS),
+      [CONTACT_INFORMATION]: getEntitySetIdFromApp(app, CONTACT_INFORMATION),
+      [CONTACT_INFO_GIVEN]: getEntitySetIdFromApp(app, CONTACT_INFO_GIVEN),
+      [LOCATED_AT]: getEntitySetIdFromApp(app, LOCATED_AT),
+      [PEOPLE]: getEntitySetIdFromApp(app, PEOPLE),
     };
   };
 
   createPropertyTypeIdsMap = () => {
     const { edm } = this.props;
     return {
-      [INCIDENT_START_DATETIME]: getPropertyTypeIdFromEdm(edm, INCIDENT_START_DATETIME),
-      [DATETIME_END]: getPropertyTypeIdFromEdm(edm, DATETIME_END),
+      [DOB]: getPropertyTypeIdFromEdm(edm, DOB),
+      [EMAIL]: getPropertyTypeIdFromEdm(edm, EMAIL),
+      [ETHNICITY]: getPropertyTypeIdFromEdm(edm, ETHNICITY),
+      [FIRST_NAME]: getPropertyTypeIdFromEdm(edm, FIRST_NAME),
+      [LAST_NAME]: getPropertyTypeIdFromEdm(edm, LAST_NAME),
+      [LOCATION_ADDRESS]: getPropertyTypeIdFromEdm(edm, LOCATION_ADDRESS),
+      [PHONE_NUMBER]: getPropertyTypeIdFromEdm(edm, PHONE_NUMBER),
+      [PREFERRED]: getPropertyTypeIdFromEdm(edm, PREFERRED),
+      [RACE]: getPropertyTypeIdFromEdm(edm, RACE),
+      [SEX]: getPropertyTypeIdFromEdm(edm, SEX),
     };
   };
 
-  handleOnChange = ({ formData } :Object) => {
-    this.setState({ formData });
+  getAssociations = () => {
+    const { participant } = this.props;
+    const personEKID :UUID = getEntityKeyId(participant);
+    return [
+      [LOCATED_AT, personEKID, PEOPLE, 0, ADDRESS],
+      [CONTACT_INFO_GIVEN, 0, CONTACT_INFORMATION, personEKID, PEOPLE],
+      [CONTACT_INFO_GIVEN, 1, CONTACT_INFORMATION, personEKID, PEOPLE],
+    ];
   }
 
-  handleOnSubmit = ({ formData } :Object) => {
+  handleOnChangePerson = ({ formData } :Object) => {
+    this.setState({ personFormData: formData });
+  }
+
+  handleOnChangeContacts = ({ formData } :Object) => {
+    this.setState({ contactsFormData: formData });
+  }
+
+  handleOnSubmitContacts = ({ formData } :Object) => {
+    const { actions } = this.props;
+
+    const dataToProcess = formData;
+    const [entitySetIds, propertyTypeIds] = [this.createEntitySetIdsMap(), this.createPropertyTypeIdsMap()];
+    console.log('formData: ', formData);
+    const pageKey = getPageSectionKey(1, 1);
+    const addressKey = getEntityAddressKey(0, ADDRESS, LOCATION_ADDRESS);
+    const phoneKey = getEntityAddressKey(0, CONTACT_INFORMATION, PHONE_NUMBER);
+    const emailKey = getEntityAddressKey(1, CONTACT_INFORMATION, EMAIL);
+    if (!formData[pageKey][addressKey]) dataToProcess[pageKey][addressKey] = '';
+    if (!formData[pageKey][phoneKey]) dataToProcess[pageKey][phoneKey] = '';
+    if (!formData[pageKey][emailKey]) dataToProcess[pageKey][emailKey] = '';
+
+    console.log('dataToProcess: ', dataToProcess);
+
+    dataToProcess[pageKey][getEntityAddressKey(0, CONTACT_INFORMATION, PREFERRED)] = true;
+    dataToProcess[pageKey][getEntityAddressKey(1, CONTACT_INFORMATION, PREFERRED)] = true;
+
+    const entityData :{} = processEntityData(dataToProcess, entitySetIds, propertyTypeIds);
+    const associationEntityData :{} = processAssociationEntityData(
+      this.getAssociations(),
+      entitySetIds,
+      propertyTypeIds
+    );
+    console.log('entityData: ', entityData);
+    console.log('associationEntityData: ', associationEntityData);
+    actions.addNewParticipantContacts({ associationEntityData, entityData });
   }
 
   render() {
-    const { formData } = this.state;
+    const { actions, participant } = this.props;
+    const {
+      contactsFormData,
+      contactsPrepopulated,
+      personFormData,
+      personPrepopulated,
+    } = this.state;
+    const personFormContext :Object = {
+      editAction: () => {},
+      entitySetIds: this.createEntitySetIdsMap(),
+      propertyTypeIds: this.createPropertyTypeIdsMap(),
+    };
+    const contactsFormContext :Object = {
+      editAction: () => {},
+      entitySetIds: this.createEntitySetIdsMap(),
+      propertyTypeIds: this.createPropertyTypeIdsMap(),
+    };
+    const participantEKID :UUID = getEntityKeyId(participant);
     return (
       <FormWrapper>
-        <Card>
-          <CardHeader mode="primary" padding="sm">Edit Person Details</CardHeader>
-          <Form
-              formContext={{}}
-              formData={formData}
-              onChange={this.handleOnChange}
-              onSubmit={this.handleOnSubmit}
-              schema={schema}
-              uiSchema={uiSchema} />
-        </Card>
+        <ButtonWrapper>
+          <BackNavButton
+              onClick={() => {
+                actions.goToRoute(Routes.PARTICIPANT_PROFILE.replace(':subjectId', participantEKID));
+              }}>
+            Back to Profile
+          </BackNavButton>
+        </ButtonWrapper>
+        <CardStack>
+          <Card>
+            <CardHeader mode="primary" padding="sm">Edit Person Details</CardHeader>
+            <Form
+                disabled={personPrepopulated}
+                formContext={personFormContext}
+                formData={personFormData}
+                onChange={this.handleOnChangePerson}
+                schema={personSchema}
+                uiSchema={personUiSchema} />
+          </Card>
+          <Card>
+            <CardHeader mode="primary" padding="sm">Edit Contact Information</CardHeader>
+            <Form
+                disabled={contactsPrepopulated}
+                formContext={contactsFormContext}
+                formData={contactsFormData}
+                onChange={this.handleOnChangeContacts}
+                onSubmit={this.handleOnSubmitContacts}
+                schema={contactsSchema}
+                uiSchema={contactsUiSchema} />
+          </Card>
+        </CardStack>
       </FormWrapper>
     );
   }
 }
 
-const mapStateToProps = (state :Map) => {
-  const app = state.get(STATE.APP);
-  const edm = state.get(STATE.EDM);
-  return ({
-    app,
-    edm,
-  });
-};
+const mapStateToProps = (state :Map) => ({
+  app: state.get(STATE.APP),
+  edm: state.get(STATE.EDM),
+});
 
 const mapDispatchToProps = dispatch => ({
   actions: bindActionCreators({
-    // editAppointment,
+    addNewParticipantContacts,
+    goToRoute,
   }, dispatch)
 });
 
