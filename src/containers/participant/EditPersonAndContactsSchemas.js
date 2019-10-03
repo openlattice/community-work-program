@@ -7,6 +7,7 @@ import {
   CONTACT_INFO_FQNS,
   PEOPLE_FQNS
 } from '../../core/edm/constants/FullyQualifiedNames';
+import { RACE_VALUES, SEX_VALUES } from '../participants/ParticipantsConstants';
 
 const { getEntityAddressKey, getPageSectionKey } = DataProcessingUtils;
 
@@ -43,15 +44,10 @@ export const personSchema = {
           title: 'Date of birth',
           format: 'date',
         },
-      }
-    },
-    [getPageSectionKey(1, 2)]: {
-      type: 'object',
-      title: '',
-      properties: {
         [getEntityAddressKey(0, PEOPLE, RACE)]: {
           type: 'string',
           title: 'Race',
+          enum: RACE_VALUES,
         },
         [getEntityAddressKey(0, PEOPLE, ETHNICITY)]: {
           type: 'string',
@@ -60,6 +56,7 @@ export const personSchema = {
         [getEntityAddressKey(0, PEOPLE, SEX)]: {
           type: 'string',
           title: 'Sex',
+          enum: SEX_VALUES,
         },
       }
     },
@@ -78,9 +75,6 @@ export const personUiSchema = {
     [getEntityAddressKey(0, PEOPLE, DOB)]: {
       classNames: 'column-span-4',
     },
-  },
-  [getPageSectionKey(1, 2)]: {
-    classNames: 'column-span-12 grid-container',
     [getEntityAddressKey(0, PEOPLE, RACE)]: {
       classNames: 'column-span-4',
     },
@@ -90,8 +84,8 @@ export const personUiSchema = {
     [getEntityAddressKey(0, PEOPLE, SEX)]: {
       classNames: 'column-span-4',
     },
+    'ui:options': { editable: true },
   },
-  'ui:options': { editable: true },
 };
 
 export const contactsSchema = {
@@ -131,6 +125,6 @@ export const contactsUiSchema = {
     [getEntityAddressKey(0, ADDRESS, LOCATION_ADDRESS)]: {
       classNames: 'column-span-4',
     },
+    'ui:options': { editable: true },
   },
-  'ui:options': { editable: true },
 };
