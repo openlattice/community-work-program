@@ -9,7 +9,7 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import type { RequestSequence } from 'redux-reqseq';
 
-import { addNewParticipantContacts } from './ParticipantActions';
+import { addNewParticipantContacts, editPersonDetails } from './ParticipantActions';
 import { goToRoute } from '../../core/router/RoutingActions';
 import {
   contactsSchema,
@@ -23,7 +23,6 @@ import {
   getEntitySetIdFromApp,
   getPropertyTypeIdFromEdm
 } from '../../utils/DataUtils';
-// import { getCombinedDateTime } from '../../../utils/ScheduleUtils';
 import { BackNavButton } from '../../components/controls/index';
 import { PARTICIPANT_PROFILE_WIDTH } from '../../core/style/Sizes';
 import {
@@ -61,24 +60,6 @@ const {
   SEX,
 } = PEOPLE_FQNS;
 
-// const getInfoFromTimeRange = (timeString :string) :Object => {
-//   const start :string = timeString.split('-')[0].trim().split(':').join(' ');
-//   const end :string = timeString.split('-')[1].trim().split(':').join(' ');
-//   return { start, end };
-// };
-//
-// const get24HourTimeFromString = (timeString :string) :string => {
-//   /* https://moment.github.io/luxon/docs/manual/parsing.html#table-of-tokens */
-//   const inputFormat :string = 'h mm a';
-//   const time :DateTime = DateTime.fromFormat(timeString, inputFormat).toLocaleString(DateTime.TIME_SIMPLE);
-//   const timeIn24Hour :string = time.toLowerCase().split(' ').join('');
-//   return timeIn24Hour;
-// };
-//
-// const getDateInISOFormat = (dateString :string) => (
-//   DateTime.fromFormat(dateString.split('/').join(' '), 'M d yyyy').toISODate()
-// );
-
 const FormWrapper = styled.div`
   display: flex;
   flex-direction: column;
@@ -95,6 +76,7 @@ const ButtonWrapper = styled.div`
 type Props = {
   actions:{
     addNewParticipantContacts :RequestSequence;
+    editPersonDetails :RequestSequence;
     goToRoute :RequestSequence;
   },
   address :Map;
@@ -170,9 +152,9 @@ class EditPersonAndContactsForm extends Component<Props, State> {
       if (firstName) map.setIn([getPageSectionKey(1, 1), getEntityAddressKey(0, PEOPLE, FIRST_NAME)], firstName);
       if (lastName) map.setIn([getPageSectionKey(1, 1), getEntityAddressKey(0, PEOPLE, LAST_NAME)], lastName);
       if (dateOfBirth) map.setIn([getPageSectionKey(1, 1), getEntityAddressKey(0, PEOPLE, DOB)], dateOfBirth);
-      if (race) map.setIn([getPageSectionKey(1, 2), getEntityAddressKey(0, PEOPLE, RACE)], race);
-      if (ethnicity) map.setIn([getPageSectionKey(1, 2), getEntityAddressKey(0, PEOPLE, ETHNICITY)], ethnicity);
-      if (sex) map.setIn([getPageSectionKey(1, 2), getEntityAddressKey(0, PEOPLE, SEX)], sex);
+      if (race) map.setIn([getPageSectionKey(1, 1), getEntityAddressKey(0, PEOPLE, RACE)], race);
+      if (ethnicity) map.setIn([getPageSectionKey(1, 1), getEntityAddressKey(0, PEOPLE, ETHNICITY)], ethnicity);
+      if (sex) map.setIn([getPageSectionKey(1, 1), getEntityAddressKey(0, PEOPLE, SEX)], sex);
     });
 
     const { [PHONE_NUMBER]: phoneNumber } = getEntityProperties(phone, [PHONE_NUMBER]);
@@ -220,6 +202,23 @@ class EditPersonAndContactsForm extends Component<Props, State> {
     };
   };
 
+  createEntityIndexToIdMap = () => {
+    const {
+      address,
+      email,
+      participant,
+      phone
+    } = this.props;
+
+    const entityIndexToIdMap :Map = Map().withMutations((map :Map) => {
+      map.setIn([PEOPLE, 0], getEntityKeyId(participant));
+      map.setIn([ADDRESS, 0], getEntityKeyId(address));
+      map.setIn([CONTACT_INFORMATION, 0], getEntityKeyId(phone));
+      map.setIn([CONTACT_INFORMATION, 1], getEntityKeyId(email));
+    });
+    return entityIndexToIdMap;
+  }
+
   getAssociations = () => {
     const { participant } = this.props;
     const personEKID :UUID = getEntityKeyId(participant);
@@ -243,7 +242,7 @@ class EditPersonAndContactsForm extends Component<Props, State> {
 
     const dataToProcess = formData;
     const [entitySetIds, propertyTypeIds] = [this.createEntitySetIdsMap(), this.createPropertyTypeIdsMap()];
-    console.log('formData: ', formData);
+
     const pageKey = getPageSectionKey(1, 1);
     const addressKey = getEntityAddressKey(0, ADDRESS, LOCATION_ADDRESS);
     const phoneKey = getEntityAddressKey(0, CONTACT_INFORMATION, PHONE_NUMBER);
@@ -251,8 +250,6 @@ class EditPersonAndContactsForm extends Component<Props, State> {
     if (!formData[pageKey][addressKey]) dataToProcess[pageKey][addressKey] = '';
     if (!formData[pageKey][phoneKey]) dataToProcess[pageKey][phoneKey] = '';
     if (!formData[pageKey][emailKey]) dataToProcess[pageKey][emailKey] = '';
-
-    console.log('dataToProcess: ', dataToProcess);
 
     dataToProcess[pageKey][getEntityAddressKey(0, CONTACT_INFORMATION, PREFERRED)] = true;
     dataToProcess[pageKey][getEntityAddressKey(1, CONTACT_INFORMATION, PREFERRED)] = true;
@@ -263,8 +260,6 @@ class EditPersonAndContactsForm extends Component<Props, State> {
       entitySetIds,
       propertyTypeIds
     );
-    console.log('entityData: ', entityData);
-    console.log('associationEntityData: ', associationEntityData);
     actions.addNewParticipantContacts({ associationEntityData, entityData });
   }
 
@@ -276,15 +271,22 @@ class EditPersonAndContactsForm extends Component<Props, State> {
       personFormData,
       personPrepopulated,
     } = this.state;
+
+    const entityIndexToIdMap = this.createEntityIndexToIdMap();
+    const entitySetIds = this.createEntitySetIdsMap();
+    const propertyTypeIds = this.createPropertyTypeIdsMap();
+
     const personFormContext :Object = {
-      editAction: () => {},
-      entitySetIds: this.createEntitySetIdsMap(),
-      propertyTypeIds: this.createPropertyTypeIdsMap(),
+      editAction: actions.editPersonDetails,
+      entityIndexToIdMap,
+      entitySetIds,
+      propertyTypeIds,
     };
     const contactsFormContext :Object = {
       editAction: () => {},
-      entitySetIds: this.createEntitySetIdsMap(),
-      propertyTypeIds: this.createPropertyTypeIdsMap(),
+      entityIndexToIdMap,
+      entitySetIds,
+      propertyTypeIds,
     };
     const participantEKID :UUID = getEntityKeyId(participant);
     return (
@@ -334,6 +336,7 @@ const mapDispatchToProps = dispatch => ({
   actions: bindActionCreators({
     addNewParticipantContacts,
     goToRoute,
+    editPersonDetails,
   }, dispatch)
 });
 
