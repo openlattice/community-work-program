@@ -15,6 +15,7 @@ import {
   deleteAppointment,
   editCaseAndHours,
   editCheckInDate,
+  editPersonDetails,
   editPersonNotes,
   editPlanNotes,
   editSentenceDate,
@@ -80,6 +81,7 @@ const {
   DIVERSION_PLAN,
   EDIT_CASE_AND_HOURS,
   EDIT_CHECK_IN_DATE,
+  EDIT_PERSON_DETAILS,
   EDIT_PERSON_NOTES,
   EDIT_PLAN_NOTES,
   EDIT_SENTENCE_DATE,
@@ -145,6 +147,9 @@ const INITIAL_STATE :Map<*, *> = fromJS({
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [EDIT_CHECK_IN_DATE]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [EDIT_PERSON_DETAILS]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [EDIT_PERSON_NOTES]: {
@@ -677,6 +682,35 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
         FAILURE: () => state
           .setIn([ACTIONS, DELETE_APPOINTMENT, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, DELETE_APPOINTMENT, action.id]),
+      });
+    }
+
+    case editPersonDetails.case(action.type): {
+
+      return editPersonDetails.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, EDIT_PERSON_DETAILS, action.id], action)
+          .setIn([ACTIONS, EDIT_PERSON_DETAILS, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+
+          const seqAction :SequenceAction = action;
+          const successValue :Object = seqAction.value;
+          const { newPersonData } = successValue;
+
+          let person :Map = state.get(PARTICIPANT);
+
+          newPersonData.forEach((value, fqn) => {
+            person = person.set(fqn, value);
+          });
+
+          return state
+            .set(PARTICIPANT, person)
+            .setIn([ACTIONS, EDIT_PERSON_DETAILS, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, EDIT_PERSON_DETAILS, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, EDIT_PERSON_DETAILS, action.id]),
       });
     }
 

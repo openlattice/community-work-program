@@ -33,6 +33,7 @@ import {
   DELETE_APPOINTMENT,
   EDIT_CASE_AND_HOURS,
   EDIT_CHECK_IN_DATE,
+  EDIT_PERSON_DETAILS,
   EDIT_PERSON_NOTES,
   EDIT_PLAN_NOTES,
   EDIT_SENTENCE_DATE,
@@ -63,6 +64,7 @@ import {
   deleteAppointment,
   editCaseAndHours,
   editCheckInDate,
+  editPersonDetails,
   editPersonNotes,
   editPlanNotes,
   editSentenceDate,
@@ -457,9 +459,9 @@ function* addNewParticipantContactsWorker(action :SequenceAction) :Generator<*, 
 
     const storedAddressData = fromJS(entityData[addressESID][0]);
     let newAddress :Map = Map();
-    storedAddressData.forEach((enrollmentValue, propertyTypeId) => {
+    storedAddressData.forEach((addressValue, propertyTypeId) => {
       const propertyTypeFqn :FQN = getPropertyFqnFromEdm(edm, propertyTypeId);
-      newAddress = newAddress.set(propertyTypeFqn, enrollmentValue);
+      newAddress = newAddress.set(propertyTypeFqn, addressValue);
     });
 
     const storedContactData = fromJS(entityData[contactInfoESID]);
@@ -467,12 +469,12 @@ function* addNewParticipantContactsWorker(action :SequenceAction) :Generator<*, 
     let newPhone :Map = Map();
     let newEmail :Map = Map();
     storedContactData.forEach((contactEntity :Map) => {
-      contactEntity.forEach((enrollmentValue, propertyTypeId) => {
+      contactEntity.forEach((entityValue, propertyTypeId) => {
         if (propertyTypeId === getPropertyTypeIdFromEdm(edm, PHONE_NUMBER)) {
-          newPhone = newPhone.set(PHONE_NUMBER, enrollmentValue);
+          newPhone = newPhone.set(PHONE_NUMBER, entityValue);
         }
         else if (propertyTypeId === getPropertyTypeIdFromEdm(edm, EMAIL)) {
-          newEmail = newEmail.set(EMAIL, enrollmentValue);
+          newEmail = newEmail.set(EMAIL, entityValue);
         }
         else {
           return false;
@@ -497,6 +499,95 @@ function* addNewParticipantContactsWorker(action :SequenceAction) :Generator<*, 
 function* addNewParticipantContactsWatcher() :Generator<*, *, *> {
 
   yield takeEvery(ADD_NEW_PARTICIPANT_CONTACTS, addNewParticipantContactsWorker);
+}
+
+/*
+ *
+ * ParticipantActions.editPersonDetails()
+ *
+ */
+
+function* editPersonDetailsWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+  let response :Object = {};
+
+  try {
+    yield put(editPersonDetails.request(id, value));
+
+    response = yield call(submitPartialReplaceWorker, submitPartialReplace(value));
+    if (response.error) {
+      throw response.error;
+    }
+    const { entityData } = value;
+    const app = yield select(getAppFromState);
+    const peopleESID :UUID = getEntitySetIdFromApp(app, PEOPLE);
+    const edm = yield select(getEdmFromState);
+
+    const personEKID :UUID = Object.keys(entityData[peopleESID])[0];
+    const storedPersonData :Map = fromJS(entityData[peopleESID][personEKID]);
+    let newPersonData :Map = Map();
+    storedPersonData.forEach((personValue, propertyTypeId) => {
+      const propertyTypeFqn = getPropertyFqnFromEdm(edm, propertyTypeId);
+      newPersonData = newPersonData.set(propertyTypeFqn, personValue);
+    });
+    yield put(editPersonDetails.success(id, { newPersonData }));
+  }
+  catch (error) {
+    LOG.error('caught exception in editPersonDetailsWorker()', error);
+    yield put(editPersonDetails.failure(id, error));
+  }
+  finally {
+    yield put(editPersonDetails.finally(id));
+  }
+}
+
+function* editPersonDetailsWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(EDIT_PERSON_DETAILS, editPersonDetailsWorker);
+}
+
+/*
+ *
+ * ParticipantActions.editParticipantContacts()
+ *
+ */
+
+function* editParticipantContactsWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+  let response :Object = {};
+
+  try {
+    yield put(editParticipantContacts.request(id, value));
+
+    response = yield call(submitPartialReplaceWorker, submitPartialReplace(value));
+    if (response.error) {
+      throw response.error;
+    }
+    const { entityData } = value;
+    const app = yield select(getAppFromState);
+    const peopleESID :UUID = getEntitySetIdFromApp(app, PEOPLE);
+    const contactInfoESID :UUID = getEntitySetIdFromApp(app, CONTACT_INFORMATION);
+    const edm = yield select(getEdmFromState);
+
+    yield put(editParticipantContacts.success(id, {
+      diversionPlanESID,
+      edm,
+    }));
+  }
+  catch (error) {
+    LOG.error('caught exception in editParticipantContactsWorker()', error);
+    yield put(editParticipantContacts.failure(id, error));
+  }
+  finally {
+    yield put(editParticipantContacts.finally(id));
+  }
+}
+
+function* editParticipantContactsWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(EDIT_PARTICIPANT_CONTACTS, editParticipantContactsWorker);
 }
 
 /*
@@ -1977,6 +2068,8 @@ export {
   editCaseAndHoursWorker,
   editCheckInDateWatcher,
   editCheckInDateWorker,
+  editPersonDetailsWatcher,
+  editPersonDetailsWorker,
   editPersonNotesWatcher,
   editPersonNotesWorker,
   editPlanNotesWatcher,
