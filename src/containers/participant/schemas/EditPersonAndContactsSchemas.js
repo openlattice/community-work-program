@@ -6,8 +6,8 @@ import {
   APP_TYPE_FQNS,
   CONTACT_INFO_FQNS,
   PEOPLE_FQNS
-} from '../../core/edm/constants/FullyQualifiedNames';
-import { RACE_VALUES, SEX_VALUES } from '../participants/ParticipantsConstants';
+} from '../../../core/edm/constants/FullyQualifiedNames';
+import { RACE_VALUES, SEX_VALUES } from '../../../core/edm/constants/DataModelConsts';
 
 const { getEntityAddressKey, getPageSectionKey } = DataProcessingUtils;
 
