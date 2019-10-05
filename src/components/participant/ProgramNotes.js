@@ -25,6 +25,7 @@ const NotesCard = styled(Card)`
 `;
 
 const TextWrapper = styled.div`
+  align-self: center;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
