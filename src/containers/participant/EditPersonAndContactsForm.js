@@ -16,7 +16,7 @@ import {
   contactsUiSchema,
   personSchema,
   personUiSchema,
-} from './EditPersonAndContactsSchemas';
+} from './schemas/EditPersonAndContactsSchemas';
 import {
   getEntityKeyId,
   getEntityProperties,
@@ -302,7 +302,7 @@ class EditPersonAndContactsForm extends Component<Props, State> {
         </ButtonWrapper>
         <CardStack>
           <Card>
-            <CardHeader mode="primary" padding="sm">Edit Person Details</CardHeader>
+            <CardHeader padding="sm">Edit Person Details</CardHeader>
             <Form
                 disabled={personPrepopulated}
                 formContext={personFormContext}
@@ -311,7 +311,7 @@ class EditPersonAndContactsForm extends Component<Props, State> {
                 uiSchema={personUiSchema} />
           </Card>
           <Card>
-            <CardHeader mode="primary" padding="sm">Edit Contact Information</CardHeader>
+            <CardHeader padding="sm">Edit Contact Information</CardHeader>
             <Form
                 disabled={contactsPrepopulated}
                 formContext={contactsFormContext}
@@ -339,7 +339,6 @@ const mapDispatchToProps = dispatch => ({
     goToRoute,
   }, dispatch)
 });
-
 
 // $FlowFixMe
 export default connect(mapStateToProps, mapDispatchToProps)(EditPersonAndContactsForm);
