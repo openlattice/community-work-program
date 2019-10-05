@@ -31,11 +31,13 @@ const CaseInfoCard = styled(Card)`
 `;
 
 type Props = {
+  edit :() => void;
   hours :number;
   personCase :string;
 };
 
 const CaseInfoSection = ({
+  edit,
   hours,
   personCase,
 } :Props) => {
@@ -56,7 +58,7 @@ const CaseInfoSection = ({
     <SectionWrapper>
       <SectionNameRow>
         <SectionLabel subtle>Case Info</SectionLabel>
-        <SmallEditButton mode="subtle" onClick={() => {}} />
+        <SmallEditButton mode="subtle" onClick={edit} />
       </SectionNameRow>
       <CaseInfoCard>
         <CardSegment padding="md" vertical>

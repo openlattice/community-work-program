@@ -303,6 +303,11 @@ class ParticipantProfile extends Component<Props, State> {
     actions.goToRoute(Routes.EDIT_PARTICIPANT.replace(':subjectId', personEKID));
   }
 
+  editCaseInfo = () => {
+    const { actions, personEKID } = this.props;
+    actions.goToRoute(Routes.EDIT_CASE_INFO.replace(':subjectId', personEKID));
+  }
+
   render() {
     const {
       actions,
@@ -409,8 +414,9 @@ class ParticipantProfile extends Component<Props, State> {
                   sentenceDateTime={sentenceDate}
                   workStartDateTime={workStartDateTime} />
               <CaseInfoSection
-                  personCase={personCase}
-                  hours={requiredHours} />
+                  edit={this.editCaseInfo}
+                  hours={requiredHours}
+                  personCase={personCase} />
               <ProgramNotes
                   notes={planNotes} />
             </ProgramInfoColumnWrapper>
