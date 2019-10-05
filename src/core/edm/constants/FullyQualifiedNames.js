@@ -79,6 +79,13 @@ export const CASE_FQNS = {
   COURT_CASE_TYPE: new FullyQualifiedName('justice.courtcasetype'),
 };
 
+/* justice.charge */
+export const CHARGE_FQNS = {
+  ARREST_TRACKING_NUMBER: new FullyQualifiedName('justice.ArrestTrackingNumber'),
+  CHARGE_LEVEL: new FullyQualifiedName('event.ChargeLevel'),
+  OFFENSE_CHARGE_DESCRIPTION: new FullyQualifiedName('event.OffenseLocalDescription'),
+};
+
 /* ol.encounter */
 export const CHECK_IN_FQNS = {
   CHECKED_IN: new FullyQualifiedName('ol.checkedin'),

@@ -58,6 +58,12 @@ const getAllParticipantInfo = newRequestSequence(GET_ALL_PARTICIPANT_INFO);
 const GET_CASE_INFO :'GET_CASE_INFO' = 'GET_CASE_INFO';
 const getCaseInfo = newRequestSequence(GET_CASE_INFO);
 
+const GET_CHARGES :'GET_CHARGES' = 'GET_CHARGES';
+const getCharges = newRequestSequence(GET_CHARGES);
+
+const GET_CHARGES_FOR_CASE :'GET_CHARGES_FOR_CASE' = 'GET_CHARGES_FOR_CASE';
+const getChargesForCase = newRequestSequence(GET_CHARGES_FOR_CASE);
+
 const GET_CONTACT_INFO :'GET_CONTACT_INFO' = 'GET_CONTACT_INFO';
 const getContactInfo = newRequestSequence(GET_CONTACT_INFO);
 
@@ -66,6 +72,12 @@ const getEnrollmentStatus = newRequestSequence(GET_ENROLLMENT_STATUS);
 
 const GET_INFRACTION_TYPES :'GET_INFRACTION_TYPES' = 'GET_INFRACTION_TYPES';
 const getInfractionTypes = newRequestSequence(GET_INFRACTION_TYPES);
+
+const GET_JUDGE_FOR_CASE :'GET_JUDGE_FOR_CASE' = 'GET_JUDGE_FOR_CASE';
+const getJudgeForCase = newRequestSequence(GET_JUDGE_FOR_CASE);
+
+const GET_JUDGES:'GET_JUDGES' = 'GET_JUDGES';
+const getJudges = newRequestSequence(GET_JUDGES);
 
 const GET_PARTICIPANT :'GET_PARTICIPANT' = 'GET_PARTICIPANT';
 const getParticipant = newRequestSequence(GET_PARTICIPANT);
@@ -117,9 +129,13 @@ export {
   GET_ALL_PARTICIPANT_INFO,
   GET_APPOINTMENT_CHECK_INS,
   GET_CASE_INFO,
+  GET_CHARGES,
+  GET_CHARGES_FOR_CASE,
   GET_CONTACT_INFO,
   GET_ENROLLMENT_STATUS,
   GET_INFRACTION_TYPES,
+  GET_JUDGE_FOR_CASE,
+  GET_JUDGES,
   GET_PARTICIPANT,
   GET_PARTICIPANT_ADDRESS,
   GET_PARTICIPANT_INFRACTIONS,
@@ -149,9 +165,13 @@ export {
   getAllParticipantInfo,
   getAppointmentCheckIns,
   getCaseInfo,
+  getCharges,
+  getChargesForCase,
   getContactInfo,
   getEnrollmentStatus,
   getInfractionTypes,
+  getJudgeForCase,
+  getJudges,
   getParticipant,
   getParticipantAddress,
   getParticipantInfractions,

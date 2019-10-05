@@ -24,9 +24,13 @@ import {
   getAllParticipantInfo,
   getAppointmentCheckIns,
   getCaseInfo,
+  getCharges,
+  getChargesForCase,
   getContactInfo,
   getEnrollmentStatus,
   getInfractionTypes,
+  getJudgeForCase,
+  getJudges,
   getParticipant,
   getParticipantAddress,
   getParticipantInfractions,
@@ -75,6 +79,9 @@ const {
   ADD_ORIENTATION_DATE,
   ADD_WORKSITE_PLAN,
   ADDRESS,
+  CHARGES,
+  CHARGES_BY_CHARGE_EVENT_EKID,
+  CHARGE_EVENTS,
   CHECK_INS_BY_APPOINTMENT,
   CHECK_IN_FOR_APPOINTMENT,
   CREATE_WORK_APPOINTMENTS,
@@ -94,9 +101,13 @@ const {
   GET_APPOINTMENT_CHECK_INS,
   GET_ALL_PARTICIPANT_INFO,
   GET_CASE_INFO,
+  GET_CHARGES,
+  GET_CHARGES_FOR_CASE,
   GET_CONTACT_INFO,
   GET_ENROLLMENT_STATUS,
   GET_INFRACTION_TYPES,
+  GET_JUDGE_FOR_CASE,
+  GET_JUDGES,
   GET_PARTICIPANT,
   GET_PARTICIPANT_ADDRESS,
   GET_PARTICIPANT_INFRACTIONS,
@@ -107,6 +118,8 @@ const {
   GET_WORK_APPOINTMENTS,
   INFRACTIONS_INFO,
   INFRACTION_TYPES,
+  JUDGE,
+  JUDGES,
   MARK_DIVERSION_PLAN_AS_COMPLETE,
   PARTICIPANT,
   PERSON_CASE,
@@ -175,6 +188,12 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     [GET_CASE_INFO]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
+    [GET_CHARGES]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [GET_CHARGES_FOR_CASE]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
     [GET_CONTACT_INFO]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
@@ -182,6 +201,12 @@ const INITIAL_STATE :Map<*, *> = fromJS({
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [GET_INFRACTION_TYPES]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [GET_JUDGE_FOR_CASE]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [GET_JUDGES]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [GET_PROGRAM_OUTCOME]: {
@@ -210,6 +235,9 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     },
   },
   [ADDRESS]: Map(),
+  [CHARGES]: List(),
+  [CHARGES_BY_CHARGE_EVENT_EKID]: Map(),
+  [CHARGE_EVENTS]: List(),
   [CHECK_INS_BY_APPOINTMENT]: Map(),
   [DIVERSION_PLAN]: Map(),
   [EMAIL]: Map(),
@@ -231,6 +259,8 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   },
   [INFRACTIONS_INFO]: Map(),
   [INFRACTION_TYPES]: List(),
+  [JUDGE]: Map(),
+  [JUDGES]: List(),
   [PARTICIPANT]: Map(),
   [PERSON_CASE]: Map(),
   [PHONE]: Map(),
@@ -1165,6 +1195,37 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
       });
     }
 
+    case getChargesForCase.case(action.type): {
+
+      return getChargesForCase.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, GET_CHARGES_FOR_CASE, action.id], fromJS(action))
+          .setIn([ACTIONS, GET_CHARGES_FOR_CASE, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+
+          if (!state.hasIn([ACTIONS, GET_CHARGES_FOR_CASE, action.id])) {
+            return state;
+          }
+
+          const { value } = action;
+          if (value === null || value === undefined) {
+            return state;
+          }
+
+          return state
+            .set(CHARGE_EVENTS, value.chargeEvents)
+            .set(CHARGES_BY_CHARGE_EVENT_EKID, value.chargesByChargeEventEKID)
+            .setIn([ACTIONS, GET_CHARGES_FOR_CASE, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .set(CHARGE_EVENTS, List())
+          .set(CHARGES_BY_CHARGE_EVENT_EKID, Map())
+          .setIn([ACTIONS, GET_CHARGES_FOR_CASE, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, GET_CHARGES_FOR_CASE, action.id])
+      });
+    }
+
     case getContactInfo.case(action.type): {
 
       return getContactInfo.reducer(state, action, {
@@ -1270,6 +1331,64 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
             .setIn([ACTIONS, GET_INFRACTION_TYPES, REQUEST_STATE], RequestStates.FAILURE);
         },
         FINALLY: () => state.deleteIn([ACTIONS, GET_INFRACTION_TYPES, action.id])
+      });
+    }
+
+    case getJudgeForCase.case(action.type): {
+
+      return getJudgeForCase.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, GET_JUDGE_FOR_CASE, action.id], fromJS(action))
+          .setIn([ACTIONS, GET_JUDGE_FOR_CASE, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+
+          if (!state.hasIn([ACTIONS, GET_JUDGE_FOR_CASE, action.id])) {
+            return state;
+          }
+
+          const { value } = action;
+          if (value === null || value === undefined) {
+            return state;
+          }
+
+          return state
+            .set(JUDGE, value)
+            .setIn([ACTIONS, GET_JUDGE_FOR_CASE, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .set(JUDGE, Map())
+          .setIn([ACTIONS, GET_JUDGE_FOR_CASE, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, GET_JUDGE_FOR_CASE, action.id])
+      });
+    }
+
+    case getJudges.case(action.type): {
+
+      return getJudges.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, GET_JUDGES, action.id], fromJS(action))
+          .setIn([ACTIONS, GET_JUDGES, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+
+          if (!state.hasIn([ACTIONS, GET_JUDGES, action.id])) {
+            return state;
+          }
+
+          const { value } = action;
+          if (value === null || value === undefined) {
+            return state;
+          }
+
+          return state
+            .set(JUDGES, value)
+            .setIn([ACTIONS, GET_JUDGES, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .set(JUDGES, List())
+          .setIn([ACTIONS, GET_JUDGES, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, GET_JUDGES, action.id])
       });
     }
 
