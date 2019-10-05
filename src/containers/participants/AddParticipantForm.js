@@ -29,7 +29,7 @@ import {
 } from '../../core/edm/constants/FullyQualifiedNames';
 import { STATE } from '../../utils/constants/ReduxStateConsts';
 import { CWP, ENROLLMENT_STATUSES } from '../../core/edm/constants/DataModelConsts';
-import { COURT_TYPE_OPTIONS } from '../participant/cases/EditCaseAndHoursForm';
+import { courtTypeOptions } from './ParticipantsConstants';
 import {
   ButtonsRow,
   FormRow,
@@ -257,7 +257,7 @@ class AddParticipantForm extends Component<Props, State> {
             <Select
                 name={getEntityAddressKey(0, MANUAL_PRETRIAL_COURT_CASES, COURT_CASE_TYPE)}
                 onChange={this.handleSelectChange}
-                options={COURT_TYPE_OPTIONS} />
+                options={courtTypeOptions} />
           </RowContent>
           <RowContent>
             <Label>Docket number</Label>
