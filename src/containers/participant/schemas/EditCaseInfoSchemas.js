@@ -35,7 +35,8 @@ export const judgeSchema = {
         [getEntityAddressKey(0, JUDGES, ENTITY_KEY_ID)]: {
           type: 'string',
           title: 'Judge',
-          enum: []
+          enum: [],
+          enumNames: [],
         }
       }
     },
