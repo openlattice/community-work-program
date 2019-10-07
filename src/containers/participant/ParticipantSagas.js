@@ -46,6 +46,7 @@ import {
   GET_CHARGES_FOR_CASE,
   GET_CONTACT_INFO,
   GET_ENROLLMENT_STATUS,
+  GET_INFO_FOR_EDIT_CASE,
   GET_INFRACTION_TYPES,
   GET_JUDGE_FOR_CASE,
   GET_JUDGES,
@@ -82,6 +83,7 @@ import {
   getChargesForCase,
   getContactInfo,
   getEnrollmentStatus,
+  getInfoForEditCase,
   getInfractionTypes,
   getJudgeForCase,
   getJudges,
@@ -2239,6 +2241,7 @@ function* getParticipantInfractionsWatcher() :Generator<*, *, *> {
 function* getJudgesWorker(action :SequenceAction) :Generator<*, *, *> {
 
   const { id, value } = action;
+  const workerResponse = {};
   let response :Object = {};
   let judges :List = List();
 
@@ -2256,12 +2259,14 @@ function* getJudgesWorker(action :SequenceAction) :Generator<*, *, *> {
     yield put(getJudges.success(id, judges));
   }
   catch (error) {
+    workerResponse.error = error;
     LOG.error('caught exception in getJudgesWorker()', error);
     yield put(getJudges.failure(id, error));
   }
   finally {
     yield put(getJudges.finally(id));
   }
+  return workerResponse;
 }
 
 function* getJudgesWatcher() :Generator<*, *, *> {
@@ -2271,20 +2276,20 @@ function* getJudgesWatcher() :Generator<*, *, *> {
 
 /*
  *
- * ParticipantsActions.getAllEditCaseInfo()
+ * ParticipantsActions.getInfoForEditCase()
  *
  */
 
-function* getAllEditCaseInfoWorker(action :SequenceAction) :Generator<*, *, *> {
+function* getInfoForEditCaseWorker(action :SequenceAction) :Generator<*, *, *> {
 
   const { id, value } = action;
   if (value === null || value === undefined) {
-    yield put(getAllEditCaseInfo.failure(id, ERR_ACTION_VALUE_NOT_DEFINED));
+    yield put(getInfoForEditCase.failure(id, ERR_ACTION_VALUE_NOT_DEFINED));
     return;
   }
 
   try {
-    yield put(getAllEditCaseInfo.request(id));
+    yield put(getInfoForEditCase.request(id));
     const { personEKID } = value;
 
     const workerResponses = yield all([
@@ -2292,7 +2297,7 @@ function* getAllEditCaseInfoWorker(action :SequenceAction) :Generator<*, *, *> {
       call(getParticipantWorker, getParticipant({ personEKID })),
       call(getEnrollmentStatusWorker, getEnrollmentStatus({ personEKID, populateProfile: false })),
       call(getJudgesWorker, getJudges()),
-      call(getChargesWorker, getCharges()),
+      // call(getChargesWorker, getCharges()),
     ]);
     const responseError = workerResponses.reduce(
       (error, workerResponse) => (error ? error : workerResponse.error),
@@ -2301,15 +2306,20 @@ function* getAllEditCaseInfoWorker(action :SequenceAction) :Generator<*, *, *> {
     if (responseError) {
       throw responseError;
     }
-    yield put(getAllEditCaseInfo.success(id));
+    yield put(getInfoForEditCase.success(id));
   }
   catch (error) {
-    LOG.error('caught exception in getAllEditCaseInfoWorker()', error);
-    yield put(getAllEditCaseInfo.failure(id, error));
+    LOG.error('caught exception in getInfoForEditCaseWorker()', error);
+    yield put(getInfoForEditCase.failure(id, error));
   }
   finally {
-    yield put(getAllCaseProfileInfo.finally(id));
+    yield put(getInfoForEditCase.finally(id));
   }
+}
+
+function* getInfoForEditCaseWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(GET_INFO_FOR_EDIT_CASE, getInfoForEditCaseWorker);
 }
 
 /*
@@ -2408,6 +2418,8 @@ export {
   getContactInfoWorker,
   getEnrollmentStatusWatcher,
   getEnrollmentStatusWorker,
+  getInfoForEditCaseWatcher,
+  getInfoForEditCaseWorker,
   getInfractionTypesWatcher,
   getInfractionTypesWorker,
   getJudgeForCaseWatcher,
