@@ -2,7 +2,13 @@
  * @flow
  */
 
-import { List, Map, fromJS } from 'immutable';
+import {
+  fromJS,
+  getIn,
+  has,
+  List,
+  Map,
+} from 'immutable';
 import {
   all,
   call,
@@ -59,6 +65,7 @@ import {
   GET_WORKSITE_PLAN_STATUSES,
   GET_WORK_APPOINTMENTS,
   MARK_DIVERSION_PLAN_AS_COMPLETE,
+  REASSIGN_JUDGE,
   UPDATE_HOURS_WORKED,
   addInfraction,
   addNewDiversionPlanStatus,
@@ -96,10 +103,17 @@ import {
   getWorksitePlanStatuses,
   getWorksitePlans,
   markDiversionPlanAsComplete,
+  reassignJudge,
   updateHoursWorked,
 } from './ParticipantActions';
-import { deleteEntities, submitDataGraph, submitPartialReplace } from '../../core/sagas/data/DataActions';
 import {
+  createOrReplaceAssociation,
+  deleteEntities,
+  submitDataGraph,
+  submitPartialReplace
+} from '../../core/sagas/data/DataActions';
+import {
+  createOrReplaceAssociationWorker,
   deleteEntitiesWorker,
   submitDataGraphWorker,
   submitPartialReplaceWorker
@@ -117,7 +131,7 @@ import {
   sortEntitiesByDateProperty,
 } from '../../utils/DataUtils';
 import { isDefined } from '../../utils/LangUtils';
-import { STATE, WORKSITES } from '../../utils/constants/ReduxStateConsts';
+import { PERSON, STATE, WORKSITES } from '../../utils/constants/ReduxStateConsts';
 import {
   APP_TYPE_FQNS,
   CONTACT_INFO_FQNS,
@@ -171,6 +185,7 @@ const { HOURS_WORKED } = WORKSITE_PLAN_FQNS;
 const getAppFromState = state => state.get(STATE.APP, Map());
 const getEdmFromState = state => state.get(STATE.EDM, Map());
 const getWorksitesListFromState = state => state.getIn([STATE.WORKSITES, WORKSITES.WORKSITES_LIST], List());
+const getPersonFromState = state => state.get(STATE.PERSON, Map());
 
 const LOG = new Logger('ParticipantSagas');
 /*
@@ -874,6 +889,107 @@ function* markDiversionPlanAsCompleteWorker(action :SequenceAction) :Generator<*
 function* markDiversionPlanAsCompleteWatcher() :Generator<*, *, *> {
 
   yield takeEvery(MARK_DIVERSION_PLAN_AS_COMPLETE, markDiversionPlanAsCompleteWorker);
+}
+
+/*
+ *
+ * ParticipantActions.reassignJudge()
+ *
+ */
+
+function* reassignJudgeWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+  if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
+  let newAssociations = [];
+
+  try {
+    yield put(reassignJudge.request(id, value));
+
+    const app = yield select(getAppFromState);
+    const judgesESID :UUID = getEntitySetIdFromApp(app, JUDGES);
+
+    const { entityData } = value;
+    if (has(entityData, judgesESID)) {
+
+      const judgeEKID :UUID = getIn(entityData, [judgesESID, 0, ENTITY_KEY_ID]);
+      const person = yield select(getPersonFromState);
+      const caseEKID :UUID = getEntityKeyId(person.getIn([PERSON.PERSON_CASE]));
+      const caseESID :UUID = getEntitySetIdFromApp(app, MANUAL_PRETRIAL_COURT_CASES);
+      const diversionPlanEKID :UUID = getEntityKeyId(person.getIn([PERSON.DIVERSION_PLAN]));
+      const diversionPlanESID :UUID = getEntitySetIdFromApp(app, DIVERSION_PLAN);
+
+      const presidesOverESID :UUID = getEntitySetIdFromApp(app, PRESIDES_OVER);
+
+      const associationsToDelete = [];
+      const existingAssociationsResponse = yield call(
+        getEntitySetDataWorker,
+        getEntitySetData({ entitySetId: presidesOverESID })
+      );
+      if (existingAssociationsResponse.error) throw existingAssociationsResponse.error;
+      if (existingAssociationsResponse.data) {
+
+        fromJS(existingAssociationsResponse.data)
+          .forEach((associationEntity :Map) => {
+            associationsToDelete.push({
+              entitySetId: presidesOverESID,
+              entityKeyId: getEntityKeyId(associationEntity)
+            });
+          });
+      }
+
+      const associations = {
+        [presidesOverESID]: [
+          {
+            data: {},
+            dst: {
+              entitySetId: caseESID,
+              entityKeyId: caseEKID
+            },
+            src: {
+              entitySetId: judgesESID,
+              entityKeyId: judgeEKID
+            }
+          },
+          {
+            data: {},
+            dst: {
+              entitySetId: diversionPlanESID,
+              entityKeyId: diversionPlanEKID
+            },
+            src: {
+              entitySetId: judgesESID,
+              entityKeyId: judgeEKID
+            }
+          }
+        ]
+      };
+
+      const associationResponse = yield call(
+        createOrReplaceAssociationWorker,
+        createOrReplaceAssociation({
+          associations,
+          associationsToDelete,
+        })
+      );
+      if (associationResponse.error) throw associationResponse.error;
+      if (associationResponse.data) newAssociations = associationResponse.data;
+    }
+
+    yield put(reassignJudge.success(id, { judgesESID, newAssociations }));
+  }
+  catch (error) {
+    LOG.error('caught exception in reassignJudgeWorker()', error);
+    yield put(reassignJudge.failure(id, error));
+  }
+  finally {
+    yield put(reassignJudge.finally(id));
+  }
+}
+
+function* reassignJudgeWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(REASSIGN_JUDGE, reassignJudgeWorker);
 }
 
 /*
@@ -2444,6 +2560,8 @@ export {
   getWorksitePlanStatusesWorker,
   markDiversionPlanAsCompleteWatcher,
   markDiversionPlanAsCompleteWorker,
+  reassignJudgeWatcher,
+  reassignJudgeWorker,
   updateHoursWorkedWatcher,
   updateHoursWorkedWorker,
 };

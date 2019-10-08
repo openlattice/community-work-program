@@ -103,6 +103,7 @@ export const PERSON = {
   PERSON_CASE: 'personCase',
   PHONE: 'phone',
   PROGRAM_OUTCOME: 'programOutcome',
+  REASSIGN_JUDGE: 'reassignJudge',
   REQUEST_STATE: 'requestState',
   REQUIRED_HOURS: 'requiredHours',
   UPDATE_HOURS_WORKED: 'updateHoursWorked',

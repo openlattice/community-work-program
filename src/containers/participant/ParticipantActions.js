@@ -109,6 +109,9 @@ const getWorkAppointments = newRequestSequence(GET_WORK_APPOINTMENTS);
 const MARK_DIVERSION_PLAN_AS_COMPLETE :'MARK_DIVERSION_PLAN_AS_COMPLETE' = 'MARK_DIVERSION_PLAN_AS_COMPLETE';
 const markDiversionPlanAsComplete = newRequestSequence(MARK_DIVERSION_PLAN_AS_COMPLETE);
 
+const REASSIGN_JUDGE:'REASSIGN_JUDGE' = 'REASSIGN_JUDGE';
+const reassignJudge = newRequestSequence(REASSIGN_JUDGE);
+
 const UPDATE_HOURS_WORKED :'UPDATE_HOURS_WORKED' = 'UPDATE_HOURS_WORKED';
 const updateHoursWorked = newRequestSequence(UPDATE_HOURS_WORKED);
 
@@ -149,6 +152,7 @@ export {
   GET_WORKSITE_PLAN_STATUSES,
   GET_WORK_APPOINTMENTS,
   MARK_DIVERSION_PLAN_AS_COMPLETE,
+  REASSIGN_JUDGE,
   UPDATE_HOURS_WORKED,
   addInfraction,
   addNewDiversionPlanStatus,
@@ -186,5 +190,6 @@ export {
   getWorksitePlanStatuses,
   getWorksitePlans,
   markDiversionPlanAsComplete,
+  reassignJudge,
   updateHoursWorked,
 };

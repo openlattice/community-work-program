@@ -1,5 +1,10 @@
 // @flow
-import { List, Map, fromJS } from 'immutable';
+import {
+  List,
+  Map,
+  fromJS,
+  getIn,
+} from 'immutable';
 import { RequestStates } from 'redux-reqseq';
 import type { SequenceAction } from 'redux-reqseq';
 import type { FQN } from 'lattice';
@@ -41,6 +46,7 @@ import {
   getWorksitePlanStatuses,
   getWorksitePlans,
   markDiversionPlanAsComplete,
+  reassignJudge,
   updateHoursWorked,
 } from './ParticipantActions';
 import {
@@ -127,6 +133,7 @@ const {
   PERSON_CASE,
   PHONE,
   PROGRAM_OUTCOME,
+  REASSIGN_JUDGE,
   REQUEST_STATE,
   UPDATE_HOURS_WORKED,
   VIOLATIONS,
@@ -233,6 +240,9 @@ const INITIAL_STATE :Map<*, *> = fromJS({
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [GET_WORKSITE_PLAN_STATUSES]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [REASSIGN_JUDGE]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [UPDATE_HOURS_WORKED]: {
@@ -1717,6 +1727,42 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
             .setIn([ACTIONS, GET_WORKSITE_PLAN_STATUSES, REQUEST_STATE], RequestStates.FAILURE);
         },
         FINALLY: () => state.deleteIn([ACTIONS, GET_WORKSITE_PLAN_STATUSES, action.id])
+      });
+    }
+
+    case reassignJudge.case(action.type): {
+
+      return reassignJudge.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, REASSIGN_JUDGE, action.id], fromJS(action))
+          .setIn([ACTIONS, REASSIGN_JUDGE, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+
+          const seqAction :SequenceAction = action;
+          const storedSeqAction :SequenceAction = state.getIn([ACTIONS, REASSIGN_JUDGE, seqAction.id]);
+
+          if (storedSeqAction) {
+
+            const requestValue = storedSeqAction.value;
+            const { entityData } = requestValue;
+            const successValue = seqAction.value;
+            const { judgesESID } = successValue;
+
+            const judgeEKID :UUID = getIn(entityData, [judgesESID, 0, ENTITY_KEY_ID]);
+
+            const judges = state.get(JUDGES);
+            const judge :Map = judges.find((storedJudge :Map) => getEntityKeyId(storedJudge) === judgeEKID);
+
+            return state
+              .set(JUDGE, judge)
+              .setIn([ACTIONS, JUDGE, REQUEST_STATE], RequestStates.SUCCESS);
+          }
+          return state;
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, REASSIGN_JUDGE, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, REASSIGN_JUDGE, action.id])
       });
     }
 
