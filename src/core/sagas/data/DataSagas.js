@@ -45,72 +45,6 @@ const {
 
 /*
  *
- * DataActions.createOrReplaceAssociation()
- *
- */
-
-function* createOrReplaceAssociationWorker(action :SequenceAction) :Generator<*, *, *> {
-
-  const workerResponse :Object = {};
-
-  const { id, value } = action;
-  if (!isDefined(value)) {
-    workerResponse.error = ERR_ACTION_VALUE_NOT_DEFINED;
-    yield put(createOrReplaceAssociation.failure(id, workerResponse.error));
-    return workerResponse;
-  }
-  if (!isDefined(value.association)) {
-    workerResponse.error = ERR_ACTION_VALUE_TYPE;
-    yield put(createOrReplaceAssociation.failure(id, workerResponse.error));
-    return workerResponse;
-  }
-
-  try {
-    yield put(createOrReplaceAssociation.request(action.id, value));
-
-    const { association, entityKeyId, entitySetId } = value;
-
-    if (isValidUUID(entityKeyId) && isValidUUID(entitySetId)) {
-      const deleteResponse = yield call(
-        deleteEntityWorker,
-        deleteEntity({
-          entityKeyId,
-          entitySetId,
-          deleteType: DeleteTypes.SOFT
-        })
-      );
-      if (deleteResponse.error) throw deleteResponse.error;
-    }
-
-    const createAssociationResponse = yield call(
-      createAssociationsWorker,
-      createAssociations(association)
-    );
-
-    if (createAssociationResponse.error) throw createAssociationResponse.error;
-    workerResponse.data = createAssociationResponse.data;
-
-    yield put(createOrReplaceAssociation.success(action.id, createAssociationResponse));
-  }
-  catch (error) {
-    workerResponse.error = error;
-    LOG.error(ERR_WORKER_SAGA, error);
-    yield put(createOrReplaceAssociation.failure(action.id, error));
-  }
-  finally {
-    yield put(createOrReplaceAssociation.finally(action.id));
-  }
-
-  return workerResponse;
-}
-
-function* createOrReplaceAssociationWatcher() :Generator<*, *, *> {
-
-  yield takeEvery(CREATE_OR_REPLACE_ASSOCIATION, createOrReplaceAssociationWorker);
-}
-
-/*
- *
  * DataActions.submitDataGraph()
  *
  */
@@ -236,7 +170,7 @@ function* deleteEntitiesWorker(action :SequenceAction) :Generator<*, *, *> {
   const workerResponse :Object = {};
 
   const { id, value } = action;
-  if (value === null || value === undefined) {
+  if (!isDefined(value)) {
     workerResponse.error = ERR_ACTION_VALUE_NOT_DEFINED;
     yield put(deleteEntities.failure(id, workerResponse.error));
     return workerResponse;
@@ -245,19 +179,22 @@ function* deleteEntitiesWorker(action :SequenceAction) :Generator<*, *, *> {
   try {
     yield put(deleteEntities.request(action.id, value));
 
-    const deleteRequests = value.map((dataObject) => {
+    if (value.length) {
 
-      const { entitySetId, entityKeyId } = dataObject;
-      return call(deleteEntityWorker, deleteEntity({
-        entityKeyId,
-        entitySetId,
-        deleteType: DeleteTypes.SOFT,
-      }));
-    });
+      const deleteRequests = value.map((dataObject) => {
 
-    const deleteResponses = yield all(deleteRequests);
-    const reducedError = deleteResponses.reduce((acc, response) => acc.error || response.error, {});
-    if (reducedError) throw reducedError;
+        const { entitySetId, entityKeyId } = dataObject;
+        return call(deleteEntityWorker, deleteEntity({
+          entityKeyId,
+          entitySetId,
+          deleteType: DeleteTypes.SOFT,
+        }));
+      });
+
+      const deleteResponses = yield all(deleteRequests);
+      const reducedError = deleteResponses.reduce((acc, response) => acc.error || response.error, {});
+      if (reducedError) throw reducedError;
+    }
 
     yield put(deleteEntities.success(action.id));
   }
@@ -276,6 +213,63 @@ function* deleteEntitiesWorker(action :SequenceAction) :Generator<*, *, *> {
 function* deleteEntitiesWatcher() :Generator<*, *, *> {
 
   yield takeEvery(DELETE_ENTITIES, deleteEntitiesWorker);
+}
+
+/*
+ *
+ * DataActions.createOrReplaceAssociation()
+ *
+ */
+
+function* createOrReplaceAssociationWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const workerResponse :Object = {};
+
+  const { id, value } = action;
+  if (!isDefined(value)) {
+    workerResponse.error = ERR_ACTION_VALUE_NOT_DEFINED;
+    yield put(createOrReplaceAssociation.failure(id, workerResponse.error));
+    return workerResponse;
+  }
+  if (!isDefined(value.associations) || !isDefined(value.associationsToDelete)) {
+    workerResponse.error = ERR_ACTION_VALUE_TYPE;
+    yield put(createOrReplaceAssociation.failure(id, workerResponse.error));
+    return workerResponse;
+  }
+
+  try {
+    yield put(createOrReplaceAssociation.request(action.id, value));
+
+    const { associations, associationsToDelete } = value;
+
+    const deleteResponse = yield call(deleteEntitiesWorker, deleteEntities(associationsToDelete));
+    if (deleteResponse.error) throw deleteResponse.error;
+
+    const createAssociationResponse = yield call(
+      createAssociationsWorker,
+      createAssociations(associations)
+    );
+
+    if (createAssociationResponse.error) throw createAssociationResponse.error;
+    workerResponse.data = createAssociationResponse.data;
+
+    yield put(createOrReplaceAssociation.success(action.id, createAssociationResponse));
+  }
+  catch (error) {
+    workerResponse.error = error;
+    LOG.error(ERR_WORKER_SAGA, error);
+    yield put(createOrReplaceAssociation.failure(action.id, error));
+  }
+  finally {
+    yield put(createOrReplaceAssociation.finally(action.id));
+  }
+
+  return workerResponse;
+}
+
+function* createOrReplaceAssociationWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(CREATE_OR_REPLACE_ASSOCIATION, createOrReplaceAssociationWorker);
 }
 
 export {
