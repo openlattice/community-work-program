@@ -301,7 +301,6 @@ class ParticipantProfile extends Component<Props, State> {
       enrollmentStatus,
       getAllParticipantInfoRequestState,
       getInitializeAppRequestState,
-      getWorkAppointmentsRequestState,
       participant,
       personCase,
       phone,

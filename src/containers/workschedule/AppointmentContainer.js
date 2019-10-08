@@ -88,7 +88,7 @@ const AppointmentContainer = ({
     const storedHours = result.get('hours');
     setDay(storedDay);
     setHours(storedHours);
-  });
+  }, [result]);
 
   const personName = result.get('personName');
   const worksiteName = result.get('worksiteName');

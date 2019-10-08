@@ -21,7 +21,7 @@ type Props = {
   personName :string;
 };
 
-class DeleteAppointmentModal extends Component<Props> {
+class EditAppointmentModal extends Component<Props> {
 
   componentDidUpdate(prevProps :Props) {
     const { editAppointmentRequestState, onClose } = this.props;
@@ -63,4 +63,4 @@ const mapStateToProps = (state :Map) => ({
 });
 
 // $FlowFixMe
-export default connect(mapStateToProps)(DeleteAppointmentModal);
+export default connect(mapStateToProps)(EditAppointmentModal);

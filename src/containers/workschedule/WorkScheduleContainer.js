@@ -128,7 +128,7 @@ class WorkScheduleContainer extends Component<Props, State> {
     actions.getWorksites();
   }
 
-  getDate = (name :string) => (date :string) => {
+  setDate = (name :string) => (date :string) => {
     this.setState({ [name]: date });
   }
 
@@ -166,7 +166,7 @@ class WorkScheduleContainer extends Component<Props, State> {
             <Label>Date</Label>
             <DatePicker
                 name="selectedDate"
-                onChange={this.getDate('selectedDate')}
+                onChange={this.setDate('selectedDate')}
                 placeholder={DateTime.local().toLocaleString(DateTime.DATE_SHORT)} />
           </div>
           <div>

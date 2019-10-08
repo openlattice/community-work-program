@@ -10,7 +10,12 @@ import type { RequestSequence } from 'redux-reqseq';
 import { editAppointment } from '../ParticipantActions';
 import { schema, uiSchema } from './schemas/EditAppointmentSchemas';
 import { getEntitySetIdFromApp, getPropertyTypeIdFromEdm } from '../../../utils/DataUtils';
-import { getCombinedDateTime } from '../../../utils/ScheduleUtils';
+import {
+  get24HourTimeFromString,
+  getCombinedDateTime,
+  getDateInISOFormat,
+  getInfoFromTimeRange,
+} from '../../../utils/ScheduleUtils';
 import {
   APP_TYPE_FQNS,
   DATETIME_END,
@@ -25,24 +30,6 @@ const {
 } = DataProcessingUtils;
 
 const { APPOINTMENT } = APP_TYPE_FQNS;
-
-const getInfoFromTimeRange = (timeString :string) :Object => {
-  const start :string = timeString.split('-')[0].trim().split(':').join(' ');
-  const end :string = timeString.split('-')[1].trim().split(':').join(' ');
-  return { start, end };
-};
-
-const get24HourTimeFromString = (timeString :string) :string => {
-  /* https://moment.github.io/luxon/docs/manual/parsing.html#table-of-tokens */
-  const inputFormat :string = 'h mm a';
-  const time :DateTime = DateTime.fromFormat(timeString, inputFormat).toLocaleString(DateTime.TIME_SIMPLE);
-  const timeIn24Hour :string = time.toLowerCase().split(' ').join('');
-  return timeIn24Hour;
-};
-
-const getDateInISOFormat = (dateString :string) => (
-  DateTime.fromFormat(dateString.split('/').join(' '), 'M d yyyy').toISODate()
-);
 
 type Props = {
   actions:{
@@ -152,7 +139,6 @@ class EditAppointmentForm extends Component<Props, State> {
     const { formData } = this.state;
     return (
       <Form
-          formContext={{}}
           formData={formData}
           onChange={this.handleOnChange}
           onSubmit={this.handleOnSubmit}
