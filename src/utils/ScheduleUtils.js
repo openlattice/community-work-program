@@ -7,13 +7,13 @@ import { DateTime, Interval } from 'luxon';
 import { isDefined } from './LangUtils';
 import { DATETIME_END, INCIDENT_START_DATETIME } from '../core/edm/constants/FullyQualifiedNames';
 
-export const getCombinedDateTime = (date :string, time :string) => {
+const getCombinedDateTime = (date :string, time :string) => {
   const datetimeString :string = date.concat(' ', time);
   const datetime = DateTime.fromSQL(datetimeString).toISO();
   return datetime;
 };
 
-export const getRegularlyRepeatingAppointments = (
+const getRegularlyRepeatingAppointments = (
   startDateTime :string,
   endDateTime :string,
   endsOnDate :string,
@@ -51,7 +51,7 @@ export const getRegularlyRepeatingAppointments = (
   return appointments;
 };
 
-export const getCustomSchedule = (
+const getCustomSchedule = (
   appointmentWeekdays :number[],
   startDateTime :string,
   endDateTime :string,
@@ -102,4 +102,31 @@ export const getCustomSchedule = (
   });
 
   return appointments;
+};
+
+const getInfoFromTimeRange = (timeString :string) :Object => {
+  const start :string = timeString.split('-')[0].trim().split(':').join(' ');
+  const end :string = timeString.split('-')[1].trim().split(':').join(' ');
+  return { start, end };
+};
+
+const get24HourTimeFromString = (timeString :string) :string => {
+  /* https://moment.github.io/luxon/docs/manual/parsing.html#table-of-tokens */
+  const inputFormat :string = 'h mm a';
+  const time :DateTime = DateTime.fromFormat(timeString, inputFormat).toLocaleString(DateTime.TIME_SIMPLE);
+  const timeIn24Hour :string = time.toLowerCase().split(' ').join('');
+  return timeIn24Hour;
+};
+
+const getDateInISOFormat = (dateString :string) => (
+  DateTime.fromFormat(dateString.split('/').join(' '), 'M d yyyy').toISODate()
+);
+
+export {
+  get24HourTimeFromString,
+  getCombinedDateTime,
+  getCustomSchedule,
+  getDateInISOFormat,
+  getInfoFromTimeRange,
+  getRegularlyRepeatingAppointments,
 };

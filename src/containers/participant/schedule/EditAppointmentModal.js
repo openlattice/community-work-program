@@ -6,27 +6,27 @@ import { connect } from 'react-redux';
 import { RequestStates } from 'redux-reqseq';
 import type { RequestState } from 'redux-reqseq';
 
-import CheckInForm from './CheckInForm';
+import EditAppointmentForm from './EditAppointmentForm';
 
 import { PERSON, STATE } from '../../../utils/constants/ReduxStateConsts';
 
-const { ACTIONS, CHECK_IN_FOR_APPOINTMENT, REQUEST_STATE } = PERSON;
+const { ACTIONS, EDIT_APPOINTMENT, REQUEST_STATE } = PERSON;
 
 type Props = {
   appointment :Map;
-  checkInForAppointmentState :RequestState;
+  appointmentEKID :UUID;
+  editAppointmentRequestState :RequestState;
   isOpen :boolean;
   onClose :() => void;
-  personEKID :UUID;
   personName :string;
 };
 
-class CheckInModal extends Component<Props> {
+class EditAppointmentModal extends Component<Props> {
 
   componentDidUpdate(prevProps :Props) {
-    const { checkInForAppointmentState, onClose } = this.props;
-    const { checkInForAppointmentState: prevSumbitState } = prevProps;
-    if (checkInForAppointmentState === RequestStates.SUCCESS
+    const { editAppointmentRequestState, onClose } = this.props;
+    const { editAppointmentRequestState: prevSumbitState } = prevProps;
+    if (editAppointmentRequestState === RequestStates.SUCCESS
       && prevSumbitState === RequestStates.PENDING) {
       onClose();
     }
@@ -35,24 +35,23 @@ class CheckInModal extends Component<Props> {
   render() {
     const {
       appointment,
-      checkInForAppointmentState,
+      appointmentEKID,
+      editAppointmentRequestState,
       isOpen,
       onClose,
-      personEKID,
       personName,
     } = this.props;
-
     return (
       <Modal
           isVisible={isOpen}
           onClose={onClose}
-          textTitle="Check In Participant"
+          textTitle="Edit Appointment"
           viewportScrolling>
-        <CheckInForm
+        <EditAppointmentForm
             appointment={appointment}
-            isLoading={checkInForAppointmentState === RequestStates.PENDING}
+            appointmentEKID={appointmentEKID}
+            isLoading={editAppointmentRequestState === RequestStates.PENDING}
             onDiscard={onClose}
-            personEKID={personEKID}
             personName={personName} />
       </Modal>
     );
@@ -60,8 +59,8 @@ class CheckInModal extends Component<Props> {
 }
 
 const mapStateToProps = (state :Map) => ({
-  checkInForAppointmentState: state.getIn([STATE.PERSON, ACTIONS, CHECK_IN_FOR_APPOINTMENT, REQUEST_STATE]),
+  editAppointmentRequestState: state.getIn([STATE.PERSON, ACTIONS, EDIT_APPOINTMENT, REQUEST_STATE]),
 });
 
 // $FlowFixMe
-export default connect(mapStateToProps)(CheckInModal);
+export default connect(mapStateToProps)(EditAppointmentModal);
