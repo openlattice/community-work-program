@@ -36,6 +36,7 @@ import {
   updateHoursWorked,
 } from './ParticipantActions';
 import {
+  findEntityPathInMap,
   getEntityKeyId,
   getEntityProperties,
   getPropertyFqnFromEdm,
@@ -621,22 +622,11 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
             const { entityKeyId } :Object = requestValue[0];
 
             let workAppointmentsByWorksitePlan = state.get(WORK_APPOINTMENTS_BY_WORKSITE_PLAN);
-            let worksitePlanEKID = '';
-            let indexToDelete = -1;
-            workAppointmentsByWorksitePlan.forEach((appointments :List, ekid :UUID) => {
-              const targetIndex :number = appointments.findIndex(
-                (appointment :Map) => getEntityKeyId(appointment) === entityKeyId
-              );
-              if (targetIndex !== -1) {
-                worksitePlanEKID = ekid;
-                indexToDelete = targetIndex;
-                return false;
-              }
-              return true;
-            });
-            if (indexToDelete !== -1) {
+
+            const [keyEKID, index] = findEntityPathInMap(workAppointmentsByWorksitePlan, entityKeyId);
+            if (index !== -1) {
               workAppointmentsByWorksitePlan = workAppointmentsByWorksitePlan
-                .deleteIn([worksitePlanEKID, indexToDelete]);
+                .deleteIn([keyEKID, index]);
               return state
                 .set(WORK_APPOINTMENTS_BY_WORKSITE_PLAN, workAppointmentsByWorksitePlan)
                 .setIn([ACTIONS, DELETE_APPOINTMENT, REQUEST_STATE], RequestStates.SUCCESS);
@@ -674,21 +664,8 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
             const appointmentEKID = Object.keys(entityData[appointmentESID])[0];
 
             let workAppointmentsByWorksitePlan = state.get(WORK_APPOINTMENTS_BY_WORKSITE_PLAN);
-            let relevantWorksitePlanEKID :string = '';
-            let indexOfAppointmentToEdit :number = -1;
-
-            workAppointmentsByWorksitePlan.forEach((worksitePlanAppointments :List, planEKID :UUID) => {
-              const targetIndex :number = worksitePlanAppointments
-                .findIndex((appointment :Map) => getEntityKeyId(appointment) === appointmentEKID);
-              if (targetIndex !== -1) {
-                indexOfAppointmentToEdit = targetIndex;
-                relevantWorksitePlanEKID = planEKID;
-                return false;
-              }
-              return true;
-            });
-
-            if (indexOfAppointmentToEdit !== -1) {
+            const [keyEKID, index] = findEntityPathInMap(workAppointmentsByWorksitePlan, appointmentEKID);
+            if (index !== -1) {
 
               const newAppointmentData :Map = fromJS(entityData[appointmentESID][appointmentEKID]);
               const startDateTimePTID :UUID = getPropertyTypeIdFromEdm(edm, INCIDENT_START_DATETIME);
@@ -699,15 +676,15 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
 
               if (newStartDateTime) {
                 workAppointmentsByWorksitePlan = workAppointmentsByWorksitePlan.setIn([
-                  relevantWorksitePlanEKID,
-                  indexOfAppointmentToEdit,
+                  keyEKID,
+                  index,
                   INCIDENT_START_DATETIME,
                 ], List([newStartDateTime]));
               }
               if (newEndDateTime) {
                 workAppointmentsByWorksitePlan = workAppointmentsByWorksitePlan.setIn([
-                  relevantWorksitePlanEKID,
-                  indexOfAppointmentToEdit,
+                  keyEKID,
+                  index,
                   DATETIME_END,
                 ], List([newEndDateTime]));
               }

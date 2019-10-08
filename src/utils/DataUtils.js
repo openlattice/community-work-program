@@ -115,3 +115,21 @@ export const getUTCDateRangeSearchString = (PTID :UUID, timeUnits :string, start
   const dateRangeString = `[${start} TO ${end}]`;
   return getSearchTermNotExact(PTID, dateRangeString);
 };
+
+export const findEntityPathInMap = (entityMap :Map, entityEKID :UUID) :any[] => {
+
+  let keyEKID :string = '';
+  let index :number = -1;
+  if (isImmutable(entityMap) && !entityMap.isEmpty()) {
+    entityMap.forEach((innerEntityList :List, mapKeyEKID :UUID) => {
+      const targetIndex :number = innerEntityList.findIndex((entity :Map) => getEntityKeyId(entity) === entityEKID);
+      if (targetIndex !== -1) {
+        index = targetIndex;
+        keyEKID = mapKeyEKID;
+        return false;
+      }
+      return true;
+    });
+  }
+  return [keyEKID, index];
+};
