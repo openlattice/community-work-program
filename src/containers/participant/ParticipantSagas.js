@@ -43,6 +43,7 @@ import {
   EDIT_PERSON_DETAILS,
   EDIT_PERSON_NOTES,
   EDIT_PLAN_NOTES,
+  EDIT_REQUIRED_HOURS,
   EDIT_SENTENCE_DATE,
   EDIT_WORKSITE_PLAN,
   GET_ALL_PARTICIPANT_INFO,
@@ -54,8 +55,8 @@ import {
   GET_ENROLLMENT_STATUS,
   GET_INFO_FOR_EDIT_CASE,
   GET_INFRACTION_TYPES,
-  GET_JUDGE_FOR_CASE,
   GET_JUDGES,
+  GET_JUDGE_FOR_CASE,
   GET_PARTICIPANT,
   GET_PARTICIPANT_ADDRESS,
   GET_PARTICIPANT_INFRACTIONS,
@@ -81,6 +82,7 @@ import {
   editPersonDetails,
   editPersonNotes,
   editPlanNotes,
+  editRequiredHours,
   editSentenceDate,
   editWorksitePlan,
   getAllParticipantInfo,
@@ -180,7 +182,7 @@ const {
 const { EFFECTIVE_DATE, STATUS } = ENROLLMENT_STATUS_FQNS;
 const { CATEGORY } = INFRACTION_FQNS;
 const { TYPE } = INFRACTION_EVENT_FQNS;
-const { HOURS_WORKED } = WORKSITE_PLAN_FQNS;
+const { HOURS_WORKED, REQUIRED_HOURS } = WORKSITE_PLAN_FQNS;
 
 const getAppFromState = state => state.get(STATE.APP, Map());
 const getEdmFromState = state => state.get(STATE.EDM, Map());
@@ -381,6 +383,49 @@ function* editCaseAndHoursWorker(action :SequenceAction) :Generator<*, *, *> {
 function* editCaseAndHoursWatcher() :Generator<*, *, *> {
 
   yield takeEvery(EDIT_CASE_AND_HOURS, editCaseAndHoursWorker);
+}
+
+/*
+ *
+ * ParticipantActions.editRequiredHours()
+ *
+ */
+
+function* editRequiredHoursWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+  let requiredHours = null;
+
+  try {
+    yield put(editRequiredHours.request(id, value));
+
+    const response = yield call(submitPartialReplaceWorker, submitPartialReplace(value));
+    if (response.error) {
+      throw response.error;
+    }
+    const app = yield select(getAppFromState);
+    const diversionPlanESID = getEntitySetIdFromApp(app, DIVERSION_PLAN);
+    const edm = yield select(getEdmFromState);
+
+    const { entityData } = value;
+    const diversionPlanEKID = Object.keys(entityData[diversionPlanESID])[0];
+    const requiredHoursPTID :UUID = getPropertyTypeIdFromEdm(edm, REQUIRED_HOURS);
+    requiredHours = getIn(entityData, [diversionPlanESID, diversionPlanEKID, requiredHoursPTID, 0]);
+
+    yield put(editRequiredHours.success(id, requiredHours));
+  }
+  catch (error) {
+    LOG.error('caught exception in editRequiredHoursWorker()', error);
+    yield put(editRequiredHours.failure(id, error));
+  }
+  finally {
+    yield put(editRequiredHours.finally(id));
+  }
+}
+
+function* editRequiredHoursWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(EDIT_REQUIRED_HOURS, editRequiredHoursWorker);
 }
 
 /*
@@ -2518,6 +2563,8 @@ export {
   editPersonNotesWorker,
   editPlanNotesWatcher,
   editPlanNotesWorker,
+  editRequiredHoursWatcher,
+  editRequiredHoursWorker,
   editSentenceDateWatcher,
   editSentenceDateWorker,
   editWorksitePlanWatcher,

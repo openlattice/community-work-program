@@ -43,6 +43,9 @@ const editPersonNotes = newRequestSequence(EDIT_PERSON_NOTES);
 const EDIT_PLAN_NOTES:'EDIT_PLAN_NOTES' = 'EDIT_PLAN_NOTES';
 const editPlanNotes = newRequestSequence(EDIT_PLAN_NOTES);
 
+const EDIT_REQUIRED_HOURS:'EDIT_REQUIRED_HOURS' = 'EDIT_REQUIRED_HOURS';
+const editRequiredHours = newRequestSequence(EDIT_REQUIRED_HOURS);
+
 const EDIT_SENTENCE_DATE:'EDIT_SENTENCE_DATE' = 'EDIT_SENTENCE_DATE';
 const editSentenceDate = newRequestSequence(EDIT_SENTENCE_DATE);
 
@@ -130,6 +133,7 @@ export {
   EDIT_PERSON_DETAILS,
   EDIT_PERSON_NOTES,
   EDIT_PLAN_NOTES,
+  EDIT_REQUIRED_HOURS,
   EDIT_SENTENCE_DATE,
   EDIT_WORKSITE_PLAN,
   GET_ALL_PARTICIPANT_INFO,
@@ -141,8 +145,8 @@ export {
   GET_ENROLLMENT_STATUS,
   GET_INFO_FOR_EDIT_CASE,
   GET_INFRACTION_TYPES,
-  GET_JUDGE_FOR_CASE,
   GET_JUDGES,
+  GET_JUDGE_FOR_CASE,
   GET_PARTICIPANT,
   GET_PARTICIPANT_ADDRESS,
   GET_PARTICIPANT_INFRACTIONS,
@@ -168,6 +172,7 @@ export {
   editPersonDetails,
   editPersonNotes,
   editPlanNotes,
+  editRequiredHours,
   editSentenceDate,
   editWorksitePlan,
   getAllParticipantInfo,

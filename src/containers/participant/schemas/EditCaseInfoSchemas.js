@@ -159,7 +159,7 @@ export const requiredHoursSchema = {
       title: '',
       properties: {
         [getEntityAddressKey(0, DIVERSION_PLAN, REQUIRED_HOURS)]: {
-          type: 'string',
+          type: 'number',
           title: 'Required hours',
         },
       }

@@ -13,11 +13,15 @@ import type { Match } from 'react-router';
 
 import LogoLoader from '../../components/LogoLoader';
 
-import { getInfoForEditCase } from './ParticipantActions';
+import {
+  editRequiredHours,
+  getInfoForEditCase,
+} from './ParticipantActions';
 import { goToRoute } from '../../core/router/RoutingActions';
 import {
   APP_TYPE_FQNS,
   CASE_FQNS,
+  CHARGE_FQNS,
   DIVERSION_PLAN_FQNS,
   ENTITY_KEY_ID,
   PEOPLE_FQNS,
@@ -83,6 +87,7 @@ const ButtonWrapper = styled.div`
 
 type Props = {
   actions:{
+    editRequiredHours :RequestSequence;
     getInfoForEditCase :RequestSequence;
     goToRoute :RequestSequence;
   },
@@ -143,6 +148,7 @@ class EditCaseInfoForm extends Component<Props, State> {
     const {
       actions,
       app,
+      diversionPlan,
       getInfoForEditCaseRequestState,
       match: {
         params: { subjectId: personEKID }
@@ -151,8 +157,9 @@ class EditCaseInfoForm extends Component<Props, State> {
     if (!prevProps.app.get(PEOPLE) && app.get(PEOPLE) && personEKID) {
       actions.getInfoForEditCase({ personEKID });
     }
-    if (prevProps.getInfoForEditCaseRequestState === RequestStates.PENDING &&
-      getInfoForEditCaseRequestState !== RequestStates.PENDING) {
+    if ((prevProps.getInfoForEditCaseRequestState === RequestStates.PENDING
+      && getInfoForEditCaseRequestState !== RequestStates.PENDING)
+      || !prevProps.diversionPlan.equals(diversionPlan)) {
       this.prepopulateFormData();
     }
   }
@@ -170,7 +177,7 @@ class EditCaseInfoForm extends Component<Props, State> {
     const sectionOneKey = getPageSectionKey(1, 1);
 
     // const { [FIRST_NAME]: firstName, [LAST_NAME]: lastName } = getEntityProperties(judge, [FIRST_NAME, LAST_NAME]);
-    const judgePrepopulated = !!judge.isEmpty();
+    const judgePrepopulated = !judge.isEmpty();
     const judgeFormData :{} = judgePrepopulated
       ? {
         [sectionOneKey]: {
@@ -215,6 +222,30 @@ class EditCaseInfoForm extends Component<Props, State> {
     });
   }
 
+  createEntityIndexToIdMap = () => {
+    const { diversionPlan } = this.props;
+
+    const entityIndexToIdMap :Map = Map().withMutations((map :Map) => {
+      map.setIn([DIVERSION_PLAN, 0], getEntityKeyId(diversionPlan));
+    });
+    return entityIndexToIdMap;
+  }
+
+  createEntitySetIdsMap = () => {
+    const { app } = this.props;
+    return {
+      [DIVERSION_PLAN]: getEntitySetIdFromApp(app, DIVERSION_PLAN),
+      [JUDGES]: getEntitySetIdFromApp(app, JUDGES),
+    };
+  }
+
+  createPropertyTypeIdsMap = () => {
+    const { edm } = this.props;
+    return {
+      [REQUIRED_HOURS]: getPropertyTypeIdFromEdm(edm, REQUIRED_HOURS),
+    };
+  }
+
   render() {
     const {
       actions,
@@ -244,6 +275,17 @@ class EditCaseInfoForm extends Component<Props, State> {
             size={60} />
       );
     }
+
+    const entityIndexToIdMap = this.createEntityIndexToIdMap();
+    const entitySetIds = this.createEntitySetIdsMap();
+    const propertyTypeIds = this.createPropertyTypeIdsMap();
+
+    const requiredHoursFormContext = {
+      editAction: actions.editRequiredHours,
+      entityIndexToIdMap,
+      entitySetIds,
+      propertyTypeIds,
+    };
 
     return (
       <FormWrapper>
@@ -287,7 +329,7 @@ class EditCaseInfoForm extends Component<Props, State> {
             <CardHeader padding="sm">Edit Required Hours</CardHeader>
             <Form
                 disabled={requiredHoursPrepopulated}
-                formContext={{}}
+                formContext={requiredHoursFormContext}
                 formData={requiredHoursFormData}
                 schema={requiredHoursSchema}
                 uiSchema={requiredHoursUiSchema} />
@@ -318,6 +360,7 @@ const mapStateToProps = (state :Map) => {
 
 const mapDispatchToProps = dispatch => ({
   actions: bindActionCreators({
+    editRequiredHours,
     getInfoForEditCase,
     goToRoute,
   }, dispatch)

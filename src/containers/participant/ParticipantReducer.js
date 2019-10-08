@@ -24,6 +24,7 @@ import {
   editPersonDetails,
   editPersonNotes,
   editPlanNotes,
+  editRequiredHours,
   editSentenceDate,
   editWorksitePlan,
   getAllParticipantInfo,
@@ -100,6 +101,7 @@ const {
   EDIT_PERSON_DETAILS,
   EDIT_PERSON_NOTES,
   EDIT_PLAN_NOTES,
+  EDIT_REQUIRED_HOURS,
   EDIT_SENTENCE_DATE,
   EDIT_WORKSITE_PLAN,
   EMAIL,
@@ -180,6 +182,9 @@ const INITIAL_STATE :Map<*, *> = fromJS({
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [EDIT_PLAN_NOTES]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [EDIT_REQUIRED_HOURS]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [EDIT_SENTENCE_DATE]: {
@@ -992,6 +997,31 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
         FAILURE: () => state
           .setIn([ACTIONS, EDIT_CHECK_IN_DATE, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, EDIT_CHECK_IN_DATE, action.id]),
+      });
+    }
+
+    case editRequiredHours.case(action.type): {
+
+      return editRequiredHours.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, EDIT_REQUIRED_HOURS, action.id], action)
+          .setIn([ACTIONS, EDIT_REQUIRED_HOURS, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+
+          const seqAction :SequenceAction = action;
+          const { value } :Object = seqAction;
+
+          let diversionPlan :Map = state.get(DIVERSION_PLAN);
+          diversionPlan = diversionPlan.setIn([REQUIRED_HOURS], value);
+
+          return state
+            .set(DIVERSION_PLAN, diversionPlan)
+            .setIn([ACTIONS, EDIT_REQUIRED_HOURS, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, EDIT_REQUIRED_HOURS, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, EDIT_REQUIRED_HOURS, action.id]),
       });
     }
 
