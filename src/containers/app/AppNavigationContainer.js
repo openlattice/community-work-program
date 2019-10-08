@@ -2,7 +2,7 @@
  * @flow
  */
 
-import React, { Component } from 'react';
+import React from 'react';
 
 import styled from 'styled-components';
 import { Colors } from 'lattice-ui-kit';
@@ -56,20 +56,13 @@ const NavLinkWrapper = styled(NavLink).attrs({
   }
 `;
 
-type Props = {};
-
-class AppNavigationContainer extends Component<Props> {
-
-  render() {
-
-    return (
-      <NavigationContentWrapper>
-        <NavLinkWrapper to={Routes.DASHBOARD}>Dashboard</NavLinkWrapper>
-        <NavLinkWrapper to={Routes.PARTICIPANTS}>Participants</NavLinkWrapper>
-        <NavLinkWrapper to={Routes.WORKSITES}>Work Sites</NavLinkWrapper>
-      </NavigationContentWrapper>
-    );
-  }
-}
+const AppNavigationContainer = () => (
+  <NavigationContentWrapper>
+    <NavLinkWrapper to={Routes.DASHBOARD}>Dashboard</NavLinkWrapper>
+    <NavLinkWrapper to={Routes.PARTICIPANTS}>Participants</NavLinkWrapper>
+    <NavLinkWrapper to={Routes.WORKSITES}>Work Sites</NavLinkWrapper>
+    <NavLinkWrapper to={Routes.WORK_SCHEDULE}>Work Schedule</NavLinkWrapper>
+  </NavigationContentWrapper>
+);
 
 export default withRouter<*>(AppNavigationContainer);

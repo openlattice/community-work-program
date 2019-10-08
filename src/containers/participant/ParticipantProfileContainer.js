@@ -29,7 +29,6 @@ const ParticipantProfileContainer = (props :Props) => {
     workAppointmentsByWorksitePlan,
     worksitesByWorksitePlan,
   } = props;
-  // console.log('props.person: ', props.person);
   return (
     <Switch>
       <Route
