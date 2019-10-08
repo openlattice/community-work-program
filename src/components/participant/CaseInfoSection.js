@@ -12,10 +12,11 @@ import {
 } from './SectionStyledComponents';
 import { getEntityProperties } from '../../utils/DataUtils';
 import { formatNumericalValue } from '../../utils/FormattingUtils';
-import { CASE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { CASE_FQNS, PEOPLE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { EMPTY_FIELD } from '../../containers/participants/ParticipantsConstants';
 
 const { CASE_NUMBER_TEXT, COURT_CASE_TYPE } = CASE_FQNS;
+const { FIRST_NAME, LAST_NAME } = PEOPLE_FQNS;
 
 const labelMap :OrderedMap = OrderedMap({
   judge: 'Judge',
@@ -33,21 +34,26 @@ const CaseInfoCard = styled(Card)`
 type Props = {
   edit :() => void;
   hours :number;
+  judge :Map;
   personCase :string;
 };
 
 const CaseInfoSection = ({
   edit,
   hours,
+  judge,
   personCase,
 } :Props) => {
+
+  const { [FIRST_NAME]: firstName, [LAST_NAME]: lastName } = getEntityProperties(judge, [FIRST_NAME, LAST_NAME]);
+  const judgeName :string = (!!firstName && !!lastName) ? `${firstName} ${lastName}` : EMPTY_FIELD;
 
   const { [CASE_NUMBER_TEXT]: caseNumbers, [COURT_CASE_TYPE]: courtCaseType } = getEntityProperties(
     personCase, [CASE_NUMBER_TEXT, COURT_CASE_TYPE]
   );
 
   const data :Map = fromJS({
-    judge: EMPTY_FIELD,
+    judge: judgeName,
     courtType: courtCaseType || EMPTY_FIELD,
     docketNumber: caseNumbers || EMPTY_FIELD,
     charge: EMPTY_FIELD,

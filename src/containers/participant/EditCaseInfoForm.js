@@ -180,7 +180,6 @@ class EditCaseInfoForm extends Component<Props, State> {
 
     const sectionOneKey = getPageSectionKey(1, 1);
 
-    // const { [FIRST_NAME]: firstName, [LAST_NAME]: lastName } = getEntityProperties(judge, [FIRST_NAME, LAST_NAME]);
     const judgePrepopulated = !judge.isEmpty();
     const judgeFormData :{} = judgePrepopulated
       ? {

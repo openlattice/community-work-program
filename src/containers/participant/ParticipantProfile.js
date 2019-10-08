@@ -78,6 +78,7 @@ const {
   EMAIL,
   ENROLLMENT_STATUS,
   GET_ALL_PARTICIPANT_INFO,
+  JUDGE,
   PARTICIPANT,
   PERSON_CASE,
   PHONE,
@@ -186,6 +187,7 @@ type Props = {
   enrollmentStatus :Map;
   getAllParticipantInfoRequestState :RequestState;
   getInitializeAppRequestState :RequestState;
+  judge :Map;
   participant :Map;
   personCase :Map;
   personEKID :string;
@@ -317,6 +319,7 @@ class ParticipantProfile extends Component<Props, State> {
       enrollmentStatus,
       getAllParticipantInfoRequestState,
       getInitializeAppRequestState,
+      judge,
       participant,
       personCase,
       phone,
@@ -416,6 +419,7 @@ class ParticipantProfile extends Component<Props, State> {
               <CaseInfoSection
                   edit={this.editCaseInfo}
                   hours={requiredHours}
+                  judge={judge}
                   personCase={personCase} />
               <ProgramNotes
                   notes={planNotes} />
@@ -527,6 +531,7 @@ const mapStateToProps = (state :Map<*, *>) => {
     [ENROLLMENT_STATUS]: person.get(ENROLLMENT_STATUS),
     getAllParticipantInfoRequestState: person.getIn([ACTIONS, GET_ALL_PARTICIPANT_INFO, REQUEST_STATE]),
     getInitializeAppRequestState: app.getIn([APP.ACTIONS, APP.INITIALIZE_APPLICATION, APP.REQUEST_STATE]),
+    [JUDGE]: person.get(JUDGE),
     [PARTICIPANT]: person.get(PARTICIPANT),
     [PERSON_CASE]: person.get(PERSON_CASE),
     [PHONE]: person.get(PHONE),
