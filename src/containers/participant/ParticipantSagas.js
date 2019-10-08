@@ -37,7 +37,6 @@ import {
   CHECK_IN_FOR_APPOINTMENT,
   CREATE_WORK_APPOINTMENTS,
   DELETE_APPOINTMENT,
-  EDIT_CASE_AND_HOURS,
   EDIT_CHECK_IN_DATE,
   EDIT_PARTICIPANT_CONTACTS,
   EDIT_PERSON_CASE,
@@ -77,7 +76,6 @@ import {
   checkInForAppointment,
   createWorkAppointments,
   deleteAppointment,
-  editCaseAndHours,
   editCheckInDate,
   editParticipantContacts,
   editPersonCase,
@@ -343,48 +341,6 @@ function* addOrientationDateWorker(action :SequenceAction) :Generator<*, *, *> {
 function* addOrientationDateWatcher() :Generator<*, *, *> {
 
   yield takeEvery(ADD_ORIENTATION_DATE, addOrientationDateWorker);
-}
-
-/*
- *
- * ParticipantActions.editCaseAndHours()
- *
- */
-
-function* editCaseAndHoursWorker(action :SequenceAction) :Generator<*, *, *> {
-
-  const { id, value } = action;
-
-  try {
-    yield put(editCaseAndHours.request(id, value));
-
-    const response = yield call(submitPartialReplaceWorker, submitPartialReplace(value));
-    if (response.error) {
-      throw response.error;
-    }
-    const app = yield select(getAppFromState);
-    const caseESID = getEntitySetIdFromApp(app, MANUAL_PRETRIAL_COURT_CASES);
-    const diversionPlanESID = getEntitySetIdFromApp(app, DIVERSION_PLAN);
-    const edm = yield select(getEdmFromState);
-
-    yield put(editCaseAndHours.success(id, {
-      caseESID,
-      diversionPlanESID,
-      edm,
-    }));
-  }
-  catch (error) {
-    LOG.error('caught exception in editCaseAndHoursWorker()', error);
-    yield put(editCaseAndHours.failure(id, error));
-  }
-  finally {
-    yield put(editCaseAndHours.finally(id));
-  }
-}
-
-function* editCaseAndHoursWatcher() :Generator<*, *, *> {
-
-  yield takeEvery(EDIT_CASE_AND_HOURS, editCaseAndHoursWorker);
 }
 
 /*
@@ -2595,8 +2551,6 @@ export {
   createWorkAppointmentsWorker,
   deleteAppointmentWatcher,
   deleteAppointmentWorker,
-  editCaseAndHoursWatcher,
-  editCaseAndHoursWorker,
   editCheckInDateWatcher,
   editCheckInDateWorker,
   editParticipantContactsWatcher,

@@ -18,7 +18,6 @@ import {
   checkInForAppointment,
   createWorkAppointments,
   deleteAppointment,
-  editCaseAndHours,
   editCheckInDate,
   editParticipantContacts,
   editPersonCase,
@@ -97,7 +96,6 @@ const {
   CREATE_WORK_APPOINTMENTS,
   DELETE_APPOINTMENT,
   DIVERSION_PLAN,
-  EDIT_CASE_AND_HOURS,
   EDIT_CHECK_IN_DATE,
   EDIT_PARTICIPANT_CONTACTS,
   EDIT_PERSON_CASE,
@@ -170,9 +168,6 @@ const INITIAL_STATE :Map<*, *> = fromJS({
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [DELETE_APPOINTMENT]: {
-      [REQUEST_STATE]: RequestStates.STANDBY
-    },
-    [EDIT_CASE_AND_HOURS]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [EDIT_CHECK_IN_DATE]: {
@@ -894,74 +889,6 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
         FAILURE: () => state
           .setIn([ACTIONS, EDIT_PLAN_NOTES, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, EDIT_PLAN_NOTES, action.id]),
-      });
-    }
-
-    case editCaseAndHours.case(action.type): {
-
-      return editCaseAndHours.reducer(state, action, {
-
-        REQUEST: () => state
-          .setIn([ACTIONS, EDIT_CASE_AND_HOURS, action.id], action)
-          .setIn([ACTIONS, EDIT_CASE_AND_HOURS, REQUEST_STATE], RequestStates.PENDING),
-        SUCCESS: () => {
-
-          const seqAction :SequenceAction = action;
-          const storedSeqAction :SequenceAction = state.getIn([ACTIONS, EDIT_CASE_AND_HOURS, seqAction.id]);
-
-          if (storedSeqAction) {
-
-            const { value } :Object = seqAction;
-            const { caseESID, diversionPlanESID, edm } = value;
-
-            const requestValue :Object = storedSeqAction.value;
-            const { entityData } :Object = requestValue;
-
-            let diversionPlan :Map = state.get(DIVERSION_PLAN);
-            let personCase :Map = state.get(PERSON_CASE);
-
-            if (entityData[diversionPlanESID]) {
-              const diversionPlanEKID = Object.keys(entityData[diversionPlanESID])[0];
-              const storedPropertyValueMap = entityData[diversionPlanESID][diversionPlanEKID];
-              const requiredHours = Object.values(storedPropertyValueMap)[0];
-
-              let requiredHoursPlaceholder = diversionPlan.get(REQUIRED_HOURS, 0);
-              requiredHoursPlaceholder = requiredHours[0];
-              diversionPlan = diversionPlan.set(REQUIRED_HOURS, requiredHoursPlaceholder);
-            }
-
-            if (entityData[caseESID]) {
-              const caseEKID = Object.keys(entityData[caseESID])[0];
-              const storedPropertyValueMaps = entityData[caseESID][caseEKID];
-
-              const caseNumberTextPTID :UUID = getPropertyTypeIdFromEdm(edm, CASE_NUMBER_TEXT);
-              const courtCaseTypePTID :UUID = getPropertyTypeIdFromEdm(edm, COURT_CASE_TYPE);
-
-              if (storedPropertyValueMaps[caseNumberTextPTID]) {
-                const newCaseNumber = Object.values(storedPropertyValueMaps[caseNumberTextPTID]);
-                let caseNumberPlaceholder = personCase.get(CASE_NUMBER_TEXT, '');
-                caseNumberPlaceholder = newCaseNumber;
-                personCase = personCase.set(CASE_NUMBER_TEXT, caseNumberPlaceholder);
-              }
-              if (storedPropertyValueMaps[courtCaseTypePTID]) {
-                const newCourtType = Object.values(storedPropertyValueMaps[courtCaseTypePTID]);
-                let courtTypePlaceholder = personCase.get(COURT_CASE_TYPE, '');
-                courtTypePlaceholder = newCourtType;
-                personCase = personCase.set(COURT_CASE_TYPE, courtTypePlaceholder);
-              }
-            }
-
-            return state
-              .set(PERSON_CASE, personCase)
-              .set(DIVERSION_PLAN, diversionPlan)
-              .setIn([ACTIONS, EDIT_CASE_AND_HOURS, REQUEST_STATE], RequestStates.SUCCESS);
-          }
-
-          return state;
-        },
-        FAILURE: () => state
-          .setIn([ACTIONS, EDIT_CASE_AND_HOURS, REQUEST_STATE], RequestStates.FAILURE),
-        FINALLY: () => state.deleteIn([ACTIONS, EDIT_CASE_AND_HOURS, action.id]),
       });
     }
 
