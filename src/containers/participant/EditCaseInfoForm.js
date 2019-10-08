@@ -14,6 +14,7 @@ import type { Match } from 'react-router';
 import LogoLoader from '../../components/LogoLoader';
 
 import {
+  editPersonCase,
   editRequiredHours,
   getInfoForEditCase,
 } from './ParticipantActions';
@@ -87,6 +88,7 @@ const ButtonWrapper = styled.div`
 
 type Props = {
   actions:{
+    editPersonCase :RequestSequence;
     editRequiredHours :RequestSequence;
     getInfoForEditCase :RequestSequence;
     goToRoute :RequestSequence;
@@ -153,13 +155,15 @@ class EditCaseInfoForm extends Component<Props, State> {
       match: {
         params: { subjectId: personEKID }
       },
+      personCase,
     } = this.props;
     if (!prevProps.app.get(PEOPLE) && app.get(PEOPLE) && personEKID) {
       actions.getInfoForEditCase({ personEKID });
     }
     if ((prevProps.getInfoForEditCaseRequestState === RequestStates.PENDING
       && getInfoForEditCaseRequestState !== RequestStates.PENDING)
-      || !prevProps.diversionPlan.equals(diversionPlan)) {
+      || !prevProps.diversionPlan.equals(diversionPlan)
+      || !prevProps.personCase.equals(personCase)) {
       this.prepopulateFormData();
     }
   }
@@ -223,10 +227,11 @@ class EditCaseInfoForm extends Component<Props, State> {
   }
 
   createEntityIndexToIdMap = () => {
-    const { diversionPlan } = this.props;
+    const { diversionPlan, personCase } = this.props;
 
     const entityIndexToIdMap :Map = Map().withMutations((map :Map) => {
       map.setIn([DIVERSION_PLAN, 0], getEntityKeyId(diversionPlan));
+      map.setIn([MANUAL_PRETRIAL_COURT_CASES, 0], getEntityKeyId(personCase));
     });
     return entityIndexToIdMap;
   }
@@ -236,12 +241,15 @@ class EditCaseInfoForm extends Component<Props, State> {
     return {
       [DIVERSION_PLAN]: getEntitySetIdFromApp(app, DIVERSION_PLAN),
       [JUDGES]: getEntitySetIdFromApp(app, JUDGES),
+      [MANUAL_PRETRIAL_COURT_CASES]: getEntitySetIdFromApp(app, MANUAL_PRETRIAL_COURT_CASES),
     };
   }
 
   createPropertyTypeIdsMap = () => {
     const { edm } = this.props;
     return {
+      [CASE_NUMBER_TEXT]: getPropertyTypeIdFromEdm(edm, CASE_NUMBER_TEXT),
+      [COURT_CASE_TYPE]: getPropertyTypeIdFromEdm(edm, COURT_CASE_TYPE),
       [REQUIRED_HOURS]: getPropertyTypeIdFromEdm(edm, REQUIRED_HOURS),
     };
   }
@@ -280,6 +288,12 @@ class EditCaseInfoForm extends Component<Props, State> {
     const entitySetIds = this.createEntitySetIdsMap();
     const propertyTypeIds = this.createPropertyTypeIdsMap();
 
+    const caseFormContext = {
+      editAction: actions.editPersonCase,
+      entityIndexToIdMap,
+      entitySetIds,
+      propertyTypeIds,
+    };
     const requiredHoursFormContext = {
       editAction: actions.editRequiredHours,
       entityIndexToIdMap,
@@ -311,7 +325,7 @@ class EditCaseInfoForm extends Component<Props, State> {
             <CardHeader padding="sm">Edit Case</CardHeader>
             <Form
                 disabled={casePrepopulated}
-                formContext={{}}
+                formContext={caseFormContext}
                 formData={caseFormData}
                 schema={caseSchema}
                 uiSchema={caseUiSchema} />
@@ -360,6 +374,7 @@ const mapStateToProps = (state :Map) => {
 
 const mapDispatchToProps = dispatch => ({
   actions: bindActionCreators({
+    editPersonCase,
     editRequiredHours,
     getInfoForEditCase,
     goToRoute,

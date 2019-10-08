@@ -40,6 +40,7 @@ import {
   EDIT_CASE_AND_HOURS,
   EDIT_CHECK_IN_DATE,
   EDIT_PARTICIPANT_CONTACTS,
+  EDIT_PERSON_CASE,
   EDIT_PERSON_DETAILS,
   EDIT_PERSON_NOTES,
   EDIT_PLAN_NOTES,
@@ -79,6 +80,7 @@ import {
   editCaseAndHours,
   editCheckInDate,
   editParticipantContacts,
+  editPersonCase,
   editPersonDetails,
   editPersonNotes,
   editPlanNotes,
@@ -383,6 +385,48 @@ function* editCaseAndHoursWorker(action :SequenceAction) :Generator<*, *, *> {
 function* editCaseAndHoursWatcher() :Generator<*, *, *> {
 
   yield takeEvery(EDIT_CASE_AND_HOURS, editCaseAndHoursWorker);
+}
+
+/*
+ *
+ * ParticipantActions.editPersonCase()
+ *
+ */
+
+function* editPersonCaseWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+  let newCaseData :Map = Map();
+
+  try {
+    yield put(editPersonCase.request(id, value));
+
+    const response = yield call(submitPartialReplaceWorker, submitPartialReplace(value));
+    if (response.error) {
+      throw response.error;
+    }
+    const app = yield select(getAppFromState);
+    const caseESID = getEntitySetIdFromApp(app, MANUAL_PRETRIAL_COURT_CASES);
+    const edm = yield select(getEdmFromState);
+
+    const { entityData } = value;
+    const caseEKID = Object.keys(entityData[caseESID])[0];
+    newCaseData = fromJS(getIn(entityData, [caseESID, caseEKID]));
+
+    yield put(editPersonCase.success(id, { edm, newCaseData }));
+  }
+  catch (error) {
+    LOG.error('caught exception in editPersonCaseWorker()', error);
+    yield put(editPersonCase.failure(id, error));
+  }
+  finally {
+    yield put(editPersonCase.finally(id));
+  }
+}
+
+function* editPersonCaseWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(EDIT_PERSON_CASE, editPersonCaseWorker);
 }
 
 /*
@@ -2557,6 +2601,8 @@ export {
   editCheckInDateWorker,
   editParticipantContactsWatcher,
   editParticipantContactsWorker,
+  editPersonCaseWatcher,
+  editPersonCaseWorker,
   editPersonDetailsWatcher,
   editPersonDetailsWorker,
   editPersonNotesWatcher,

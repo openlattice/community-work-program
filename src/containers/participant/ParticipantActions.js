@@ -34,6 +34,9 @@ const editCheckInDate = newRequestSequence(EDIT_CHECK_IN_DATE);
 const EDIT_PARTICIPANT_CONTACTS:'EDIT_PARTICIPANT_CONTACTS' = 'EDIT_PARTICIPANT_CONTACTS';
 const editParticipantContacts = newRequestSequence(EDIT_PARTICIPANT_CONTACTS);
 
+const EDIT_PERSON_CASE:'EDIT_PERSON_CASE' = 'EDIT_PERSON_CASE';
+const editPersonCase = newRequestSequence(EDIT_PERSON_CASE);
+
 const EDIT_PERSON_DETAILS:'EDIT_PERSON_DETAILS' = 'EDIT_PERSON_DETAILS';
 const editPersonDetails = newRequestSequence(EDIT_PERSON_DETAILS);
 
@@ -130,6 +133,7 @@ export {
   EDIT_CASE_AND_HOURS,
   EDIT_CHECK_IN_DATE,
   EDIT_PARTICIPANT_CONTACTS,
+  EDIT_PERSON_CASE,
   EDIT_PERSON_DETAILS,
   EDIT_PERSON_NOTES,
   EDIT_PLAN_NOTES,
@@ -169,6 +173,7 @@ export {
   editCaseAndHours,
   editCheckInDate,
   editParticipantContacts,
+  editPersonCase,
   editPersonDetails,
   editPersonNotes,
   editPlanNotes,

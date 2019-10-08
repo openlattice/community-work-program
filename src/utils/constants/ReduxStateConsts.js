@@ -68,6 +68,7 @@ export const PERSON = {
   EDIT_CASE_AND_HOURS: 'editCaseAndHours',
   EDIT_CHECK_IN_DATE: 'editCheckInDate',
   EDIT_PARTICIPANT_CONTACTS: 'editParticipantContacts',
+  EDIT_PERSON_CASE: 'editPersonCase',
   EDIT_PERSON_DETAILS: 'editPersonDetails',
   EDIT_PERSON_NOTES: 'editPersonNotes',
   EDIT_PLAN_NOTES: 'editPlanNotes',

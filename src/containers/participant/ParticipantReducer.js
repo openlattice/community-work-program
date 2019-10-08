@@ -21,6 +21,7 @@ import {
   editCaseAndHours,
   editCheckInDate,
   editParticipantContacts,
+  editPersonCase,
   editPersonDetails,
   editPersonNotes,
   editPlanNotes,
@@ -56,6 +57,7 @@ import {
   getPropertyFqnFromEdm,
   getPropertyTypeIdFromEdm,
 } from '../../utils/DataUtils';
+import { isDefined } from '../../utils/LangUtils';
 import { PERSON } from '../../utils/constants/ReduxStateConsts';
 import { INFRACTIONS_CONSTS } from '../../core/edm/constants/DataModelConsts';
 import {
@@ -98,6 +100,7 @@ const {
   EDIT_CASE_AND_HOURS,
   EDIT_CHECK_IN_DATE,
   EDIT_PARTICIPANT_CONTACTS,
+  EDIT_PERSON_CASE,
   EDIT_PERSON_DETAILS,
   EDIT_PERSON_NOTES,
   EDIT_PLAN_NOTES,
@@ -173,6 +176,9 @@ const INITIAL_STATE :Map<*, *> = fromJS({
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [EDIT_CHECK_IN_DATE]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [EDIT_PERSON_CASE]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [EDIT_PERSON_DETAILS]: {
@@ -959,6 +965,45 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
       });
     }
 
+    case editPersonCase.case(action.type): {
+
+      return editPersonCase.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, EDIT_PERSON_CASE, action.id], action)
+          .setIn([ACTIONS, EDIT_PERSON_CASE, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+
+          const seqAction :SequenceAction = action;
+          const { value } :Object = seqAction;
+          const { edm, newCaseData } = value;
+
+          if (!newCaseData.isEmpty()) {
+
+            const caseNumberTextPTID :UUID = getPropertyTypeIdFromEdm(edm, CASE_NUMBER_TEXT);
+            const courtCaseTypePTID :UUID = getPropertyTypeIdFromEdm(edm, COURT_CASE_TYPE);
+
+            let personCase = state.get(PERSON_CASE);
+            if (newCaseData.get(caseNumberTextPTID)) {
+              personCase = personCase.set(CASE_NUMBER_TEXT, newCaseData.get(caseNumberTextPTID));
+            }
+            if (newCaseData.get(courtCaseTypePTID)) {
+              personCase = personCase.set(COURT_CASE_TYPE, newCaseData.get(courtCaseTypePTID));
+            }
+
+            return state
+              .set(PERSON_CASE, personCase)
+              .setIn([ACTIONS, EDIT_PERSON_CASE, REQUEST_STATE], RequestStates.SUCCESS);
+          }
+
+          return state;
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, EDIT_PERSON_CASE, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, EDIT_PERSON_CASE, action.id]),
+      });
+    }
+
     case editCheckInDate.case(action.type): {
 
       return editCheckInDate.reducer(state, action, {
@@ -1013,7 +1058,7 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
           const { value } :Object = seqAction;
 
           let diversionPlan :Map = state.get(DIVERSION_PLAN);
-          diversionPlan = diversionPlan.setIn([REQUIRED_HOURS], value);
+          if (isDefined(value)) diversionPlan = diversionPlan.setIn([REQUIRED_HOURS], value);
 
           return state
             .set(DIVERSION_PLAN, diversionPlan)
