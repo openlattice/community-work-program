@@ -10,9 +10,6 @@ const addNewDiversionPlanStatus = newRequestSequence(ADD_NEW_DIVERSION_PLAN_STAT
 const ADD_NEW_PARTICIPANT_CONTACTS :'ADD_NEW_PARTICIPANT_CONTACTS' = 'ADD_NEW_PARTICIPANT_CONTACTS';
 const addNewParticipantContacts = newRequestSequence(ADD_NEW_PARTICIPANT_CONTACTS);
 
-const ADD_ORIENTATION_DATE :'ADD_ORIENTATION_DATE' = 'ADD_ORIENTATION_DATE';
-const addOrientationDate = newRequestSequence(ADD_ORIENTATION_DATE);
-
 const ADD_WORKSITE_PLAN :'ADD_WORKSITE_PLAN' = 'ADD_WORKSITE_PLAN';
 const addWorksitePlan = newRequestSequence(ADD_WORKSITE_PLAN);
 
@@ -27,9 +24,6 @@ const deleteAppointment = newRequestSequence(DELETE_APPOINTMENT);
 
 const EDIT_APPOINTMENT:'EDIT_APPOINTMENT' = 'EDIT_APPOINTMENT';
 const editAppointment = newRequestSequence(EDIT_APPOINTMENT);
-
-const EDIT_CHECK_IN_DATE:'EDIT_CHECK_IN_DATE' = 'EDIT_CHECK_IN_DATE';
-const editCheckInDate = newRequestSequence(EDIT_CHECK_IN_DATE);
 
 const EDIT_ENROLLMENT_DATES:'EDIT_ENROLLMENT_DATES' = 'EDIT_ENROLLMENT_DATES';
 const editEnrollmentDates = newRequestSequence(EDIT_ENROLLMENT_DATES);
@@ -51,9 +45,6 @@ const editPlanNotes = newRequestSequence(EDIT_PLAN_NOTES);
 
 const EDIT_REQUIRED_HOURS:'EDIT_REQUIRED_HOURS' = 'EDIT_REQUIRED_HOURS';
 const editRequiredHours = newRequestSequence(EDIT_REQUIRED_HOURS);
-
-const EDIT_SENTENCE_DATE:'EDIT_SENTENCE_DATE' = 'EDIT_SENTENCE_DATE';
-const editSentenceDate = newRequestSequence(EDIT_SENTENCE_DATE);
 
 const EDIT_WORKSITE_PLAN:'EDIT_WORKSITE_PLAN' = 'EDIT_WORKSITE_PLAN';
 const editWorksitePlan = newRequestSequence(EDIT_WORKSITE_PLAN);
@@ -128,13 +119,11 @@ export {
   ADD_INFRACTION,
   ADD_NEW_DIVERSION_PLAN_STATUS,
   ADD_NEW_PARTICIPANT_CONTACTS,
-  ADD_ORIENTATION_DATE,
   ADD_WORKSITE_PLAN,
   CHECK_IN_FOR_APPOINTMENT,
   CREATE_WORK_APPOINTMENTS,
   DELETE_APPOINTMENT,
   EDIT_APPOINTMENT,
-  EDIT_CHECK_IN_DATE,
   EDIT_ENROLLMENT_DATES,
   EDIT_PARTICIPANT_CONTACTS,
   EDIT_PERSON_CASE,
@@ -142,7 +131,6 @@ export {
   EDIT_PERSON_NOTES,
   EDIT_PLAN_NOTES,
   EDIT_REQUIRED_HOURS,
-  EDIT_SENTENCE_DATE,
   EDIT_WORKSITE_PLAN,
   GET_ALL_PARTICIPANT_INFO,
   GET_APPOINTMENT_CHECK_INS,
@@ -169,13 +157,11 @@ export {
   addInfraction,
   addNewDiversionPlanStatus,
   addNewParticipantContacts,
-  addOrientationDate,
   addWorksitePlan,
   checkInForAppointment,
   createWorkAppointments,
   deleteAppointment,
   editAppointment,
-  editCheckInDate,
   editEnrollmentDates,
   editParticipantContacts,
   editPersonCase,
@@ -183,7 +169,6 @@ export {
   editPersonNotes,
   editPlanNotes,
   editRequiredHours,
-  editSentenceDate,
   editWorksitePlan,
   getAllParticipantInfo,
   getAppointmentCheckIns,

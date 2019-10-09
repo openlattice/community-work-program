@@ -34,13 +34,11 @@ import {
   ADD_INFRACTION,
   ADD_NEW_DIVERSION_PLAN_STATUS,
   ADD_NEW_PARTICIPANT_CONTACTS,
-  ADD_ORIENTATION_DATE,
   ADD_WORKSITE_PLAN,
   CHECK_IN_FOR_APPOINTMENT,
   CREATE_WORK_APPOINTMENTS,
   DELETE_APPOINTMENT,
   EDIT_APPOINTMENT,
-  EDIT_CHECK_IN_DATE,
   EDIT_ENROLLMENT_DATES,
   EDIT_PARTICIPANT_CONTACTS,
   EDIT_PERSON_CASE,
@@ -48,7 +46,6 @@ import {
   EDIT_PERSON_NOTES,
   EDIT_PLAN_NOTES,
   EDIT_REQUIRED_HOURS,
-  EDIT_SENTENCE_DATE,
   EDIT_WORKSITE_PLAN,
   GET_ALL_PARTICIPANT_INFO,
   GET_APPOINTMENT_CHECK_INS,
@@ -75,13 +72,11 @@ import {
   addInfraction,
   addNewDiversionPlanStatus,
   addNewParticipantContacts,
-  addOrientationDate,
   addWorksitePlan,
   checkInForAppointment,
   createWorkAppointments,
   deleteAppointment,
   editAppointment,
-  editCheckInDate,
   editEnrollmentDates,
   editParticipantContacts,
   editPersonCase,
@@ -89,7 +84,6 @@ import {
   editPersonNotes,
   editPlanNotes,
   editRequiredHours,
-  editSentenceDate,
   editWorksitePlan,
   getAllParticipantInfo,
   getAppointmentCheckIns,
@@ -305,49 +299,6 @@ function* addNewDiversionPlanStatusWorker(action :SequenceAction) :Generator<*, 
 function* addNewDiversionPlanStatusWatcher() :Generator<*, *, *> {
 
   yield takeEvery(ADD_NEW_DIVERSION_PLAN_STATUS, addNewDiversionPlanStatusWorker);
-}
-
-/*
- *
- * ParticipantActions.addOrientationDate()
- *
- */
-
-function* addOrientationDateWorker(action :SequenceAction) :Generator<*, *, *> {
-
-  const { id, value } = action;
-  const workerResponse = {};
-  let response :Object = {};
-
-  try {
-    yield put(addOrientationDate.request(id, value));
-
-    response = yield call(submitPartialReplaceWorker, submitPartialReplace(value));
-    if (response.error) {
-      throw response.error;
-    }
-    const app = yield select(getAppFromState);
-    const diversionPlanESID = getEntitySetIdFromApp(app, DIVERSION_PLAN);
-    const edm = yield select(getEdmFromState);
-
-    yield put(addOrientationDate.success(id, {
-      diversionPlanESID,
-      edm,
-    }));
-  }
-  catch (error) {
-    workerResponse.error = error;
-    LOG.error('caught exception in addOrientationDateWorker()', error);
-    yield put(addOrientationDate.failure(id, error));
-  }
-  finally {
-    yield put(addOrientationDate.finally(id));
-  }
-}
-
-function* addOrientationDateWatcher() :Generator<*, *, *> {
-
-  yield takeEvery(ADD_ORIENTATION_DATE, addOrientationDateWorker);
 }
 
 /*
@@ -754,89 +705,9 @@ function* editParticipantContactsWatcher() :Generator<*, *, *> {
 
 /*
  *
- * ParticipantActions.editSentenceDate()
+ * ParticipantActions.editWorksitePlan()
  *
  */
-
-function* editSentenceDateWorker(action :SequenceAction) :Generator<*, *, *> {
-
-  const { id, value } = action;
-  const workerResponse = {};
-  let response :Object = {};
-
-  try {
-    yield put(editSentenceDate.request(id, value));
-
-    response = yield call(submitPartialReplaceWorker, submitPartialReplace(value));
-    if (response.error) {
-      throw response.error;
-    }
-    const app = yield select(getAppFromState);
-    const diversionPlanESID = getEntitySetIdFromApp(app, DIVERSION_PLAN);
-    const edm = yield select(getEdmFromState);
-
-    yield put(editSentenceDate.success(id, {
-      diversionPlanESID,
-      edm,
-    }));
-  }
-  catch (error) {
-    workerResponse.error = error;
-    LOG.error('caught exception in editSentenceDateWorker()', error);
-    yield put(editSentenceDate.failure(id, error));
-  }
-  finally {
-    yield put(editSentenceDate.finally(id));
-  }
-}
-
-function* editSentenceDateWatcher() :Generator<*, *, *> {
-
-  yield takeEvery(EDIT_SENTENCE_DATE, editSentenceDateWorker);
-}
-
-/*
- *
- * ParticipantActions.editCheckInDate()
- *
- */
-
-function* editCheckInDateWorker(action :SequenceAction) :Generator<*, *, *> {
-
-  const { id, value } = action;
-  const workerResponse = {};
-  let response :Object = {};
-
-  try {
-    yield put(editCheckInDate.request(id, value));
-
-    response = yield call(submitPartialReplaceWorker, submitPartialReplace(value));
-    if (response.error) {
-      throw response.error;
-    }
-    const app = yield select(getAppFromState);
-    const diversionPlanESID = getEntitySetIdFromApp(app, DIVERSION_PLAN);
-    const edm = yield select(getEdmFromState);
-
-    yield put(editCheckInDate.success(id, {
-      diversionPlanESID,
-      edm,
-    }));
-  }
-  catch (error) {
-    workerResponse.error = error;
-    LOG.error('caught exception in editCheckInDateWorker()', error);
-    yield put(editCheckInDate.failure(id, error));
-  }
-  finally {
-    yield put(editCheckInDate.finally(id));
-  }
-}
-
-function* editCheckInDateWatcher() :Generator<*, *, *> {
-
-  yield takeEvery(EDIT_CHECK_IN_DATE, editCheckInDateWorker);
-}
 
 function* editWorksitePlanWorker(action :SequenceAction) :Generator<*, *, *> {
 
@@ -2638,8 +2509,6 @@ export {
   addNewDiversionPlanStatusWorker,
   addNewParticipantContactsWatcher,
   addNewParticipantContactsWorker,
-  addOrientationDateWatcher,
-  addOrientationDateWorker,
   addWorksitePlanWatcher,
   addWorksitePlanWorker,
   checkInForAppointmentWatcher,
@@ -2650,8 +2519,6 @@ export {
   deleteAppointmentWorker,
   editAppointmentWatcher,
   editAppointmentWorker,
-  editCheckInDateWatcher,
-  editCheckInDateWorker,
   editEnrollmentDatesWatcher,
   editEnrollmentDatesWorker,
   editParticipantContactsWatcher,
@@ -2666,8 +2533,6 @@ export {
   editPlanNotesWorker,
   editRequiredHoursWatcher,
   editRequiredHoursWorker,
-  editSentenceDateWatcher,
-  editSentenceDateWorker,
   editWorksitePlanWatcher,
   editWorksitePlanWorker,
   getAppointmentCheckInsWatcher,
