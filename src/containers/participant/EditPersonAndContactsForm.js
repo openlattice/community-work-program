@@ -230,14 +230,6 @@ class EditPersonAndContactsForm extends Component<Props, State> {
     ];
   }
 
-  handleOnChangePerson = ({ formData } :Object) => {
-    this.setState({ personFormData: formData });
-  }
-
-  handleOnChangeContacts = ({ formData } :Object) => {
-    this.setState({ contactsFormData: formData });
-  }
-
   handleOnSubmitContacts = ({ formData } :Object) => {
     const { actions } = this.props;
 
