@@ -65,6 +65,7 @@ import {
   GET_PARTICIPANT_ADDRESS,
   GET_PARTICIPANT_INFRACTIONS,
   GET_PROGRAM_OUTCOME,
+  GET_SENTENCE_TERM,
   GET_WORKSITE_BY_WORKSITE_PLAN,
   GET_WORKSITE_PLANS,
   GET_WORKSITE_PLAN_STATUSES,
@@ -106,6 +107,7 @@ import {
   getParticipantAddress,
   getParticipantInfractions,
   getProgramOutcome,
+  getSentenceTerm,
   getWorkAppointments,
   getWorksiteByWorksitePlan,
   getWorksitePlanStatuses,
@@ -178,6 +180,7 @@ const {
   PROGRAM_OUTCOME,
   REGISTERED_FOR,
   RESULTS_IN,
+  SENTENCE_TERM,
   WORKSITE,
   WORKSITE_PLAN,
 } = APP_TYPE_FQNS;
@@ -2140,6 +2143,63 @@ function* getProgramOutcomeWatcher() :Generator<*, *, *> {
 
   yield takeEvery(GET_PROGRAM_OUTCOME, getProgramOutcomeWorker);
 }
+/*
+ *
+ * ParticipantsActions.getSentenceTerm()
+ *
+ */
+
+function* getSentenceTermWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+  if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
+  const workerResponse = {};
+  let response :Object = {};
+  let sentenceTerm :Map = Map();
+
+  try {
+    yield put(getSentenceTerm.request(id));
+    const { diversionPlan } = value;
+    const diversionPlanEKID :UUID = getEntityKeyId(diversionPlan);
+
+    const app = yield select(getAppFromState);
+    const sentenceTermESID = getEntitySetIdFromApp(app, SENTENCE_TERM);
+    const diversionPlanESID = getEntitySetIdFromApp(app, DIVERSION_PLAN);
+
+    const searchFilter :Object = {
+      entityKeyIds: [diversionPlanEKID],
+      destinationEntitySetIds: [],
+      sourceEntitySetIds: [sentenceTermESID],
+    };
+    response = yield call(
+      searchEntityNeighborsWithFilterWorker,
+      searchEntityNeighborsWithFilter({ entitySetId: diversionPlanESID, filter: searchFilter })
+    );
+    if (response.error) {
+      throw response.error;
+    }
+    if (response.data[diversionPlanEKID]) {
+      const sentenceTermNeighbor = fromJS(response.data[diversionPlanEKID][0]);
+      sentenceTerm = getNeighborDetails(sentenceTermNeighbor);
+    }
+
+    yield put(getSentenceTerm.success(id, sentenceTerm));
+  }
+  catch (error) {
+    workerResponse.error = error;
+    LOG.error('caught exception in getSentenceTermWorker()', error);
+    yield put(getSentenceTerm.failure(id, error));
+  }
+  finally {
+    yield put(getSentenceTerm.finally(id));
+  }
+  return workerResponse;
+}
+
+function* getSentenceTermWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(GET_SENTENCE_TERM, getSentenceTermWorker);
+}
 
 /*
  *
@@ -2240,6 +2300,7 @@ function* getEnrollmentStatusWorker(action :SequenceAction) :Generator<*, *, *> 
         yield all([
           call(getWorksitePlansWorker, getWorksitePlans({ diversionPlan })),
           call(getProgramOutcomeWorker, getProgramOutcome({ diversionPlan })),
+          call(getSentenceTermWorker, getSentenceTerm({ diversionPlan })),
         ]);
       }
     }
@@ -2698,6 +2759,8 @@ export {
   getParticipantWorker,
   getProgramOutcomeWatcher,
   getProgramOutcomeWorker,
+  getSentenceTermWatcher,
+  getSentenceTermWorker,
   getWorkAppointmentsWatcher,
   getWorkAppointmentsWorker,
   getWorksiteByWorksitePlanWatcher,

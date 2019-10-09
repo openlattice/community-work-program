@@ -44,6 +44,7 @@ import {
   getParticipantAddress,
   getParticipantInfractions,
   getProgramOutcome,
+  getSentenceTerm,
   getWorkAppointments,
   getWorksiteByWorksitePlan,
   getWorksitePlanStatuses,
@@ -130,6 +131,7 @@ const {
   GET_PARTICIPANT_ADDRESS,
   GET_PARTICIPANT_INFRACTIONS,
   GET_PROGRAM_OUTCOME,
+  GET_SENTENCE_TERM,
   GET_WORKSITE_BY_WORKSITE_PLAN,
   GET_WORKSITE_PLANS,
   GET_WORKSITE_PLAN_STATUSES,
@@ -251,6 +253,9 @@ const INITIAL_STATE :Map<*, *> = fromJS({
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [GET_PARTICIPANT_INFRACTIONS]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [GET_SENTENCE_TERM]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [GET_WORK_APPOINTMENTS]: {
@@ -1669,6 +1674,35 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
           .set(PROGRAM_OUTCOME, Map())
           .setIn([ACTIONS, GET_PROGRAM_OUTCOME, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, GET_PROGRAM_OUTCOME, action.id])
+      });
+    }
+
+    case getSentenceTerm.case(action.type): {
+
+      return getSentenceTerm.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, GET_SENTENCE_TERM, action.id], fromJS(action))
+          .setIn([ACTIONS, GET_SENTENCE_TERM, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+
+          if (!state.hasIn([ACTIONS, GET_SENTENCE_TERM, action.id])) {
+            return state;
+          }
+
+          const { value } = action;
+          if (value === null || value === undefined) {
+            return state;
+          }
+
+          return state
+            .set(SENTENCE_TERM, value)
+            .setIn([ACTIONS, GET_SENTENCE_TERM, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .set(SENTENCE_TERM, Map())
+          .setIn([ACTIONS, GET_SENTENCE_TERM, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, GET_SENTENCE_TERM, action.id])
       });
     }
 
