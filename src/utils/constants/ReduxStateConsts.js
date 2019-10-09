@@ -110,7 +110,6 @@ export const PERSON = {
   REASSIGN_JUDGE: 'reassignJudge',
   REQUEST_STATE: 'requestState',
   REQUIRED_HOURS: 'requiredHours',
-  SENTENCE_TERM: 'sentenceTerm',
   UPDATE_HOURS_WORKED: 'updateHoursWorked',
   VIOLATIONS: 'violations',
   WARNINGS: 'warnings',

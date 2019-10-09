@@ -1,7 +1,7 @@
 // @flow
 import React, { Component } from 'react';
 import styled from 'styled-components';
-import { fromJS, List, Map } from 'immutable';
+import { Map } from 'immutable';
 import { DateTime } from 'luxon';
 import { Card, CardHeader, CardStack } from 'lattice-ui-kit';
 import { Form, DataProcessingUtils } from 'lattice-fabricate';
@@ -23,13 +23,10 @@ import {
   DATETIME_END,
   DATETIME_START,
   DIVERSION_PLAN_FQNS,
-  ENTITY_KEY_ID,
 } from '../../core/edm/constants/FullyQualifiedNames';
 import {
-  diversionPlanSchema,
-  diversionPlanUiSchema,
-  sentenceTermSchema,
-  sentenceTermUiSchema,
+  schema,
+  uiSchema,
 } from './schemas/EditEnrollmentDatesSchemas';
 import {
   getEntityKeyId,
@@ -42,15 +39,10 @@ import { PARTICIPANT_PROFILE_WIDTH } from '../../core/style/Sizes';
 import { APP, PERSON, STATE } from '../../utils/constants/ReduxStateConsts';
 import * as Routes from '../../core/router/Routes';
 
-const {
-  getEntityAddressKey,
-  getPageSectionKey,
-  processAssociationEntityData,
-  processEntityData,
-} = DataProcessingUtils;
+const { getEntityAddressKey, getPageSectionKey } = DataProcessingUtils;
 
-const { DIVERSION_PLAN, PEOPLE } = APP_TYPE_FQNS;
-const { CHECK_IN_DATETIME, ORIENTATION_DATETIME } = DIVERSION_PLAN_FQNS;
+const { DIVERSION_PLAN } = APP_TYPE_FQNS;
+const { CHECK_IN_DATETIME, DATETIME_RECEIVED, ORIENTATION_DATETIME } = DIVERSION_PLAN_FQNS;
 
 const {
   ACTIONS,
@@ -83,23 +75,18 @@ type Props = {
   getEnrollmentStatusRequestState :RequestState;
   initializeAppRequestState :RequestState;
   match :Match;
-  sentenceTerm :Map;
 };
 
 type State = {
-  diversionPlanFormData :Object;
-  diversionPlanPrepopulated :boolean;
-  sentenceTermFormData :Object;
-  sentenceTermPrepopulated :boolean;
+  formData :Object;
+  prepopulated :boolean;
 };
 
 class EditCaseInfoForm extends Component<Props, State> {
 
   state = {
-    diversionPlanFormData: {},
-    diversionPlanPrepopulated: true,
-    sentenceTermFormData: {},
-    sentenceTermPrepopulated: false,
+    formData: {},
+    prepopulated: true,
   };
 
   componentDidMount() {
@@ -110,7 +97,7 @@ class EditCaseInfoForm extends Component<Props, State> {
         params: { subjectId: personEKID }
       },
     } = this.props;
-    if (app.get(PEOPLE) && personEKID) {
+    if (app.get(DIVERSION_PLAN) && personEKID) {
       actions.getEnrollmentStatus({ personEKID });
     }
   }
@@ -124,75 +111,68 @@ class EditCaseInfoForm extends Component<Props, State> {
       match: {
         params: { subjectId: personEKID }
       },
-      sentenceTerm,
     } = this.props;
-    if (!prevProps.app.get(PEOPLE) && app.get(PEOPLE) && personEKID) {
+    if (!prevProps.app.get(DIVERSION_PLAN) && app.get(DIVERSION_PLAN) && personEKID) {
       actions.getEnrollmentStatus({ personEKID, populateProfile: false });
     }
     if ((prevProps.getEnrollmentStatusRequestState === RequestStates.PENDING
       && getEnrollmentStatusRequestState !== RequestStates.PENDING)
-      || !prevProps.diversionPlan.equals(diversionPlan)
-      || !prevProps.sentenceTerm.equals(sentenceTerm)) {
+      || !prevProps.diversionPlan.equals(diversionPlan)) {
       this.prepopulateFormData();
     }
   }
 
   prepopulateFormData = () => {
-    const {
-      diversionPlan,
-      sentenceTerm,
-    } = this.props;
+    const { diversionPlan } = this.props;
 
     const sectionOneKey = getPageSectionKey(1, 1);
+    const formData :{} = {};
 
-    //   const { [DATETIME_END]: sentenceEndDate, [DATETIME_START]: sentenceDate } = getEntityProperties(
-    //     sentenceTerm,
-    //     [DATETIME_END, DATETIME_START]
-    //   );
-    const sentenceTermPrepopulated = !sentenceTerm.isEmpty(); /* CHANGE LATER */
-    const sentenceTermFormData :{} = {};
-    // if (sentenceTermPrepopulated) {
-    //   sentenceTermFormData[sectionOneKey] = {};
-    //   if (sentenceDate) {
-    //     sentenceTermFormData[sectionOneKey][getEntityAddressKey(0, SENTENCE_TERM, DATETIME_START)] = [sentenceDate];
-    //   }
-    //   if (sentenceEndDate) {
-    //     sentenceTermFormData[sectionOneKey][getEntityAddressKey(0, SENTENCE_TERM, DATETIME_END)] = [sentenceEndDate];
-    //   }
-    // }
-
-    const diversionPlanFormData :{} = {};
-
-    const { [CHECK_IN_DATETIME]: checkInDateTime, [ORIENTATION_DATETIME]: orientationDateTime } = getEntityProperties(
+    const {
+      [CHECK_IN_DATETIME]: checkInDateTime,
+      [DATETIME_END]: sentenceEndDate,
+      [DATETIME_RECEIVED]: sentenceDate,
+      [ORIENTATION_DATETIME]: orientationDateTime,
+    } = getEntityProperties(
       diversionPlan,
-      [CHECK_IN_DATETIME, ORIENTATION_DATETIME]
+      [CHECK_IN_DATETIME, DATETIME_END, DATETIME_RECEIVED, ORIENTATION_DATETIME]
     );
 
-    diversionPlanFormData[sectionOneKey] = {};
+    formData[sectionOneKey] = {};
     if (checkInDateTime) {
-      diversionPlanFormData[sectionOneKey][getEntityAddressKey(
+      formData[sectionOneKey][getEntityAddressKey(
         0, DIVERSION_PLAN, CHECK_IN_DATETIME
       )] = DateTime.fromISO(checkInDateTime).toISODate();
     }
     if (orientationDateTime) {
-      diversionPlanFormData[sectionOneKey][getEntityAddressKey(
+      formData[sectionOneKey][getEntityAddressKey(
         0, DIVERSION_PLAN, ORIENTATION_DATETIME
       )] = DateTime.fromISO(orientationDateTime).toISODate();
     }
+    if (sentenceDate) {
+      formData[sectionOneKey][getEntityAddressKey(
+        0, DIVERSION_PLAN, DATETIME_RECEIVED
+      )] = DateTime.fromISO(sentenceDate).toISODate();
+    }
+    if (sentenceEndDate) {
+      formData[sectionOneKey][getEntityAddressKey(
+        0, DIVERSION_PLAN, DATETIME_END
+      )] = DateTime.fromISO(sentenceEndDate).toISODate();
+    }
+    if (!sentenceEndDate && sentenceDate) {
+      formData[sectionOneKey][getEntityAddressKey(
+        0, DIVERSION_PLAN, DATETIME_END
+      )] = DateTime.fromISO(sentenceDate).plus({ days: 90 }).toLocaleString();
+    }
 
-    this.setState({
-      diversionPlanFormData,
-      sentenceTermFormData,
-      sentenceTermPrepopulated,
-    });
+    this.setState({ formData });
   }
 
   createEntityIndexToIdMap = () => {
-    const { diversionPlan, sentenceTerm } = this.props;
+    const { diversionPlan } = this.props;
 
     const entityIndexToIdMap :Map = Map().withMutations((map :Map) => {
       map.setIn([DIVERSION_PLAN, 0], getEntityKeyId(diversionPlan));
-      // map.setIn([MANUAL_PRETRIAL_COURT_CASES, 0], getEntityKeyId(sentenceTerm));
     });
     return entityIndexToIdMap;
   }
@@ -200,8 +180,7 @@ class EditCaseInfoForm extends Component<Props, State> {
   createEntitySetIdsMap = () => {
     const { app } = this.props;
     return {
-      [DIVERSION_PLAN]: getEntitySetIdFromApp(app, DIVERSION_PLAN),
-      // [SENTENCE_TERM]: getEntitySetIdFromApp(app, SENTENCE_TERM),
+      [DIVERSION_PLAN]: getEntitySetIdFromApp(app, DIVERSION_PLAN)
     };
   }
 
@@ -224,12 +203,7 @@ class EditCaseInfoForm extends Component<Props, State> {
         params: { subjectId: personEKID }
       },
     } = this.props;
-    const {
-      diversionPlanFormData,
-      diversionPlanPrepopulated,
-      sentenceTermFormData,
-      sentenceTermPrepopulated,
-    } = this.state;
+    const { formData, prepopulated } = this.state;
 
     if (initializeAppRequestState === RequestStates.PENDING
       || getEnrollmentStatusRequestState === RequestStates.PENDING) {
@@ -244,13 +218,7 @@ class EditCaseInfoForm extends Component<Props, State> {
     const entitySetIds = this.createEntitySetIdsMap();
     const propertyTypeIds = this.createPropertyTypeIdsMap();
 
-    // const caseFormContext = {
-    //   editAction: actions.editPersonCase,
-    //   entityIndexToIdMap,
-    //   entitySetIds,
-    //   propertyTypeIds,
-    // };
-    const diversionPlanFormContext = {
+    const formContext = {
       editAction: actions.editEnrollmentDates,
       entityIndexToIdMap,
       entitySetIds,
@@ -269,22 +237,13 @@ class EditCaseInfoForm extends Component<Props, State> {
         </ButtonWrapper>
         <CardStack>
           <Card>
-            <CardHeader padding="sm">Edit Sentence Dates</CardHeader>
-            <Form
-                disabled={sentenceTermPrepopulated}
-                formContext={{}}
-                formData={sentenceTermFormData}
-                schema={sentenceTermSchema}
-                uiSchema={sentenceTermUiSchema} />
-          </Card>
-          <Card>
             <CardHeader padding="sm">Edit Enrollment Dates</CardHeader>
             <Form
-                disabled={diversionPlanPrepopulated}
-                formContext={diversionPlanFormContext}
-                formData={diversionPlanFormData}
-                schema={diversionPlanSchema}
-                uiSchema={diversionPlanUiSchema} />
+                disabled={prepopulated}
+                formContext={formContext}
+                formData={formData}
+                schema={schema}
+                uiSchema={uiSchema} />
           </Card>
         </CardStack>
       </FormWrapper>
@@ -301,7 +260,6 @@ const mapStateToProps = (state :Map) => {
     edm: state.get(STATE.EDM),
     getEnrollmentStatusRequestState: person.getIn([ACTIONS, GET_ENROLLMENT_STATUS, REQUEST_STATE]),
     initializeAppRequestState: app.getIn([APP.ACTIONS, APP.INITIALIZE_APPLICATION, APP.REQUEST_STATE]),
-    [PERSON.SENTENCE_TERM]: person.get(PERSON.SENTENCE_TERM),
   });
 };
 

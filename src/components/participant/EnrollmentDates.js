@@ -32,6 +32,7 @@ type Props = {
   edit :() => void;
   orientationDateTime :string;
   sentenceDateTime :string;
+  sentenceEndDateTime :string;
   workStartDateTime :string;
 };
 
@@ -40,6 +41,7 @@ const EnrollmentDates = ({
   edit,
   orientationDateTime,
   sentenceDateTime,
+  sentenceEndDateTime,
   workStartDateTime
 } :Props) => {
 
@@ -50,9 +52,13 @@ const EnrollmentDates = ({
     ? sentenceDateObj.plus({ hours: 48 }).toLocaleString()
     : EMPTY_FIELD;
 
-  const sentenceEndDate = sentenceDateObj.isValid
-    ? sentenceDateObj.plus({ days: 90 }).toLocaleString()
+  const sentenceEndDateObj = DateTime.fromISO(sentenceEndDateTime);
+  let sentenceEndDate = sentenceEndDateObj.isValid
+    ? sentenceEndDateObj.toLocaleString(DateTime.DATE_SHORT)
     : EMPTY_FIELD;
+  if (!sentenceEndDateObj.isValid && sentenceDateObj.isValid) {
+    sentenceEndDate = sentenceDateObj.plus({ days: 90 }).toLocaleString();
+  }
 
   const orientationDateObj = DateTime.fromISO(orientationDateTime);
   const orientationDate = orientationDateObj.isValid

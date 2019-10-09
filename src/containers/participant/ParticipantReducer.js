@@ -44,7 +44,6 @@ import {
   getParticipantAddress,
   getParticipantInfractions,
   getProgramOutcome,
-  getSentenceTerm,
   getWorkAppointments,
   getWorksiteByWorksitePlan,
   getWorksitePlanStatuses,
@@ -65,9 +64,9 @@ import { PERSON } from '../../utils/constants/ReduxStateConsts';
 import { INFRACTIONS_CONSTS } from '../../core/edm/constants/DataModelConsts';
 import {
   APP_TYPE_FQNS,
-  DIVERSION_PLAN_FQNS,
   CASE_FQNS,
   DATETIME_END,
+  DIVERSION_PLAN_FQNS,
   ENROLLMENT_STATUS_FQNS,
   ENTITY_KEY_ID,
   INCIDENT_START_DATETIME,
@@ -78,7 +77,12 @@ import {
 } from '../../core/edm/constants/FullyQualifiedNames';
 
 const { WORKSITE_PLAN } = APP_TYPE_FQNS;
-const { CHECK_IN_DATETIME, COMPLETED, ORIENTATION_DATETIME } = DIVERSION_PLAN_FQNS;
+const {
+  CHECK_IN_DATETIME,
+  COMPLETED,
+  DATETIME_RECEIVED,
+  ORIENTATION_DATETIME,
+} = DIVERSION_PLAN_FQNS;
 const { CASE_NUMBER_TEXT, COURT_CASE_TYPE } = CASE_FQNS;
 const { NOTES } = DIVERSION_PLAN_FQNS;
 const { STATUS } = ENROLLMENT_STATUS_FQNS;
@@ -131,7 +135,6 @@ const {
   GET_PARTICIPANT_ADDRESS,
   GET_PARTICIPANT_INFRACTIONS,
   GET_PROGRAM_OUTCOME,
-  GET_SENTENCE_TERM,
   GET_WORKSITE_BY_WORKSITE_PLAN,
   GET_WORKSITE_PLANS,
   GET_WORKSITE_PLAN_STATUSES,
@@ -147,7 +150,6 @@ const {
   PROGRAM_OUTCOME,
   REASSIGN_JUDGE,
   REQUEST_STATE,
-  SENTENCE_TERM,
   UPDATE_HOURS_WORKED,
   VIOLATIONS,
   WARNINGS,
@@ -255,9 +257,6 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     [GET_PARTICIPANT_INFRACTIONS]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
-    [GET_SENTENCE_TERM]: {
-      [REQUEST_STATE]: RequestStates.STANDBY
-    },
     [GET_WORK_APPOINTMENTS]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
@@ -302,7 +301,6 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [PERSON_CASE]: Map(),
   [PHONE]: Map(),
   [PROGRAM_OUTCOME]: Map(),
-  [SENTENCE_TERM]: Map(),
   [VIOLATIONS]: List(),
   [WARNINGS]: List(),
   [WORKSITES_BY_WORKSITE_PLAN]: Map(),
@@ -978,6 +976,8 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
 
             const checkInDateTime :UUID = getPropertyTypeIdFromEdm(edm, CHECK_IN_DATETIME);
             const orientationDateTime :UUID = getPropertyTypeIdFromEdm(edm, ORIENTATION_DATETIME);
+            const sentenceDate :UUID = getPropertyTypeIdFromEdm(edm, DATETIME_RECEIVED);
+            const sentenceEndDate :UUID = getPropertyTypeIdFromEdm(edm, DATETIME_END);
 
             let diversionPlan = state.get(DIVERSION_PLAN);
             if (newDiversionPlanData.get(checkInDateTime)) {
@@ -985,6 +985,12 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
             }
             if (newDiversionPlanData.get(orientationDateTime)) {
               diversionPlan = diversionPlan.set(ORIENTATION_DATETIME, newDiversionPlanData.get(orientationDateTime));
+            }
+            if (newDiversionPlanData.get(sentenceDate)) {
+              diversionPlan = diversionPlan.set(DATETIME_RECEIVED, newDiversionPlanData.get(sentenceDate));
+            }
+            if (newDiversionPlanData.get(sentenceEndDate)) {
+              diversionPlan = diversionPlan.set(DATETIME_END, newDiversionPlanData.get(sentenceEndDate));
             }
 
             return state
@@ -1674,35 +1680,6 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
           .set(PROGRAM_OUTCOME, Map())
           .setIn([ACTIONS, GET_PROGRAM_OUTCOME, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, GET_PROGRAM_OUTCOME, action.id])
-      });
-    }
-
-    case getSentenceTerm.case(action.type): {
-
-      return getSentenceTerm.reducer(state, action, {
-
-        REQUEST: () => state
-          .setIn([ACTIONS, GET_SENTENCE_TERM, action.id], fromJS(action))
-          .setIn([ACTIONS, GET_SENTENCE_TERM, REQUEST_STATE], RequestStates.PENDING),
-        SUCCESS: () => {
-
-          if (!state.hasIn([ACTIONS, GET_SENTENCE_TERM, action.id])) {
-            return state;
-          }
-
-          const { value } = action;
-          if (value === null || value === undefined) {
-            return state;
-          }
-
-          return state
-            .set(SENTENCE_TERM, value)
-            .setIn([ACTIONS, GET_SENTENCE_TERM, REQUEST_STATE], RequestStates.SUCCESS);
-        },
-        FAILURE: () => state
-          .set(SENTENCE_TERM, Map())
-          .setIn([ACTIONS, GET_SENTENCE_TERM, REQUEST_STATE], RequestStates.FAILURE),
-        FINALLY: () => state.deleteIn([ACTIONS, GET_SENTENCE_TERM, action.id])
       });
     }
 
