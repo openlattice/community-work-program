@@ -3,12 +3,14 @@
  */
 
 import {
+  List,
+  Map,
   fromJS,
   getIn,
   has,
-  List,
-  Map,
+  setIn,
 } from 'immutable';
+import { DateTime } from 'luxon';
 import {
   all,
   call,
@@ -38,6 +40,7 @@ import {
   CREATE_WORK_APPOINTMENTS,
   DELETE_APPOINTMENT,
   EDIT_CHECK_IN_DATE,
+  EDIT_ENROLLMENT_DATES,
   EDIT_PARTICIPANT_CONTACTS,
   EDIT_PERSON_CASE,
   EDIT_PERSON_DETAILS,
@@ -77,6 +80,7 @@ import {
   createWorkAppointments,
   deleteAppointment,
   editCheckInDate,
+  editEnrollmentDates,
   editParticipantContacts,
   editPersonCase,
   editPersonDetails,
@@ -133,6 +137,7 @@ import {
   sortEntitiesByDateProperty,
 } from '../../utils/DataUtils';
 import { isDefined } from '../../utils/LangUtils';
+import { getCombinedDateTime } from '../../utils/ScheduleUtils';
 import { PERSON, STATE, WORKSITES } from '../../utils/constants/ReduxStateConsts';
 import {
   APP_TYPE_FQNS,
@@ -341,6 +346,56 @@ function* addOrientationDateWorker(action :SequenceAction) :Generator<*, *, *> {
 function* addOrientationDateWatcher() :Generator<*, *, *> {
 
   yield takeEvery(ADD_ORIENTATION_DATE, addOrientationDateWorker);
+}
+
+/*
+ *
+ * ParticipantActions.editEnrollmentDates()
+ *
+ */
+
+function* editEnrollmentDatesWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+  let newDiversionPlanData :Map = Map();
+
+  try {
+    yield put(editEnrollmentDates.request(id, value));
+
+    const app = yield select(getAppFromState);
+    const diversionPlanESID = getEntitySetIdFromApp(app, DIVERSION_PLAN);
+    const edm = yield select(getEdmFromState);
+
+    let { entityData } = value;
+    const diversionPlanEKID = Object.keys(entityData[diversionPlanESID])[0];
+    newDiversionPlanData = fromJS(getIn(entityData, [diversionPlanESID, diversionPlanEKID]));
+
+    newDiversionPlanData.forEach((dateValue, propertyTypeId :UUID) => {
+      let dateAsDateTime = dateValue.get(0);
+      const currentTime = DateTime.local().toLocaleString(DateTime.TIME_24_SIMPLE);
+      dateAsDateTime = getCombinedDateTime(dateAsDateTime, currentTime);
+      entityData = setIn(entityData, [diversionPlanESID, diversionPlanEKID, propertyTypeId], [dateAsDateTime]);
+    });
+
+    const response = yield call(submitPartialReplaceWorker, submitPartialReplace({ entityData }));
+    if (response.error) {
+      throw response.error;
+    }
+
+    yield put(editEnrollmentDates.success(id, { edm, newDiversionPlanData }));
+  }
+  catch (error) {
+    LOG.error('caught exception in editEnrollmentDatesWorker()', error);
+    yield put(editEnrollmentDates.failure(id, error));
+  }
+  finally {
+    yield put(editEnrollmentDates.finally(id));
+  }
+}
+
+function* editEnrollmentDatesWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(EDIT_ENROLLMENT_DATES, editEnrollmentDatesWorker);
 }
 
 /*
@@ -2553,6 +2608,8 @@ export {
   deleteAppointmentWorker,
   editCheckInDateWatcher,
   editCheckInDateWorker,
+  editEnrollmentDatesWatcher,
+  editEnrollmentDatesWorker,
   editParticipantContactsWatcher,
   editParticipantContactsWorker,
   editPersonCaseWatcher,

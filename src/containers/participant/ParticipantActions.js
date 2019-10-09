@@ -28,6 +28,9 @@ const deleteAppointment = newRequestSequence(DELETE_APPOINTMENT);
 const EDIT_CHECK_IN_DATE:'EDIT_CHECK_IN_DATE' = 'EDIT_CHECK_IN_DATE';
 const editCheckInDate = newRequestSequence(EDIT_CHECK_IN_DATE);
 
+const EDIT_ENROLLMENT_DATES:'EDIT_ENROLLMENT_DATES' = 'EDIT_ENROLLMENT_DATES';
+const editEnrollmentDates = newRequestSequence(EDIT_ENROLLMENT_DATES);
+
 const EDIT_PARTICIPANT_CONTACTS:'EDIT_PARTICIPANT_CONTACTS' = 'EDIT_PARTICIPANT_CONTACTS';
 const editParticipantContacts = newRequestSequence(EDIT_PARTICIPANT_CONTACTS);
 
@@ -128,6 +131,7 @@ export {
   CREATE_WORK_APPOINTMENTS,
   DELETE_APPOINTMENT,
   EDIT_CHECK_IN_DATE,
+  EDIT_ENROLLMENT_DATES,
   EDIT_PARTICIPANT_CONTACTS,
   EDIT_PERSON_CASE,
   EDIT_PERSON_DETAILS,
@@ -167,6 +171,7 @@ export {
   createWorkAppointments,
   deleteAppointment,
   editCheckInDate,
+  editEnrollmentDates,
   editParticipantContacts,
   editPersonCase,
   editPersonDetails,

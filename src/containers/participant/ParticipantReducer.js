@@ -19,6 +19,7 @@ import {
   createWorkAppointments,
   deleteAppointment,
   editCheckInDate,
+  editEnrollmentDates,
   editParticipantContacts,
   editPersonCase,
   editPersonDetails,
@@ -72,7 +73,7 @@ import {
 } from '../../core/edm/constants/FullyQualifiedNames';
 
 const { WORKSITE_PLAN } = APP_TYPE_FQNS;
-const { COMPLETED } = DIVERSION_PLAN_FQNS;
+const { CHECK_IN_DATETIME, COMPLETED, ORIENTATION_DATETIME } = DIVERSION_PLAN_FQNS;
 const { CASE_NUMBER_TEXT, COURT_CASE_TYPE } = CASE_FQNS;
 const { NOTES } = DIVERSION_PLAN_FQNS;
 const { STATUS } = ENROLLMENT_STATUS_FQNS;
@@ -97,6 +98,7 @@ const {
   DELETE_APPOINTMENT,
   DIVERSION_PLAN,
   EDIT_CHECK_IN_DATE,
+  EDIT_ENROLLMENT_DATES,
   EDIT_PARTICIPANT_CONTACTS,
   EDIT_PERSON_CASE,
   EDIT_PERSON_DETAILS,
@@ -138,6 +140,7 @@ const {
   PROGRAM_OUTCOME,
   REASSIGN_JUDGE,
   REQUEST_STATE,
+  SENTENCE_TERM,
   UPDATE_HOURS_WORKED,
   VIOLATIONS,
   WARNINGS,
@@ -171,6 +174,9 @@ const INITIAL_STATE :Map<*, *> = fromJS({
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [EDIT_CHECK_IN_DATE]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [EDIT_ENROLLMENT_DATES]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [EDIT_PERSON_CASE]: {
@@ -286,6 +292,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [PERSON_CASE]: Map(),
   [PHONE]: Map(),
   [PROGRAM_OUTCOME]: Map(),
+  [SENTENCE_TERM]: Map(),
   [VIOLATIONS]: List(),
   [WARNINGS]: List(),
   [WORKSITES_BY_WORKSITE_PLAN]: Map(),
@@ -889,6 +896,45 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
         FAILURE: () => state
           .setIn([ACTIONS, EDIT_PLAN_NOTES, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, EDIT_PLAN_NOTES, action.id]),
+      });
+    }
+
+    case editEnrollmentDates.case(action.type): {
+
+      return editEnrollmentDates.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, EDIT_ENROLLMENT_DATES, action.id], action)
+          .setIn([ACTIONS, EDIT_ENROLLMENT_DATES, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+
+          const seqAction :SequenceAction = action;
+          const { value } :Object = seqAction;
+          const { edm, newDiversionPlanData } = value;
+
+          if (!newDiversionPlanData.isEmpty()) {
+
+            const checkInDateTime :UUID = getPropertyTypeIdFromEdm(edm, CHECK_IN_DATETIME);
+            const orientationDateTime :UUID = getPropertyTypeIdFromEdm(edm, ORIENTATION_DATETIME);
+
+            let diversionPlan = state.get(DIVERSION_PLAN);
+            if (newDiversionPlanData.get(checkInDateTime)) {
+              diversionPlan = diversionPlan.set(CHECK_IN_DATETIME, newDiversionPlanData.get(checkInDateTime));
+            }
+            if (newDiversionPlanData.get(orientationDateTime)) {
+              diversionPlan = diversionPlan.set(ORIENTATION_DATETIME, newDiversionPlanData.get(orientationDateTime));
+            }
+
+            return state
+              .set(DIVERSION_PLAN, diversionPlan)
+              .setIn([ACTIONS, EDIT_ENROLLMENT_DATES, REQUEST_STATE], RequestStates.SUCCESS);
+          }
+
+          return state;
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, EDIT_ENROLLMENT_DATES, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, EDIT_ENROLLMENT_DATES, action.id]),
       });
     }
 
