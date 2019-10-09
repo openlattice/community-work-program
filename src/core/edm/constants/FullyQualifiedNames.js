@@ -24,6 +24,7 @@ export const APP_TYPE_FQNS = {
   CHECK_IN_DETAILS: new FullyQualifiedName('app.checkindetails'),
   CONTACT_INFORMATION: new FullyQualifiedName('app.contactinformation'),
   CONTACT_INFO_GIVEN: new FullyQualifiedName('app.contactinfogiven'),
+  COURT_CHARGE_LIST: new FullyQualifiedName('publicsafety.courtchargelist'),
   COURT_PRETRIAL_CASES: new FullyQualifiedName('app.courtpretrialcases'),
   DIVERSION_PLAN: new FullyQualifiedName('app.diversionplan'),
   EMPLOYEE: new FullyQualifiedName('app.employee'),
