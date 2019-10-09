@@ -188,7 +188,6 @@ type Props = {
   enrollmentStatus :Map;
   getAllParticipantInfoRequestState :RequestState;
   getInitializeAppRequestState :RequestState;
-  getWorkAppointmentsRequestState :RequestState;
   judge :Map;
   participant :Map;
   personCase :Map;
@@ -539,7 +538,6 @@ const mapStateToProps = (state :Map<*, *>) => {
     [ENROLLMENT_STATUS]: person.get(ENROLLMENT_STATUS),
     getAllParticipantInfoRequestState: person.getIn([ACTIONS, GET_ALL_PARTICIPANT_INFO, REQUEST_STATE]),
     getInitializeAppRequestState: app.getIn([APP.ACTIONS, APP.INITIALIZE_APPLICATION, APP.REQUEST_STATE]),
-    getWorkAppointmentsRequestState: person.getIn([ACTIONS, GET_WORK_APPOINTMENTS, REQUEST_STATE]),
     [JUDGE]: person.get(JUDGE),
     [PARTICIPANT]: person.get(PARTICIPANT),
     [PERSON_CASE]: person.get(PERSON_CASE),
