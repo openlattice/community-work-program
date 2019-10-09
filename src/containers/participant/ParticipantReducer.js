@@ -18,6 +18,11 @@ import {
   checkInForAppointment,
   createWorkAppointments,
   deleteAppointment,
+<<<<<<< HEAD
+=======
+  editAppointment,
+  editCaseAndHours,
+>>>>>>> develop
   editCheckInDate,
   editEnrollmentDates,
   editParticipantContacts,
@@ -52,6 +57,7 @@ import {
   updateHoursWorked,
 } from './ParticipantActions';
 import {
+  findEntityPathInMap,
   getEntityKeyId,
   getEntityProperties,
   getPropertyFqnFromEdm,
@@ -64,8 +70,10 @@ import {
   APP_TYPE_FQNS,
   DIVERSION_PLAN_FQNS,
   CASE_FQNS,
+  DATETIME_END,
   ENROLLMENT_STATUS_FQNS,
   ENTITY_KEY_ID,
+  INCIDENT_START_DATETIME,
   INFRACTION_EVENT_FQNS,
   INFRACTION_FQNS,
   PEOPLE_FQNS,
@@ -97,6 +105,11 @@ const {
   CREATE_WORK_APPOINTMENTS,
   DELETE_APPOINTMENT,
   DIVERSION_PLAN,
+<<<<<<< HEAD
+=======
+  EDIT_APPOINTMENT,
+  EDIT_CASE_AND_HOURS,
+>>>>>>> develop
   EDIT_CHECK_IN_DATE,
   EDIT_ENROLLMENT_DATES,
   EDIT_PARTICIPANT_CONTACTS,
@@ -173,7 +186,14 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     [DELETE_APPOINTMENT]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
+<<<<<<< HEAD
     [EDIT_CHECK_IN_DATE]: {
+=======
+    [EDIT_APPOINTMENT]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [EDIT_CASE_AND_HOURS]: {
+>>>>>>> develop
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [EDIT_ENROLLMENT_DATES]: {
@@ -715,29 +735,19 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
             const { entityKeyId } :Object = requestValue[0];
 
             let workAppointmentsByWorksitePlan = state.get(WORK_APPOINTMENTS_BY_WORKSITE_PLAN);
-            let worksitePlanEKID = '';
-            let indexToDelete = -1;
-            workAppointmentsByWorksitePlan.forEach((appointments :List, ekid :UUID) => {
-              const targetIndex :number = appointments.findIndex(
-                (appointment :Map) => getEntityKeyId(appointment) === entityKeyId
-              );
-              if (targetIndex !== -1) {
-                worksitePlanEKID = ekid;
-                indexToDelete = targetIndex;
-                return false;
-              }
-              return true;
-            });
-            if (indexToDelete !== -1) {
+
+            const [keyEKID, index] = findEntityPathInMap(workAppointmentsByWorksitePlan, entityKeyId);
+            if (index !== -1) {
               workAppointmentsByWorksitePlan = workAppointmentsByWorksitePlan
-                .deleteIn([worksitePlanEKID, indexToDelete]);
+                .deleteIn([keyEKID, index]);
               return state
                 .set(WORK_APPOINTMENTS_BY_WORKSITE_PLAN, workAppointmentsByWorksitePlan)
                 .setIn([ACTIONS, DELETE_APPOINTMENT, REQUEST_STATE], RequestStates.SUCCESS);
             }
           }
 
-          return state;
+          return state
+            .setIn([ACTIONS, DELETE_APPOINTMENT, REQUEST_STATE], RequestStates.SUCCESS);
         },
         FAILURE: () => state
           .setIn([ACTIONS, DELETE_APPOINTMENT, REQUEST_STATE], RequestStates.FAILURE),
@@ -853,6 +863,68 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
         FAILURE: () => state
           .setIn([ACTIONS, EDIT_PLAN_NOTES, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, EDIT_PLAN_NOTES, action.id]),
+      });
+    }
+
+    case editAppointment.case(action.type): {
+
+      return editAppointment.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, EDIT_APPOINTMENT, action.id], action)
+          .setIn([ACTIONS, EDIT_APPOINTMENT, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+
+          const seqAction :SequenceAction = action;
+          const storedSeqAction :SequenceAction = state.getIn([ACTIONS, EDIT_APPOINTMENT, seqAction.id]);
+
+          if (storedSeqAction) {
+
+            const successValue :Object = seqAction.value;
+            const { appointmentESID, edm } = successValue;
+
+            const requestValue :Object = storedSeqAction.value;
+            const { entityData } :Object = requestValue;
+            const appointmentEKID = Object.keys(entityData[appointmentESID])[0];
+
+            let workAppointmentsByWorksitePlan = state.get(WORK_APPOINTMENTS_BY_WORKSITE_PLAN);
+            const [keyEKID, index] = findEntityPathInMap(workAppointmentsByWorksitePlan, appointmentEKID);
+            if (index !== -1) {
+
+              const newAppointmentData :Map = fromJS(entityData[appointmentESID][appointmentEKID]);
+              const startDateTimePTID :UUID = getPropertyTypeIdFromEdm(edm, INCIDENT_START_DATETIME);
+              const newStartDateTime :string = newAppointmentData.getIn([startDateTimePTID, 0]);
+
+              const endDateTimePTID :UUID = getPropertyTypeIdFromEdm(edm, DATETIME_END);
+              const newEndDateTime :string = newAppointmentData.getIn([endDateTimePTID, 0]);
+
+              if (newStartDateTime) {
+                workAppointmentsByWorksitePlan = workAppointmentsByWorksitePlan.setIn([
+                  keyEKID,
+                  index,
+                  INCIDENT_START_DATETIME,
+                ], List([newStartDateTime]));
+              }
+              if (newEndDateTime) {
+                workAppointmentsByWorksitePlan = workAppointmentsByWorksitePlan.setIn([
+                  keyEKID,
+                  index,
+                  DATETIME_END,
+                ], List([newEndDateTime]));
+              }
+
+              return state
+                .set(WORK_APPOINTMENTS_BY_WORKSITE_PLAN, workAppointmentsByWorksitePlan)
+                .setIn([ACTIONS, EDIT_APPOINTMENT, REQUEST_STATE], RequestStates.SUCCESS);
+            }
+          }
+
+          return state
+            .setIn([ACTIONS, EDIT_APPOINTMENT, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, EDIT_APPOINTMENT, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, EDIT_APPOINTMENT, action.id]),
       });
     }
 

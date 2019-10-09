@@ -9,6 +9,7 @@ import type { FQN } from 'lattice';
 import {
   NEIGHBOR_DETAILS,
   NEIGHBOR_ENTITY_SET,
+  SEARCH_PREFIX,
   TYPE_IDS_BY_FQNS,
   TYPES_BY_ID
 } from '../core/edm/constants/DataModelConsts';
@@ -90,3 +91,45 @@ export const sortEntitiesByDateProperty = (
   });
 
 export const getNeighborESID = (neighbor :Map) => (neighbor.getIn([NEIGHBOR_ENTITY_SET, 'id']));
+
+export const getSearchTerm = (
+  propertyTypeId :UUID,
+  searchString :string
+) => `${SEARCH_PREFIX}.${propertyTypeId}:"${searchString}"`;
+
+export const getSearchTermNotExact = (
+  propertyTypeId :UUID,
+  searchString :string
+) => `${SEARCH_PREFIX}.${propertyTypeId}:${searchString}`;
+
+export const getUTCDateRangeSearchString = (PTID :UUID, timeUnits :string, startDate :DateTime, endDate :?DateTime) => {
+  let start = startDate.toUTC().toISO();
+  let end;
+  if (!endDate) {
+    start = startDate.startOf(timeUnits).toUTC().toISO();
+    end = startDate.endOf(timeUnits).toUTC().toISO();
+  }
+  else {
+    end = endDate.toUTC().toISO();
+  }
+  const dateRangeString = `[${start} TO ${end}]`;
+  return getSearchTermNotExact(PTID, dateRangeString);
+};
+
+export const findEntityPathInMap = (entityMap :Map, entityEKID :UUID) :any[] => {
+
+  let keyEKID :string = '';
+  let index :number = -1;
+  if (isImmutable(entityMap) && !entityMap.isEmpty()) {
+    entityMap.forEach((innerEntityList :List, mapKeyEKID :UUID) => {
+      const targetIndex :number = innerEntityList.findIndex((entity :Map) => getEntityKeyId(entity) === entityEKID);
+      if (targetIndex !== -1) {
+        index = targetIndex;
+        keyEKID = mapKeyEKID;
+        return false;
+      }
+      return true;
+    });
+  }
+  return [keyEKID, index];
+};

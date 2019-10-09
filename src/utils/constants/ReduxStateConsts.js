@@ -2,10 +2,11 @@ export const STATE = {
   APP: 'app',
   DATA: 'data',
   EDM: 'edm',
+  ORGANIZATION: 'organization',
   PEOPLE: 'people',
   PERSON: 'person',
-  ORGANIZATION: 'organization',
   WORKSITES: 'worksites',
+  WORK_SCHEDULE: 'workSchedule',
 };
 
 // App
@@ -65,6 +66,7 @@ export const PERSON = {
   CREATE_WORK_APPOINTMENTS: 'createWorkAppointments',
   DELETE_APPOINTMENT: 'deleteAppointment',
   DIVERSION_PLAN: 'diversionPlan',
+  EDIT_APPOINTMENT: 'editAppointment',
   EDIT_CHECK_IN_DATE: 'editCheckInDate',
   EDIT_ENROLLMENT_DATES: 'editEnrollmentDates',
   EDIT_PARTICIPANT_CONTACTS: 'editParticipantContacts',
@@ -116,6 +118,19 @@ export const PERSON = {
   WORKSITE_PLANS: 'worksitePlans',
   WORKSITE_PLAN_STATUSES: 'worksitePlanStatuses',
   WORK_APPOINTMENTS_BY_WORKSITE_PLAN: 'workAppointmentsByWorksitePlan',
+};
+
+/* Work Schedule */
+
+export const WORK_SCHEDULE = {
+  ACTIONS: 'actions',
+  APPOINTMENTS: 'appointments',
+  DELETE_APPOINTMENT: 'deleteAppointment',
+  FIND_APPOINTMENTS: 'findAppointments',
+  GET_WORKSITE_AND_PERSON_NAMES: 'getWorksiteAndPersonNames',
+  REQUEST_STATE: 'requestState',
+  PERSON_BY_APPOINTMENT_EKID: 'personByAppointmentEKID',
+  WORKSITE_NAMES_BY_APPOINTMENT_EKID: 'worksiteNamesByAppointmentEKID',
 };
 
 /* Worksites (and organizations) */

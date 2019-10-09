@@ -26,6 +26,7 @@ const { APPOINTMENT } = APP_TYPE_FQNS;
 
 const ColoredText = styled.div`
   color: ${OL.PURPLE02};
+  text-align: center;
 `;
 
 type Props = {
@@ -33,7 +34,7 @@ type Props = {
     deleteAppointment :RequestSequence;
   };
   app :Map;
-  appointment :Object;
+  appointment :Map;
   appointmentEKID :UUID;
   isLoading :boolean;
   onDiscard :() => void;
@@ -62,13 +63,11 @@ class DeleteAppointmentForm extends Component<Props, State> {
       isLoading,
       onDiscard,
     } = this.props;
-    const {
-      date,
-      hours,
-      weekday,
-      worksiteName,
-    } = appointment;
-    const appointmentText :string = `${weekday} ${date}, ${hours} at ${worksiteName}`;
+    const day = appointment.get('day');
+    const worksiteName = appointment.get('worksiteName');
+    const hours = appointment.get('hours');
+    const personName = appointment.get('personName');
+
     return (
       <FormWrapper>
         <FormRow>
@@ -78,7 +77,10 @@ class DeleteAppointmentForm extends Component<Props, State> {
         </FormRow>
         <FormRow>
           <RowContent>
-            <ColoredText>{ appointmentText }</ColoredText>
+            <ColoredText>{ personName }</ColoredText>
+            <ColoredText>{ day }</ColoredText>
+            <ColoredText>{ hours }</ColoredText>
+            <ColoredText>{ worksiteName }</ColoredText>
           </RowContent>
         </FormRow>
         <ButtonsRow>

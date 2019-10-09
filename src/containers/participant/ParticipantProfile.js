@@ -23,7 +23,7 @@ import {
   PersonNotes,
   ProgramNotes,
 } from '../../components/participant/index';
-import ParticipantWorkSchedule from './schedule/ParticipantWorkSchedule';
+import ParticipantWorkScheduleContainer from './schedule/ParticipantWorkScheduleContainer';
 import ProgramCompletionBanner from './ProgramCompletionBanner';
 
 import AssignedWorksite from './assignedworksites/AssignedWorksite';
@@ -78,6 +78,7 @@ const {
   EMAIL,
   ENROLLMENT_STATUS,
   GET_ALL_PARTICIPANT_INFO,
+  GET_WORK_APPOINTMENTS,
   JUDGE,
   PARTICIPANT,
   PERSON_CASE,
@@ -187,6 +188,7 @@ type Props = {
   enrollmentStatus :Map;
   getAllParticipantInfoRequestState :RequestState;
   getInitializeAppRequestState :RequestState;
+  getWorkAppointmentsRequestState :RequestState;
   judge :Map;
   participant :Map;
   personCase :Map;
@@ -484,7 +486,7 @@ class ParticipantProfile extends Component<Props, State> {
                     <Button onClick={() => this.handleShowModal(WORK_APPOINTMENT)}>Create Appointment</Button>
                   </ScheduleButtonsWrapper>
                 </NameRowWrapper>
-                <ParticipantWorkSchedule
+                <ParticipantWorkScheduleContainer
                     workAppointmentsByWorksitePlan={workAppointmentsByWorksitePlan}
                     worksitesByWorksitePlan={worksitesByWorksitePlan}
                     worksiteNamesByWorksitePlan={worksiteNamesByWorksitePlan} />
@@ -537,6 +539,7 @@ const mapStateToProps = (state :Map<*, *>) => {
     [ENROLLMENT_STATUS]: person.get(ENROLLMENT_STATUS),
     getAllParticipantInfoRequestState: person.getIn([ACTIONS, GET_ALL_PARTICIPANT_INFO, REQUEST_STATE]),
     getInitializeAppRequestState: app.getIn([APP.ACTIONS, APP.INITIALIZE_APPLICATION, APP.REQUEST_STATE]),
+    getWorkAppointmentsRequestState: person.getIn([ACTIONS, GET_WORK_APPOINTMENTS, REQUEST_STATE]),
     [JUDGE]: person.get(JUDGE),
     [PARTICIPANT]: person.get(PARTICIPANT),
     [PERSON_CASE]: person.get(PERSON_CASE),
