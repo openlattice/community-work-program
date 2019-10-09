@@ -18,11 +18,7 @@ import {
   checkInForAppointment,
   createWorkAppointments,
   deleteAppointment,
-<<<<<<< HEAD
-=======
   editAppointment,
-  editCaseAndHours,
->>>>>>> develop
   editCheckInDate,
   editEnrollmentDates,
   editParticipantContacts,
@@ -105,11 +101,7 @@ const {
   CREATE_WORK_APPOINTMENTS,
   DELETE_APPOINTMENT,
   DIVERSION_PLAN,
-<<<<<<< HEAD
-=======
   EDIT_APPOINTMENT,
-  EDIT_CASE_AND_HOURS,
->>>>>>> develop
   EDIT_CHECK_IN_DATE,
   EDIT_ENROLLMENT_DATES,
   EDIT_PARTICIPANT_CONTACTS,
@@ -186,14 +178,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     [DELETE_APPOINTMENT]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
-<<<<<<< HEAD
-    [EDIT_CHECK_IN_DATE]: {
-=======
     [EDIT_APPOINTMENT]: {
-      [REQUEST_STATE]: RequestStates.STANDBY
-    },
-    [EDIT_CASE_AND_HOURS]: {
->>>>>>> develop
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [EDIT_ENROLLMENT_DATES]: {
