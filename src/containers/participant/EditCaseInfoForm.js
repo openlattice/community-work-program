@@ -59,7 +59,6 @@ const {
 const { DIVERSION_PLAN, MANUAL_PRETRIAL_COURT_CASES, PEOPLE } = APP_TYPE_FQNS;
 const { CASE_NUMBER_TEXT, COURT_CASE_TYPE } = CASE_FQNS;
 const { REQUIRED_HOURS } = DIVERSION_PLAN_FQNS;
-const { FIRST_NAME, LAST_NAME } = PEOPLE_FQNS;
 
 const {
   ACTIONS,
@@ -196,8 +195,8 @@ class EditCaseInfoForm extends Component<Props, State> {
     const caseFormData :{} = casePrepopulated
       ? {
         [sectionOneKey]: {
-          [getEntityAddressKey(0, MANUAL_PRETRIAL_COURT_CASES, COURT_CASE_TYPE)]: [courtCaseType],
-          [getEntityAddressKey(0, MANUAL_PRETRIAL_COURT_CASES, CASE_NUMBER_TEXT)]: [caseNumbers],
+          [getEntityAddressKey(0, MANUAL_PRETRIAL_COURT_CASES, COURT_CASE_TYPE)]: courtCaseType,
+          [getEntityAddressKey(0, MANUAL_PRETRIAL_COURT_CASES, CASE_NUMBER_TEXT)]: caseNumbers,
         }
       }
       : {};
@@ -207,7 +206,7 @@ class EditCaseInfoForm extends Component<Props, State> {
     const requiredHoursFormData :{} = requiredHoursPrepopulated
       ? {
         [sectionOneKey]: {
-          [getEntityAddressKey(0, DIVERSION_PLAN, REQUIRED_HOURS)]: [requiredHours]
+          [getEntityAddressKey(0, DIVERSION_PLAN, REQUIRED_HOURS)]: requiredHours
         }
       }
       : {};
