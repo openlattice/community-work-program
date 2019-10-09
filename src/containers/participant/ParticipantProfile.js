@@ -63,6 +63,7 @@ import {
 
 const {
   CHECK_IN_DATETIME,
+  DATETIME_RECEIVED,
   NOTES,
   ORIENTATION_DATETIME,
   REQUIRED_HOURS,
@@ -84,7 +85,6 @@ const {
   PHONE,
   PROGRAM_OUTCOME,
   REQUEST_STATE,
-  SENTENCE_TERM,
   VIOLATIONS,
   WARNINGS,
   WORK_APPOINTMENTS_BY_WORKSITE_PLAN,
@@ -194,7 +194,6 @@ type Props = {
   personEKID :string;
   phone :Map;
   programOutcome :Map;
-  sentenceTerm :Map;
   violations :List;
   warnings :List;
   workAppointmentsByWorksitePlan :Map;
@@ -331,7 +330,6 @@ class ParticipantProfile extends Component<Props, State> {
       personCase,
       phone,
       programOutcome,
-      sentenceTerm,
       violations,
       warnings,
       workAppointmentsByWorksitePlan,
@@ -370,19 +368,19 @@ class ParticipantProfile extends Component<Props, State> {
     const diversionPlanEKID :UUID = getEntityKeyId(diversionPlan);
     const {
       [CHECK_IN_DATETIME]: checkInDate,
+      [DATETIME_END]: sentenceEndDateTime,
+      [DATETIME_RECEIVED]: sentenceDate,
       [ORIENTATION_DATETIME]: orientationDateTime,
       [NOTES]: planNotes,
       [REQUIRED_HOURS]: requiredHours,
     } = getEntityProperties(diversionPlan, [
       CHECK_IN_DATETIME,
+      DATETIME_END,
+      DATETIME_RECEIVED,
       NOTES,
       ORIENTATION_DATETIME,
       REQUIRED_HOURS,
     ]);
-    const {
-      [DATETIME_START]: sentenceDate,
-      [DATETIME_END]: sentenceEndDate
-    } = getEntityProperties(sentenceTerm, [DATETIME_START, DATETIME_END]);
 
     return (
       <>
@@ -426,7 +424,7 @@ class ParticipantProfile extends Component<Props, State> {
                   edit={this.editEnrollmentDates}
                   orientationDateTime={orientationDateTime}
                   sentenceDateTime={sentenceDate}
-                  sentenceEndDate={sentenceEndDate}
+                  sentenceEndDateTime={sentenceEndDateTime}
                   workStartDateTime={workStartDateTime} />
               <CaseInfoSection
                   edit={this.editCaseInfo}
@@ -548,7 +546,6 @@ const mapStateToProps = (state :Map<*, *>) => {
     [PERSON_CASE]: person.get(PERSON_CASE),
     [PHONE]: person.get(PHONE),
     [PROGRAM_OUTCOME]: person.get(PROGRAM_OUTCOME),
-    [SENTENCE_TERM]: person.get(SENTENCE_TERM),
     [VIOLATIONS]: person.get(VIOLATIONS),
     [WARNINGS]: person.get(WARNINGS),
     [WORK_APPOINTMENTS_BY_WORKSITE_PLAN]: person.get(WORK_APPOINTMENTS_BY_WORKSITE_PLAN),
