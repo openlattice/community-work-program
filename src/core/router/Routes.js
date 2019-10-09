@@ -14,3 +14,4 @@ export const PRINT_PARTICIPANT_SCHEDULE :string = `${PARTICIPANT_PROFILE}/schedu
 const EDIT_PROFILE :string = `${PARTICIPANT_PROFILE}/edit`;
 export const EDIT_PARTICIPANT :string = `${EDIT_PROFILE}/participant`;
 export const EDIT_CASE_INFO :string = `${EDIT_PROFILE}/caseinfo`;
+export const EDIT_DATES :string = `${EDIT_PROFILE}/enrollmentdates`;

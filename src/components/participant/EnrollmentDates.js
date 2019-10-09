@@ -29,6 +29,7 @@ const DatesCard = styled(Card)`
 
 type Props = {
   checkInDate :string;
+  edit :() => void;
   orientationDateTime :string;
   sentenceDateTime :string;
   workStartDateTime :string;
@@ -36,6 +37,7 @@ type Props = {
 
 const EnrollmentDates = ({
   checkInDate,
+  edit,
   orientationDateTime,
   sentenceDateTime,
   workStartDateTime
@@ -73,7 +75,7 @@ const EnrollmentDates = ({
     <SectionWrapper>
       <SectionNameRow>
         <SectionLabel subtle>Enrollment Dates</SectionLabel>
-        <SmallEditButton mode="subtle" onClick={() => {}} />
+        <SmallEditButton mode="subtle" onClick={edit} />
       </SectionNameRow>
       <DatesCard>
         <CardSegment padding="md" vertical>

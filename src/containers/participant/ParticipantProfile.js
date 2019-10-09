@@ -310,6 +310,11 @@ class ParticipantProfile extends Component<Props, State> {
     actions.goToRoute(Routes.EDIT_CASE_INFO.replace(':subjectId', personEKID));
   }
 
+  editEnrollmentDates = () => {
+    const { actions, personEKID } = this.props;
+    actions.goToRoute(Routes.EDIT_DATES.replace(':subjectId', personEKID));
+  }
+
   render() {
     const {
       actions,
@@ -413,6 +418,7 @@ class ParticipantProfile extends Component<Props, State> {
                   warnings={warnings} />
               <EnrollmentDates
                   checkInDate={checkInDate}
+                  edit={this.editEnrollmentDates}
                   orientationDateTime={orientationDateTime}
                   sentenceDateTime={sentenceDate}
                   workStartDateTime={workStartDateTime} />
