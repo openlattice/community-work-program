@@ -1191,6 +1191,35 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
       });
     }
 
+    case getCharges.case(action.type): {
+
+      return getCharges.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, GET_CHARGES, action.id], fromJS(action))
+          .setIn([ACTIONS, GET_CHARGES, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+
+          if (!state.hasIn([ACTIONS, GET_CHARGES, action.id])) {
+            return state;
+          }
+
+          const { value } = action;
+          if (value === null || value === undefined) {
+            return state;
+          }
+
+          return state
+            .set(CHARGES, value)
+            .setIn([ACTIONS, GET_CHARGES, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .set(CHARGES, List())
+          .setIn([ACTIONS, GET_CHARGES, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, GET_CHARGES, action.id])
+      });
+    }
+
     case getChargesForCase.case(action.type): {
 
       return getChargesForCase.reducer(state, action, {

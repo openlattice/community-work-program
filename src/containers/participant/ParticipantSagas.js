@@ -160,12 +160,14 @@ const {
   CHECK_INS,
   CHECK_IN_DETAILS,
   CONTACT_INFORMATION,
+  COURT_CHARGE_LIST,
   DIVERSION_PLAN,
   ENROLLMENT_STATUS,
   FULFILLS,
   INFRACTION_EVENT,
   INFRACTIONS,
   JUDGES,
+  MANUAL_CHARGED_WITH,
   MANUAL_COURT_CHARGES,
   MANUAL_PRETRIAL_COURT_CASES,
   PEOPLE,
@@ -1296,9 +1298,9 @@ function* getChargesWorker(action :SequenceAction) :Generator<*, *, *> {
   try {
     yield put(getCharges.request(id));
     const app = yield select(getAppFromState);
-    const manualCourtChargesESID = getEntitySetIdFromApp(app, MANUAL_COURT_CHARGES);
+    const courtChargeListESID = getEntitySetIdFromApp(app, COURT_CHARGE_LIST);
 
-    response = yield call(getEntitySetDataWorker, getEntitySetData({ entitySetId: manualCourtChargesESID }));
+    response = yield call(getEntitySetDataWorker, getEntitySetData({ entitySetId: courtChargeListESID }));
     if (response.error) {
       throw response.error;
     }
@@ -2428,7 +2430,7 @@ function* getInfoForEditCaseWorker(action :SequenceAction) :Generator<*, *, *> {
       call(getParticipantWorker, getParticipant({ personEKID })),
       call(getEnrollmentStatusWorker, getEnrollmentStatus({ personEKID, populateProfile: false })),
       call(getJudgesWorker, getJudges()),
-      // call(getChargesWorker, getCharges()),
+      call(getChargesWorker, getCharges()),
     ]);
     const responseError = workerResponses.reduce(
       (error, workerResponse) => (error ? error : workerResponse.error),
@@ -2543,6 +2545,8 @@ export {
   getAllParticipantInfoWorker,
   getCaseInfoWatcher,
   getCaseInfoWorker,
+  getChargesWatcher,
+  getChargesWorker,
   getChargesForCaseWatcher,
   getChargesForCaseWorker,
   getContactInfoWatcher,
