@@ -39,6 +39,7 @@ export const APP_TYPE_FQNS = {
   JUDGES: new FullyQualifiedName('app.judges'),
   LIVES_AT: new FullyQualifiedName('app.livesat'),
   LOCATED_AT: new FullyQualifiedName('app.locatedat'),
+  MANUAL_CHARGED_WITH: new FullyQualifiedName('app.manualchargedwith'),
   MANUAL_COURT_CHARGES: new FullyQualifiedName('app.manualcourtcharges'),
   MANUAL_PRETRIAL_COURT_CASES: new FullyQualifiedName('app.manualpretrialcourtcases'),
   MANUAL_SENTENCED_WITH: new FullyQualifiedName('app.manualsentencedwith'),
@@ -83,9 +84,9 @@ export const CASE_FQNS = {
 
 /* justice.charge */
 export const CHARGE_FQNS = {
-  ARREST_TRACKING_NUMBER: new FullyQualifiedName('justice.ArrestTrackingNumber'),
-  CHARGE_LEVEL: new FullyQualifiedName('event.ChargeLevel'),
-  OFFENSE_CHARGE_DESCRIPTION: new FullyQualifiedName('event.OffenseLocalDescription'),
+  NAME: new FullyQualifiedName('ol.name'),
+  OL_ID: new FullyQualifiedName('ol.id'),
+  VIOLENT: new FullyQualifiedName('ol.violent'),
 };
 
 /* ol.encounter */
