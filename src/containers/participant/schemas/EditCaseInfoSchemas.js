@@ -5,18 +5,21 @@ import {
   APP_TYPE_FQNS,
   CASE_FQNS,
   CHARGE_FQNS,
+  DATETIME,
   DATETIME_COMPLETED,
   DIVERSION_PLAN_FQNS,
   ENTITY_KEY_ID,
 } from '../../../core/edm/constants/FullyQualifiedNames';
 import { COURT_TYPES } from '../../../core/edm/constants/DataModelConsts';
+import { CustomSelectWidget } from '../../../components/controls/index';
 
 const { getEntityAddressKey, getPageSectionKey } = DataProcessingUtils;
 
 const {
-  CHARGE_EVENT,
+  COURT_CHARGE_LIST,
   DIVERSION_PLAN,
   JUDGES,
+  MANUAL_CHARGED_WITH,
   MANUAL_COURT_CHARGES,
   MANUAL_PRETRIAL_COURT_CASES,
 } = APP_TYPE_FQNS;
@@ -89,30 +92,6 @@ export const caseUiSchema = {
 };
 
 export const chargeSchema = {
-  definitions: {
-    charges: {
-      type: 'object',
-      properties: {
-        [getEntityAddressKey(0, MANUAL_COURT_CHARGES, OFFENSE_CHARGE_DESCRIPTION)]: {
-          type: 'string',
-          title: 'Charge',
-        },
-        [getEntityAddressKey(0, MANUAL_COURT_CHARGES, CHARGE_LEVEL)]: {
-          type: 'string',
-          title: 'Charge level',
-        },
-        [getEntityAddressKey(0, CHARGE_EVENT, DATETIME_COMPLETED)]: {
-          type: 'string',
-          title: 'Date charged',
-          format: 'date',
-        },
-      },
-      required: [
-        getEntityAddressKey(0, MANUAL_COURT_CHARGES, OFFENSE_CHARGE_DESCRIPTION),
-        getEntityAddressKey(0, CHARGE_EVENT, DATETIME_COMPLETED)
-      ]
-    }
-  },
   type: 'object',
   title: '',
   properties: {
@@ -120,7 +99,20 @@ export const chargeSchema = {
       type: 'array',
       title: '',
       items: {
-        $ref: '#/definitions/charges'
+        type: 'object',
+        properties: {
+          [getEntityAddressKey(-1, COURT_CHARGE_LIST, ENTITY_KEY_ID)]: {
+            type: 'string',
+            title: 'Charge',
+            enum: [],
+            enumNames: [],
+          },
+          [getEntityAddressKey(-1, MANUAL_CHARGED_WITH, DATETIME)]: {
+            type: 'string',
+            title: 'Date charged',
+            format: 'date',
+          },
+        },
       },
       default: [{}]
     },
@@ -132,18 +124,19 @@ export const chargeUiSchema = {
     classNames: 'column-span-12',
     'ui:options': {
       addButtonText: '+ Add Charge',
-      editable: true,
       orderable: false,
     },
     items: {
-      classNames: 'column-span-12 grid-container',
-      [getEntityAddressKey(0, MANUAL_COURT_CHARGES, OFFENSE_CHARGE_DESCRIPTION)]: {
-        classNames: 'column-span-4',
+      classNames: 'grid-container',
+      'ui:options': {
+        creatable: true,
+        editable: true
       },
-      [getEntityAddressKey(0, MANUAL_COURT_CHARGES, CHARGE_LEVEL)]: {
-        classNames: 'column-span-4',
+      [getEntityAddressKey(-1, COURT_CHARGE_LIST, ENTITY_KEY_ID)]: {
+        classNames: 'column-span-8',
+        'ui:widget': CustomSelectWidget,
       },
-      [getEntityAddressKey(0, CHARGE_EVENT, DATETIME_COMPLETED)]: {
+      [getEntityAddressKey(-1, MANUAL_CHARGED_WITH, DATETIME)]: {
         classNames: 'column-span-4',
       },
     },
