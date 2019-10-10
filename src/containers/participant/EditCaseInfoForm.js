@@ -31,7 +31,6 @@ import {
   CHARGE_FQNS,
   DIVERSION_PLAN_FQNS,
   ENTITY_KEY_ID,
-  PEOPLE_FQNS,
 } from '../../core/edm/constants/FullyQualifiedNames';
 import {
   caseSchema,
@@ -43,7 +42,7 @@ import {
   requiredHoursSchema,
   requiredHoursUiSchema,
 } from './schemas/EditCaseInfoSchemas';
-import { hydrateJudgeSchema } from './utils/EditCaseInfoUtils';
+import { hydrateChargeSchema, hydrateJudgeSchema } from './utils/EditCaseInfoUtils';
 import {
   getEntityKeyId,
   getEntityProperties,
@@ -54,6 +53,7 @@ import { BackNavButton } from '../../components/controls/index';
 import { PARTICIPANT_PROFILE_WIDTH } from '../../core/style/Sizes';
 import { APP, PERSON, STATE } from '../../utils/constants/ReduxStateConsts';
 import * as Routes from '../../core/router/Routes';
+// import { charges } from './tempcharges';
 
 const {
   getEntityAddressKey,
@@ -69,10 +69,12 @@ const {
   PRESIDES_OVER,
 } = APP_TYPE_FQNS;
 const { CASE_NUMBER_TEXT, COURT_CASE_TYPE } = CASE_FQNS;
+const { NAME } = CHARGE_FQNS;
 const { REQUIRED_HOURS } = DIVERSION_PLAN_FQNS;
 
 const {
   ACTIONS,
+  CHARGES,
   CHARGES_BY_CHARGE_EVENT_EKID,
   CHARGE_EVENTS,
   GET_INFO_FOR_EDIT_CASE,
@@ -104,6 +106,7 @@ type Props = {
     reassignJudge :RequestSequence;
   },
   app :Map;
+  charges :List;
   chargeEvents :List;
   chargesByChargeEventEKID :Map;
   diversionPlan :Map;
@@ -121,6 +124,7 @@ type State = {
   caseFormData :Object;
   casePrepopulated :boolean;
   chargeFormData :Object;
+  chargeFormSchema :Object;
   chargePrepopulated :boolean;
   judgeFormData :Object;
   judgeFormSchema :Object;
@@ -135,6 +139,7 @@ class EditCaseInfoForm extends Component<Props, State> {
     caseFormData: {},
     casePrepopulated: false,
     chargeFormData: {},
+    chargeFormSchema: chargeSchema,
     chargePrepopulated: false,
     judgeFormData: {},
     judgeFormSchema: judgeSchema,
@@ -182,6 +187,7 @@ class EditCaseInfoForm extends Component<Props, State> {
 
   prepopulateFormData = () => {
     const {
+      charges,
       chargeEvents,
       chargesByChargeEventEKID,
       diversionPlan,
@@ -225,10 +231,12 @@ class EditCaseInfoForm extends Component<Props, State> {
       : {};
 
     const newJudgeSchema = hydrateJudgeSchema(judgeSchema, judges);
+    const newChargeSchema = hydrateChargeSchema(chargeSchema, charges);
 
     this.setState({
       caseFormData,
       casePrepopulated,
+      chargeFormSchema: newChargeSchema,
       judgeFormData,
       judgeFormSchema: newJudgeSchema,
       judgePrepopulated,
@@ -322,6 +330,7 @@ class EditCaseInfoForm extends Component<Props, State> {
       caseFormData,
       casePrepopulated,
       chargeFormData,
+      chargeFormSchema,
       chargePrepopulated,
       judgeFormData,
       judgePrepopulated,
@@ -362,6 +371,7 @@ class EditCaseInfoForm extends Component<Props, State> {
       propertyTypeIds,
     };
 
+
     return (
       <FormWrapper>
         <ButtonWrapper>
@@ -399,7 +409,7 @@ class EditCaseInfoForm extends Component<Props, State> {
                 disabled={chargePrepopulated}
                 formContext={{}}
                 formData={chargeFormData}
-                schema={chargeSchema}
+                schema={chargeFormSchema}
                 uiSchema={chargeUiSchema} />
           </Card>
           <Card>
@@ -422,6 +432,7 @@ const mapStateToProps = (state :Map) => {
   const person = state.get(STATE.PERSON);
   return ({
     app,
+    [CHARGES]: person.get(CHARGES),
     [CHARGES_BY_CHARGE_EVENT_EKID]: person.get(CHARGES_BY_CHARGE_EVENT_EKID),
     [CHARGE_EVENTS]: person.get(CHARGE_EVENTS),
     [PERSON.DIVERSION_PLAN]: person.get(PERSON.DIVERSION_PLAN),
