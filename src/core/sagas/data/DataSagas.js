@@ -192,7 +192,10 @@ function* deleteEntitiesWorker(action :SequenceAction) :Generator<*, *, *> {
       });
 
       const deleteResponses = yield all(deleteRequests);
-      const reducedError = deleteResponses.reduce((acc, response) => acc.error || response.error, {});
+      console.log('deleteResponses: ', deleteResponses);
+      const reducedError = deleteResponses.forEach((response) => {
+        if (response.error) throw response.error;
+      });
       if (reducedError) throw reducedError;
     }
 

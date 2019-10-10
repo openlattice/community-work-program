@@ -169,6 +169,7 @@ const {
   MANUAL_COURT_CHARGES,
   MANUAL_PRETRIAL_COURT_CASES,
   PEOPLE,
+  PRESIDES_OVER,
   PROGRAM_OUTCOME,
   REGISTERED_FOR,
   RESULTS_IN,
@@ -874,27 +875,29 @@ function* reassignJudgeWorker(action :SequenceAction) :Generator<*, *, *> {
 
   const { id, value } = action;
   if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
-  let newAssociations = [];
 
   try {
     yield put(reassignJudge.request(id, value));
 
     const app = yield select(getAppFromState);
+    const edm = yield select(getEdmFromState);
     const judgesESID :UUID = getEntitySetIdFromApp(app, JUDGES);
+    const presidesOverESID :UUID = getEntitySetIdFromApp(app, PRESIDES_OVER);
+
+    const { associationEntityData } = value;
+    let associations :Object = associationEntityData;
+    const associationsToDelete = [];
 
     const { entityData } = value;
     if (has(entityData, judgesESID)) {
 
-      const judgeEKID :UUID = getIn(entityData, [judgesESID, 0, ENTITY_KEY_ID]);
+      const judgeEKID :UUID = getIn(entityData, [judgesESID, 0, getPropertyTypeIdFromEdm(edm, ENTITY_KEY_ID), 0]);
       const person = yield select(getPersonFromState);
       const caseEKID :UUID = getEntityKeyId(person.getIn([PERSON.PERSON_CASE]));
       const caseESID :UUID = getEntitySetIdFromApp(app, MANUAL_PRETRIAL_COURT_CASES);
       const diversionPlanEKID :UUID = getEntityKeyId(person.getIn([PERSON.DIVERSION_PLAN]));
       const diversionPlanESID :UUID = getEntitySetIdFromApp(app, DIVERSION_PLAN);
 
-      const presidesOverESID :UUID = getEntitySetIdFromApp(app, PRESIDES_OVER);
-
-      const associationsToDelete = [];
       const existingAssociationsResponse = yield call(
         getEntitySetDataWorker,
         getEntitySetData({ entitySetId: presidesOverESID })
@@ -911,7 +914,7 @@ function* reassignJudgeWorker(action :SequenceAction) :Generator<*, *, *> {
           });
       }
 
-      const associations = {
+      associations = {
         [presidesOverESID]: [
           {
             data: {},
@@ -937,19 +940,18 @@ function* reassignJudgeWorker(action :SequenceAction) :Generator<*, *, *> {
           }
         ]
       };
-
-      const associationResponse = yield call(
-        createOrReplaceAssociationWorker,
-        createOrReplaceAssociation({
-          associations,
-          associationsToDelete,
-        })
-      );
-      if (associationResponse.error) throw associationResponse.error;
-      if (associationResponse.data) newAssociations = associationResponse.data;
     }
 
-    yield put(reassignJudge.success(id, { judgesESID, newAssociations }));
+    const associationResponse = yield call(
+      createOrReplaceAssociationWorker,
+      createOrReplaceAssociation({
+        associations,
+        associationsToDelete,
+      })
+    );
+    if (associationResponse.error) throw associationResponse.error;
+
+    yield put(reassignJudge.success(id, { edm, judgesESID, presidesOverESID }));
   }
   catch (error) {
     LOG.error('caught exception in reassignJudgeWorker()', error);

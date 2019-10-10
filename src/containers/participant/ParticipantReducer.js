@@ -1716,7 +1716,7 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
       return reassignJudge.reducer(state, action, {
 
         REQUEST: () => state
-          .setIn([ACTIONS, REASSIGN_JUDGE, action.id], fromJS(action))
+          .setIn([ACTIONS, REASSIGN_JUDGE, action.id], action)
           .setIn([ACTIONS, REASSIGN_JUDGE, REQUEST_STATE], RequestStates.PENDING),
         SUCCESS: () => {
 
@@ -1726,14 +1726,22 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
           if (storedSeqAction) {
 
             const requestValue = storedSeqAction.value;
-            const { entityData } = requestValue;
+            const { associationEntityData, entityData } = requestValue;
             const successValue = seqAction.value;
-            const { judgesESID } = successValue;
+            const { edm, judgesESID, presidesOverESID } = successValue;
 
-            const judgeEKID :UUID = getIn(entityData, [judgesESID, 0, ENTITY_KEY_ID]);
+            let judgeEKID :UUID = '';
+            if (entityData) {
+              judgeEKID = getIn(entityData, [judgesESID, 0, getPropertyTypeIdFromEdm(edm, ENTITY_KEY_ID), 0]);
+            }
+            if (associationEntityData) {
+              judgeEKID = getIn(associationEntityData, [presidesOverESID, 0, 'src', 'entityKeyId']);
+            }
 
             const judges = state.get(JUDGES);
-            const judge :Map = judges.find((storedJudge :Map) => getEntityKeyId(storedJudge) === judgeEKID);
+            const judge :Map = judges.find((storedJudge :Map) => {
+              return getEntityKeyId(storedJudge) === judgeEKID;
+            });
 
             return state
               .set(JUDGE, judge)

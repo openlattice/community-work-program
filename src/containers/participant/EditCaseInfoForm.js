@@ -1,7 +1,12 @@
 // @flow
 import React, { Component } from 'react';
 import styled from 'styled-components';
-import { fromJS, List, Map } from 'immutable';
+import {
+  List,
+  Map,
+  fromJS,
+  getIn,
+} from 'immutable';
 import { DateTime } from 'luxon';
 import { Card, CardHeader, CardStack } from 'lattice-ui-kit';
 import { Form, DataProcessingUtils } from 'lattice-fabricate';
@@ -17,6 +22,7 @@ import {
   editPersonCase,
   editRequiredHours,
   getInfoForEditCase,
+  reassignJudge,
 } from './ParticipantActions';
 import { goToRoute } from '../../core/router/RoutingActions';
 import {
@@ -53,10 +59,15 @@ const {
   getEntityAddressKey,
   getPageSectionKey,
   processAssociationEntityData,
-  processEntityData,
 } = DataProcessingUtils;
 
-const { DIVERSION_PLAN, MANUAL_PRETRIAL_COURT_CASES, PEOPLE } = APP_TYPE_FQNS;
+const {
+  DIVERSION_PLAN,
+  JUDGES,
+  MANUAL_PRETRIAL_COURT_CASES,
+  PEOPLE,
+  PRESIDES_OVER,
+} = APP_TYPE_FQNS;
 const { CASE_NUMBER_TEXT, COURT_CASE_TYPE } = CASE_FQNS;
 const { REQUIRED_HOURS } = DIVERSION_PLAN_FQNS;
 
@@ -66,7 +77,6 @@ const {
   CHARGE_EVENTS,
   GET_INFO_FOR_EDIT_CASE,
   JUDGE,
-  JUDGES,
   PARTICIPANT,
   PERSON_CASE,
   REQUEST_STATE,
@@ -91,6 +101,7 @@ type Props = {
     editRequiredHours :RequestSequence;
     getInfoForEditCase :RequestSequence;
     goToRoute :RequestSequence;
+    reassignJudge :RequestSequence;
   },
   app :Map;
   chargeEvents :List;
@@ -151,6 +162,7 @@ class EditCaseInfoForm extends Component<Props, State> {
       app,
       diversionPlan,
       getInfoForEditCaseRequestState,
+      judge,
       match: {
         params: { subjectId: personEKID }
       },
@@ -162,7 +174,8 @@ class EditCaseInfoForm extends Component<Props, State> {
     if ((prevProps.getInfoForEditCaseRequestState === RequestStates.PENDING
       && getInfoForEditCaseRequestState !== RequestStates.PENDING)
       || !prevProps.diversionPlan.equals(diversionPlan)
-      || !prevProps.personCase.equals(personCase)) {
+      || !prevProps.personCase.equals(personCase)
+      || !prevProps.judge.equals(judge)) {
       this.prepopulateFormData();
     }
   }
@@ -240,6 +253,7 @@ class EditCaseInfoForm extends Component<Props, State> {
       [DIVERSION_PLAN]: getEntitySetIdFromApp(app, DIVERSION_PLAN),
       [JUDGES]: getEntitySetIdFromApp(app, JUDGES),
       [MANUAL_PRETRIAL_COURT_CASES]: getEntitySetIdFromApp(app, MANUAL_PRETRIAL_COURT_CASES),
+      [PRESIDES_OVER]: getEntitySetIdFromApp(app, PRESIDES_OVER),
     };
   }
 
@@ -248,8 +262,51 @@ class EditCaseInfoForm extends Component<Props, State> {
     return {
       [CASE_NUMBER_TEXT]: getPropertyTypeIdFromEdm(edm, CASE_NUMBER_TEXT),
       [COURT_CASE_TYPE]: getPropertyTypeIdFromEdm(edm, COURT_CASE_TYPE),
+      [ENTITY_KEY_ID]: getPropertyTypeIdFromEdm(edm, ENTITY_KEY_ID),
       [REQUIRED_HOURS]: getPropertyTypeIdFromEdm(edm, REQUIRED_HOURS),
     };
+  }
+
+  handleOnJudgeSubmit = () => {
+    const { actions, diversionPlan, personCase } = this.props;
+    const { judgeFormData } = this.state;
+
+    const judgeEKID = getIn(judgeFormData, [getPageSectionKey(1, 1), getEntityAddressKey(0, JUDGES, ENTITY_KEY_ID)]);
+    const caseEKID = getEntityKeyId(personCase);
+    const diversionPlanEKID = getEntityKeyId(diversionPlan);
+
+    const entitySetIds :{} = this.createEntitySetIdsMap();
+    const associationEntityData :{} = {
+      [entitySetIds[PRESIDES_OVER]]: [
+        {
+          data: {},
+          dst: {
+            entitySetId: entitySetIds[MANUAL_PRETRIAL_COURT_CASES],
+            entityKeyId: caseEKID
+          },
+          src: {
+            entitySetId: entitySetIds[JUDGES],
+            entityKeyId: judgeEKID
+          }
+        },
+        {
+          data: {},
+          dst: {
+            entitySetId: entitySetIds[DIVERSION_PLAN],
+            entityKeyId: diversionPlanEKID
+          },
+          src: {
+            entitySetId: entitySetIds[JUDGES],
+            entityKeyId: judgeEKID
+          }
+        }
+      ]
+    };
+    actions.reassignJudge({ associationEntityData, entityData: {} });
+  }
+
+  handleOnChangeJudge = ({ formData } :Object) => {
+    this.setState({ judgeFormData: formData });
   }
 
   render() {
@@ -286,6 +343,12 @@ class EditCaseInfoForm extends Component<Props, State> {
     const entitySetIds = this.createEntitySetIdsMap();
     const propertyTypeIds = this.createPropertyTypeIdsMap();
 
+    const judgeFormContext = {
+      editAction: actions.reassignJudge,
+      entityIndexToIdMap,
+      entitySetIds,
+      propertyTypeIds,
+    };
     const caseFormContext = {
       editAction: actions.editPersonCase,
       entityIndexToIdMap,
@@ -314,8 +377,10 @@ class EditCaseInfoForm extends Component<Props, State> {
             <CardHeader padding="sm">Assign Judge</CardHeader>
             <Form
                 disabled={judgePrepopulated}
-                formContext={{}}
+                formContext={judgeFormContext}
                 formData={judgeFormData}
+                onChange={this.handleOnChangeJudge}
+                onSubmit={this.handleOnJudgeSubmit}
                 schema={judgeFormSchema}
                 uiSchema={judgeUiSchema} />
           </Card>
@@ -364,7 +429,7 @@ const mapStateToProps = (state :Map) => {
     getInfoForEditCaseRequestState: person.getIn([ACTIONS, GET_INFO_FOR_EDIT_CASE, REQUEST_STATE]),
     initializeAppRequestState: app.getIn([APP.ACTIONS, APP.INITIALIZE_APPLICATION, APP.REQUEST_STATE]),
     [JUDGE]: person.get(JUDGE),
-    [JUDGES]: person.get(JUDGES),
+    [PERSON.JUDGES]: person.get(PERSON.JUDGES),
     [PARTICIPANT]: person.get(PARTICIPANT),
     [PERSON_CASE]: person.get(PERSON_CASE),
   });
@@ -376,6 +441,7 @@ const mapDispatchToProps = dispatch => ({
     editRequiredHours,
     getInfoForEditCase,
     goToRoute,
+    reassignJudge,
   }, dispatch)
 });
 
