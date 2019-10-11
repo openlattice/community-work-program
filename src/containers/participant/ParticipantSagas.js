@@ -1466,7 +1466,7 @@ function* getChargesForCaseWorker(action :SequenceAction) :Generator<*, *, *> {
         const chargeEKID :UUID = getEntityKeyId(chargeEntity);
         chargesEKIDs.push(chargeEKID);
         chargesInCase = chargesInCase.push(fromJS({
-          COURT_CHARGE_LIST: chargeEntity
+          [COURT_CHARGE_LIST]: chargeEntity
         }));
       });
 
@@ -1485,8 +1485,8 @@ function* getChargesForCaseWorker(action :SequenceAction) :Generator<*, *, *> {
       }
       const chargeEventResults :Map = fromJS(response.data);
       if (!chargeEventResults.isEmpty()) {
-        chargeEventResults.forEach((chargeEventObj :Map, chargeEKID :UUID) => {
-          const chargeEvent :Map = getNeighborDetails(chargeEventObj);
+        chargeEventResults.forEach((chargeEventObj :List, chargeEKID :UUID) => {
+          const chargeEvent :Map = getNeighborDetails(chargeEventObj.get(0));
           let chargeMap :Map = chargesInCase.find((map :Map) => getEntityKeyId(
             map.get(COURT_CHARGE_LIST)
           ) === chargeEKID);

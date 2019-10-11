@@ -1,6 +1,8 @@
 // @flow
 import React from 'react';
 import styled from 'styled-components';
+import startCase from 'lodash/startCase';
+import { DateTime } from 'luxon';
 import {
   List,
   Map,
@@ -65,11 +67,13 @@ const CaseInfoSection = ({
       .sort((chargeMap :Map) => sortEntitiesByDateProperty(chargeMap.get(CHARGE_EVENT), DATETIME_COMPLETED))
       .last()
     : Map();
-  const { [NAME]: chargeName } = getEntityProperties(mostRecentChargeAndChargeEvent.get(COURT_CHARGE_LIST), [NAME]);
-  const { [DATETIME_COMPLETED]: chargeDate } = getEntityProperties(
+  let { [NAME]: chargeName } = getEntityProperties(mostRecentChargeAndChargeEvent.get(COURT_CHARGE_LIST), [NAME]);
+  if (chargeName) chargeName = startCase(chargeName.toLowerCase());
+  let { [DATETIME_COMPLETED]: chargeDate } = getEntityProperties(
     mostRecentChargeAndChargeEvent.get(CHARGE_EVENT),
     [DATETIME_COMPLETED]
   );
+  if (chargeDate) chargeDate = DateTime.fromISO(chargeDate).toLocaleString(DateTime.DATE_SHORT);
 
   const { [FIRST_NAME]: firstName, [LAST_NAME]: lastName } = getEntityProperties(judge, [FIRST_NAME, LAST_NAME]);
   const judgeName :string = (!!firstName && !!lastName) ? `${firstName} ${lastName}` : EMPTY_FIELD;
