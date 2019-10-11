@@ -10,6 +10,7 @@ import type { SequenceAction } from 'redux-reqseq';
 import type { FQN } from 'lattice';
 
 import {
+  addChargesToCase,
   addInfraction,
   addNewDiversionPlanStatus,
   addNewParticipantContacts,
@@ -73,7 +74,7 @@ import {
   WORKSITE_PLAN_FQNS,
 } from '../../core/edm/constants/FullyQualifiedNames';
 
-const { WORKSITE_PLAN } = APP_TYPE_FQNS;
+const { COURT_CHARGE_LIST, WORKSITE_PLAN } = APP_TYPE_FQNS;
 const {
   CHECK_IN_DATETIME,
   COMPLETED,
@@ -89,6 +90,7 @@ const { PERSON_NOTES } = PEOPLE_FQNS;
 const { HOURS_WORKED, REQUIRED_HOURS } = WORKSITE_PLAN_FQNS;
 const {
   ACTIONS,
+  ADD_CHARGES_TO_CASE,
   ADD_INFRACTION_EVENT,
   ADD_NEW_DIVERSION_PLAN_STATUS,
   ADD_NEW_PARTICIPANT_CONTACTS,
@@ -154,6 +156,9 @@ const {
 
 const INITIAL_STATE :Map<*, *> = fromJS({
   [ACTIONS]: {
+    [ADD_CHARGES_TO_CASE]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
     [ADD_INFRACTION_EVENT]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
@@ -298,6 +303,43 @@ const INITIAL_STATE :Map<*, *> = fromJS({
 export default function participantReducer(state :Map<*, *> = INITIAL_STATE, action :SequenceAction) :Map<*, *> {
 
   switch (action.type) {
+
+    case addChargesToCase.case(action.type): {
+
+      return addChargesToCase.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, ADD_CHARGES_TO_CASE, action.id], action)
+          .setIn([ACTIONS, ADD_CHARGES_TO_CASE, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+
+          const seqAction :SequenceAction = action;
+
+          const successValue :Object = seqAction.value;
+          const { chargeEKIDs } = successValue;
+          let { newChargeMaps } = successValue;
+
+          const charges :List = state.get(CHARGES);
+          chargeEKIDs.forEach((chargeEKID :UUID, index :number) => {
+            const chargeEntity :Map = charges.find((charge :Map) => getEntityKeyId(charge) === chargeEKID);
+            let chargeMap :Map = newChargeMaps.get(index);
+            chargeMap = chargeMap.set(COURT_CHARGE_LIST, chargeEntity);
+            newChargeMaps = newChargeMaps.set(index, chargeMap);
+          });
+
+          let existingChargesForCase :List = state.get(CHARGES_FOR_CASE);
+          existingChargesForCase = existingChargesForCase.concat(newChargeMaps);
+
+          return state
+            .set(CHARGES_FOR_CASE, existingChargesForCase)
+            .setIn([ACTIONS, ADD_CHARGES_TO_CASE, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .set(CHARGES_FOR_CASE, List())
+          .setIn([ACTIONS, ADD_CHARGES_TO_CASE, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, ADD_CHARGES_TO_CASE, action.id]),
+      });
+    }
 
     case addInfraction.case(action.type): {
 
