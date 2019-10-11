@@ -31,6 +31,7 @@ import type { FQN } from 'lattice';
 import Logger from '../../utils/Logger';
 import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../utils/Errors';
 import {
+  ADD_CHARGES_TO_CASE,
   ADD_INFRACTION,
   ADD_NEW_DIVERSION_PLAN_STATUS,
   ADD_NEW_PARTICIPANT_CONTACTS,
@@ -69,6 +70,7 @@ import {
   MARK_DIVERSION_PLAN_AS_COMPLETE,
   REASSIGN_JUDGE,
   UPDATE_HOURS_WORKED,
+  addChargesToCase,
   addInfraction,
   addNewDiversionPlanStatus,
   addNewParticipantContacts,
@@ -161,6 +163,7 @@ const {
   CHECK_IN_DETAILS,
   CONTACT_INFORMATION,
   COURT_CHARGE_LIST,
+  DATETIME,
   DIVERSION_PLAN,
   ENROLLMENT_STATUS,
   FULFILLS,
@@ -194,6 +197,39 @@ const getWorksitesListFromState = state => state.getIn([STATE.WORKSITES, WORKSIT
 const getPersonFromState = state => state.get(STATE.PERSON, Map());
 
 const LOG = new Logger('ParticipantSagas');
+
+/*
+ *
+ * ParticipantActions.addChargesToCase()
+ *
+ */
+
+function* addChargesToCaseWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+  const workerResponse = {};
+  let response :Object = {};
+
+  try {
+    yield put(addChargesToCase.request(id, value));
+
+    yield put(addChargesToCase.success(id, {}));
+  }
+  catch (error) {
+    workerResponse.error = error;
+    LOG.error('caught exception in addChargesToCaseWorker()', error);
+    yield put(addChargesToCase.failure(id, error));
+  }
+  finally {
+    yield put(addChargesToCase.finally(id));
+  }
+}
+
+function* addChargesToCaseWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(ADD_CHARGES_TO_CASE, addChargesToCaseWorker);
+}
+
 /*
  *
  * ParticipantActions.addInfraction()

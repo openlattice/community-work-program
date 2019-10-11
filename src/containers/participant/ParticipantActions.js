@@ -1,6 +1,9 @@
 // @flow
 import { newRequestSequence } from 'redux-reqseq';
 
+const ADD_CHARGES_TO_CASE :'ADD_CHARGES_TO_CASE' = 'ADD_CHARGES_TO_CASE';
+const addChargesToCase = newRequestSequence(ADD_CHARGES_TO_CASE);
+
 const ADD_INFRACTION :'ADD_INFRACTION' = 'ADD_INFRACTION';
 const addInfraction = newRequestSequence(ADD_INFRACTION);
 
@@ -116,6 +119,7 @@ const UPDATE_HOURS_WORKED :'UPDATE_HOURS_WORKED' = 'UPDATE_HOURS_WORKED';
 const updateHoursWorked = newRequestSequence(UPDATE_HOURS_WORKED);
 
 export {
+  ADD_CHARGES_TO_CASE,
   ADD_INFRACTION,
   ADD_NEW_DIVERSION_PLAN_STATUS,
   ADD_NEW_PARTICIPANT_CONTACTS,
@@ -154,6 +158,7 @@ export {
   MARK_DIVERSION_PLAN_AS_COMPLETE,
   REASSIGN_JUDGE,
   UPDATE_HOURS_WORKED,
+  addChargesToCase,
   addInfraction,
   addNewDiversionPlanStatus,
   addNewParticipantContacts,
