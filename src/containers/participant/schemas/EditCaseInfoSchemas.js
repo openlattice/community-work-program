@@ -103,7 +103,7 @@ export const chargeSchema = {
         properties: {
           [getEntityAddressKey(-1, COURT_CHARGE_LIST, ENTITY_KEY_ID)]: {
             type: 'string',
-            title: 'Charge',
+            title: 'Court charge',
             enum: [],
             enumNames: [],
           },
