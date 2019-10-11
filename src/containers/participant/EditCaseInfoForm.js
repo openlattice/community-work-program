@@ -129,9 +129,9 @@ type Props = {
 type State = {
   caseFormData :Object;
   casePrepopulated :boolean;
-  chargeFormData :Object;
-  chargeFormSchema :Object;
-  chargePrepopulated :boolean;
+  chargesFormData :Object;
+  chargesFormSchema :Object;
+  chargesPrepopulated :boolean;
   judgeFormData :Object;
   judgeFormSchema :Object;
   judgePrepopulated :boolean;
@@ -144,9 +144,9 @@ class EditCaseInfoForm extends Component<Props, State> {
   state = {
     caseFormData: {},
     casePrepopulated: false,
-    chargeFormData: {},
-    chargeFormSchema: chargeSchema,
-    chargePrepopulated: false,
+    chargesFormData: {},
+    chargesFormSchema: chargeSchema,
+    chargesPrepopulated: false,
     judgeFormData: {},
     judgeFormSchema: judgeSchema,
     judgePrepopulated: false,
@@ -194,6 +194,7 @@ class EditCaseInfoForm extends Component<Props, State> {
   prepopulateFormData = () => {
     const {
       charges,
+      chargesForCase,
       diversionPlan,
       judge,
       judges,
@@ -224,6 +225,22 @@ class EditCaseInfoForm extends Component<Props, State> {
       }
       : {};
 
+    const chargesPrepopulated = !chargesForCase.isEmpty();
+    let chargesFormData :{} = {};
+    if (chargesPrepopulated) {
+      chargesFormData = {
+        [sectionOneKey]: []
+      };
+      chargesForCase.forEach((chargeMap :Map, index :number) => {
+        const chargeEKID :UUID = chargeMap.getIn([COURT_CHARGE_LIST, ENTITY_KEY_ID, 0]);
+        const datetimeCharged :string = chargeMap.getIn([CHARGE_EVENT, DATETIME_COMPLETED, 0]);
+        const dateCharged :string = DateTime.fromISO(datetimeCharged).toISODate();
+        chargesFormData[sectionOneKey][index] = {};
+        chargesFormData[sectionOneKey][index][getEntityAddressKey(-1, COURT_CHARGE_LIST, ENTITY_KEY_ID)] = chargeEKID;
+        chargesFormData[sectionOneKey][index][getEntityAddressKey(-1, CHARGE_EVENT, DATETIME_COMPLETED)] = dateCharged;
+      });
+    }
+
     const { [REQUIRED_HOURS]: requiredHours } = getEntityProperties(diversionPlan, [REQUIRED_HOURS]);
     const requiredHoursPrepopulated = !!requiredHours;
     const requiredHoursFormData :{} = requiredHoursPrepopulated
@@ -240,7 +257,9 @@ class EditCaseInfoForm extends Component<Props, State> {
     this.setState({
       caseFormData,
       casePrepopulated,
-      chargeFormSchema: newChargeSchema,
+      chargesFormData,
+      chargesFormSchema: newChargeSchema,
+      chargesPrepopulated,
       judgeFormData,
       judgeFormSchema: newJudgeSchema,
       judgePrepopulated,
@@ -251,13 +270,13 @@ class EditCaseInfoForm extends Component<Props, State> {
 
   createEntityIndexToIdMap = () => {
     const { diversionPlan, personCase } = this.props;
-    const { chargeFormData } = this.state;
+    const { chargesFormData } = this.state;
 
     const entityIndexToIdMap :Map = Map().withMutations((map :Map) => {
       map.setIn([DIVERSION_PLAN, 0], getEntityKeyId(diversionPlan));
       map.setIn([MANUAL_PRETRIAL_COURT_CASES, 0], getEntityKeyId(personCase));
 
-      const charges :[] = Object.keys(chargeFormData).length ? getIn(chargeFormData, [getPageSectionKey(1, 1)]) : [];
+      const charges :[] = Object.keys(chargesFormData).length ? getIn(chargesFormData, [getPageSectionKey(1, 1)]) : [];
       if (charges.length) {
         fromJS(charges).forEach((charge :Map, index :number) => {
           map.setIn([COURT_CHARGE_LIST, index], charge.get(getEntityAddressKey(-1, COURT_CHARGE_LIST, ENTITY_KEY_ID)));
@@ -338,9 +357,9 @@ class EditCaseInfoForm extends Component<Props, State> {
 
   handleOnChargesSubmit = () => {
     const { actions, participant, personCase } = this.props;
-    const { chargeFormData } = this.state;
+    const { chargesFormData } = this.state;
 
-    const storedChargeData :[] = getIn(chargeFormData, [getPageSectionKey(1, 1)]);
+    const storedChargeData :[] = getIn(chargesFormData, [getPageSectionKey(1, 1)]);
     const chargeKey = getEntityAddressKey(-1, COURT_CHARGE_LIST, ENTITY_KEY_ID);
     const chargeEventKey = getEntityAddressKey(-1, CHARGE_EVENT, DATETIME_COMPLETED);
     const newChargesList :Object[] = storedChargeData.map((charge :{}) => {
@@ -353,11 +372,11 @@ class EditCaseInfoForm extends Component<Props, State> {
         [chargeEventKey]: datetime
       };
     });
-    chargeFormData[getPageSectionKey(1, 1)] = newChargesList;
+    chargesFormData[getPageSectionKey(1, 1)] = newChargesList;
 
     const entitySetIds :{} = this.createEntitySetIdsMap();
     const propertyTypeIds :{} = this.createPropertyTypeIdsMap();
-    const entityData :{} = processEntityData(chargeFormData, entitySetIds, propertyTypeIds);
+    const entityData :{} = processEntityData(chargesFormData, entitySetIds, propertyTypeIds);
 
     const associations = [];
 
@@ -376,12 +395,14 @@ class EditCaseInfoForm extends Component<Props, State> {
 
     const associationEntityData :{} = processAssociationEntityData(associations, entitySetIds, propertyTypeIds);
     delete entityData[courtChargeListESID];
+    console.log('associationEntityData: ', associationEntityData);
+    console.log('entityData: ', entityData);
 
-    // actions.addChargesToCase({ associationEntityData, entityData: {} });
+    actions.addChargesToCase({ associationEntityData, entityData });
   }
 
   handleOnChangeCharges = ({ formData } :Object) => {
-    this.setState({ chargeFormData: formData });
+    this.setState({ chargesFormData: formData });
   }
 
   render() {
@@ -396,9 +417,9 @@ class EditCaseInfoForm extends Component<Props, State> {
     const {
       caseFormData,
       casePrepopulated,
-      chargeFormData,
-      chargeFormSchema,
-      chargePrepopulated,
+      chargesFormData,
+      chargesFormSchema,
+      chargesPrepopulated,
       judgeFormData,
       judgePrepopulated,
       judgeFormSchema,
@@ -479,12 +500,12 @@ class EditCaseInfoForm extends Component<Props, State> {
           <Card>
             <CardHeader padding="sm">Edit Charges</CardHeader>
             <Form
-                disabled={chargePrepopulated}
+                disabled={chargesPrepopulated}
                 formContext={chargesFormContext}
-                formData={chargeFormData}
+                formData={chargesFormData}
                 onChange={this.handleOnChangeCharges}
                 onSubmit={this.handleOnChargesSubmit}
-                schema={chargeFormSchema}
+                schema={chargesFormSchema}
                 uiSchema={chargeUiSchema} />
           </Card>
           <Card>
