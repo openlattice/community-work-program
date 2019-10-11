@@ -171,6 +171,7 @@ class EditCaseInfoForm extends Component<Props, State> {
     const {
       actions,
       app,
+      chargesForCase,
       diversionPlan,
       getInfoForEditCaseRequestState,
       judge,
@@ -186,7 +187,8 @@ class EditCaseInfoForm extends Component<Props, State> {
       && getInfoForEditCaseRequestState !== RequestStates.PENDING)
       || !prevProps.diversionPlan.equals(diversionPlan)
       || !prevProps.personCase.equals(personCase)
-      || !prevProps.judge.equals(judge)) {
+      || !prevProps.judge.equals(judge)
+      || !prevProps.chargesForCase.equals(chargesForCase)) {
       this.prepopulateFormData();
     }
   }
@@ -395,8 +397,6 @@ class EditCaseInfoForm extends Component<Props, State> {
 
     const associationEntityData :{} = processAssociationEntityData(associations, entitySetIds, propertyTypeIds);
     delete entityData[courtChargeListESID];
-    console.log('associationEntityData: ', associationEntityData);
-    console.log('entityData: ', entityData);
 
     actions.addChargesToCase({ associationEntityData, entityData });
   }
@@ -453,7 +453,9 @@ class EditCaseInfoForm extends Component<Props, State> {
       propertyTypeIds,
     };
     const chargesFormContext = {
-      editAction: actions.addChargesToCase,
+      addActions: {
+        addCharge: actions.addChargesToCase
+      },
       entityIndexToIdMap,
       entitySetIds,
       propertyTypeIds,

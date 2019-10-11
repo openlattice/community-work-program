@@ -120,12 +120,10 @@ export const chargeUiSchema = {
     'ui:options': {
       addButtonText: '+ Add Charge',
       orderable: false,
+      addActionKey: 'addCharge'
     },
     items: {
       classNames: 'grid-container',
-      'ui:options': {
-        editable: true
-      },
       [getEntityAddressKey(-1, COURT_CHARGE_LIST, ENTITY_KEY_ID)]: {
         classNames: 'column-span-8',
       },
