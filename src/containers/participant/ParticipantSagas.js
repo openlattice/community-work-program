@@ -1443,12 +1443,13 @@ function* getChargesForCaseWorker(action :SequenceAction) :Generator<*, *, *> {
     }
     const { caseEKID } = value;
     const app = yield select(getAppFromState);
-    const courtCasesESID :UUID = getEntitySetIdFromApp(app, COURT_CHARGE_LIST);
+    const courtCasesESID :UUID = getEntitySetIdFromApp(app, MANUAL_PRETRIAL_COURT_CASES);
+    const courtChargeListESID :UUID = getEntitySetIdFromApp(app, COURT_CHARGE_LIST);
 
-    const searchFilter :Object = {
+    let searchFilter :Object = {
       entityKeyIds: [caseEKID],
       destinationEntitySetIds: [],
-      sourceEntitySetIds: [courtCasesESID],
+      sourceEntitySetIds: [courtChargeListESID],
     };
     response = yield call(
       searchEntityNeighborsWithFilterWorker,
@@ -1459,14 +1460,45 @@ function* getChargesForCaseWorker(action :SequenceAction) :Generator<*, *, *> {
     }
     if (response.data[caseEKID]) {
       const chargesNeighborsResults :List = fromJS(response.data[caseEKID]);
+      const chargesEKIDs = [];
       chargesNeighborsResults.forEach((neighbor :Map) => {
-        const chargedWithEntity :Map = neighbor.get(ASSOCIATION_DETAILS);
         const chargeEntity :Map = getNeighborDetails(neighbor);
-        chargesInCase = chargesInCase.push(Map({
-          MANUAL_CHARGED_WITH: chargedWithEntity,
+        const chargeEKID :UUID = getEntityKeyId(chargeEntity);
+        chargesEKIDs.push(chargeEKID);
+        chargesInCase = chargesInCase.push(fromJS({
           COURT_CHARGE_LIST: chargeEntity
         }));
       });
+
+      const chargeEventESID :UUID = getEntitySetIdFromApp(app, CHARGE_EVENT);
+      searchFilter = {
+        entityKeyIds: chargesEKIDs,
+        destinationEntitySetIds: [],
+        sourceEntitySetIds: [chargeEventESID],
+      };
+      response = yield call(
+        searchEntityNeighborsWithFilterWorker,
+        searchEntityNeighborsWithFilter({ entitySetId: courtChargeListESID, filter: searchFilter })
+      );
+      if (response.error) {
+        throw response.error;
+      }
+      const chargeEventResults :Map = fromJS(response.data);
+      if (!chargeEventResults.isEmpty()) {
+        chargeEventResults.forEach((chargeEventObj :Map, chargeEKID :UUID) => {
+          const chargeEvent :Map = getNeighborDetails(chargeEventObj);
+          let chargeMap :Map = chargesInCase.find((map :Map) => getEntityKeyId(
+            map.get(COURT_CHARGE_LIST)
+          ) === chargeEKID);
+          if (isDefined(chargeMap)) {
+            const chargeMapIndex :number = chargesInCase.findIndex((map :Map) => getEntityKeyId(
+              map.get(COURT_CHARGE_LIST)
+            ) === chargeEKID);
+            chargeMap = chargeMap.set(CHARGE_EVENT, chargeEvent);
+            chargesInCase = chargesInCase.set(chargeMapIndex, chargeMap);
+          }
+        });
+      }
     }
 
     yield put(getChargesForCase.success(id, chargesInCase));
