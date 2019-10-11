@@ -29,6 +29,7 @@ import {
   APP_TYPE_FQNS,
   CASE_FQNS,
   CHARGE_FQNS,
+  DATETIME,
   DIVERSION_PLAN_FQNS,
   ENTITY_KEY_ID,
 } from '../../core/edm/constants/FullyQualifiedNames';
@@ -49,6 +50,7 @@ import {
   getEntitySetIdFromApp,
   getPropertyTypeIdFromEdm
 } from '../../utils/DataUtils';
+import { getCombinedDateTime } from '../../utils/ScheduleUtils';
 import { BackNavButton } from '../../components/controls/index';
 import { PARTICIPANT_PROFILE_WIDTH } from '../../core/style/Sizes';
 import { APP, PERSON, STATE } from '../../utils/constants/ReduxStateConsts';
@@ -62,14 +64,16 @@ const {
 } = DataProcessingUtils;
 
 const {
+  APPEARS_IN,
+  COURT_CHARGE_LIST,
   DIVERSION_PLAN,
   JUDGES,
+  MANUAL_CHARGED_WITH,
   MANUAL_PRETRIAL_COURT_CASES,
   PEOPLE,
   PRESIDES_OVER,
 } = APP_TYPE_FQNS;
 const { CASE_NUMBER_TEXT, COURT_CASE_TYPE } = CASE_FQNS;
-const { NAME } = CHARGE_FQNS;
 const { REQUIRED_HOURS } = DIVERSION_PLAN_FQNS;
 
 const {
@@ -254,10 +258,12 @@ class EditCaseInfoForm extends Component<Props, State> {
   createEntitySetIdsMap = () => {
     const { app } = this.props;
     return {
+      [APPEARS_IN]: getEntitySetIdFromApp(app, APPEARS_IN),
       [DIVERSION_PLAN]: getEntitySetIdFromApp(app, DIVERSION_PLAN),
       [JUDGES]: getEntitySetIdFromApp(app, JUDGES),
       [MANUAL_PRETRIAL_COURT_CASES]: getEntitySetIdFromApp(app, MANUAL_PRETRIAL_COURT_CASES),
       [PRESIDES_OVER]: getEntitySetIdFromApp(app, PRESIDES_OVER),
+      [PEOPLE]: getEntitySetIdFromApp(app, PEOPLE),
     };
   }
 
@@ -266,6 +272,7 @@ class EditCaseInfoForm extends Component<Props, State> {
     return {
       [CASE_NUMBER_TEXT]: getPropertyTypeIdFromEdm(edm, CASE_NUMBER_TEXT),
       [COURT_CASE_TYPE]: getPropertyTypeIdFromEdm(edm, COURT_CASE_TYPE),
+      [DATETIME]: getPropertyTypeIdFromEdm(edm, DATETIME),
       [ENTITY_KEY_ID]: getPropertyTypeIdFromEdm(edm, ENTITY_KEY_ID),
       [REQUIRED_HOURS]: getPropertyTypeIdFromEdm(edm, REQUIRED_HOURS),
     };
@@ -311,6 +318,63 @@ class EditCaseInfoForm extends Component<Props, State> {
 
   handleOnChangeJudge = ({ formData } :Object) => {
     this.setState({ judgeFormData: formData });
+  }
+
+  handleOnChargesSubmit = () => {
+    const { actions, participant, personCase } = this.props;
+    const { chargeFormData } = this.state;
+
+    const caseEKID = getEntityKeyId(personCase);
+    const personEKID = getEntityKeyId(participant);
+    const newChargesList = getIn(chargeFormData, [getPageSectionKey(1, 1)]);
+
+    const entitySetIds :{} = this.createEntitySetIdsMap();
+    const propertyTypeIds :{} = this.createPropertyTypeIdsMap();
+
+    const manualChargedWithESID :UUID = entitySetIds[MANUAL_CHARGED_WITH];
+    const appearsInESID :UUID = entitySetIds[APPEARS_IN];
+    const courtChargeListESID :UUID = entitySetIds[COURT_CHARGE_LIST];
+    const casesESID :UUID = entitySetIds[MANUAL_PRETRIAL_COURT_CASES];
+    const peopleESID :UUID = entitySetIds[PEOPLE];
+    const datetimePTID :UUID = propertyTypeIds[DATETIME];
+
+    const associationEntityData :{} = {
+      [manualChargedWithESID]: [],
+      [appearsInESID]: [],
+    };
+
+    fromJS(newChargesList).forEach((charge :Map) => {
+      const chargeEKID :UUID = charge.get(getEntityAddressKey(-1, COURT_CHARGE_LIST, ENTITY_KEY_ID));
+      const currentTime = DateTime.local().toLocaleString(DateTime.TIME_24_SIMPLE);
+      const datetime = getCombinedDateTime(getEntityAddressKey(-1, MANUAL_CHARGED_WITH, DATETIME), currentTime);
+      associationEntityData[appearsInESID].push({
+        data: { [datetimePTID]: datetime },
+        dst: {
+          entityKeyId: caseEKID,
+          entitySetId: casesESID,
+        },
+        src: {
+          entityKeyId: chargeEKID,
+          entitySetId: courtChargeListESID,
+        }
+      });
+      associationEntityData[manualChargedWithESID].push({
+        data: { [datetimePTID]: datetime },
+        dst: {
+          entityKeyId: chargeEKID,
+          entitySetId: courtChargeListESID,
+        },
+        src: {
+          entityKeyId: personEKID,
+          entitySetId: peopleESID,
+        }
+      });
+    });
+    // actions.reassignCharges({ associationEntityData, entityData: {} });
+  }
+
+  handleOnChangeCharges = ({ formData } :Object) => {
+    this.setState({ chargeFormData: formData });
   }
 
   render() {
@@ -405,6 +469,8 @@ class EditCaseInfoForm extends Component<Props, State> {
                 disabled={chargePrepopulated}
                 formContext={{}}
                 formData={chargeFormData}
+                onChange={this.handleOnChangeCharges}
+                onSubmit={this.handleOnChargesSubmit}
                 schema={chargeFormSchema}
                 uiSchema={chargeUiSchema} />
           </Card>
