@@ -19,6 +19,7 @@ import type { Match } from 'react-router';
 import LogoLoader from '../../components/LogoLoader';
 
 import {
+  addChargesToCase,
   editPersonCase,
   editRequiredHours,
   getInfoForEditCase,
@@ -28,8 +29,7 @@ import { goToRoute } from '../../core/router/RoutingActions';
 import {
   APP_TYPE_FQNS,
   CASE_FQNS,
-  CHARGE_FQNS,
-  DATETIME,
+  DATETIME_COMPLETED,
   DIVERSION_PLAN_FQNS,
   ENTITY_KEY_ID,
 } from '../../core/edm/constants/FullyQualifiedNames';
@@ -61,10 +61,12 @@ const {
   getEntityAddressKey,
   getPageSectionKey,
   processAssociationEntityData,
+  processEntityData,
 } = DataProcessingUtils;
 
 const {
   APPEARS_IN,
+  CHARGE_EVENT,
   COURT_CHARGE_LIST,
   DIVERSION_PLAN,
   JUDGES,
@@ -72,6 +74,7 @@ const {
   MANUAL_PRETRIAL_COURT_CASES,
   PEOPLE,
   PRESIDES_OVER,
+  REGISTERED_FOR,
 } = APP_TYPE_FQNS;
 const { CASE_NUMBER_TEXT, COURT_CASE_TYPE } = CASE_FQNS;
 const { REQUIRED_HOURS } = DIVERSION_PLAN_FQNS;
@@ -102,6 +105,7 @@ const ButtonWrapper = styled.div`
 
 type Props = {
   actions:{
+    addChargesToCase :RequestSequence;
     editPersonCase :RequestSequence;
     editRequiredHours :RequestSequence;
     getInfoForEditCase :RequestSequence;
@@ -247,10 +251,18 @@ class EditCaseInfoForm extends Component<Props, State> {
 
   createEntityIndexToIdMap = () => {
     const { diversionPlan, personCase } = this.props;
+    const { chargeFormData } = this.state;
 
     const entityIndexToIdMap :Map = Map().withMutations((map :Map) => {
       map.setIn([DIVERSION_PLAN, 0], getEntityKeyId(diversionPlan));
       map.setIn([MANUAL_PRETRIAL_COURT_CASES, 0], getEntityKeyId(personCase));
+
+      const charges :[] = Object.keys(chargeFormData).length ? getIn(chargeFormData, [getPageSectionKey(1, 1)]) : [];
+      if (charges.length) {
+        fromJS(charges).forEach((charge :Map, index :number) => {
+          map.setIn([COURT_CHARGE_LIST, index], charge.get(getEntityAddressKey(-1, COURT_CHARGE_LIST, ENTITY_KEY_ID)));
+        });
+      }
     });
     return entityIndexToIdMap;
   }
@@ -259,11 +271,15 @@ class EditCaseInfoForm extends Component<Props, State> {
     const { app } = this.props;
     return {
       [APPEARS_IN]: getEntitySetIdFromApp(app, APPEARS_IN),
+      [CHARGE_EVENT]: getEntitySetIdFromApp(app, CHARGE_EVENT),
+      [COURT_CHARGE_LIST]: getEntitySetIdFromApp(app, COURT_CHARGE_LIST),
       [DIVERSION_PLAN]: getEntitySetIdFromApp(app, DIVERSION_PLAN),
       [JUDGES]: getEntitySetIdFromApp(app, JUDGES),
+      [MANUAL_CHARGED_WITH]: getEntitySetIdFromApp(app, MANUAL_CHARGED_WITH),
       [MANUAL_PRETRIAL_COURT_CASES]: getEntitySetIdFromApp(app, MANUAL_PRETRIAL_COURT_CASES),
       [PRESIDES_OVER]: getEntitySetIdFromApp(app, PRESIDES_OVER),
       [PEOPLE]: getEntitySetIdFromApp(app, PEOPLE),
+      [REGISTERED_FOR]: getEntitySetIdFromApp(app, REGISTERED_FOR),
     };
   }
 
@@ -272,7 +288,7 @@ class EditCaseInfoForm extends Component<Props, State> {
     return {
       [CASE_NUMBER_TEXT]: getPropertyTypeIdFromEdm(edm, CASE_NUMBER_TEXT),
       [COURT_CASE_TYPE]: getPropertyTypeIdFromEdm(edm, COURT_CASE_TYPE),
-      [DATETIME]: getPropertyTypeIdFromEdm(edm, DATETIME),
+      [DATETIME_COMPLETED]: getPropertyTypeIdFromEdm(edm, DATETIME_COMPLETED),
       [ENTITY_KEY_ID]: getPropertyTypeIdFromEdm(edm, ENTITY_KEY_ID),
       [REQUIRED_HOURS]: getPropertyTypeIdFromEdm(edm, REQUIRED_HOURS),
     };
@@ -324,53 +340,44 @@ class EditCaseInfoForm extends Component<Props, State> {
     const { actions, participant, personCase } = this.props;
     const { chargeFormData } = this.state;
 
-    const caseEKID = getEntityKeyId(personCase);
-    const personEKID = getEntityKeyId(participant);
-    const newChargesList = getIn(chargeFormData, [getPageSectionKey(1, 1)]);
+    const storedChargeData :[] = getIn(chargeFormData, [getPageSectionKey(1, 1)]);
+    const chargeKey = getEntityAddressKey(-1, COURT_CHARGE_LIST, ENTITY_KEY_ID);
+    const chargeEventKey = getEntityAddressKey(-1, CHARGE_EVENT, DATETIME_COMPLETED);
+    const newChargesList :Object[] = storedChargeData.map((charge :{}) => {
+      const chargeName = charge[chargeKey];
+      const date :UUID = charge[chargeEventKey];
+      const currentTime = DateTime.local().toLocaleString(DateTime.TIME_24_SIMPLE);
+      const datetime = getCombinedDateTime(date, currentTime);
+      return {
+        [chargeKey]: chargeName,
+        [chargeEventKey]: datetime
+      };
+    });
+    chargeFormData[getPageSectionKey(1, 1)] = newChargesList;
 
     const entitySetIds :{} = this.createEntitySetIdsMap();
     const propertyTypeIds :{} = this.createPropertyTypeIdsMap();
+    const entityData :{} = processEntityData(chargeFormData, entitySetIds, propertyTypeIds);
 
-    const manualChargedWithESID :UUID = entitySetIds[MANUAL_CHARGED_WITH];
-    const appearsInESID :UUID = entitySetIds[APPEARS_IN];
+    const associations = [];
+
+    const personEKID = getEntityKeyId(participant);
+    const caseEKID = getEntityKeyId(personCase);
     const courtChargeListESID :UUID = entitySetIds[COURT_CHARGE_LIST];
-    const casesESID :UUID = entitySetIds[MANUAL_PRETRIAL_COURT_CASES];
-    const peopleESID :UUID = entitySetIds[PEOPLE];
-    const datetimePTID :UUID = propertyTypeIds[DATETIME];
+    const olEKID :UUID = propertyTypeIds[ENTITY_KEY_ID];
 
-    const associationEntityData :{} = {
-      [manualChargedWithESID]: [],
-      [appearsInESID]: [],
-    };
-
-    fromJS(newChargesList).forEach((charge :Map) => {
-      const chargeEKID :UUID = charge.get(getEntityAddressKey(-1, COURT_CHARGE_LIST, ENTITY_KEY_ID));
-      const currentTime = DateTime.local().toLocaleString(DateTime.TIME_24_SIMPLE);
-      const datetime = getCombinedDateTime(getEntityAddressKey(-1, MANUAL_CHARGED_WITH, DATETIME), currentTime);
-      associationEntityData[appearsInESID].push({
-        data: { [datetimePTID]: datetime },
-        dst: {
-          entityKeyId: caseEKID,
-          entitySetId: casesESID,
-        },
-        src: {
-          entityKeyId: chargeEKID,
-          entitySetId: courtChargeListESID,
-        }
-      });
-      associationEntityData[manualChargedWithESID].push({
-        data: { [datetimePTID]: datetime },
-        dst: {
-          entityKeyId: chargeEKID,
-          entitySetId: courtChargeListESID,
-        },
-        src: {
-          entityKeyId: personEKID,
-          entitySetId: peopleESID,
-        }
-      });
+    fromJS(entityData).get(courtChargeListESID).forEach((courtCharge :Map, index :number) => {
+      const courtChargeEKID :UUID = courtCharge.getIn([olEKID, 0]);
+      associations.push([APPEARS_IN, courtChargeEKID, COURT_CHARGE_LIST, caseEKID, MANUAL_PRETRIAL_COURT_CASES]);
+      associations.push([REGISTERED_FOR, index, CHARGE_EVENT, courtChargeEKID, COURT_CHARGE_LIST]);
+      associations.push([MANUAL_CHARGED_WITH, personEKID, PEOPLE, courtChargeEKID, COURT_CHARGE_LIST]);
+      associations.push([MANUAL_CHARGED_WITH, personEKID, PEOPLE, index, CHARGE_EVENT]);
     });
-    // actions.reassignCharges({ associationEntityData, entityData: {} });
+
+    const associationEntityData :{} = processAssociationEntityData(associations, entitySetIds, propertyTypeIds);
+    delete entityData[courtChargeListESID];
+
+    // actions.addChargesToCase({ associationEntityData, entityData: {} });
   }
 
   handleOnChangeCharges = ({ formData } :Object) => {
@@ -424,6 +431,12 @@ class EditCaseInfoForm extends Component<Props, State> {
       entitySetIds,
       propertyTypeIds,
     };
+    const chargesFormContext = {
+      editAction: actions.addChargesToCase,
+      entityIndexToIdMap,
+      entitySetIds,
+      propertyTypeIds,
+    };
     const requiredHoursFormContext = {
       editAction: actions.editRequiredHours,
       entityIndexToIdMap,
@@ -467,7 +480,7 @@ class EditCaseInfoForm extends Component<Props, State> {
             <CardHeader padding="sm">Edit Charges</CardHeader>
             <Form
                 disabled={chargePrepopulated}
-                formContext={{}}
+                formContext={chargesFormContext}
                 formData={chargeFormData}
                 onChange={this.handleOnChangeCharges}
                 onSubmit={this.handleOnChargesSubmit}
@@ -509,6 +522,7 @@ const mapStateToProps = (state :Map) => {
 
 const mapDispatchToProps = dispatch => ({
   actions: bindActionCreators({
+    addChargesToCase,
     editPersonCase,
     editRequiredHours,
     getInfoForEditCase,
