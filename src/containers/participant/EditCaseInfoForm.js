@@ -75,8 +75,7 @@ const { REQUIRED_HOURS } = DIVERSION_PLAN_FQNS;
 const {
   ACTIONS,
   CHARGES,
-  CHARGES_BY_CHARGE_EVENT_EKID,
-  CHARGE_EVENTS,
+  CHARGES_FOR_CASE,
   GET_INFO_FOR_EDIT_CASE,
   JUDGE,
   PARTICIPANT,
@@ -107,8 +106,7 @@ type Props = {
   },
   app :Map;
   charges :List;
-  chargeEvents :List;
-  chargesByChargeEventEKID :Map;
+  chargesForCase :List;
   diversionPlan :Map;
   edm :Map;
   getInfoForEditCaseRequestState :RequestState;
@@ -188,8 +186,6 @@ class EditCaseInfoForm extends Component<Props, State> {
   prepopulateFormData = () => {
     const {
       charges,
-      chargeEvents,
-      chargesByChargeEventEKID,
       diversionPlan,
       judge,
       judges,
@@ -433,8 +429,7 @@ const mapStateToProps = (state :Map) => {
   return ({
     app,
     [CHARGES]: person.get(CHARGES),
-    [CHARGES_BY_CHARGE_EVENT_EKID]: person.get(CHARGES_BY_CHARGE_EVENT_EKID),
-    [CHARGE_EVENTS]: person.get(CHARGE_EVENTS),
+    [CHARGES_FOR_CASE]: person.get(CHARGES_FOR_CASE),
     [PERSON.DIVERSION_PLAN]: person.get(PERSON.DIVERSION_PLAN),
     edm: state.get(STATE.EDM),
     getInfoForEditCaseRequestState: person.getIn([ACTIONS, GET_INFO_FOR_EDIT_CASE, REQUEST_STATE]),

@@ -95,8 +95,7 @@ const {
   ADD_WORKSITE_PLAN,
   ADDRESS,
   CHARGES,
-  CHARGES_BY_CHARGE_EVENT_EKID,
-  CHARGE_EVENTS,
+  CHARGES_FOR_CASE,
   CHECK_INS_BY_APPOINTMENT,
   CHECK_IN_FOR_APPOINTMENT,
   CREATE_WORK_APPOINTMENTS,
@@ -260,8 +259,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   },
   [ADDRESS]: Map(),
   [CHARGES]: List(),
-  [CHARGES_BY_CHARGE_EVENT_EKID]: Map(),
-  [CHARGE_EVENTS]: List(),
+  [CHARGES_FOR_CASE]: List(),
   [CHECK_INS_BY_APPOINTMENT]: Map(),
   [DIVERSION_PLAN]: Map(),
   [EMAIL]: Map(),
@@ -1239,13 +1237,11 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
           }
 
           return state
-            .set(CHARGE_EVENTS, value.chargeEvents)
-            .set(CHARGES_BY_CHARGE_EVENT_EKID, value.chargesByChargeEventEKID)
+            .set(CHARGES_FOR_CASE, value)
             .setIn([ACTIONS, GET_CHARGES_FOR_CASE, REQUEST_STATE], RequestStates.SUCCESS);
         },
         FAILURE: () => state
-          .set(CHARGE_EVENTS, List())
-          .set(CHARGES_BY_CHARGE_EVENT_EKID, Map())
+          .set(CHARGES_FOR_CASE, List())
           .setIn([ACTIONS, GET_CHARGES_FOR_CASE, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, GET_CHARGES_FOR_CASE, action.id])
       });

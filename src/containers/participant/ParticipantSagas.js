@@ -144,7 +144,7 @@ import {
   INFRACTION_FQNS,
   WORKSITE_PLAN_FQNS,
 } from '../../core/edm/constants/FullyQualifiedNames';
-import { INFRACTIONS_CONSTS } from '../../core/edm/constants/DataModelConsts';
+import { ASSOCIATION_DETAILS, INFRACTIONS_CONSTS } from '../../core/edm/constants/DataModelConsts';
 
 const { UpdateTypes } = Types;
 const { getEntityData, getEntitySetData, updateEntityData } = DataApiActions;
@@ -1391,17 +1391,14 @@ function* getJudgeForCaseWatcher() :Generator<*, *, *> {
 
 function* getChargesForCaseWorker(action :SequenceAction) :Generator<*, *, *> {
 
-  /* person -> charged with -> charge
-     person -> charged with -> charge event
-     charge event -> appears in -> case
-     charge -> appears in -> case
-     charge event -> registered for -> charge
+  /*
+    person -> charged with -> charge (datetime stored on charged with)
+    charge -> appears in -> case
   */
   const { id, value } = action;
   const workerResponse = {};
   let response :Object = {};
-  let chargeEvents :List = List();
-  let chargesByChargeEventEKID :Map = Map();
+  let chargesInCase :List = List();
 
   try {
     yield put(getChargesForCase.request(id));
@@ -1410,45 +1407,33 @@ function* getChargesForCaseWorker(action :SequenceAction) :Generator<*, *, *> {
     }
     const { caseEKID } = value;
     const app = yield select(getAppFromState);
-    const manualCourtCasesESID :UUID = getEntitySetIdFromApp(app, MANUAL_PRETRIAL_COURT_CASES);
-    const chargeEventESID :UUID = getEntitySetIdFromApp(app, CHARGE_EVENT);
+    const courtCasesESID :UUID = getEntitySetIdFromApp(app, COURT_CHARGE_LIST);
 
-    let searchFilter :Object = {
+    const searchFilter :Object = {
       entityKeyIds: [caseEKID],
       destinationEntitySetIds: [],
-      sourceEntitySetIds: [chargeEventESID],
+      sourceEntitySetIds: [courtCasesESID],
     };
     response = yield call(
       searchEntityNeighborsWithFilterWorker,
-      searchEntityNeighborsWithFilter({ entitySetId: manualCourtCasesESID, filter: searchFilter })
+      searchEntityNeighborsWithFilter({ entitySetId: courtCasesESID, filter: searchFilter })
     );
     if (response.error) {
       throw response.error;
     }
     if (response.data[caseEKID]) {
-      const chargeEventResults :List = fromJS(response.data[caseEKID]);
-      chargeEventResults.forEach((result :Map) => {
-        chargeEvents = chargeEvents.push(getNeighborDetails(result));
+      const chargesNeighborsResults :List = fromJS(response.data[caseEKID]);
+      chargesNeighborsResults.forEach((neighbor :Map) => {
+        const chargedWithEntity :Map = neighbor.get(ASSOCIATION_DETAILS);
+        const chargeEntity :Map = getNeighborDetails(neighbor);
+        chargesInCase = chargesInCase.push(Map({
+          MANUAL_CHARGED_WITH: chargedWithEntity,
+          COURT_CHARGE_LIST: chargeEntity
+        }));
       });
-
-      const chargeEventsEKIDs :UUID[] = chargeEvents.map((chargeEvent :Map) => getEntityKeyId(chargeEvent)).toJS();
-      const manualCourtChargesESID :UUID = getEntitySetIdFromApp(app, MANUAL_COURT_CHARGES);
-      searchFilter = {
-        entityKeyIds: chargeEventsEKIDs,
-        destinationEntitySetIds: [manualCourtChargesESID],
-        sourceEntitySetIds: [],
-      };
-      response = yield call(
-        searchEntityNeighborsWithFilterWorker,
-        searchEntityNeighborsWithFilter({ entitySetId: chargeEventESID, filter: searchFilter })
-      );
-      if (response.error) {
-        throw response.error;
-      }
-      chargesByChargeEventEKID = fromJS(response.data);
     }
 
-    yield put(getChargesForCase.success(id, { chargeEvents, chargesByChargeEventEKID }));
+    yield put(getChargesForCase.success(id, chargesInCase));
   }
   catch (error) {
     workerResponse.error = error;
