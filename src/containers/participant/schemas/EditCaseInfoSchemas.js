@@ -4,28 +4,23 @@ import { DataProcessingUtils } from 'lattice-fabricate';
 import {
   APP_TYPE_FQNS,
   CASE_FQNS,
-  CHARGE_FQNS,
-  DATETIME,
   DATETIME_COMPLETED,
   DIVERSION_PLAN_FQNS,
   ENTITY_KEY_ID,
 } from '../../../core/edm/constants/FullyQualifiedNames';
 import { COURT_TYPES } from '../../../core/edm/constants/DataModelConsts';
-import { CustomSelectWidget } from '../../../components/controls/index';
 
 const { getEntityAddressKey, getPageSectionKey } = DataProcessingUtils;
 
 const {
+  CHARGE_EVENT,
   COURT_CHARGE_LIST,
   DIVERSION_PLAN,
   JUDGES,
-  MANUAL_CHARGED_WITH,
-  MANUAL_COURT_CHARGES,
   MANUAL_PRETRIAL_COURT_CASES,
 } = APP_TYPE_FQNS;
 const { CASE_NUMBER_TEXT, COURT_CASE_TYPE } = CASE_FQNS;
 const { REQUIRED_HOURS } = DIVERSION_PLAN_FQNS;
-const { CHARGE_LEVEL, OFFENSE_CHARGE_DESCRIPTION } = CHARGE_FQNS;
 
 export const judgeSchema = {
   type: 'object',
@@ -107,7 +102,7 @@ export const chargeSchema = {
             enum: [],
             enumNames: [],
           },
-          [getEntityAddressKey(-1, MANUAL_CHARGED_WITH, DATETIME)]: {
+          [getEntityAddressKey(-1, CHARGE_EVENT, DATETIME_COMPLETED)]: {
             type: 'string',
             title: 'Date charged',
             format: 'date',
@@ -129,14 +124,12 @@ export const chargeUiSchema = {
     items: {
       classNames: 'grid-container',
       'ui:options': {
-        creatable: true,
         editable: true
       },
       [getEntityAddressKey(-1, COURT_CHARGE_LIST, ENTITY_KEY_ID)]: {
         classNames: 'column-span-8',
-        'ui:widget': CustomSelectWidget,
       },
-      [getEntityAddressKey(-1, MANUAL_CHARGED_WITH, DATETIME)]: {
+      [getEntityAddressKey(-1, CHARGE_EVENT, DATETIME_COMPLETED)]: {
         classNames: 'column-span-4',
       },
     },
