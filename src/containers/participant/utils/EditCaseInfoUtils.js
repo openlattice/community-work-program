@@ -13,7 +13,7 @@ import { getEntityKeyId, getFirstNeighborValue } from '../../../utils/DataUtils'
 
 const { getEntityAddressKey, getPageSectionKey } = DataProcessingUtils;
 const { COURT_CHARGE_LIST, JUDGES } = APP_TYPE_FQNS;
-const { NAME, OL_ID } = CHARGE_FQNS;
+const { NAME } = CHARGE_FQNS;
 const { FIRST_NAME, LAST_NAME } = PEOPLE_FQNS;
 
 const getValuesFromEntityList = (entities :List, propertyList :FQN[]) => {
