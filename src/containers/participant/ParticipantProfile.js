@@ -74,6 +74,7 @@ const { NAME } = WORKSITE_FQNS;
 const {
   ACTIONS,
   ADDRESS,
+  CHARGES_FOR_CASE,
   CHECK_INS_BY_APPOINTMENT,
   DIVERSION_PLAN,
   EMAIL,
@@ -182,6 +183,7 @@ type Props = {
   };
   address :Map;
   app :Map;
+  chargesForCase :List;
   checkInsByAppointment :Map;
   diversionPlan :Map;
   email :Map;
@@ -320,6 +322,7 @@ class ParticipantProfile extends Component<Props, State> {
     const {
       actions,
       address,
+      chargesForCase,
       diversionPlan,
       email,
       enrollmentStatus,
@@ -427,6 +430,7 @@ class ParticipantProfile extends Component<Props, State> {
                   sentenceEndDateTime={sentenceEndDateTime}
                   workStartDateTime={workStartDateTime} />
               <CaseInfoSection
+                  charges={chargesForCase}
                   edit={this.editCaseInfo}
                   hours={requiredHours}
                   judge={judge}
@@ -535,6 +539,7 @@ const mapStateToProps = (state :Map<*, *>) => {
   return {
     [ADDRESS]: person.get(ADDRESS),
     app,
+    [CHARGES_FOR_CASE]: person.get(CHARGES_FOR_CASE),
     [CHECK_INS_BY_APPOINTMENT]: person.get(CHECK_INS_BY_APPOINTMENT),
     [DIVERSION_PLAN]: person.get(DIVERSION_PLAN),
     [EMAIL]: person.get(EMAIL),

@@ -1,7 +1,12 @@
 // @flow
 import React from 'react';
 import styled from 'styled-components';
-import { fromJS, Map, OrderedMap } from 'immutable';
+import {
+  List,
+  Map,
+  OrderedMap,
+  fromJS,
+} from 'immutable';
 import { Card, CardSegment, DataGrid } from 'lattice-ui-kit';
 
 import {
@@ -10,20 +15,28 @@ import {
   SectionWrapper,
   SmallEditButton,
 } from './SectionStyledComponents';
-import { getEntityProperties } from '../../utils/DataUtils';
+import { getEntityProperties, sortEntitiesByDateProperty } from '../../utils/DataUtils';
 import { formatNumericalValue } from '../../utils/FormattingUtils';
-import { CASE_FQNS, PEOPLE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import {
+  APP_TYPE_FQNS,
+  CASE_FQNS,
+  CHARGE_FQNS,
+  DATETIME_COMPLETED,
+  PEOPLE_FQNS
+} from '../../core/edm/constants/FullyQualifiedNames';
 import { EMPTY_FIELD } from '../../containers/participants/ParticipantsConstants';
 
+const { CHARGE_EVENT, COURT_CHARGE_LIST } = APP_TYPE_FQNS;
 const { CASE_NUMBER_TEXT, COURT_CASE_TYPE } = CASE_FQNS;
+const { NAME } = CHARGE_FQNS;
 const { FIRST_NAME, LAST_NAME } = PEOPLE_FQNS;
 
 const labelMap :OrderedMap = OrderedMap({
   judge: 'Judge',
   courtType: 'Court type',
   docketNumber: 'Docket number',
-  charge: 'Charge',
-  chargeLevel: 'Charge level',
+  charge: 'Charge (most recent)',
+  chargeDate: 'Charge date',
   requiredHours: 'Required hours',
 });
 
@@ -32,6 +45,7 @@ const CaseInfoCard = styled(Card)`
 `;
 
 type Props = {
+  charges :List;
   edit :() => void;
   hours :number;
   judge :Map;
@@ -39,11 +53,23 @@ type Props = {
 };
 
 const CaseInfoSection = ({
+  charges,
   edit,
   hours,
   judge,
   personCase,
 } :Props) => {
+
+  const mostRecentChargeAndChargeEvent :Map = !charges.isEmpty()
+    ? charges
+      .sort((chargeMap :Map) => sortEntitiesByDateProperty(chargeMap.get(CHARGE_EVENT), DATETIME_COMPLETED))
+      .last()
+    : Map();
+  const { [NAME]: chargeName } = getEntityProperties(mostRecentChargeAndChargeEvent.get(COURT_CHARGE_LIST), [NAME]);
+  const { [DATETIME_COMPLETED]: chargeDate } = getEntityProperties(
+    mostRecentChargeAndChargeEvent.get(CHARGE_EVENT),
+    [DATETIME_COMPLETED]
+  );
 
   const { [FIRST_NAME]: firstName, [LAST_NAME]: lastName } = getEntityProperties(judge, [FIRST_NAME, LAST_NAME]);
   const judgeName :string = (!!firstName && !!lastName) ? `${firstName} ${lastName}` : EMPTY_FIELD;
@@ -56,8 +82,8 @@ const CaseInfoSection = ({
     judge: judgeName,
     courtType: courtCaseType || EMPTY_FIELD,
     docketNumber: caseNumbers || EMPTY_FIELD,
-    charge: EMPTY_FIELD,
-    chargeLevel: EMPTY_FIELD,
+    charge: chargeName || EMPTY_FIELD,
+    chargeDate: chargeDate || EMPTY_FIELD,
     requiredHours: formatNumericalValue(hours) || EMPTY_FIELD,
   });
   return (
@@ -71,7 +97,8 @@ const CaseInfoSection = ({
           <DataGrid
               columns={3}
               data={data}
-              labelMap={labelMap} />
+              labelMap={labelMap}
+              truncate />
         </CardSegment>
       </CaseInfoCard>
     </SectionWrapper>
