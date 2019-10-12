@@ -10,10 +10,10 @@ import AddToAvailableChargesForm from './AddToAvailableChargesForm';
 
 import { PERSON, STATE } from '../../../utils/constants/ReduxStateConsts';
 
-const { ACTIONS, EDIT_CHECK_IN_DATE, REQUEST_STATE } = PERSON;
+const { ACTIONS, ADD_TO_AVAILABLE_CHARGES, REQUEST_STATE } = PERSON;
 
 type Props = {
-  editCheckInDateRequestState :RequestState;
+  addChargesRequestState :RequestState;
   isOpen :boolean;
   onClose :() => void;
 };
@@ -21,9 +21,9 @@ type Props = {
 class AddToAvailableChargesModal extends Component<Props> {
 
   componentDidUpdate(prevProps :Props) {
-    const { editCheckInDateRequestState, onClose } = this.props;
-    const { editCheckInDateRequestState: prevSumbitState } = prevProps;
-    if (editCheckInDateRequestState === RequestStates.SUCCESS
+    const { addChargesRequestState, onClose } = this.props;
+    const { addChargesRequestState: prevSumbitState } = prevProps;
+    if (addChargesRequestState === RequestStates.SUCCESS
       && prevSumbitState === RequestStates.PENDING) {
       onClose();
     }
@@ -31,7 +31,6 @@ class AddToAvailableChargesModal extends Component<Props> {
 
   render() {
     const {
-      editCheckInDateRequestState,
       isOpen,
       onClose,
     } = this.props;
@@ -48,7 +47,7 @@ class AddToAvailableChargesModal extends Component<Props> {
 }
 
 const mapStateToProps = (state :Map) => ({
-  editCheckInDateRequestState: state.getIn([STATE.PERSON, ACTIONS, EDIT_CHECK_IN_DATE, REQUEST_STATE]),
+  addChargesRequestState: state.getIn([STATE.PERSON, ACTIONS, ADD_TO_AVAILABLE_CHARGES, REQUEST_STATE]),
 });
 
 // $FlowFixMe

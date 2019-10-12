@@ -188,6 +188,7 @@ class EditCaseInfoForm extends Component<Props, State> {
     const {
       actions,
       app,
+      charges,
       chargesForCase,
       diversionPlan,
       getInfoForEditCaseRequestState,
@@ -205,7 +206,8 @@ class EditCaseInfoForm extends Component<Props, State> {
       || !prevProps.diversionPlan.equals(diversionPlan)
       || !prevProps.personCase.equals(personCase)
       || !prevProps.judge.equals(judge)
-      || !prevProps.chargesForCase.equals(chargesForCase)) {
+      || !prevProps.chargesForCase.equals(chargesForCase)
+      || !prevProps.charges.equals(charges)) {
       this.prepopulateFormData();
     }
   }

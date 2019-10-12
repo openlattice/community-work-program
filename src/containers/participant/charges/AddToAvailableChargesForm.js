@@ -20,6 +20,7 @@ import { RequestStates } from 'redux-reqseq';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 import type { Match } from 'react-router';
 
+import { addToAvailableCharges } from '../ParticipantActions';
 import { schema, uiSchema } from './AddToAvailableChargesSchemas';
 import { getEntitySetIdFromApp, getPropertyTypeIdFromEdm } from '../../../utils/DataUtils';
 import { APP_TYPE_FQNS, CHARGE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
@@ -32,6 +33,9 @@ const { COURT_CHARGE_LIST } = APP_TYPE_FQNS;
 const { NAME, OL_ID } = CHARGE_FQNS;
 
 type Props = {
+  actions:{
+    addToAvailableCharges :RequestSequence;
+  };
   app :Map;
   edm :Map;
 };
@@ -47,7 +51,7 @@ class AddToAvailableChargesForm extends Component<Props, State> {
   };
 
   handleOnSubmit = ({ formData } :Object) => {
-    const { app, edm } = this.props;
+    const { actions, app, edm } = this.props;
 
     const entitySetIds :{} = {
       [COURT_CHARGE_LIST]: getEntitySetIdFromApp(app, COURT_CHARGE_LIST),
@@ -57,7 +61,7 @@ class AddToAvailableChargesForm extends Component<Props, State> {
       [OL_ID]: getPropertyTypeIdFromEdm(edm, OL_ID),
     };
     const entityData = processEntityData(formData, entitySetIds, propertyTypeIds);
-    // actions.addCharge({ associationEntityData: {}, entityData });
+    actions.addToAvailableCharges({ associationEntityData: {}, entityData });
   }
 
   render() {
@@ -83,6 +87,7 @@ const mapStateToProps = (state :Map) => {
 
 const mapDispatchToProps = dispatch => ({
   actions: bindActionCreators({
+    addToAvailableCharges,
   }, dispatch)
 });
 
