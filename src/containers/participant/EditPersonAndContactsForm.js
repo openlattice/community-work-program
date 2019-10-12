@@ -1,8 +1,7 @@
 // @flow
 import React, { Component } from 'react';
 import styled from 'styled-components';
-import { fromJS, Map } from 'immutable';
-import { DateTime } from 'luxon';
+import { Map } from 'immutable';
 import { Card, CardHeader, CardStack } from 'lattice-ui-kit';
 import { Form, DataProcessingUtils } from 'lattice-fabricate';
 import { connect } from 'react-redux';

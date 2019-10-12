@@ -260,7 +260,7 @@ function* addChargesToCaseWorker(action :SequenceAction) :Generator<*, *, *> {
       };
       associationEntityData = processAssociationEntityData(associations, entitySetIds, {});
 
-      /* Edit entityData */
+      /* Edit entityData to use datetimes instead of dates */
       delete entityData[courtChargeListESID];
 
       entityData[chargeEventESID] = entityData[chargeEventESID].map((charge :{}) => {
