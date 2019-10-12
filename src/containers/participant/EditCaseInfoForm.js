@@ -21,6 +21,7 @@ import { RequestStates } from 'redux-reqseq';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 import type { Match } from 'react-router';
 
+import AddToAvailableChargesModal from './charges/AddToAvailableChargesModal';
 import LogoLoader from '../../components/LogoLoader';
 
 import {
@@ -146,6 +147,7 @@ type State = {
   chargesFormData :Object;
   chargesFormSchema :Object;
   chargesPrepopulated :boolean;
+  isAvailableChargesModalVisible :boolean;
   judgeFormData :Object;
   judgeFormSchema :Object;
   judgePrepopulated :boolean;
@@ -161,6 +163,7 @@ class EditCaseInfoForm extends Component<Props, State> {
     chargesFormData: {},
     chargesFormSchema: chargeSchema,
     chargesPrepopulated: false,
+    isAvailableChargesModalVisible: false,
     judgeFormData: {},
     judgeFormSchema: judgeSchema,
     judgePrepopulated: false,
@@ -286,7 +289,6 @@ class EditCaseInfoForm extends Component<Props, State> {
 
   createEntityIndexToIdMap = () => {
     const { chargesForCase, diversionPlan, personCase } = this.props;
-    const { chargesFormData } = this.state;
 
     const chargeEKIDs :UUID[] = [];
     const chargeEventEKIDs :UUID[] = [];
@@ -299,15 +301,6 @@ class EditCaseInfoForm extends Component<Props, State> {
       map.setIn([MANUAL_PRETRIAL_COURT_CASES, 0], getEntityKeyId(personCase));
       map.setIn([COURT_CHARGE_LIST, -1], chargeEKIDs);
       map.setIn([CHARGE_EVENT, -1], chargeEventEKIDs);
-      // const charges :[] = Object.keys(chargesFormData).length ? getIn(chargesFormData, [getPageSectionKey(1, 1)]) : [];
-      // if (charges.length) {
-      //   fromJS(charges).forEach((charge :Map, index :number) => {
-      //     map.setIn([COURT_CHARGE_LIST, index], charge.get(getEntityAddressKey(-1, COURT_CHARGE_LIST, ENTITY_KEY_ID)));
-      //     map.setIn([CHARGE_EVENT, index], charge.get(getEntityAddressKey(-1, CHARGE_EVENT, DATETIME_COMPLETED)));
-      //   });
-      // }
-
-
     });
     return entityIndexToIdMap;
   }
@@ -429,6 +422,14 @@ class EditCaseInfoForm extends Component<Props, State> {
     this.setState({ chargesFormData: formData });
   }
 
+  handleShowModal = () => {
+    this.setState({ isAvailableChargesModalVisible: true });
+  }
+
+  handleHideModal = () => {
+    this.setState({ isAvailableChargesModalVisible: false });
+  }
+
   render() {
     const {
       actions,
@@ -444,6 +445,7 @@ class EditCaseInfoForm extends Component<Props, State> {
       chargesFormData,
       chargesFormSchema,
       chargesPrepopulated,
+      isAvailableChargesModalVisible,
       judgeFormData,
       judgePrepopulated,
       judgeFormSchema,
@@ -528,7 +530,7 @@ class EditCaseInfoForm extends Component<Props, State> {
             <CardHeader padding="sm">
               <InnerCardHeader>
                 <div>Edit Charges in Case</div>
-                <Button>Add to Available Charges</Button>
+                <Button onClick={this.handleShowModal}>Add to Available Charges</Button>
               </InnerCardHeader>
             </CardHeader>
             <Form
@@ -550,6 +552,9 @@ class EditCaseInfoForm extends Component<Props, State> {
                 uiSchema={requiredHoursUiSchema} />
           </Card>
         </CardStack>
+        <AddToAvailableChargesModal
+            isOpen={isAvailableChargesModalVisible}
+            onClose={this.handleHideModal} />
       </FormWrapper>
     );
   }
