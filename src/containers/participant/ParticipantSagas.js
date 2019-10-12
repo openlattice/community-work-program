@@ -70,6 +70,7 @@ import {
   GET_WORK_APPOINTMENTS,
   MARK_DIVERSION_PLAN_AS_COMPLETE,
   REASSIGN_JUDGE,
+  REMOVE_CHARGE_FROM_CASE,
   UPDATE_HOURS_WORKED,
   addChargesToCase,
   addInfraction,
@@ -109,6 +110,7 @@ import {
   getWorksitePlans,
   markDiversionPlanAsComplete,
   reassignJudge,
+  removeChargeFromCase,
   updateHoursWorked,
 } from './ParticipantActions';
 import {
@@ -126,6 +128,7 @@ import {
 import { getWorksites } from '../worksites/WorksitesActions';
 import { getWorksitesWorker } from '../worksites/WorksitesSagas';
 import {
+  getAssociationNeighborESID,
   getEntityKeyId,
   getEntityProperties,
   getEntitySetIdFromApp,
@@ -148,7 +151,7 @@ import {
   INFRACTION_FQNS,
   WORKSITE_PLAN_FQNS,
 } from '../../core/edm/constants/FullyQualifiedNames';
-import { INFRACTIONS_CONSTS } from '../../core/edm/constants/DataModelConsts';
+import { ASSOCIATION_DETAILS, INFRACTIONS_CONSTS } from '../../core/edm/constants/DataModelConsts';
 
 const { UpdateTypes } = Types;
 const { getEntityData, getEntitySetData, updateEntityData } = DataApiActions;
@@ -305,6 +308,84 @@ function* addChargesToCaseWorker(action :SequenceAction) :Generator<*, *, *> {
 function* addChargesToCaseWatcher() :Generator<*, *, *> {
 
   yield takeEvery(ADD_CHARGES_TO_CASE, addChargesToCaseWorker);
+}
+
+/*
+ *
+ * ParticipantActions.removeChargeFromCase()
+ *
+ */
+
+function* removeChargeFromCaseWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+  if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
+  let response :{} = {};
+
+  try {
+    yield put(removeChargeFromCase.request(id, value));
+
+    const { entityData } = value;
+
+    const app = yield select(getAppFromState);
+    const courtChargeListESID :UUID = getEntitySetIdFromApp(app, COURT_CHARGE_LIST);
+    const chargeEventESID :UUID = getEntitySetIdFromApp(app, CHARGE_EVENT);
+    const caseESID :UUID = getEntitySetIdFromApp(app, MANUAL_PRETRIAL_COURT_CASES);
+    const peopleESID :UUID = getEntitySetIdFromApp(app, PEOPLE);
+
+    const courtChargeListIterator = entityData[courtChargeListESID].values();
+    const courtChargeListEKID :UUID = courtChargeListIterator.next().value;
+    const chargeEventIterator = entityData[chargeEventESID].values();
+    const chargeEventEKID :UUID = chargeEventIterator.next().value;
+
+    const entitiesToDelete :Object[] = [{
+      entitySetId: chargeEventESID,
+      entityKeyId: chargeEventEKID
+    }];
+
+    const searchFilter = {
+      entityKeyIds: [courtChargeListEKID],
+      destinationEntitySetIds: [caseESID],
+      sourceEntitySetIds: [peopleESID],
+    };
+    response = yield call(
+      searchEntityNeighborsWithFilterWorker,
+      searchEntityNeighborsWithFilter({ entitySetId: courtChargeListESID, filter: searchFilter })
+    );
+    if (response.error) {
+      throw response.error;
+    }
+    if (response.data[courtChargeListEKID]) {
+      fromJS(response.data[courtChargeListEKID]).forEach((neighbor :Map) => {
+        const associationEntity :Map = neighbor.get(ASSOCIATION_DETAILS);
+        const associationEKID :UUID = getEntityKeyId(associationEntity);
+        const associationESID :UUID = getAssociationNeighborESID(neighbor);
+        entitiesToDelete.push({
+          entitySetId: associationESID,
+          entityKeyId: associationEKID
+        });
+      });
+    }
+
+    response = yield call(deleteEntitiesWorker, deleteEntities(entitiesToDelete));
+    if (response.error) {
+      throw response.error;
+    }
+
+    yield put(removeChargeFromCase.success(id, {}));
+  }
+  catch (error) {
+    LOG.error('caught exception in removeChargeFromCaseWorker()', error);
+    yield put(removeChargeFromCase.failure(id, error));
+  }
+  finally {
+    yield put(removeChargeFromCase.finally(id));
+  }
+}
+
+function* removeChargeFromCaseWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(REMOVE_CHARGE_FROM_CASE, removeChargeFromCaseWorker);
 }
 
 /*
@@ -2713,6 +2794,8 @@ export {
   markDiversionPlanAsCompleteWorker,
   reassignJudgeWatcher,
   reassignJudgeWorker,
+  removeChargeFromCaseWatcher,
+  removeChargeFromCaseWorker,
   updateHoursWorkedWatcher,
   updateHoursWorkedWorker,
 };

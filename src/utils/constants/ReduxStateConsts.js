@@ -107,6 +107,7 @@ export const PERSON = {
   PHONE: 'phone',
   PROGRAM_OUTCOME: 'programOutcome',
   REASSIGN_JUDGE: 'reassignJudge',
+  REMOVE_CHARGE_FROM_CASE: 'removeChargeFromCase',
   REQUEST_STATE: 'requestState',
   REQUIRED_HOURS: 'requiredHours',
   UPDATE_HOURS_WORKED: 'updateHoursWorked',

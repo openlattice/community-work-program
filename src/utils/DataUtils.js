@@ -7,6 +7,7 @@ import { DateTime } from 'luxon';
 import type { FQN } from 'lattice';
 
 import {
+  ASSOCIATION_ENTITY_SET,
   NEIGHBOR_DETAILS,
   NEIGHBOR_ENTITY_SET,
   SEARCH_PREFIX,
@@ -91,6 +92,7 @@ export const sortEntitiesByDateProperty = (
   });
 
 export const getNeighborESID = (neighbor :Map) => (neighbor.getIn([NEIGHBOR_ENTITY_SET, 'id']));
+export const getAssociationNeighborESID = (neighbor :Map) => (neighbor.getIn([ASSOCIATION_ENTITY_SET, 'id']));
 
 export const getSearchTerm = (
   propertyTypeId :UUID,

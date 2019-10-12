@@ -8,7 +8,12 @@ import {
   getIn,
 } from 'immutable';
 import { DateTime } from 'luxon';
-import { Card, CardHeader, CardStack } from 'lattice-ui-kit';
+import {
+  Button,
+  Card,
+  CardHeader,
+  CardStack
+} from 'lattice-ui-kit';
 import { Form, DataProcessingUtils } from 'lattice-fabricate';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
@@ -24,6 +29,7 @@ import {
   editRequiredHours,
   getInfoForEditCase,
   reassignJudge,
+  removeChargeFromCase,
 } from './ParticipantActions';
 import { goToRoute } from '../../core/router/RoutingActions';
 import {
@@ -103,6 +109,13 @@ const ButtonWrapper = styled.div`
   margin-bottom: 30px;
 `;
 
+const InnerCardHeader = styled.div`
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+`;
+
 type Props = {
   actions:{
     addChargesToCase :RequestSequence;
@@ -111,6 +124,7 @@ type Props = {
     getInfoForEditCase :RequestSequence;
     goToRoute :RequestSequence;
     reassignJudge :RequestSequence;
+    removeChargeFromCase :RequestSequence;
   },
   app :Map;
   charges :List;
@@ -271,19 +285,29 @@ class EditCaseInfoForm extends Component<Props, State> {
   }
 
   createEntityIndexToIdMap = () => {
-    const { diversionPlan, personCase } = this.props;
+    const { chargesForCase, diversionPlan, personCase } = this.props;
     const { chargesFormData } = this.state;
 
+    const chargeEKIDs :UUID[] = [];
+    const chargeEventEKIDs :UUID[] = [];
+    chargesForCase.forEach((chargeMap :Map) => {
+      chargeEKIDs.push(getEntityKeyId(chargeMap.get(COURT_CHARGE_LIST)));
+      chargeEventEKIDs.push(getEntityKeyId(chargeMap.get(CHARGE_EVENT)));
+    });
     const entityIndexToIdMap :Map = Map().withMutations((map :Map) => {
       map.setIn([DIVERSION_PLAN, 0], getEntityKeyId(diversionPlan));
       map.setIn([MANUAL_PRETRIAL_COURT_CASES, 0], getEntityKeyId(personCase));
+      map.setIn([COURT_CHARGE_LIST, -1], chargeEKIDs);
+      map.setIn([CHARGE_EVENT, -1], chargeEventEKIDs);
+      // const charges :[] = Object.keys(chargesFormData).length ? getIn(chargesFormData, [getPageSectionKey(1, 1)]) : [];
+      // if (charges.length) {
+      //   fromJS(charges).forEach((charge :Map, index :number) => {
+      //     map.setIn([COURT_CHARGE_LIST, index], charge.get(getEntityAddressKey(-1, COURT_CHARGE_LIST, ENTITY_KEY_ID)));
+      //     map.setIn([CHARGE_EVENT, index], charge.get(getEntityAddressKey(-1, CHARGE_EVENT, DATETIME_COMPLETED)));
+      //   });
+      // }
 
-      const charges :[] = Object.keys(chargesFormData).length ? getIn(chargesFormData, [getPageSectionKey(1, 1)]) : [];
-      if (charges.length) {
-        fromJS(charges).forEach((charge :Map, index :number) => {
-          map.setIn([COURT_CHARGE_LIST, index], charge.get(getEntityAddressKey(-1, COURT_CHARGE_LIST, ENTITY_KEY_ID)));
-        });
-      }
+
     });
     return entityIndexToIdMap;
   }
@@ -456,6 +480,7 @@ class EditCaseInfoForm extends Component<Props, State> {
       addActions: {
         addCharge: actions.addChargesToCase
       },
+      deleteAction: actions.removeChargeFromCase,
       entityIndexToIdMap,
       entitySetIds,
       propertyTypeIds,
@@ -500,7 +525,12 @@ class EditCaseInfoForm extends Component<Props, State> {
                 uiSchema={caseUiSchema} />
           </Card>
           <Card>
-            <CardHeader padding="sm">Edit Charges</CardHeader>
+            <CardHeader padding="sm">
+              <InnerCardHeader>
+                <div>Edit Charges in Case</div>
+                <Button>Add to Available Charges</Button>
+              </InnerCardHeader>
+            </CardHeader>
             <Form
                 disabled={chargesPrepopulated}
                 formContext={chargesFormContext}
@@ -551,6 +581,7 @@ const mapDispatchToProps = dispatch => ({
     getInfoForEditCase,
     goToRoute,
     reassignJudge,
+    removeChargeFromCase,
   }, dispatch)
 });
 

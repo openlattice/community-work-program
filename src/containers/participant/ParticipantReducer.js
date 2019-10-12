@@ -48,6 +48,7 @@ import {
   getWorksitePlans,
   markDiversionPlanAsComplete,
   reassignJudge,
+  removeChargeFromCase,
   updateHoursWorked,
 } from './ParticipantActions';
 import {
@@ -144,6 +145,7 @@ const {
   PHONE,
   PROGRAM_OUTCOME,
   REASSIGN_JUDGE,
+  REMOVE_CHARGE_FROM_CASE,
   REQUEST_STATE,
   UPDATE_HOURS_WORKED,
   VIOLATIONS,
@@ -1819,6 +1821,21 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
         FAILURE: () => state
           .setIn([ACTIONS, REASSIGN_JUDGE, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, REASSIGN_JUDGE, action.id])
+      });
+    }
+
+    case removeChargeFromCase.case(action.type): {
+
+      return removeChargeFromCase.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, REMOVE_CHARGE_FROM_CASE, action.id], action)
+          .setIn([ACTIONS, REMOVE_CHARGE_FROM_CASE, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => state
+          .setIn([ACTIONS, REMOVE_CHARGE_FROM_CASE, REQUEST_STATE], RequestStates.SUCCESS),
+        FAILURE: () => state
+          .setIn([ACTIONS, REMOVE_CHARGE_FROM_CASE, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, REMOVE_CHARGE_FROM_CASE, action.id])
       });
     }
 

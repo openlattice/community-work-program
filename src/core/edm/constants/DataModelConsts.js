@@ -15,6 +15,7 @@ export const ORG_IDS = {
 
 export const TYPE_IDS_BY_FQNS = 'typeIdsByFqn';
 export const TYPES_BY_ID = 'typesById';
+export const ASSOCIATION_ENTITY_SET = 'associationEntitySet';
 export const ASSOCIATION_DETAILS = 'associationDetails';
 export const NEIGHBOR_DETAILS = 'neighborDetails';
 export const NEIGHBOR_ENTITY_SET = 'neighborEntitySet';

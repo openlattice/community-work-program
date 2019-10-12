@@ -115,6 +115,9 @@ const markDiversionPlanAsComplete = newRequestSequence(MARK_DIVERSION_PLAN_AS_CO
 const REASSIGN_JUDGE:'REASSIGN_JUDGE' = 'REASSIGN_JUDGE';
 const reassignJudge = newRequestSequence(REASSIGN_JUDGE);
 
+const REMOVE_CHARGE_FROM_CASE:'REMOVE_CHARGE_FROM_CASE' = 'REMOVE_CHARGE_FROM_CASE';
+const removeChargeFromCase = newRequestSequence(REMOVE_CHARGE_FROM_CASE);
+
 const UPDATE_HOURS_WORKED :'UPDATE_HOURS_WORKED' = 'UPDATE_HOURS_WORKED';
 const updateHoursWorked = newRequestSequence(UPDATE_HOURS_WORKED);
 
@@ -157,6 +160,7 @@ export {
   GET_WORK_APPOINTMENTS,
   MARK_DIVERSION_PLAN_AS_COMPLETE,
   REASSIGN_JUDGE,
+  REMOVE_CHARGE_FROM_CASE,
   UPDATE_HOURS_WORKED,
   addChargesToCase,
   addInfraction,
@@ -196,5 +200,6 @@ export {
   getWorksitePlans,
   markDiversionPlanAsComplete,
   reassignJudge,
+  removeChargeFromCase,
   updateHoursWorked,
 };
