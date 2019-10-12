@@ -30,9 +30,6 @@ import AssignedWorksite from './assignedworksites/AssignedWorksite';
 import AssignWorksiteModal from './assignedworksites/AssignWorksiteModal';
 import InfractionsContainer from './infractions/InfractionsContainer';
 import CreateWorkAppointmentModal from './schedule/CreateAppointmentModal';
-import AddOrientationDateModal from './AddOrientationDateModal';
-import EditSentenceDateModal from './EditSentenceDateModal';
-import EditCheckInDateModal from './EditCheckInDateModal';
 import LogoLoader from '../../components/LogoLoader';
 
 import { getAllParticipantInfo } from './ParticipantActions';
@@ -101,9 +98,6 @@ const ENROLLMENT_STATUSES_EXCLUDING_PREENROLLMENT = Object.values(ENROLLMENT_STA
 
 /* Constants for Modals */
 const ASSIGN_WORKSITE = 'showAssignWorksiteModal';
-const CHECK_IN_DATE = 'showCheckInDateModal';
-const ORIENTATION_DATE = 'showOrientationDateModal';
-const SENTENCE_DATE = 'showSentenceDateModal';
 const WORK_APPOINTMENT = 'showWorkAppointmentModal';
 
 const ProfileWrapper = styled.div`
@@ -208,9 +202,6 @@ type Props = {
 type State = {
   workStartDateTime :string;
   showAssignWorksiteModal :boolean;
-  showCheckInDateModal :boolean;
-  showOrientationDateModal :boolean;
-  showSentenceDateModal :boolean;
   showWorkAppointmentModal :boolean;
   worksiteNamesByWorksitePlan :Map;
 };
@@ -223,9 +214,6 @@ class ParticipantProfile extends Component<Props, State> {
     this.state = {
       workStartDateTime: '',
       [ASSIGN_WORKSITE]: false,
-      [CHECK_IN_DATE]: false,
-      [ORIENTATION_DATE]: false,
-      [SENTENCE_DATE]: false,
       [WORK_APPOINTMENT]: false,
       worksiteNamesByWorksitePlan: Map(),
     };
@@ -343,9 +331,6 @@ class ParticipantProfile extends Component<Props, State> {
     } = this.props;
     const {
       showAssignWorksiteModal,
-      showCheckInDateModal,
-      showOrientationDateModal,
-      showSentenceDateModal,
       showWorkAppointmentModal,
       workStartDateTime,
       worksiteNamesByWorksitePlan
@@ -517,15 +502,6 @@ class ParticipantProfile extends Component<Props, State> {
               isOpen={showWorkAppointmentModal}
               onClose={() => this.handleHideModal(WORK_APPOINTMENT)}
               personEKID={personEKID} />
-          <AddOrientationDateModal
-              isOpen={showOrientationDateModal}
-              onClose={() => this.handleHideModal(ORIENTATION_DATE)} />
-          <EditSentenceDateModal
-              isOpen={showSentenceDateModal}
-              onClose={() => this.handleHideModal(SENTENCE_DATE)} />
-          <EditCheckInDateModal
-              isOpen={showCheckInDateModal}
-              onClose={() => this.handleHideModal(CHECK_IN_DATE)} />
         </ProfileWrapper>
       </>
     );
