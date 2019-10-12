@@ -13,6 +13,9 @@ const addNewDiversionPlanStatus = newRequestSequence(ADD_NEW_DIVERSION_PLAN_STAT
 const ADD_NEW_PARTICIPANT_CONTACTS :'ADD_NEW_PARTICIPANT_CONTACTS' = 'ADD_NEW_PARTICIPANT_CONTACTS';
 const addNewParticipantContacts = newRequestSequence(ADD_NEW_PARTICIPANT_CONTACTS);
 
+const ADD_TO_AVAILABLE_CHARGES :'ADD_TO_AVAILABLE_CHARGES' = 'ADD_TO_AVAILABLE_CHARGES';
+const addToAvailableCharges = newRequestSequence(ADD_TO_AVAILABLE_CHARGES);
+
 const ADD_WORKSITE_PLAN :'ADD_WORKSITE_PLAN' = 'ADD_WORKSITE_PLAN';
 const addWorksitePlan = newRequestSequence(ADD_WORKSITE_PLAN);
 
@@ -126,6 +129,7 @@ export {
   ADD_INFRACTION,
   ADD_NEW_DIVERSION_PLAN_STATUS,
   ADD_NEW_PARTICIPANT_CONTACTS,
+  ADD_TO_AVAILABLE_CHARGES,
   ADD_WORKSITE_PLAN,
   CHECK_IN_FOR_APPOINTMENT,
   CREATE_WORK_APPOINTMENTS,
@@ -166,6 +170,7 @@ export {
   addInfraction,
   addNewDiversionPlanStatus,
   addNewParticipantContacts,
+  addToAvailableCharges,
   addWorksitePlan,
   checkInForAppointment,
   createWorkAppointments,

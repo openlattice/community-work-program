@@ -57,6 +57,7 @@ export const PERSON = {
   ADD_NEW_DIVERSION_PLAN_STATUS: 'addNewDiversionPlanStatus',
   ADD_NEW_PARTICIPANT_CONTACTS: 'addNewParticipantContacts',
   ADD_ORIENTATION_DATE: 'addOrientationDate',
+  ADD_TO_AVAILABLE_CHARGES: 'addToAvailableCharges',
   ADD_WORKSITE_PLAN: 'addWorksitePlan',
   CHARGES: 'charges',
   CHARGES_FOR_CASE: 'chargesForCase',

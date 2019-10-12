@@ -14,6 +14,7 @@ import {
   addInfraction,
   addNewDiversionPlanStatus,
   addNewParticipantContacts,
+  addToAvailableCharges,
   addWorksitePlan,
   checkInForAppointment,
   createWorkAppointments,
@@ -95,6 +96,7 @@ const {
   ADD_INFRACTION_EVENT,
   ADD_NEW_DIVERSION_PLAN_STATUS,
   ADD_NEW_PARTICIPANT_CONTACTS,
+  ADD_TO_AVAILABLE_CHARGES,
   ADD_WORKSITE_PLAN,
   ADDRESS,
   CHARGES,
@@ -165,6 +167,9 @@ const INITIAL_STATE :Map<*, *> = fromJS({
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [ADD_NEW_DIVERSION_PLAN_STATUS]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [ADD_TO_AVAILABLE_CHARGES]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [ADD_WORKSITE_PLAN]: {
@@ -520,6 +525,32 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
           .set(EMAIL, Map())
           .setIn([ACTIONS, ADD_NEW_PARTICIPANT_CONTACTS, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, ADD_NEW_PARTICIPANT_CONTACTS, action.id]),
+      });
+    }
+
+    case addToAvailableCharges.case(action.type): {
+
+      return addToAvailableCharges.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, ADD_TO_AVAILABLE_CHARGES, action.id], action)
+          .setIn([ACTIONS, ADD_TO_AVAILABLE_CHARGES, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+
+          const seqAction :SequenceAction = action;
+          const successValue :Object = seqAction.value;
+          const { newCharge } = successValue;
+
+          let charges = state.get(CHARGES);
+          charges = charges.push(newCharge);
+
+          return state
+            .set(CHARGES, charges)
+            .setIn([ACTIONS, ADD_TO_AVAILABLE_CHARGES, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, ADD_TO_AVAILABLE_CHARGES, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, ADD_TO_AVAILABLE_CHARGES, action.id]),
       });
     }
 
