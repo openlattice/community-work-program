@@ -536,7 +536,7 @@ function* addToAvailableChargesWorker(action :SequenceAction) :Generator<*, *, *
       newCharge = newCharge.set(propertyTypeFqn, chargeValue);
     });
 
-    yield put(addToAvailableCharges.success(id, newCharge));
+    yield put(addToAvailableCharges.success(id, { newCharge }));
   }
   catch (error) {
     LOG.error('caught exception in addToAvailableChargesWorker()', error);
