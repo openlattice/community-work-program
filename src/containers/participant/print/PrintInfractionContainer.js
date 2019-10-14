@@ -1,14 +1,14 @@
 // @flow
 import React, { Component } from 'react';
 import styled from 'styled-components';
-import {
-  fromJS,
-  List,
-  Map,
-  OrderedMap
-} from 'immutable';
+import { List, Map } from 'immutable';
 import { DateTime } from 'luxon';
-import { Card, CardSegment, DataGrid, Label } from 'lattice-ui-kit';
+import {
+  Card,
+  CardSegment,
+  Label,
+  Select,
+} from 'lattice-ui-kit';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { RequestStates } from 'redux-reqseq';
@@ -16,53 +16,47 @@ import type { RequestSequence, RequestState } from 'redux-reqseq';
 import type { Match } from 'react-router';
 
 import LogoLoader from '../../../components/LogoLoader';
+import ViolationHeader from '../../../assets/images/violation_header.png';
 
 import { getInfoForPrintInfraction } from '../ParticipantActions';
 import {
   APP_TYPE_FQNS,
+  CASE_FQNS,
   DATETIME_COMPLETED,
   INFRACTION_FQNS,
   INFRACTION_EVENT_FQNS,
   PEOPLE_FQNS,
 } from '../../../core/edm/constants/FullyQualifiedNames';
-import { getEntityKeyId, getEntityProperties, sortEntitiesByDateProperty } from '../../../utils/DataUtils';
+import { getEntityProperties } from '../../../utils/DataUtils';
+import { getValuesFromEntityList } from '../utils/EditCaseInfoUtils';
 import { APP, PERSON, STATE } from '../../../utils/constants/ReduxStateConsts';
 
 const { PEOPLE } = APP_TYPE_FQNS;
+const { CASE_NUMBER_TEXT } = CASE_FQNS;
 const { CATEGORY } = INFRACTION_FQNS;
 const { NOTES } = INFRACTION_EVENT_FQNS;
 const { DOB, FIRST_NAME, LAST_NAME } = PEOPLE_FQNS;
 const { INITIALIZE_APPLICATION } = APP;
 const {
   ACTIONS,
+  ALL_PARTICIPANT_CASES,
   GET_INFO_FOR_PRINT_INFRACTION,
   INFRACTION_EVENT,
   INFRACTION_TYPE,
+  JUDGES_BY_CASE,
   PARTICIPANT,
   REQUEST_STATE,
 } = PERSON;
 
-const EMPTY_STRING = '';
-const SPACED_STRING = ' ';
-
-const headerLabelMap :OrderedMap = OrderedMap({
-  worksiteName: 'Worksite',
-  day: 'Weekday',
-  date: 'Date',
-  hours: 'Hours',
-});
-const appointmentLabelMap :OrderedMap = OrderedMap({
-  worksiteName: EMPTY_STRING,
-  day: EMPTY_STRING,
-  date: EMPTY_STRING,
-  hours: EMPTY_STRING,
-});
-const headerDataMap :Map = Map({
-  worksiteName: SPACED_STRING,
-  day: SPACED_STRING,
-  date: SPACED_STRING,
-  hours: SPACED_STRING,
-});
+// $FlowFixMe
+const PenningtonSherrifsHeader = styled.img.attrs({
+  alt: 'Pennington County Sheriff\'s Office',
+  src: ViolationHeader,
+})`
+  height: 200px;
+  display: block;
+  margin: 0 auto;
+`;
 
 const TextWrapper = styled.div`
   display: flex;
@@ -72,29 +66,27 @@ const TextWrapper = styled.div`
 
 const RowWrapper = styled.div`
   display: grid;
-  grid-template-columns: 300px 1fr;
+  grid-template-columns: 300px 300px;
   grid-gap: 5px 30px;
   width: 100%;
-  /* min-height: 40px; */
 `;
 
 type Props = {
   actions:{
     getInfoForPrintInfraction :RequestSequence;
   };
+  allParticipantCases :List;
   app :Map;
   getInfoForPrintInfractionRequestState :RequestState;
   initializeApplicationRequestState :RequestState;
   infractionEvent :Map;
   infractionType :Map;
+  judgesByCase :Map;
   match :Match;
   participant :Map;
 };
 
-type State = {
-};
-
-class PrintInfractionContainer extends Component<Props, State> {
+class PrintInfractionContainer extends Component<Props> {
 
   componentDidMount() {
     const {
@@ -124,15 +116,17 @@ class PrintInfractionContainer extends Component<Props, State> {
 
   render() {
     const {
+      allParticipantCases,
       getInfoForPrintInfractionRequestState,
       initializeApplicationRequestState,
       infractionEvent,
       infractionType,
+      judgesByCase,
       participant,
     } = this.props;
 
-    if (getInfoForPrintInfractionRequestState === RequestStates.PENDING
-        || initializeApplicationRequestState === RequestStates.PENDING) {
+    if (initializeApplicationRequestState === RequestStates.PENDING
+        || getInfoForPrintInfractionRequestState === RequestStates.PENDING) {
       return (
         <LogoLoader
             loadingText="Please wait..."
@@ -156,8 +150,21 @@ class PrintInfractionContainer extends Component<Props, State> {
 
     const { [CATEGORY]: infractionCategory } = getEntityProperties(infractionType, [CATEGORY]);
 
+    const judgesEntities :List = judgesByCase ? judgesByCase.valueSeq().toList() : List();
+    const [judgeValues, judgeLabels] = getValuesFromEntityList(judgesEntities, [FIRST_NAME, LAST_NAME]);
+    const judgesOptions = [];
+    judgeValues
+      .forEach((judgeEKID :UUID, i :number) => judgesOptions.push({ value: judgeEKID, label: judgeLabels[i] }));
+
+    const [caseValues, caseLabels] = getValuesFromEntityList(allParticipantCases, [CASE_NUMBER_TEXT]);
+    const casesOptions = [];
+    caseValues.forEach((caseEKID :UUID, i :number) => casesOptions.push({ value: caseEKID, label: caseLabels[i] }));
+
     return (
       <Card>
+        <CardSegment>
+          <PenningtonSherrifsHeader />
+        </CardSegment>
         <CardSegment vertical>
           <Label subtle>Date</Label>
           <TextWrapper>{ infractionDate }</TextWrapper>
@@ -179,11 +186,15 @@ class PrintInfractionContainer extends Component<Props, State> {
           <RowWrapper>
             <div>
               <Label subtle>Docket #</Label>
-              <TextWrapper></TextWrapper>
+              <Select
+                  borderless
+                  options={casesOptions} />
             </div>
             <div>
               <Label subtle>Judge</Label>
-              <TextWrapper></TextWrapper>
+              <Select
+                  borderless
+                  options={judgesOptions} />
             </div>
           </RowWrapper>
         </CardSegment>
@@ -192,11 +203,15 @@ class PrintInfractionContainer extends Component<Props, State> {
           <RowWrapper>
             <div>
               <Label subtle>Docket #</Label>
-              <TextWrapper></TextWrapper>
+              <Select
+                  borderless
+                  options={casesOptions} />
             </div>
             <div>
               <Label subtle>Judge</Label>
-              <TextWrapper></TextWrapper>
+              <Select
+                  borderless
+                  options={judgesOptions} />
             </div>
           </RowWrapper>
         </CardSegment>
@@ -218,10 +233,12 @@ const mapStateToProps = (state) => {
   const person = state.get(STATE.PERSON);
   return {
     app,
+    [ALL_PARTICIPANT_CASES]: person.get(ALL_PARTICIPANT_CASES),
     getInfoForPrintInfractionRequestState: person.getIn([ACTIONS, GET_INFO_FOR_PRINT_INFRACTION, REQUEST_STATE]),
     initializeApplicationRequestState: app.getIn([ACTIONS, INITIALIZE_APPLICATION, REQUEST_STATE]),
     [INFRACTION_EVENT]: person.get(INFRACTION_EVENT),
     [INFRACTION_TYPE]: person.get(INFRACTION_TYPE),
+    [JUDGES_BY_CASE]: person.get(JUDGES_BY_CASE),
     [PARTICIPANT]: person.get(PARTICIPANT),
   };
 };
