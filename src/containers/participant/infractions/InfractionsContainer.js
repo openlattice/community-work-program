@@ -60,7 +60,7 @@ type Props = {
   currentStatus :string;
   getParticipantInfractionsState :RequestState;
   infractionsInfo :Map;
-  personEKID :UUID;
+  participant :Map;
   violations :List;
   warnings :List;
   worksitesByWorksitePlan :Map;
@@ -140,6 +140,7 @@ class InfractionsContainer extends Component<Props, State> {
     const {
       getParticipantInfractionsState,
       infractionsInfo,
+      participant,
       violations,
       warnings,
       worksitesByWorksitePlan,
@@ -148,7 +149,7 @@ class InfractionsContainer extends Component<Props, State> {
 
     const infractions :List = violations.concat(warnings);
 
-    const actions :Element<*> = (
+    const controls :Element<*> = (
       <ActionsWrapper>
         <Select
             options={infractionOptions}
@@ -170,7 +171,7 @@ class InfractionsContainer extends Component<Props, State> {
     if (infractions.isEmpty()) {
       return (
         <Card>
-          { actions }
+          { controls }
           <IconSplashWrapper>
             <IconSplash
                 caption="No Warnings or Violations"
@@ -185,9 +186,10 @@ class InfractionsContainer extends Component<Props, State> {
     const infractionInfo :Map = infractionsInfo.get(selectedInfractionEKID);
     return (
       <InfractionDisplay
-          actions={actions}
+          controls={controls}
           infraction={selectedInfraction}
           infractionInfo={infractionInfo}
+          participant={participant}
           worksitesByWorksitePlan={worksitesByWorksitePlan} />
     );
   }
@@ -195,9 +197,10 @@ class InfractionsContainer extends Component<Props, State> {
   render() {
     const {
       currentStatus,
-      personEKID,
+      participant,
     } = this.props;
     const { infractionEventModalVisible } = this.state;
+    const personEKID :UUID = getEntityKeyId(participant);
     return (
       <InfractionsOuterWrapper>
         { this.renderReports() }
