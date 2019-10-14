@@ -1,7 +1,6 @@
 // @flow
 import React, { Component } from 'react';
-import styled from 'styled-components';
-import { List, Map } from 'immutable';
+import { Map } from 'immutable';
 import {
   Button,
   Label,

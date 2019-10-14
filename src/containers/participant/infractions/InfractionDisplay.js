@@ -143,7 +143,7 @@ class InfractionDisplay extends Component<Props, State> {
     const worksiteEntity :Map = infractionInfo ? worksitesByWorksitePlan.get(infractionInfo.get(WORKSITE_PLAN)) : Map();
     let { [NAME]: worksiteName } = getEntityProperties(worksiteEntity, [NAME]);
     worksiteName = !worksiteName ? EMPTY_FIELD : worksiteName;
-    const status :string = infractionInfo.get(STATUS, EMPTY_FIELD) || EMPTY_FIELD;
+    const status :string = (infractionInfo ? infractionInfo.get(STATUS, '') : '') || EMPTY_FIELD;
     const data :List = fromJS({
       category,
       date,
