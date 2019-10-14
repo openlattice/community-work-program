@@ -72,11 +72,12 @@ const BottomRow = styled.div`
 `;
 
 const ButtonsWrapper = styled.div`
+  align-self: flex-end;
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
   grid-gap: 0 10px;
+  grid-template-columns: repeat(3, 1fr);
   height: 40px;
-  align-self: center;
+  margin-bottom: 20px;
 `;
 
 type Props = {
