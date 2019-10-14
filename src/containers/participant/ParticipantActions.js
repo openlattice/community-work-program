@@ -55,6 +55,12 @@ const getContactInfo = newRequestSequence(GET_CONTACT_INFO);
 const GET_ENROLLMENT_STATUS :'GET_ENROLLMENT_STATUS' = 'GET_ENROLLMENT_STATUS';
 const getEnrollmentStatus = newRequestSequence(GET_ENROLLMENT_STATUS);
 
+const GET_INFO_FOR_PRINT_INFRACTION :'GET_INFO_FOR_PRINT_INFRACTION' = 'GET_INFO_FOR_PRINT_INFRACTION';
+const getInfoForPrintInfraction = newRequestSequence(GET_INFO_FOR_PRINT_INFRACTION);
+
+const GET_INFRACTION :'GET_INFRACTION' = 'GET_INFRACTION';
+const getInfraction = newRequestSequence(GET_INFRACTION);
+
 const GET_INFRACTION_TYPES :'GET_INFRACTION_TYPES' = 'GET_INFRACTION_TYPES';
 const getInfractionTypes = newRequestSequence(GET_INFRACTION_TYPES);
 
@@ -109,6 +115,8 @@ export {
   GET_CASE_INFO,
   GET_CONTACT_INFO,
   GET_ENROLLMENT_STATUS,
+  GET_INFO_FOR_PRINT_INFRACTION,
+  GET_INFRACTION,
   GET_INFRACTION_TYPES,
   GET_PARTICIPANT,
   GET_PARTICIPANT_INFRACTIONS,
@@ -137,6 +145,8 @@ export {
   getCaseInfo,
   getContactInfo,
   getEnrollmentStatus,
+  getInfoForPrintInfraction,
+  getInfraction,
   getInfractionTypes,
   getParticipant,
   getParticipantInfractions,

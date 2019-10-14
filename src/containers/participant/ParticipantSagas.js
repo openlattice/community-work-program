@@ -42,6 +42,8 @@ import {
   GET_CASE_INFO,
   GET_CONTACT_INFO,
   GET_ENROLLMENT_STATUS,
+  GET_INFO_FOR_PRINT_INFRACTION,
+  GET_INFRACTION,
   GET_INFRACTION_TYPES,
   GET_PARTICIPANT,
   GET_PARTICIPANT_INFRACTIONS,
@@ -70,6 +72,8 @@ import {
   getCaseInfo,
   getContactInfo,
   getEnrollmentStatus,
+  getInfoForPrintInfraction,
+  getInfraction,
   getInfractionTypes,
   getParticipant,
   getParticipantInfractions,
@@ -1836,6 +1840,120 @@ function* getParticipantInfractionsWatcher() :Generator<*, *, *> {
 
 /*
  *
+ * ParticipantActions.getInfraction()
+ *
+ */
+
+function* getInfractionWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+  const workerResponse = {};
+  let response :Object = {};
+  let infractionEvent :Map = Map();
+  let infractionType :Map = Map();
+
+  try {
+    yield put(getInfraction.request(id));
+    const { infractionEventEKID } = value;
+    if (value === null || value === undefined) {
+      throw ERR_ACTION_VALUE_NOT_DEFINED;
+    }
+    const app = yield select(getAppFromState);
+    const infractionEventESID :UUID = getEntitySetIdFromApp(app, INFRACTION_EVENT);
+
+    response = yield call(getEntityDataWorker, getEntityData({
+      entitySetId: infractionEventESID,
+      entityKeyId: infractionEventEKID
+    }));
+    if (response.error) {
+      throw response.error;
+    }
+    infractionEvent = fromJS(response.data);
+
+    const infractionESID :UUID = getEntitySetIdFromApp(app, INFRACTIONS);
+    const searchFilter = {
+      entityKeyIds: [infractionEventEKID],
+      destinationEntitySetIds: [infractionESID],
+      sourceEntitySetIds: [],
+    };
+    response = yield call(
+      searchEntityNeighborsWithFilterWorker,
+      searchEntityNeighborsWithFilter({ entitySetId: infractionEventESID, filter: searchFilter })
+    );
+    if (response.error) {
+      throw response.error;
+    }
+
+    if (response.data[infractionEventEKID]) {
+      infractionType = fromJS(response.data[infractionEventEKID]);
+    }
+
+    yield put(getInfraction.success(id, { infractionEvent, infractionType }));
+  }
+  catch (error) {
+    workerResponse.error = error;
+    LOG.error('caught exception in getInfractionWorker()', error);
+    yield put(getInfraction.failure(id, error));
+  }
+  finally {
+    yield put(getInfraction.finally(id));
+  }
+  return workerResponse;
+}
+
+function* getInfractionWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(GET_INFRACTION, getInfractionWorker);
+}
+
+/*
+ *
+ * ParticipantActions.getInfoForPrintInfraction()
+ *
+ */
+
+function* getInfoForPrintInfractionWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+  if (value === null || value === undefined) {
+    yield put(getInfoForPrintInfraction.failure(id, ERR_ACTION_VALUE_NOT_DEFINED));
+    return;
+  }
+
+  try {
+    yield put(getInfoForPrintInfraction.request(id));
+    const { infractionEventEKID, personEKID } = value;
+
+    const workerResponses = yield all([
+      call(getCaseInfoWorker, getCaseInfo({ personEKID })),
+      call(getInfractionWorker, getInfraction({ infractionEventEKID })),
+      call(getParticipantWorker, getParticipant({ personEKID })),
+    ]);
+    const responseError = workerResponses.reduce(
+      (error, workerResponse) => (error ? error : workerResponse.error),
+      undefined,
+    );
+    if (responseError) {
+      throw responseError;
+    }
+    yield put(getInfoForPrintInfraction.success(id));
+  }
+  catch (error) {
+    LOG.error('caught exception in getInfoForPrintInfractionWorker()', error);
+    yield put(getInfoForPrintInfraction.failure(id, error));
+  }
+  finally {
+    yield put(getInfoForPrintInfraction.finally(id));
+  }
+}
+
+function* getInfoForPrintInfractionWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(GET_INFO_FOR_PRINT_INFRACTION, getInfoForPrintInfractionWorker);
+}
+
+/*
+ *
  * ParticipantsActions.getAllParticipantInfo()
  *
  */
@@ -1922,6 +2040,10 @@ export {
   getContactInfoWorker,
   getEnrollmentStatusWatcher,
   getEnrollmentStatusWorker,
+  getInfoForPrintInfractionWatcher,
+  getInfoForPrintInfractionWorker,
+  getInfractionWatcher,
+  getInfractionWorker,
   getInfractionTypesWatcher,
   getInfractionTypesWorker,
   getParticipantInfractionsWatcher,

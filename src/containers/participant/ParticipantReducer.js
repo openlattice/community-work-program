@@ -24,6 +24,7 @@ import {
   getCaseInfo,
   getContactInfo,
   getEnrollmentStatus,
+  getInfraction,
   getInfractionTypes,
   getParticipant,
   getParticipantInfractions,
@@ -91,6 +92,7 @@ const {
   GET_CASE_INFO,
   GET_CONTACT_INFO,
   GET_ENROLLMENT_STATUS,
+  GET_INFRACTION,
   GET_INFRACTION_TYPES,
   GET_PARTICIPANT,
   // GET_PARTICIPANT_ADDRESS,
@@ -100,7 +102,9 @@ const {
   GET_WORKSITE_PLANS,
   GET_WORKSITE_PLAN_STATUSES,
   GET_WORK_APPOINTMENTS,
+  INFRACTION_EVENT,
   INFRACTIONS_INFO,
+  INFRACTION_TYPE,
   INFRACTION_TYPES,
   MARK_DIVERSION_PLAN_AS_COMPLETE,
   PARTICIPANT,
@@ -173,6 +177,9 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     [GET_ENROLLMENT_STATUS]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
+    [GET_INFRACTION]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
     [GET_INFRACTION_TYPES]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
@@ -222,7 +229,9 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     [GET_PARTICIPANT_INFRACTIONS]: Map(),
     [UPDATE_HOURS_WORKED]: Map(),
   },
+  [INFRACTION_EVENT]: Map(),
   [INFRACTIONS_INFO]: Map(),
+  [INFRACTION_TYPE]: Map(),
   [INFRACTION_TYPES]: List(),
   [PARTICIPANT]: Map(),
   [PERSON_CASE]: Map(),
@@ -1141,6 +1150,35 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
             .setIn([ACTIONS, GET_ENROLLMENT_STATUS, REQUEST_STATE], RequestStates.FAILURE);
         },
         FINALLY: () => state.deleteIn([ACTIONS, GET_ENROLLMENT_STATUS, action.id])
+      });
+    }
+
+    case getInfraction.case(action.type): {
+
+      return getInfraction.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, GET_INFRACTION, action.id], fromJS(action))
+          .setIn([ACTIONS, GET_INFRACTION, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+
+          if (!state.hasIn([ACTIONS, GET_INFRACTION, action.id])) {
+            return state;
+          }
+
+          const { value } = action;
+          if (value === null || value === undefined) {
+            return state;
+          }
+
+          return state
+            .set(INFRACTION_EVENT, value.infractionEvent)
+            .set(INFRACTION_TYPE, value.infractionType)
+            .setIn([ACTIONS, GET_INFRACTION, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, GET_INFRACTION, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, GET_INFRACTION, action.id])
       });
     }
 
