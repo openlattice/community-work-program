@@ -2,6 +2,7 @@
 import React, { Component } from 'react';
 import styled from 'styled-components';
 import { List, Map } from 'immutable';
+import { DateTime } from 'luxon';
 import {
   Button,
   Card,
@@ -72,6 +73,7 @@ const { NAME } = WORKSITE_FQNS;
 const {
   ACTIONS,
   ADDRESS,
+  ALL_DIVERSION_PLANS,
   CHARGES_FOR_CASE,
   CHECK_INS_BY_APPOINTMENT,
   DIVERSION_PLAN,
@@ -100,6 +102,17 @@ const ENROLLMENT_STATUSES_EXCLUDING_PREENROLLMENT = Object.values(ENROLLMENT_STA
 /* Constants for Modals */
 const ASSIGN_WORKSITE = 'showAssignWorksiteModal';
 const WORK_APPOINTMENT = 'showWorkAppointmentModal';
+
+const generateDiversionPlanOptions = (entities :List) :Object[] => {
+  const options = [];
+  entities.forEach((entity :Map) => {
+    const { [DATETIME_RECEIVED]: sentenceDateTime } = getEntityProperties(entity, [DATETIME_RECEIVED]);
+    const sentenceDate = DateTime.fromISO(sentenceDateTime).toLocaleString(DateTime.DATE_SHORT);
+    const ekid :UUID = getEntityKeyId(entity);
+    options.push({ label: `Enrollment ${sentenceDate}`, value: ekid });
+  });
+  return options;
+};
 
 const ProfileWrapper = styled.div`
   display: flex;
@@ -182,6 +195,7 @@ type Props = {
     goToRoute :RequestSequence;
   };
   address :Map;
+  allDiversionPlans :List;
   app :Map;
   chargesForCase :List;
   checkInsByAppointment :Map;
@@ -316,6 +330,7 @@ class ParticipantProfile extends Component<Props, State> {
     const {
       actions,
       address,
+      allDiversionPlans,
       chargesForCase,
       diversionPlan,
       email,
@@ -376,6 +391,8 @@ class ParticipantProfile extends Component<Props, State> {
       REQUIRED_HOURS,
     ]);
 
+    const diversionPlanOptions :Object[] = generateDiversionPlanOptions(allDiversionPlans);
+
     return (
       <>
         {
@@ -410,8 +427,8 @@ class ParticipantProfile extends Component<Props, State> {
             <ProgramInfoColumnWrapper>
               <EnrollmentControlsWrapper>
                 <Select
-                    options={[]}
-                    placeholder="Enrollment 08/09/2018" />
+                    options={diversionPlanOptions}
+                    value={diversionPlanOptions.find(option => option.value === diversionPlanEKID)} />
                 <Button>Create New Enrollment</Button>
               </EnrollmentControlsWrapper>
               <EnrollmentStatusSection
@@ -526,6 +543,7 @@ const mapStateToProps = (state :Map<*, *>) => {
   const worksites = state.get(STATE.WORKSITES);
   return {
     [ADDRESS]: person.get(ADDRESS),
+    [ALL_DIVERSION_PLANS]: person.get(ALL_DIVERSION_PLANS),
     app,
     [CHARGES_FOR_CASE]: person.get(CHARGES_FOR_CASE),
     [CHECK_INS_BY_APPOINTMENT]: person.get(CHECK_INS_BY_APPOINTMENT),
