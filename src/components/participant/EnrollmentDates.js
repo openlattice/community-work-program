@@ -9,7 +9,7 @@ import {
   SectionLabel,
   SectionNameRow,
   SectionWrapper,
-  SmallEditButton,
+  StyledEditButton,
 } from './SectionStyledComponents';
 import { formatAsDate } from '../../utils/DateTimeUtils';
 import { EMPTY_FIELD } from '../../containers/participants/ParticipantsConstants';
@@ -81,7 +81,7 @@ const EnrollmentDates = ({
     <SectionWrapper>
       <SectionNameRow>
         <SectionLabel subtle>Enrollment Dates</SectionLabel>
-        <SmallEditButton mode="subtle" onClick={edit} />
+        <StyledEditButton mode="subtle" onClick={edit} />
       </SectionNameRow>
       <DatesCard>
         <CardSegment padding="md" vertical>

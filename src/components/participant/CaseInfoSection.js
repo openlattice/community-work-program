@@ -15,7 +15,7 @@ import {
   SectionLabel,
   SectionNameRow,
   SectionWrapper,
-  SmallEditButton,
+  StyledEditButton,
 } from './SectionStyledComponents';
 import { getEntityProperties, sortEntitiesByDateProperty } from '../../utils/DataUtils';
 import { formatNumericalValue } from '../../utils/FormattingUtils';
@@ -94,7 +94,7 @@ const CaseInfoSection = ({
     <SectionWrapper>
       <SectionNameRow>
         <SectionLabel subtle>Case Info</SectionLabel>
-        <SmallEditButton mode="subtle" onClick={edit} />
+        <StyledEditButton mode="subtle" onClick={edit} />
       </SectionNameRow>
       <CaseInfoCard>
         <CardSegment padding="md" vertical>

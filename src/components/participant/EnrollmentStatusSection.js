@@ -22,7 +22,7 @@ import {
   SectionLabel,
   SectionNameRow,
   SectionWrapper,
-  SmallEditButton,
+  StyledEditButton,
 } from './SectionStyledComponents';
 import { getEntityProperties } from '../../utils/DataUtils';
 import { formatNumericalValue } from '../../utils/FormattingUtils';
@@ -94,7 +94,7 @@ const EnrollmentStatusSection = ({
     <SectionWrapper>
       <SectionNameRow>
         <SectionLabel subtle>Enrollment Status</SectionLabel>
-        <SmallEditButton mode="subtle" onClick={() => setChangeStatusModalVisibility(true)} />
+        <StyledEditButton mode="subtle" onClick={() => setChangeStatusModalVisibility(true)} />
       </SectionNameRow>
       <StatusCard>
         <CardSegment padding="md">

@@ -13,7 +13,7 @@ import {
   SectionLabel,
   SectionNameRow,
   SectionWrapper,
-  SmallEditButton,
+  StyledEditButton,
 } from './SectionStyledComponents';
 import { EMPTY_FIELD } from '../../containers/participants/ParticipantsConstants';
 import { PERSON, STATE } from '../../utils/constants/ReduxStateConsts';
@@ -44,7 +44,7 @@ const ProgramNotes = ({ editPlanNotesRequestState, notes } :Props) => {
     <SectionWrapper>
       <SectionNameRow>
         <SectionLabel subtle>Program Notes</SectionLabel>
-        <SmallEditButton mode="subtle" onClick={() => setEditModalVisibility(true)} />
+        <StyledEditButton mode="subtle" onClick={() => setEditModalVisibility(true)} />
       </SectionNameRow>
       <NotesCard>
         <CardSegment padding="md">

@@ -15,7 +15,7 @@ import {
   SectionLabel,
   SectionNameRow,
   SectionWrapper,
-  SmallEditButton,
+  StyledEditButton,
 } from './SectionStyledComponents';
 import { OL } from '../../core/style/Colors';
 import { PersonPhoto, PersonPicture } from '../picture/PersonPicture';
@@ -109,7 +109,7 @@ const ParticipantProfileSection = ({
     <SectionWrapper>
       <SectionNameRow>
         <SectionLabel subtle>Participant Profile</SectionLabel>
-        <SmallEditButton mode="subtle" onClick={edit} />
+        <StyledEditButton mode="subtle" onClick={edit} />
       </SectionNameRow>
       <PersonCard>
         <PersonHeaderRow>
