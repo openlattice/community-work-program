@@ -9,15 +9,14 @@ import {
   Input,
   Label,
   Select,
-  TextArea
 } from 'lattice-ui-kit';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import type { RequestSequence } from 'redux-reqseq';
 import type { FQN } from 'lattice';
 
-// import { createNewEnrollment } from './ParticipantsActions';
-import { getEntitySetIdFromApp, getPropertyTypeIdFromEdm } from '../../utils/DataUtils';
+import { createNewEnrollment } from './ParticipantActions';
+import { getEntityKeyId, getEntitySetIdFromApp, getPropertyTypeIdFromEdm } from '../../utils/DataUtils';
 import {
   APP_TYPE_FQNS,
   CASE_FQNS,
@@ -25,7 +24,6 @@ import {
   DATETIME_END,
   DIVERSION_PLAN_FQNS,
   ENROLLMENT_STATUS_FQNS,
-  PEOPLE_FQNS
 } from '../../core/edm/constants/FullyQualifiedNames';
 import { PERSON, STATE } from '../../utils/constants/ReduxStateConsts';
 import { CWP, ENROLLMENT_STATUSES } from '../../core/edm/constants/DataModelConsts';
@@ -60,12 +58,6 @@ const {
   REQUIRED_HOURS
 } = DIVERSION_PLAN_FQNS;
 const { EFFECTIVE_DATE, STATUS } = ENROLLMENT_STATUS_FQNS;
-const {
-  DOB,
-  FIRST_NAME,
-  LAST_NAME,
-  PERSON_NOTES,
-} = PEOPLE_FQNS;
 const { PARTICIPANT } = PERSON;
 
 type Props = {
@@ -130,12 +122,8 @@ class AddParticipantForm extends Component<Props, State> {
     const datetimeCompletedPTID :UUID = getPropertyTypeIdFromEdm(edm, DATETIME_COMPLETED);
     const datetimeReceivedPTID :UUID = getPropertyTypeIdFromEdm(edm, DATETIME_RECEIVED);
     const datetimeEndPTID :UUID = getPropertyTypeIdFromEdm(edm, DATETIME_END);
-    const dobPTID :UUID = getPropertyTypeIdFromEdm(edm, DOB);
     const effectiveDatePTID :UUID = getPropertyTypeIdFromEdm(edm, EFFECTIVE_DATE);
-    const firstNamePTID :UUID = getPropertyTypeIdFromEdm(edm, FIRST_NAME);
-    const lastNamePTID :UUID = getPropertyTypeIdFromEdm(edm, LAST_NAME);
     const namePTID :UUID = getPropertyTypeIdFromEdm(edm, NAME);
-    const personNotesPTID :UUID = getPropertyTypeIdFromEdm(edm, PERSON_NOTES);
     const requiredHoursPTID :UUID = getPropertyTypeIdFromEdm(edm, REQUIRED_HOURS);
     const statusPTID :UUID = getPropertyTypeIdFromEdm(edm, STATUS);
 
@@ -146,12 +134,8 @@ class AddParticipantForm extends Component<Props, State> {
       [DATETIME_COMPLETED]: datetimeCompletedPTID,
       [DATETIME_RECEIVED]: datetimeReceivedPTID,
       [DATETIME_END]: datetimeEndPTID,
-      [DOB]: dobPTID,
       [EFFECTIVE_DATE]: effectiveDatePTID,
-      [FIRST_NAME]: firstNamePTID,
-      [LAST_NAME]: lastNamePTID,
       [NAME]: namePTID,
-      [PERSON_NOTES]: personNotesPTID,
       [REQUIRED_HOURS]: requiredHoursPTID,
       [STATUS]: statusPTID,
     };
@@ -174,7 +158,7 @@ class AddParticipantForm extends Component<Props, State> {
     const { actions, participant } = this.props;
     let { newEnrollmentData } = this.state;
 
-    const personEKID :UUID = getEntityAddressKey(participant);
+    const personEKID :UUID = getEntityKeyId(participant);
     const associations = [];
     const nowAsIso = DateTime.local().toISO();
 
@@ -247,14 +231,6 @@ class AddParticipantForm extends Component<Props, State> {
                 onChange={this.handleInputChange} />
           </RowContent>
         </FormRow>
-        <FormRow>
-          <RowContent>
-            <Label>Notes</Label>
-            <TextArea
-                name={getEntityAddressKey(0, PEOPLE, PERSON_NOTES)}
-                onChange={this.handleInputChange} />
-          </RowContent>
-        </FormRow>
         <ButtonsRow>
           <Button onClick={onDiscard}>Discard</Button>
           <Button
@@ -282,7 +258,7 @@ const mapStateToProps = (state :Map<*, *>) => {
 
 const mapDispatchToProps = dispatch => ({
   actions: bindActionCreators({
-    // createNewEnrollment,
+    createNewEnrollment,
   }, dispatch)
 });
 
