@@ -44,6 +44,7 @@ class AddNewPlanEnrollmentStatusModal extends Component<Props> {
       <Modal
           isVisible={isOpen}
           onClose={onClose}
+          shouldCloseOnOutsideClick={false}
           textTitle="Create Infraction Report"
           viewportScrolling>
         <AddInfractionForm
