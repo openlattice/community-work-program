@@ -55,11 +55,11 @@ import {
   GET_CASE_INFO,
   GET_CHARGES,
   GET_CHARGES_FOR_CASE,
-  GET_INFO_FOR_EDIT_PERSON,
   GET_CONTACT_INFO,
   GET_ENROLLMENT_FROM_DIVERSION_PLAN,
   GET_ENROLLMENT_STATUS,
   GET_INFO_FOR_EDIT_CASE,
+  GET_INFO_FOR_EDIT_PERSON,
   GET_INFRACTION_TYPES,
   GET_JUDGES,
   GET_JUDGE_FOR_CASE,
@@ -1759,25 +1759,26 @@ function* getCaseInfoWorker(action :SequenceAction) :Generator<*, *, *> {
     if (value === null || value === undefined) {
       throw ERR_ACTION_VALUE_NOT_DEFINED;
     }
-    const { personEKID } = value;
+    const { diversionPlan } = value;
     const app = yield select(getAppFromState);
-    const peopleESID = getEntitySetIdFromApp(app, PEOPLE);
+    const diversionPlanESID = getEntitySetIdFromApp(app, DIVERSION_PLAN);
     const manualCourtCases = getEntitySetIdFromApp(app, MANUAL_PRETRIAL_COURT_CASES);
+    const diversionPlanEKID = getEntityKeyId(diversionPlan);
 
     const searchFilter :Object = {
-      entityKeyIds: [personEKID],
+      entityKeyIds: [diversionPlanEKID],
       destinationEntitySetIds: [manualCourtCases],
       sourceEntitySetIds: [],
     };
     response = yield call(
       searchEntityNeighborsWithFilterWorker,
-      searchEntityNeighborsWithFilter({ entitySetId: peopleESID, filter: searchFilter })
+      searchEntityNeighborsWithFilter({ entitySetId: diversionPlanESID, filter: searchFilter })
     );
     if (response.error) {
       throw response.error;
     }
-    if (response.data[personEKID]) {
-      const caseResult :Map = fromJS(response.data[personEKID][0]);
+    if (response.data[diversionPlanEKID]) {
+      const caseResult :Map = fromJS(response.data[diversionPlanEKID][0]);
       personCase = getNeighborDetails(caseResult);
     }
 
@@ -2385,6 +2386,7 @@ function* getEnrollmentStatusWorker(action :SequenceAction) :Generator<*, *, *> 
       // some integrated people won't have enrollment statuses but will have a diversion plan:
       if (diversionPlan.isEmpty()) diversionPlan = allDiversionPlans.get(0);
 
+      yield call(getCaseInfoWorker, getCaseInfo({ diversionPlan }));
       /* If populating profile, call getWorksitePlans() to find all worksite plans for current diversion plan */
       const { populateProfile } = value;
       if (populateProfile) {
@@ -2771,7 +2773,6 @@ function* getInfoForEditCaseWorker(action :SequenceAction) :Generator<*, *, *> {
     const { personEKID } = value;
 
     const workerResponses = yield all([
-      call(getCaseInfoWorker, getCaseInfo({ personEKID })),
       call(getParticipantWorker, getParticipant({ personEKID })),
       call(getEnrollmentStatusWorker, getEnrollmentStatus({ personEKID, populateProfile: false })),
       call(getJudgesWorker, getJudges()),
@@ -2865,7 +2866,6 @@ function* getAllParticipantInfoWorker(action :SequenceAction) :Generator<*, *, *
     const { personEKID } = value;
 
     const workerResponses = yield all([
-      call(getCaseInfoWorker, getCaseInfo({ personEKID })),
       call(getContactInfoWorker, getContactInfo({ personEKID })),
       call(getEnrollmentStatusWorker, getEnrollmentStatus({ personEKID, populateProfile: true })),
       call(getInfractionTypesWorker, getInfractionTypes()),
