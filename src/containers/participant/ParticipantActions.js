@@ -22,6 +22,9 @@ const addWorksitePlan = newRequestSequence(ADD_WORKSITE_PLAN);
 const CHECK_IN_FOR_APPOINTMENT :'CHECK_IN_FOR_APPOINTMENT' = 'CHECK_IN_FOR_APPOINTMENT';
 const checkInForAppointment = newRequestSequence(CHECK_IN_FOR_APPOINTMENT);
 
+const CREATE_NEW_ENROLLMENT :'CREATE_NEW_ENROLLMENT' = 'CREATE_NEW_ENROLLMENT';
+const createNewEnrollment = newRequestSequence(CREATE_NEW_ENROLLMENT);
+
 const CREATE_WORK_APPOINTMENTS :'CREATE_WORK_APPOINTMENTS' = 'CREATE_WORK_APPOINTMENTS';
 const createWorkAppointments = newRequestSequence(CREATE_WORK_APPOINTMENTS);
 
@@ -72,6 +75,9 @@ const getChargesForCase = newRequestSequence(GET_CHARGES_FOR_CASE);
 
 const GET_CONTACT_INFO :'GET_CONTACT_INFO' = 'GET_CONTACT_INFO';
 const getContactInfo = newRequestSequence(GET_CONTACT_INFO);
+
+const GET_ENROLLMENT_FROM_DIVERSION_PLAN :'GET_ENROLLMENT_FROM_DIVERSION_PLAN' = 'GET_ENROLLMENT_FROM_DIVERSION_PLAN';
+const getEnrollmentFromDiversionPlan = newRequestSequence(GET_ENROLLMENT_FROM_DIVERSION_PLAN);
 
 const GET_ENROLLMENT_STATUS :'GET_ENROLLMENT_STATUS' = 'GET_ENROLLMENT_STATUS';
 const getEnrollmentStatus = newRequestSequence(GET_ENROLLMENT_STATUS);
@@ -141,6 +147,7 @@ export {
   ADD_TO_AVAILABLE_CHARGES,
   ADD_WORKSITE_PLAN,
   CHECK_IN_FOR_APPOINTMENT,
+  CREATE_NEW_ENROLLMENT,
   CREATE_WORK_APPOINTMENTS,
   DELETE_APPOINTMENT,
   EDIT_APPOINTMENT,
@@ -158,6 +165,7 @@ export {
   GET_CHARGES,
   GET_CHARGES_FOR_CASE,
   GET_CONTACT_INFO,
+  GET_ENROLLMENT_FROM_DIVERSION_PLAN,
   GET_ENROLLMENT_STATUS,
   GET_INFO_FOR_EDIT_CASE,
   GET_INFO_FOR_EDIT_PERSON,
@@ -185,6 +193,7 @@ export {
   addToAvailableCharges,
   addWorksitePlan,
   checkInForAppointment,
+  createNewEnrollment,
   createWorkAppointments,
   deleteAppointment,
   editAppointment,
@@ -202,6 +211,7 @@ export {
   getCharges,
   getChargesForCase,
   getContactInfo,
+  getEnrollmentFromDiversionPlan,
   getEnrollmentStatus,
   getInfoForEditCase,
   getInfoForEditPerson,
