@@ -55,6 +55,7 @@ import {
   GET_CASE_INFO,
   GET_CHARGES,
   GET_CHARGES_FOR_CASE,
+  GET_INFO_FOR_EDIT_PERSON,
   GET_CONTACT_INFO,
   GET_ENROLLMENT_STATUS,
   GET_INFO_FOR_EDIT_CASE,
@@ -99,6 +100,7 @@ import {
   getContactInfo,
   getEnrollmentStatus,
   getInfoForEditCase,
+  getInfoForEditPerson,
   getInfractionTypes,
   getJudgeForCase,
   getJudges,
@@ -2722,6 +2724,52 @@ function* getInfoForEditCaseWatcher() :Generator<*, *, *> {
 
 /*
  *
+ * ParticipantsActions.getInfoForEditPerson()
+ *
+ */
+
+function* getInfoForEditPersonWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+  if (value === null || value === undefined) {
+    yield put(getInfoForEditPerson.failure(id, ERR_ACTION_VALUE_NOT_DEFINED));
+    return;
+  }
+
+  try {
+    yield put(getInfoForEditPerson.request(id));
+    const { personEKID } = value;
+
+    const workerResponses = yield all([
+      call(getContactInfoWorker, getContactInfo({ personEKID })),
+      call(getParticipantWorker, getParticipant({ personEKID })),
+      call(getParticipantAddressWorker, getParticipantAddress({ personEKID })),
+    ]);
+    const responseError = workerResponses.reduce(
+      (error, workerResponse) => (error ? error : workerResponse.error),
+      undefined,
+    );
+    if (responseError) {
+      throw responseError;
+    }
+    yield put(getInfoForEditPerson.success(id));
+  }
+  catch (error) {
+    LOG.error('caught exception in getInfoForEditPersonWorker()', error);
+    yield put(getInfoForEditPerson.failure(id, error));
+  }
+  finally {
+    yield put(getInfoForEditPerson.finally(id));
+  }
+}
+
+function* getInfoForEditPersonWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(GET_INFO_FOR_EDIT_PERSON, getInfoForEditPersonWorker);
+}
+
+/*
+ *
  * ParticipantsActions.getAllParticipantInfo()
  *
  */
@@ -2824,6 +2872,8 @@ export {
   getEnrollmentStatusWorker,
   getInfoForEditCaseWatcher,
   getInfoForEditCaseWorker,
+  getInfoForEditPersonWatcher,
+  getInfoForEditPersonWorker,
   getInfractionTypesWatcher,
   getInfractionTypesWorker,
   getJudgeForCaseWatcher,

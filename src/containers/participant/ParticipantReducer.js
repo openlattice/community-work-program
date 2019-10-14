@@ -36,6 +36,7 @@ import {
   getContactInfo,
   getEnrollmentStatus,
   getInfoForEditCase,
+  getInfoForEditPerson,
   getInfractionTypes,
   getJudgeForCase,
   getJudges,
@@ -126,6 +127,7 @@ const {
   GET_CONTACT_INFO,
   GET_ENROLLMENT_STATUS,
   GET_INFO_FOR_EDIT_CASE,
+  GET_INFO_FOR_EDIT_PERSON,
   GET_INFRACTION_TYPES,
   GET_JUDGE_FOR_CASE,
   GET_JUDGES,
@@ -230,6 +232,9 @@ const INITIAL_STATE :Map<*, *> = fromJS({
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [GET_INFO_FOR_EDIT_CASE]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [GET_INFO_FOR_EDIT_PERSON]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [GET_INFRACTION_TYPES]: {
@@ -1411,15 +1416,31 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
           return state
             .setIn([ACTIONS, GET_INFO_FOR_EDIT_CASE, REQUEST_STATE], RequestStates.SUCCESS);
         },
-        FAILURE: () => {
+        FAILURE: () => state
+          .setIn([ACTIONS, GET_INFO_FOR_EDIT_CASE, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, GET_INFO_FOR_EDIT_CASE, action.id])
+      });
+    }
 
-          const { value } = action;
+    case getInfoForEditPerson.case(action.type): {
+
+      return getInfoForEditPerson.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, GET_INFO_FOR_EDIT_PERSON, action.id], fromJS(action))
+          .setIn([ACTIONS, GET_INFO_FOR_EDIT_PERSON, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+
+          if (!state.hasIn([ACTIONS, GET_INFO_FOR_EDIT_PERSON, action.id])) {
+            return state;
+          }
 
           return state
-            .setIn([ERRORS, GET_INFO_FOR_EDIT_CASE], value)
-            .setIn([ACTIONS, GET_INFO_FOR_EDIT_CASE, REQUEST_STATE], RequestStates.FAILURE);
+            .setIn([ACTIONS, GET_INFO_FOR_EDIT_PERSON, REQUEST_STATE], RequestStates.SUCCESS);
         },
-        FINALLY: () => state.deleteIn([ACTIONS, GET_INFO_FOR_EDIT_CASE, action.id])
+        FAILURE: () => state
+          .setIn([ACTIONS, GET_INFO_FOR_EDIT_PERSON, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, GET_INFO_FOR_EDIT_PERSON, action.id])
       });
     }
 

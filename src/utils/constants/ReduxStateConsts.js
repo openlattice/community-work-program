@@ -88,6 +88,7 @@ export const PERSON = {
   GET_CONTACT_INFO: 'getContactInfo',
   GET_ENROLLMENT_STATUS: 'getEnrollmentStatus',
   GET_INFO_FOR_EDIT_CASE: 'getInfoForEditCase',
+  GET_INFO_FOR_EDIT_PERSON: 'getInfoForEditPerson',
   GET_INFRACTION_TYPES: 'getInfractionTypes',
   GET_JUDGES: 'getJudges',
   GET_JUDGE_FOR_CASE: 'getJudgeForCase',

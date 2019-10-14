@@ -79,6 +79,9 @@ const getEnrollmentStatus = newRequestSequence(GET_ENROLLMENT_STATUS);
 const GET_INFO_FOR_EDIT_CASE :'GET_INFO_FOR_EDIT_CASE' = 'GET_INFO_FOR_EDIT_CASE';
 const getInfoForEditCase = newRequestSequence(GET_INFO_FOR_EDIT_CASE);
 
+const GET_INFO_FOR_EDIT_PERSON :'GET_INFO_FOR_EDIT_PERSON' = 'GET_INFO_FOR_EDIT_PERSON';
+const getInfoForEditPerson = newRequestSequence(GET_INFO_FOR_EDIT_PERSON);
+
 const GET_INFRACTION_TYPES :'GET_INFRACTION_TYPES' = 'GET_INFRACTION_TYPES';
 const getInfractionTypes = newRequestSequence(GET_INFRACTION_TYPES);
 
@@ -148,6 +151,7 @@ export {
   GET_CASE_INFO,
   GET_CHARGES,
   GET_CHARGES_FOR_CASE,
+  GET_INFO_FOR_EDIT_PERSON,
   GET_CONTACT_INFO,
   GET_ENROLLMENT_STATUS,
   GET_INFO_FOR_EDIT_CASE,
@@ -192,6 +196,7 @@ export {
   getContactInfo,
   getEnrollmentStatus,
   getInfoForEditCase,
+  getInfoForEditPerson,
   getInfractionTypes,
   getJudgeForCase,
   getJudges,
