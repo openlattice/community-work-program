@@ -34,7 +34,7 @@ import InfractionsContainer from './infractions/InfractionsContainer';
 import CreateWorkAppointmentModal from './schedule/CreateAppointmentModal';
 import LogoLoader from '../../components/LogoLoader';
 
-import { getAllParticipantInfo } from './ParticipantActions';
+import { getAllParticipantInfo, getEnrollmentFromDiversionPlan } from './ParticipantActions';
 import { goToRoute } from '../../core/router/RoutingActions';
 import { OL } from '../../core/style/Colors';
 import { PARTICIPANT_PROFILE_WIDTH } from '../../core/style/Sizes';
@@ -80,6 +80,7 @@ const {
   EMAIL,
   ENROLLMENT_STATUS,
   GET_ALL_PARTICIPANT_INFO,
+  GET_ENROLLMENT_FROM_DIVERSION_PLAN,
   JUDGE,
   PARTICIPANT,
   PERSON_CASE,
@@ -108,8 +109,7 @@ const generateDiversionPlanOptions = (entities :List) :Object[] => {
   entities.forEach((entity :Map) => {
     const { [DATETIME_RECEIVED]: sentenceDateTime } = getEntityProperties(entity, [DATETIME_RECEIVED]);
     const sentenceDate = DateTime.fromISO(sentenceDateTime).toLocaleString(DateTime.DATE_SHORT);
-    const ekid :UUID = getEntityKeyId(entity);
-    options.push({ label: `Enrollment ${sentenceDate}`, value: ekid });
+    options.push({ label: `Enrollment ${sentenceDate}`, value: entity });
   });
   return options;
 };
@@ -192,6 +192,7 @@ const EnrollmentControlsWrapper = styled(ScheduleButtonsWrapper)`
 type Props = {
   actions:{
     getAllParticipantInfo :RequestSequence;
+    getEnrollmentFromDiversionPlan :RequestSequence;
     goToRoute :RequestSequence;
   };
   address :Map;
@@ -203,6 +204,7 @@ type Props = {
   email :Map;
   enrollmentStatus :Map;
   getAllParticipantInfoRequestState :RequestState;
+  getEnrollmentFromDiversionPlanRequestState :RequestState;
   getInitializeAppRequestState :RequestState;
   judge :Map;
   participant :Map;
@@ -326,6 +328,12 @@ class ParticipantProfile extends Component<Props, State> {
     actions.goToRoute(Routes.EDIT_DATES.replace(':subjectId', personEKID));
   }
 
+  selectDiversionPlan = (option :Object) => {
+    const { actions } = this.props;
+    const { value } = option;
+    actions.getEnrollmentFromDiversionPlan({ diversionPlan: value });
+  }
+
   render() {
     const {
       actions,
@@ -336,6 +344,7 @@ class ParticipantProfile extends Component<Props, State> {
       email,
       enrollmentStatus,
       getAllParticipantInfoRequestState,
+      getEnrollmentFromDiversionPlanRequestState,
       getInitializeAppRequestState,
       judge,
       participant,
@@ -358,7 +367,8 @@ class ParticipantProfile extends Component<Props, State> {
     } = this.state;
 
     if (getInitializeAppRequestState === RequestStates.PENDING
-        || getAllParticipantInfoRequestState === RequestStates.PENDING) {
+        || getAllParticipantInfoRequestState === RequestStates.PENDING
+        || getEnrollmentFromDiversionPlanRequestState === RequestStates.PENDING) {
       return (
         <LogoLoader
             loadingText="Please wait..."
@@ -427,8 +437,9 @@ class ParticipantProfile extends Component<Props, State> {
             <ProgramInfoColumnWrapper>
               <EnrollmentControlsWrapper>
                 <Select
+                    onChange={this.selectDiversionPlan}
                     options={diversionPlanOptions}
-                    value={diversionPlanOptions.find(option => option.value === diversionPlanEKID)} />
+                    value={diversionPlanOptions.find(option => (option.value).equals(diversionPlan))} />
                 <Button>Create New Enrollment</Button>
               </EnrollmentControlsWrapper>
               <EnrollmentStatusSection
@@ -551,6 +562,8 @@ const mapStateToProps = (state :Map<*, *>) => {
     [EMAIL]: person.get(EMAIL),
     [ENROLLMENT_STATUS]: person.get(ENROLLMENT_STATUS),
     getAllParticipantInfoRequestState: person.getIn([ACTIONS, GET_ALL_PARTICIPANT_INFO, REQUEST_STATE]),
+    getEnrollmentFromDiversionPlanRequestState: person
+      .getIn([ACTIONS, GET_ENROLLMENT_FROM_DIVERSION_PLAN, REQUEST_STATE]),
     getInitializeAppRequestState: app.getIn([APP.ACTIONS, APP.INITIALIZE_APPLICATION, APP.REQUEST_STATE]),
     [JUDGE]: person.get(JUDGE),
     [PARTICIPANT]: person.get(PARTICIPANT),
@@ -570,6 +583,7 @@ const mapStateToProps = (state :Map<*, *>) => {
 const mapDispatchToProps = dispatch => ({
   actions: bindActionCreators({
     getAllParticipantInfo,
+    getEnrollmentFromDiversionPlan,
     goToRoute,
   }, dispatch)
 });
