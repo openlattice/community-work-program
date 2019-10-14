@@ -86,6 +86,7 @@ export const PERSON = {
   GET_CHARGES: 'getCharges',
   GET_CHARGES_FOR_CASE: 'getChargesForCase',
   GET_CONTACT_INFO: 'getContactInfo',
+  GET_ENROLLMENT_FROM_DIVERSION_PLAN: 'getEnrollmentFromDiversionPlan',
   GET_ENROLLMENT_STATUS: 'getEnrollmentStatus',
   GET_INFO_FOR_EDIT_CASE: 'getInfoForEditCase',
   GET_INFO_FOR_EDIT_PERSON: 'getInfoForEditPerson',

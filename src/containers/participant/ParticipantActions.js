@@ -73,6 +73,9 @@ const getChargesForCase = newRequestSequence(GET_CHARGES_FOR_CASE);
 const GET_CONTACT_INFO :'GET_CONTACT_INFO' = 'GET_CONTACT_INFO';
 const getContactInfo = newRequestSequence(GET_CONTACT_INFO);
 
+const GET_ENROLLMENT_FROM_DIVERSION_PLAN :'GET_ENROLLMENT_FROM_DIVERSION_PLAN' = 'GET_ENROLLMENT_FROM_DIVERSION_PLAN';
+const getEnrollmentFromDiversionPlan = newRequestSequence(GET_ENROLLMENT_FROM_DIVERSION_PLAN);
+
 const GET_ENROLLMENT_STATUS :'GET_ENROLLMENT_STATUS' = 'GET_ENROLLMENT_STATUS';
 const getEnrollmentStatus = newRequestSequence(GET_ENROLLMENT_STATUS);
 
@@ -151,10 +154,11 @@ export {
   GET_CASE_INFO,
   GET_CHARGES,
   GET_CHARGES_FOR_CASE,
-  GET_INFO_FOR_EDIT_PERSON,
   GET_CONTACT_INFO,
+  GET_ENROLLMENT_FROM_DIVERSION_PLAN,
   GET_ENROLLMENT_STATUS,
   GET_INFO_FOR_EDIT_CASE,
+  GET_INFO_FOR_EDIT_PERSON,
   GET_INFRACTION_TYPES,
   GET_JUDGES,
   GET_JUDGE_FOR_CASE,
@@ -194,6 +198,7 @@ export {
   getCharges,
   getChargesForCase,
   getContactInfo,
+  getEnrollmentFromDiversionPlan,
   getEnrollmentStatus,
   getInfoForEditCase,
   getInfoForEditPerson,

@@ -34,6 +34,7 @@ import {
   getCharges,
   getChargesForCase,
   getContactInfo,
+  getEnrollmentFromDiversionPlan,
   getEnrollmentStatus,
   getInfoForEditCase,
   getInfoForEditPerson,
@@ -126,6 +127,7 @@ const {
   GET_CHARGES,
   GET_CHARGES_FOR_CASE,
   GET_CONTACT_INFO,
+  GET_ENROLLMENT_FROM_DIVERSION_PLAN,
   GET_ENROLLMENT_STATUS,
   GET_INFO_FOR_EDIT_CASE,
   GET_INFO_FOR_EDIT_PERSON,
@@ -227,6 +229,9 @@ const INITIAL_STATE :Map<*, *> = fromJS({
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [GET_CONTACT_INFO]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [GET_ENROLLMENT_FROM_DIVERSION_PLAN]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [GET_ENROLLMENT_STATUS]: {
@@ -1363,6 +1368,35 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
             .setIn([ACTIONS, GET_CONTACT_INFO, REQUEST_STATE], RequestStates.FAILURE);
         },
         FINALLY: () => state.deleteIn([ACTIONS, GET_CONTACT_INFO, action.id])
+      });
+    }
+
+    case getEnrollmentFromDiversionPlan.case(action.type): {
+
+      return getEnrollmentFromDiversionPlan.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, GET_ENROLLMENT_FROM_DIVERSION_PLAN, action.id], fromJS(action))
+          .setIn([ACTIONS, GET_ENROLLMENT_FROM_DIVERSION_PLAN, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+
+          if (!state.hasIn([ACTIONS, GET_ENROLLMENT_FROM_DIVERSION_PLAN, action.id])) {
+            return state;
+          }
+
+          const { value } = action;
+          if (value === null || value === undefined) {
+            return state;
+          }
+
+          return state
+            .set(ENROLLMENT_STATUS, value.enrollmentStatus)
+            .set(DIVERSION_PLAN, value.diversionPlan)
+            .setIn([ACTIONS, GET_ENROLLMENT_FROM_DIVERSION_PLAN, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, GET_ENROLLMENT_FROM_DIVERSION_PLAN, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, GET_ENROLLMENT_FROM_DIVERSION_PLAN, action.id])
       });
     }
 

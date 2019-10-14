@@ -57,6 +57,7 @@ import {
   GET_CHARGES_FOR_CASE,
   GET_INFO_FOR_EDIT_PERSON,
   GET_CONTACT_INFO,
+  GET_ENROLLMENT_FROM_DIVERSION_PLAN,
   GET_ENROLLMENT_STATUS,
   GET_INFO_FOR_EDIT_CASE,
   GET_INFRACTION_TYPES,
@@ -98,6 +99,7 @@ import {
   getCharges,
   getChargesForCase,
   getContactInfo,
+  getEnrollmentFromDiversionPlan,
   getEnrollmentStatus,
   getInfoForEditCase,
   getInfoForEditPerson,
@@ -2413,6 +2415,75 @@ function* getEnrollmentStatusWatcher() :Generator<*, *, *> {
 
 /*
  *
+ * ParticipantsActions.getEnrollmentFromDiversionPlan()
+ *
+ */
+
+function* getEnrollmentFromDiversionPlanWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+  const workerResponse = {};
+  let response :Object = {};
+  let enrollmentStatus :Map = Map();
+
+  try {
+    yield put(getEnrollmentFromDiversionPlan.request(id));
+    const { diversionPlan } = value;
+    if (value === null || value === undefined) {
+      throw ERR_ACTION_VALUE_NOT_DEFINED;
+    }
+
+    const app = yield select(getAppFromState);
+    const diversionPlanESID = getEntitySetIdFromApp(app, DIVERSION_PLAN);
+    const enrollmentStatusESID = getEntitySetIdFromApp(app, ENROLLMENT_STATUS);
+    const diversionPlanEKID :UUID = getEntityKeyId(diversionPlan);
+
+    const enrollmentFilter :Object = {
+      entityKeyIds: [diversionPlanEKID],
+      destinationEntitySetIds: [],
+      sourceEntitySetIds: [enrollmentStatusESID],
+    };
+    response = yield call(
+      searchEntityNeighborsWithFilterWorker,
+      searchEntityNeighborsWithFilter({ entitySetId: diversionPlanESID, filter: enrollmentFilter })
+    );
+    if (response.error) {
+      throw response.error;
+    }
+    const enrollmentStatuses :Map = fromJS(response.data[diversionPlanEKID])
+      .map((enrollment :List) => getNeighborDetails(enrollment));
+
+    if (enrollmentStatuses.count() > 0) {
+      enrollmentStatus = sortEntitiesByDateProperty(enrollmentStatuses, EFFECTIVE_DATE)
+        .last();
+    }
+
+    yield all([
+      call(getCaseInfoWorker, getCaseInfo({ diversionPlan })),
+      call(getWorksitePlansWorker, getWorksitePlans({ diversionPlan })),
+      call(getProgramOutcomeWorker, getProgramOutcome({ diversionPlan })),
+    ]);
+
+    yield put(getEnrollmentFromDiversionPlan.success(id, { diversionPlan, enrollmentStatus }));
+  }
+  catch (error) {
+    workerResponse.error = error;
+    LOG.error('caught exception in getEnrollmentFromDiversionPlanWorker()', error);
+    yield put(getEnrollmentFromDiversionPlan.failure(id, error));
+  }
+  finally {
+    yield put(getEnrollmentFromDiversionPlan.finally(id));
+  }
+  return workerResponse;
+}
+
+function* getEnrollmentFromDiversionPlanWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(GET_ENROLLMENT_FROM_DIVERSION_PLAN, getEnrollmentFromDiversionPlanWorker);
+}
+
+/*
+ *
  * ParticipantsActions.getParticipantAddress()
  *
  */
@@ -2875,6 +2946,8 @@ export {
   getChargesForCaseWorker,
   getContactInfoWatcher,
   getContactInfoWorker,
+  getEnrollmentFromDiversionPlanWatcher,
+  getEnrollmentFromDiversionPlanWorker,
   getEnrollmentStatusWatcher,
   getEnrollmentStatusWorker,
   getInfoForEditCaseWatcher,
