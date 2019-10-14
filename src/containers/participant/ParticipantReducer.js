@@ -40,6 +40,7 @@ import {
   getInfraction,
   getInfoForEditCase,
   getInfoForEditPerson,
+  getInfoForPrintInfraction,
   getInfractionTypes,
   getJudgeForCase,
   getJudges,
@@ -137,6 +138,7 @@ const {
   GET_INFRACTION,
   GET_INFO_FOR_EDIT_CASE,
   GET_INFO_FOR_EDIT_PERSON,
+  GET_INFO_FOR_PRINT_INFRACTION,
   GET_INFRACTION_TYPES,
   GET_JUDGE_FOR_CASE,
   GET_JUDGES,
@@ -257,6 +259,9 @@ const INITIAL_STATE :Map<*, *> = fromJS({
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [GET_INFO_FOR_EDIT_PERSON]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [GET_INFO_FOR_PRINT_INFRACTION]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [GET_INFRACTION_TYPES]: {
@@ -1543,6 +1548,28 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
         FAILURE: () => state
           .setIn([ACTIONS, GET_INFO_FOR_EDIT_PERSON, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, GET_INFO_FOR_EDIT_PERSON, action.id])
+      });
+    }
+
+    case getInfoForPrintInfraction.case(action.type): {
+
+      return getInfoForPrintInfraction.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, GET_INFO_FOR_PRINT_INFRACTION, action.id], action)
+          .setIn([ACTIONS, GET_INFO_FOR_PRINT_INFRACTION, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+
+          if (!state.hasIn([ACTIONS, GET_INFO_FOR_PRINT_INFRACTION, action.id])) {
+            return state;
+          }
+
+          return state
+            .setIn([ACTIONS, GET_INFO_FOR_PRINT_INFRACTION, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, GET_INFO_FOR_PRINT_INFRACTION, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, GET_INFO_FOR_PRINT_INFRACTION, action.id])
       });
     }
 
