@@ -28,6 +28,7 @@ import {
 import ParticipantWorkScheduleContainer from './schedule/ParticipantWorkScheduleContainer';
 import ProgramCompletionBanner from './ProgramCompletionBanner';
 
+import CreateNewEnrollmentModal from './CreateNewEnrollmentModal';
 import AssignedWorksite from './assignedworksites/AssignedWorksite';
 import AssignWorksiteModal from './assignedworksites/AssignWorksiteModal';
 import InfractionsContainer from './infractions/InfractionsContainer';
@@ -101,6 +102,7 @@ const ENROLLMENT_STATUSES_EXCLUDING_PREENROLLMENT = Object.values(ENROLLMENT_STA
     && status !== ENROLLMENT_STATUSES.AWAITING_ORIENTATION);
 
 /* Constants for Modals */
+const NEW_ENROLLMENT = 'showNewEnrollmentModal';
 const ASSIGN_WORKSITE = 'showAssignWorksiteModal';
 const WORK_APPOINTMENT = 'showWorkAppointmentModal';
 
@@ -205,7 +207,7 @@ type Props = {
   enrollmentStatus :Map;
   getAllParticipantInfoRequestState :RequestState;
   getEnrollmentFromDiversionPlanRequestState :RequestState;
-  getInitializeAppRequestState :RequestState;
+  initializeAppRequestState :RequestState;
   judge :Map;
   participant :Map;
   personCase :Map;
@@ -224,6 +226,7 @@ type Props = {
 type State = {
   workStartDateTime :string;
   showAssignWorksiteModal :boolean;
+  showNewEnrollmentModal :boolean;
   showWorkAppointmentModal :boolean;
   worksiteNamesByWorksitePlan :Map;
 };
@@ -236,6 +239,7 @@ class ParticipantProfile extends Component<Props, State> {
     this.state = {
       workStartDateTime: '',
       [ASSIGN_WORKSITE]: false,
+      [NEW_ENROLLMENT]: false,
       [WORK_APPOINTMENT]: false,
       worksiteNamesByWorksitePlan: Map(),
     };
@@ -345,7 +349,7 @@ class ParticipantProfile extends Component<Props, State> {
       enrollmentStatus,
       getAllParticipantInfoRequestState,
       getEnrollmentFromDiversionPlanRequestState,
-      getInitializeAppRequestState,
+      initializeAppRequestState,
       judge,
       participant,
       personCase,
@@ -361,12 +365,13 @@ class ParticipantProfile extends Component<Props, State> {
     } = this.props;
     const {
       showAssignWorksiteModal,
+      showNewEnrollmentModal,
       showWorkAppointmentModal,
       workStartDateTime,
       worksiteNamesByWorksitePlan
     } = this.state;
 
-    if (getInitializeAppRequestState === RequestStates.PENDING
+    if (initializeAppRequestState === RequestStates.PENDING
         || getAllParticipantInfoRequestState === RequestStates.PENDING
         || getEnrollmentFromDiversionPlanRequestState === RequestStates.PENDING) {
       return (
@@ -440,7 +445,7 @@ class ParticipantProfile extends Component<Props, State> {
                     onChange={this.selectDiversionPlan}
                     options={diversionPlanOptions}
                     value={diversionPlanOptions.find(option => (option.value).equals(diversionPlan))} />
-                <Button>Create New Enrollment</Button>
+                <Button onClick={() => this.handleShowModal(NEW_ENROLLMENT)}>Create New Enrollment</Button>
               </EnrollmentControlsWrapper>
               <EnrollmentStatusSection
                   enrollmentStatus={enrollmentStatus}
@@ -542,6 +547,9 @@ class ParticipantProfile extends Component<Props, State> {
               isOpen={showWorkAppointmentModal}
               onClose={() => this.handleHideModal(WORK_APPOINTMENT)}
               personEKID={personEKID} />
+          <CreateNewEnrollmentModal
+              isOpen={showNewEnrollmentModal}
+              onClose={() => this.handleHideModal(NEW_ENROLLMENT)} />
         </ProfileWrapper>
       </>
     );
@@ -564,7 +572,7 @@ const mapStateToProps = (state :Map<*, *>) => {
     getAllParticipantInfoRequestState: person.getIn([ACTIONS, GET_ALL_PARTICIPANT_INFO, REQUEST_STATE]),
     getEnrollmentFromDiversionPlanRequestState: person
       .getIn([ACTIONS, GET_ENROLLMENT_FROM_DIVERSION_PLAN, REQUEST_STATE]),
-    getInitializeAppRequestState: app.getIn([APP.ACTIONS, APP.INITIALIZE_APPLICATION, APP.REQUEST_STATE]),
+    initializeAppRequestState: app.getIn([APP.ACTIONS, APP.INITIALIZE_APPLICATION, APP.REQUEST_STATE]),
     [JUDGE]: person.get(JUDGE),
     [PARTICIPANT]: person.get(PARTICIPANT),
     [PERSON_CASE]: person.get(PERSON_CASE),
