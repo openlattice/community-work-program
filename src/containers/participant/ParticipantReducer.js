@@ -45,6 +45,7 @@ import {
   getJudges,
   getParticipant,
   getParticipantAddress,
+  getParticipantCases,
   getParticipantInfractions,
   getProgramOutcome,
   getWorkAppointments,
@@ -104,6 +105,7 @@ const {
   ADD_WORKSITE_PLAN,
   ADDRESS,
   ALL_DIVERSION_PLANS,
+  ALL_PARTICIPANT_CASES,
   CHARGES,
   CHARGES_FOR_CASE,
   CHECK_INS_BY_APPOINTMENT,
@@ -140,6 +142,7 @@ const {
   GET_JUDGES,
   GET_PARTICIPANT,
   GET_PARTICIPANT_ADDRESS,
+  GET_PARTICIPANT_CASES,
   GET_PARTICIPANT_INFRACTIONS,
   GET_PROGRAM_OUTCOME,
   GET_WORKSITE_BY_WORKSITE_PLAN,
@@ -152,6 +155,7 @@ const {
   INFRACTION_TYPES,
   JUDGE,
   JUDGES,
+  JUDGES_BY_CASE,
   MARK_DIVERSION_PLAN_AS_COMPLETE,
   PARTICIPANT,
   PERSON_CASE,
@@ -276,6 +280,9 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     [GET_PARTICIPANT_ADDRESS]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
+    [GET_PARTICIPANT_CASES]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
     [GET_PARTICIPANT_INFRACTIONS]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
@@ -294,6 +301,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   },
   [ADDRESS]: Map(),
   [ALL_DIVERSION_PLANS]: List(),
+  [ALL_PARTICIPANT_CASES]: List(),
   [CHARGES]: List(),
   [CHARGES_FOR_CASE]: List(),
   [CHECK_INS_BY_APPOINTMENT]: Map(),
@@ -1592,7 +1600,8 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
           }
 
           return state
-            .set(JUDGE, value)
+            .set(JUDGE, value.judge)
+            .set(JUDGES_BY_CASE, value.judgesByCase)
             .setIn([ACTIONS, GET_JUDGE_FOR_CASE, REQUEST_STATE], RequestStates.SUCCESS);
         },
         FAILURE: () => state
@@ -1731,6 +1740,34 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
           .set(ADDRESS, Map())
           .setIn([ACTIONS, GET_PARTICIPANT_ADDRESS, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, GET_PARTICIPANT_ADDRESS, action.id])
+      });
+    }
+
+    case getParticipantCases.case(action.type): {
+
+      return getParticipantCases.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, GET_PARTICIPANT_CASES, action.id], fromJS(action))
+          .setIn([ACTIONS, GET_PARTICIPANT_CASES, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+
+          if (!state.hasIn([ACTIONS, GET_PARTICIPANT_CASES, action.id])) {
+            return state;
+          }
+
+          const { value } = action;
+          if (value === null || value === undefined) {
+            return state;
+          }
+
+          return state
+            .set(ALL_PARTICIPANT_CASES, value)
+            .setIn([ACTIONS, GET_PARTICIPANT_CASES, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, GET_PARTICIPANT_CASES, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, GET_PARTICIPANT_CASES, action.id])
       });
     }
 

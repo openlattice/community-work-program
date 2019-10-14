@@ -80,6 +80,7 @@ export default function* sagas() :Generator<*, *, *> {
     fork(ParticipantSagas.getJudgeForCaseWatcher),
     fork(ParticipantSagas.getJudgesWatcher),
     fork(ParticipantSagas.getParticipantAddressWatcher),
+    fork(ParticipantSagas.getParticipantCasesWatcher),
     fork(ParticipantSagas.getParticipantInfractionsWatcher),
     fork(ParticipantSagas.getParticipantWatcher),
     fork(ParticipantSagas.getProgramOutcomeWatcher),

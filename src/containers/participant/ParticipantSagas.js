@@ -68,6 +68,7 @@ import {
   GET_JUDGE_FOR_CASE,
   GET_PARTICIPANT,
   GET_PARTICIPANT_ADDRESS,
+  GET_PARTICIPANT_CASES,
   GET_PARTICIPANT_INFRACTIONS,
   GET_PROGRAM_OUTCOME,
   GET_WORKSITE_BY_WORKSITE_PLAN,
@@ -114,6 +115,7 @@ import {
   getJudges,
   getParticipant,
   getParticipantAddress,
+  getParticipantCases,
   getParticipantInfractions,
   getProgramOutcome,
   getWorkAppointments,
@@ -1636,19 +1638,20 @@ function* getJudgeForCaseWorker(action :SequenceAction) :Generator<*, *, *> {
   const workerResponse = {};
   let response :Object = {};
   let judge :Map = Map();
+  let judgesByCase :Map = Map();
 
   try {
     yield put(getJudgeForCase.request(id));
     if (value === null || value === undefined) {
       throw ERR_ACTION_VALUE_NOT_DEFINED;
     }
-    const { caseEKID } = value;
+    const { caseEKIDs } = value;
     const app = yield select(getAppFromState);
     const manualCourtCasesESID :UUID = getEntitySetIdFromApp(app, MANUAL_PRETRIAL_COURT_CASES);
     const judgesESID :UUID = getEntitySetIdFromApp(app, JUDGES);
 
     const searchFilter :Object = {
-      entityKeyIds: [caseEKID],
+      entityKeyIds: caseEKIDs,
       destinationEntitySetIds: [],
       sourceEntitySetIds: [judgesESID],
     };
@@ -1659,12 +1662,17 @@ function* getJudgeForCaseWorker(action :SequenceAction) :Generator<*, *, *> {
     if (response.error) {
       throw response.error;
     }
-    if (response.data[caseEKID]) {
-      const judgeResult :Map = fromJS(response.data[caseEKID][0]);
-      judge = getNeighborDetails(judgeResult);
+    let judgeResults :Map = fromJS(response.data);
+    if (!judgeResults.isEmpty()) {
+      judgeResults = judgeResults.map((judgeList :List) => getNeighborDetails(judgeList.get(0)));
+      if (!judgeResults.isEmpty()) {
+        const caseEKID :UUID = caseEKIDs[0];
+        judge = judgeResults.get(caseEKID);
+        judgesByCase = judgeResults;
+      }
     }
 
-    yield put(getJudgeForCase.success(id, judge));
+    yield put(getJudgeForCase.success(id, { judge, judgesByCase }));
   }
   catch (error) {
     workerResponse.error = error;
@@ -1825,7 +1833,7 @@ function* getCaseInfoWorker(action :SequenceAction) :Generator<*, *, *> {
 
     const caseEKID :UUID = getEntityKeyId(personCase);
     yield call(getChargesForCaseWorker, getChargesForCase({ caseEKID }));
-    yield call(getJudgeForCaseWorker, getJudgeForCase({ caseEKID }));
+    yield call(getJudgeForCaseWorker, getJudgeForCase({ caseEKIDs: [caseEKID] }));
 
     yield put(getCaseInfo.success(id, personCase));
   }
@@ -2866,6 +2874,65 @@ function* getJudgesWatcher() :Generator<*, *, *> {
 
 /*
  *
+ * ParticipantActions.getParticipantCases()
+ *
+ */
+
+function* getParticipantCasesWorker(action :SequenceAction) :Generator<*, *, *> {
+  const { id, value } = action;
+  if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
+  const workerResponse = {};
+  let response :Object = {};
+  let allParticipantCases :List = List();
+
+  try {
+    yield put(getParticipantCases.request(id, value));
+    const { personEKID } = value;
+
+    const app = yield select(getAppFromState);
+    const peopleESID :UUID = getEntitySetIdFromApp(app, PEOPLE);
+    const manualPretrialCaseESID :UUID = getEntitySetIdFromApp(app, MANUAL_PRETRIAL_COURT_CASES);
+
+    const searchFilter = {
+      entityKeyIds: [personEKID],
+      destinationEntitySetIds: [manualPretrialCaseESID],
+      sourceEntitySetIds: [],
+    };
+    response = yield call(
+      searchEntityNeighborsWithFilterWorker,
+      searchEntityNeighborsWithFilter({ entitySetId: peopleESID, filter: searchFilter })
+    );
+    if (response.error) {
+      throw response.error;
+    }
+    const caseResults :List = fromJS(response.data[personEKID]);
+    if (!caseResults.isEmpty()) {
+      allParticipantCases = caseResults.map((caseResult :Map) => getNeighborDetails(caseResult));
+
+      const caseEKIDs :UUID[] = allParticipantCases.map((caseEntity :Map) => getEntityKeyId(caseEntity)).toJS();
+      yield call(getJudgeForCaseWorker, getJudgeForCase({ caseEKIDs }));
+    }
+    yield put(getParticipantCases.success(id, allParticipantCases));
+  }
+  catch (error) {
+    workerResponse.error = error;
+    LOG.error('caught exception in getParticipantCasesWorker()', error);
+    yield put(getParticipantCases.failure(id, error));
+  }
+  finally {
+    yield put(getParticipantCases.finally(id));
+  }
+  return workerResponse;
+}
+
+
+function* getParticipantCasesWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(GET_PARTICIPANT_CASES, getParticipantCasesWorker);
+}
+
+/*
+ *
  * ParticipantActions.getInfoForPrintInfraction()
  *
  */
@@ -2883,7 +2950,7 @@ function* getInfoForPrintInfractionWorker(action :SequenceAction) :Generator<*, 
     const { infractionEventEKID, personEKID } = value;
 
     const workerResponses = yield all([
-      call(getCaseInfoWorker, getCaseInfo({ personEKID })),
+      call(getParticipantCasesWorker, getParticipantCases({ personEKID })),
       call(getInfractionWorker, getInfraction({ infractionEventEKID })),
       call(getParticipantWorker, getParticipant({ personEKID })),
     ]);
@@ -3126,6 +3193,8 @@ export {
   getJudgesWorker,
   getParticipantAddressWatcher,
   getParticipantAddressWorker,
+  getParticipantCasesWatcher,
+  getParticipantCasesWorker,
   getParticipantInfractionsWatcher,
   getParticipantInfractionsWorker,
   getParticipantWatcher,

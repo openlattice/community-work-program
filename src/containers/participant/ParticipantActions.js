@@ -109,6 +109,9 @@ const getParticipant = newRequestSequence(GET_PARTICIPANT);
 const GET_PARTICIPANT_ADDRESS :'GET_PARTICIPANT_ADDRESS' = 'GET_PARTICIPANT_ADDRESS';
 const getParticipantAddress = newRequestSequence(GET_PARTICIPANT_ADDRESS);
 
+const GET_PARTICIPANT_CASES :'GET_PARTICIPANT_CASES' = 'GET_PARTICIPANT_CASES';
+const getParticipantCases = newRequestSequence(GET_PARTICIPANT_CASES);
+
 const GET_PARTICIPANT_INFRACTIONS :'GET_PARTICIPANT_INFRACTIONS' = 'GET_PARTICIPANT_INFRACTIONS';
 const getParticipantInfractions = newRequestSequence(GET_PARTICIPANT_INFRACTIONS);
 
@@ -176,6 +179,7 @@ export {
   GET_JUDGE_FOR_CASE,
   GET_PARTICIPANT,
   GET_PARTICIPANT_ADDRESS,
+  GET_PARTICIPANT_CASES,
   GET_PARTICIPANT_INFRACTIONS,
   GET_PROGRAM_OUTCOME,
   GET_WORKSITE_BY_WORKSITE_PLAN,
@@ -222,6 +226,7 @@ export {
   getJudges,
   getParticipant,
   getParticipantAddress,
+  getParticipantCases,
   getParticipantInfractions,
   getProgramOutcome,
   getWorkAppointments,
