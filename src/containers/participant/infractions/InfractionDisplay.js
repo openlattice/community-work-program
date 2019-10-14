@@ -7,6 +7,8 @@ import {
   Card,
   CardSegment,
   DataGrid,
+  EditButton,
+  IconButton,
   Label,
 } from 'lattice-ui-kit';
 import {
@@ -15,6 +17,8 @@ import {
   Map,
   OrderedMap
 } from 'immutable';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faPrint } from '@fortawesome/pro-regular-svg-icons';
 
 import { getEntityProperties } from '../../../utils/DataUtils';
 import { formatAsDate, formatAsTime } from '../../../utils/DateTimeUtils';
@@ -27,6 +31,7 @@ import {
   WORKSITE_FQNS,
 } from '../../../core/edm/constants/FullyQualifiedNames';
 import { EMPTY_FIELD } from '../../participants/ParticipantsConstants';
+import { OL } from '../../../core/style/Colors';
 
 const { WORKSITE_PLAN } = APP_TYPE_FQNS;
 const { STATUS } = ENROLLMENT_STATUS_FQNS;
@@ -47,6 +52,20 @@ const NotesWrapper = styled.div`
   display: flex;
   flex-direction: column;
   margin: 20px 0;
+`;
+
+const BottomRow = styled.div`
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+`;
+
+const ButtonsWrapper = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-gap: 0 10px;
+  height: 40px;
+  align-self: center;
 `;
 
 type Props = {
@@ -96,10 +115,17 @@ const InfractionDisplay = ({
             columns={3}
             data={data}
             labelMap={labelMap} />
-        <NotesWrapper>
-          <Label subtle>Notes</Label>
-          <span>{ notes }</span>
-        </NotesWrapper>
+        <BottomRow>
+          <NotesWrapper>
+            <Label subtle>Notes</Label>
+            <span>{ notes }</span>
+          </NotesWrapper>
+          <ButtonsWrapper>
+            <IconButton
+                icon={<FontAwesomeIcon icon={faPrint} color={OL.GREY02} />} />
+            <EditButton />
+          </ButtonsWrapper>
+        </BottomRow>
       </CardSegment>
     </Card>
   );
