@@ -18,10 +18,13 @@ import {
   OrderedMap
 } from 'immutable';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPrint } from '@fortawesome/pro-regular-svg-icons';
+import { faPrint, faTrash } from '@fortawesome/pro-solid-svg-icons';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import type { RequestSequence } from 'redux-reqseq';
+
+import EditInfractionModal from './EditInfractionModal';
+import DeleteInfractionModal from './DeleteInfractionModal';
 
 import * as Routes from '../../../core/router/Routes';
 import { goToRoute } from '../../../core/router/RoutingActions';
@@ -53,6 +56,9 @@ const labelMap :OrderedMap = OrderedMap({
   status: 'Resulting enrollment status, if any',
 });
 
+const EDIT_INFRACTION_MODAL = 'isEditInfractionModalVisible';
+const DELETE_INFRACTION_MODAL = 'isDeleteInfractionModalVisible';
+
 const NotesWrapper = styled.div`
   display: flex;
   flex-direction: column;
@@ -67,7 +73,7 @@ const BottomRow = styled.div`
 
 const ButtonsWrapper = styled.div`
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   grid-gap: 0 10px;
   height: 40px;
   align-self: center;
@@ -84,7 +90,17 @@ type Props = {
   worksitesByWorksitePlan :Map;
 };
 
-class InfractionDisplay extends Component<Props> {
+type State = {
+  isEditInfractionModalVisible :boolean;
+  isDeleteInfractionModalVisible :boolean;
+};
+
+class InfractionDisplay extends Component<Props, State> {
+
+  state = {
+    isEditInfractionModalVisible: false,
+    isDeleteInfractionModalVisible: false,
+  };
 
   goToPrintInfraction = () => {
     const { actions, infraction, participant } = this.props;
@@ -95,6 +111,14 @@ class InfractionDisplay extends Component<Props> {
       .replace(':infractionId', infractionEventEKID));
   }
 
+  handleShowModal = (modalName :string) => {
+    this.setState({ [modalName]: true });
+  }
+
+  handleHideModal = (modalName :string) => {
+    this.setState({ [modalName]: false });
+  }
+
   render() {
     const {
       controls,
@@ -102,6 +126,8 @@ class InfractionDisplay extends Component<Props> {
       infractionInfo,
       worksitesByWorksitePlan,
     } = this.props;
+    const { isEditInfractionModalVisible, isDeleteInfractionModalVisible } = this.state;
+
     const {
       [DATETIME_COMPLETED]: infractionDateTime,
       [NOTES]: infractionNotes,
@@ -144,10 +170,22 @@ class InfractionDisplay extends Component<Props> {
               <IconButton
                   icon={<FontAwesomeIcon icon={faPrint} color={OL.GREY02} />}
                   onClick={this.goToPrintInfraction} />
-              <EditButton />
+              <EditButton onClick={() => this.handleShowModal(EDIT_INFRACTION_MODAL)} />
+              <IconButton
+                  icon={<FontAwesomeIcon icon={faTrash} color={OL.GREY02} />}
+                  onClick={() => this.handleShowModal(DELETE_INFRACTION_MODAL)} />
             </ButtonsWrapper>
           </BottomRow>
         </CardSegment>
+        <EditInfractionModal
+            infractionEvent={infraction}
+            infractionCategory={infractionCategory}
+            isOpen={isEditInfractionModalVisible}
+            onClose={() => this.handleHideModal(EDIT_INFRACTION_MODAL)} />
+        <DeleteInfractionModal
+            infractionEventEKID={getEntityKeyId(infraction)}
+            isOpen={isDeleteInfractionModalVisible}
+            onClose={() => this.handleHideModal(DELETE_INFRACTION_MODAL)} />
       </Card>
     );
   }

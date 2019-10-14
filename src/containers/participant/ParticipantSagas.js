@@ -42,6 +42,7 @@ import {
   CREATE_NEW_ENROLLMENT,
   CREATE_WORK_APPOINTMENTS,
   DELETE_APPOINTMENT,
+  DELETE_INFRACTION_EVENT,
   EDIT_APPOINTMENT,
   EDIT_ENROLLMENT_DATES,
   EDIT_PARTICIPANT_CONTACTS,
@@ -89,6 +90,7 @@ import {
   createNewEnrollment,
   createWorkAppointments,
   deleteAppointment,
+  deleteInfractionEvent,
   editAppointment,
   editEnrollmentDates,
   editParticipantContacts,
@@ -1495,6 +1497,43 @@ function* deleteAppointmentWorker(action :SequenceAction) :Generator<*, *, *> {
 function* deleteAppointmentWatcher() :Generator<*, *, *> {
 
   yield takeEvery(DELETE_APPOINTMENT, deleteAppointmentWorker);
+}
+
+/*
+ *
+ * ParticipantActions.deleteInfractionEvent()
+ *
+ */
+
+function* deleteInfractionEventWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+  if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
+  let response :Object = {};
+
+  try {
+    yield put(deleteInfractionEvent.request(id, value));
+
+    response = yield call(deleteEntitiesWorker, deleteEntities(value));
+    if (response.error) {
+      throw response.error;
+    }
+    const { entityKeyId } = value[0];
+
+    yield put(deleteInfractionEvent.success(id, entityKeyId));
+  }
+  catch (error) {
+    LOG.error('caught exception in deleteInfractionEventWorker()', error);
+    yield put(deleteInfractionEvent.failure(id, error));
+  }
+  finally {
+    yield put(deleteInfractionEvent.finally(id));
+  }
+}
+
+function* deleteInfractionEventWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(DELETE_INFRACTION_EVENT, deleteInfractionEventWorker);
 }
 
 /*
@@ -3143,6 +3182,8 @@ export {
   createWorkAppointmentsWorker,
   deleteAppointmentWatcher,
   deleteAppointmentWorker,
+  deleteInfractionEventWatcher,
+  deleteInfractionEventWorker,
   editAppointmentWatcher,
   editAppointmentWorker,
   editEnrollmentDatesWatcher,

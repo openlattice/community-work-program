@@ -67,6 +67,7 @@ export const PERSON = {
   CREATE_NEW_ENROLLMENT: 'createNewEnrollment',
   CREATE_WORK_APPOINTMENTS: 'createWorkAppointments',
   DELETE_APPOINTMENT: 'deleteAppointment',
+  DELETE_INFRACTION_EVENT: 'deleteInfractionEvent',
   DIVERSION_PLAN: 'diversionPlan',
   EDIT_APPOINTMENT: 'editAppointment',
   EDIT_CHECK_IN_DATE: 'editCheckInDate',

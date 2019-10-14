@@ -88,10 +88,12 @@ class InfractionsContainer extends Component<Props, State> {
   }
 
   componentDidUpdate(prevProps :Props) {
-    const { addInfractionEventRequestState } = this.props;
+    const { addInfractionEventRequestState, violations, warnings } = this.props;
     const { addInfractionEventRequestState: prevSumbitState } = prevProps;
-    if (addInfractionEventRequestState === RequestStates.SUCCESS
-      && prevSumbitState === RequestStates.PENDING) {
+    if ((addInfractionEventRequestState === RequestStates.SUCCESS
+      && prevSumbitState === RequestStates.PENDING)
+      || !prevProps.violations.equals(violations)
+      || !prevProps.warnings.equals(warnings)) {
       this.updateInfractionsList();
     }
   }

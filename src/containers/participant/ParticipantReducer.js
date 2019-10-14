@@ -20,6 +20,7 @@ import {
   createNewEnrollment,
   createWorkAppointments,
   deleteAppointment,
+  deleteInfractionEvent,
   editAppointment,
   editEnrollmentDates,
   editParticipantContacts,
@@ -114,6 +115,7 @@ const {
   CREATE_NEW_ENROLLMENT,
   CREATE_WORK_APPOINTMENTS,
   DELETE_APPOINTMENT,
+  DELETE_INFRACTION_EVENT,
   DIVERSION_PLAN,
   EDIT_APPOINTMENT,
   EDIT_ENROLLMENT_DATES,
@@ -202,6 +204,9 @@ const INITIAL_STATE :Map<*, *> = fromJS({
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [DELETE_APPOINTMENT]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [DELETE_INFRACTION_EVENT]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [EDIT_APPOINTMENT]: {
@@ -814,6 +819,44 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
         FAILURE: () => state
           .setIn([ACTIONS, DELETE_APPOINTMENT, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, DELETE_APPOINTMENT, action.id]),
+      });
+    }
+
+    case deleteInfractionEvent.case(action.type): {
+
+      return deleteInfractionEvent.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, DELETE_INFRACTION_EVENT, action.id], action)
+          .setIn([ACTIONS, DELETE_INFRACTION_EVENT, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+
+          const seqAction :SequenceAction = action;
+          const { entityKeyId } = seqAction.value;
+
+          let violations = state.get(VIOLATIONS);
+          let warnings = state.get(WARNINGS);
+          const violationIndexToDelete :number = violations
+            .findIndex((violation :Map) => getEntityKeyId(violation) === entityKeyId);
+          if (violationIndexToDelete !== 1) {
+            violations = violations.delete(violationIndexToDelete);
+          }
+          else {
+            const warningIndexToDelete :number = warnings
+              .findIndex((warning :Map) => getEntityKeyId(warning) === entityKeyId);
+            if (warningIndexToDelete !== -1) {
+              warnings = warnings.delete(warningIndexToDelete);
+            }
+          }
+
+          return state
+            .set(VIOLATIONS, violations)
+            .set(WARNINGS, warnings)
+            .setIn([ACTIONS, DELETE_INFRACTION_EVENT, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, DELETE_INFRACTION_EVENT, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, DELETE_INFRACTION_EVENT, action.id]),
       });
     }
 
