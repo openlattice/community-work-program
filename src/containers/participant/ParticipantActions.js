@@ -22,6 +22,9 @@ const addWorksitePlan = newRequestSequence(ADD_WORKSITE_PLAN);
 const CHECK_IN_FOR_APPOINTMENT :'CHECK_IN_FOR_APPOINTMENT' = 'CHECK_IN_FOR_APPOINTMENT';
 const checkInForAppointment = newRequestSequence(CHECK_IN_FOR_APPOINTMENT);
 
+const CREATE_NEW_ENROLLMENT :'CREATE_NEW_ENROLLMENT' = 'CREATE_NEW_ENROLLMENT';
+const createNewEnrollment = newRequestSequence(CREATE_NEW_ENROLLMENT);
+
 const CREATE_WORK_APPOINTMENTS :'CREATE_WORK_APPOINTMENTS' = 'CREATE_WORK_APPOINTMENTS';
 const createWorkAppointments = newRequestSequence(CREATE_WORK_APPOINTMENTS);
 
@@ -138,6 +141,7 @@ export {
   ADD_TO_AVAILABLE_CHARGES,
   ADD_WORKSITE_PLAN,
   CHECK_IN_FOR_APPOINTMENT,
+  CREATE_NEW_ENROLLMENT,
   CREATE_WORK_APPOINTMENTS,
   DELETE_APPOINTMENT,
   EDIT_APPOINTMENT,
@@ -181,6 +185,7 @@ export {
   addToAvailableCharges,
   addWorksitePlan,
   checkInForAppointment,
+  createNewEnrollment,
   createWorkAppointments,
   deleteAppointment,
   editAppointment,

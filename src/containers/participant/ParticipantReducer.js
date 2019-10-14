@@ -17,6 +17,7 @@ import {
   addToAvailableCharges,
   addWorksitePlan,
   checkInForAppointment,
+  createNewEnrollment,
   createWorkAppointments,
   deleteAppointment,
   editAppointment,
@@ -106,6 +107,7 @@ const {
   CHARGES_FOR_CASE,
   CHECK_INS_BY_APPOINTMENT,
   CHECK_IN_FOR_APPOINTMENT,
+  CREATE_NEW_ENROLLMENT,
   CREATE_WORK_APPOINTMENTS,
   DELETE_APPOINTMENT,
   DIVERSION_PLAN,
@@ -181,6 +183,9 @@ const INITIAL_STATE :Map<*, *> = fromJS({
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [CHECK_IN_FOR_APPOINTMENT]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [CREATE_NEW_ENROLLMENT]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [CREATE_WORK_APPOINTMENTS]: {
@@ -674,6 +679,21 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
         FAILURE: () => state
           .setIn([ACTIONS, CHECK_IN_FOR_APPOINTMENT, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, CHECK_IN_FOR_APPOINTMENT, action.id])
+      });
+    }
+
+    case createNewEnrollment.case(action.type): {
+
+      return createNewEnrollment.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, CREATE_NEW_ENROLLMENT, action.id], action)
+          .setIn([ACTIONS, CREATE_NEW_ENROLLMENT, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => state
+          .setIn([ACTIONS, CREATE_NEW_ENROLLMENT, REQUEST_STATE], RequestStates.SUCCESS),
+        FAILURE: () => state
+          .setIn([ACTIONS, CREATE_NEW_ENROLLMENT, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, CREATE_NEW_ENROLLMENT, action.id]),
       });
     }
 

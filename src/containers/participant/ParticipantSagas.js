@@ -39,6 +39,7 @@ import {
   ADD_TO_AVAILABLE_CHARGES,
   ADD_WORKSITE_PLAN,
   CHECK_IN_FOR_APPOINTMENT,
+  CREATE_NEW_ENROLLMENT,
   CREATE_WORK_APPOINTMENTS,
   DELETE_APPOINTMENT,
   EDIT_APPOINTMENT,
@@ -82,6 +83,7 @@ import {
   addToAvailableCharges,
   addWorksitePlan,
   checkInForAppointment,
+  createNewEnrollment,
   createWorkAppointments,
   deleteAppointment,
   editAppointment,
@@ -554,6 +556,41 @@ function* addToAvailableChargesWorker(action :SequenceAction) :Generator<*, *, *
 function* addToAvailableChargesWatcher() :Generator<*, *, *> {
 
   yield takeEvery(ADD_TO_AVAILABLE_CHARGES, addToAvailableChargesWorker);
+}
+
+/*
+ *
+ * ParticipantActions.createNewEnrollment()
+ *
+ */
+
+function* createNewEnrollmentWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+  let response :Object = {};
+
+  try {
+    yield put(createNewEnrollment.request(id, value));
+
+    response = yield call(submitDataGraphWorker, submitDataGraph(value));
+    if (response.error) {
+      throw response.error;
+    }
+
+    yield put(createNewEnrollment.success(id));
+  }
+  catch (error) {
+    LOG.error('caught exception in createNewEnrollmentWorker()', error);
+    yield put(createNewEnrollment.failure(id, error));
+  }
+  finally {
+    yield put(createNewEnrollment.finally(id));
+  }
+}
+
+function* createNewEnrollmentWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(CREATE_NEW_ENROLLMENT, createNewEnrollmentWorker);
 }
 
 /*
@@ -2912,6 +2949,8 @@ export {
   addWorksitePlanWorker,
   checkInForAppointmentWatcher,
   checkInForAppointmentWorker,
+  createNewEnrollmentWatcher,
+  createNewEnrollmentWorker,
   createWorkAppointmentsWatcher,
   createWorkAppointmentsWorker,
   deleteAppointmentWatcher,

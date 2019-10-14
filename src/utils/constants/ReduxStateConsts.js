@@ -63,6 +63,7 @@ export const PERSON = {
   CHARGES_FOR_CASE: 'chargesForCase',
   CHECK_INS_BY_APPOINTMENT: 'checkInsByAppointment',
   CHECK_IN_FOR_APPOINTMENT: 'checkInForAppointment',
+  CREATE_NEW_ENROLLMENT: 'createNewEnrollment',
   CREATE_WORK_APPOINTMENTS: 'createWorkAppointments',
   DELETE_APPOINTMENT: 'deleteAppointment',
   DIVERSION_PLAN: 'diversionPlan',
