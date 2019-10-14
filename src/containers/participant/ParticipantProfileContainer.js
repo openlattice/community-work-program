@@ -7,6 +7,7 @@ import type { Match } from 'react-router';
 
 import ParticipantProfile from './ParticipantProfile';
 import PrintWorkScheduleContainer from './print/PrintWorkScheduleContainer';
+import PrintInfractionContainer from './print/PrintInfractionContainer';
 import * as Routes from '../../core/router/Routes';
 
 import { PERSON, STATE } from '../../utils/constants/ReduxStateConsts';
@@ -31,6 +32,9 @@ const ParticipantProfileContainer = (props :Props) => {
   } = props;
   return (
     <Switch>
+      <Route
+          path={Routes.PRINT_INFRACTION}
+          component={PrintInfractionContainer} />
       <Route
           path={Routes.PRINT_PARTICIPANT_SCHEDULE}
           render={() => (
