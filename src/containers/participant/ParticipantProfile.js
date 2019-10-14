@@ -77,6 +77,7 @@ const {
   ALL_DIVERSION_PLANS,
   CHARGES_FOR_CASE,
   CHECK_INS_BY_APPOINTMENT,
+  CREATE_NEW_ENROLLMENT,
   DIVERSION_PLAN,
   EMAIL,
   ENROLLMENT_STATUS,
@@ -202,6 +203,7 @@ type Props = {
   app :Map;
   chargesForCase :List;
   checkInsByAppointment :Map;
+  createNewEnrollmentRequestState :RequestState;
   diversionPlan :Map;
   email :Map;
   enrollmentStatus :Map;
@@ -253,7 +255,12 @@ class ParticipantProfile extends Component<Props, State> {
   }
 
   componentDidUpdate(prevProps :Props) {
-    const { app, workAppointmentsByWorksitePlan, worksitesByWorksitePlan } = this.props;
+    const {
+      app,
+      createNewEnrollmentRequestState,
+      workAppointmentsByWorksitePlan,
+      worksitesByWorksitePlan
+    } = this.props;
     if (!prevProps.app.get(APP_TYPE_FQNS.PEOPLE) && app.get(APP_TYPE_FQNS.PEOPLE)) {
       this.loadProfile();
     }
@@ -262,6 +269,14 @@ class ParticipantProfile extends Component<Props, State> {
     }
     if (prevProps.workAppointmentsByWorksitePlan.count() !== workAppointmentsByWorksitePlan.count()) {
       this.setWorkStartDate();
+    }
+    if (prevProps.workAppointmentsByWorksitePlan.count() !== workAppointmentsByWorksitePlan.count()) {
+      this.setWorkStartDate();
+    }
+    if (prevProps.createNewEnrollmentRequestState === RequestStates.PENDING
+      && createNewEnrollmentRequestState !== RequestStates.PENDING) {
+      this.loadProfile();
+      this.handleHideModal(NEW_ENROLLMENT);
     }
   }
 
@@ -566,6 +581,7 @@ const mapStateToProps = (state :Map<*, *>) => {
     app,
     [CHARGES_FOR_CASE]: person.get(CHARGES_FOR_CASE),
     [CHECK_INS_BY_APPOINTMENT]: person.get(CHECK_INS_BY_APPOINTMENT),
+    createNewEnrollmentRequestState: person.getIn([ACTIONS, CREATE_NEW_ENROLLMENT, REQUEST_STATE]),
     [DIVERSION_PLAN]: person.get(DIVERSION_PLAN),
     [EMAIL]: person.get(EMAIL),
     [ENROLLMENT_STATUS]: person.get(ENROLLMENT_STATUS),
