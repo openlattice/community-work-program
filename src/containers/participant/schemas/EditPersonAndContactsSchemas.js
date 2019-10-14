@@ -11,7 +11,7 @@ import { RACE_VALUES, SEX_VALUES } from '../../../core/edm/constants/DataModelCo
 
 const { getEntityAddressKey, getPageSectionKey } = DataProcessingUtils;
 
-const { LOCATION_ADDRESS } = ADDRESS_FQNS;
+const { FULL_ADDRESS } = ADDRESS_FQNS;
 const { ADDRESS, CONTACT_INFORMATION, PEOPLE } = APP_TYPE_FQNS;
 const { EMAIL, PHONE_NUMBER } = CONTACT_INFO_FQNS;
 const {
@@ -100,16 +100,28 @@ export const contactsSchema = {
           type: 'string',
           title: 'Phone number',
         },
+      }
+    },
+    [getPageSectionKey(1, 2)]: {
+      type: 'object',
+      title: '',
+      properties: {
         [getEntityAddressKey(1, CONTACT_INFORMATION, EMAIL)]: {
           type: 'string',
           title: 'Email',
         },
-        [getEntityAddressKey(0, ADDRESS, LOCATION_ADDRESS)]: {
+      }
+    },
+    [getPageSectionKey(1, 3)]: {
+      type: 'object',
+      title: '',
+      properties: {
+        [getEntityAddressKey(0, ADDRESS, FULL_ADDRESS)]: {
           type: 'string',
           title: 'Address',
         },
       }
-    },
+    }
   }
 };
 
@@ -117,13 +129,21 @@ export const contactsUiSchema = {
   [getPageSectionKey(1, 1)]: {
     classNames: 'column-span-12 grid-container',
     [getEntityAddressKey(0, CONTACT_INFORMATION, PHONE_NUMBER)]: {
-      classNames: 'column-span-4',
+      classNames: 'column-span-6',
     },
+    'ui:options': { editable: true },
+  },
+  [getPageSectionKey(1, 2)]: {
+    classNames: 'column-span-12 grid-container',
     [getEntityAddressKey(1, CONTACT_INFORMATION, EMAIL)]: {
-      classNames: 'column-span-4',
+      classNames: 'column-span-6',
     },
-    [getEntityAddressKey(0, ADDRESS, LOCATION_ADDRESS)]: {
-      classNames: 'column-span-4',
+    'ui:options': { editable: true },
+  },
+  [getPageSectionKey(1, 3)]: {
+    classNames: 'column-span-12 grid-container',
+    [getEntityAddressKey(0, ADDRESS, FULL_ADDRESS)]: {
+      classNames: 'column-span-6',
     },
     'ui:options': { editable: true },
   },

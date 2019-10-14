@@ -24,7 +24,7 @@ import { getEntityProperties } from '../../utils/DataUtils';
 import { ADDRESS_FQNS, CONTACT_INFO_FQNS, PEOPLE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { EMPTY_FIELD } from '../../containers/participants/ParticipantsConstants';
 
-const { LOCATION_ADDRESS } = ADDRESS_FQNS;
+const { FULL_ADDRESS } = ADDRESS_FQNS;
 const { EMAIL, PHONE_NUMBER } = CONTACT_INFO_FQNS;
 const {
   DOB,
@@ -103,7 +103,7 @@ const ParticipantProfileSection = ({
 
   const { [PHONE_NUMBER]: phoneNumber } = getEntityProperties(phone, [PHONE_NUMBER]);
   const { [EMAIL]: emailAddress } = getEntityProperties(email, [EMAIL]);
-  const { [LOCATION_ADDRESS]: personAddress } = getEntityProperties(address, [LOCATION_ADDRESS]);
+  const { [FULL_ADDRESS]: personAddress } = getEntityProperties(address, [FULL_ADDRESS]);
 
   return (
     <SectionWrapper>

@@ -73,7 +73,7 @@ export const INCIDENT_START_DATETIME = new FullyQualifiedName('incident.startdat
 
 /* geo.address */
 export const ADDRESS_FQNS = {
-  LOCATION_ADDRESS: new FullyQualifiedName('location.address'),
+  FULL_ADDRESS: new FullyQualifiedName('location.Address'),
 };
 
 /* publicsafety.pretrialstatuscaseprocessings */
