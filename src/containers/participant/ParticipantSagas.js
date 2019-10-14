@@ -1885,7 +1885,8 @@ function* getInfractionWorker(action :SequenceAction) :Generator<*, *, *> {
     }
 
     if (response.data[infractionEventEKID]) {
-      infractionType = fromJS(response.data[infractionEventEKID]);
+      const infractionResult = fromJS(response.data[infractionEventEKID][0]);
+      infractionType = getNeighborDetails(infractionResult);
     }
 
     yield put(getInfraction.success(id, { infractionEvent, infractionType }));

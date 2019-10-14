@@ -175,6 +175,20 @@ class PrintInfractionContainer extends Component<Props, State> {
           <TextWrapper>{ infractionCategory }</TextWrapper>
         </CardSegment>
         <CardSegment vertical>
+          <Label subtle>File #1</Label>
+          <RowWrapper>
+            <div>
+              <Label subtle>Docket #</Label>
+              <TextWrapper></TextWrapper>
+            </div>
+            <div>
+              <Label subtle>Judge</Label>
+              <TextWrapper></TextWrapper>
+            </div>
+          </RowWrapper>
+        </CardSegment>
+        <CardSegment vertical>
+          <Label subtle>File #2</Label>
           <RowWrapper>
             <div>
               <Label subtle>Docket #</Label>
