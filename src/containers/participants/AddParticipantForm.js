@@ -22,14 +22,14 @@ import {
   APP_TYPE_FQNS,
   CASE_FQNS,
   DATETIME_COMPLETED,
-  DATETIME_START,
+  DATETIME_END,
   DIVERSION_PLAN_FQNS,
   ENROLLMENT_STATUS_FQNS,
   PEOPLE_FQNS
 } from '../../core/edm/constants/FullyQualifiedNames';
 import { STATE } from '../../utils/constants/ReduxStateConsts';
 import { CWP, ENROLLMENT_STATUSES } from '../../core/edm/constants/DataModelConsts';
-import { COURT_TYPE_OPTIONS } from '../participant/cases/EditCaseAndHoursForm';
+import { courtTypeOptions } from './ParticipantsConstants';
 import {
   ButtonsRow,
   FormRow,
@@ -57,11 +57,15 @@ const {
   COMPLETED,
   DATETIME_RECEIVED,
   NAME,
-  NOTES,
   REQUIRED_HOURS
 } = DIVERSION_PLAN_FQNS;
 const { EFFECTIVE_DATE, STATUS } = ENROLLMENT_STATUS_FQNS;
-const { DOB, FIRST_NAME, LAST_NAME } = PEOPLE_FQNS;
+const {
+  DOB,
+  FIRST_NAME,
+  LAST_NAME,
+  PERSON_NOTES,
+} = PEOPLE_FQNS;
 
 type Props = {
   actions:{
@@ -123,13 +127,13 @@ class AddParticipantForm extends Component<Props, State> {
     const courtCaseTypePTID :UUID = getPropertyTypeIdFromEdm(edm, COURT_CASE_TYPE);
     const datetimeCompletedPTID :UUID = getPropertyTypeIdFromEdm(edm, DATETIME_COMPLETED);
     const datetimeReceivedPTID :UUID = getPropertyTypeIdFromEdm(edm, DATETIME_RECEIVED);
-    const datetimeStartPTID :UUID = getPropertyTypeIdFromEdm(edm, DATETIME_START);
+    const datetimeEndPTID :UUID = getPropertyTypeIdFromEdm(edm, DATETIME_END);
     const dobPTID :UUID = getPropertyTypeIdFromEdm(edm, DOB);
     const effectiveDatePTID :UUID = getPropertyTypeIdFromEdm(edm, EFFECTIVE_DATE);
     const firstNamePTID :UUID = getPropertyTypeIdFromEdm(edm, FIRST_NAME);
     const lastNamePTID :UUID = getPropertyTypeIdFromEdm(edm, LAST_NAME);
     const namePTID :UUID = getPropertyTypeIdFromEdm(edm, NAME);
-    const notesPTID :UUID = getPropertyTypeIdFromEdm(edm, NOTES);
+    const personNotesPTID :UUID = getPropertyTypeIdFromEdm(edm, PERSON_NOTES);
     const requiredHoursPTID :UUID = getPropertyTypeIdFromEdm(edm, REQUIRED_HOURS);
     const statusPTID :UUID = getPropertyTypeIdFromEdm(edm, STATUS);
 
@@ -139,13 +143,13 @@ class AddParticipantForm extends Component<Props, State> {
       [COURT_CASE_TYPE]: courtCaseTypePTID,
       [DATETIME_COMPLETED]: datetimeCompletedPTID,
       [DATETIME_RECEIVED]: datetimeReceivedPTID,
-      [DATETIME_START]: datetimeStartPTID,
+      [DATETIME_END]: datetimeEndPTID,
       [DOB]: dobPTID,
       [EFFECTIVE_DATE]: effectiveDatePTID,
       [FIRST_NAME]: firstNamePTID,
       [LAST_NAME]: lastNamePTID,
       [NAME]: namePTID,
-      [NOTES]: notesPTID,
+      [PERSON_NOTES]: personNotesPTID,
       [REQUIRED_HOURS]: requiredHoursPTID,
       [STATUS]: statusPTID,
     };
@@ -253,7 +257,7 @@ class AddParticipantForm extends Component<Props, State> {
             <Select
                 name={getEntityAddressKey(0, MANUAL_PRETRIAL_COURT_CASES, COURT_CASE_TYPE)}
                 onChange={this.handleSelectChange}
-                options={COURT_TYPE_OPTIONS} />
+                options={courtTypeOptions} />
           </RowContent>
           <RowContent>
             <Label>Docket number</Label>
@@ -266,7 +270,7 @@ class AddParticipantForm extends Component<Props, State> {
           <RowContent>
             <Label>Notes</Label>
             <TextArea
-                name={getEntityAddressKey(0, DIVERSION_PLAN, NOTES)}
+                name={getEntityAddressKey(0, PEOPLE, PERSON_NOTES)}
                 onChange={this.handleInputChange} />
           </RowContent>
         </FormRow>

@@ -5,6 +5,12 @@ import { fromJS, Map, OrderedMap } from 'immutable';
 import { DateTime } from 'luxon';
 import { Card, CardSegment, DataGrid } from 'lattice-ui-kit';
 
+import {
+  SectionLabel,
+  SectionNameRow,
+  SectionWrapper,
+  StyledEditButton,
+} from './SectionStyledComponents';
 import { formatAsDate } from '../../utils/DateTimeUtils';
 import { EMPTY_FIELD } from '../../containers/participants/ParticipantsConstants';
 
@@ -17,21 +23,25 @@ const labelMap :OrderedMap = OrderedMap({
   sentenceEndDate: 'Sentence end date',
 });
 
-const DatesWrapper = styled.div`
-  width: 610px;
+const DatesCard = styled(Card)`
+  height: 190px;
 `;
 
 type Props = {
   checkInDate :string;
+  edit :() => void;
   orientationDateTime :string;
   sentenceDateTime :string;
+  sentenceEndDateTime :string;
   workStartDateTime :string;
 };
 
-const KeyDates = ({
+const EnrollmentDates = ({
   checkInDate,
+  edit,
   orientationDateTime,
   sentenceDateTime,
+  sentenceEndDateTime,
   workStartDateTime
 } :Props) => {
 
@@ -42,9 +52,13 @@ const KeyDates = ({
     ? sentenceDateObj.plus({ hours: 48 }).toLocaleString()
     : EMPTY_FIELD;
 
-  const sentenceEndDate = sentenceDateObj.isValid
-    ? sentenceDateObj.plus({ days: 90 }).toLocaleString()
+  const sentenceEndDateObj = DateTime.fromISO(sentenceEndDateTime);
+  let sentenceEndDate = sentenceEndDateObj.isValid
+    ? sentenceEndDateObj.toLocaleString(DateTime.DATE_SHORT)
     : EMPTY_FIELD;
+  if (!sentenceEndDateObj.isValid && sentenceDateObj.isValid) {
+    sentenceEndDate = sentenceDateObj.plus({ days: 90 }).toLocaleString();
+  }
 
   const orientationDateObj = DateTime.fromISO(orientationDateTime);
   const orientationDate = orientationDateObj.isValid
@@ -64,17 +78,21 @@ const KeyDates = ({
     sentenceEndDate,
   });
   return (
-    <DatesWrapper>
-      <Card>
+    <SectionWrapper>
+      <SectionNameRow>
+        <SectionLabel subtle>Enrollment Dates</SectionLabel>
+        <StyledEditButton mode="subtle" onClick={edit} />
+      </SectionNameRow>
+      <DatesCard>
         <CardSegment padding="md" vertical>
           <DataGrid
               columns={3}
               data={data}
               labelMap={labelMap} />
         </CardSegment>
-      </Card>
-    </DatesWrapper>
+      </DatesCard>
+    </SectionWrapper>
   );
 };
 
-export default KeyDates;
+export default EnrollmentDates;

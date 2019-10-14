@@ -6,25 +6,24 @@ import { connect } from 'react-redux';
 import { RequestStates } from 'redux-reqseq';
 import type { RequestState } from 'redux-reqseq';
 
-import EditPlanNotesForm from './EditPlanNotesForm';
+import AddToAvailableChargesForm from './AddToAvailableChargesForm';
 
 import { PERSON, STATE } from '../../../utils/constants/ReduxStateConsts';
 
-const { ACTIONS, EDIT_PLAN_NOTES, REQUEST_STATE } = PERSON;
-
+const { ACTIONS, ADD_TO_AVAILABLE_CHARGES, REQUEST_STATE } = PERSON;
 
 type Props = {
-  editPlanNotesRequestState :RequestState;
+  addChargesRequestState :RequestState;
   isOpen :boolean;
   onClose :() => void;
 };
 
-class EditPlanNotesModal extends Component<Props> {
+class AddToAvailableChargesModal extends Component<Props> {
 
   componentDidUpdate(prevProps :Props) {
-    const { editPlanNotesRequestState, onClose } = this.props;
-    const { editPlanNotesRequestState: prevSumbitState } = prevProps;
-    if (editPlanNotesRequestState === RequestStates.SUCCESS
+    const { addChargesRequestState, onClose } = this.props;
+    const { addChargesRequestState: prevSumbitState } = prevProps;
+    if (addChargesRequestState === RequestStates.SUCCESS
       && prevSumbitState === RequestStates.PENDING) {
       onClose();
     }
@@ -32,7 +31,6 @@ class EditPlanNotesModal extends Component<Props> {
 
   render() {
     const {
-      editPlanNotesRequestState,
       isOpen,
       onClose,
     } = this.props;
@@ -40,19 +38,17 @@ class EditPlanNotesModal extends Component<Props> {
       <Modal
           isVisible={isOpen}
           onClose={onClose}
-          textTitle="CWP Notes"
+          textTitle="Create a Charge"
           viewportScrolling>
-        <EditPlanNotesForm
-            isLoading={editPlanNotesRequestState === RequestStates.PENDING}
-            onDiscard={onClose} />
+        <AddToAvailableChargesForm />
       </Modal>
     );
   }
 }
 
 const mapStateToProps = (state :Map) => ({
-  editPlanNotesRequestState: state.getIn([STATE.PERSON, ACTIONS, EDIT_PLAN_NOTES, REQUEST_STATE]),
+  addChargesRequestState: state.getIn([STATE.PERSON, ACTIONS, ADD_TO_AVAILABLE_CHARGES, REQUEST_STATE]),
 });
 
 // $FlowFixMe
-export default connect(mapStateToProps)(EditPlanNotesModal);
+export default connect(mapStateToProps)(AddToAvailableChargesModal);

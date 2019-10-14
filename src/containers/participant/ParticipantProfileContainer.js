@@ -8,11 +8,18 @@ import type { Match } from 'react-router';
 import ParticipantProfile from './ParticipantProfile';
 import PrintWorkScheduleContainer from './print/PrintWorkScheduleContainer';
 import PrintInfractionContainer from './print/PrintInfractionContainer';
+import EditPersonAndContactsForm from './EditPersonAndContactsForm';
+import EditEnrollmentDatesForm from './EditEnrollmentDatesForm';
+import EditCaseInfoForm from './EditCaseInfoForm';
 import * as Routes from '../../core/router/Routes';
 
 import { PERSON, STATE } from '../../utils/constants/ReduxStateConsts';
 
-const { PARTICIPANT, WORK_APPOINTMENTS_BY_WORKSITE_PLAN, WORKSITES_BY_WORKSITE_PLAN } = PERSON;
+const {
+  PARTICIPANT,
+  WORK_APPOINTMENTS_BY_WORKSITE_PLAN,
+  WORKSITES_BY_WORKSITE_PLAN
+} = PERSON;
 
 type Props = {
   match :Match;
@@ -35,6 +42,15 @@ const ParticipantProfileContainer = (props :Props) => {
       <Route
           path={Routes.PRINT_INFRACTION}
           component={PrintInfractionContainer} />
+      <Route
+          path={Routes.EDIT_PARTICIPANT}
+          component={EditPersonAndContactsForm} />
+      <Route
+          path={Routes.EDIT_DATES}
+          component={EditEnrollmentDatesForm} />
+      <Route
+          path={Routes.EDIT_CASE_INFO}
+          component={EditCaseInfoForm} />
       <Route
           path={Routes.PRINT_PARTICIPANT_SCHEDULE}
           render={() => (
