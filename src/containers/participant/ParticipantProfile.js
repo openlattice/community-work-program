@@ -8,6 +8,7 @@ import {
   CardSegment,
   CardStack,
   IconSplash,
+  Select,
 } from 'lattice-ui-kit';
 import { faTools } from '@fortawesome/pro-light-svg-icons';
 import { connect } from 'react-redux';
@@ -122,7 +123,7 @@ const ProfileBody = styled.div`
 `;
 
 const GeneralInfoSection = styled(ProfileBody)`
-  height: 790px;
+  height: 836px;
   align-items: center;
   flex-direction: row;
   font-size: 13px;
@@ -168,6 +169,11 @@ const ButtonsWrapper = styled.div`
 
 const ScheduleButtonsWrapper = styled(ButtonsWrapper)`
   grid-template-columns: repeat(2, 1fr);
+`;
+
+const EnrollmentControlsWrapper = styled(ScheduleButtonsWrapper)`
+  width: 100%;
+  grid-gap: 5px 20px;
 `;
 
 type Props = {
@@ -382,16 +388,16 @@ class ParticipantProfile extends Component<Props, State> {
             )
         }
         <ProfileWrapper>
-          <NameRowWrapper>
-            <BackNavButton
-                onClick={() => {
-                  actions.goToRoute(Routes.PARTICIPANTS);
-                }}>
-              Back to Participants
-            </BackNavButton>
-          </NameRowWrapper>
           <GeneralInfoSection>
             <ProfileInfoColumnWrapper>
+              <NameRowWrapper>
+                <BackNavButton
+                    onClick={() => {
+                      actions.goToRoute(Routes.PARTICIPANTS);
+                    }}>
+                  Back to Participants
+                </BackNavButton>
+              </NameRowWrapper>
               <ParticipantProfileSection
                   address={address}
                   edit={this.editParticipant}
@@ -402,6 +408,12 @@ class ParticipantProfile extends Component<Props, State> {
                   notes={personNotes} />
             </ProfileInfoColumnWrapper>
             <ProgramInfoColumnWrapper>
+              <EnrollmentControlsWrapper>
+                <Select
+                    options={[]}
+                    placeholder="Enrollment 08/09/2018" />
+                <Button>Create New Enrollment</Button>
+              </EnrollmentControlsWrapper>
               <EnrollmentStatusSection
                   enrollmentStatus={enrollmentStatus}
                   firstName={firstName}
