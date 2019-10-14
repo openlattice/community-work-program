@@ -15,33 +15,24 @@ import * as Routes from '../../core/router/Routes';
 import { PERSON, STATE } from '../../utils/constants/ReduxStateConsts';
 
 const {
-  ADDRESS,
-  EMAIL,
   PARTICIPANT,
-  PHONE,
   WORK_APPOINTMENTS_BY_WORKSITE_PLAN,
   WORKSITES_BY_WORKSITE_PLAN
 } = PERSON;
 
 type Props = {
-  address :Map;
-  email :Map;
   match :Match;
   participant :Map;
-  phone :Map;
   workAppointmentsByWorksitePlan :Map;
   worksitesByWorksitePlan :Map;
 };
 
 const ParticipantProfileContainer = (props :Props) => {
   const {
-    address,
-    email,
     match: {
       params: { subjectId: personEKID }
     },
     participant,
-    phone,
     workAppointmentsByWorksitePlan,
     worksitesByWorksitePlan,
   } = props;
@@ -49,13 +40,7 @@ const ParticipantProfileContainer = (props :Props) => {
     <Switch>
       <Route
           path={Routes.EDIT_PARTICIPANT}
-          render={() => (
-            <EditPersonAndContactsForm
-                address={address}
-                email={email}
-                participant={participant}
-                phone={phone} />
-          )} />
+          component={EditPersonAndContactsForm} />
       <Route
           path={Routes.EDIT_DATES}
           component={EditEnrollmentDatesForm} />
@@ -78,10 +63,7 @@ const ParticipantProfileContainer = (props :Props) => {
 const mapStateToProps = (state :Map<*, *>) => {
   const person = state.get(STATE.PERSON);
   return {
-    [ADDRESS]: person.get(ADDRESS),
-    [EMAIL]: person.get(EMAIL),
     [PARTICIPANT]: person.get(PARTICIPANT),
-    [PHONE]: person.get(PHONE),
     [WORK_APPOINTMENTS_BY_WORKSITE_PLAN]: person.get(WORK_APPOINTMENTS_BY_WORKSITE_PLAN),
     [WORKSITES_BY_WORKSITE_PLAN]: person.get(WORKSITES_BY_WORKSITE_PLAN),
   };

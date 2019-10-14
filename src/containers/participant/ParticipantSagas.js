@@ -787,12 +787,15 @@ function* addNewParticipantContactsWorker(action :SequenceAction) :Generator<*, 
     if (response.error) {
       throw response.error;
     }
+    const { data } = response;
+    const { entityKeyIds } = data;
 
     const { entityData } = value;
     const app = yield select(getAppFromState);
     const edm = yield select(getEdmFromState);
     const contactInfoESID = getEntitySetIdFromApp(app, CONTACT_INFORMATION);
     const addressESID = getEntitySetIdFromApp(app, ADDRESS);
+    const addressEKID :UUID = entityKeyIds[addressESID][0];
 
     const storedAddressData = fromJS(entityData[addressESID][0]);
     let newAddress :Map = Map();
@@ -800,6 +803,7 @@ function* addNewParticipantContactsWorker(action :SequenceAction) :Generator<*, 
       const propertyTypeFqn :FQN = getPropertyFqnFromEdm(edm, propertyTypeId);
       newAddress = newAddress.set(propertyTypeFqn, addressValue);
     });
+    newAddress = newAddress.set(ENTITY_KEY_ID, addressEKID);
 
     const storedContactData = fromJS(entityData[contactInfoESID]);
 
@@ -819,8 +823,10 @@ function* addNewParticipantContactsWorker(action :SequenceAction) :Generator<*, 
         return true;
       });
     });
-    if (!newPhone.isEmpty()) newPhone = newPhone.set(PREFERRED, true);
-    if (!newEmail.isEmpty()) newEmail = newEmail.set(PREFERRED, true);
+    newPhone = newPhone.set(ENTITY_KEY_ID, entityKeyIds[contactInfoESID][0]);
+    newEmail = newEmail.set(ENTITY_KEY_ID, entityKeyIds[contactInfoESID][1]);
+    newPhone = newPhone.set(PREFERRED, true);
+    newEmail = newEmail.set(PREFERRED, true);
 
     yield put(addNewParticipantContacts.success(id, { newAddress, newPhone, newEmail }));
   }

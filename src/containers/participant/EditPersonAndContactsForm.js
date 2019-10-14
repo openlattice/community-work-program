@@ -6,9 +6,18 @@ import { Card, CardHeader, CardStack } from 'lattice-ui-kit';
 import { Form, DataProcessingUtils } from 'lattice-fabricate';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import type { RequestSequence } from 'redux-reqseq';
+import { RequestStates } from 'redux-reqseq';
+import type { RequestSequence, RequestState } from 'redux-reqseq';
+import type { Match } from 'react-router';
 
-import { addNewParticipantContacts, editParticipantContacts, editPersonDetails } from './ParticipantActions';
+import LogoLoader from '../../components/LogoLoader';
+
+import {
+  addNewParticipantContacts,
+  editParticipantContacts,
+  editPersonDetails,
+  getInfoForEditPerson,
+} from './ParticipantActions';
 import { goToRoute } from '../../core/router/RoutingActions';
 import {
   contactsSchema,
@@ -30,7 +39,7 @@ import {
   CONTACT_INFO_FQNS,
   PEOPLE_FQNS,
 } from '../../core/edm/constants/FullyQualifiedNames';
-import { STATE } from '../../utils/constants/ReduxStateConsts';
+import { APP, PERSON, STATE } from '../../utils/constants/ReduxStateConsts';
 import * as Routes from '../../core/router/Routes';
 
 const {
@@ -40,7 +49,7 @@ const {
   processEntityData,
 } = DataProcessingUtils;
 
-const { LOCATION_ADDRESS } = ADDRESS_FQNS;
+const { FULL_ADDRESS } = ADDRESS_FQNS;
 const {
   ADDRESS,
   CONTACT_INFORMATION,
@@ -58,6 +67,13 @@ const {
   RACE,
   SEX,
 } = PEOPLE_FQNS;
+const {
+  ACTIONS,
+  GET_INFO_FOR_EDIT_PERSON,
+  PARTICIPANT,
+  PHONE,
+  REQUEST_STATE,
+} = PERSON;
 
 const FormWrapper = styled.div`
   display: flex;
@@ -77,12 +93,16 @@ type Props = {
     addNewParticipantContacts :RequestSequence;
     editParticipantContacts :RequestSequence;
     editPersonDetails :RequestSequence;
+    getInfoForEditPerson :RequestSequence;
     goToRoute :RequestSequence;
   },
   address :Map;
   app :Map;
   edm :Map;
   email :Map;
+  getInfoForEditPersonRequestState :RequestState;
+  initializeAppRequestState :RequestState;
+  match :Match;
   participant :Map;
   phone :Map;
 };
@@ -112,8 +132,27 @@ class EditPersonAndContactsForm extends Component<Props, State> {
   }
 
   componentDidUpdate(prevProps :Props) {
-    const { address, email, phone } = this.props;
-    if (!prevProps.address.equals(address) || !prevProps.email.equals(email) || !prevProps.phone.equals(phone)) {
+    const {
+      actions,
+      app,
+      address,
+      email,
+      getInfoForEditPersonRequestState,
+      match: {
+        params: { subjectId: personEKID }
+      },
+      participant,
+      phone,
+    } = this.props;
+    if (!prevProps.app.get(PEOPLE) && app.get(PEOPLE) && personEKID) {
+      actions.getInfoForEditPerson({ personEKID });
+    }
+    if ((prevProps.getInfoForEditPersonRequestState === RequestStates.PENDING
+      && getInfoForEditPersonRequestState !== RequestStates.PENDING)
+      || !prevProps.participant.equals(participant)
+      || !prevProps.address.equals(address)
+      || !prevProps.email.equals(email)
+      || !prevProps.phone.equals(phone)) {
       this.prepopulateFormData();
     }
   }
@@ -159,17 +198,17 @@ class EditPersonAndContactsForm extends Component<Props, State> {
 
     const { [PHONE_NUMBER]: phoneNumber } = getEntityProperties(phone, [PHONE_NUMBER]);
     const { [EMAIL]: emailAddress } = getEntityProperties(email, [EMAIL]);
-    const { [LOCATION_ADDRESS]: personAddress } = getEntityProperties(address, [LOCATION_ADDRESS]);
+    const { [FULL_ADDRESS]: personAddress } = getEntityProperties(address, [FULL_ADDRESS]);
 
     const contactsFormData :Map = Map().withMutations((map :Map) => {
-      if (phoneNumber) {
+      if (!phone.isEmpty()) {
         map.setIn([getPageSectionKey(1, 1), getEntityAddressKey(0, CONTACT_INFORMATION, PHONE_NUMBER)], phoneNumber);
       }
-      if (emailAddress) {
-        map.setIn([getPageSectionKey(1, 1), getEntityAddressKey(1, CONTACT_INFORMATION, EMAIL)], emailAddress);
+      if (!email.isEmpty()) {
+        map.setIn([getPageSectionKey(1, 2), getEntityAddressKey(1, CONTACT_INFORMATION, EMAIL)], emailAddress);
       }
-      if (personAddress) {
-        map.setIn([getPageSectionKey(1, 1), getEntityAddressKey(0, ADDRESS, LOCATION_ADDRESS)], personAddress);
+      if (!address.isEmpty()) {
+        map.setIn([getPageSectionKey(1, 3), getEntityAddressKey(0, ADDRESS, FULL_ADDRESS)], personAddress);
       }
     });
     return { personFormData, contactsFormData };
@@ -193,8 +232,8 @@ class EditPersonAndContactsForm extends Component<Props, State> {
       [EMAIL]: getPropertyTypeIdFromEdm(edm, EMAIL),
       [ETHNICITY]: getPropertyTypeIdFromEdm(edm, ETHNICITY),
       [FIRST_NAME]: getPropertyTypeIdFromEdm(edm, FIRST_NAME),
+      [FULL_ADDRESS]: getPropertyTypeIdFromEdm(edm, FULL_ADDRESS),
       [LAST_NAME]: getPropertyTypeIdFromEdm(edm, LAST_NAME),
-      [LOCATION_ADDRESS]: getPropertyTypeIdFromEdm(edm, LOCATION_ADDRESS),
       [PHONE_NUMBER]: getPropertyTypeIdFromEdm(edm, PHONE_NUMBER),
       [PREFERRED]: getPropertyTypeIdFromEdm(edm, PREFERRED),
       [RACE]: getPropertyTypeIdFromEdm(edm, RACE),
@@ -235,16 +274,16 @@ class EditPersonAndContactsForm extends Component<Props, State> {
     const dataToProcess = formData;
     const [entitySetIds, propertyTypeIds] = [this.createEntitySetIdsMap(), this.createPropertyTypeIdsMap()];
 
-    const pageKey = getPageSectionKey(1, 1);
-    const addressKey = getEntityAddressKey(0, ADDRESS, LOCATION_ADDRESS);
     const phoneKey = getEntityAddressKey(0, CONTACT_INFORMATION, PHONE_NUMBER);
     const emailKey = getEntityAddressKey(1, CONTACT_INFORMATION, EMAIL);
-    if (!formData[pageKey][addressKey]) dataToProcess[pageKey][addressKey] = '';
-    if (!formData[pageKey][phoneKey]) dataToProcess[pageKey][phoneKey] = '';
-    if (!formData[pageKey][emailKey]) dataToProcess[pageKey][emailKey] = '';
+    const addressKey = getEntityAddressKey(0, ADDRESS, FULL_ADDRESS);
 
-    dataToProcess[pageKey][getEntityAddressKey(0, CONTACT_INFORMATION, PREFERRED)] = true;
-    dataToProcess[pageKey][getEntityAddressKey(1, CONTACT_INFORMATION, PREFERRED)] = true;
+    if (!formData[getPageSectionKey(1, 1)][phoneKey]) dataToProcess[getPageSectionKey(1, 1)][phoneKey] = '';
+    if (!formData[getPageSectionKey(1, 2)][emailKey]) dataToProcess[getPageSectionKey(1, 2)][emailKey] = '';
+    if (!formData[getPageSectionKey(1, 3)][addressKey]) dataToProcess[getPageSectionKey(1, 3)][addressKey] = '';
+
+    dataToProcess[getPageSectionKey(1, 1)][getEntityAddressKey(0, CONTACT_INFORMATION, PREFERRED)] = true;
+    dataToProcess[getPageSectionKey(1, 2)][getEntityAddressKey(1, CONTACT_INFORMATION, PREFERRED)] = true;
 
     const entityData :{} = processEntityData(dataToProcess, entitySetIds, propertyTypeIds);
     const associationEntityData :{} = processAssociationEntityData(
@@ -256,13 +295,27 @@ class EditPersonAndContactsForm extends Component<Props, State> {
   }
 
   render() {
-    const { actions, participant } = this.props;
+    const {
+      actions,
+      getInfoForEditPersonRequestState,
+      initializeAppRequestState,
+      participant,
+    } = this.props;
     const {
       contactsFormData,
       contactsPrepopulated,
       personFormData,
       personPrepopulated,
     } = this.state;
+
+    if (initializeAppRequestState === RequestStates.PENDING
+      || getInfoForEditPersonRequestState === RequestStates.PENDING) {
+      return (
+        <LogoLoader
+            loadingText="Please wait..."
+            size={60} />
+      );
+    }
 
     const entityIndexToIdMap = this.createEntityIndexToIdMap();
     const entitySetIds = this.createEntitySetIdsMap();
@@ -317,16 +370,28 @@ class EditPersonAndContactsForm extends Component<Props, State> {
   }
 }
 
-const mapStateToProps = (state :Map) => ({
-  app: state.get(STATE.APP),
-  edm: state.get(STATE.EDM),
-});
+const mapStateToProps = (state :Map) => {
+  const app = state.get(STATE.APP);
+  const edm = state.get(STATE.EDM);
+  const person = state.get(STATE.PERSON);
+  return ({
+    [PERSON.ADDRESS]: person.get(PERSON.ADDRESS),
+    app,
+    edm,
+    [PERSON.EMAIL]: person.get(PERSON.EMAIL),
+    getInfoForEditPersonRequestState: person.getIn([ACTIONS, GET_INFO_FOR_EDIT_PERSON, REQUEST_STATE]),
+    initializeAppRequestState: app.getIn([APP.ACTIONS, APP.INITIALIZE_APPLICATION, APP.REQUEST_STATE]),
+    [PARTICIPANT]: person.get(PARTICIPANT),
+    [PHONE]: person.get(PHONE),
+  });
+};
 
 const mapDispatchToProps = dispatch => ({
   actions: bindActionCreators({
     addNewParticipantContacts,
     editParticipantContacts,
     editPersonDetails,
+    getInfoForEditPerson,
     goToRoute,
   }, dispatch)
 });
