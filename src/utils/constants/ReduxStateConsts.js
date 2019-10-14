@@ -30,7 +30,6 @@ export const APP = {
 export const PEOPLE = {
   ACTIONS: 'actions',
   ADD_PARTICIPANT: 'addParticipant',
-  ALL_DIVERSION_PLANS_BY_PARTICIPANT: 'allDiversionPlansByParticipant',
   COURT_TYPE_BY_PARTICIPANT: 'courtTypeByParticipant',
   CURRENT_DIVERSION_PLANS_BY_PARTICIPANT: 'currentDiversionPlansByParticipant',
   ENROLLMENT_BY_PARTICIPANT: 'enrollmentByParticipant',
@@ -59,6 +58,7 @@ export const PERSON = {
   ADD_ORIENTATION_DATE: 'addOrientationDate',
   ADD_TO_AVAILABLE_CHARGES: 'addToAvailableCharges',
   ADD_WORKSITE_PLAN: 'addWorksitePlan',
+  ALL_DIVERSION_PLANS: 'allDiversionPlans',
   CHARGES: 'charges',
   CHARGES_FOR_CASE: 'chargesForCase',
   CHECK_INS_BY_APPOINTMENT: 'checkInsByAppointment',

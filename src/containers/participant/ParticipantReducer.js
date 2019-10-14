@@ -100,6 +100,7 @@ const {
   ADD_TO_AVAILABLE_CHARGES,
   ADD_WORKSITE_PLAN,
   ADDRESS,
+  ALL_DIVERSION_PLANS,
   CHARGES,
   CHARGES_FOR_CASE,
   CHECK_INS_BY_APPOINTMENT,
@@ -275,6 +276,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     },
   },
   [ADDRESS]: Map(),
+  [ALL_DIVERSION_PLANS]: List(),
   [CHARGES]: List(),
   [CHARGES_FOR_CASE]: List(),
   [CHECK_INS_BY_APPOINTMENT]: Map(),
@@ -1385,6 +1387,7 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
           return state
             .set(ENROLLMENT_STATUS, value.enrollmentStatus)
             .set(DIVERSION_PLAN, value.diversionPlan)
+            .set(ALL_DIVERSION_PLANS, value.allDiversionPlans)
             .setIn([ACTIONS, GET_ENROLLMENT_STATUS, REQUEST_STATE], RequestStates.SUCCESS);
         },
         FAILURE: () => {

@@ -2302,6 +2302,7 @@ function* getEnrollmentStatusWorker(action :SequenceAction) :Generator<*, *, *> 
   let response :Object = {};
   let enrollmentStatus :Map = Map();
   let diversionPlan :Map = Map();
+  let allDiversionPlans :List = List();
 
   try {
     yield put(getEnrollmentStatus.request(id));
@@ -2330,16 +2331,16 @@ function* getEnrollmentStatusWorker(action :SequenceAction) :Generator<*, *, *> 
     if (response.error) {
       throw response.error;
     }
-    const diversionPlans :Map = fromJS(response.data)
+    allDiversionPlans = fromJS(response.data[personEKID])
       .map((planList :List) => planList.map((plan :Map) => getNeighborDetails(plan)));
 
-    if (diversionPlans.count() > 0) {
+    if (allDiversionPlans.count() > 0) {
 
       /*
        * 2. Find all enrollment statuses for each diversion plan found.
        */
       const diversionPlanEKIDs :UUID[] = [];
-      diversionPlans.get(personEKID).forEach((plan :Map) => {
+      allDiversionPlans.forEach((plan :Map) => {
         diversionPlanEKIDs.push(getEntityKeyId(plan));
       });
 
@@ -2376,11 +2377,11 @@ function* getEnrollmentStatusWorker(action :SequenceAction) :Generator<*, *, *> 
          */
         const diversionPlanEKID :UUID = mostRecentEnrollmentStatusesByDiversionPlan
           .findKey((status :Map) => getEntityKeyId(status) === getEntityKeyId(enrollmentStatus));
-        diversionPlan = diversionPlans.get(personEKID).find((plan :Map) => getEntityKeyId(plan) === diversionPlanEKID);
+        diversionPlan = allDiversionPlans.find((plan :Map) => getEntityKeyId(plan) === diversionPlanEKID);
       }
 
       // some integrated people won't have enrollment statuses but will have a diversion plan:
-      if (diversionPlan.isEmpty()) diversionPlan = diversionPlans.getIn([personEKID, 0]);
+      if (diversionPlan.isEmpty()) diversionPlan = allDiversionPlans.get(0);
 
       /* If populating profile, call getWorksitePlans() to find all worksite plans for current diversion plan */
       const { populateProfile } = value;
@@ -2392,7 +2393,7 @@ function* getEnrollmentStatusWorker(action :SequenceAction) :Generator<*, *, *> 
       }
     }
 
-    yield put(getEnrollmentStatus.success(id, { diversionPlan, enrollmentStatus }));
+    yield put(getEnrollmentStatus.success(id, { allDiversionPlans, diversionPlan, enrollmentStatus }));
   }
   catch (error) {
     workerResponse.error = error;
