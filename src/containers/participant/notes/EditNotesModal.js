@@ -5,7 +5,7 @@ import { RequestStates } from 'redux-reqseq';
 import type { RequestState } from 'redux-reqseq';
 
 type Props = {
-  components :Object;
+  editForm :React.Node;
   editRequestState :RequestState;
   isOpen :boolean;
   onClose :() => void;
@@ -25,7 +25,7 @@ class EditNotesModal extends Component<Props> {
 
   render() {
     const {
-      components,
+      editForm: EditForm,
       editRequestState,
       isOpen,
       onClose,
@@ -37,7 +37,7 @@ class EditNotesModal extends Component<Props> {
           onClose={onClose}
           textTitle={title}
           viewportScrolling>
-        <components.EditForm
+        <EditForm
             isLoading={editRequestState === RequestStates.PENDING}
             onDiscard={onClose} />
       </Modal>
