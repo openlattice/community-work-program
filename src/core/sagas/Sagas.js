@@ -9,6 +9,7 @@ import { DataApiSagas, SearchApiSagas } from 'lattice-sagas';
 import * as AppSagas from '../../containers/app/AppSagas';
 import * as DataSagas from './data/DataSagas';
 import * as EDMSagas from '../edm/EDMSagas';
+import * as InfractionsSagas from '../../containers/participant/infractions/InfractionsSagas';
 import * as ParticipantSagas from '../../containers/participant/ParticipantSagas';
 import * as ParticipantsSagas from '../../containers/participants/ParticipantsSagas';
 import * as RoutingSagas from '../router/RoutingSagas';
@@ -44,9 +45,13 @@ export default function* sagas() :Generator<*, *, *> {
     // EDMSagas
     fork(EDMSagas.getEntityDataModelTypesWatcher),
 
+    // InfractionsSagas
+    fork(InfractionsSagas.addInfractionWatcher),
+    fork(InfractionsSagas.getInfractionTypesWatcher),
+    fork(InfractionsSagas.getParticipantInfractionsWatcher),
+
     // ParticipantSagas
     fork(ParticipantSagas.addChargesToCaseWatcher),
-    fork(ParticipantSagas.addInfractionWatcher),
     fork(ParticipantSagas.addNewDiversionPlanStatusWatcher),
     fork(ParticipantSagas.addNewParticipantContactsWatcher),
     fork(ParticipantSagas.addToAvailableChargesWatcher),
@@ -72,11 +77,9 @@ export default function* sagas() :Generator<*, *, *> {
     fork(ParticipantSagas.getEnrollmentStatusWatcher),
     fork(ParticipantSagas.getInfoForEditCaseWatcher),
     fork(ParticipantSagas.getInfoForEditPersonWatcher),
-    fork(ParticipantSagas.getInfractionTypesWatcher),
     fork(ParticipantSagas.getJudgeForCaseWatcher),
     fork(ParticipantSagas.getJudgesWatcher),
     fork(ParticipantSagas.getParticipantAddressWatcher),
-    fork(ParticipantSagas.getParticipantInfractionsWatcher),
     fork(ParticipantSagas.getParticipantWatcher),
     fork(ParticipantSagas.getWorkAppointmentsWatcher),
     fork(ParticipantSagas.getWorksiteByWorksitePlanWatcher),

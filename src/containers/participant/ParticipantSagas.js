@@ -33,7 +33,6 @@ import Logger from '../../utils/Logger';
 import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../utils/Errors';
 import {
   ADD_CHARGES_TO_CASE,
-  ADD_INFRACTION,
   ADD_NEW_DIVERSION_PLAN_STATUS,
   ADD_NEW_PARTICIPANT_CONTACTS,
   ADD_TO_AVAILABLE_CHARGES,
@@ -59,12 +58,10 @@ import {
   GET_CONTACT_INFO,
   GET_ENROLLMENT_STATUS,
   GET_INFO_FOR_EDIT_CASE,
-  GET_INFRACTION_TYPES,
   GET_JUDGES,
   GET_JUDGE_FOR_CASE,
   GET_PARTICIPANT,
   GET_PARTICIPANT_ADDRESS,
-  GET_PARTICIPANT_INFRACTIONS,
   GET_PROGRAM_OUTCOME,
   GET_WORKSITE_BY_WORKSITE_PLAN,
   GET_WORKSITE_PLANS,
@@ -75,7 +72,6 @@ import {
   REMOVE_CHARGE_FROM_CASE,
   UPDATE_HOURS_WORKED,
   addChargesToCase,
-  addInfraction,
   addNewDiversionPlanStatus,
   addNewParticipantContacts,
   addToAvailableCharges,
@@ -101,12 +97,10 @@ import {
   getEnrollmentStatus,
   getInfoForEditCase,
   getInfoForEditPerson,
-  getInfractionTypes,
   getJudgeForCase,
   getJudges,
   getParticipant,
   getParticipantAddress,
-  getParticipantInfractions,
   getProgramOutcome,
   getWorkAppointments,
   getWorksiteByWorksitePlan,
@@ -131,13 +125,14 @@ import {
 } from '../../core/sagas/data/DataSagas';
 import { getWorksites } from '../worksites/WorksitesActions';
 import { getWorksitesWorker } from '../worksites/WorksitesSagas';
+import { getInfractionTypes, getParticipantInfractions } from './infractions/InfractionsActions';
+import { getInfractionTypesWorker, getParticipantInfractionsWorker } from './infractions/InfractionsSagas';
 import {
   getAssociationNeighborESID,
   getEntityKeyId,
   getEntityProperties,
   getEntitySetIdFromApp,
   getNeighborDetails,
-  getNeighborESID,
   getPropertyFqnFromEdm,
   getPropertyTypeIdFromEdm,
   sortEntitiesByDateProperty,
@@ -151,11 +146,9 @@ import {
   DATETIME_COMPLETED,
   ENROLLMENT_STATUS_FQNS,
   ENTITY_KEY_ID,
-  INFRACTION_EVENT_FQNS,
-  INFRACTION_FQNS,
   WORKSITE_PLAN_FQNS,
 } from '../../core/edm/constants/FullyQualifiedNames';
-import { ASSOCIATION_DETAILS, INFRACTIONS_CONSTS } from '../../core/edm/constants/DataModelConsts';
+import { ASSOCIATION_DETAILS } from '../../core/edm/constants/DataModelConsts';
 
 const { UpdateTypes } = Types;
 const { getEntityData, getEntitySetData, updateEntityData } = DataApiActions;
@@ -177,8 +170,6 @@ const {
   DIVERSION_PLAN,
   ENROLLMENT_STATUS,
   FULFILLS,
-  INFRACTION_EVENT,
-  INFRACTIONS,
   JUDGES,
   MANUAL_CHARGED_WITH,
   MANUAL_PRETRIAL_COURT_CASES,
@@ -186,7 +177,6 @@ const {
   PRESIDES_OVER,
   PROGRAM_OUTCOME,
   REGISTERED_FOR,
-  RESULTS_IN,
   WORKSITE,
   WORKSITE_PLAN,
 } = APP_TYPE_FQNS;
@@ -195,9 +185,7 @@ const {
   PHONE_NUMBER,
   PREFERRED,
 } = CONTACT_INFO_FQNS;
-const { EFFECTIVE_DATE, STATUS } = ENROLLMENT_STATUS_FQNS;
-const { CATEGORY } = INFRACTION_FQNS;
-const { TYPE } = INFRACTION_EVENT_FQNS;
+const { EFFECTIVE_DATE } = ENROLLMENT_STATUS_FQNS;
 const { HOURS_WORKED, REQUIRED_HOURS } = WORKSITE_PLAN_FQNS;
 
 const getAppFromState = state => state.get(STATE.APP, Map());
@@ -390,64 +378,6 @@ function* removeChargeFromCaseWorker(action :SequenceAction) :Generator<*, *, *>
 function* removeChargeFromCaseWatcher() :Generator<*, *, *> {
 
   yield takeEvery(REMOVE_CHARGE_FROM_CASE, removeChargeFromCaseWorker);
-}
-
-/*
- *
- * ParticipantActions.addInfraction()
- *
- */
-
-function* addInfractionWorker(action :SequenceAction) :Generator<*, *, *> {
-
-  const { id, value } = action;
-  const workerResponse = {};
-  let response :Object = {};
-
-  try {
-    yield put(addInfraction.request(id, value));
-
-    response = yield call(submitDataGraphWorker, submitDataGraph(value));
-    if (response.error) {
-      throw response.error;
-    }
-    const { data } :Object = response;
-    const { entityKeyIds } :Object = data;
-    const app = yield select(getAppFromState);
-    const infractionEventESID = getEntitySetIdFromApp(app, INFRACTION_EVENT);
-    const infractionEventEKID = entityKeyIds[infractionEventESID][0];
-
-    const worksitePlanESID = getEntitySetIdFromApp(app, WORKSITE_PLAN);
-    const registeredForESID = getEntitySetIdFromApp(app, REGISTERED_FOR);
-    const resultsInESID = getEntitySetIdFromApp(app, RESULTS_IN);
-    const enrollmentStatusESID = getEntitySetIdFromApp(app, ENROLLMENT_STATUS);
-    const infractionESID = getEntitySetIdFromApp(app, INFRACTIONS);
-    const edm = yield select(getEdmFromState);
-
-    yield put(addInfraction.success(id, {
-      edm,
-      enrollmentStatusESID,
-      infractionESID,
-      infractionEventEKID,
-      infractionEventESID,
-      resultsInESID,
-      registeredForESID,
-      worksitePlanESID
-    }));
-  }
-  catch (error) {
-    workerResponse.error = error;
-    LOG.error('caught exception in addInfractionWorker()', error);
-    yield put(addInfraction.failure(id, error));
-  }
-  finally {
-    yield put(addInfraction.finally(id));
-  }
-}
-
-function* addInfractionWatcher() :Generator<*, *, *> {
-
-  yield takeEvery(ADD_INFRACTION, addInfractionWorker);
 }
 
 /*
@@ -2471,175 +2401,6 @@ function* getParticipantAddressWatcher() :Generator<*, *, *> {
 
 /*
  *
- * ParticipantsActions.getInfractionTypes()
- *
- */
-
-function* getInfractionTypesWorker(action :SequenceAction) :Generator<*, *, *> {
-
-  const { id, value } = action;
-  const workerResponse = {};
-  let response :Object = {};
-  let infractionTypes :List = List();
-
-  try {
-    yield put(getInfractionTypes.request(id, value));
-
-    const app = yield select(getAppFromState);
-    const infractionsESID :UUID = getEntitySetIdFromApp(app, INFRACTIONS);
-
-    response = yield call(getEntitySetDataWorker, getEntitySetData({ entitySetId: infractionsESID }));
-    if (response.error) {
-      throw response.error;
-    }
-    infractionTypes = fromJS(response.data);
-    yield put(getInfractionTypes.success(id, infractionTypes));
-  }
-  catch (error) {
-    workerResponse.error = error;
-    LOG.error('caught exception in getInfractionTypesWorker()', error);
-    yield put(getInfractionTypes.failure(id, error));
-  }
-  finally {
-    yield put(getInfractionTypes.finally(id));
-  }
-  return workerResponse;
-}
-
-function* getInfractionTypesWatcher() :Generator<*, *, *> {
-
-  yield takeEvery(GET_INFRACTION_TYPES, getInfractionTypesWorker);
-}
-
-/*
- *
- * ParticipantsActions.getParticipantInfractions()
- *
- */
-
-function* getParticipantInfractionsWorker(action :SequenceAction) :Generator<*, *, *> {
-
-  const { id, value } = action;
-  const workerResponse = {};
-  let response :Object = {};
-  let infractionsMap :Map = Map().withMutations((map :Map) => {
-    map.set(INFRACTIONS_CONSTS.VIOLATION, List());
-    map.set(INFRACTIONS_CONSTS.WARNING, List());
-  });
-  let infractionsList :List = List();
-  let infractionInfoMap :Map = Map();
-
-  try {
-    yield put(getParticipantInfractions.request(id));
-    const { personEKID } = value;
-    if (value === null || value === undefined) {
-      throw ERR_ACTION_VALUE_NOT_DEFINED;
-    }
-    const app = yield select(getAppFromState);
-    const peopleESID :UUID = getEntitySetIdFromApp(app, PEOPLE);
-    const infractionEventESID :UUID = getEntitySetIdFromApp(app, INFRACTION_EVENT);
-
-    let searchFilter = {
-      entityKeyIds: [personEKID],
-      destinationEntitySetIds: [infractionEventESID],
-      sourceEntitySetIds: [],
-    };
-    response = yield call(
-      searchEntityNeighborsWithFilterWorker,
-      searchEntityNeighborsWithFilter({ entitySetId: peopleESID, filter: searchFilter })
-    );
-    if (response.error) {
-      throw response.error;
-    }
-
-    if (response.data[personEKID]) {
-      infractionsList = fromJS(response.data[personEKID])
-        .map((infraction :Map) => getNeighborDetails(infraction));
-      infractionsList.forEach((infraction :Map) => {
-        const { [TYPE]: type } = getEntityProperties(infraction, [TYPE]);
-        if (type === INFRACTIONS_CONSTS.WARNING) {
-          let warnings = infractionsMap.get(INFRACTIONS_CONSTS.WARNING);
-          warnings = warnings.push(infraction);
-          infractionsMap = infractionsMap.set(INFRACTIONS_CONSTS.WARNING, warnings);
-        }
-        if (type === INFRACTIONS_CONSTS.VIOLATION) {
-          let violations = infractionsMap.get(INFRACTIONS_CONSTS.VIOLATION);
-          violations = violations.push(infraction);
-          infractionsMap = infractionsMap.set(INFRACTIONS_CONSTS.VIOLATION, violations);
-        }
-      });
-
-      const infractionEventEKIDs :UUID[] = [];
-      infractionsList
-        .forEach((infraction :Map) => {
-          infractionEventEKIDs.push(getEntityKeyId(infraction));
-        });
-      const infractionsESID :UUID = getEntitySetIdFromApp(app, INFRACTIONS);
-      const enrollmentStatusESID :UUID = getEntitySetIdFromApp(app, ENROLLMENT_STATUS);
-      const worksitePlanESID :UUID = getEntitySetIdFromApp(app, WORKSITE_PLAN);
-      searchFilter = {
-        entityKeyIds: infractionEventEKIDs,
-        destinationEntitySetIds: [enrollmentStatusESID, infractionsESID],
-        sourceEntitySetIds: [worksitePlanESID],
-      };
-      response = yield call(
-        searchEntityNeighborsWithFilterWorker,
-        searchEntityNeighborsWithFilter({ entitySetId: infractionEventESID, filter: searchFilter })
-      );
-      if (response.error) {
-        throw response.error;
-      }
-      const infractionEventNeighbors :Map = fromJS(response.data);
-
-      if (!infractionEventNeighbors.isEmpty()) {
-
-        infractionEventNeighbors.forEach((neighborList :List, infractionEventEKID :UUID) => {
-          neighborList.forEach((neighbor :Map) => {
-            const neighborESID = getNeighborESID(neighbor);
-            const entity :Map = getNeighborDetails(neighbor);
-            let infractionEventMap :Map = infractionInfoMap.get(infractionEventEKID, Map());
-
-            if (neighborESID === infractionsESID) {
-              const { [CATEGORY]: violationCategory } = getEntityProperties(entity, [CATEGORY]);
-              infractionEventMap = infractionEventMap.set(CATEGORY, violationCategory);
-              infractionInfoMap = infractionInfoMap.set(infractionEventEKID, infractionEventMap);
-            }
-            else if (neighborESID === enrollmentStatusESID) {
-              const { [STATUS]: enrollmentStatus } = getEntityProperties(entity, [STATUS]);
-              infractionEventMap = infractionEventMap.set(STATUS, enrollmentStatus);
-              infractionInfoMap = infractionInfoMap.set(infractionEventEKID, infractionEventMap);
-            }
-            else if (neighborESID === worksitePlanESID) {
-              const worksitePlanEKID :UUID = getEntityKeyId(entity);
-              infractionEventMap = infractionEventMap.set(WORKSITE_PLAN, worksitePlanEKID);
-              infractionInfoMap = infractionInfoMap.set(infractionEventEKID, infractionEventMap);
-            }
-
-          });
-        });
-      }
-    }
-
-    yield put(getParticipantInfractions.success(id, { infractionInfoMap, infractionsMap }));
-  }
-  catch (error) {
-    workerResponse.error = error;
-    LOG.error('caught exception in getParticipantInfractionsWorker()', error);
-    yield put(getParticipantInfractions.failure(id, error));
-  }
-  finally {
-    yield put(getParticipantInfractions.finally(id));
-  }
-  return workerResponse;
-}
-
-function* getParticipantInfractionsWatcher() :Generator<*, *, *> {
-
-  yield takeEvery(GET_PARTICIPANT_INFRACTIONS, getParticipantInfractionsWorker);
-}
-
-/*
- *
  * ParticipantsActions.getJudges()
  *
  */
@@ -2828,8 +2589,6 @@ function* getAllParticipantInfoWatcher() :Generator<*, *, *> {
 export {
   addChargesToCaseWatcher,
   addChargesToCaseWorker,
-  addInfractionWatcher,
-  addInfractionWorker,
   addNewDiversionPlanStatusWatcher,
   addNewDiversionPlanStatusWorker,
   addNewParticipantContactsWatcher,
@@ -2880,16 +2639,12 @@ export {
   getInfoForEditCaseWorker,
   getInfoForEditPersonWatcher,
   getInfoForEditPersonWorker,
-  getInfractionTypesWatcher,
-  getInfractionTypesWorker,
   getJudgeForCaseWatcher,
   getJudgeForCaseWorker,
   getJudgesWatcher,
   getJudgesWorker,
   getParticipantAddressWatcher,
   getParticipantAddressWorker,
-  getParticipantInfractionsWatcher,
-  getParticipantInfractionsWorker,
   getParticipantWatcher,
   getParticipantWorker,
   getProgramOutcomeWatcher,

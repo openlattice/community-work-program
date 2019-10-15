@@ -17,7 +17,7 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import type { RequestSequence } from 'redux-reqseq';
 
-import { addInfraction } from '../ParticipantActions';
+import { addInfraction } from './InfractionsActions';
 import {
   getEntityKeyId,
   getEntityProperties,
@@ -36,7 +36,7 @@ import {
   INFRACTION_FQNS,
   WORKSITE_FQNS,
 } from '../../../core/edm/constants/FullyQualifiedNames';
-import { PERSON, STATE } from '../../../utils/constants/ReduxStateConsts';
+import { PERSON_INFRACTIONS, PERSON, STATE } from '../../../utils/constants/ReduxStateConsts';
 import { INFRACTIONS_CONSTS } from '../../../core/edm/constants/DataModelConsts';
 import {
   ButtonsRow,
@@ -68,8 +68,8 @@ const { EFFECTIVE_DATE, STATUS } = ENROLLMENT_STATUS_FQNS;
 const { CATEGORY } = INFRACTION_FQNS;
 const { NOTES, TYPE } = INFRACTION_EVENT_FQNS;
 const { NAME } = WORKSITE_FQNS;
+const { INFRACTION_TYPES } = PERSON_INFRACTIONS;
 const {
-  INFRACTION_TYPES,
   WORKSITE_PLANS,
   WORKSITES_BY_WORKSITE_PLAN,
   WORK_APPOINTMENTS_BY_WORKSITE_PLAN,
@@ -394,11 +394,12 @@ class AddInfractionForm extends Component<Props, State> {
 
 const mapStateToProps = (state :Map) => {
   const person = state.get(STATE.PERSON);
+  const infractions = state.get(STATE.INFRACTIONS);
   return ({
     app: state.get(STATE.APP),
     [PERSON.DIVERSION_PLAN]: person.get(PERSON.DIVERSION_PLAN),
     edm: state.get(STATE.EDM),
-    [INFRACTION_TYPES]: person.get(INFRACTION_TYPES),
+    [INFRACTION_TYPES]: infractions.get(INFRACTION_TYPES),
     [WORKSITE_PLANS]: person.get(WORKSITE_PLANS),
     [WORKSITES_BY_WORKSITE_PLAN]: person.get(WORKSITES_BY_WORKSITE_PLAN),
     [WORK_APPOINTMENTS_BY_WORKSITE_PLAN]: person.get(WORK_APPOINTMENTS_BY_WORKSITE_PLAN),

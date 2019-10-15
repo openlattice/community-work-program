@@ -11,7 +11,6 @@ import type { FQN } from 'lattice';
 
 import {
   addChargesToCase,
-  addInfraction,
   addNewDiversionPlanStatus,
   addNewParticipantContacts,
   addToAvailableCharges,
@@ -37,12 +36,10 @@ import {
   getEnrollmentStatus,
   getInfoForEditCase,
   getInfoForEditPerson,
-  getInfractionTypes,
   getJudgeForCase,
   getJudges,
   getParticipant,
   getParticipantAddress,
-  getParticipantInfractions,
   getProgramOutcome,
   getWorkAppointments,
   getWorksiteByWorksitePlan,
@@ -56,28 +53,23 @@ import {
 import {
   findEntityPathInMap,
   getEntityKeyId,
-  getEntityProperties,
   getPropertyFqnFromEdm,
   getPropertyTypeIdFromEdm,
 } from '../../utils/DataUtils';
 import { isDefined } from '../../utils/LangUtils';
 import { PERSON } from '../../utils/constants/ReduxStateConsts';
-import { INFRACTIONS_CONSTS } from '../../core/edm/constants/DataModelConsts';
 import {
   APP_TYPE_FQNS,
   CASE_FQNS,
   DATETIME_END,
   DIVERSION_PLAN_FQNS,
-  ENROLLMENT_STATUS_FQNS,
   ENTITY_KEY_ID,
   INCIDENT_START_DATETIME,
-  INFRACTION_EVENT_FQNS,
-  INFRACTION_FQNS,
   PEOPLE_FQNS,
   WORKSITE_PLAN_FQNS,
 } from '../../core/edm/constants/FullyQualifiedNames';
 
-const { COURT_CHARGE_LIST, WORKSITE_PLAN } = APP_TYPE_FQNS;
+const { COURT_CHARGE_LIST } = APP_TYPE_FQNS;
 const {
   CHECK_IN_DATETIME,
   COMPLETED,
@@ -86,15 +78,11 @@ const {
 } = DIVERSION_PLAN_FQNS;
 const { CASE_NUMBER_TEXT, COURT_CASE_TYPE } = CASE_FQNS;
 const { NOTES } = DIVERSION_PLAN_FQNS;
-const { STATUS } = ENROLLMENT_STATUS_FQNS;
-const { TYPE } = INFRACTION_EVENT_FQNS;
-const { CATEGORY } = INFRACTION_FQNS;
 const { PERSON_NOTES } = PEOPLE_FQNS;
 const { HOURS_WORKED, REQUIRED_HOURS } = WORKSITE_PLAN_FQNS;
 const {
   ACTIONS,
   ADD_CHARGES_TO_CASE,
-  ADD_INFRACTION_EVENT,
   ADD_NEW_DIVERSION_PLAN_STATUS,
   ADD_NEW_PARTICIPANT_CONTACTS,
   ADD_TO_AVAILABLE_CHARGES,
@@ -128,19 +116,15 @@ const {
   GET_ENROLLMENT_STATUS,
   GET_INFO_FOR_EDIT_CASE,
   GET_INFO_FOR_EDIT_PERSON,
-  GET_INFRACTION_TYPES,
   GET_JUDGE_FOR_CASE,
   GET_JUDGES,
   GET_PARTICIPANT,
   GET_PARTICIPANT_ADDRESS,
-  GET_PARTICIPANT_INFRACTIONS,
   GET_PROGRAM_OUTCOME,
   GET_WORKSITE_BY_WORKSITE_PLAN,
   GET_WORKSITE_PLANS,
   GET_WORKSITE_PLAN_STATUSES,
   GET_WORK_APPOINTMENTS,
-  INFRACTIONS_INFO,
-  INFRACTION_TYPES,
   JUDGE,
   JUDGES,
   MARK_DIVERSION_PLAN_AS_COMPLETE,
@@ -163,9 +147,6 @@ const {
 const INITIAL_STATE :Map<*, *> = fromJS({
   [ACTIONS]: {
     [ADD_CHARGES_TO_CASE]: {
-      [REQUEST_STATE]: RequestStates.STANDBY
-    },
-    [ADD_INFRACTION_EVENT]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [ADD_NEW_DIVERSION_PLAN_STATUS]: {
@@ -237,9 +218,6 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     [GET_INFO_FOR_EDIT_PERSON]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
-    [GET_INFRACTION_TYPES]: {
-      [REQUEST_STATE]: RequestStates.STANDBY
-    },
     [GET_JUDGE_FOR_CASE]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
@@ -256,9 +234,6 @@ const INITIAL_STATE :Map<*, *> = fromJS({
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [GET_PARTICIPANT_ADDRESS]: {
-      [REQUEST_STATE]: RequestStates.STANDBY
-    },
-    [GET_PARTICIPANT_INFRACTIONS]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [GET_WORK_APPOINTMENTS]: {
@@ -282,7 +257,6 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [EMAIL]: Map(),
   [ENROLLMENT_STATUS]: Map(),
   [ERRORS]: {
-    [ADD_INFRACTION_EVENT]: Map(),
     [ADD_NEW_DIVERSION_PLAN_STATUS]: Map(),
     [CHECK_IN_FOR_APPOINTMENT]: Map(),
     [CREATE_WORK_APPOINTMENTS]: Map(),
@@ -291,13 +265,9 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     [GET_CASE_INFO]: Map(),
     [GET_CONTACT_INFO]: Map(),
     [GET_ENROLLMENT_STATUS]: Map(),
-    [GET_INFRACTION_TYPES]: Map(),
     [GET_PARTICIPANT]: Map(),
-    [GET_PARTICIPANT_INFRACTIONS]: Map(),
     [UPDATE_HOURS_WORKED]: Map(),
   },
-  [INFRACTIONS_INFO]: Map(),
-  [INFRACTION_TYPES]: List(),
   [JUDGE]: Map(),
   [JUDGES]: List(),
   [PARTICIPANT]: Map(),
@@ -350,97 +320,6 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
           .set(CHARGES_FOR_CASE, List())
           .setIn([ACTIONS, ADD_CHARGES_TO_CASE, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, ADD_CHARGES_TO_CASE, action.id]),
-      });
-    }
-
-    case addInfraction.case(action.type): {
-
-      return addInfraction.reducer(state, action, {
-
-        REQUEST: () => state
-          .setIn([ACTIONS, ADD_INFRACTION_EVENT, action.id], action)
-          .setIn([ACTIONS, ADD_INFRACTION_EVENT, REQUEST_STATE], RequestStates.PENDING),
-        SUCCESS: () => {
-
-          const seqAction :SequenceAction = action;
-          const storedSeqAction :SequenceAction = state.getIn([ACTIONS, ADD_INFRACTION_EVENT, seqAction.id]);
-
-          if (storedSeqAction) {
-
-            const successValue :Object = seqAction.value;
-            const {
-              edm,
-              enrollmentStatusESID,
-              infractionESID,
-              infractionEventEKID,
-              infractionEventESID,
-              resultsInESID,
-              registeredForESID,
-              worksitePlanESID,
-            } = successValue;
-
-            const requestValue :Object = storedSeqAction.value;
-            const { associationEntityData, entityData } :Object = requestValue;
-
-            const storedInfractionEventEntity :Map = fromJS(entityData[infractionEventESID][0]);
-            const storedEnrollmentStatusEntity :Map = entityData[enrollmentStatusESID]
-              ? fromJS(entityData[enrollmentStatusESID][0])
-              : Map();
-
-            const worksitePlan :Map = associationEntityData[resultsInESID]
-              ? fromJS(associationEntityData[resultsInESID])
-                .find((association :Map) => association.get('srcEntitySetId') === worksitePlanESID)
-              : Map();
-            const worksitePlanEKID :UUID = worksitePlan ? worksitePlan.get('srcEntityKeyId', '') : '';
-
-            const infraction = associationEntityData[registeredForESID]
-              ? fromJS(associationEntityData[registeredForESID])
-                .find((association :Map) => association.get('dstEntitySetId') === infractionESID)
-              : Map();
-            const infractionEKID :UUID = infraction ? infraction.get('dstEntityKeyId', '') : '';
-
-            const newInfractionEvent = Map().withMutations((map) => {
-              map.set(ENTITY_KEY_ID, infractionEventEKID);
-              storedInfractionEventEntity.forEach((infractionEventValue, id) => {
-                const propertyTypeFqn :FQN = getPropertyFqnFromEdm(edm, id);
-                map.set(propertyTypeFqn, infractionEventValue);
-              });
-            });
-
-            let violations = state.get(VIOLATIONS);
-            let warnings = state.get(WARNINGS);
-            const { [TYPE]: infractionType } = getEntityProperties(newInfractionEvent, [TYPE]);
-            if (infractionType === INFRACTIONS_CONSTS.VIOLATION) violations = violations.push(newInfractionEvent);
-            if (infractionType === INFRACTIONS_CONSTS.WARNING) warnings = warnings.push(newInfractionEvent);
-
-            const infractionTypes :List = state.get(INFRACTION_TYPES);
-            const infractionEntity = infraction
-              ? infractionTypes.find((type :Map) => getEntityKeyId(type) === infractionEKID)
-              : Map();
-            const { [CATEGORY]: category } = getEntityProperties(infractionEntity, [CATEGORY]);
-            const statusPTID = getPropertyTypeIdFromEdm(edm, STATUS);
-            const status = storedEnrollmentStatusEntity.getIn([statusPTID, 0], '');
-            const info :Map = fromJS({
-              [CATEGORY]: category,
-              [STATUS]: status,
-              [WORKSITE_PLAN]: worksitePlanEKID,
-            });
-            const infractionsInfo = state.get(INFRACTIONS_INFO)
-              .set(infractionEventEKID, info);
-
-            return state
-              .set(VIOLATIONS, violations)
-              .set(WARNINGS, warnings)
-              .set(INFRACTIONS_INFO, infractionsInfo)
-              .setIn([ACTIONS, ADD_INFRACTION_EVENT, REQUEST_STATE], RequestStates.SUCCESS);
-          }
-
-          return state;
-        },
-        FAILURE: () => state
-          .set(INFRACTIONS_INFO, List())
-          .setIn([ACTIONS, ADD_INFRACTION_EVENT, REQUEST_STATE], RequestStates.FAILURE),
-        FINALLY: () => state.deleteIn([ACTIONS, ADD_INFRACTION_EVENT, action.id]),
       });
     }
 
@@ -1444,41 +1323,6 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
       });
     }
 
-    case getInfractionTypes.case(action.type): {
-
-      return getInfractionTypes.reducer(state, action, {
-
-        REQUEST: () => state
-          .setIn([ACTIONS, GET_INFRACTION_TYPES, action.id], fromJS(action))
-          .setIn([ACTIONS, GET_INFRACTION_TYPES, REQUEST_STATE], RequestStates.PENDING),
-        SUCCESS: () => {
-
-          if (!state.hasIn([ACTIONS, GET_INFRACTION_TYPES, action.id])) {
-            return state;
-          }
-
-          const { value } = action;
-          if (value === null || value === undefined) {
-            return state;
-          }
-
-          return state
-            .set(INFRACTION_TYPES, value)
-            .setIn([ACTIONS, GET_INFRACTION_TYPES, REQUEST_STATE], RequestStates.SUCCESS);
-        },
-        FAILURE: () => {
-
-          const { value } = action;
-
-          return state
-            .set(INFRACTION_TYPES, List())
-            .setIn([ERRORS, GET_INFRACTION_TYPES], value)
-            .setIn([ACTIONS, GET_INFRACTION_TYPES, REQUEST_STATE], RequestStates.FAILURE);
-        },
-        FINALLY: () => state.deleteIn([ACTIONS, GET_INFRACTION_TYPES, action.id])
-      });
-    }
-
     case getJudgeForCase.case(action.type): {
 
       return getJudgeForCase.reducer(state, action, {
@@ -1534,45 +1378,6 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
           .set(JUDGES, List())
           .setIn([ACTIONS, GET_JUDGES, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, GET_JUDGES, action.id])
-      });
-    }
-
-    case getParticipantInfractions.case(action.type): {
-
-      return getParticipantInfractions.reducer(state, action, {
-
-        REQUEST: () => state
-          .setIn([ACTIONS, GET_PARTICIPANT_INFRACTIONS, action.id], fromJS(action))
-          .setIn([ACTIONS, GET_PARTICIPANT_INFRACTIONS, REQUEST_STATE], RequestStates.PENDING),
-        SUCCESS: () => {
-
-          if (!state.hasIn([ACTIONS, GET_PARTICIPANT_INFRACTIONS, action.id])) {
-            return state;
-          }
-
-          const { value } = action;
-          if (value === null || value === undefined) {
-            return state;
-          }
-          const { infractionInfoMap, infractionsMap } = value;
-
-          return state
-            .set(VIOLATIONS, infractionsMap.get(INFRACTIONS_CONSTS.VIOLATION))
-            .set(WARNINGS, infractionsMap.get(INFRACTIONS_CONSTS.WARNING))
-            .set(INFRACTIONS_INFO, infractionInfoMap)
-            .setIn([ACTIONS, GET_PARTICIPANT_INFRACTIONS, REQUEST_STATE], RequestStates.SUCCESS);
-        },
-        FAILURE: () => {
-
-          const { value } = action;
-
-          return state
-            .set(VIOLATIONS, Map())
-            .set(WARNINGS, Map())
-            .setIn([ERRORS, GET_PARTICIPANT_INFRACTIONS], value)
-            .setIn([ACTIONS, GET_PARTICIPANT_INFRACTIONS, REQUEST_STATE], RequestStates.FAILURE);
-        },
-        FINALLY: () => state.deleteIn([ACTIONS, GET_PARTICIPANT_INFRACTIONS, action.id])
       });
     }
 

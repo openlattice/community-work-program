@@ -5,9 +5,6 @@ import type { RequestSequence } from 'redux-reqseq';
 const ADD_CHARGES_TO_CASE :'ADD_CHARGES_TO_CASE' = 'ADD_CHARGES_TO_CASE';
 const addChargesToCase :RequestSequence = newRequestSequence(ADD_CHARGES_TO_CASE);
 
-const ADD_INFRACTION :'ADD_INFRACTION' = 'ADD_INFRACTION';
-const addInfraction :RequestSequence = newRequestSequence(ADD_INFRACTION);
-
 const ADD_NEW_DIVERSION_PLAN_STATUS :'ADD_NEW_DIVERSION_PLAN_STATUS' = 'ADD_NEW_DIVERSION_PLAN_STATUS';
 const addNewDiversionPlanStatus :RequestSequence = newRequestSequence(ADD_NEW_DIVERSION_PLAN_STATUS);
 
@@ -83,9 +80,6 @@ const getInfoForEditCase :RequestSequence = newRequestSequence(GET_INFO_FOR_EDIT
 const GET_INFO_FOR_EDIT_PERSON :'GET_INFO_FOR_EDIT_PERSON' = 'GET_INFO_FOR_EDIT_PERSON';
 const getInfoForEditPerson :RequestSequence = newRequestSequence(GET_INFO_FOR_EDIT_PERSON);
 
-const GET_INFRACTION_TYPES :'GET_INFRACTION_TYPES' = 'GET_INFRACTION_TYPES';
-const getInfractionTypes :RequestSequence = newRequestSequence(GET_INFRACTION_TYPES);
-
 const GET_JUDGE_FOR_CASE :'GET_JUDGE_FOR_CASE' = 'GET_JUDGE_FOR_CASE';
 const getJudgeForCase :RequestSequence = newRequestSequence(GET_JUDGE_FOR_CASE);
 
@@ -97,9 +91,6 @@ const getParticipant :RequestSequence = newRequestSequence(GET_PARTICIPANT);
 
 const GET_PARTICIPANT_ADDRESS :'GET_PARTICIPANT_ADDRESS' = 'GET_PARTICIPANT_ADDRESS';
 const getParticipantAddress :RequestSequence = newRequestSequence(GET_PARTICIPANT_ADDRESS);
-
-const GET_PARTICIPANT_INFRACTIONS :'GET_PARTICIPANT_INFRACTIONS' = 'GET_PARTICIPANT_INFRACTIONS';
-const getParticipantInfractions :RequestSequence = newRequestSequence(GET_PARTICIPANT_INFRACTIONS);
 
 const GET_PROGRAM_OUTCOME :'GET_PROGRAM_OUTCOME' = 'GET_PROGRAM_OUTCOME';
 const getProgramOutcome :RequestSequence = newRequestSequence(GET_PROGRAM_OUTCOME);
@@ -130,7 +121,6 @@ const updateHoursWorked :RequestSequence = newRequestSequence(UPDATE_HOURS_WORKE
 
 export {
   ADD_CHARGES_TO_CASE,
-  ADD_INFRACTION,
   ADD_NEW_DIVERSION_PLAN_STATUS,
   ADD_NEW_PARTICIPANT_CONTACTS,
   ADD_TO_AVAILABLE_CHARGES,
@@ -156,12 +146,10 @@ export {
   GET_CONTACT_INFO,
   GET_ENROLLMENT_STATUS,
   GET_INFO_FOR_EDIT_CASE,
-  GET_INFRACTION_TYPES,
   GET_JUDGES,
   GET_JUDGE_FOR_CASE,
   GET_PARTICIPANT,
   GET_PARTICIPANT_ADDRESS,
-  GET_PARTICIPANT_INFRACTIONS,
   GET_PROGRAM_OUTCOME,
   GET_WORKSITE_BY_WORKSITE_PLAN,
   GET_WORKSITE_PLANS,
@@ -172,7 +160,6 @@ export {
   REMOVE_CHARGE_FROM_CASE,
   UPDATE_HOURS_WORKED,
   addChargesToCase,
-  addInfraction,
   addNewDiversionPlanStatus,
   addNewParticipantContacts,
   addToAvailableCharges,
@@ -198,12 +185,10 @@ export {
   getEnrollmentStatus,
   getInfoForEditCase,
   getInfoForEditPerson,
-  getInfractionTypes,
   getJudgeForCase,
   getJudges,
   getParticipant,
   getParticipantAddress,
-  getParticipantInfractions,
   getProgramOutcome,
   getWorkAppointments,
   getWorksiteByWorksitePlan,

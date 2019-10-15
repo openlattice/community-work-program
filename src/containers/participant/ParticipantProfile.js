@@ -54,6 +54,7 @@ import { ENROLLMENT_STATUSES } from '../../core/edm/constants/DataModelConsts';
 import {
   APP,
   PERSON,
+  PERSON_INFRACTIONS,
   STATE,
   WORKSITES
 } from '../../utils/constants/ReduxStateConsts';
@@ -83,13 +84,12 @@ const {
   PHONE,
   PROGRAM_OUTCOME,
   REQUEST_STATE,
-  VIOLATIONS,
-  WARNINGS,
   WORK_APPOINTMENTS_BY_WORKSITE_PLAN,
   WORKSITES_BY_WORKSITE_PLAN,
   WORKSITE_PLANS,
   WORKSITE_PLAN_STATUSES,
 } = PERSON;
+const { VIOLATIONS, WARNINGS } = PERSON_INFRACTIONS;
 const { WORKSITES_LIST } = WORKSITES;
 
 const ENROLLMENT_STATUSES_EXCLUDING_PREENROLLMENT = Object.values(ENROLLMENT_STATUSES)
@@ -512,6 +512,7 @@ const mapStateToProps = (state :Map<*, *>) => {
   const app = state.get(STATE.APP);
   const person = state.get(STATE.PERSON);
   const worksites = state.get(STATE.WORKSITES);
+  const infractions = state.get(STATE.INFRACTIONS);
   return {
     [ADDRESS]: person.get(ADDRESS),
     app,
@@ -527,8 +528,8 @@ const mapStateToProps = (state :Map<*, *>) => {
     [PERSON_CASE]: person.get(PERSON_CASE),
     [PHONE]: person.get(PHONE),
     [PROGRAM_OUTCOME]: person.get(PROGRAM_OUTCOME),
-    [VIOLATIONS]: person.get(VIOLATIONS),
-    [WARNINGS]: person.get(WARNINGS),
+    [VIOLATIONS]: infractions.get(VIOLATIONS),
+    [WARNINGS]: infractions.get(WARNINGS),
     [WORK_APPOINTMENTS_BY_WORKSITE_PLAN]: person.get(WORK_APPOINTMENTS_BY_WORKSITE_PLAN),
     [WORKSITES_BY_WORKSITE_PLAN]: person.get(WORKSITES_BY_WORKSITE_PLAN),
     [WORKSITE_PLANS]: person.get(WORKSITE_PLANS),

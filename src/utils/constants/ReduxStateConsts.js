@@ -2,6 +2,7 @@ export const STATE = {
   APP: 'app',
   DATA: 'data',
   EDM: 'edm',
+  INFRACTIONS: 'infractions',
   ORGANIZATION: 'organization',
   PEOPLE: 'people',
   PERSON: 'person',
@@ -9,7 +10,7 @@ export const STATE = {
   WORK_SCHEDULE: 'workSchedule',
 };
 
-// App
+/* App */
 
 export const APP = {
   ACTIONS: 'actions',
@@ -23,6 +24,19 @@ export const APP = {
   SELECTED_ORG_ID: 'selectedOrganizationId',
   SELECTED_ORG_TITLE: 'selectedOrganizationTitle',
   SWITCH_ORGANIZATION: 'switchOrganization',
+};
+
+/* Infractions */
+
+export const PERSON_INFRACTIONS = {
+  ACTIONS: 'actions',
+  ADD_INFRACTION_EVENT: 'addInfractionEvent',
+  GET_INFRACTION_TYPES: 'getInfractionTypes',
+  INFRACTIONS_INFO: 'infractionsInfo',
+  INFRACTION_TYPES: 'infractionTypes',
+  REQUEST_STATE: 'requestState',
+  VIOLATIONS: 'violations',
+  WARNINGS: 'warnings',
 };
 
 /* People */
@@ -53,7 +67,6 @@ export const PEOPLE = {
 export const PERSON = {
   ACTIONS: 'actions',
   ADDRESS: 'address',
-  ADD_INFRACTION_EVENT: 'addInfractionEvent',
   ADD_NEW_DIVERSION_PLAN_STATUS: 'addNewDiversionPlanStatus',
   ADD_NEW_PARTICIPANT_CONTACTS: 'addNewParticipantContacts',
   ADD_ORIENTATION_DATE: 'addOrientationDate',
@@ -89,7 +102,6 @@ export const PERSON = {
   GET_ENROLLMENT_STATUS: 'getEnrollmentStatus',
   GET_INFO_FOR_EDIT_CASE: 'getInfoForEditCase',
   GET_INFO_FOR_EDIT_PERSON: 'getInfoForEditPerson',
-  GET_INFRACTION_TYPES: 'getInfractionTypes',
   GET_JUDGES: 'getJudges',
   GET_JUDGE_FOR_CASE: 'getJudgeForCase',
   GET_PARTICIPANT: 'getParticipant',
@@ -99,8 +111,6 @@ export const PERSON = {
   GET_WORKSITE_PLANS: 'getWorksitePlans',
   GET_WORKSITE_PLAN_STATUSES: 'getWorksitePlanStatuses',
   GET_WORK_APPOINTMENTS: 'getWorkAppointments',
-  INFRACTIONS_INFO: 'infractionsInfo',
-  INFRACTION_TYPES: 'infractionTypes',
   JUDGE: 'judge',
   JUDGES: 'judges',
   MARK_DIVERSION_PLAN_AS_COMPLETE: 'markDiversionPlanAsComplete',
@@ -113,8 +123,6 @@ export const PERSON = {
   REQUEST_STATE: 'requestState',
   REQUIRED_HOURS: 'requiredHours',
   UPDATE_HOURS_WORKED: 'updateHoursWorked',
-  VIOLATIONS: 'violations',
-  WARNINGS: 'warnings',
   WORKSITES_BY_WORKSITE_PLAN: 'worksitesByWorksitePlan',
   WORKSITE_PLANS: 'worksitePlans',
   WORKSITE_PLAN_STATUSES: 'worksitePlanStatuses',
