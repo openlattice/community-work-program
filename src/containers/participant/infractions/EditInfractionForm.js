@@ -1,7 +1,7 @@
 // @flow
 import React, { Component } from 'react';
 import styled from 'styled-components';
-import { fromJS, Map } from 'immutable';
+import { Map } from 'immutable';
 import { DateTime } from 'luxon';
 import { Form, DataProcessingUtils } from 'lattice-fabricate';
 import { connect } from 'react-redux';
@@ -145,8 +145,6 @@ class EditInfractionForm extends Component<Props, State> {
         [notesNewKey]: infractionNotes,
       }
     };
-    console.log('dataToProcess: ', dataToProcess);
-    console.log('originalData: ', originalData);
 
     const entityData :Object = processEntityDataForPartialReplace(
       dataToProcess,
@@ -155,7 +153,6 @@ class EditInfractionForm extends Component<Props, State> {
       this.createPropertyTypeIdsMap(),
       {}
     );
-    console.log('entityData: ', entityData);
 
     actions.editInfractionEvent({ entityData });
   }
