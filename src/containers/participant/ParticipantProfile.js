@@ -130,7 +130,6 @@ const ProfileBody = styled.div`
   align-items: stretch;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
   margin-bottom: 30px;
   overflow-x: visible;
   overflow-y: auto;
@@ -138,29 +137,45 @@ const ProfileBody = styled.div`
   width: 100%;
 `;
 
-const GeneralInfoSection = styled(ProfileBody)`
+const GeneralInfoSection = styled.div`
   height: 836px;
-  align-items: center;
-  flex-direction: row;
+  /* align-items: center; */
+  /* flex-direction: row; */
   font-size: 13px;
+  display: grid;
+  grid-gap: 16px 33px;
+  grid-template-columns: 383px 1fr;
+  margin-bottom: 30px;
+  overflow-x: visible;
+  overflow-y: auto;
+  overflow-y: visible;
+  width: 100%;
 `;
 
 const ProfileInfoColumnWrapper = styled.div`
-  display: flex;
+  /* display: flex;
   flex-direction: column;
   justify-content: space-between;
-  align-items: center;
+  align-items: center; */
   height: 100%;
-  width: 383px;
+  /* width: 383px; */
+  display: grid;
+  grid-template-rows: 7% 78% 15%;
+  row-gap: 15px;
+  width: 100%;
 `;
 
 const ProgramInfoColumnWrapper = styled.div`
-  display: flex;
+  /* display: flex;
   flex-direction: column;
   justify-content: space-between;
-  align-items: center;
+  align-items: center; */
   height: 100%;
-  width: 547px;
+  /* width: 547px; */
+  display: grid;
+  grid-template-rows: 7% 18% 28% 28.5% 15%;
+  row-gap: 15px;
+  width: 100%;
 `;
 
 const NameRowWrapper = styled.div`
@@ -168,6 +183,12 @@ const NameRowWrapper = styled.div`
   width: 100%;
   display: flex;
   justify-content: space-between;
+  align-items: center;
+`;
+
+const TopRowWrapper = styled.div`
+  width: 100%;
+  display: flex;
   align-items: center;
 `;
 
@@ -187,9 +208,18 @@ const ScheduleButtonsWrapper = styled(ButtonsWrapper)`
   grid-template-columns: repeat(2, 1fr);
 `;
 
-const EnrollmentControlsWrapper = styled(ScheduleButtonsWrapper)`
+const EnrollmentControlsWrapper = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-gap: 0 20px;
+  margin-top: 8px;
   width: 100%;
-  grid-gap: 5px 20px;
+  height: 42px;
+`;
+
+const ControlsRowWrapper = styled.div`
+  height: 7%;
+  width: 100%;
 `;
 
 type Props = {
@@ -437,14 +467,14 @@ class ParticipantProfile extends Component<Props, State> {
         <ProfileWrapper>
           <GeneralInfoSection>
             <ProfileInfoColumnWrapper>
-              <NameRowWrapper>
+              <TopRowWrapper>
                 <BackNavButton
                     onClick={() => {
                       actions.goToRoute(Routes.PARTICIPANTS);
                     }}>
                   Back to Participants
                 </BackNavButton>
-              </NameRowWrapper>
+              </TopRowWrapper>
               <ParticipantProfileSection
                   address={address}
                   edit={this.editParticipant}

@@ -52,10 +52,6 @@ const labelMap :OrderedMap = OrderedMap({
   violations: 'Violations',
 });
 
-const StatusCard = styled(Card)`
-  height: 96px;
-`;
-
 const StatusBox = styled.div`
   display: flex;
   flex-direction: column;
@@ -96,7 +92,7 @@ const EnrollmentStatusSection = ({
         <SectionLabel subtle>Enrollment Status</SectionLabel>
         <StyledEditButton mode="subtle" onClick={() => setChangeStatusModalVisibility(true)} />
       </SectionNameRow>
-      <StatusCard>
+      <Card>
         <CardSegment padding="md">
           <StatusBox>
             <Label subtle>Status</Label>
@@ -107,7 +103,7 @@ const EnrollmentStatusSection = ({
               data={data}
               labelMap={labelMap} />
         </CardSegment>
-      </StatusCard>
+      </Card>
       <AddNewPlanStatusModal
           currentStatus={status}
           isOpen={isChangeStatusModalVisible}
