@@ -14,6 +14,7 @@ import * as ParticipantSagas from '../../containers/participant/ParticipantSagas
 import * as ParticipantsSagas from '../../containers/participants/ParticipantsSagas';
 import * as RoutingSagas from '../router/RoutingSagas';
 import * as WorkScheduleSagas from '../../containers/workschedule/WorkScheduleSagas';
+import * as WorksitePlanSagas from '../../containers/participant/assignedworksites/WorksitePlanSagas';
 import * as WorksitesSagas from '../../containers/worksites/WorksitesSagas';
 
 export default function* sagas() :Generator<*, *, *> {
@@ -55,8 +56,6 @@ export default function* sagas() :Generator<*, *, *> {
     fork(ParticipantSagas.addNewDiversionPlanStatusWatcher),
     fork(ParticipantSagas.addNewParticipantContactsWatcher),
     fork(ParticipantSagas.addToAvailableChargesWatcher),
-    fork(ParticipantSagas.addWorksitePlanWatcher),
-    fork(ParticipantSagas.checkInForAppointmentWatcher),
     fork(ParticipantSagas.createWorkAppointmentsWatcher),
     fork(ParticipantSagas.deleteAppointmentWatcher),
     fork(ParticipantSagas.editAppointmentWatcher),
@@ -67,7 +66,6 @@ export default function* sagas() :Generator<*, *, *> {
     fork(ParticipantSagas.editPersonNotesWatcher),
     fork(ParticipantSagas.editPlanNotesWatcher),
     fork(ParticipantSagas.editRequiredHoursWatcher),
-    fork(ParticipantSagas.editWorksitePlanWatcher),
     fork(ParticipantSagas.getAppointmentCheckInsWatcher),
     fork(ParticipantSagas.getAllParticipantInfoWatcher),
     fork(ParticipantSagas.getCaseInfoWatcher),
@@ -82,14 +80,10 @@ export default function* sagas() :Generator<*, *, *> {
     fork(ParticipantSagas.getParticipantAddressWatcher),
     fork(ParticipantSagas.getParticipantWatcher),
     fork(ParticipantSagas.getWorkAppointmentsWatcher),
-    fork(ParticipantSagas.getWorksiteByWorksitePlanWatcher),
-    fork(ParticipantSagas.getWorksitePlansWatcher),
-    fork(ParticipantSagas.getWorksitePlanStatusesWatcher),
     fork(ParticipantSagas.getProgramOutcomeWatcher),
     fork(ParticipantSagas.markDiversionPlanAsCompleteWatcher),
     fork(ParticipantSagas.reassignJudgeWatcher),
     fork(ParticipantSagas.removeChargeFromCaseWatcher),
-    fork(ParticipantSagas.updateHoursWorkedWatcher),
 
     // ParticipantsSagas
     fork(ParticipantsSagas.addParticipantWatcher),
@@ -111,6 +105,14 @@ export default function* sagas() :Generator<*, *, *> {
     fork(WorksitesSagas.getWorksitesWatcher),
     fork(WorksitesSagas.getWorksitePlansWatcher),
     fork(WorksitesSagas.getWorksitesByOrgWatcher),
+
+    // WorksitePlanSagas
+    fork(WorksitePlanSagas.addWorksitePlanWatcher),
+    fork(WorksitePlanSagas.editWorksitePlanWatcher),
+    fork(WorksitePlanSagas.getWorksiteByWorksitePlanWatcher),
+    fork(WorksitePlanSagas.getWorksitePlansWatcher),
+    fork(WorksitePlanSagas.getWorksitePlanStatusesWatcher),
+    fork(WorksitePlanSagas.updateHoursWorkedWatcher),
 
     // RoutingSagas
     fork(RoutingSagas.goToRootWatcher),

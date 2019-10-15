@@ -14,21 +14,6 @@ const addNewParticipantContacts :RequestSequence = newRequestSequence(ADD_NEW_PA
 const ADD_TO_AVAILABLE_CHARGES :'ADD_TO_AVAILABLE_CHARGES' = 'ADD_TO_AVAILABLE_CHARGES';
 const addToAvailableCharges :RequestSequence = newRequestSequence(ADD_TO_AVAILABLE_CHARGES);
 
-const ADD_WORKSITE_PLAN :'ADD_WORKSITE_PLAN' = 'ADD_WORKSITE_PLAN';
-const addWorksitePlan :RequestSequence = newRequestSequence(ADD_WORKSITE_PLAN);
-
-const CHECK_IN_FOR_APPOINTMENT :'CHECK_IN_FOR_APPOINTMENT' = 'CHECK_IN_FOR_APPOINTMENT';
-const checkInForAppointment :RequestSequence = newRequestSequence(CHECK_IN_FOR_APPOINTMENT);
-
-const CREATE_WORK_APPOINTMENTS :'CREATE_WORK_APPOINTMENTS' = 'CREATE_WORK_APPOINTMENTS';
-const createWorkAppointments :RequestSequence = newRequestSequence(CREATE_WORK_APPOINTMENTS);
-
-const DELETE_APPOINTMENT :'DELETE_APPOINTMENT' = 'DELETE_APPOINTMENT';
-const deleteAppointment :RequestSequence = newRequestSequence(DELETE_APPOINTMENT);
-
-const EDIT_APPOINTMENT :'EDIT_APPOINTMENT' = 'EDIT_APPOINTMENT';
-const editAppointment :RequestSequence = newRequestSequence(EDIT_APPOINTMENT);
-
 const EDIT_ENROLLMENT_DATES :'EDIT_ENROLLMENT_DATES' = 'EDIT_ENROLLMENT_DATES';
 const editEnrollmentDates :RequestSequence = newRequestSequence(EDIT_ENROLLMENT_DATES);
 
@@ -49,12 +34,6 @@ const editPlanNotes :RequestSequence = newRequestSequence(EDIT_PLAN_NOTES);
 
 const EDIT_REQUIRED_HOURS :'EDIT_REQUIRED_HOURS' = 'EDIT_REQUIRED_HOURS';
 const editRequiredHours :RequestSequence = newRequestSequence(EDIT_REQUIRED_HOURS);
-
-const EDIT_WORKSITE_PLAN :'EDIT_WORKSITE_PLAN' = 'EDIT_WORKSITE_PLAN';
-const editWorksitePlan :RequestSequence = newRequestSequence(EDIT_WORKSITE_PLAN);
-
-const GET_APPOINTMENT_CHECK_INS :'GET_APPOINTMENT_CHECK_INS' = 'GET_APPOINTMENT_CHECK_INS';
-const getAppointmentCheckIns :RequestSequence = newRequestSequence(GET_APPOINTMENT_CHECK_INS);
 
 const GET_ALL_PARTICIPANT_INFO :'GET_ALL_PARTICIPANT_INFO' = 'GET_ALL_PARTICIPANT_INFO';
 const getAllParticipantInfo :RequestSequence = newRequestSequence(GET_ALL_PARTICIPANT_INFO);
@@ -95,18 +74,6 @@ const getParticipantAddress :RequestSequence = newRequestSequence(GET_PARTICIPAN
 const GET_PROGRAM_OUTCOME :'GET_PROGRAM_OUTCOME' = 'GET_PROGRAM_OUTCOME';
 const getProgramOutcome :RequestSequence = newRequestSequence(GET_PROGRAM_OUTCOME);
 
-const GET_WORKSITE_BY_WORKSITE_PLAN :'GET_WORKSITE_BY_WORKSITE_PLAN' = 'GET_WORKSITE_BY_WORKSITE_PLAN';
-const getWorksiteByWorksitePlan :RequestSequence = newRequestSequence(GET_WORKSITE_BY_WORKSITE_PLAN);
-
-const GET_WORKSITE_PLANS :'GET_WORKSITE_PLANS' = 'GET_WORKSITE_PLANS';
-const getWorksitePlans :RequestSequence = newRequestSequence(GET_WORKSITE_PLANS);
-
-const GET_WORKSITE_PLAN_STATUSES :'GET_WORKSITE_PLAN_STATUSES' = 'GET_WORKSITE_PLAN_STATUSES';
-const getWorksitePlanStatuses :RequestSequence = newRequestSequence(GET_WORKSITE_PLAN_STATUSES);
-
-const GET_WORK_APPOINTMENTS :'GET_WORK_APPOINTMENTS' = 'GET_WORK_APPOINTMENTS';
-const getWorkAppointments :RequestSequence = newRequestSequence(GET_WORK_APPOINTMENTS);
-
 const MARK_DIVERSION_PLAN_AS_COMPLETE :'MARK_DIVERSION_PLAN_AS_COMPLETE' = 'MARK_DIVERSION_PLAN_AS_COMPLETE';
 const markDiversionPlanAsComplete :RequestSequence = newRequestSequence(MARK_DIVERSION_PLAN_AS_COMPLETE);
 
@@ -116,19 +83,11 @@ const reassignJudge :RequestSequence = newRequestSequence(REASSIGN_JUDGE);
 const REMOVE_CHARGE_FROM_CASE :'REMOVE_CHARGE_FROM_CASE' = 'REMOVE_CHARGE_FROM_CASE';
 const removeChargeFromCase :RequestSequence = newRequestSequence(REMOVE_CHARGE_FROM_CASE);
 
-const UPDATE_HOURS_WORKED :'UPDATE_HOURS_WORKED' = 'UPDATE_HOURS_WORKED';
-const updateHoursWorked :RequestSequence = newRequestSequence(UPDATE_HOURS_WORKED);
-
 export {
   ADD_CHARGES_TO_CASE,
   ADD_NEW_DIVERSION_PLAN_STATUS,
   ADD_NEW_PARTICIPANT_CONTACTS,
   ADD_TO_AVAILABLE_CHARGES,
-  ADD_WORKSITE_PLAN,
-  CHECK_IN_FOR_APPOINTMENT,
-  CREATE_WORK_APPOINTMENTS,
-  DELETE_APPOINTMENT,
-  EDIT_APPOINTMENT,
   EDIT_ENROLLMENT_DATES,
   EDIT_PARTICIPANT_CONTACTS,
   EDIT_PERSON_CASE,
@@ -136,9 +95,7 @@ export {
   EDIT_PERSON_NOTES,
   EDIT_PLAN_NOTES,
   EDIT_REQUIRED_HOURS,
-  EDIT_WORKSITE_PLAN,
   GET_ALL_PARTICIPANT_INFO,
-  GET_APPOINTMENT_CHECK_INS,
   GET_CASE_INFO,
   GET_CHARGES,
   GET_CHARGES_FOR_CASE,
@@ -151,23 +108,13 @@ export {
   GET_PARTICIPANT,
   GET_PARTICIPANT_ADDRESS,
   GET_PROGRAM_OUTCOME,
-  GET_WORKSITE_BY_WORKSITE_PLAN,
-  GET_WORKSITE_PLANS,
-  GET_WORKSITE_PLAN_STATUSES,
-  GET_WORK_APPOINTMENTS,
   MARK_DIVERSION_PLAN_AS_COMPLETE,
   REASSIGN_JUDGE,
   REMOVE_CHARGE_FROM_CASE,
-  UPDATE_HOURS_WORKED,
   addChargesToCase,
   addNewDiversionPlanStatus,
   addNewParticipantContacts,
   addToAvailableCharges,
-  addWorksitePlan,
-  checkInForAppointment,
-  createWorkAppointments,
-  deleteAppointment,
-  editAppointment,
   editEnrollmentDates,
   editParticipantContacts,
   editPersonCase,
@@ -175,9 +122,7 @@ export {
   editPersonNotes,
   editPlanNotes,
   editRequiredHours,
-  editWorksitePlan,
   getAllParticipantInfo,
-  getAppointmentCheckIns,
   getCaseInfo,
   getCharges,
   getChargesForCase,
@@ -190,12 +135,7 @@ export {
   getParticipant,
   getParticipantAddress,
   getProgramOutcome,
-  getWorkAppointments,
-  getWorksiteByWorksitePlan,
-  getWorksitePlanStatuses,
-  getWorksitePlans,
   markDiversionPlanAsComplete,
   reassignJudge,
   removeChargeFromCase,
-  updateHoursWorked,
 };

@@ -56,7 +56,8 @@ import {
   PERSON,
   PERSON_INFRACTIONS,
   STATE,
-  WORKSITES
+  WORKSITES,
+  WORKSITE_PLANS,
 } from '../../utils/constants/ReduxStateConsts';
 
 const {
@@ -84,13 +85,15 @@ const {
   PHONE,
   PROGRAM_OUTCOME,
   REQUEST_STATE,
-  WORK_APPOINTMENTS_BY_WORKSITE_PLAN,
-  WORKSITES_BY_WORKSITE_PLAN,
-  WORKSITE_PLANS,
   WORKSITE_PLAN_STATUSES,
 } = PERSON;
 const { VIOLATIONS, WARNINGS } = PERSON_INFRACTIONS;
 const { WORKSITES_LIST } = WORKSITES;
+const {
+  WORK_APPOINTMENTS_BY_WORKSITE_PLAN,
+  WORKSITES_BY_WORKSITE_PLAN,
+  WORKSITE_PLANS_LIST,
+} = WORKSITE_PLANS;
 
 const ENROLLMENT_STATUSES_EXCLUDING_PREENROLLMENT = Object.values(ENROLLMENT_STATUSES)
   .filter(status => status !== ENROLLMENT_STATUSES.AWAITING_CHECKIN
@@ -183,7 +186,7 @@ type Props = {
   email :Map;
   enrollmentStatus :Map;
   getAllParticipantInfoRequestState :RequestState;
-  getInitializeAppRequestState :RequestState;
+  initializeAppRequestState :RequestState;
   judge :Map;
   participant :Map;
   personCase :Map;
@@ -194,7 +197,7 @@ type Props = {
   warnings :List;
   workAppointmentsByWorksitePlan :Map;
   worksitesByWorksitePlan :Map;
-  worksitePlans :List;
+  worksitePlansList :List;
   worksitePlanStatuses :Map;
   worksitesList :List;
 };
@@ -315,7 +318,7 @@ class ParticipantProfile extends Component<Props, State> {
       email,
       enrollmentStatus,
       getAllParticipantInfoRequestState,
-      getInitializeAppRequestState,
+      initializeAppRequestState,
       judge,
       participant,
       personCase,
@@ -325,7 +328,7 @@ class ParticipantProfile extends Component<Props, State> {
       warnings,
       workAppointmentsByWorksitePlan,
       worksitesByWorksitePlan,
-      worksitePlans,
+      worksitePlansList,
       worksitePlanStatuses,
       worksitesList,
     } = this.props;
@@ -336,7 +339,7 @@ class ParticipantProfile extends Component<Props, State> {
       worksiteNamesByWorksitePlan
     } = this.state;
 
-    if (getInitializeAppRequestState === RequestStates.PENDING
+    if (initializeAppRequestState === RequestStates.PENDING
         || getAllParticipantInfoRequestState === RequestStates.PENDING) {
       return (
         <LogoLoader
@@ -432,7 +435,7 @@ class ParticipantProfile extends Component<Props, State> {
                   <Button onClick={() => this.handleShowModal(ASSIGN_WORKSITE)}>Add Work Site</Button>
                 </NameRowWrapper>
                 {
-                  worksitePlans.isEmpty()
+                  worksitePlansList.isEmpty()
                     ? (
                       <Card>
                         <CardSegment>
@@ -446,7 +449,7 @@ class ParticipantProfile extends Component<Props, State> {
                     : (
                       <CardStack>
                         {
-                          worksitePlans.map((worksitePlan :Map) => {
+                          worksitePlansList.map((worksitePlan :Map) => {
                             const worksitePlanEKID :UUID = getEntityKeyId(worksitePlan);
                             const worksite :Map = worksitesByWorksitePlan.get(worksitePlanEKID);
                             const worksitePlanStatus :Map = worksitePlanStatuses.get(worksitePlanEKID);
@@ -466,7 +469,7 @@ class ParticipantProfile extends Component<Props, State> {
             )
           }
           {
-            !worksitePlans.isEmpty() && (
+            !worksitePlansList.isEmpty() && (
               <ProfileBody>
                 <NameRowWrapper>
                   <NameHeader>Work Schedule</NameHeader>
@@ -513,6 +516,7 @@ const mapStateToProps = (state :Map<*, *>) => {
   const person = state.get(STATE.PERSON);
   const worksites = state.get(STATE.WORKSITES);
   const infractions = state.get(STATE.INFRACTIONS);
+  const worksitePlans = state.get(STATE.WORKSITE_PLANS);
   return {
     [ADDRESS]: person.get(ADDRESS),
     app,
@@ -522,7 +526,7 @@ const mapStateToProps = (state :Map<*, *>) => {
     [EMAIL]: person.get(EMAIL),
     [ENROLLMENT_STATUS]: person.get(ENROLLMENT_STATUS),
     getAllParticipantInfoRequestState: person.getIn([ACTIONS, GET_ALL_PARTICIPANT_INFO, REQUEST_STATE]),
-    getInitializeAppRequestState: app.getIn([APP.ACTIONS, APP.INITIALIZE_APPLICATION, APP.REQUEST_STATE]),
+    initializeAppRequestState: app.getIn([APP.ACTIONS, APP.INITIALIZE_APPLICATION, APP.REQUEST_STATE]),
     [JUDGE]: person.get(JUDGE),
     [PARTICIPANT]: person.get(PARTICIPANT),
     [PERSON_CASE]: person.get(PERSON_CASE),
@@ -531,9 +535,9 @@ const mapStateToProps = (state :Map<*, *>) => {
     [VIOLATIONS]: infractions.get(VIOLATIONS),
     [WARNINGS]: infractions.get(WARNINGS),
     [WORK_APPOINTMENTS_BY_WORKSITE_PLAN]: person.get(WORK_APPOINTMENTS_BY_WORKSITE_PLAN),
-    [WORKSITES_BY_WORKSITE_PLAN]: person.get(WORKSITES_BY_WORKSITE_PLAN),
-    [WORKSITE_PLANS]: person.get(WORKSITE_PLANS),
-    [WORKSITE_PLAN_STATUSES]: person.get(WORKSITE_PLAN_STATUSES),
+    [WORKSITES_BY_WORKSITE_PLAN]: worksitePlans.get(WORKSITES_BY_WORKSITE_PLAN),
+    [WORKSITE_PLANS_LIST]: worksitePlans.get(WORKSITE_PLANS_LIST),
+    [WORKSITE_PLAN_STATUSES]: worksitePlans.get(WORKSITE_PLAN_STATUSES),
     [WORKSITES_LIST]: worksites.get(WORKSITES_LIST),
   };
 };

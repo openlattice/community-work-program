@@ -17,7 +17,7 @@ import { bindActionCreators } from 'redux';
 import type { RequestSequence } from 'redux-reqseq';
 import type { FQN } from 'lattice';
 
-import { addWorksitePlan } from '../ParticipantActions';
+import { addWorksitePlan } from './WorksitePlanActions';
 import {
   getEntityKeyId,
   getEntityProperties,

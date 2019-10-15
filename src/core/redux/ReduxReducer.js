@@ -12,6 +12,7 @@ import infractionsReducer from '../../containers/participant/infractions/Infract
 import participantReducer from '../../containers/participant/ParticipantReducer';
 import participantsReducer from '../../containers/participants/ParticipantsReducer';
 import workScheduleReducer from '../../containers/workschedule/WorkScheduleReducer';
+import worksitePlanReducer from '../../containers/participant/assignedworksites/WorksitePlanReducer';
 import worksitesReducer from '../../containers/worksites/WorksitesReducer';
 
 export default function reduxReducer(routerHistory :any) {
@@ -25,6 +26,7 @@ export default function reduxReducer(routerHistory :any) {
     person: participantReducer,
     router: connectRouter(routerHistory),
     workSchedule: workScheduleReducer,
+    worksitePlans: worksitePlanReducer,
     worksites: worksitesReducer,
   });
 }
