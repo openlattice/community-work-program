@@ -79,14 +79,12 @@ type Props = {
 
 type State = {
   formData :Object;
-  prepopulated :boolean;
 };
 
 class EditCaseInfoForm extends Component<Props, State> {
 
   state = {
     formData: {},
-    prepopulated: true,
   };
 
   componentDidMount() {
@@ -210,7 +208,7 @@ class EditCaseInfoForm extends Component<Props, State> {
       getEnrollmentStatusRequestState,
       initializeAppRequestState,
     } = this.props;
-    const { formData, prepopulated } = this.state;
+    const { formData } = this.state;
 
     if (initializeAppRequestState === RequestStates.PENDING
       || getEnrollmentStatusRequestState === RequestStates.PENDING) {
@@ -244,7 +242,7 @@ class EditCaseInfoForm extends Component<Props, State> {
           <Card>
             <CardHeader padding="sm">Edit Enrollment Dates</CardHeader>
             <Form
-                disabled={prepopulated}
+                disabled
                 formContext={formContext}
                 formData={formData}
                 schema={schema}
