@@ -107,7 +107,7 @@ class InfractionsContainer extends Component<Props, State> {
   }
 
   getInfractionStateValues = (infractions :List) => {
-    const sortedInfractions :List = sortEntitiesByDateProperty(infractions, DATETIME_COMPLETED).reverse();
+    const sortedInfractions :List = sortEntitiesByDateProperty(infractions, [DATETIME_COMPLETED]).reverse();
     const infractionOptions :Object[] = sortedInfractions
       .map((infraction :Map) => {
         const {

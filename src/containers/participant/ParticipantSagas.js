@@ -2148,7 +2148,7 @@ function* getWorksitePlanStatusesWorker(action :SequenceAction) :Generator<*, *,
       // get most recent status for each work site plan:
       worksitePlanStatuses = worksitePlanStatuses
         .map((statusList :List) => {
-          const sortedStatusList :List = sortEntitiesByDateProperty(statusList, EFFECTIVE_DATE);
+          const sortedStatusList :List = sortEntitiesByDateProperty(statusList, [EFFECTIVE_DATE]);
           return sortedStatusList.last();
         });
     }
@@ -2365,11 +2365,11 @@ function* getEnrollmentStatusWorker(action :SequenceAction) :Generator<*, *, *> 
 
         const mostRecentEnrollmentStatusesByDiversionPlan :Map = enrollmentStatusesByDiversionPlan
           .map((statusList :List) => {
-            const sortedStatusList :List = sortEntitiesByDateProperty(statusList, EFFECTIVE_DATE);
+            const sortedStatusList :List = sortEntitiesByDateProperty(statusList, [EFFECTIVE_DATE]);
             return sortedStatusList.last();
           });
         enrollmentStatus = sortEntitiesByDateProperty(
-          mostRecentEnrollmentStatusesByDiversionPlan, EFFECTIVE_DATE
+          mostRecentEnrollmentStatusesByDiversionPlan, [EFFECTIVE_DATE]
         ).last();
         /*
          * 4. Additionally, return relevant diversion plan.

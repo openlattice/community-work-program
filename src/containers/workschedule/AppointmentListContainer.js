@@ -65,7 +65,7 @@ class AppointmentListContainer extends Component<Props, State> {
   }
 
   sortAppointmentsByDate = (appointments :List) => (
-    sortEntitiesByDateProperty(appointments, INCIDENT_START_DATETIME)
+    sortEntitiesByDateProperty(appointments, [INCIDENT_START_DATETIME])
   );
 
   setFullWorkAppointments = (appointments :List) => {

@@ -262,7 +262,7 @@ class ParticipantProfile extends Component<Props, State> {
         .valueSeq()
         .toList()
         .flatten(1);
-      const sortedAppointments :List = sortEntitiesByDateProperty(appointments, INCIDENT_START_DATETIME);
+      const sortedAppointments :List = sortEntitiesByDateProperty(appointments, [INCIDENT_START_DATETIME]);
       sortedAppointments.forEach((appointment :Map) => {
         const appointmentEKID :UUID = getEntityKeyId(appointment);
         const checkIn :Map = checkInsByAppointment.get(appointmentEKID, Map());
