@@ -72,6 +72,7 @@ export const PERSON = {
   EDIT_APPOINTMENT: 'editAppointment',
   EDIT_CHECK_IN_DATE: 'editCheckInDate',
   EDIT_ENROLLMENT_DATES: 'editEnrollmentDates',
+  EDIT_INFRACTION_EVENT: 'editInfractionEvent',
   EDIT_PARTICIPANT_CONTACTS: 'editParticipantContacts',
   EDIT_PERSON_CASE: 'editPersonCase',
   EDIT_PERSON_DETAILS: 'editPersonDetails',

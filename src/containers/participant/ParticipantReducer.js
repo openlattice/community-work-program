@@ -23,6 +23,7 @@ import {
   deleteInfractionEvent,
   editAppointment,
   editEnrollmentDates,
+  editInfractionEvent,
   editParticipantContacts,
   editPersonCase,
   editPersonDetails,
@@ -119,6 +120,7 @@ const {
   DIVERSION_PLAN,
   EDIT_APPOINTMENT,
   EDIT_ENROLLMENT_DATES,
+  EDIT_INFRACTION_EVENT,
   EDIT_PARTICIPANT_CONTACTS,
   EDIT_PERSON_CASE,
   EDIT_PERSON_DETAILS,
@@ -213,6 +215,9 @@ const INITIAL_STATE :Map<*, *> = fromJS({
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [EDIT_ENROLLMENT_DATES]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [EDIT_INFRACTION_EVENT]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [EDIT_PERSON_CASE]: {
@@ -1030,6 +1035,71 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
         FAILURE: () => state
           .setIn([ACTIONS, EDIT_APPOINTMENT, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, EDIT_APPOINTMENT, action.id]),
+      });
+    }
+
+    case editInfractionEvent.case(action.type): {
+
+      return editInfractionEvent.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, EDIT_INFRACTION_EVENT, action.id], action)
+          .setIn([ACTIONS, EDIT_INFRACTION_EVENT, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+
+          const seqAction :SequenceAction = action;
+          const storedSeqAction :SequenceAction = state.getIn([ACTIONS, EDIT_INFRACTION_EVENT, seqAction.id]);
+
+          if (storedSeqAction) {
+
+            const successValue :Object = seqAction.value;
+            const { infractionEventESID, edm } = successValue;
+
+            const requestValue :Object = storedSeqAction.value;
+            const { entityData } :Object = requestValue;
+            const infractionEventEKID = Object.keys(entityData[infractionEventESID])[0];
+            const storedInfractionEventEntity :Map = fromJS(entityData[infractionEventESID][infractionEventEKID]);
+            const newInfractionEvent :Map = Map().withMutations((map) => {
+              storedInfractionEventEntity.forEach((infractionEventValue, ptid) => {
+                const propertyTypeFqn :FQN = getPropertyFqnFromEdm(edm, ptid);
+                map.set(propertyTypeFqn, infractionEventValue);
+              });
+            });
+
+            let violations = state.get(VIOLATIONS);
+            let warnings = state.get(WARNINGS);
+            const violationIndexToEdit :number = violations
+              .findIndex((violation :Map) => getEntityKeyId(violation) === infractionEventEKID);
+
+            if (violationIndexToEdit !== -1) {
+              let violationToEdit :Map = violations.get(violationIndexToEdit);
+              newInfractionEvent.forEach((value :any, propertyTypeFqn :FQN) => {
+                violationToEdit = violationToEdit.set(propertyTypeFqn, value);
+              });
+              violations = violations.set(violationIndexToEdit, violationToEdit);
+            }
+            else {
+              const warningIndexToEdit :number = warnings
+                .findIndex((warning :Map) => getEntityKeyId(warning) === infractionEventEKID);
+
+              if (warningIndexToEdit !== -1) {
+                let warningToEdit :Map = warnings.get(warningIndexToEdit);
+                newInfractionEvent.forEach((value :any, propertyTypeFqn :FQN) => {
+                  warningToEdit = warningToEdit.set(propertyTypeFqn, value);
+                });
+                warnings = warnings.set(warningIndexToEdit, warningToEdit);
+              }
+            }
+            return state
+              .set(VIOLATIONS, violations)
+              .set(WARNINGS, warnings)
+              .setIn([ACTIONS, EDIT_INFRACTION_EVENT, REQUEST_STATE], RequestStates.SUCCESS);
+          }
+          return state;
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, EDIT_INFRACTION_EVENT, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, EDIT_INFRACTION_EVENT, action.id]),
       });
     }
 

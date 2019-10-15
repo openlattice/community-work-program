@@ -45,6 +45,7 @@ import {
   DELETE_INFRACTION_EVENT,
   EDIT_APPOINTMENT,
   EDIT_ENROLLMENT_DATES,
+  EDIT_INFRACTION_EVENT,
   EDIT_PARTICIPANT_CONTACTS,
   EDIT_PERSON_CASE,
   EDIT_PERSON_DETAILS,
@@ -93,6 +94,7 @@ import {
   deleteInfractionEvent,
   editAppointment,
   editEnrollmentDates,
+  editInfractionEvent,
   editParticipantContacts,
   editPersonCase,
   editPersonDetails,
@@ -1574,6 +1576,43 @@ function* editAppointmentWorker(action :SequenceAction) :Generator<*, *, *> {
 function* editAppointmentWatcher() :Generator<*, *, *> {
 
   yield takeEvery(EDIT_APPOINTMENT, editAppointmentWorker);
+}
+
+/*
+ *
+ * ParticipantActions.editInfractionEvent()
+ *
+ */
+
+function* editInfractionEventWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+
+  try {
+    yield put(editInfractionEvent.request(id, value));
+
+    const response = yield call(submitPartialReplaceWorker, submitPartialReplace(value));
+    if (response.error) {
+      throw response.error;
+    }
+    const app = yield select(getAppFromState);
+    const infractionEventESID :UUID = getEntitySetIdFromApp(app, INFRACTION_EVENT);
+    const edm = yield select(getEdmFromState);
+
+    yield put(editInfractionEvent.success(id, { infractionEventESID, edm }));
+  }
+  catch (error) {
+    LOG.error('caught exception in editInfractionEventWorker()', error);
+    yield put(editInfractionEvent.failure(id, error));
+  }
+  finally {
+    yield put(editInfractionEvent.finally(id));
+  }
+}
+
+function* editInfractionEventWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(EDIT_INFRACTION_EVENT, editInfractionEventWorker);
 }
 
 /*
@@ -3224,6 +3263,8 @@ export {
   getInfoForEditPersonWorker,
   getInfoForPrintInfractionWatcher,
   getInfoForPrintInfractionWorker,
+  editInfractionEventWatcher,
+  editInfractionEventWorker,
   getInfractionTypesWatcher,
   getInfractionTypesWorker,
   getInfractionWatcher,

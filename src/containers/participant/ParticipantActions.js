@@ -37,6 +37,9 @@ const deleteInfractionEvent = newRequestSequence(DELETE_INFRACTION_EVENT);
 const EDIT_APPOINTMENT:'EDIT_APPOINTMENT' = 'EDIT_APPOINTMENT';
 const editAppointment = newRequestSequence(EDIT_APPOINTMENT);
 
+const EDIT_INFRACTION_EVENT:'EDIT_INFRACTION_EVENT' = 'EDIT_INFRACTION_EVENT';
+const editInfractionEvent = newRequestSequence(EDIT_INFRACTION_EVENT);
+
 const EDIT_ENROLLMENT_DATES:'EDIT_ENROLLMENT_DATES' = 'EDIT_ENROLLMENT_DATES';
 const editEnrollmentDates = newRequestSequence(EDIT_ENROLLMENT_DATES);
 
@@ -159,6 +162,7 @@ export {
   DELETE_INFRACTION_EVENT,
   EDIT_APPOINTMENT,
   EDIT_ENROLLMENT_DATES,
+  EDIT_INFRACTION_EVENT,
   EDIT_PARTICIPANT_CONTACTS,
   EDIT_PERSON_CASE,
   EDIT_PERSON_DETAILS,
@@ -207,6 +211,7 @@ export {
   deleteInfractionEvent,
   editAppointment,
   editEnrollmentDates,
+  editInfractionEvent,
   editParticipantContacts,
   editPersonCase,
   editPersonDetails,
