@@ -194,14 +194,21 @@ class EditCaseInfoForm extends Component<Props, State> {
     };
   }
 
+  handleOnClickBackButton = () => {
+    const {
+      actions,
+      match: {
+        params: { subjectId: personEKID }
+      },
+    } = this.props;
+    actions.goToRoute(Routes.PARTICIPANT_PROFILE.replace(':subjectId', personEKID));
+  }
+
   render() {
     const {
       actions,
       getEnrollmentStatusRequestState,
       initializeAppRequestState,
-      match: {
-        params: { subjectId: personEKID }
-      },
     } = this.props;
     const { formData, prepopulated } = this.state;
 
@@ -229,9 +236,7 @@ class EditCaseInfoForm extends Component<Props, State> {
       <FormWrapper>
         <ButtonWrapper>
           <BackNavButton
-              onClick={() => {
-                actions.goToRoute(Routes.PARTICIPANT_PROFILE.replace(':subjectId', personEKID));
-              }}>
+              onClick={this.handleOnClickBackButton}>
             Back to Profile
           </BackNavButton>
         </ButtonWrapper>

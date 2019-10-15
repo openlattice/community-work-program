@@ -12,7 +12,7 @@ type Props = {
   title :string;
 };
 
-class EditPlanNotesModal extends Component<Props> {
+class EditNotesModal extends Component<Props> {
 
   componentDidUpdate(prevProps :Props) {
     const { editRequestState, onClose } = this.props;
@@ -46,4 +46,4 @@ class EditPlanNotesModal extends Component<Props> {
 }
 
 // $FlowFixMe
-export default EditPlanNotesModal;
+export default EditNotesModal;

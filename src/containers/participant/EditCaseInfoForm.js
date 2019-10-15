@@ -432,14 +432,21 @@ class EditCaseInfoForm extends Component<Props, State> {
     this.setState({ isAvailableChargesModalVisible: false });
   }
 
+  handleOnClickBackButton = () => {
+    const {
+      actions,
+      match: {
+        params: { subjectId: personEKID }
+      },
+    } = this.props;
+    actions.goToRoute(Routes.PARTICIPANT_PROFILE.replace(':subjectId', personEKID));
+  }
+
   render() {
     const {
       actions,
       getInfoForEditCaseRequestState,
       initializeAppRequestState,
-      match: {
-        params: { subjectId: personEKID }
-      },
     } = this.props;
     const {
       caseFormData,
@@ -501,9 +508,7 @@ class EditCaseInfoForm extends Component<Props, State> {
       <FormWrapper>
         <ButtonWrapper>
           <BackNavButton
-              onClick={() => {
-                actions.goToRoute(Routes.PARTICIPANT_PROFILE.replace(':subjectId', personEKID));
-              }}>
+              onClick={this.handleOnClickBackButton}>
             Back to Profile
           </BackNavButton>
         </ButtonWrapper>
