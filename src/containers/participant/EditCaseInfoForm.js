@@ -62,7 +62,6 @@ import { BackNavButton } from '../../components/controls/index';
 import { PARTICIPANT_PROFILE_WIDTH } from '../../core/style/Sizes';
 import { APP, PERSON, STATE } from '../../utils/constants/ReduxStateConsts';
 import * as Routes from '../../core/router/Routes';
-// import { charges } from './tempcharges';
 
 const {
   getEntityAddressKey,
