@@ -4,7 +4,7 @@ import { Label } from 'lattice-ui-kit';
 
 import { StyledEditButton } from '../controls/index';
 
-const SectionWrapper = styled.div`
+const SectionWrapper = styled.section`
   align-items: stretch;
   display: flex;
   flex-direction: column;
