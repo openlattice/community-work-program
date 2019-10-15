@@ -20,6 +20,7 @@ import {
 import { OL } from '../../core/style/Colors';
 import { PersonPhoto, PersonPicture } from '../picture/PersonPicture';
 import { formatAsDate } from '../../utils/DateTimeUtils';
+import { formatPairOfStrings } from '../../utils/FormattingUtils';
 import { getEntityProperties } from '../../utils/DataUtils';
 import { ADDRESS_FQNS, CONTACT_INFO_FQNS, PEOPLE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { EMPTY_FIELD } from '../../containers/participants/ParticipantsConstants';
@@ -97,9 +98,7 @@ const ParticipantProfileSection = ({
 
   const fullName = `${firstName} ${lastName}`;
   const dob = formatAsDate(dateOfBirth);
-  const raceAndEthnicity = (race && ethnicity)
-    ? `${race}/${ethnicity}`
-    : (`${race}` || `${ethnicity}` || EMPTY_FIELD);
+  const raceAndEthnicity = formatPairOfStrings([race, ethnicity]);
 
   const { [PHONE_NUMBER]: phoneNumber } = getEntityProperties(phone, [PHONE_NUMBER]);
   const { [EMAIL]: emailAddress } = getEntityProperties(email, [EMAIL]);
