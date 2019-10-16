@@ -174,7 +174,6 @@ class AssignWorksiteForm extends Component<Props, State> {
 
     const entityData :{} = processEntityData(newWorksitePlanData, entitySetIds, propertyTypeIds);
     const associationEntityData :{} = processAssociationEntityData(fromJS(associations), entitySetIds, propertyTypeIds);
-
     actions.addWorksitePlan({ associationEntityData, entityData });
   }
 

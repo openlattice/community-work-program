@@ -20,12 +20,18 @@ import EditAppointmentModal from '../participant/schedule/EditAppointmentModal';
 
 import { isDefined } from '../../utils/LangUtils';
 import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
-import { PERSON, STATE, WORK_SCHEDULE } from '../../utils/constants/ReduxStateConsts';
+import {
+  PARTICIPANT_SCHEDULE,
+  PERSON,
+  STATE,
+  WORK_SCHEDULE,
+} from '../../utils/constants/ReduxStateConsts';
 import { ENTITY_KEY_ID, PEOPLE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { OL } from '../../core/style/Colors';
 import { ButtonWrapper } from '../../components/Layout';
 
-const { CHECK_INS_BY_APPOINTMENT, PARTICIPANT } = PERSON;
+const { CHECK_INS_BY_APPOINTMENT } = PARTICIPANT_SCHEDULE;
+const { PARTICIPANT } = PERSON;
 const { PERSON_BY_APPOINTMENT_EKID } = WORK_SCHEDULE;
 const { FIRST_NAME, LAST_NAME } = PEOPLE_FQNS;
 
@@ -190,9 +196,10 @@ const AppointmentContainer = ({
 
 const mapStateToProps = (state :Map) => {
   const person = state.get(STATE.PERSON);
+  const participantSchedule = state.get(STATE.PARTICIPANT_SCHEDULE);
   const workSchedule = state.get(STATE.WORK_SCHEDULE);
   return ({
-    [CHECK_INS_BY_APPOINTMENT]: person.get(CHECK_INS_BY_APPOINTMENT),
+    [CHECK_INS_BY_APPOINTMENT]: participantSchedule.get(CHECK_INS_BY_APPOINTMENT),
     [PARTICIPANT]: person.get(PARTICIPANT),
     [PERSON_BY_APPOINTMENT_EKID]: workSchedule.get(PERSON_BY_APPOINTMENT_EKID),
   });

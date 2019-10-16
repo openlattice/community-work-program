@@ -22,7 +22,7 @@ import AddInfractionModal from './AddInfractionModal';
 import { getEntityKeyId, getEntityProperties, sortEntitiesByDateProperty } from '../../../utils/DataUtils';
 import { formatAsDate } from '../../../utils/DateTimeUtils';
 import { getParticipantInfractions } from './InfractionsActions';
-import { PERSON, PERSON_INFRACTIONS, STATE } from '../../../utils/constants/ReduxStateConsts';
+import { PERSON_INFRACTIONS, STATE, WORKSITE_PLANS } from '../../../utils/constants/ReduxStateConsts';
 import { DATETIME_COMPLETED, INFRACTION_EVENT_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { ContainerOuterWrapper } from '../../../components/Layout';
 
@@ -45,7 +45,7 @@ const {
   ACTIONS,
   REQUEST_STATE,
   WORKSITES_BY_WORKSITE_PLAN,
-} = PERSON;
+} = WORKSITE_PLANS;
 const {
   ADD_INFRACTION_EVENT,
   GET_PARTICIPANT_INFRACTIONS,
@@ -214,15 +214,15 @@ class InfractionsContainer extends Component<Props, State> {
 }
 
 const mapStateToProps = (state) => {
-  const person = state.get(STATE.PERSON);
   const infractions = state.get(STATE.INFRACTIONS);
+  const worksitePlans = state.get(STATE.WORKSITE_PLANS);
   return {
     addInfractionEventRequestState: infractions.getIn([ACTIONS, ADD_INFRACTION_EVENT, REQUEST_STATE]),
     getParticipantInfractionsState: infractions.getIn([ACTIONS, GET_PARTICIPANT_INFRACTIONS, REQUEST_STATE]),
     [INFRACTIONS_INFO]: infractions.get(INFRACTIONS_INFO),
     [VIOLATIONS]: infractions.get(VIOLATIONS),
     [WARNINGS]: infractions.get(WARNINGS),
-    [WORKSITES_BY_WORKSITE_PLAN]: person.get(WORKSITES_BY_WORKSITE_PLAN),
+    [WORKSITES_BY_WORKSITE_PLAN]: worksitePlans.get(WORKSITES_BY_WORKSITE_PLAN),
   };
 };
 

@@ -102,7 +102,7 @@ export default function worksitePlanReducer(state :Map<*, *> = INITIAL_STATE, ac
             });
             newWorksitePlan = newWorksitePlan.set(ENTITY_KEY_ID, worksitePlanEKID);
 
-            const worksitePlans = state.get(WORKSITE_PLANS)
+            const worksitePlans = state.get(WORKSITE_PLANS_LIST)
               .push(newWorksitePlan);
 
             const worksite :Map = worksitesList.find((site :Map) => getEntityKeyId(site) === worksiteEKID);
@@ -110,7 +110,7 @@ export default function worksitePlanReducer(state :Map<*, *> = INITIAL_STATE, ac
               .set(worksitePlanEKID[0], worksite);
 
             return state
-              .set(WORKSITE_PLANS, worksitePlans)
+              .set(WORKSITE_PLANS_LIST, worksitePlans)
               .set(WORKSITES_BY_WORKSITE_PLAN, worksitesByWorksitePlan)
               .setIn([ACTIONS, ADD_WORKSITE_PLAN, REQUEST_STATE], RequestStates.SUCCESS);
           }
@@ -153,7 +153,7 @@ export default function worksitePlanReducer(state :Map<*, *> = INITIAL_STATE, ac
             worksitePlanDataToEdit = fromJS(worksitePlanDataToEdit);
 
             let worksitePlanStatuses :Map = state.get(WORKSITE_PLAN_STATUSES);
-            let worksitePlans :List = state.get(WORKSITE_PLANS);
+            let worksitePlans :List = state.get(WORKSITE_PLANS_LIST);
 
             if (!statusEntityData.isEmpty()) {
               const storedStatusEntity :Map = statusEntityData.getIn([enrollmentStatusESID, 0]);
@@ -187,7 +187,7 @@ export default function worksitePlanReducer(state :Map<*, *> = INITIAL_STATE, ac
             }
 
             return state
-              .set(WORKSITE_PLANS, worksitePlans)
+              .set(WORKSITE_PLANS_LIST, worksitePlans)
               .set(WORKSITE_PLAN_STATUSES, worksitePlanStatuses)
               .setIn([ACTIONS, EDIT_WORKSITE_PLAN, REQUEST_STATE], RequestStates.SUCCESS);
           }
@@ -219,11 +219,11 @@ export default function worksitePlanReducer(state :Map<*, *> = INITIAL_STATE, ac
           }
 
           return state
-            .set(WORKSITE_PLANS, value)
+            .set(WORKSITE_PLANS_LIST, value)
             .setIn([ACTIONS, GET_WORKSITE_PLANS, REQUEST_STATE], RequestStates.SUCCESS);
         },
         FAILURE: () => state
-          .set(WORKSITE_PLANS, Map())
+          .set(WORKSITE_PLANS_LIST, Map())
           .setIn([ACTIONS, GET_WORKSITE_PLANS, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, GET_WORKSITE_PLANS, action.id])
       });
@@ -304,13 +304,13 @@ export default function worksitePlanReducer(state :Map<*, *> = INITIAL_STATE, ac
           }
 
           const worksitePlanEKID :UUID = getEntityKeyId(value);
-          let worksitePlans :List = state.get(WORKSITE_PLANS);
+          let worksitePlans :List = state.get(WORKSITE_PLANS_LIST);
           const worksitePlanToReplace :number = worksitePlans
             .findKey((worksitePlan :Map) => worksitePlanEKID === getEntityKeyId(worksitePlan));
           worksitePlans = worksitePlans.set(worksitePlanToReplace, value);
 
           return state
-            .set(WORKSITE_PLANS, worksitePlans)
+            .set(WORKSITE_PLANS_LIST, worksitePlans)
             .setIn([ACTIONS, GET_WORKSITE_BY_WORKSITE_PLAN, REQUEST_STATE], RequestStates.SUCCESS);
         },
         FAILURE: () => state

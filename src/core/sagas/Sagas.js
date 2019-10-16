@@ -11,6 +11,7 @@ import * as DataSagas from './data/DataSagas';
 import * as EDMSagas from '../edm/EDMSagas';
 import * as InfractionsSagas from '../../containers/participant/infractions/InfractionsSagas';
 import * as ParticipantSagas from '../../containers/participant/ParticipantSagas';
+import * as ParticipantScheduleSagas from '../../containers/participant/schedule/ParticipantScheduleSagas';
 import * as ParticipantsSagas from '../../containers/participants/ParticipantsSagas';
 import * as RoutingSagas from '../router/RoutingSagas';
 import * as WorkScheduleSagas from '../../containers/workschedule/WorkScheduleSagas';
@@ -56,9 +57,6 @@ export default function* sagas() :Generator<*, *, *> {
     fork(ParticipantSagas.addNewDiversionPlanStatusWatcher),
     fork(ParticipantSagas.addNewParticipantContactsWatcher),
     fork(ParticipantSagas.addToAvailableChargesWatcher),
-    fork(ParticipantSagas.createWorkAppointmentsWatcher),
-    fork(ParticipantSagas.deleteAppointmentWatcher),
-    fork(ParticipantSagas.editAppointmentWatcher),
     fork(ParticipantSagas.editEnrollmentDatesWatcher),
     fork(ParticipantSagas.editParticipantContactsWatcher),
     fork(ParticipantSagas.editPersonCaseWatcher),
@@ -66,7 +64,6 @@ export default function* sagas() :Generator<*, *, *> {
     fork(ParticipantSagas.editPersonNotesWatcher),
     fork(ParticipantSagas.editPlanNotesWatcher),
     fork(ParticipantSagas.editRequiredHoursWatcher),
-    fork(ParticipantSagas.getAppointmentCheckInsWatcher),
     fork(ParticipantSagas.getAllParticipantInfoWatcher),
     fork(ParticipantSagas.getCaseInfoWatcher),
     fork(ParticipantSagas.getChargesWatcher),
@@ -79,11 +76,18 @@ export default function* sagas() :Generator<*, *, *> {
     fork(ParticipantSagas.getJudgesWatcher),
     fork(ParticipantSagas.getParticipantAddressWatcher),
     fork(ParticipantSagas.getParticipantWatcher),
-    fork(ParticipantSagas.getWorkAppointmentsWatcher),
     fork(ParticipantSagas.getProgramOutcomeWatcher),
     fork(ParticipantSagas.markDiversionPlanAsCompleteWatcher),
     fork(ParticipantSagas.reassignJudgeWatcher),
     fork(ParticipantSagas.removeChargeFromCaseWatcher),
+
+    // ParticipantScheduleSagas
+    fork(ParticipantScheduleSagas.checkInForAppointmentWatcher),
+    fork(ParticipantScheduleSagas.createWorkAppointmentsWatcher),
+    fork(ParticipantScheduleSagas.deleteAppointmentWatcher),
+    fork(ParticipantScheduleSagas.editAppointmentWatcher),
+    fork(ParticipantScheduleSagas.getAppointmentCheckInsWatcher),
+    fork(ParticipantScheduleSagas.getWorkAppointmentsWatcher),
 
     // ParticipantsSagas
     fork(ParticipantsSagas.addParticipantWatcher),

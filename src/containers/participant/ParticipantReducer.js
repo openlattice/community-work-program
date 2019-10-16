@@ -14,10 +14,6 @@ import {
   addNewDiversionPlanStatus,
   addNewParticipantContacts,
   addToAvailableCharges,
-  checkInForAppointment,
-  createWorkAppointments,
-  deleteAppointment,
-  editAppointment,
   editEnrollmentDates,
   editParticipantContacts,
   editPersonCase,
@@ -26,7 +22,6 @@ import {
   editPlanNotes,
   editRequiredHours,
   getAllParticipantInfo,
-  getAppointmentCheckIns,
   getCaseInfo,
   getCharges,
   getChargesForCase,
@@ -39,7 +34,6 @@ import {
   getParticipant,
   getParticipantAddress,
   getProgramOutcome,
-  getWorkAppointments,
   markDiversionPlanAsComplete,
   reassignJudge,
   removeChargeFromCase,
@@ -83,12 +77,7 @@ const {
   ADDRESS,
   CHARGES,
   CHARGES_FOR_CASE,
-  CHECK_INS_BY_APPOINTMENT,
-  CHECK_IN_FOR_APPOINTMENT,
-  CREATE_WORK_APPOINTMENTS,
-  DELETE_APPOINTMENT,
   DIVERSION_PLAN,
-  EDIT_APPOINTMENT,
   EDIT_ENROLLMENT_DATES,
   EDIT_PARTICIPANT_CONTACTS,
   EDIT_PERSON_CASE,
@@ -98,8 +87,6 @@ const {
   EDIT_REQUIRED_HOURS,
   EMAIL,
   ENROLLMENT_STATUS,
-  ERRORS,
-  GET_APPOINTMENT_CHECK_INS,
   GET_ALL_PARTICIPANT_INFO,
   GET_CASE_INFO,
   GET_CHARGES,
@@ -113,7 +100,6 @@ const {
   GET_PARTICIPANT,
   GET_PARTICIPANT_ADDRESS,
   GET_PROGRAM_OUTCOME,
-  GET_WORK_APPOINTMENTS,
   JUDGE,
   JUDGES,
   MARK_DIVERSION_PLAN_AS_COMPLETE,
@@ -124,9 +110,6 @@ const {
   REASSIGN_JUDGE,
   REMOVE_CHARGE_FROM_CASE,
   REQUEST_STATE,
-  VIOLATIONS,
-  WARNINGS,
-  WORK_APPOINTMENTS_BY_WORKSITE_PLAN,
 } = PERSON;
 
 const INITIAL_STATE :Map<*, *> = fromJS({
@@ -138,18 +121,6 @@ const INITIAL_STATE :Map<*, *> = fromJS({
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [ADD_TO_AVAILABLE_CHARGES]: {
-      [REQUEST_STATE]: RequestStates.STANDBY
-    },
-    [CHECK_IN_FOR_APPOINTMENT]: {
-      [REQUEST_STATE]: RequestStates.STANDBY
-    },
-    [CREATE_WORK_APPOINTMENTS]: {
-      [REQUEST_STATE]: RequestStates.STANDBY
-    },
-    [DELETE_APPOINTMENT]: {
-      [REQUEST_STATE]: RequestStates.STANDBY
-    },
-    [EDIT_APPOINTMENT]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [EDIT_ENROLLMENT_DATES]: {
@@ -168,9 +139,6 @@ const INITIAL_STATE :Map<*, *> = fromJS({
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [EDIT_REQUIRED_HOURS]: {
-      [REQUEST_STATE]: RequestStates.STANDBY
-    },
-    [GET_APPOINTMENT_CHECK_INS]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [GET_ALL_PARTICIPANT_INFO]: {
@@ -215,9 +183,6 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     [GET_PARTICIPANT_ADDRESS]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
-    [GET_WORK_APPOINTMENTS]: {
-      [REQUEST_STATE]: RequestStates.STANDBY
-    },
     [REASSIGN_JUDGE]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
@@ -225,30 +190,15 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [ADDRESS]: Map(),
   [CHARGES]: List(),
   [CHARGES_FOR_CASE]: List(),
-  [CHECK_INS_BY_APPOINTMENT]: Map(),
   [DIVERSION_PLAN]: Map(),
   [EMAIL]: Map(),
   [ENROLLMENT_STATUS]: Map(),
-  [ERRORS]: {
-    [ADD_NEW_DIVERSION_PLAN_STATUS]: Map(),
-    [CHECK_IN_FOR_APPOINTMENT]: Map(),
-    [CREATE_WORK_APPOINTMENTS]: Map(),
-    [GET_APPOINTMENT_CHECK_INS]: Map(),
-    [GET_ALL_PARTICIPANT_INFO]: Map(),
-    [GET_CASE_INFO]: Map(),
-    [GET_CONTACT_INFO]: Map(),
-    [GET_ENROLLMENT_STATUS]: Map(),
-    [GET_PARTICIPANT]: Map(),
-  },
   [JUDGE]: Map(),
   [JUDGES]: List(),
   [PARTICIPANT]: Map(),
   [PERSON_CASE]: Map(),
   [PHONE]: Map(),
   [PROGRAM_OUTCOME]: Map(),
-  [VIOLATIONS]: List(),
-  [WARNINGS]: List(),
-  [WORK_APPOINTMENTS_BY_WORKSITE_PLAN]: Map(),
 });
 
 export default function participantReducer(state :Map<*, *> = INITIAL_STATE, action :SequenceAction) :Map<*, *> {
@@ -407,159 +357,6 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
       });
     }
 
-    case checkInForAppointment.case(action.type): {
-
-      return checkInForAppointment.reducer(state, action, {
-
-        REQUEST: () => state
-          .setIn([ACTIONS, CHECK_IN_FOR_APPOINTMENT, action.id], action)
-          .setIn([ACTIONS, CHECK_IN_FOR_APPOINTMENT, REQUEST_STATE], RequestStates.PENDING),
-        SUCCESS: () => {
-
-          const seqAction :SequenceAction = action;
-          const storedSeqAction :SequenceAction = state.getIn([ACTIONS, CHECK_IN_FOR_APPOINTMENT, seqAction.id]);
-
-          if (storedSeqAction) {
-
-            const successValue :Object = seqAction.value;
-            const {
-              appointmentEKID,
-              checkInDetailsESID,
-              checkInEKID,
-              checkInESID,
-              edm,
-            } = successValue;
-            const requestValue :Object = storedSeqAction.value;
-            const { entityData } = requestValue;
-
-            const storedCheckInEntity :Map = fromJS(entityData[checkInESID][0]);
-            const storedCheckInDetailsEntity :Map = fromJS(entityData[checkInDetailsESID][0]);
-
-            let newCheckIn :Map = Map();
-            storedCheckInEntity.forEach((value, id) => {
-              const propertyTypeFqn :FQN = getPropertyFqnFromEdm(edm, id);
-              newCheckIn = newCheckIn.set(propertyTypeFqn, value);
-            });
-            newCheckIn = newCheckIn.set(ENTITY_KEY_ID, checkInEKID);
-            const hoursWorkedPTID :UUID = getPropertyTypeIdFromEdm(edm, HOURS_WORKED);
-            const hoursWorked :number = storedCheckInDetailsEntity.getIn([hoursWorkedPTID, 0]);
-            newCheckIn = newCheckIn.set(HOURS_WORKED, hoursWorked);
-
-            let checkInsByAppointment :Map = state.get(CHECK_INS_BY_APPOINTMENT);
-            checkInsByAppointment = checkInsByAppointment.set(appointmentEKID, newCheckIn);
-
-            return state
-              .set(CHECK_INS_BY_APPOINTMENT, checkInsByAppointment)
-              .setIn([ACTIONS, CHECK_IN_FOR_APPOINTMENT, REQUEST_STATE], RequestStates.SUCCESS);
-          }
-
-          return state
-            .setIn([ACTIONS, CHECK_IN_FOR_APPOINTMENT, REQUEST_STATE], RequestStates.SUCCESS);
-        },
-        FAILURE: () => state
-          .setIn([ACTIONS, CHECK_IN_FOR_APPOINTMENT, REQUEST_STATE], RequestStates.FAILURE),
-        FINALLY: () => state.deleteIn([ACTIONS, CHECK_IN_FOR_APPOINTMENT, action.id])
-      });
-    }
-
-    case createWorkAppointments.case(action.type): {
-
-      return createWorkAppointments.reducer(state, action, {
-
-        REQUEST: () => state
-          .setIn([ACTIONS, CREATE_WORK_APPOINTMENTS, action.id], action)
-          .setIn([ACTIONS, CREATE_WORK_APPOINTMENTS, REQUEST_STATE], RequestStates.PENDING),
-        SUCCESS: () => {
-
-          const seqAction :SequenceAction = action;
-          const storedSeqAction :SequenceAction = state.getIn([ACTIONS, CREATE_WORK_APPOINTMENTS, seqAction.id]);
-
-          if (storedSeqAction) {
-
-            const successValue :Object = seqAction.value;
-            const {
-              addressesESID,
-              appointmentEKIDs,
-              appointmentESID,
-              edm,
-            } = successValue;
-            const requestValue :Object = storedSeqAction.value;
-            const { associationEntityData, entityData } :Object = requestValue;
-
-            const worksitePlanEKID :UUID = associationEntityData[addressesESID][0].dstEntityKeyId;
-
-            const storedAppointmentEntities :List = fromJS(entityData[appointmentESID]);
-            let newAppointmentEntities :List = List();
-            storedAppointmentEntities.forEach((appointment :Map, i :number) => {
-
-              let newAppointment :Map = Map();
-              appointment.forEach((value, id) => {
-                const propertyTypeFqn :FQN = getPropertyFqnFromEdm(edm, id);
-                newAppointment = newAppointment.set(propertyTypeFqn, value);
-              });
-
-              newAppointment = newAppointment.set(ENTITY_KEY_ID, appointmentEKIDs[i]);
-              newAppointmentEntities = newAppointmentEntities.push(newAppointment);
-            });
-
-            let workAppointmentsByWorksitePlan :Map = state.get(WORK_APPOINTMENTS_BY_WORKSITE_PLAN);
-            let worksitePlanAppointments :List = workAppointmentsByWorksitePlan.get(worksitePlanEKID, List());
-
-            worksitePlanAppointments = worksitePlanAppointments.concat(newAppointmentEntities);
-            workAppointmentsByWorksitePlan = workAppointmentsByWorksitePlan
-              .set(worksitePlanEKID, worksitePlanAppointments);
-
-            return state
-              .set(WORK_APPOINTMENTS_BY_WORKSITE_PLAN, workAppointmentsByWorksitePlan)
-              .setIn([ACTIONS, CREATE_WORK_APPOINTMENTS, REQUEST_STATE], RequestStates.SUCCESS);
-          }
-
-          return state;
-        },
-        FAILURE: () => state
-          .setIn([ACTIONS, CREATE_WORK_APPOINTMENTS, REQUEST_STATE], RequestStates.FAILURE),
-        FINALLY: () => state.deleteIn([ACTIONS, CREATE_WORK_APPOINTMENTS, action.id])
-      });
-    }
-
-    case deleteAppointment.case(action.type): {
-
-      return deleteAppointment.reducer(state, action, {
-
-        REQUEST: () => state
-          .setIn([ACTIONS, DELETE_APPOINTMENT, action.id], action)
-          .setIn([ACTIONS, DELETE_APPOINTMENT, REQUEST_STATE], RequestStates.PENDING),
-        SUCCESS: () => {
-
-          const seqAction :SequenceAction = action;
-          const storedSeqAction :SequenceAction = state.getIn([ACTIONS, DELETE_APPOINTMENT, seqAction.id]);
-
-          if (storedSeqAction) {
-
-            const requestValue :Object = storedSeqAction.value;
-            const { entityKeyId } :Object = requestValue[0];
-
-            let workAppointmentsByWorksitePlan = state.get(WORK_APPOINTMENTS_BY_WORKSITE_PLAN);
-
-            const [keyEKID, index] = findEntityPathInMap(workAppointmentsByWorksitePlan, entityKeyId);
-            if (index !== -1) {
-              workAppointmentsByWorksitePlan = workAppointmentsByWorksitePlan
-                .deleteIn([keyEKID, index]);
-              return state
-                .set(WORK_APPOINTMENTS_BY_WORKSITE_PLAN, workAppointmentsByWorksitePlan)
-                .setIn([ACTIONS, DELETE_APPOINTMENT, REQUEST_STATE], RequestStates.SUCCESS);
-            }
-          }
-
-          return state
-            .setIn([ACTIONS, DELETE_APPOINTMENT, REQUEST_STATE], RequestStates.SUCCESS);
-        },
-        FAILURE: () => state
-          .setIn([ACTIONS, DELETE_APPOINTMENT, REQUEST_STATE], RequestStates.FAILURE),
-        FINALLY: () => state.deleteIn([ACTIONS, DELETE_APPOINTMENT, action.id]),
-      });
-    }
-
     case editParticipantContacts.case(action.type): {
 
       return editParticipantContacts.reducer(state, action, {
@@ -668,68 +465,6 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
         FAILURE: () => state
           .setIn([ACTIONS, EDIT_PLAN_NOTES, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, EDIT_PLAN_NOTES, action.id]),
-      });
-    }
-
-    case editAppointment.case(action.type): {
-
-      return editAppointment.reducer(state, action, {
-
-        REQUEST: () => state
-          .setIn([ACTIONS, EDIT_APPOINTMENT, action.id], action)
-          .setIn([ACTIONS, EDIT_APPOINTMENT, REQUEST_STATE], RequestStates.PENDING),
-        SUCCESS: () => {
-
-          const seqAction :SequenceAction = action;
-          const storedSeqAction :SequenceAction = state.getIn([ACTIONS, EDIT_APPOINTMENT, seqAction.id]);
-
-          if (storedSeqAction) {
-
-            const successValue :Object = seqAction.value;
-            const { appointmentESID, edm } = successValue;
-
-            const requestValue :Object = storedSeqAction.value;
-            const { entityData } :Object = requestValue;
-            const appointmentEKID = Object.keys(entityData[appointmentESID])[0];
-
-            let workAppointmentsByWorksitePlan = state.get(WORK_APPOINTMENTS_BY_WORKSITE_PLAN);
-            const [keyEKID, index] = findEntityPathInMap(workAppointmentsByWorksitePlan, appointmentEKID);
-            if (index !== -1) {
-
-              const newAppointmentData :Map = fromJS(entityData[appointmentESID][appointmentEKID]);
-              const startDateTimePTID :UUID = getPropertyTypeIdFromEdm(edm, INCIDENT_START_DATETIME);
-              const newStartDateTime :string = newAppointmentData.getIn([startDateTimePTID, 0]);
-
-              const endDateTimePTID :UUID = getPropertyTypeIdFromEdm(edm, DATETIME_END);
-              const newEndDateTime :string = newAppointmentData.getIn([endDateTimePTID, 0]);
-
-              if (newStartDateTime) {
-                workAppointmentsByWorksitePlan = workAppointmentsByWorksitePlan.setIn([
-                  keyEKID,
-                  index,
-                  INCIDENT_START_DATETIME,
-                ], List([newStartDateTime]));
-              }
-              if (newEndDateTime) {
-                workAppointmentsByWorksitePlan = workAppointmentsByWorksitePlan.setIn([
-                  keyEKID,
-                  index,
-                  DATETIME_END,
-                ], List([newEndDateTime]));
-              }
-
-              return state
-                .set(WORK_APPOINTMENTS_BY_WORKSITE_PLAN, workAppointmentsByWorksitePlan)
-                .setIn([ACTIONS, EDIT_APPOINTMENT, REQUEST_STATE], RequestStates.SUCCESS);
-            }
-          }
-
-          return state
-            .setIn([ACTIONS, EDIT_APPOINTMENT, REQUEST_STATE], RequestStates.SUCCESS);
-        },
-        FAILURE: () => state
-          .setIn([ACTIONS, EDIT_APPOINTMENT, REQUEST_STATE], RequestStates.FAILURE),
-        FINALLY: () => state.deleteIn([ACTIONS, EDIT_APPOINTMENT, action.id]),
       });
     }
 
@@ -887,41 +622,6 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
       });
     }
 
-    case getAppointmentCheckIns.case(action.type): {
-
-      return getAppointmentCheckIns.reducer(state, action, {
-
-        REQUEST: () => state
-          .setIn([ACTIONS, GET_APPOINTMENT_CHECK_INS, action.id], fromJS(action))
-          .setIn([ACTIONS, GET_APPOINTMENT_CHECK_INS, REQUEST_STATE], RequestStates.PENDING),
-        SUCCESS: () => {
-
-          if (!state.hasIn([ACTIONS, GET_APPOINTMENT_CHECK_INS, action.id])) {
-            return state;
-          }
-
-          const { value } = action;
-          if (value === null || value === undefined) {
-            return state;
-          }
-
-          return state
-            .set(CHECK_INS_BY_APPOINTMENT, value)
-            .setIn([ACTIONS, GET_APPOINTMENT_CHECK_INS, REQUEST_STATE], RequestStates.SUCCESS);
-        },
-        FAILURE: () => {
-
-          const { value } = action;
-
-          return state
-            .set(CHECK_INS_BY_APPOINTMENT, Map())
-            .setIn([ERRORS, GET_APPOINTMENT_CHECK_INS], value)
-            .setIn([ACTIONS, GET_APPOINTMENT_CHECK_INS, REQUEST_STATE], RequestStates.FAILURE);
-        },
-        FINALLY: () => state.deleteIn([ACTIONS, GET_APPOINTMENT_CHECK_INS, action.id])
-      });
-    }
-
     case getAllParticipantInfo.case(action.type): {
 
       return getAllParticipantInfo.reducer(state, action, {
@@ -938,14 +638,8 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
           return state
             .setIn([ACTIONS, GET_ALL_PARTICIPANT_INFO, REQUEST_STATE], RequestStates.SUCCESS);
         },
-        FAILURE: () => {
-
-          const { value } = action;
-
-          return state
-            .setIn([ERRORS, GET_ALL_PARTICIPANT_INFO], value)
-            .setIn([ACTIONS, GET_ALL_PARTICIPANT_INFO, REQUEST_STATE], RequestStates.FAILURE);
-        },
+        FAILURE: () => state
+          .setIn([ACTIONS, GET_ALL_PARTICIPANT_INFO, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, GET_ALL_PARTICIPANT_INFO, action.id])
       });
     }
@@ -972,14 +666,8 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
             .set(PERSON_CASE, value)
             .setIn([ACTIONS, GET_CASE_INFO, REQUEST_STATE], RequestStates.SUCCESS);
         },
-        FAILURE: () => {
-
-          const { value } = action;
-          return state
-            .set(PERSON_CASE, Map())
-            .setIn([ERRORS, GET_CASE_INFO], value)
-            .setIn([ACTIONS, GET_CASE_INFO, REQUEST_STATE], RequestStates.FAILURE);
-        },
+        FAILURE: () => state
+          .setIn([ACTIONS, GET_CASE_INFO, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, GET_CASE_INFO, action.id])
       });
     }
@@ -1065,16 +753,8 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
             .set(PHONE, value.phone)
             .setIn([ACTIONS, GET_CONTACT_INFO, REQUEST_STATE], RequestStates.SUCCESS);
         },
-        FAILURE: () => {
-
-          const { value } = action;
-
-          return state
-            .set(EMAIL, Map())
-            .set(PHONE, Map())
-            .setIn([ERRORS, GET_CONTACT_INFO], value)
-            .setIn([ACTIONS, GET_CONTACT_INFO, REQUEST_STATE], RequestStates.FAILURE);
-        },
+        FAILURE: () => state
+          .setIn([ACTIONS, GET_CONTACT_INFO, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, GET_CONTACT_INFO, action.id])
       });
     }
@@ -1102,15 +782,8 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
             .set(DIVERSION_PLAN, value.diversionPlan)
             .setIn([ACTIONS, GET_ENROLLMENT_STATUS, REQUEST_STATE], RequestStates.SUCCESS);
         },
-        FAILURE: () => {
-
-          const { value } = action;
-
-          return state
-            .set(ENROLLMENT_STATUS, Map())
-            .setIn([ERRORS, GET_ENROLLMENT_STATUS], value)
-            .setIn([ACTIONS, GET_ENROLLMENT_STATUS, REQUEST_STATE], RequestStates.FAILURE);
-        },
+        FAILURE: () => state
+          .setIn([ACTIONS, GET_ENROLLMENT_STATUS, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, GET_ENROLLMENT_STATUS, action.id])
       });
     }
@@ -1239,15 +912,8 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
             .set(PARTICIPANT, value)
             .setIn([ACTIONS, GET_PARTICIPANT, REQUEST_STATE], RequestStates.SUCCESS);
         },
-        FAILURE: () => {
-
-          const { value } = action;
-
-          return state
-            .set(PARTICIPANT, Map())
-            .setIn([ERRORS, GET_PARTICIPANT], value)
-            .setIn([ACTIONS, GET_PARTICIPANT, REQUEST_STATE], RequestStates.FAILURE);
-        },
+        FAILURE: () => state
+          .setIn([ACTIONS, GET_PARTICIPANT, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, GET_PARTICIPANT, action.id])
       });
     }
@@ -1331,41 +997,6 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
         FAILURE: () => state
           .setIn([ACTIONS, MARK_DIVERSION_PLAN_AS_COMPLETE, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, MARK_DIVERSION_PLAN_AS_COMPLETE, action.id]),
-      });
-    }
-
-    case getWorkAppointments.case(action.type): {
-
-      return getWorkAppointments.reducer(state, action, {
-
-        REQUEST: () => state
-          .setIn([ACTIONS, GET_WORK_APPOINTMENTS, action.id], fromJS(action))
-          .setIn([ACTIONS, GET_WORK_APPOINTMENTS, REQUEST_STATE], RequestStates.PENDING),
-        SUCCESS: () => {
-
-          if (!state.hasIn([ACTIONS, GET_WORK_APPOINTMENTS, action.id])) {
-            return state;
-          }
-
-          const { value } = action;
-          if (value === null || value === undefined) {
-            return state;
-          }
-
-          return state
-            .set(WORK_APPOINTMENTS_BY_WORKSITE_PLAN, value)
-            .setIn([ACTIONS, GET_WORK_APPOINTMENTS, REQUEST_STATE], RequestStates.SUCCESS);
-        },
-        FAILURE: () => {
-
-          const { value } = action;
-
-          return state
-            .set(WORK_APPOINTMENTS_BY_WORKSITE_PLAN, Map())
-            .setIn([ERRORS, GET_WORK_APPOINTMENTS], value)
-            .setIn([ACTIONS, GET_WORK_APPOINTMENTS, REQUEST_STATE], RequestStates.FAILURE);
-        },
-        FINALLY: () => state.deleteIn([ACTIONS, GET_WORK_APPOINTMENTS, action.id])
       });
     }
 

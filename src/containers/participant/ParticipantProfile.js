@@ -53,6 +53,7 @@ import {
 import { ENROLLMENT_STATUSES } from '../../core/edm/constants/DataModelConsts';
 import {
   APP,
+  PARTICIPANT_SCHEDULE,
   PERSON,
   PERSON_INFRACTIONS,
   STATE,
@@ -70,11 +71,12 @@ const {
 const { STATUS } = ENROLLMENT_STATUS_FQNS;
 const { FIRST_NAME, PERSON_NOTES } = PEOPLE_FQNS;
 const { NAME } = WORKSITE_FQNS;
+
+const { CHECK_INS_BY_APPOINTMENT, WORK_APPOINTMENTS_BY_WORKSITE_PLAN } = PARTICIPANT_SCHEDULE;
 const {
   ACTIONS,
   ADDRESS,
   CHARGES_FOR_CASE,
-  CHECK_INS_BY_APPOINTMENT,
   DIVERSION_PLAN,
   EMAIL,
   ENROLLMENT_STATUS,
@@ -85,14 +87,13 @@ const {
   PHONE,
   PROGRAM_OUTCOME,
   REQUEST_STATE,
-  WORKSITE_PLAN_STATUSES,
 } = PERSON;
 const { VIOLATIONS, WARNINGS } = PERSON_INFRACTIONS;
 const { WORKSITES_LIST } = WORKSITES;
 const {
-  WORK_APPOINTMENTS_BY_WORKSITE_PLAN,
   WORKSITES_BY_WORKSITE_PLAN,
   WORKSITE_PLANS_LIST,
+  WORKSITE_PLAN_STATUSES,
 } = WORKSITE_PLANS;
 
 const ENROLLMENT_STATUSES_EXCLUDING_PREENROLLMENT = Object.values(ENROLLMENT_STATUSES)
@@ -513,15 +514,16 @@ class ParticipantProfile extends Component<Props, State> {
 
 const mapStateToProps = (state :Map<*, *>) => {
   const app = state.get(STATE.APP);
-  const person = state.get(STATE.PERSON);
-  const worksites = state.get(STATE.WORKSITES);
   const infractions = state.get(STATE.INFRACTIONS);
+  const participantSchedule = state.get(STATE.PARTICIPANT_SCHEDULE);
+  const person = state.get(STATE.PERSON);
   const worksitePlans = state.get(STATE.WORKSITE_PLANS);
+  const worksites = state.get(STATE.WORKSITES);
   return {
     [ADDRESS]: person.get(ADDRESS),
     app,
     [CHARGES_FOR_CASE]: person.get(CHARGES_FOR_CASE),
-    [CHECK_INS_BY_APPOINTMENT]: person.get(CHECK_INS_BY_APPOINTMENT),
+    [CHECK_INS_BY_APPOINTMENT]: participantSchedule.get(CHECK_INS_BY_APPOINTMENT),
     [DIVERSION_PLAN]: person.get(DIVERSION_PLAN),
     [EMAIL]: person.get(EMAIL),
     [ENROLLMENT_STATUS]: person.get(ENROLLMENT_STATUS),
@@ -534,7 +536,7 @@ const mapStateToProps = (state :Map<*, *>) => {
     [PROGRAM_OUTCOME]: person.get(PROGRAM_OUTCOME),
     [VIOLATIONS]: infractions.get(VIOLATIONS),
     [WARNINGS]: infractions.get(WARNINGS),
-    [WORK_APPOINTMENTS_BY_WORKSITE_PLAN]: person.get(WORK_APPOINTMENTS_BY_WORKSITE_PLAN),
+    [WORK_APPOINTMENTS_BY_WORKSITE_PLAN]: participantSchedule.get(WORK_APPOINTMENTS_BY_WORKSITE_PLAN),
     [WORKSITES_BY_WORKSITE_PLAN]: worksitePlans.get(WORKSITES_BY_WORKSITE_PLAN),
     [WORKSITE_PLANS_LIST]: worksitePlans.get(WORKSITE_PLANS_LIST),
     [WORKSITE_PLAN_STATUSES]: worksitePlans.get(WORKSITE_PLAN_STATUSES),

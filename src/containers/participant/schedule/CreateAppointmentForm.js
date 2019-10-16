@@ -16,7 +16,7 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import type { RequestSequence } from 'redux-reqseq';
 
-import { createWorkAppointments } from '../ParticipantActions';
+import { createWorkAppointments } from './ParticipantScheduleActions';
 import {
   getEntityProperties,
   getEntitySetIdFromApp,
@@ -33,7 +33,7 @@ import {
   INCIDENT_START_DATETIME,
   WORKSITE_FQNS,
 } from '../../../core/edm/constants/FullyQualifiedNames';
-import { PERSON, STATE } from '../../../utils/constants/ReduxStateConsts';
+import { STATE, WORKSITE_PLANS } from '../../../utils/constants/ReduxStateConsts';
 import {
   ButtonsRow,
   FormRow,
@@ -55,7 +55,7 @@ const {
   WORKSITE_PLAN,
 } = APP_TYPE_FQNS;
 const { NAME } = WORKSITE_FQNS;
-const { WORKSITES_BY_WORKSITE_PLAN } = PERSON;
+const { WORKSITES_BY_WORKSITE_PLAN } = WORKSITE_PLANS;
 
 const START = 'start';
 const END = 'end';
@@ -367,7 +367,7 @@ class CreateWorkAppointmentForm extends Component<Props, State> {
 const mapStateToProps = (state :Map) => ({
   app: state.get(STATE.APP),
   edm: state.get(STATE.EDM),
-  [WORKSITES_BY_WORKSITE_PLAN]: state.getIn([STATE.PERSON, WORKSITES_BY_WORKSITE_PLAN]),
+  [WORKSITES_BY_WORKSITE_PLAN]: state.getIn([STATE.WORKSITE_PLANS, WORKSITES_BY_WORKSITE_PLAN]),
 });
 
 const mapDispatchToProps = dispatch => ({

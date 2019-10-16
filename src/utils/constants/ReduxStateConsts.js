@@ -4,6 +4,7 @@ export const STATE = {
   EDM: 'edm',
   INFRACTIONS: 'infractions',
   ORGANIZATION: 'organization',
+  PARTICIPANT_SCHEDULE: 'participantSchedule',
   PEOPLE: 'people',
   PERSON: 'person',
   WORKSITES: 'worksites',
@@ -40,6 +41,21 @@ export const PERSON_INFRACTIONS = {
   WARNINGS: 'warnings',
 };
 
+/* Participant Schedule */
+
+export const PARTICIPANT_SCHEDULE = {
+  ACTIONS: 'actions',
+  CHECK_INS_BY_APPOINTMENT: 'checkInsByAppointment',
+  CHECK_IN_FOR_APPOINTMENT: 'checkInForAppointment',
+  CREATE_WORK_APPOINTMENTS: 'createWorkAppointments',
+  DELETE_APPOINTMENT: 'deleteAppointment',
+  EDIT_APPOINTMENT: 'editAppointment',
+  GET_APPOINTMENT_CHECK_INS: 'getAppointmentCheckIns',
+  GET_WORK_APPOINTMENTS: 'getWorkAppointments',
+  REQUEST_STATE: 'requestState',
+  WORK_APPOINTMENTS_BY_WORKSITE_PLAN: 'workAppointmentsByWorksitePlan',
+};
+
 /* People */
 
 export const PEOPLE = {
@@ -74,12 +90,7 @@ export const PERSON = {
   ADD_TO_AVAILABLE_CHARGES: 'addToAvailableCharges',
   CHARGES: 'charges',
   CHARGES_FOR_CASE: 'chargesForCase',
-  CHECK_INS_BY_APPOINTMENT: 'checkInsByAppointment',
-  CHECK_IN_FOR_APPOINTMENT: 'checkInForAppointment',
-  CREATE_WORK_APPOINTMENTS: 'createWorkAppointments',
-  DELETE_APPOINTMENT: 'deleteAppointment',
   DIVERSION_PLAN: 'diversionPlan',
-  EDIT_APPOINTMENT: 'editAppointment',
   EDIT_CHECK_IN_DATE: 'editCheckInDate',
   EDIT_ENROLLMENT_DATES: 'editEnrollmentDates',
   EDIT_PARTICIPANT_CONTACTS: 'editParticipantContacts',
@@ -93,7 +104,6 @@ export const PERSON = {
   ENROLLMENT_STATUS: 'enrollmentStatus',
   ERRORS: 'errors',
   GET_ALL_PARTICIPANT_INFO: 'getAllParticipantInfo',
-  GET_APPOINTMENT_CHECK_INS: 'getAppointmentCheckIns',
   GET_CASE_INFO: 'getCaseInfo',
   GET_CHARGES: 'getCharges',
   GET_CHARGES_FOR_CASE: 'getChargesForCase',
@@ -107,7 +117,6 @@ export const PERSON = {
   GET_PARTICIPANT_ADDRESS: 'getParticipantAddress',
   GET_PROGRAM_OUTCOME: 'getProgramOutcome',
   GET_REQUIRED_HOURS: 'getRequiredHours',
-  GET_WORK_APPOINTMENTS: 'getWorkAppointments',
   JUDGE: 'judge',
   JUDGES: 'judges',
   MARK_DIVERSION_PLAN_AS_COMPLETE: 'markDiversionPlanAsComplete',
@@ -119,7 +128,6 @@ export const PERSON = {
   REMOVE_CHARGE_FROM_CASE: 'removeChargeFromCase',
   REQUEST_STATE: 'requestState',
   REQUIRED_HOURS: 'requiredHours',
-  WORK_APPOINTMENTS_BY_WORKSITE_PLAN: 'workAppointmentsByWorksitePlan',
 };
 
 /* Work Schedule */

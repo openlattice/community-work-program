@@ -24,10 +24,11 @@ import {
   INCIDENT_START_DATETIME,
   PEOPLE_FQNS,
 } from '../../core/edm/constants/FullyQualifiedNames';
-import { PERSON, STATE } from '../../utils/constants/ReduxStateConsts';
+import { PARTICIPANT_SCHEDULE, STATE } from '../../utils/constants/ReduxStateConsts';
 import { EMPTY_FIELD } from '../participants/ParticipantsConstants';
 
 const { FIRST_NAME, LAST_NAME } = PEOPLE_FQNS;
+const { ACTIONS, EDIT_APPOINTMENT, REQUEST_STATE } = PARTICIPANT_SCHEDULE;
 
 const OuterWrapper = styled.div`
   width: 100%;
@@ -140,9 +141,9 @@ AppointmentListContainer.defaultProps = {
 };
 
 const mapStateToProps = (state :Map) => {
-  const person = state.get(STATE.PERSON);
+  const participantSchedule = state.get(STATE.PARTICIPANT_SCHEDULE);
   return ({
-    editAppointmentsRequestState: person.getIn([PERSON.ACTIONS, PERSON.EDIT_APPOINTMENT, PERSON.REQUEST_STATE]),
+    editAppointmentsRequestState: participantSchedule.getIn([ACTIONS, EDIT_APPOINTMENT, REQUEST_STATE]),
   });
 };
 

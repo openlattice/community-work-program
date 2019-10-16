@@ -36,7 +36,13 @@ import {
   INFRACTION_FQNS,
   WORKSITE_FQNS,
 } from '../../../core/edm/constants/FullyQualifiedNames';
-import { PERSON_INFRACTIONS, PERSON, STATE } from '../../../utils/constants/ReduxStateConsts';
+import {
+  PARTICIPANT_SCHEDULE,
+  PERSON_INFRACTIONS,
+  PERSON,
+  STATE,
+  WORKSITE_PLANS,
+} from '../../../utils/constants/ReduxStateConsts';
 import { INFRACTIONS_CONSTS } from '../../../core/edm/constants/DataModelConsts';
 import {
   ButtonsRow,
@@ -70,10 +76,10 @@ const { NOTES, TYPE } = INFRACTION_EVENT_FQNS;
 const { NAME } = WORKSITE_FQNS;
 const { INFRACTION_TYPES } = PERSON_INFRACTIONS;
 const {
-  WORKSITE_PLANS,
+  WORKSITE_PLANS_LIST,
   WORKSITES_BY_WORKSITE_PLAN,
-  WORK_APPOINTMENTS_BY_WORKSITE_PLAN,
-} = PERSON;
+} = WORKSITE_PLANS;
+const { WORK_APPOINTMENTS_BY_WORKSITE_PLAN } = PARTICIPANT_SCHEDULE;
 
 const ENROLLMENT_STATUS_OPTIONS :Object[] = STATUS_FILTER_OPTIONS
   .slice(1)
@@ -395,14 +401,16 @@ class AddInfractionForm extends Component<Props, State> {
 const mapStateToProps = (state :Map) => {
   const person = state.get(STATE.PERSON);
   const infractions = state.get(STATE.INFRACTIONS);
+  const worksitePlans = state.get(STATE.WORKSITE_PLANS);
+  const participantSchedule = state.get(STATE.PARTICIPANT_SCHEDULE);
   return ({
     app: state.get(STATE.APP),
     [PERSON.DIVERSION_PLAN]: person.get(PERSON.DIVERSION_PLAN),
     edm: state.get(STATE.EDM),
     [INFRACTION_TYPES]: infractions.get(INFRACTION_TYPES),
-    [WORKSITE_PLANS]: person.get(WORKSITE_PLANS),
-    [WORKSITES_BY_WORKSITE_PLAN]: person.get(WORKSITES_BY_WORKSITE_PLAN),
-    [WORK_APPOINTMENTS_BY_WORKSITE_PLAN]: person.get(WORK_APPOINTMENTS_BY_WORKSITE_PLAN),
+    [WORKSITE_PLANS_LIST]: worksitePlans.get(WORKSITE_PLANS_LIST),
+    [WORKSITES_BY_WORKSITE_PLAN]: worksitePlans.get(WORKSITES_BY_WORKSITE_PLAN),
+    [WORK_APPOINTMENTS_BY_WORKSITE_PLAN]: participantSchedule.get(WORK_APPOINTMENTS_BY_WORKSITE_PLAN),
   });
 };
 

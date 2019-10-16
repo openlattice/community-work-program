@@ -11,6 +11,7 @@ import edmReducer from '../edm/EDMReducer';
 import infractionsReducer from '../../containers/participant/infractions/InfractionsReducer';
 import participantReducer from '../../containers/participant/ParticipantReducer';
 import participantsReducer from '../../containers/participants/ParticipantsReducer';
+import participantScheduleReducer from '../../containers/participant/schedule/ParticipantScheduleReducer';
 import workScheduleReducer from '../../containers/workschedule/WorkScheduleReducer';
 import worksitePlanReducer from '../../containers/participant/assignedworksites/WorksitePlanReducer';
 import worksitesReducer from '../../containers/worksites/WorksitesReducer';
@@ -22,6 +23,7 @@ export default function reduxReducer(routerHistory :any) {
     auth: AuthReducer,
     edm: edmReducer,
     infractions: infractionsReducer,
+    participantSchedule: participantScheduleReducer,
     people: participantsReducer,
     person: participantReducer,
     router: connectRouter(routerHistory),
