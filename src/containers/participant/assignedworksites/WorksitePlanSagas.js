@@ -102,17 +102,21 @@ function* addWorksitePlanWorker(action :SequenceAction) :Generator<*, *, *> {
 
     const app = yield select(getAppFromState);
     const edm = yield select(getEdmFromState);
-    const worksitePlanESID = Object.keys(entityKeyIds)[0];
-    const worksitePlanEKID = Object.values(entityKeyIds)[0];
+    const worksitePlanESID = getEntitySetIdFromApp(app, WORKSITE_PLAN);
+    const enrollmentStatusESID = getEntitySetIdFromApp(app, ENROLLMENT_STATUS);
+    const worksitePlanEKID = entityKeyIds[worksitePlanESID][0];
+    const worksitePlanStatusEKID = entityKeyIds[enrollmentStatusESID][0];
     const basedOnESID = getEntitySetIdFromApp(app, BASED_ON);
     const worksitesList = yield select(getWorksitesListFromState);
 
     yield put(addWorksitePlan.success(id, {
       basedOnESID,
       edm,
+      enrollmentStatusESID,
       worksitePlanEKID,
       worksitePlanESID,
-      worksitesList
+      worksitePlanStatusEKID,
+      worksitesList,
     }));
   }
   catch (error) {

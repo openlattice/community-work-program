@@ -85,20 +85,23 @@ export default function worksitePlanReducer(state :Map<*, *> = INITIAL_STATE, ac
             const {
               basedOnESID,
               edm,
+              enrollmentStatusESID,
               worksitePlanEKID,
               worksitePlanESID,
-              worksitesList
+              worksitePlanStatusEKID,
+              worksitesList,
             } = successValue;
 
             const requestValue :Object = storedSeqAction.value;
             const { associationEntityData, entityData } :Object = requestValue;
             const storedWorksitePlanEntity :Map = fromJS(entityData[worksitePlanESID][0]);
+            const storedWorksitePlanStatusEntity :Map = fromJS(entityData[enrollmentStatusESID][0]);
             const worksiteEKID = associationEntityData[basedOnESID][0].dstEntityKeyId;
 
             let newWorksitePlan :Map = Map();
-            storedWorksitePlanEntity.forEach((enrollmentValue, id) => {
-              const propertyTypeFqn :FQN = getPropertyFqnFromEdm(edm, id);
-              newWorksitePlan = newWorksitePlan.set(propertyTypeFqn, enrollmentValue);
+            storedWorksitePlanEntity.forEach((planValue, planId) => {
+              const propertyTypeFqn :FQN = getPropertyFqnFromEdm(edm, planId);
+              newWorksitePlan = newWorksitePlan.set(propertyTypeFqn, planValue);
             });
             newWorksitePlan = newWorksitePlan.set(ENTITY_KEY_ID, worksitePlanEKID);
 
@@ -107,11 +110,22 @@ export default function worksitePlanReducer(state :Map<*, *> = INITIAL_STATE, ac
 
             const worksite :Map = worksitesList.find((site :Map) => getEntityKeyId(site) === worksiteEKID);
             const worksitesByWorksitePlan = state.get(WORKSITES_BY_WORKSITE_PLAN)
-              .set(worksitePlanEKID[0], worksite);
+              .set(worksitePlanEKID, worksite);
+
+            let newStatus :Map = Map();
+            storedWorksitePlanStatusEntity.forEach((statusValue, statusId) => {
+              const propertyTypeFqn :FQN = getPropertyFqnFromEdm(edm, statusId);
+              newStatus = newStatus.set(propertyTypeFqn, statusValue);
+            });
+            newStatus = newStatus.set(ENTITY_KEY_ID, worksitePlanStatusEKID);
+
+            const worksitePlanStatuses = state.get(WORKSITE_PLAN_STATUSES)
+              .set(worksitePlanEKID, newStatus);
 
             return state
               .set(WORKSITE_PLANS_LIST, worksitePlans)
               .set(WORKSITES_BY_WORKSITE_PLAN, worksitesByWorksitePlan)
+              .set(WORKSITE_PLAN_STATUSES, worksitePlanStatuses)
               .setIn([ACTIONS, ADD_WORKSITE_PLAN, REQUEST_STATE], RequestStates.SUCCESS);
           }
 
