@@ -68,6 +68,11 @@ export const INCIDENT_START_DATETIME = new FullyQualifiedName('incident.startdat
 
 /* Property Type FQNs by Entity Type */
 
+/* geo.address */
+export const ADDRESS_FQNS = {
+  FULL_ADDRESS: new FullyQualifiedName('location.Address'),
+};
+
 /* publicsafety.pretrialstatuscaseprocessings */
 export const CASE_FQNS = {
   CASE_NUMBER_TEXT: new FullyQualifiedName('j.CaseNumberText'),
