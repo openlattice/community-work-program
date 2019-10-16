@@ -29,7 +29,7 @@ import { APP_TYPE_FQNS, WORKSITE_FQNS } from '../../core/edm/constants/FullyQual
 import { APP, STATE, WORKSITES } from '../../utils/constants/ReduxStateConsts';
 import { getEntityProperties } from '../../utils/DataUtils';
 import { formatAsDate } from '../../utils/DateTimeUtils';
-import { getWorksiteStatus } from './WorksitesUtils';
+import { getWeekdayTableHeaders, getWorksiteStatus } from './WorksitesUtils';
 import {
   ContainerHeader,
   ContainerInnerWrapper,
@@ -72,10 +72,6 @@ const worksiteInfoLabelMap :OrderedMap = OrderedMap({
 });
 
 /* styled components */
-const ProfileWrapper = styled(ContainerOuterWrapper)`
-  font-size: 13px;
-`;
-
 const ProfileNameHeader = styled(ContainerHeader)`
   margin: 30px 0;
 `;
@@ -171,6 +167,8 @@ class WorksiteProfile extends Component<Props> {
       status,
     });
 
+    const tableHeaders = getWeekdayTableHeaders();
+
     return (
       <ContainerOuterWrapper>
         <ContainerInnerWrapper style={{ padding: '0' }}>
@@ -208,6 +206,11 @@ class WorksiteProfile extends Component<Props> {
             <ProfileNameHeader>Hours of Operation</ProfileNameHeader>
             <EditButton>Edit</EditButton>
           </HeaderRowWrapper>
+          <Card>
+            <Table
+                headers={tableHeaders}
+                isLoading={false} />
+          </Card>
         </ContainerInnerWrapper>
       </ContainerOuterWrapper>
     );
