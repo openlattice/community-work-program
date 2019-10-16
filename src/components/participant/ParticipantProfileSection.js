@@ -20,6 +20,7 @@ import {
 import { OL } from '../../core/style/Colors';
 import { PersonPhoto, PersonPicture } from '../picture/PersonPicture';
 import { formatAsDate } from '../../utils/DateTimeUtils';
+import { formatPairOfStrings } from '../../utils/FormattingUtils';
 import { getEntityProperties } from '../../utils/DataUtils';
 import { ADDRESS_FQNS, CONTACT_INFO_FQNS, PEOPLE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { EMPTY_FIELD } from '../../containers/participants/ParticipantsConstants';
@@ -51,10 +52,6 @@ const PersonNameHeader = styled.div`
   margin-top: 14px;
   text-align: center;
   width: 100%;
-`;
-
-const PersonCard = styled(Card)`
-  height: 603px;
 `;
 
 const PersonInfoRow = styled.div`
@@ -97,9 +94,7 @@ const ParticipantProfileSection = ({
 
   const fullName = `${firstName} ${lastName}`;
   const dob = formatAsDate(dateOfBirth);
-  const raceAndEthnicity = (race && ethnicity)
-    ? `${race}/${ethnicity}`
-    : (`${race}` || `${ethnicity}` || EMPTY_FIELD);
+  const raceAndEthnicity = formatPairOfStrings([race, ethnicity]);
 
   const { [PHONE_NUMBER]: phoneNumber } = getEntityProperties(phone, [PHONE_NUMBER]);
   const { [EMAIL]: emailAddress } = getEntityProperties(email, [EMAIL]);
@@ -111,7 +106,7 @@ const ParticipantProfileSection = ({
         <SectionLabel subtle>Participant Profile</SectionLabel>
         <StyledEditButton mode="subtle" onClick={edit} />
       </SectionNameRow>
-      <PersonCard>
+      <Card>
         <PersonHeaderRow>
           {
             person && mugshot
@@ -162,7 +157,7 @@ const ParticipantProfileSection = ({
             <PersonValue>{ personAddress || EMPTY_FIELD }</PersonValue>
           </PersonInfoRow>
         </CardSegment>
-      </PersonCard>
+      </Card>
     </SectionWrapper>
   );
 };

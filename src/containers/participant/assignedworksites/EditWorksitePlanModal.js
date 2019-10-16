@@ -9,7 +9,7 @@ import type { RequestState } from 'redux-reqseq';
 import EditWorksitePlanForm from './EditWorksitePlanForm';
 
 import { getEntityKeyId } from '../../../utils/DataUtils';
-import { PERSON, STATE } from '../../../utils/constants/ReduxStateConsts';
+import { STATE, WORKSITE_PLANS } from '../../../utils/constants/ReduxStateConsts';
 import { WORKSITE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 
 const { NAME } = WORKSITE_FQNS;
@@ -18,7 +18,7 @@ const {
   EDIT_WORKSITE_PLAN,
   REQUEST_STATE,
   WORKSITES_BY_WORKSITE_PLAN,
-} = PERSON;
+} = WORKSITE_PLANS;
 
 type Props = {
   editWorksitePlanRequestState :RequestState;
@@ -69,8 +69,8 @@ class EditWorksitePlanModal extends Component<Props> {
 }
 
 const mapStateToProps = (state :Map) => ({
-  editWorksitePlanRequestState: state.getIn([STATE.PERSON, ACTIONS, EDIT_WORKSITE_PLAN, REQUEST_STATE]),
-  [WORKSITES_BY_WORKSITE_PLAN]: state.getIn([STATE.PERSON, WORKSITES_BY_WORKSITE_PLAN]),
+  editWorksitePlanRequestState: state.getIn([STATE.WORKSITE_PLANS, ACTIONS, EDIT_WORKSITE_PLAN, REQUEST_STATE]),
+  [WORKSITES_BY_WORKSITE_PLAN]: state.getIn([STATE.WORKSITE_PLANS, WORKSITES_BY_WORKSITE_PLAN]),
 });
 
 // $FlowFixMe

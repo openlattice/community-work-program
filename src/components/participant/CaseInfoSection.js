@@ -1,6 +1,5 @@
 // @flow
 import React from 'react';
-import styled from 'styled-components';
 import startCase from 'lodash/startCase';
 import { DateTime } from 'luxon';
 import {
@@ -10,6 +9,7 @@ import {
   fromJS,
 } from 'immutable';
 import { Card, CardSegment, DataGrid } from 'lattice-ui-kit';
+import type { FQN } from 'lattice';
 
 import {
   SectionLabel,
@@ -42,10 +42,6 @@ const labelMap :OrderedMap = OrderedMap({
   requiredHours: 'Required hours',
 });
 
-const CaseInfoCard = styled(Card)`
-  height: 190px;
-`;
-
 type Props = {
   charges :List;
   edit :() => void;
@@ -62,11 +58,8 @@ const CaseInfoSection = ({
   personCase,
 } :Props) => {
 
-  const mostRecentChargeAndChargeEvent :Map = !charges.isEmpty()
-    ? charges
-      .sort((chargeMap :Map) => sortEntitiesByDateProperty(chargeMap.get(CHARGE_EVENT), DATETIME_COMPLETED))
-      .last()
-    : Map();
+  const sortedChargeMaps :List = sortEntitiesByDateProperty(charges, [CHARGE_EVENT, DATETIME_COMPLETED]);
+  const mostRecentChargeAndChargeEvent :Map = sortedChargeMaps.last() || Map();
   let { [NAME]: chargeName } = getEntityProperties(mostRecentChargeAndChargeEvent.get(COURT_CHARGE_LIST), [NAME]);
   if (chargeName) chargeName = startCase(chargeName.toLowerCase());
   let { [DATETIME_COMPLETED]: chargeDate } = getEntityProperties(
@@ -96,7 +89,7 @@ const CaseInfoSection = ({
         <SectionLabel subtle>Case Info</SectionLabel>
         <StyledEditButton mode="subtle" onClick={edit} />
       </SectionNameRow>
-      <CaseInfoCard>
+      <Card>
         <CardSegment padding="md" vertical>
           <DataGrid
               columns={3}
@@ -104,7 +97,7 @@ const CaseInfoSection = ({
               labelMap={labelMap}
               truncate />
         </CardSegment>
-      </CaseInfoCard>
+      </Card>
     </SectionWrapper>
   );
 };

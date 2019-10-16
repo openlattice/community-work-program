@@ -294,12 +294,20 @@ class EditPersonAndContactsForm extends Component<Props, State> {
     actions.addNewParticipantContacts({ associationEntityData, entityData });
   }
 
+  handleOnClickBackButton = () => {
+    const {
+      actions,
+      participant,
+    } = this.props;
+    const participantEKID :UUID = getEntityKeyId(participant);
+    actions.goToRoute(Routes.PARTICIPANT_PROFILE.replace(':subjectId', participantEKID));
+  }
+
   render() {
     const {
       actions,
       getInfoForEditPersonRequestState,
       initializeAppRequestState,
-      participant,
     } = this.props;
     const {
       contactsFormData,
@@ -333,14 +341,11 @@ class EditPersonAndContactsForm extends Component<Props, State> {
       entitySetIds,
       propertyTypeIds,
     };
-    const participantEKID :UUID = getEntityKeyId(participant);
     return (
       <FormWrapper>
         <ButtonWrapper>
           <BackNavButton
-              onClick={() => {
-                actions.goToRoute(Routes.PARTICIPANT_PROFILE.replace(':subjectId', participantEKID));
-              }}>
+              onClick={this.handleOnClickBackButton}>
             Back to Profile
           </BackNavButton>
         </ButtonWrapper>

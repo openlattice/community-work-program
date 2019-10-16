@@ -56,9 +56,12 @@ import {
 import { ENROLLMENT_STATUSES } from '../../core/edm/constants/DataModelConsts';
 import {
   APP,
+  PARTICIPANT_SCHEDULE,
   PERSON,
+  PERSON_INFRACTIONS,
   STATE,
-  WORKSITES
+  WORKSITES,
+  WORKSITE_PLANS,
 } from '../../utils/constants/ReduxStateConsts';
 
 const {
@@ -71,12 +74,13 @@ const {
 const { STATUS } = ENROLLMENT_STATUS_FQNS;
 const { FIRST_NAME, PERSON_NOTES } = PEOPLE_FQNS;
 const { NAME } = WORKSITE_FQNS;
+
+const { CHECK_INS_BY_APPOINTMENT, WORK_APPOINTMENTS_BY_WORKSITE_PLAN } = PARTICIPANT_SCHEDULE;
 const {
   ACTIONS,
   ADDRESS,
   ALL_DIVERSION_PLANS,
   CHARGES_FOR_CASE,
-  CHECK_INS_BY_APPOINTMENT,
   CREATE_NEW_ENROLLMENT,
   DIVERSION_PLAN,
   EMAIL,
@@ -89,14 +93,14 @@ const {
   PHONE,
   PROGRAM_OUTCOME,
   REQUEST_STATE,
-  VIOLATIONS,
-  WARNINGS,
-  WORK_APPOINTMENTS_BY_WORKSITE_PLAN,
-  WORKSITES_BY_WORKSITE_PLAN,
-  WORKSITE_PLANS,
-  WORKSITE_PLAN_STATUSES,
 } = PERSON;
+const { VIOLATIONS, WARNINGS } = PERSON_INFRACTIONS;
 const { WORKSITES_LIST } = WORKSITES;
+const {
+  WORKSITES_BY_WORKSITE_PLAN,
+  WORKSITE_PLANS_LIST,
+  WORKSITE_PLAN_STATUSES,
+} = WORKSITE_PLANS;
 
 const ENROLLMENT_STATUSES_EXCLUDING_PREENROLLMENT = Object.values(ENROLLMENT_STATUSES)
   .filter(status => status !== ENROLLMENT_STATUSES.AWAITING_CHECKIN
@@ -130,7 +134,6 @@ const ProfileBody = styled.div`
   align-items: stretch;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
   margin-bottom: 30px;
   overflow-x: visible;
   overflow-y: auto;
@@ -138,29 +141,33 @@ const ProfileBody = styled.div`
   width: 100%;
 `;
 
-const GeneralInfoSection = styled(ProfileBody)`
-  height: 836px;
-  align-items: center;
-  flex-direction: row;
+const GeneralInfoSection = styled.div`
+  display: grid;
   font-size: 13px;
+  grid-gap: 16px 33px;
+  grid-template-columns: 383px 1fr;
+  height: 836px;
+  margin-bottom: 30px;
+  overflow-x: visible;
+  overflow-y: auto;
+  overflow-y: visible;
+  width: 100%;
 `;
 
 const ProfileInfoColumnWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  align-items: center;
+  display: grid;
+  grid-template-rows: 7% 78% 15%;
   height: 100%;
-  width: 383px;
+  row-gap: 15px;
+  width: 100%;
 `;
 
 const ProgramInfoColumnWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  align-items: center;
+  display: grid;
+  grid-template-rows: 7% 18% 28% 28.5% 15%;
   height: 100%;
-  width: 547px;
+  row-gap: 15px;
+  width: 100%;
 `;
 
 const NameRowWrapper = styled.div`
@@ -168,6 +175,12 @@ const NameRowWrapper = styled.div`
   width: 100%;
   display: flex;
   justify-content: space-between;
+  align-items: center;
+`;
+
+const TopRowWrapper = styled.div`
+  width: 100%;
+  display: flex;
   align-items: center;
 `;
 
@@ -187,9 +200,13 @@ const ScheduleButtonsWrapper = styled(ButtonsWrapper)`
   grid-template-columns: repeat(2, 1fr);
 `;
 
-const EnrollmentControlsWrapper = styled(ScheduleButtonsWrapper)`
+const EnrollmentControlsWrapper = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-gap: 0 20px;
+  margin-top: 8px;
   width: 100%;
-  grid-gap: 5px 20px;
+  height: 42px;
 `;
 
 type Props = {
@@ -220,7 +237,7 @@ type Props = {
   warnings :List;
   workAppointmentsByWorksitePlan :Map;
   worksitesByWorksitePlan :Map;
-  worksitePlans :List;
+  worksitePlansList :List;
   worksitePlanStatuses :Map;
   worksitesList :List;
 };
@@ -303,7 +320,7 @@ class ParticipantProfile extends Component<Props, State> {
         .valueSeq()
         .toList()
         .flatten(1);
-      const sortedAppointments :List = sortEntitiesByDateProperty(appointments, INCIDENT_START_DATETIME);
+      const sortedAppointments :List = sortEntitiesByDateProperty(appointments, [INCIDENT_START_DATETIME]);
       sortedAppointments.forEach((appointment :Map) => {
         const appointmentEKID :UUID = getEntityKeyId(appointment);
         const checkIn :Map = checkInsByAppointment.get(appointmentEKID, Map());
@@ -374,7 +391,7 @@ class ParticipantProfile extends Component<Props, State> {
       warnings,
       workAppointmentsByWorksitePlan,
       worksitesByWorksitePlan,
-      worksitePlans,
+      worksitePlansList,
       worksitePlanStatuses,
       worksitesList,
     } = this.props;
@@ -437,14 +454,14 @@ class ParticipantProfile extends Component<Props, State> {
         <ProfileWrapper>
           <GeneralInfoSection>
             <ProfileInfoColumnWrapper>
-              <NameRowWrapper>
+              <TopRowWrapper>
                 <BackNavButton
                     onClick={() => {
                       actions.goToRoute(Routes.PARTICIPANTS);
                     }}>
                   Back to Participants
                 </BackNavButton>
-              </NameRowWrapper>
+              </TopRowWrapper>
               <ParticipantProfileSection
                   address={address}
                   edit={this.editParticipant}
@@ -492,7 +509,7 @@ class ParticipantProfile extends Component<Props, State> {
                   <Button onClick={() => this.handleShowModal(ASSIGN_WORKSITE)}>Add Work Site</Button>
                 </NameRowWrapper>
                 {
-                  worksitePlans.isEmpty()
+                  worksitePlansList.isEmpty()
                     ? (
                       <Card>
                         <CardSegment>
@@ -506,7 +523,7 @@ class ParticipantProfile extends Component<Props, State> {
                     : (
                       <CardStack>
                         {
-                          worksitePlans.map((worksitePlan :Map) => {
+                          worksitePlansList.map((worksitePlan :Map) => {
                             const worksitePlanEKID :UUID = getEntityKeyId(worksitePlan);
                             const worksite :Map = worksitesByWorksitePlan.get(worksitePlanEKID);
                             const worksitePlanStatus :Map = worksitePlanStatuses.get(worksitePlanEKID);
@@ -526,7 +543,7 @@ class ParticipantProfile extends Component<Props, State> {
             )
           }
           {
-            !worksitePlans.isEmpty() && (
+            !worksitePlansList.isEmpty() && (
               <ProfileBody>
                 <NameRowWrapper>
                   <NameHeader>Work Schedule</NameHeader>
@@ -573,7 +590,10 @@ class ParticipantProfile extends Component<Props, State> {
 
 const mapStateToProps = (state :Map<*, *>) => {
   const app = state.get(STATE.APP);
+  const infractions = state.get(STATE.INFRACTIONS);
+  const participantSchedule = state.get(STATE.PARTICIPANT_SCHEDULE);
   const person = state.get(STATE.PERSON);
+  const worksitePlans = state.get(STATE.WORKSITE_PLANS);
   const worksites = state.get(STATE.WORKSITES);
   return {
     [ADDRESS]: person.get(ADDRESS),
@@ -594,12 +614,12 @@ const mapStateToProps = (state :Map<*, *>) => {
     [PERSON_CASE]: person.get(PERSON_CASE),
     [PHONE]: person.get(PHONE),
     [PROGRAM_OUTCOME]: person.get(PROGRAM_OUTCOME),
-    [VIOLATIONS]: person.get(VIOLATIONS),
-    [WARNINGS]: person.get(WARNINGS),
-    [WORK_APPOINTMENTS_BY_WORKSITE_PLAN]: person.get(WORK_APPOINTMENTS_BY_WORKSITE_PLAN),
-    [WORKSITES_BY_WORKSITE_PLAN]: person.get(WORKSITES_BY_WORKSITE_PLAN),
-    [WORKSITE_PLANS]: person.get(WORKSITE_PLANS),
-    [WORKSITE_PLAN_STATUSES]: person.get(WORKSITE_PLAN_STATUSES),
+    [VIOLATIONS]: infractions.get(VIOLATIONS),
+    [WARNINGS]: infractions.get(WARNINGS),
+    [WORK_APPOINTMENTS_BY_WORKSITE_PLAN]: participantSchedule.get(WORK_APPOINTMENTS_BY_WORKSITE_PLAN),
+    [WORKSITES_BY_WORKSITE_PLAN]: worksitePlans.get(WORKSITES_BY_WORKSITE_PLAN),
+    [WORKSITE_PLANS_LIST]: worksitePlans.get(WORKSITE_PLANS_LIST),
+    [WORKSITE_PLAN_STATUSES]: worksitePlans.get(WORKSITE_PLAN_STATUSES),
     [WORKSITES_LIST]: worksites.get(WORKSITES_LIST),
   };
 };

@@ -10,7 +10,7 @@ import PrintWorkScheduleContainer from './print/PrintWorkScheduleContainer';
 import PrintInfractionContainer from './print/PrintInfractionContainer';
 import EditPersonAndContactsForm from './EditPersonAndContactsForm';
 import EditEnrollmentDatesForm from './EditEnrollmentDatesForm';
-import EditCaseInfoForm from './EditCaseInfoForm';
+import EditCaseInfoForm from './cases/EditCaseInfoForm';
 import * as Routes from '../../core/router/Routes';
 
 import { PERSON, STATE } from '../../utils/constants/ReduxStateConsts';

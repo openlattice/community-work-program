@@ -7,7 +7,7 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import type { RequestSequence } from 'redux-reqseq';
 
-import { editAppointment } from '../ParticipantActions';
+import { editAppointment } from './ParticipantScheduleActions';
 import { schema, uiSchema } from './schemas/EditAppointmentSchemas';
 import { getEntitySetIdFromApp, getPropertyTypeIdFromEdm } from '../../../utils/DataUtils';
 import {

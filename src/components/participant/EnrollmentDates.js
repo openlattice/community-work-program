@@ -1,6 +1,5 @@
 // @flow
 import React from 'react';
-import styled from 'styled-components';
 import { fromJS, Map, OrderedMap } from 'immutable';
 import { DateTime } from 'luxon';
 import { Card, CardSegment, DataGrid } from 'lattice-ui-kit';
@@ -12,6 +11,7 @@ import {
   StyledEditButton,
 } from './SectionStyledComponents';
 import { formatAsDate } from '../../utils/DateTimeUtils';
+import { getCheckInDeadline, getSentenceEndDate } from '../../utils/ScheduleUtils';
 import { EMPTY_FIELD } from '../../containers/participants/ParticipantsConstants';
 
 const labelMap :OrderedMap = OrderedMap({
@@ -22,10 +22,6 @@ const labelMap :OrderedMap = OrderedMap({
   workStartDate: 'Started work',
   sentenceEndDate: 'Sentence end date',
 });
-
-const DatesCard = styled(Card)`
-  height: 190px;
-`;
 
 type Props = {
   checkInDate :string;
@@ -45,29 +41,12 @@ const EnrollmentDates = ({
   workStartDateTime
 } :Props) => {
 
-  const sentenceDate = sentenceDateTime ? formatAsDate(sentenceDateTime) : EMPTY_FIELD;
-
-  const sentenceDateObj = DateTime.fromISO(sentenceDateTime);
-  const checkInDeadline = sentenceDateObj.isValid
-    ? sentenceDateObj.plus({ hours: 48 }).toLocaleString()
-    : EMPTY_FIELD;
-
-  const sentenceEndDateObj = DateTime.fromISO(sentenceEndDateTime);
-  let sentenceEndDate = sentenceEndDateObj.isValid
-    ? sentenceEndDateObj.toLocaleString(DateTime.DATE_SHORT)
-    : EMPTY_FIELD;
-  if (!sentenceEndDateObj.isValid && sentenceDateObj.isValid) {
-    sentenceEndDate = sentenceDateObj.plus({ days: 90 }).toLocaleString();
-  }
-
-  const orientationDateObj = DateTime.fromISO(orientationDateTime);
-  const orientationDate = orientationDateObj.isValid
-    ? orientationDateObj.toLocaleString(DateTime.DATE_SHORT)
-    : EMPTY_FIELD;
-
-  const workStartDate = workStartDateTime ? formatAsDate(workStartDateTime) : EMPTY_FIELD;
-
-  const checkedInDate = checkInDate ? formatAsDate(checkInDate) : EMPTY_FIELD;
+  const sentenceDate = formatAsDate(sentenceDateTime);
+  const checkInDeadline = getCheckInDeadline(sentenceDateTime);
+  const sentenceEndDate = getSentenceEndDate(sentenceEndDateTime, sentenceDateTime);
+  const orientationDate = formatAsDate(orientationDateTime);
+  const workStartDate = formatAsDate(workStartDateTime);
+  const checkedInDate = formatAsDate(checkInDate);
 
   const data :Map = fromJS({
     sentenceDate,
@@ -83,14 +62,14 @@ const EnrollmentDates = ({
         <SectionLabel subtle>Enrollment Dates</SectionLabel>
         <StyledEditButton mode="subtle" onClick={edit} />
       </SectionNameRow>
-      <DatesCard>
+      <Card>
         <CardSegment padding="md" vertical>
           <DataGrid
               columns={3}
               data={data}
               labelMap={labelMap} />
         </CardSegment>
-      </DatesCard>
+      </Card>
     </SectionWrapper>
   );
 };

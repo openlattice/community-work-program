@@ -10,7 +10,7 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import type { RequestSequence } from 'redux-reqseq';
 
-import { deleteAppointment } from '../ParticipantActions';
+import { deleteAppointment } from './ParticipantScheduleActions';
 import { getEntitySetIdFromApp } from '../../../utils/DataUtils';
 import { APP_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { STATE } from '../../../utils/constants/ReduxStateConsts';
