@@ -11,3 +11,5 @@ export const WORK_SCHEDULE :string = '/workschedule';
 
 export const PARTICIPANT_PROFILE :string = `${PARTICIPANTS}/:subjectId`;
 export const PRINT_PARTICIPANT_SCHEDULE :string = `${PARTICIPANT_PROFILE}/schedule/print`;
+
+export const WORKSITE_PROFILE :string = '/worksites/:worksiteId';

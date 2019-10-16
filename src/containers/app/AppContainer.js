@@ -21,6 +21,7 @@ import AppHeaderContainer from './AppHeaderContainer';
 import DashboardContainer from '../dashboard/DashboardContainer';
 import ParticipantProfileContainer from '../participant/ParticipantProfileContainer';
 import ParticipantsSearchContainer from '../participants/ParticipantsSearchContainer';
+import WorksiteProfile from '../worksites/WorksiteProfile';
 import WorksitesContainer from '../worksites/WorksitesContainer';
 import WorkScheduleContainer from '../workschedule/WorkScheduleContainer';
 
@@ -95,6 +96,7 @@ class AppContainer extends Component<Props> {
 
   renderAppContent = () => (
     <Switch>
+      <Route path={Routes.WORKSITE_PROFILE} component={WorksiteProfile} />
       <Route path={Routes.WORK_SCHEDULE} component={WorkScheduleContainer} />
       <Route path={Routes.WORKSITES} component={WorksitesContainer} />
       <Route path={Routes.PARTICIPANT_PROFILE} component={ParticipantProfileContainer} />
