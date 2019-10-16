@@ -17,8 +17,10 @@ import {
   addWorksite,
   getOrganizations,
   getWorksite,
-  getWorksites,
+  getWorksiteAddress,
+  getWorksiteContact,
   getWorksitePlans,
+  getWorksites,
   getWorksitesByOrg,
 } from './WorksitesActions';
 
@@ -26,8 +28,13 @@ const {
   ACTIONS,
   ADD_ORGANIZATION,
   ADD_WORKSITE,
+  CONTACT_EMAIL,
+  CONTACT_PERSON,
+  CONTACT_PHONE,
   GET_ORGANIZATIONS,
   GET_WORKSITE,
+  GET_WORKSITE_ADDRESS,
+  GET_WORKSITE_CONTACT,
   GET_WORKSITES,
   GET_WORKSITES_BY_ORG,
   GET_WORKSITE_PLANS,
@@ -35,6 +42,7 @@ const {
   ORGANIZATION_STATUSES,
   ORGANIZATIONS_LIST,
   WORKSITE,
+  WORKSITE_ADDRESS,
   WORKSITES_BY_ORG,
   WORKSITES_INFO,
   WORKSITES_LIST,
@@ -55,6 +63,12 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     [GET_WORKSITE]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
+    [GET_WORKSITE_ADDRESS]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [GET_WORKSITE_CONTACT]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
     [GET_WORKSITES]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
@@ -65,12 +79,16 @@ const INITIAL_STATE :Map<*, *> = fromJS({
       [REQUEST_STATE]: RequestStates.STANDBY
     },
   },
-  [ORGANIZATION_STATUSES]: Map(),
+  [CONTACT_EMAIL]: Map(),
+  [CONTACT_PERSON]: Map(),
+  [CONTACT_PHONE]: Map(),
   [ORGANIZATIONS_LIST]: List(),
-  [WORKSITE]: Map(),
+  [ORGANIZATION_STATUSES]: Map(),
   [WORKSITES_BY_ORG]: Map(),
   [WORKSITES_INFO]: Map(),
   [WORKSITES_LIST]: List(),
+  [WORKSITE]: Map(),
+  [WORKSITE_ADDRESS]: Map(),
 });
 
 export default function worksitesReducer(state :Map<*, *> = INITIAL_STATE, action :SequenceAction) :Map<*, *> {
@@ -356,6 +374,65 @@ export default function worksitesReducer(state :Map<*, *> = INITIAL_STATE, actio
         FAILURE: () => state
           .setIn([ACTIONS, GET_WORKSITE, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, GET_WORKSITE, action.id])
+      });
+    }
+
+    case getWorksiteAddress.case(action.type): {
+
+      return getWorksiteAddress.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, GET_WORKSITE_ADDRESS, action.id], fromJS(action))
+          .setIn([ACTIONS, GET_WORKSITE_ADDRESS, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+
+          if (!state.hasIn([ACTIONS, GET_WORKSITE_ADDRESS, action.id])) {
+            return state;
+          }
+
+          const { value } = action;
+          if (value === null || value === undefined) {
+            return state;
+          }
+
+          return state
+            .set(WORKSITE_ADDRESS, value)
+            .setIn([ACTIONS, GET_WORKSITE_ADDRESS, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, GET_WORKSITE_ADDRESS, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, GET_WORKSITE_ADDRESS, action.id])
+      });
+    }
+
+    case getWorksiteContact.case(action.type): {
+
+      return getWorksiteContact.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, GET_WORKSITE_CONTACT, action.id], fromJS(action))
+          .setIn([ACTIONS, GET_WORKSITE_CONTACT, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+
+          if (!state.hasIn([ACTIONS, GET_WORKSITE_CONTACT, action.id])) {
+            return state;
+          }
+
+          const { value } = action;
+          if (value === null || value === undefined) {
+            return state;
+          }
+          const { contactEmail, contactPerson, contactPhone } = value;
+
+          return state
+            .set(CONTACT_PERSON, contactPerson)
+            .set(CONTACT_EMAIL, contactEmail)
+            .set(CONTACT_PHONE, contactPhone)
+            .setIn([ACTIONS, GET_WORKSITE_CONTACT, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, GET_WORKSITE_CONTACT, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, GET_WORKSITE_CONTACT, action.id])
       });
     }
 

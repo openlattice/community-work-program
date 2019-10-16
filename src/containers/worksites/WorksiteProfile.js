@@ -118,7 +118,7 @@ class WorksiteProfile extends Component<Props> {
     const {
       actions,
       match: {
-        params: { subjectId: worksiteEKID }
+        params: { worksiteId: worksiteEKID }
       }
     } = this.props;
     actions.getWorksite({ worksiteEKID });

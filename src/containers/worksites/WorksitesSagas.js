@@ -4,6 +4,7 @@
 
 import { List, Map, fromJS } from 'immutable';
 import {
+  all,
   call,
   put,
   select,
@@ -24,11 +25,12 @@ import {
   getEntityKeyId,
   getEntityProperties,
   getEntitySetIdFromApp,
-  getNeighborDetails
+  getNeighborDetails,
+  getNeighborESID,
 } from '../../utils/DataUtils';
 import { isDefined } from '../../utils/LangUtils';
 import { STATE } from '../../utils/constants/ReduxStateConsts';
-import { APP_TYPE_FQNS, WORKSITE_PLAN_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { APP_TYPE_FQNS, CONTACT_INFO_FQNS, WORKSITE_PLAN_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import {
   ADD_ORGANIZATION,
   ADD_WORKSITE,
@@ -36,20 +38,33 @@ import {
   GET_WORKSITE,
   GET_WORKSITES,
   GET_WORKSITES_BY_ORG,
+  GET_WORKSITE_ADDRESS,
+  GET_WORKSITE_CONTACT,
   GET_WORKSITE_PLANS,
   addOrganization,
   addWorksite,
   getOrganizations,
   getWorksite,
-  getWorksites,
+  getWorksiteAddress,
+  getWorksiteContact,
   getWorksitePlans,
+  getWorksites,
   getWorksitesByOrg,
 } from './WorksitesActions';
 import { submitDataGraph } from '../../core/sagas/data/DataActions';
 import { submitDataGraphWorker } from '../../core/sagas/data/DataSagas';
 
 const { PAST, SCHEDULED, TOTAL_HOURS } = WORKSITE_INFO_CONSTS;
-const { ORGANIZATION, WORKSITE, WORKSITE_PLAN } = APP_TYPE_FQNS;
+const {
+  ADDRESS,
+  CONTACT_INFORMATION,
+  EMPLOYEE,
+  ORGANIZATION,
+  STAFF,
+  WORKSITE,
+  WORKSITE_PLAN,
+} = APP_TYPE_FQNS;
+const { EMAIL, PHONE_NUMBER } = CONTACT_INFO_FQNS;
 const { HOURS_WORKED, REQUIRED_HOURS } = WORKSITE_PLAN_FQNS;
 
 const LOG = new Logger('WorksitesSagas');
@@ -419,6 +434,139 @@ function* getWorksitesWatcher() :Generator<*, *, *> {
 
 /*
  *
+ * WorksitesActions.getWorksiteAddress()
+ *
+ */
+
+function* getWorksiteAddressWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+  if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
+  let response :Object = {};
+  let address :Map = Map();
+
+  try {
+    yield put(getWorksiteAddress.request(id));
+    const { worksiteEKID } = value;
+    const app = yield select(getAppFromState);
+    const worksiteESID = getEntitySetIdFromApp(app, WORKSITE);
+    const addressESID = getEntitySetIdFromApp(app, ADDRESS);
+
+    const searchFilter :{} = {
+      entityKeyIds: [worksiteEKID],
+      destinationEntitySetIds: [addressESID],
+      sourceEntitySetIds: [],
+    };
+    response = yield call(
+      searchEntityNeighborsWithFilterWorker,
+      searchEntityNeighborsWithFilter({ entitySetId: worksiteESID, filter: searchFilter })
+    );
+    if (response.error) {
+      throw response.error;
+    }
+    const results :List = fromJS(response.data[worksiteEKID]);
+    if (isDefined(results) && !results.isEmpty()) address = getNeighborDetails(results.get(0));
+
+    yield put(getWorksiteAddress.success(id, address));
+  }
+  catch (error) {
+    LOG.error('caught exception in getWorksiteAddressWorker()', error);
+    yield put(getWorksiteAddress.failure(id, error));
+  }
+  finally {
+    yield put(getWorksiteAddress.finally(id));
+  }
+}
+
+function* getWorksiteAddressWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(GET_WORKSITE_ADDRESS, getWorksiteAddressWorker);
+}
+
+/*
+ *
+ * WorksitesActions.getWorksiteContact()
+ *
+ */
+
+function* getWorksiteContactWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+  if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
+  let response :Object = {};
+  let contactPerson :Map = Map();
+  let contactEmail :Map = Map();
+  let contactPhone :Map = Map();
+
+  try {
+    yield put(getWorksiteContact.request(id));
+    const { worksiteEKID } = value;
+    const app = yield select(getAppFromState);
+    const worksiteESID :UUID = getEntitySetIdFromApp(app, WORKSITE);
+    const employeeESID :UUID = getEntitySetIdFromApp(app, EMPLOYEE);
+
+    let searchFilter :{} = {
+      entityKeyIds: [worksiteEKID],
+      destinationEntitySetIds: [],
+      sourceEntitySetIds: [employeeESID],
+    };
+    response = yield call(
+      searchEntityNeighborsWithFilterWorker,
+      searchEntityNeighborsWithFilter({ entitySetId: worksiteESID, filter: searchFilter })
+    );
+    if (response.error) {
+      throw response.error;
+    }
+    let results :List = fromJS(response.data[worksiteEKID]);
+    if (isDefined(results) && !results.isEmpty()) {
+
+      const employee = getNeighborDetails(results.get(0));
+      const employeeEKID :UUID = getEntityKeyId(employee);
+      const staffESID :UUID = getEntitySetIdFromApp(app, STAFF);
+      const contactInfoESID :UUID = getEntitySetIdFromApp(app, CONTACT_INFORMATION);
+
+      searchFilter = {
+        entityKeyIds: [employeeEKID],
+        destinationEntitySetIds: [],
+        sourceEntitySetIds: [staffESID, contactInfoESID],
+      };
+      results = fromJS(response.data[worksiteEKID]);
+      results.foreach((result :Map) => {
+        if (getNeighborESID(result) === staffESID) {
+          contactPerson = getNeighborDetails(result);
+        }
+        if (getNeighborESID(result) === contactInfoESID) {
+          const { [EMAIL]: emailFound, [PHONE_NUMBER]: phoneFound } = getEntityProperties(
+            result, [EMAIL, PHONE_NUMBER]
+          );
+          if (isDefined(emailFound)) {
+            contactEmail = getNeighborDetails(result);
+          }
+          if (isDefined(phoneFound)) {
+            contactPhone = getNeighborDetails(result);
+          }
+        }
+      });
+    }
+
+    yield put(getWorksiteContact.success(id, { contactEmail, contactPerson, contactPhone }));
+  }
+  catch (error) {
+    LOG.error('caught exception in getWorksiteContactWorker()', error);
+    yield put(getWorksiteContact.failure(id, error));
+  }
+  finally {
+    yield put(getWorksiteContact.finally(id));
+  }
+}
+
+function* getWorksiteContactWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(GET_WORKSITE_CONTACT, getWorksiteContactWorker);
+}
+
+/*
+ *
  * WorksitesActions.getWorksite()
  *
  */
@@ -433,6 +581,7 @@ function* getWorksiteWorker(action :SequenceAction) :Generator<*, *, *> {
   try {
     yield put(getWorksite.request(id));
     const { worksiteEKID } = value;
+
     const app = yield select(getAppFromState);
     const worksiteESID = getEntitySetIdFromApp(app, WORKSITE);
 
@@ -444,6 +593,11 @@ function* getWorksiteWorker(action :SequenceAction) :Generator<*, *, *> {
       throw response.error;
     }
     worksite = fromJS(response.data).get(0);
+
+    yield all([
+      call(getWorksiteAddressWorker, getWorksiteAddress({ worksiteEKID })),
+      call(getWorksiteContactWorker, getWorksiteContact({ worksiteEKID })),
+    ]);
 
     yield put(getWorksite.success(id, worksite));
   }
@@ -470,6 +624,10 @@ export {
   getOrganizationsWorker,
   getWorksiteWatcher,
   getWorksiteWorker,
+  getWorksiteAddressWatcher,
+  getWorksiteAddressWorker,
+  getWorksiteContactWatcher,
+  getWorksiteContactWorker,
   getWorksitesWatcher,
   getWorksitesWorker,
   getWorksitePlansWatcher,
