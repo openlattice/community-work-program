@@ -11,7 +11,6 @@ const SectionWrapper = styled.div`
   width: 100%;
 `;
 
-
 const SectionNameRow = styled.div`
   align-items: center;
   display: flex;

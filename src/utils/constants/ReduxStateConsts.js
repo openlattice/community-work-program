@@ -2,14 +2,17 @@ export const STATE = {
   APP: 'app',
   DATA: 'data',
   EDM: 'edm',
+  INFRACTIONS: 'infractions',
   ORGANIZATION: 'organization',
+  PARTICIPANT_SCHEDULE: 'participantSchedule',
   PEOPLE: 'people',
   PERSON: 'person',
   WORKSITES: 'worksites',
+  WORKSITE_PLANS: 'worksitePlans',
   WORK_SCHEDULE: 'workSchedule',
 };
 
-// App
+/* App */
 
 export const APP = {
   ACTIONS: 'actions',
@@ -23,6 +26,34 @@ export const APP = {
   SELECTED_ORG_ID: 'selectedOrganizationId',
   SELECTED_ORG_TITLE: 'selectedOrganizationTitle',
   SWITCH_ORGANIZATION: 'switchOrganization',
+};
+
+/* Infractions */
+
+export const PERSON_INFRACTIONS = {
+  ACTIONS: 'actions',
+  ADD_INFRACTION_EVENT: 'addInfractionEvent',
+  GET_INFRACTION_TYPES: 'getInfractionTypes',
+  INFRACTIONS_INFO: 'infractionsInfo',
+  INFRACTION_TYPES: 'infractionTypes',
+  REQUEST_STATE: 'requestState',
+  VIOLATIONS: 'violations',
+  WARNINGS: 'warnings',
+};
+
+/* Participant Schedule */
+
+export const PARTICIPANT_SCHEDULE = {
+  ACTIONS: 'actions',
+  CHECK_INS_BY_APPOINTMENT: 'checkInsByAppointment',
+  CHECK_IN_FOR_APPOINTMENT: 'checkInForAppointment',
+  CREATE_WORK_APPOINTMENTS: 'createWorkAppointments',
+  DELETE_APPOINTMENT: 'deleteAppointment',
+  EDIT_APPOINTMENT: 'editAppointment',
+  GET_APPOINTMENT_CHECK_INS: 'getAppointmentCheckIns',
+  GET_WORK_APPOINTMENTS: 'getWorkAppointments',
+  REQUEST_STATE: 'requestState',
+  WORK_APPOINTMENTS_BY_WORKSITE_PLAN: 'workAppointmentsByWorksitePlan',
 };
 
 /* People */
@@ -52,22 +83,15 @@ export const PEOPLE = {
 export const PERSON = {
   ACTIONS: 'actions',
   ADDRESS: 'address',
-  ADD_INFRACTION_EVENT: 'addInfractionEvent',
   ADD_NEW_DIVERSION_PLAN_STATUS: 'addNewDiversionPlanStatus',
   ADD_NEW_PARTICIPANT_CONTACTS: 'addNewParticipantContacts',
   ADD_ORIENTATION_DATE: 'addOrientationDate',
   ADD_TO_AVAILABLE_CHARGES: 'addToAvailableCharges',
-  ADD_WORKSITE_PLAN: 'addWorksitePlan',
   ALL_DIVERSION_PLANS: 'allDiversionPlans',
   CHARGES: 'charges',
   CHARGES_FOR_CASE: 'chargesForCase',
-  CHECK_INS_BY_APPOINTMENT: 'checkInsByAppointment',
-  CHECK_IN_FOR_APPOINTMENT: 'checkInForAppointment',
   CREATE_NEW_ENROLLMENT: 'createNewEnrollment',
-  CREATE_WORK_APPOINTMENTS: 'createWorkAppointments',
-  DELETE_APPOINTMENT: 'deleteAppointment',
   DIVERSION_PLAN: 'diversionPlan',
-  EDIT_APPOINTMENT: 'editAppointment',
   EDIT_CHECK_IN_DATE: 'editCheckInDate',
   EDIT_ENROLLMENT_DATES: 'editEnrollmentDates',
   EDIT_PARTICIPANT_CONTACTS: 'editParticipantContacts',
@@ -77,12 +101,10 @@ export const PERSON = {
   EDIT_PLAN_NOTES: 'editPlanNotes',
   EDIT_REQUIRED_HOURS: 'editRequiredHours',
   EDIT_SENTENCE_DATE: 'editSentenceDate',
-  EDIT_WORKSITE_PLAN: 'editWorksitePlan',
   EMAIL: 'email',
   ENROLLMENT_STATUS: 'enrollmentStatus',
   ERRORS: 'errors',
   GET_ALL_PARTICIPANT_INFO: 'getAllParticipantInfo',
-  GET_APPOINTMENT_CHECK_INS: 'getAppointmentCheckIns',
   GET_CASE_INFO: 'getCaseInfo',
   GET_CHARGES: 'getCharges',
   GET_CHARGES_FOR_CASE: 'getChargesForCase',
@@ -91,18 +113,12 @@ export const PERSON = {
   GET_ENROLLMENT_STATUS: 'getEnrollmentStatus',
   GET_INFO_FOR_EDIT_CASE: 'getInfoForEditCase',
   GET_INFO_FOR_EDIT_PERSON: 'getInfoForEditPerson',
-  GET_INFRACTION_TYPES: 'getInfractionTypes',
   GET_JUDGES: 'getJudges',
   GET_JUDGE_FOR_CASE: 'getJudgeForCase',
   GET_PARTICIPANT: 'getParticipant',
   GET_PARTICIPANT_ADDRESS: 'getParticipantAddress',
   GET_PROGRAM_OUTCOME: 'getProgramOutcome',
   GET_REQUIRED_HOURS: 'getRequiredHours',
-  GET_WORKSITE_PLANS: 'getWorksitePlans',
-  GET_WORKSITE_PLAN_STATUSES: 'getWorksitePlanStatuses',
-  GET_WORK_APPOINTMENTS: 'getWorkAppointments',
-  INFRACTIONS_INFO: 'infractionsInfo',
-  INFRACTION_TYPES: 'infractionTypes',
   JUDGE: 'judge',
   JUDGES: 'judges',
   MARK_DIVERSION_PLAN_AS_COMPLETE: 'markDiversionPlanAsComplete',
@@ -114,13 +130,6 @@ export const PERSON = {
   REMOVE_CHARGE_FROM_CASE: 'removeChargeFromCase',
   REQUEST_STATE: 'requestState',
   REQUIRED_HOURS: 'requiredHours',
-  UPDATE_HOURS_WORKED: 'updateHoursWorked',
-  VIOLATIONS: 'violations',
-  WARNINGS: 'warnings',
-  WORKSITES_BY_WORKSITE_PLAN: 'worksitesByWorksitePlan',
-  WORKSITE_PLANS: 'worksitePlans',
-  WORKSITE_PLAN_STATUSES: 'worksitePlanStatuses',
-  WORK_APPOINTMENTS_BY_WORKSITE_PLAN: 'workAppointmentsByWorksitePlan',
 };
 
 /* Work Schedule */
@@ -134,6 +143,21 @@ export const WORK_SCHEDULE = {
   REQUEST_STATE: 'requestState',
   PERSON_BY_APPOINTMENT_EKID: 'personByAppointmentEKID',
   WORKSITE_NAMES_BY_APPOINTMENT_EKID: 'worksiteNamesByAppointmentEKID',
+};
+
+/* Worksite Plans */
+export const WORKSITE_PLANS = {
+  ACTIONS: 'actions',
+  ADD_WORKSITE_PLAN: 'addWorksitePlan',
+  EDIT_WORKSITE_PLAN: 'editWorksitePlan',
+  GET_WORKSITE_BY_WORKSITE_PLAN: 'getWorksiteByWorksitePlan',
+  GET_WORKSITE_PLANS: 'getWorksitePlans',
+  GET_WORKSITE_PLAN_STATUSES: 'getWorksitePlanStatuses',
+  REQUEST_STATE: 'requestState',
+  UPDATE_HOURS_WORKED: 'updateHoursWorked',
+  WORKSITES_BY_WORKSITE_PLAN: 'worksitesByWorksitePlan',
+  WORKSITE_PLANS_LIST: 'worksitePlansList',
+  WORKSITE_PLAN_STATUSES: 'worksitePlanStatuses',
 };
 
 /* Worksites (and organizations) */

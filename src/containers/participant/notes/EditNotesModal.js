@@ -5,14 +5,14 @@ import { RequestStates } from 'redux-reqseq';
 import type { RequestState } from 'redux-reqseq';
 
 type Props = {
-  components :Object;
+  editForm :React.Node;
   editRequestState :RequestState;
   isOpen :boolean;
   onClose :() => void;
   title :string;
 };
 
-class EditPlanNotesModal extends Component<Props> {
+class EditNotesModal extends Component<Props> {
 
   componentDidUpdate(prevProps :Props) {
     const { editRequestState, onClose } = this.props;
@@ -25,7 +25,7 @@ class EditPlanNotesModal extends Component<Props> {
 
   render() {
     const {
-      components,
+      editForm: EditForm,
       editRequestState,
       isOpen,
       onClose,
@@ -37,7 +37,7 @@ class EditPlanNotesModal extends Component<Props> {
           onClose={onClose}
           textTitle={title}
           viewportScrolling>
-        <components.EditForm
+        <EditForm
             isLoading={editRequestState === RequestStates.PENDING}
             onDiscard={onClose} />
       </Modal>
@@ -46,4 +46,4 @@ class EditPlanNotesModal extends Component<Props> {
 }
 
 // $FlowFixMe
-export default EditPlanNotesModal;
+export default EditNotesModal;

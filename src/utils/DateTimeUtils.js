@@ -3,6 +3,8 @@
  */
 import { DateTime } from 'luxon';
 
+import { EMPTY_FIELD } from '../containers/participants/ParticipantsConstants';
+
 const DATE_MDY_SLASH_FORMAT :string = 'MM/DD/YYYY';
 const ISO_DATE_FORMAT :string = 'YYYY-MM-DD';
 const ISO_TIME_HMS_FORMAT :string = 'HH:mm:ss';
@@ -15,7 +17,7 @@ function formatAsDate(value :string) :string {
   if (valueAsDate.isValid) {
     return valueAsDate.toLocaleString(DateTime.DATE_SHORT);
   }
-  return '';
+  return EMPTY_FIELD;
 }
 
 function formatAsISODate(value :string) :string {

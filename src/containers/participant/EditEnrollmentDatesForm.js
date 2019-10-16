@@ -79,14 +79,12 @@ type Props = {
 
 type State = {
   formData :Object;
-  prepopulated :boolean;
 };
 
 class EditCaseInfoForm extends Component<Props, State> {
 
   state = {
     formData: {},
-    prepopulated: true,
   };
 
   componentDidMount() {
@@ -194,16 +192,23 @@ class EditCaseInfoForm extends Component<Props, State> {
     };
   }
 
+  handleOnClickBackButton = () => {
+    const {
+      actions,
+      match: {
+        params: { subjectId: personEKID }
+      },
+    } = this.props;
+    actions.goToRoute(Routes.PARTICIPANT_PROFILE.replace(':subjectId', personEKID));
+  }
+
   render() {
     const {
       actions,
       getEnrollmentStatusRequestState,
       initializeAppRequestState,
-      match: {
-        params: { subjectId: personEKID }
-      },
     } = this.props;
-    const { formData, prepopulated } = this.state;
+    const { formData } = this.state;
 
     if (initializeAppRequestState === RequestStates.PENDING
       || getEnrollmentStatusRequestState === RequestStates.PENDING) {
@@ -229,9 +234,7 @@ class EditCaseInfoForm extends Component<Props, State> {
       <FormWrapper>
         <ButtonWrapper>
           <BackNavButton
-              onClick={() => {
-                actions.goToRoute(Routes.PARTICIPANT_PROFILE.replace(':subjectId', personEKID));
-              }}>
+              onClick={this.handleOnClickBackButton}>
             Back to Profile
           </BackNavButton>
         </ButtonWrapper>
@@ -239,7 +242,7 @@ class EditCaseInfoForm extends Component<Props, State> {
           <Card>
             <CardHeader padding="sm">Edit Enrollment Dates</CardHeader>
             <Form
-                disabled={prepopulated}
+                disabled
                 formContext={formContext}
                 formData={formData}
                 schema={schema}

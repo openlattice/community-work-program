@@ -15,7 +15,7 @@ import {
   EDIT_APPOINTMENT,
   deleteAppointment,
   editAppointment,
-} from '../participant/ParticipantActions';
+} from '../participant/schedule/ParticipantScheduleActions';
 import { getEntityKeyId, getPropertyTypeIdFromEdm } from '../../utils/DataUtils';
 import { WORK_SCHEDULE } from '../../utils/constants/ReduxStateConsts';
 import { DATETIME_END, INCIDENT_START_DATETIME } from '../../core/edm/constants/FullyQualifiedNames';

@@ -48,7 +48,7 @@ const ProgramNotes = ({ editPlanNotesRequestState, notes } :Props) => {
         </CardSegment>
       </Card>
       <EditNotesModal
-          components={{ EditForm: EditPlanNotesForm }}
+          editForm={EditPlanNotesForm}
           editRequestState={editPlanNotesRequestState}
           isOpen={isEditModalVisible}
           onClose={() => setEditModalVisibility(false)}

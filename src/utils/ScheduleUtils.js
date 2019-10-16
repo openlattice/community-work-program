@@ -6,6 +6,7 @@ import { DateTime, Interval } from 'luxon';
 
 import { isDefined } from './LangUtils';
 import { DATETIME_END, INCIDENT_START_DATETIME } from '../core/edm/constants/FullyQualifiedNames';
+import { EMPTY_FIELD } from '../containers/participants/ParticipantsConstants';
 
 const getCombinedDateTime = (date :string, time :string) => {
   const datetimeString :string = date.concat(' ', time);
@@ -122,11 +123,35 @@ const getDateInISOFormat = (dateString :string) => (
   DateTime.fromFormat(dateString.split('/').join(' '), 'M d yyyy').toISODate()
 );
 
+const getCheckInDeadline = (sentenceDateTime :string) :string => {
+
+  const sentenceDateObj :DateTime = DateTime.fromISO(sentenceDateTime);
+  if (sentenceDateObj.isValid) {
+    return sentenceDateObj.plus({ hours: 48 }).toLocaleString();
+  }
+  return EMPTY_FIELD;
+};
+
+const getSentenceEndDate = (sentenceEndDateTime :string, sentenceDateTime :string) :string => {
+
+  const sentenceEndDateObj :DateTime = DateTime.fromISO(sentenceEndDateTime);
+  if (sentenceEndDateObj.isValid) {
+    return sentenceEndDateObj.toLocaleString(DateTime.DATE_SHORT);
+  }
+  const sentenceDateObj :DateTime = DateTime.fromISO(sentenceDateTime);
+  if (sentenceDateObj.isValid) {
+    return sentenceDateObj.plus({ days: 90 }).toLocaleString();
+  }
+  return EMPTY_FIELD;
+};
+
 export {
   get24HourTimeFromString,
+  getCheckInDeadline,
   getCombinedDateTime,
   getCustomSchedule,
   getDateInISOFormat,
   getInfoFromTimeRange,
   getRegularlyRepeatingAppointments,
+  getSentenceEndDate,
 };

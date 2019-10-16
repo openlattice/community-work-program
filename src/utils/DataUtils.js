@@ -79,12 +79,15 @@ export const getEntityKeyId = (entityObj :Map) :string => {
 
 export const sortEntitiesByDateProperty = (
   entityCollection :List | Map,
-  datePropertyFqn :FQN
+  datePropertyPath :FQN[]
 ) :List | Map => entityCollection
 
   .sort((entityObjA :Map, entityObjB :Map) => {
-    const dateA = DateTime.fromISO(entityObjA.getIn([datePropertyFqn, 0]));
-    const dateB = DateTime.fromISO(entityObjB.getIn([datePropertyFqn, 0]));
+    const dateA = DateTime.fromISO(entityObjA.getIn(datePropertyPath.concat([0])));
+    const dateB = DateTime.fromISO(entityObjB.getIn(datePropertyPath.concat([0])));
+    if (!dateA.isValid || !dateB.isValid) {
+      return 0;
+    }
     if (dateA.toISO() === dateB.toISO()) {
       return 0;
     }
