@@ -1,10 +1,15 @@
 // @flow
 import { isDefined } from '../../utils/LangUtils';
+import { EMPTY_FIELD } from '../participants/ParticipantsConstants';
 
 const getWorksiteStatus = (dateActive :string, dateInactive :string) :string => {
 
-  const active :boolean = !isDefined(dateInactive) && isDefined(dateActive);
-  const status :string = active ? 'Active' : 'Inactive';
+  let status :string = EMPTY_FIELD;
+  if (isDefined(dateActive) || isDefined(dateInactive)) {
+    const active :boolean = dateInactive.length === 0 && dateActive.length > 0;
+    status = active ? 'Active' : 'Inactive';
+  }
+
   return status;
 };
 
