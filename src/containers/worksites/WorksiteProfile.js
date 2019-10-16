@@ -25,7 +25,13 @@ import LogoLoader from '../../components/LogoLoader';
 
 import { getWorksite } from './WorksitesActions';
 import { goToRoute } from '../../core/router/RoutingActions';
-import { APP_TYPE_FQNS, WORKSITE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import {
+  ADDRESS_FQNS,
+  APP_TYPE_FQNS,
+  CONTACT_INFO_FQNS,
+  PEOPLE_FQNS,
+  WORKSITE_FQNS,
+} from '../../core/edm/constants/FullyQualifiedNames';
 import { APP, STATE, WORKSITES } from '../../utils/constants/ReduxStateConsts';
 import { getEntityProperties } from '../../utils/DataUtils';
 import { formatAsDate } from '../../utils/DateTimeUtils';
@@ -36,9 +42,13 @@ import {
   ContainerOuterWrapper,
 } from '../../components/Layout';
 import { BackNavButton } from '../../components/controls/index';
+import { EMPTY_FIELD } from '../participants/ParticipantsConstants';
 import { OL } from '../../core/style/Colors';
 import * as Routes from '../../core/router/Routes';
 
+const { FULL_ADDRESS } = ADDRESS_FQNS;
+const { EMAIL, PHONE_NUMBER } = CONTACT_INFO_FQNS;
+const { FIRST_NAME, LAST_NAME } = PEOPLE_FQNS;
 const {
   DATETIME_END,
   DATETIME_START,
@@ -71,6 +81,9 @@ const worksiteInfoLabelMap :OrderedMap = OrderedMap({
   status: 'Status'
 });
 
+/* consts */
+const cardSegmentPadding = '30px 30px';
+
 /* styled components */
 const ProfileNameHeader = styled(ContainerHeader)`
   margin: 30px 0;
@@ -88,10 +101,14 @@ type Props = {
     goToRoute :RequestSequence;
   },
   app :Map;
+  contactEmail :Map;
+  contactPerson :Map;
+  contactPhone :Map;
   getWorksiteRequestState :RequestState;
   initializeAppRequestState :RequestState;
   match :Match;
   worksite :Map;
+  worksiteAddress :Map;
 };
 
 class WorksiteProfile extends Component<Props> {
@@ -137,9 +154,13 @@ class WorksiteProfile extends Component<Props> {
 
   render() {
     const {
+      contactEmail,
+      contactPerson,
+      contactPhone,
       getWorksiteRequestState,
       initializeAppRequestState,
       worksite,
+      worksiteAddress,
     } = this.props;
 
     if (initializeAppRequestState === RequestStates.PENDING
@@ -157,6 +178,13 @@ class WorksiteProfile extends Component<Props> {
       [DESCRIPTION]: availableWork,
       [NAME]: worksiteName
     } = getEntityProperties(worksite, [DATETIME_END, DATETIME_START, DESCRIPTION, NAME]);
+    const {
+      [FIRST_NAME]: firstName,
+      [LAST_NAME]: lastName,
+    } = getEntityProperties(contactPerson, [FIRST_NAME, LAST_NAME]);
+    const { [PHONE_NUMBER]: phoneNumber } = getEntityProperties(contactPhone, [PHONE_NUMBER]);
+    const { [EMAIL]: email } = getEntityProperties(contactEmail, [EMAIL]);
+    const { [FULL_ADDRESS]: address } = getEntityProperties(worksiteAddress, [FULL_ADDRESS]);
 
     const dates :Map = Map({
       dateFirstActive: formatAsDate(dateActive),
@@ -164,10 +192,10 @@ class WorksiteProfile extends Component<Props> {
     });
 
     const contact :Map = Map({
-      contactName: '----',
-      contactPhone: '----',
-      contactEmail: '----',
-      address: '----',
+      contactName: `${firstName} ${lastName}` || EMPTY_FIELD,
+      contactPhone: phoneNumber || EMPTY_FIELD,
+      contactEmail: email || EMPTY_FIELD,
+      address: address || EMPTY_FIELD,
     });
 
     const status = getWorksiteStatus(dateActive, dateInactive);
@@ -193,19 +221,19 @@ class WorksiteProfile extends Component<Props> {
             <EditButton onClick={this.goToEditWorksiteInfoForm}>Edit</EditButton>
           </HeaderRowWrapper>
           <Card>
-            <CardSegment padding="md">
+            <CardSegment padding={cardSegmentPadding}>
               <DataGrid
-                  columns={2}
+                  columns={4}
                   data={dates}
                   labelMap={datesLabelMap} />
             </CardSegment>
-            <CardSegment padding="md">
+            <CardSegment padding={cardSegmentPadding}>
               <DataGrid
                   columns={4}
                   data={contact}
                   labelMap={contactLabelMap} />
             </CardSegment>
-            <CardSegment padding="md">
+            <CardSegment padding={cardSegmentPadding}>
               <DataGrid
                   columns={4}
                   data={worksiteInfo}
