@@ -26,18 +26,21 @@ import {
   getEntitySetIdFromApp,
   getNeighborDetails
 } from '../../utils/DataUtils';
+import { isDefined } from '../../utils/LangUtils';
 import { STATE } from '../../utils/constants/ReduxStateConsts';
 import { APP_TYPE_FQNS, WORKSITE_PLAN_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import {
   ADD_ORGANIZATION,
   ADD_WORKSITE,
   GET_ORGANIZATIONS,
+  GET_WORKSITE,
   GET_WORKSITES,
   GET_WORKSITES_BY_ORG,
   GET_WORKSITE_PLANS,
   addOrganization,
   addWorksite,
   getOrganizations,
+  getWorksite,
   getWorksites,
   getWorksitePlans,
   getWorksitesByOrg,
@@ -414,6 +417,50 @@ function* getWorksitesWatcher() :Generator<*, *, *> {
   yield takeEvery(GET_WORKSITES, getWorksitesWorker);
 }
 
+/*
+ *
+ * WorksitesActions.getWorksite()
+ *
+ */
+
+function* getWorksiteWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+  if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
+  let response :Object = {};
+  let worksite :Map = Map();
+
+  try {
+    yield put(getWorksite.request(id));
+    const { worksiteEKID } = value;
+    const app = yield select(getAppFromState);
+    const worksiteESID = getEntitySetIdFromApp(app, WORKSITE);
+
+    response = yield call(getEntitySetDataWorker, getEntitySetData({
+      entitySetId: worksiteESID,
+      entityKeyId: worksiteEKID
+    }));
+    if (response.error) {
+      throw response.error;
+    }
+    worksite = fromJS(response.data).get(0);
+
+    yield put(getWorksite.success(id, worksite));
+  }
+  catch (error) {
+    LOG.error('caught exception in getWorksiteWorker()', error);
+    yield put(getWorksite.failure(id, error));
+  }
+  finally {
+    yield put(getWorksite.finally(id));
+  }
+}
+
+function* getWorksiteWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(GET_WORKSITE, getWorksiteWorker);
+}
+
 export {
   addOrganizationWatcher,
   addOrganizationWorker,
@@ -421,6 +468,8 @@ export {
   addWorksiteWorker,
   getOrganizationsWatcher,
   getOrganizationsWorker,
+  getWorksiteWatcher,
+  getWorksiteWorker,
   getWorksitesWatcher,
   getWorksitesWorker,
   getWorksitePlansWatcher,

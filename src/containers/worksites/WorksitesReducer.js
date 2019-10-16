@@ -16,6 +16,7 @@ import {
   addOrganization,
   addWorksite,
   getOrganizations,
+  getWorksite,
   getWorksites,
   getWorksitePlans,
   getWorksitesByOrg,
@@ -25,14 +26,15 @@ const {
   ACTIONS,
   ADD_ORGANIZATION,
   ADD_WORKSITE,
-  ERRORS,
   GET_ORGANIZATIONS,
+  GET_WORKSITE,
   GET_WORKSITES,
   GET_WORKSITES_BY_ORG,
   GET_WORKSITE_PLANS,
   REQUEST_STATE,
   ORGANIZATION_STATUSES,
   ORGANIZATIONS_LIST,
+  WORKSITE,
   WORKSITES_BY_ORG,
   WORKSITES_INFO,
   WORKSITES_LIST,
@@ -50,6 +52,9 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     [GET_ORGANIZATIONS]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
+    [GET_WORKSITE]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
     [GET_WORKSITES]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
@@ -60,16 +65,9 @@ const INITIAL_STATE :Map<*, *> = fromJS({
       [REQUEST_STATE]: RequestStates.STANDBY
     },
   },
-  [ERRORS]: {
-    [ADD_ORGANIZATION]: Map(),
-    [ADD_WORKSITE]: Map(),
-    [GET_ORGANIZATIONS]: Map(),
-    [GET_WORKSITES]: Map(),
-    [GET_WORKSITES_BY_ORG]: Map(),
-    [GET_WORKSITE_PLANS]: Map(),
-  },
   [ORGANIZATION_STATUSES]: Map(),
   [ORGANIZATIONS_LIST]: List(),
+  [WORKSITE]: Map(),
   [WORKSITES_BY_ORG]: Map(),
   [WORKSITES_INFO]: Map(),
   [WORKSITES_LIST]: List(),
@@ -166,14 +164,8 @@ export default function worksitesReducer(state :Map<*, *> = INITIAL_STATE, actio
             .set(WORKSITES_INFO, value)
             .setIn([ACTIONS, GET_WORKSITE_PLANS, REQUEST_STATE], RequestStates.SUCCESS);
         },
-        FAILURE: () => {
-
-          const { value } = action;
-          return state
-            .set(WORKSITES_INFO, Map())
-            .setIn([ERRORS, GET_WORKSITE_PLANS], value)
-            .setIn([ACTIONS, GET_WORKSITE_PLANS, REQUEST_STATE], RequestStates.FAILURE);
-        },
+        FAILURE: () => state
+          .setIn([ACTIONS, GET_WORKSITE_PLANS, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, GET_WORKSITE_PLANS, action.id])
       });
     }
@@ -250,14 +242,8 @@ export default function worksitesReducer(state :Map<*, *> = INITIAL_STATE, actio
             .set(ORGANIZATIONS_LIST, value)
             .setIn([ACTIONS, GET_ORGANIZATIONS, REQUEST_STATE], RequestStates.SUCCESS);
         },
-        FAILURE: () => {
-
-          const { value } = action;
-          return state
-            .set(ORGANIZATIONS_LIST, List())
-            .setIn([ERRORS, GET_ORGANIZATIONS], value)
-            .setIn([ACTIONS, GET_ORGANIZATIONS, REQUEST_STATE], RequestStates.FAILURE);
-        },
+        FAILURE: () => state
+          .setIn([ACTIONS, GET_ORGANIZATIONS, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, GET_ORGANIZATIONS, action.id])
       });
     }
@@ -311,14 +297,8 @@ export default function worksitesReducer(state :Map<*, *> = INITIAL_STATE, actio
 
           return state;
         },
-        FAILURE: () => {
-
-          const { value } = action;
-          return state
-            .set(WORKSITES_BY_ORG, Map())
-            .setIn([ERRORS, GET_WORKSITES_BY_ORG], value)
-            .setIn([ACTIONS, GET_WORKSITES_BY_ORG, REQUEST_STATE], RequestStates.FAILURE);
-        },
+        FAILURE: () => state
+          .setIn([ACTIONS, GET_WORKSITES_BY_ORG, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, GET_WORKSITES_BY_ORG, action.id])
       });
     }
@@ -345,15 +325,37 @@ export default function worksitesReducer(state :Map<*, *> = INITIAL_STATE, actio
             .set(WORKSITES_LIST, value)
             .setIn([ACTIONS, GET_WORKSITES, REQUEST_STATE], RequestStates.SUCCESS);
         },
-        FAILURE: () => {
+        FAILURE: () => state
+          .setIn([ACTIONS, GET_WORKSITES, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, GET_WORKSITES, action.id])
+      });
+    }
+
+    case getWorksite.case(action.type): {
+
+      return getWorksite.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, GET_WORKSITE, action.id], fromJS(action))
+          .setIn([ACTIONS, GET_WORKSITE, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+
+          if (!state.hasIn([ACTIONS, GET_WORKSITE, action.id])) {
+            return state;
+          }
 
           const { value } = action;
+          if (value === null || value === undefined) {
+            return state;
+          }
+
           return state
-            .set(WORKSITES_LIST, List())
-            .setIn([ERRORS, GET_WORKSITES], value)
-            .setIn([ACTIONS, GET_WORKSITES, REQUEST_STATE], RequestStates.FAILURE);
+            .set(WORKSITE, value)
+            .setIn([ACTIONS, GET_WORKSITE, REQUEST_STATE], RequestStates.SUCCESS);
         },
-        FINALLY: () => state.deleteIn([ACTIONS, GET_WORKSITES, action.id])
+        FAILURE: () => state
+          .setIn([ACTIONS, GET_WORKSITE, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, GET_WORKSITE, action.id])
       });
     }
 
