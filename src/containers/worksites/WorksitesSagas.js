@@ -27,6 +27,7 @@ import {
   getEntitySetIdFromApp,
   getNeighborDetails,
   getNeighborESID,
+  getPropertyFqnFromEdm,
 } from '../../utils/DataUtils';
 import { isDefined } from '../../utils/LangUtils';
 import { STATE } from '../../utils/constants/ReduxStateConsts';
@@ -34,6 +35,7 @@ import { APP_TYPE_FQNS, CONTACT_INFO_FQNS, WORKSITE_PLAN_FQNS } from '../../core
 import {
   ADD_ORGANIZATION,
   ADD_WORKSITE,
+  EDIT_WORKSITE,
   GET_ORGANIZATIONS,
   GET_WORKSITE,
   GET_WORKSITES,
@@ -43,6 +45,7 @@ import {
   GET_WORKSITE_PLANS,
   addOrganization,
   addWorksite,
+  editWorksite,
   getOrganizations,
   getWorksite,
   getWorksiteAddress,
@@ -51,8 +54,8 @@ import {
   getWorksites,
   getWorksitesByOrg,
 } from './WorksitesActions';
-import { submitDataGraph } from '../../core/sagas/data/DataActions';
-import { submitDataGraphWorker } from '../../core/sagas/data/DataSagas';
+import { submitDataGraph, submitPartialReplace } from '../../core/sagas/data/DataActions';
+import { submitDataGraphWorker, submitPartialReplaceWorker } from '../../core/sagas/data/DataSagas';
 
 const { PAST, SCHEDULED, TOTAL_HOURS } = WORKSITE_INFO_CONSTS;
 const {
@@ -160,6 +163,53 @@ function* addOrganizationWorker(action :SequenceAction) :Generator<*, *, *> {
 function* addOrganizationWatcher() :Generator<*, *, *> {
 
   yield takeEvery(ADD_ORGANIZATION, addOrganizationWorker);
+}
+
+/*
+ *
+ * WorksitesActions.editWorksite()
+ *
+ */
+
+function* editWorksiteWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+  let response :Object = {};
+
+  try {
+    yield put(editWorksite.request(id, value));
+
+    response = yield call(submitPartialReplaceWorker, submitPartialReplace(value));
+    if (response.error) {
+      throw response.error;
+    }
+    const { entityData } = value;
+    const app = yield select(getAppFromState);
+    const worksiteESID :UUID = getEntitySetIdFromApp(app, WORKSITE);
+    const edm = yield select(getEdmFromState);
+
+    const personEKID :UUID = Object.keys(entityData[worksiteESID])[0];
+    const storedWorksiteData :Map = fromJS(entityData[worksiteESID][personEKID]);
+
+    let newWorksiteData :Map = Map();
+    storedWorksiteData.forEach((personValue, propertyTypeId) => {
+      const propertyTypeFqn = getPropertyFqnFromEdm(edm, propertyTypeId);
+      newWorksiteData = newWorksiteData.set(propertyTypeFqn, personValue);
+    });
+    yield put(editWorksite.success(id, { newWorksiteData }));
+  }
+  catch (error) {
+    LOG.error('caught exception in editWorksiteWorker()', error);
+    yield put(editWorksite.failure(id, error));
+  }
+  finally {
+    yield put(editWorksite.finally(id));
+  }
+}
+
+function* editWorksiteWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(EDIT_WORKSITE, editWorksiteWorker);
 }
 
 /*
@@ -620,6 +670,8 @@ export {
   addOrganizationWorker,
   addWorksiteWatcher,
   addWorksiteWorker,
+  editWorksiteWatcher,
+  editWorksiteWorker,
   getOrganizationsWatcher,
   getOrganizationsWorker,
   getWorksiteWatcher,

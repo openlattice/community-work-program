@@ -15,6 +15,7 @@ import { WORKSITE_STATUSES } from './WorksitesConstants';
 import {
   addOrganization,
   addWorksite,
+  editWorksite,
   getOrganizations,
   getWorksite,
   getWorksiteAddress,
@@ -31,6 +32,7 @@ const {
   CONTACT_EMAIL,
   CONTACT_PERSON,
   CONTACT_PHONE,
+  EDIT_WORKSITE,
   GET_ORGANIZATIONS,
   GET_WORKSITE,
   GET_WORKSITE_ADDRESS,
@@ -55,6 +57,9 @@ const INITIAL_STATE :Map<*, *> = fromJS({
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [ADD_WORKSITE]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [EDIT_WORKSITE]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [GET_ORGANIZATIONS]: {
@@ -157,6 +162,35 @@ export default function worksitesReducer(state :Map<*, *> = INITIAL_STATE, actio
         FAILURE: () => state
           .setIn([ACTIONS, ADD_WORKSITE, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, ADD_WORKSITE, action.id]),
+      });
+    }
+
+    case editWorksite.case(action.type): {
+
+      return editWorksite.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, EDIT_WORKSITE, action.id], action)
+          .setIn([ACTIONS, EDIT_WORKSITE, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+
+          const seqAction :SequenceAction = action;
+          const successValue :Object = seqAction.value;
+          const { newWorksiteData } = successValue;
+
+          let worksite :Map = state.get(WORKSITE);
+
+          newWorksiteData.forEach((value, fqn) => {
+            worksite = worksite.set(fqn, value);
+          });
+
+          return state
+            .set(WORKSITE, worksite)
+            .setIn([ACTIONS, EDIT_WORKSITE, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, EDIT_WORKSITE, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, EDIT_WORKSITE, action.id]),
       });
     }
 

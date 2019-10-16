@@ -124,7 +124,7 @@ export const WORKSITES = {
   CONTACT_PERSON: 'contactPerson',
   CONTACT_EMAIL: 'contactEmail',
   CONTACT_PHONE: 'contactPhone',
-  ERRORS: 'errors',
+  EDIT_WORKSITE: 'editWorksite',
   GET_ORGANIZATIONS: 'getOrganizations',
   GET_WORKSITE: 'getWorksite',
   GET_WORKSITE_ADDRESS: 'getWorksiteAddress',

@@ -11,6 +11,9 @@ const addOrganization :RequestSequence = newRequestSequence(ADD_ORGANIZATION);
 const ADD_WORKSITE :'ADD_WORKSITE' = 'ADD_WORKSITE';
 const addWorksite :RequestSequence = newRequestSequence(ADD_WORKSITE);
 
+const EDIT_WORKSITE :'EDIT_WORKSITE' = 'EDIT_WORKSITE';
+const editWorksite :RequestSequence = newRequestSequence(EDIT_WORKSITE);
+
 const GET_ORGANIZATIONS :'GET_ORGANIZATIONS' = 'GET_ORGANIZATIONS';
 const getOrganizations :RequestSequence = newRequestSequence(GET_ORGANIZATIONS);
 
@@ -35,6 +38,7 @@ const getWorksitePlans :RequestSequence = newRequestSequence(GET_WORKSITE_PLANS)
 export {
   ADD_ORGANIZATION,
   ADD_WORKSITE,
+  EDIT_WORKSITE,
   GET_ORGANIZATIONS,
   GET_WORKSITE,
   GET_WORKSITES,
@@ -44,6 +48,7 @@ export {
   GET_WORKSITE_PLANS,
   addOrganization,
   addWorksite,
+  editWorksite,
   getOrganizations,
   getWorksite,
   getWorksiteAddress,
