@@ -125,6 +125,16 @@ class WorksiteProfile extends Component<Props> {
     actions.goToRoute(Routes.WORKSITES);
   }
 
+  goToEditWorksiteInfoForm = () => {
+    const {
+      actions,
+      match: {
+        params: { worksiteId: worksiteEKID }
+      }
+    } = this.props;
+    actions.goToRoute(Routes.EDIT_WORKSITE_PROFILE_INFO.replace(':worksiteId', worksiteEKID));
+  }
+
   render() {
     const {
       getWorksiteRequestState,
@@ -180,7 +190,7 @@ class WorksiteProfile extends Component<Props> {
           </div>
           <HeaderRowWrapper>
             <ProfileNameHeader>{ worksiteName }</ProfileNameHeader>
-            <EditButton>Edit</EditButton>
+            <EditButton onClick={this.goToEditWorksiteInfoForm}>Edit</EditButton>
           </HeaderRowWrapper>
           <Card>
             <CardSegment padding="md">

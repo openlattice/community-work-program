@@ -13,3 +13,4 @@ export const PARTICIPANT_PROFILE :string = `${PARTICIPANTS}/:subjectId`;
 export const PRINT_PARTICIPANT_SCHEDULE :string = `${PARTICIPANT_PROFILE}/schedule/print`;
 
 export const WORKSITE_PROFILE :string = '/worksites/:worksiteId';
+export const EDIT_WORKSITE_PROFILE_INFO :string = `${WORKSITE_PROFILE}/edit`;
