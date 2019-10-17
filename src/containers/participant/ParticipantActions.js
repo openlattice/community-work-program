@@ -77,6 +77,9 @@ const getParticipant :RequestSequence = newRequestSequence(GET_PARTICIPANT);
 const GET_PARTICIPANT_ADDRESS :'GET_PARTICIPANT_ADDRESS' = 'GET_PARTICIPANT_ADDRESS';
 const getParticipantAddress :RequestSequence = newRequestSequence(GET_PARTICIPANT_ADDRESS);
 
+const GET_PARTICIPANT_CASES :'GET_PARTICIPANT_CASES' = 'GET_PARTICIPANT_CASES';
+const getParticipantCases = newRequestSequence(GET_PARTICIPANT_CASES);
+
 const GET_PROGRAM_OUTCOME :'GET_PROGRAM_OUTCOME' = 'GET_PROGRAM_OUTCOME';
 const getProgramOutcome :RequestSequence = newRequestSequence(GET_PROGRAM_OUTCOME);
 
@@ -115,6 +118,7 @@ export {
   GET_JUDGE_FOR_CASE,
   GET_PARTICIPANT,
   GET_PARTICIPANT_ADDRESS,
+  GET_PARTICIPANT_CASES,
   GET_PROGRAM_OUTCOME,
   MARK_DIVERSION_PLAN_AS_COMPLETE,
   REASSIGN_JUDGE,
@@ -144,6 +148,7 @@ export {
   getJudges,
   getParticipant,
   getParticipantAddress,
+  getParticipantCases,
   getProgramOutcome,
   markDiversionPlanAsComplete,
   reassignJudge,

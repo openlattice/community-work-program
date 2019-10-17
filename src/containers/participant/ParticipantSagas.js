@@ -56,6 +56,7 @@ import {
   GET_JUDGE_FOR_CASE,
   GET_PARTICIPANT,
   GET_PARTICIPANT_ADDRESS,
+  GET_PARTICIPANT_CASES,
   GET_PROGRAM_OUTCOME,
   MARK_DIVERSION_PLAN_AS_COMPLETE,
   REASSIGN_JUDGE,
@@ -85,6 +86,7 @@ import {
   getJudges,
   getParticipant,
   getParticipantAddress,
+  getParticipantCases,
   getProgramOutcome,
   markDiversionPlanAsComplete,
   reassignJudge,
@@ -1423,7 +1425,7 @@ function* getContactInfoWatcher() :Generator<*, *, *> {
 
 /*
  *
- * ParticipantsActions.getProgramOutcome()
+ * ParticipantActions.getProgramOutcome()
  *
  */
 
@@ -1478,7 +1480,7 @@ function* getProgramOutcomeWatcher() :Generator<*, *, *> {
 
 /*
  *
- * ParticipantsActions.getEnrollmentStatus()
+ * ParticipantActions.getEnrollmentStatus()
  *
  */
 
@@ -1601,7 +1603,7 @@ function* getEnrollmentStatusWatcher() :Generator<*, *, *> {
 
 /*
  *
- * ParticipantsActions.getEnrollmentFromDiversionPlan()
+ * ParticipantActions.getEnrollmentFromDiversionPlan()
  *
  */
 
@@ -1670,7 +1672,7 @@ function* getEnrollmentFromDiversionPlanWatcher() :Generator<*, *, *> {
 
 /*
  *
- * ParticipantsActions.getParticipantAddress()
+ * ParticipantActions.getParticipantAddress()
  *
  */
 
@@ -1729,12 +1731,11 @@ function* getParticipantAddressWatcher() :Generator<*, *, *> {
 
 /*
  *
- * ParticipantsActions.getJudges()
+ * ParticipantActions.getJudges()
  *
  */
 
 function* getJudgesWorker(action :SequenceAction) :Generator<*, *, *> {
-
   const { id, value } = action;
   const workerResponse = {};
   let response :Object = {};
@@ -1764,6 +1765,7 @@ function* getJudgesWorker(action :SequenceAction) :Generator<*, *, *> {
   return workerResponse;
 }
 
+
 function* getJudgesWatcher() :Generator<*, *, *> {
 
   yield takeEvery(GET_JUDGES, getJudgesWorker);
@@ -1771,7 +1773,66 @@ function* getJudgesWatcher() :Generator<*, *, *> {
 
 /*
  *
- * ParticipantsActions.getInfoForEditCase()
+ * ParticipantActions.getParticipantCases()
+ *
+ */
+
+function* getParticipantCasesWorker(action :SequenceAction) :Generator<*, *, *> {
+  const { id, value } = action;
+  if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
+  const workerResponse = {};
+  let response :Object = {};
+  let allParticipantCases :List = List();
+
+  try {
+    yield put(getParticipantCases.request(id, value));
+    const { personEKID } = value;
+
+    const app = yield select(getAppFromState);
+    const peopleESID :UUID = getEntitySetIdFromApp(app, PEOPLE);
+    const manualPretrialCaseESID :UUID = getEntitySetIdFromApp(app, MANUAL_PRETRIAL_COURT_CASES);
+
+    const searchFilter = {
+      entityKeyIds: [personEKID],
+      destinationEntitySetIds: [manualPretrialCaseESID],
+      sourceEntitySetIds: [],
+    };
+    response = yield call(
+      searchEntityNeighborsWithFilterWorker,
+      searchEntityNeighborsWithFilter({ entitySetId: peopleESID, filter: searchFilter })
+    );
+    if (response.error) {
+      throw response.error;
+    }
+    const caseResults :List = fromJS(response.data[personEKID]);
+    if (!caseResults.isEmpty()) {
+      allParticipantCases = caseResults.map((caseResult :Map) => getNeighborDetails(caseResult));
+
+      const caseEKIDs :UUID[] = allParticipantCases.map((caseEntity :Map) => getEntityKeyId(caseEntity)).toJS();
+      yield call(getJudgeForCaseWorker, getJudgeForCase({ caseEKIDs }));
+    }
+    yield put(getParticipantCases.success(id, allParticipantCases));
+  }
+  catch (error) {
+    workerResponse.error = error;
+    LOG.error('caught exception in getParticipantCasesWorker()', error);
+    yield put(getParticipantCases.failure(id, error));
+  }
+  finally {
+    yield put(getParticipantCases.finally(id));
+  }
+  return workerResponse;
+}
+
+
+function* getParticipantCasesWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(GET_PARTICIPANT_CASES, getParticipantCasesWorker);
+}
+
+/*
+ *
+ * ParticipantActions.getInfoForEditCase()
  *
  */
 
@@ -1800,6 +1861,7 @@ function* getInfoForEditCaseWorker(action :SequenceAction) :Generator<*, *, *> {
     if (responseError) {
       throw responseError;
     }
+
     yield put(getInfoForEditCase.success(id));
   }
   catch (error) {
@@ -1818,7 +1880,7 @@ function* getInfoForEditCaseWatcher() :Generator<*, *, *> {
 
 /*
  *
- * ParticipantsActions.getInfoForEditPerson()
+ * ParticipantActions.getInfoForEditPerson()
  *
  */
 
@@ -1846,6 +1908,7 @@ function* getInfoForEditPersonWorker(action :SequenceAction) :Generator<*, *, *>
     if (responseError) {
       throw responseError;
     }
+
     yield put(getInfoForEditPerson.success(id));
   }
   catch (error) {
@@ -1864,7 +1927,7 @@ function* getInfoForEditPersonWatcher() :Generator<*, *, *> {
 
 /*
  *
- * ParticipantsActions.getAllParticipantInfo()
+ * ParticipantActions.getAllParticipantInfo()
  *
  */
 
@@ -1941,10 +2004,10 @@ export {
   getAllParticipantInfoWorker,
   getCaseInfoWatcher,
   getCaseInfoWorker,
-  getChargesWatcher,
-  getChargesWorker,
   getChargesForCaseWatcher,
   getChargesForCaseWorker,
+  getChargesWatcher,
+  getChargesWorker,
   getContactInfoWatcher,
   getContactInfoWorker,
   getEnrollmentFromDiversionPlanWatcher,
@@ -1961,6 +2024,8 @@ export {
   getJudgesWorker,
   getParticipantAddressWatcher,
   getParticipantAddressWorker,
+  getParticipantCasesWatcher,
+  getParticipantCasesWorker,
   getParticipantWatcher,
   getParticipantWorker,
   getProgramOutcomeWatcher,

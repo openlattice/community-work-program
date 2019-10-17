@@ -7,6 +7,7 @@ import type { Match } from 'react-router';
 
 import ParticipantProfile from './ParticipantProfile';
 import PrintWorkScheduleContainer from './print/PrintWorkScheduleContainer';
+import PrintInfractionContainer from './print/PrintInfractionContainer';
 import EditPersonAndContactsForm from './EditPersonAndContactsForm';
 import EditEnrollmentDatesForm from './EditEnrollmentDatesForm';
 import EditCaseInfoForm from './cases/EditCaseInfoForm';
@@ -38,6 +39,9 @@ const ParticipantProfileContainer = (props :Props) => {
   } = props;
   return (
     <Switch>
+      <Route
+          path={Routes.PRINT_INFRACTION}
+          component={PrintInfractionContainer} />
       <Route
           path={Routes.EDIT_PARTICIPANT}
           component={EditPersonAndContactsForm} />

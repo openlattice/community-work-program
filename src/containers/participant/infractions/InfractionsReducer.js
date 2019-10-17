@@ -10,6 +10,10 @@ import type { FQN } from 'lattice';
 
 import {
   addInfraction,
+  deleteInfractionEvent,
+  editInfractionEvent,
+  getInfoForPrintInfraction,
+  getInfraction,
   getInfractionTypes,
   getParticipantInfractions,
 } from './InfractionsActions';
@@ -36,9 +40,15 @@ const { CATEGORY } = INFRACTION_FQNS;
 const {
   ACTIONS,
   ADD_INFRACTION_EVENT,
+  DELETE_INFRACTION_EVENT,
+  EDIT_INFRACTION_EVENT,
+  GET_INFO_FOR_PRINT_INFRACTION,
+  GET_INFRACTION,
   GET_INFRACTION_TYPES,
   GET_PARTICIPANT_INFRACTIONS,
+  INFRACTION_EVENT,
   INFRACTIONS_INFO,
+  INFRACTION_TYPE,
   INFRACTION_TYPES,
   REQUEST_STATE,
   VIOLATIONS,
@@ -156,6 +166,160 @@ export default function infractionsReducer(state :Map<*, *> = INITIAL_STATE, act
           .set(INFRACTIONS_INFO, List())
           .setIn([ACTIONS, ADD_INFRACTION_EVENT, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, ADD_INFRACTION_EVENT, action.id]),
+      });
+    }
+
+    case deleteInfractionEvent.case(action.type): {
+
+      return deleteInfractionEvent.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, DELETE_INFRACTION_EVENT, action.id], action)
+          .setIn([ACTIONS, DELETE_INFRACTION_EVENT, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+
+          const seqAction :SequenceAction = action;
+          const { entityKeyId } = seqAction.value;
+
+          let violations = state.get(VIOLATIONS);
+          let warnings = state.get(WARNINGS);
+          const violationIndexToDelete :number = violations
+            .findIndex((violation :Map) => getEntityKeyId(violation) === entityKeyId);
+          if (violationIndexToDelete !== 1) {
+            violations = violations.delete(violationIndexToDelete);
+          }
+          else {
+            const warningIndexToDelete :number = warnings
+              .findIndex((warning :Map) => getEntityKeyId(warning) === entityKeyId);
+            if (warningIndexToDelete !== -1) {
+              warnings = warnings.delete(warningIndexToDelete);
+            }
+          }
+
+          return state
+            .set(VIOLATIONS, violations)
+            .set(WARNINGS, warnings)
+            .setIn([ACTIONS, DELETE_INFRACTION_EVENT, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, DELETE_INFRACTION_EVENT, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, DELETE_INFRACTION_EVENT, action.id]),
+      });
+    }
+
+    case editInfractionEvent.case(action.type): {
+
+      return editInfractionEvent.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, EDIT_INFRACTION_EVENT, action.id], action)
+          .setIn([ACTIONS, EDIT_INFRACTION_EVENT, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+
+          const seqAction :SequenceAction = action;
+          const storedSeqAction :SequenceAction = state.getIn([ACTIONS, EDIT_INFRACTION_EVENT, seqAction.id]);
+
+          if (storedSeqAction) {
+
+            const successValue :Object = seqAction.value;
+            const { infractionEventESID, edm } = successValue;
+
+            const requestValue :Object = storedSeqAction.value;
+            const { entityData } :Object = requestValue;
+            const infractionEventEKID = Object.keys(entityData[infractionEventESID])[0];
+            const storedInfractionEventEntity :Map = fromJS(entityData[infractionEventESID][infractionEventEKID]);
+            const newInfractionEvent :Map = Map().withMutations((map) => {
+              storedInfractionEventEntity.forEach((infractionEventValue, ptid) => {
+                const propertyTypeFqn :FQN = getPropertyFqnFromEdm(edm, ptid);
+                map.set(propertyTypeFqn, infractionEventValue);
+              });
+            });
+
+            let violations = state.get(VIOLATIONS);
+            let warnings = state.get(WARNINGS);
+            const violationIndexToEdit :number = violations
+              .findIndex((violation :Map) => getEntityKeyId(violation) === infractionEventEKID);
+
+            if (violationIndexToEdit !== -1) {
+              let violationToEdit :Map = violations.get(violationIndexToEdit);
+              newInfractionEvent.forEach((value :any, propertyTypeFqn :FQN) => {
+                violationToEdit = violationToEdit.set(propertyTypeFqn, value);
+              });
+              violations = violations.set(violationIndexToEdit, violationToEdit);
+            }
+            else {
+              const warningIndexToEdit :number = warnings
+                .findIndex((warning :Map) => getEntityKeyId(warning) === infractionEventEKID);
+
+              if (warningIndexToEdit !== -1) {
+                let warningToEdit :Map = warnings.get(warningIndexToEdit);
+                newInfractionEvent.forEach((value :any, propertyTypeFqn :FQN) => {
+                  warningToEdit = warningToEdit.set(propertyTypeFqn, value);
+                });
+                warnings = warnings.set(warningIndexToEdit, warningToEdit);
+              }
+            }
+            return state
+              .set(VIOLATIONS, violations)
+              .set(WARNINGS, warnings)
+              .setIn([ACTIONS, EDIT_INFRACTION_EVENT, REQUEST_STATE], RequestStates.SUCCESS);
+          }
+          return state;
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, EDIT_INFRACTION_EVENT, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, EDIT_INFRACTION_EVENT, action.id]),
+      });
+    }
+
+    case getInfraction.case(action.type): {
+
+      return getInfraction.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, GET_INFRACTION, action.id], fromJS(action))
+          .setIn([ACTIONS, GET_INFRACTION, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+
+          if (!state.hasIn([ACTIONS, GET_INFRACTION, action.id])) {
+            return state;
+          }
+
+          const { value } = action;
+          if (value === null || value === undefined) {
+            return state;
+          }
+          return state
+            .set(INFRACTION_EVENT, value.infractionEvent)
+            .set(INFRACTION_TYPE, value.infractionType)
+            .setIn([ACTIONS, GET_INFRACTION, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, GET_INFRACTION, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, GET_INFRACTION, action.id])
+          .setIn([ACTIONS, GET_INFRACTION, REQUEST_STATE], RequestStates.SUCCESS)
+      });
+    }
+
+    case getInfoForPrintInfraction.case(action.type): {
+
+      return getInfoForPrintInfraction.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, GET_INFO_FOR_PRINT_INFRACTION, action.id], action)
+          .setIn([ACTIONS, GET_INFO_FOR_PRINT_INFRACTION, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+
+          if (!state.hasIn([ACTIONS, GET_INFO_FOR_PRINT_INFRACTION, action.id])) {
+            return state;
+          }
+
+          return state
+            .setIn([ACTIONS, GET_INFO_FOR_PRINT_INFRACTION, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, GET_INFO_FOR_PRINT_INFRACTION, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, GET_INFO_FOR_PRINT_INFRACTION, action.id])
       });
     }
 

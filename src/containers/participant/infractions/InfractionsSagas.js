@@ -5,6 +5,7 @@ import {
   fromJS,
 } from 'immutable';
 import {
+  all,
   call,
   put,
   select,
@@ -23,12 +24,22 @@ import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../../utils/Errors';
 
 import {
   ADD_INFRACTION,
+  DELETE_INFRACTION_EVENT,
+  EDIT_INFRACTION_EVENT,
+  GET_INFO_FOR_PRINT_INFRACTION,
+  GET_INFRACTION,
   GET_INFRACTION_TYPES,
   GET_PARTICIPANT_INFRACTIONS,
   addInfraction,
+  deleteInfractionEvent,
+  editInfractionEvent,
+  getInfoForPrintInfraction,
+  getInfraction,
   getInfractionTypes,
   getParticipantInfractions,
 } from './InfractionsActions';
+import { getParticipant, getParticipantCases } from '../ParticipantActions';
+import { getParticipantWorker, getParticipantCasesWorker } from '../ParticipantSagas';
 import {
   getEntityKeyId,
   getEntityProperties,
@@ -36,8 +47,13 @@ import {
   getNeighborDetails,
   getNeighborESID,
 } from '../../../utils/DataUtils';
-import { submitDataGraph } from '../../../core/sagas/data/DataActions';
-import { submitDataGraphWorker } from '../../../core/sagas/data/DataSagas';
+import { isDefined } from '../../../utils/LangUtils';
+import { deleteEntities, submitDataGraph, submitPartialReplace } from '../../../core/sagas/data/DataActions';
+import {
+  deleteEntitiesWorker,
+  submitDataGraphWorker,
+  submitPartialReplaceWorker
+} from '../../../core/sagas/data/DataSagas';
 import { STATE } from '../../../utils/constants/ReduxStateConsts';
 import {
   APP_TYPE_FQNS,
@@ -47,8 +63,8 @@ import {
 } from '../../../core/edm/constants/FullyQualifiedNames';
 import { INFRACTIONS_CONSTS } from '../../../core/edm/constants/DataModelConsts';
 
-const { getEntitySetData } = DataApiActions;
-const { getEntitySetDataWorker } = DataApiSagas;
+const { getEntityData, getEntitySetData } = DataApiActions;
+const { getEntityDataWorker, getEntitySetDataWorker } = DataApiSagas;
 const { searchEntityNeighborsWithFilter } = SearchApiActions;
 const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
 const {
@@ -124,6 +140,195 @@ function* addInfractionWorker(action :SequenceAction) :Generator<*, *, *> {
 function* addInfractionWatcher() :Generator<*, *, *> {
 
   yield takeEvery(ADD_INFRACTION, addInfractionWorker);
+}
+
+/*
+ *
+ * InfractionsActions.deleteInfractionEvent()
+ *
+ */
+
+function* deleteInfractionEventWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+  if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
+  let response :Object = {};
+
+  try {
+    yield put(deleteInfractionEvent.request(id, value));
+
+    response = yield call(deleteEntitiesWorker, deleteEntities(value));
+    if (response.error) {
+      throw response.error;
+    }
+    const { entityKeyId } = value[0];
+
+    yield put(deleteInfractionEvent.success(id, entityKeyId));
+  }
+  catch (error) {
+    LOG.error('caught exception in deleteInfractionEventWorker()', error);
+    yield put(deleteInfractionEvent.failure(id, error));
+  }
+  finally {
+    yield put(deleteInfractionEvent.finally(id));
+  }
+}
+
+function* deleteInfractionEventWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(DELETE_INFRACTION_EVENT, deleteInfractionEventWorker);
+}
+
+/*
+ *
+ * InfractionsActions.editInfractionEvent()
+ *
+ */
+
+function* editInfractionEventWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+
+  try {
+    yield put(editInfractionEvent.request(id, value));
+
+    const response = yield call(submitPartialReplaceWorker, submitPartialReplace(value));
+    if (response.error) {
+      throw response.error;
+    }
+    const app = yield select(getAppFromState);
+    const infractionEventESID :UUID = getEntitySetIdFromApp(app, INFRACTION_EVENT);
+    const edm = yield select(getEdmFromState);
+
+    yield put(editInfractionEvent.success(id, { infractionEventESID, edm }));
+  }
+  catch (error) {
+    LOG.error('caught exception in editInfractionEventWorker()', error);
+    yield put(editInfractionEvent.failure(id, error));
+  }
+  finally {
+    yield put(editInfractionEvent.finally(id));
+  }
+}
+
+function* editInfractionEventWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(EDIT_INFRACTION_EVENT, editInfractionEventWorker);
+}
+
+/*
+ *
+ * InfractionsActions.getInfraction()
+ *
+ */
+
+function* getInfractionWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+  const workerResponse = {};
+  let response :Object = {};
+  let infractionEvent :Map = Map();
+  let infractionType :Map = Map();
+
+  try {
+    yield put(getInfraction.request(id));
+    const { infractionEventEKID } = value;
+    if (value === null || value === undefined) {
+      throw ERR_ACTION_VALUE_NOT_DEFINED;
+    }
+    const app = yield select(getAppFromState);
+    const infractionEventESID :UUID = getEntitySetIdFromApp(app, INFRACTION_EVENT);
+
+    response = yield call(getEntityDataWorker, getEntityData({
+      entitySetId: infractionEventESID,
+      entityKeyId: infractionEventEKID
+    }));
+    if (response.error) {
+      throw response.error;
+    }
+    infractionEvent = fromJS(response.data);
+
+    const infractionESID :UUID = getEntitySetIdFromApp(app, INFRACTIONS);
+    const searchFilter = {
+      entityKeyIds: [infractionEventEKID],
+      destinationEntitySetIds: [infractionESID],
+      sourceEntitySetIds: [],
+    };
+    response = yield call(
+      searchEntityNeighborsWithFilterWorker,
+      searchEntityNeighborsWithFilter({ entitySetId: infractionEventESID, filter: searchFilter })
+    );
+    if (response.error) {
+      throw response.error;
+    }
+
+    if (response.data[infractionEventEKID]) {
+      const infractionResult = fromJS(response.data[infractionEventEKID][0]);
+      infractionType = getNeighborDetails(infractionResult);
+    }
+
+    yield put(getInfraction.success(id, { infractionEvent, infractionType }));
+  }
+  catch (error) {
+    workerResponse.error = error;
+    LOG.error('caught exception in getInfractionWorker()', error);
+    yield put(getInfraction.failure(id, error));
+  }
+  finally {
+    yield put(getInfraction.finally(id));
+  }
+  return workerResponse;
+}
+
+function* getInfractionWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(GET_INFRACTION, getInfractionWorker);
+}
+
+/*
+ *
+ * InfractionsActions.getInfoForPrintInfraction()
+ *
+ */
+
+function* getInfoForPrintInfractionWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+  if (value === null || value === undefined) {
+    yield put(getInfoForPrintInfraction.failure(id, ERR_ACTION_VALUE_NOT_DEFINED));
+    return;
+  }
+
+  try {
+    yield put(getInfoForPrintInfraction.request(id));
+    const { infractionEventEKID, personEKID } = value;
+
+    const workerResponses = yield all([
+      call(getParticipantCasesWorker, getParticipantCases({ personEKID })),
+      call(getInfractionWorker, getInfraction({ infractionEventEKID })),
+      call(getParticipantWorker, getParticipant({ personEKID })),
+    ]);
+    const responseError = workerResponses.reduce(
+      (error, workerResponse) => (error ? error : workerResponse.error),
+      undefined,
+    );
+    if (responseError) {
+      throw responseError;
+    }
+    yield put(getInfoForPrintInfraction.success(id));
+  }
+  catch (error) {
+    LOG.error('caught exception in getInfoForPrintInfractionWorker()', error);
+    yield put(getInfoForPrintInfraction.failure(id, error));
+  }
+  finally {
+    yield put(getInfoForPrintInfraction.finally(id));
+  }
+}
+
+function* getInfoForPrintInfractionWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(GET_INFO_FOR_PRINT_INFRACTION, getInfoForPrintInfractionWorker);
 }
 
 /*
@@ -298,6 +503,14 @@ function* getParticipantInfractionsWatcher() :Generator<*, *, *> {
 export {
   addInfractionWatcher,
   addInfractionWorker,
+  deleteInfractionEventWatcher,
+  deleteInfractionEventWorker,
+  editInfractionEventWatcher,
+  editInfractionEventWorker,
+  getInfoForPrintInfractionWatcher,
+  getInfoForPrintInfractionWorker,
+  getInfractionWatcher,
+  getInfractionWorker,
   getInfractionTypesWatcher,
   getInfractionTypesWorker,
   getParticipantInfractionsWatcher,
