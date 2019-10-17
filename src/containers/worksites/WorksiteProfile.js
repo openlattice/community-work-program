@@ -29,11 +29,10 @@ import {
   ADDRESS_FQNS,
   APP_TYPE_FQNS,
   CONTACT_INFO_FQNS,
-  PEOPLE_FQNS,
   WORKSITE_FQNS,
 } from '../../core/edm/constants/FullyQualifiedNames';
 import { APP, STATE, WORKSITES } from '../../utils/constants/ReduxStateConsts';
-import { getEntityProperties } from '../../utils/DataUtils';
+import { getEntityProperties, getPersonFullName } from '../../utils/DataUtils';
 import { formatAsDate } from '../../utils/DateTimeUtils';
 import { getWeekdayTableHeaders, getWorksiteStatus } from './WorksitesUtils';
 import {
@@ -48,7 +47,6 @@ import * as Routes from '../../core/router/Routes';
 
 const { FULL_ADDRESS } = ADDRESS_FQNS;
 const { EMAIL, PHONE_NUMBER } = CONTACT_INFO_FQNS;
-const { FIRST_NAME, LAST_NAME } = PEOPLE_FQNS;
 const {
   DATETIME_END,
   DATETIME_START,
@@ -57,9 +55,13 @@ const {
 } = WORKSITE_FQNS;
 const {
   ACTIONS,
+  CONTACT_EMAIL,
+  CONTACT_PERSON,
+  CONTACT_PHONE,
   GET_WORKSITE,
   REQUEST_STATE,
   WORKSITE,
+  WORKSITE_ADDRESS,
 } = WORKSITES;
 
 /* Label Maps */
@@ -178,10 +180,7 @@ class WorksiteProfile extends Component<Props> {
       [DESCRIPTION]: availableWork,
       [NAME]: worksiteName
     } = getEntityProperties(worksite, [DATETIME_END, DATETIME_START, DESCRIPTION, NAME]);
-    const {
-      [FIRST_NAME]: firstName,
-      [LAST_NAME]: lastName,
-    } = getEntityProperties(contactPerson, [FIRST_NAME, LAST_NAME]);
+    const fullName = getPersonFullName(contactPerson);
     const { [PHONE_NUMBER]: phoneNumber } = getEntityProperties(contactPhone, [PHONE_NUMBER]);
     const { [EMAIL]: email } = getEntityProperties(contactEmail, [EMAIL]);
     const { [FULL_ADDRESS]: address } = getEntityProperties(worksiteAddress, [FULL_ADDRESS]);
@@ -192,7 +191,7 @@ class WorksiteProfile extends Component<Props> {
     });
 
     const contact :Map = Map({
-      contactName: `${firstName} ${lastName}` || EMPTY_FIELD,
+      contactName: fullName,
       contactPhone: phoneNumber || EMPTY_FIELD,
       contactEmail: email || EMPTY_FIELD,
       address: address || EMPTY_FIELD,
@@ -260,9 +259,13 @@ const mapStateToProps = (state) => {
   const worksites = state.get(STATE.WORKSITES);
   return ({
     app,
+    [CONTACT_EMAIL]: worksites.get(CONTACT_EMAIL),
+    [CONTACT_PERSON]: worksites.get(CONTACT_PERSON),
+    [CONTACT_PHONE]: worksites.get(CONTACT_PHONE),
     getWorksiteRequestState: worksites.getIn([ACTIONS, GET_WORKSITE, REQUEST_STATE]),
     initializeAppRequestState: app.getIn([APP.ACTIONS, APP.INITIALIZE_APPLICATION, APP.REQUEST_STATE]),
     [WORKSITE]: worksites.get(WORKSITE),
+    [WORKSITE_ADDRESS]: worksites.get(WORKSITE_ADDRESS),
   });
 };
 
