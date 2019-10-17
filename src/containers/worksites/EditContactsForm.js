@@ -142,8 +142,6 @@ class EditContactsForm extends Component<Props, State> {
     dataToProcess[getPageSectionKey(1, 4)] = {};
     dataToProcess[getPageSectionKey(1, 4)][getEntityAddressKey(0, EMPLOYEE, TITLE)] = 'worksite employee';
 
-    console.log('formData: ', formData);
-
     if (!Object.keys(formData[getPageSectionKey(1, 1)]).length) {
       dataToProcess[getPageSectionKey(1, 1)][getEntityAddressKey(0, STAFF, FIRST_NAME)] = '';
     }
@@ -169,8 +167,7 @@ class EditContactsForm extends Component<Props, State> {
 
     const entityData :Object = processEntityData(dataToProcess, entitySetIds, propertyTypeIds);
     const associationEntityData :Object = processAssociationEntityData(associations, entitySetIds, propertyTypeIds);
-    console.log('entityData: ', entityData);
-    console.log('associationEntityData: ', associationEntityData);
+
     actions.addWorksiteContactAndAddress({ associationEntityData, entityData });
   }
 

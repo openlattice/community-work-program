@@ -28,6 +28,7 @@ import {
   getNeighborDetails,
   getNeighborESID,
   getPropertyFqnFromEdm,
+  getPropertyTypeIdFromEdm,
 } from '../../utils/DataUtils';
 import { isDefined } from '../../utils/LangUtils';
 import { STATE } from '../../utils/constants/ReduxStateConsts';
@@ -80,8 +81,8 @@ const { HOURS_WORKED, REQUIRED_HOURS } = WORKSITE_PLAN_FQNS;
 const LOG = new Logger('WorksitesSagas');
 const { searchEntityNeighborsWithFilter } = SearchApiActions;
 const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
-const { getEntitySetData } = DataApiActions;
-const { getEntitySetDataWorker } = DataApiSagas;
+const { getEntityData, getEntitySetData } = DataApiActions;
+const { getEntityDataWorker, getEntitySetDataWorker } = DataApiSagas;
 
 const getAppFromState = state => state.get(STATE.APP, Map());
 const getEdmFromState = state => state.get(STATE.EDM, Map());
@@ -185,13 +186,13 @@ function* addWorksiteContactAndAddressWorker(action :SequenceAction) :Generator<
     storedContactData.forEach((contactEntity :Map, index :number) => {
 
       contactEntity.forEach((contactValue, propertyTypeId) => {
-        const propertyTypeFqn = getPropertyFqnFromEdm(edm, propertyTypeId);
-        if (propertyTypeFqn === PHONE_NUMBER) {
-          contactPhone = contactPhone.set(propertyTypeFqn, contactValue);
+
+        if (propertyTypeId === getPropertyTypeIdFromEdm(edm, PHONE_NUMBER)) {
+          contactPhone = contactPhone.set(PHONE_NUMBER, contactValue);
           contactPhone = contactPhone.set(ENTITY_KEY_ID, entityKeyIds[contactInfoESID][index]);
         }
-        if (propertyTypeFqn === EMAIL) {
-          contactEmail = contactEmail.set(propertyTypeFqn, contactValue);
+        if (propertyTypeId === getPropertyTypeIdFromEdm(edm, EMAIL)) {
+          contactEmail = contactEmail.set(EMAIL, contactValue);
           contactEmail = contactEmail.set(ENTITY_KEY_ID, entityKeyIds[contactInfoESID][index]);
         }
       });
@@ -742,14 +743,14 @@ function* getWorksiteWorker(action :SequenceAction) :Generator<*, *, *> {
     const app = yield select(getAppFromState);
     const worksiteESID = getEntitySetIdFromApp(app, WORKSITE);
 
-    response = yield call(getEntitySetDataWorker, getEntitySetData({
+    response = yield call(getEntityDataWorker, getEntityData({
       entitySetId: worksiteESID,
       entityKeyId: worksiteEKID
     }));
     if (response.error) {
       throw response.error;
     }
-    worksite = fromJS(response.data).get(0);
+    worksite = fromJS(response.data);
 
     yield all([
       call(getWorksiteAddressWorker, getWorksiteAddress({ worksiteEKID })),
