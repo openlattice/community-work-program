@@ -289,9 +289,9 @@ function* editWorksiteWorker(action :SequenceAction) :Generator<*, *, *> {
     const storedWorksiteData :Map = fromJS(entityData[worksiteESID][personEKID]);
 
     let newWorksiteData :Map = Map();
-    storedWorksiteData.forEach((personValue, propertyTypeId) => {
+    storedWorksiteData.forEach((worksiteValue, propertyTypeId) => {
       const propertyTypeFqn = getPropertyFqnFromEdm(edm, propertyTypeId);
-      newWorksiteData = newWorksiteData.set(propertyTypeFqn, personValue);
+      newWorksiteData = newWorksiteData.set(propertyTypeFqn, worksiteValue);
     });
     yield put(editWorksite.success(id, { newWorksiteData }));
   }
@@ -677,23 +677,33 @@ function* getWorksiteContactWorker(action :SequenceAction) :Generator<*, *, *> {
         destinationEntitySetIds: [],
         sourceEntitySetIds: [staffESID, contactInfoESID],
       };
-      results = fromJS(response.data[worksiteEKID]);
-      results.foreach((result :Map) => {
-        if (getNeighborESID(result) === staffESID) {
-          contactPerson = getNeighborDetails(result);
-        }
-        if (getNeighborESID(result) === contactInfoESID) {
-          const { [EMAIL]: emailFound, [PHONE_NUMBER]: phoneFound } = getEntityProperties(
-            result, [EMAIL, PHONE_NUMBER]
-          );
-          if (isDefined(emailFound)) {
-            contactEmail = getNeighborDetails(result);
+      response = yield call(
+        searchEntityNeighborsWithFilterWorker,
+        searchEntityNeighborsWithFilter({ entitySetId: employeeESID, filter: searchFilter })
+      );
+      if (response.error) {
+        throw response.error;
+      }
+      results = fromJS(response.data[employeeEKID]);
+      if (isDefined(results) && !results.isEmpty()) {
+
+        results.forEach((result :Map) => {
+          if (getNeighborESID(result) === staffESID) {
+            contactPerson = getNeighborDetails(result);
           }
-          if (isDefined(phoneFound)) {
-            contactPhone = getNeighborDetails(result);
+          if (getNeighborESID(result) === contactInfoESID) {
+            const { [EMAIL]: emailFound, [PHONE_NUMBER]: phoneFound } = getEntityProperties(
+              result, [EMAIL, PHONE_NUMBER]
+            );
+            if (emailFound) {
+              contactEmail = getNeighborDetails(result);
+            }
+            if (phoneFound) {
+              contactPhone = getNeighborDetails(result);
+            }
           }
-        }
-      });
+        });
+      }
     }
 
     yield put(getWorksiteContact.success(id, { contactEmail, contactPerson, contactPhone }));
