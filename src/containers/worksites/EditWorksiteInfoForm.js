@@ -22,13 +22,31 @@ import {
   getPropertyTypeIdFromEdm
 } from '../../utils/DataUtils';
 import {
+  ADDRESS_FQNS,
   APP_TYPE_FQNS,
+  CONTACT_INFO_FQNS,
+  EMPLOYEE_FQNS,
+  PEOPLE_FQNS,
   WORKSITE_FQNS,
 } from '../../core/edm/constants/FullyQualifiedNames';
 import { APP, STATE, WORKSITES } from '../../utils/constants/ReduxStateConsts';
 import * as Routes from '../../core/router/Routes';
 
-const { WORKSITE } = APP_TYPE_FQNS;
+const { FULL_ADDRESS } = ADDRESS_FQNS;
+const {
+  ADDRESS,
+  CONTACT_INFORMATION,
+  CONTACT_INFO_GIVEN,
+  EMPLOYEE,
+  IS,
+  LOCATED_AT,
+  STAFF,
+  WORKS_AT,
+  WORKSITE,
+} = APP_TYPE_FQNS;
+const { EMAIL, PHONE_NUMBER } = CONTACT_INFO_FQNS;
+const { TITLE } = EMPLOYEE_FQNS;
+const { FIRST_NAME, LAST_NAME } = PEOPLE_FQNS;
 const {
   DATETIME_END,
   DATETIME_START,
@@ -104,9 +122,19 @@ class EditWorksiteInfoForm extends Component<Props> {
   }
 
   createEntityIndexToIdMap = () => {
-    const { worksite } = this.props;
+    const {
+      contactEmail,
+      contactPerson,
+      contactPhone,
+      worksite,
+      worksiteAddress,
+    } = this.props;
     const entityIndexToIdMap :Map = Map().withMutations((map :Map) => {
+      map.setIn([CONTACT_INFORMATION, 0], getEntityKeyId(contactPhone));
+      map.setIn([CONTACT_INFORMATION, 1], getEntityKeyId(contactEmail));
+      map.setIn([STAFF, 0], getEntityKeyId(contactPerson));
       map.setIn([WORKSITE, 0], getEntityKeyId(worksite));
+      map.setIn([WORKSITE_ADDRESS, 0], getEntityKeyId(worksiteAddress));
     });
     return entityIndexToIdMap;
   }
@@ -114,6 +142,14 @@ class EditWorksiteInfoForm extends Component<Props> {
   createEntitySetIdsMap = () => {
     const { app } = this.props;
     return {
+      [ADDRESS]: getEntitySetIdFromApp(app, ADDRESS),
+      [CONTACT_INFORMATION]: getEntitySetIdFromApp(app, CONTACT_INFORMATION),
+      [CONTACT_INFO_GIVEN]: getEntitySetIdFromApp(app, CONTACT_INFO_GIVEN),
+      [EMPLOYEE]: getEntitySetIdFromApp(app, EMPLOYEE),
+      [IS]: getEntitySetIdFromApp(app, IS),
+      [LOCATED_AT]: getEntitySetIdFromApp(app, LOCATED_AT),
+      [STAFF]: getEntitySetIdFromApp(app, STAFF),
+      [WORKS_AT]: getEntitySetIdFromApp(app, WORKS_AT),
       [WORKSITE]: getEntitySetIdFromApp(app, WORKSITE),
     };
   }
@@ -124,7 +160,13 @@ class EditWorksiteInfoForm extends Component<Props> {
       [DATETIME_END]: getPropertyTypeIdFromEdm(edm, DATETIME_END),
       [DATETIME_START]: getPropertyTypeIdFromEdm(edm, DATETIME_START),
       [DESCRIPTION]: getPropertyTypeIdFromEdm(edm, DESCRIPTION),
+      [EMAIL]: getPropertyTypeIdFromEdm(edm, EMAIL),
+      [FIRST_NAME]: getPropertyTypeIdFromEdm(edm, FIRST_NAME),
+      [FULL_ADDRESS]: getPropertyTypeIdFromEdm(edm, FULL_ADDRESS),
+      [LAST_NAME]: getPropertyTypeIdFromEdm(edm, LAST_NAME),
       [NAME]: getPropertyTypeIdFromEdm(edm, NAME),
+      [PHONE_NUMBER]: getPropertyTypeIdFromEdm(edm, PHONE_NUMBER),
+      [TITLE]: getPropertyTypeIdFromEdm(edm, TITLE),
     };
   }
 
@@ -183,6 +225,7 @@ class EditWorksiteInfoForm extends Component<Props> {
               entityIndexToIdMap={entityIndexToIdMap}
               entitySetIds={entitySetIds}
               propertyTypeIds={propertyTypeIds}
+              worksite={worksite}
               worksiteAddress={worksiteAddress} />
         </CardStack>
       </FormWrapper>
