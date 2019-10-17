@@ -21,8 +21,8 @@ import AddInfractionModal from './AddInfractionModal';
 
 import { getEntityKeyId, getEntityProperties, sortEntitiesByDateProperty } from '../../../utils/DataUtils';
 import { formatAsDate } from '../../../utils/DateTimeUtils';
-import { getParticipantInfractions } from '../ParticipantActions';
-import { PERSON, STATE } from '../../../utils/constants/ReduxStateConsts';
+import { getParticipantInfractions } from './InfractionsActions';
+import { PERSON_INFRACTIONS, STATE, WORKSITE_PLANS } from '../../../utils/constants/ReduxStateConsts';
 import { DATETIME_COMPLETED, INFRACTION_EVENT_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { ContainerOuterWrapper } from '../../../components/Layout';
 
@@ -43,14 +43,16 @@ const IconSplashWrapper = styled.div`
 const { TYPE } = INFRACTION_EVENT_FQNS;
 const {
   ACTIONS,
+  REQUEST_STATE,
+  WORKSITES_BY_WORKSITE_PLAN,
+} = WORKSITE_PLANS;
+const {
   ADD_INFRACTION_EVENT,
   GET_PARTICIPANT_INFRACTIONS,
   INFRACTIONS_INFO,
-  REQUEST_STATE,
   VIOLATIONS,
   WARNINGS,
-  WORKSITES_BY_WORKSITE_PLAN,
-} = PERSON;
+} = PERSON_INFRACTIONS;
 
 type Props = {
   actions:{
@@ -107,7 +109,7 @@ class InfractionsContainer extends Component<Props, State> {
   }
 
   getInfractionStateValues = (infractions :List) => {
-    const sortedInfractions :List = sortEntitiesByDateProperty(infractions, DATETIME_COMPLETED).reverse();
+    const sortedInfractions :List = sortEntitiesByDateProperty(infractions, [DATETIME_COMPLETED]).reverse();
     const infractionOptions :Object[] = sortedInfractions
       .map((infraction :Map) => {
         const {
@@ -212,14 +214,15 @@ class InfractionsContainer extends Component<Props, State> {
 }
 
 const mapStateToProps = (state) => {
-  const person = state.get(STATE.PERSON);
+  const infractions = state.get(STATE.INFRACTIONS);
+  const worksitePlans = state.get(STATE.WORKSITE_PLANS);
   return {
-    addInfractionEventRequestState: state.getIn([STATE.PERSON, ACTIONS, ADD_INFRACTION_EVENT, REQUEST_STATE]),
-    getParticipantInfractionsState: person.getIn([ACTIONS, GET_PARTICIPANT_INFRACTIONS, REQUEST_STATE]),
-    [INFRACTIONS_INFO]: person.get(INFRACTIONS_INFO),
-    [VIOLATIONS]: person.get(VIOLATIONS),
-    [WARNINGS]: person.get(WARNINGS),
-    [WORKSITES_BY_WORKSITE_PLAN]: person.get(WORKSITES_BY_WORKSITE_PLAN),
+    addInfractionEventRequestState: infractions.getIn([ACTIONS, ADD_INFRACTION_EVENT, REQUEST_STATE]),
+    getParticipantInfractionsState: infractions.getIn([ACTIONS, GET_PARTICIPANT_INFRACTIONS, REQUEST_STATE]),
+    [INFRACTIONS_INFO]: infractions.get(INFRACTIONS_INFO),
+    [VIOLATIONS]: infractions.get(VIOLATIONS),
+    [WARNINGS]: infractions.get(WARNINGS),
+    [WORKSITES_BY_WORKSITE_PLAN]: worksitePlans.get(WORKSITES_BY_WORKSITE_PLAN),
   };
 };
 

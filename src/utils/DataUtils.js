@@ -7,6 +7,7 @@ import { DateTime } from 'luxon';
 import type { FQN } from 'lattice';
 
 import {
+  ASSOCIATION_ENTITY_SET,
   NEIGHBOR_DETAILS,
   NEIGHBOR_ENTITY_SET,
   SEARCH_PREFIX,
@@ -78,12 +79,15 @@ export const getEntityKeyId = (entityObj :Map) :string => {
 
 export const sortEntitiesByDateProperty = (
   entityCollection :List | Map,
-  datePropertyFqn :FQN
+  datePropertyPath :FQN[]
 ) :List | Map => entityCollection
 
   .sort((entityObjA :Map, entityObjB :Map) => {
-    const dateA = DateTime.fromISO(entityObjA.getIn([datePropertyFqn, 0]));
-    const dateB = DateTime.fromISO(entityObjB.getIn([datePropertyFqn, 0]));
+    const dateA = DateTime.fromISO(entityObjA.getIn(datePropertyPath.concat([0])));
+    const dateB = DateTime.fromISO(entityObjB.getIn(datePropertyPath.concat([0])));
+    if (!dateA.isValid || !dateB.isValid) {
+      return 0;
+    }
     if (dateA.toISO() === dateB.toISO()) {
       return 0;
     }
@@ -91,6 +95,7 @@ export const sortEntitiesByDateProperty = (
   });
 
 export const getNeighborESID = (neighbor :Map) => (neighbor.getIn([NEIGHBOR_ENTITY_SET, 'id']));
+export const getAssociationNeighborESID = (neighbor :Map) => (neighbor.getIn([ASSOCIATION_ENTITY_SET, 'id']));
 
 export const getSearchTerm = (
   propertyTypeId :UUID,

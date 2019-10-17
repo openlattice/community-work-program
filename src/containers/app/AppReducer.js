@@ -112,7 +112,6 @@ export default function appReducer(state :Map<*, *> = INITIAL_STATE, action :Obj
                 });
               }
             }
-
           });
           let selectedOrganizationId :string = '';
           let selectedOrganizationTitle :string = '';

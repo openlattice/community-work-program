@@ -408,7 +408,7 @@ function* getEnrollmentStatusesWorker(action :SequenceAction) :Generator<*, *, *
           .filter((plan :Map) => getEntityKeyId(plan) === diversionPlanEKID)
           .get(0);
 
-        const sortedEnrollmentStatuses :List = sortEntitiesByDateProperty(enrollmentList, EFFECTIVE_DATE);
+        const sortedEnrollmentStatuses :List = sortEntitiesByDateProperty(enrollmentList, [EFFECTIVE_DATE]);
 
         const mostRecentStatus = sortedEnrollmentStatuses.last();
         const mostRecentStatusDate = DateTime.fromISO(mostRecentStatus.getIn([EFFECTIVE_DATE, 0]));
