@@ -15,7 +15,7 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import type { RequestSequence } from 'redux-reqseq';
 
-import { checkInForAppointment } from '../ParticipantActions';
+import { checkInForAppointment } from './ParticipantScheduleActions';
 import { getCombinedDateTime } from '../../../utils/ScheduleUtils';
 import {
   getEntitySetIdFromApp,

@@ -8,9 +8,9 @@ import type { RequestState } from 'redux-reqseq';
 
 import CreateAppointmentForm from './CreateAppointmentForm';
 
-import { PERSON, STATE } from '../../../utils/constants/ReduxStateConsts';
+import { PARTICIPANT_SCHEDULE, STATE } from '../../../utils/constants/ReduxStateConsts';
 
-const { ACTIONS, CREATE_WORK_APPOINTMENTS, REQUEST_STATE } = PERSON;
+const { ACTIONS, CREATE_WORK_APPOINTMENTS, REQUEST_STATE } = PARTICIPANT_SCHEDULE;
 
 type Props = {
   createAppointmentRequestState :RequestState;
@@ -53,7 +53,8 @@ class CreateWorkAppointmentModal extends Component<Props> {
 }
 
 const mapStateToProps = (state :Map) => ({
-  createAppointmentRequestState: state.getIn([STATE.PERSON, ACTIONS, CREATE_WORK_APPOINTMENTS, REQUEST_STATE]),
+  createAppointmentRequestState: state
+    .getIn([STATE.PARTICIPANT_SCHEDULE, ACTIONS, CREATE_WORK_APPOINTMENTS, REQUEST_STATE]),
 });
 
 // $FlowFixMe

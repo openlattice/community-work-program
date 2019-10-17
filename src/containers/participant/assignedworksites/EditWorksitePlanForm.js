@@ -13,7 +13,7 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import type { RequestSequence } from 'redux-reqseq';
 
-import { editWorksitePlan } from '../ParticipantActions';
+import { editWorksitePlan } from './WorksitePlanActions';
 import { isDefined } from '../../../utils/LangUtils';
 import {
   getEntityProperties,

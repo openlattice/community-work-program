@@ -78,7 +78,7 @@ class PrintWorkScheduleContainer extends Component<Props, State> {
       });
     });
 
-    appointments = sortEntitiesByDateProperty(appointments, INCIDENT_START_DATETIME);
+    appointments = sortEntitiesByDateProperty(appointments, [INCIDENT_START_DATETIME]);
     return appointments;
   }
 

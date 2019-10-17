@@ -7,6 +7,7 @@ import { DateTime } from 'luxon';
 import type { FQN } from 'lattice';
 
 import {
+  ASSOCIATION_ENTITY_SET,
   NEIGHBOR_DETAILS,
   NEIGHBOR_ENTITY_SET,
   SEARCH_PREFIX,
@@ -42,6 +43,7 @@ const getPropertyFqnFromEdm = (edm :Object | Map, propertyTypeId :UUID) => {
 };
 
 const getNeighborESID = (neighbor :Map) => (neighbor.getIn([NEIGHBOR_ENTITY_SET, 'id']));
+const getAssociationNeighborESID = (neighbor :Map) => (neighbor.getIn([ASSOCIATION_ENTITY_SET, 'id']));
 
 /* entity data */
 const getFirstNeighborValue = (
@@ -96,12 +98,15 @@ const getPersonFullName = (personEntity :Map) :string => {
 /* manipulate entity data */
 const sortEntitiesByDateProperty = (
   entityCollection :List | Map,
-  datePropertyFqn :FQN
+  datePropertyPath :FQN[]
 ) :List | Map => entityCollection
 
   .sort((entityObjA :Map, entityObjB :Map) => {
-    const dateA = DateTime.fromISO(entityObjA.getIn([datePropertyFqn, 0]));
-    const dateB = DateTime.fromISO(entityObjB.getIn([datePropertyFqn, 0]));
+    const dateA = DateTime.fromISO(entityObjA.getIn(datePropertyPath.concat([0])));
+    const dateB = DateTime.fromISO(entityObjB.getIn(datePropertyPath.concat([0])));
+    if (!dateA.isValid || !dateB.isValid) {
+      return 0;
+    }
     if (dateA.toISO() === dateB.toISO()) {
       return 0;
     }
@@ -153,6 +158,7 @@ const getUTCDateRangeSearchString = (PTID :UUID, timeUnits :string, startDate :D
 
 export {
   findEntityPathInMap,
+  getAssociationNeighborESID,
   getEntityKeyId,
   getEntityProperties,
   getEntitySetIdFromApp,
