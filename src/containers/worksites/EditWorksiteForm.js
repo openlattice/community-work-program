@@ -38,14 +38,12 @@ type Props = {
 
 type State = {
   formData :Object;
-  prepopulated :boolean;
 };
 
 class EditWorksiteForm extends Component<Props, State> {
 
   state = {
     formData: {},
-    prepopulated: false,
   };
 
   componentDidMount() {
@@ -62,29 +60,25 @@ class EditWorksiteForm extends Component<Props, State> {
   prepopulateFormData = () => {
     const { worksite } = this.props;
 
-    const prepopulated = !worksite.isEmpty();
     const formData = {};
-    if (prepopulated) {
-      const {
-        [DATETIME_END]: dateInactive,
-        [DATETIME_START]: dateActive,
-        [DESCRIPTION]: availableWork,
-        [NAME]: worksiteName
-      } = getEntityProperties(worksite, [DATETIME_END, DATETIME_START, DESCRIPTION, NAME]);
+    const {
+      [DATETIME_END]: dateInactive,
+      [DATETIME_START]: dateActive,
+      [DESCRIPTION]: availableWork,
+      [NAME]: worksiteName
+    } = getEntityProperties(worksite, [DATETIME_END, DATETIME_START, DESCRIPTION, NAME]);
 
-      const sectionOneKey = getPageSectionKey(1, 1);
-      formData[sectionOneKey] = {};
-      formData[sectionOneKey][getEntityAddressKey(0, WORKSITE, NAME)] = worksiteName;
-      formData[sectionOneKey][getEntityAddressKey(0, WORKSITE, DATETIME_START)] = DateTime
-        .fromISO(dateActive).toISODate() || '';
-      formData[sectionOneKey][getEntityAddressKey(0, WORKSITE, DATETIME_END)] = DateTime
-        .fromISO(dateInactive).toISODate() || '';
-      formData[sectionOneKey][getEntityAddressKey(0, WORKSITE, DESCRIPTION)] = availableWork;
-    }
+    const sectionOneKey = getPageSectionKey(1, 1);
+    formData[sectionOneKey] = {};
+    formData[sectionOneKey][getEntityAddressKey(0, WORKSITE, NAME)] = worksiteName;
+    formData[sectionOneKey][getEntityAddressKey(0, WORKSITE, DATETIME_START)] = DateTime
+      .fromISO(dateActive).toISODate() || '';
+    formData[sectionOneKey][getEntityAddressKey(0, WORKSITE, DATETIME_END)] = DateTime
+      .fromISO(dateInactive).toISODate() || '';
+    formData[sectionOneKey][getEntityAddressKey(0, WORKSITE, DESCRIPTION)] = availableWork;
 
     this.setState({
       formData,
-      prepopulated,
     });
   }
 
@@ -95,10 +89,7 @@ class EditWorksiteForm extends Component<Props, State> {
       entitySetIds,
       propertyTypeIds,
     } = this.props;
-    const {
-      formData,
-      prepopulated,
-    } = this.state;
+    const { formData } = this.state;
 
     const formContext = {
       editAction: actions.editWorksite,
@@ -111,7 +102,7 @@ class EditWorksiteForm extends Component<Props, State> {
       <Card>
         <CardHeader padding="sm">Edit Worksite Info</CardHeader>
         <Form
-            disabled={prepopulated}
+            disabled
             formContext={formContext}
             formData={formData}
             schema={worksiteSchema}
