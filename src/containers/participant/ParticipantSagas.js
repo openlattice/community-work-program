@@ -35,6 +35,7 @@ import {
   ADD_NEW_DIVERSION_PLAN_STATUS,
   ADD_NEW_PARTICIPANT_CONTACTS,
   ADD_TO_AVAILABLE_CHARGES,
+  CREATE_NEW_ENROLLMENT,
   EDIT_ENROLLMENT_DATES,
   EDIT_PARTICIPANT_CONTACTS,
   EDIT_PERSON_CASE,
@@ -46,10 +47,11 @@ import {
   GET_CASE_INFO,
   GET_CHARGES,
   GET_CHARGES_FOR_CASE,
-  GET_INFO_FOR_EDIT_PERSON,
   GET_CONTACT_INFO,
+  GET_ENROLLMENT_FROM_DIVERSION_PLAN,
   GET_ENROLLMENT_STATUS,
   GET_INFO_FOR_EDIT_CASE,
+  GET_INFO_FOR_EDIT_PERSON,
   GET_JUDGES,
   GET_JUDGE_FOR_CASE,
   GET_PARTICIPANT,
@@ -62,6 +64,7 @@ import {
   addNewDiversionPlanStatus,
   addNewParticipantContacts,
   addToAvailableCharges,
+  createNewEnrollment,
   editEnrollmentDates,
   editParticipantContacts,
   editPersonCase,
@@ -74,6 +77,7 @@ import {
   getCharges,
   getChargesForCase,
   getContactInfo,
+  getEnrollmentFromDiversionPlan,
   getEnrollmentStatus,
   getInfoForEditCase,
   getInfoForEditPerson,
@@ -449,6 +453,41 @@ function* addToAvailableChargesWorker(action :SequenceAction) :Generator<*, *, *
 function* addToAvailableChargesWatcher() :Generator<*, *, *> {
 
   yield takeEvery(ADD_TO_AVAILABLE_CHARGES, addToAvailableChargesWorker);
+}
+
+/*
+ *
+ * ParticipantActions.createNewEnrollment()
+ *
+ */
+
+function* createNewEnrollmentWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+  let response :Object = {};
+
+  try {
+    yield put(createNewEnrollment.request(id, value));
+
+    response = yield call(submitDataGraphWorker, submitDataGraph(value));
+    if (response.error) {
+      throw response.error;
+    }
+
+    yield put(createNewEnrollment.success(id));
+  }
+  catch (error) {
+    LOG.error('caught exception in createNewEnrollmentWorker()', error);
+    yield put(createNewEnrollment.failure(id, error));
+  }
+  finally {
+    yield put(createNewEnrollment.finally(id));
+  }
+}
+
+function* createNewEnrollmentWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(CREATE_NEW_ENROLLMENT, createNewEnrollmentWorker);
 }
 
 /*
@@ -1263,25 +1302,26 @@ function* getCaseInfoWorker(action :SequenceAction) :Generator<*, *, *> {
     if (value === null || value === undefined) {
       throw ERR_ACTION_VALUE_NOT_DEFINED;
     }
-    const { personEKID } = value;
+    const { diversionPlan } = value;
     const app = yield select(getAppFromState);
-    const peopleESID = getEntitySetIdFromApp(app, PEOPLE);
+    const diversionPlanESID = getEntitySetIdFromApp(app, DIVERSION_PLAN);
     const manualCourtCases = getEntitySetIdFromApp(app, MANUAL_PRETRIAL_COURT_CASES);
+    const diversionPlanEKID = getEntityKeyId(diversionPlan);
 
     const searchFilter :Object = {
-      entityKeyIds: [personEKID],
+      entityKeyIds: [diversionPlanEKID],
       destinationEntitySetIds: [manualCourtCases],
       sourceEntitySetIds: [],
     };
     response = yield call(
       searchEntityNeighborsWithFilterWorker,
-      searchEntityNeighborsWithFilter({ entitySetId: peopleESID, filter: searchFilter })
+      searchEntityNeighborsWithFilter({ entitySetId: diversionPlanESID, filter: searchFilter })
     );
     if (response.error) {
       throw response.error;
     }
-    if (response.data[personEKID]) {
-      const caseResult :Map = fromJS(response.data[personEKID][0]);
+    if (response.data[diversionPlanEKID]) {
+      const caseResult :Map = fromJS(response.data[diversionPlanEKID][0]);
       personCase = getNeighborDetails(caseResult);
     }
 
@@ -1449,6 +1489,7 @@ function* getEnrollmentStatusWorker(action :SequenceAction) :Generator<*, *, *> 
   let response :Object = {};
   let enrollmentStatus :Map = Map();
   let diversionPlan :Map = Map();
+  let allDiversionPlans :List = List();
 
   try {
     yield put(getEnrollmentStatus.request(id));
@@ -1477,16 +1518,16 @@ function* getEnrollmentStatusWorker(action :SequenceAction) :Generator<*, *, *> 
     if (response.error) {
       throw response.error;
     }
-    const diversionPlans :Map = fromJS(response.data)
+    allDiversionPlans = fromJS(response.data[personEKID])
       .map((planList :List) => planList.map((plan :Map) => getNeighborDetails(plan)));
 
-    if (diversionPlans.count() > 0) {
+    if (allDiversionPlans.count() > 0) {
 
       /*
        * 2. Find all enrollment statuses for each diversion plan found.
        */
       const diversionPlanEKIDs :UUID[] = [];
-      diversionPlans.get(personEKID).forEach((plan :Map) => {
+      allDiversionPlans.forEach((plan :Map) => {
         diversionPlanEKIDs.push(getEntityKeyId(plan));
       });
 
@@ -1523,12 +1564,13 @@ function* getEnrollmentStatusWorker(action :SequenceAction) :Generator<*, *, *> 
          */
         const diversionPlanEKID :UUID = mostRecentEnrollmentStatusesByDiversionPlan
           .findKey((status :Map) => getEntityKeyId(status) === getEntityKeyId(enrollmentStatus));
-        diversionPlan = diversionPlans.get(personEKID).find((plan :Map) => getEntityKeyId(plan) === diversionPlanEKID);
+        diversionPlan = allDiversionPlans.find((plan :Map) => getEntityKeyId(plan) === diversionPlanEKID);
       }
 
       // some integrated people won't have enrollment statuses but will have a diversion plan:
-      if (diversionPlan.isEmpty()) diversionPlan = diversionPlans.getIn([personEKID, 0]);
+      if (diversionPlan.isEmpty()) diversionPlan = allDiversionPlans.get(0);
 
+      yield call(getCaseInfoWorker, getCaseInfo({ diversionPlan }));
       /* If populating profile, call getWorksitePlans() to find all worksite plans for current diversion plan */
       const { populateProfile } = value;
       if (populateProfile) {
@@ -1539,7 +1581,7 @@ function* getEnrollmentStatusWorker(action :SequenceAction) :Generator<*, *, *> 
       }
     }
 
-    yield put(getEnrollmentStatus.success(id, { diversionPlan, enrollmentStatus }));
+    yield put(getEnrollmentStatus.success(id, { allDiversionPlans, diversionPlan, enrollmentStatus }));
   }
   catch (error) {
     workerResponse.error = error;
@@ -1555,6 +1597,75 @@ function* getEnrollmentStatusWorker(action :SequenceAction) :Generator<*, *, *> 
 function* getEnrollmentStatusWatcher() :Generator<*, *, *> {
 
   yield takeEvery(GET_ENROLLMENT_STATUS, getEnrollmentStatusWorker);
+}
+
+/*
+ *
+ * ParticipantsActions.getEnrollmentFromDiversionPlan()
+ *
+ */
+
+function* getEnrollmentFromDiversionPlanWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+  const workerResponse = {};
+  let response :Object = {};
+  let enrollmentStatus :Map = Map();
+
+  try {
+    yield put(getEnrollmentFromDiversionPlan.request(id));
+    const { diversionPlan } = value;
+    if (value === null || value === undefined) {
+      throw ERR_ACTION_VALUE_NOT_DEFINED;
+    }
+
+    const app = yield select(getAppFromState);
+    const diversionPlanESID = getEntitySetIdFromApp(app, DIVERSION_PLAN);
+    const enrollmentStatusESID = getEntitySetIdFromApp(app, ENROLLMENT_STATUS);
+    const diversionPlanEKID :UUID = getEntityKeyId(diversionPlan);
+
+    const enrollmentFilter :Object = {
+      entityKeyIds: [diversionPlanEKID],
+      destinationEntitySetIds: [],
+      sourceEntitySetIds: [enrollmentStatusESID],
+    };
+    response = yield call(
+      searchEntityNeighborsWithFilterWorker,
+      searchEntityNeighborsWithFilter({ entitySetId: diversionPlanESID, filter: enrollmentFilter })
+    );
+    if (response.error) {
+      throw response.error;
+    }
+    const enrollmentStatuses :Map = fromJS(response.data[diversionPlanEKID])
+      .map((enrollment :List) => getNeighborDetails(enrollment));
+
+    if (enrollmentStatuses.count() > 0) {
+      enrollmentStatus = sortEntitiesByDateProperty(enrollmentStatuses, EFFECTIVE_DATE)
+        .last();
+    }
+
+    yield all([
+      call(getCaseInfoWorker, getCaseInfo({ diversionPlan })),
+      call(getWorksitePlansWorker, getWorksitePlans({ diversionPlan })),
+      call(getProgramOutcomeWorker, getProgramOutcome({ diversionPlan })),
+    ]);
+
+    yield put(getEnrollmentFromDiversionPlan.success(id, { diversionPlan, enrollmentStatus }));
+  }
+  catch (error) {
+    workerResponse.error = error;
+    LOG.error('caught exception in getEnrollmentFromDiversionPlanWorker()', error);
+    yield put(getEnrollmentFromDiversionPlan.failure(id, error));
+  }
+  finally {
+    yield put(getEnrollmentFromDiversionPlan.finally(id));
+  }
+  return workerResponse;
+}
+
+function* getEnrollmentFromDiversionPlanWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(GET_ENROLLMENT_FROM_DIVERSION_PLAN, getEnrollmentFromDiversionPlanWorker);
 }
 
 /*
@@ -1677,7 +1788,6 @@ function* getInfoForEditCaseWorker(action :SequenceAction) :Generator<*, *, *> {
     const { personEKID } = value;
 
     const workerResponses = yield all([
-      call(getCaseInfoWorker, getCaseInfo({ personEKID })),
       call(getParticipantWorker, getParticipant({ personEKID })),
       call(getEnrollmentStatusWorker, getEnrollmentStatus({ personEKID, populateProfile: false })),
       call(getJudgesWorker, getJudges()),
@@ -1771,7 +1881,6 @@ function* getAllParticipantInfoWorker(action :SequenceAction) :Generator<*, *, *
     const { personEKID } = value;
 
     const workerResponses = yield all([
-      call(getCaseInfoWorker, getCaseInfo({ personEKID })),
       call(getContactInfoWorker, getContactInfo({ personEKID })),
       call(getEnrollmentStatusWorker, getEnrollmentStatus({ personEKID, populateProfile: true })),
       call(getInfractionTypesWorker, getInfractionTypes()),
@@ -1812,6 +1921,8 @@ export {
   addNewParticipantContactsWorker,
   addToAvailableChargesWatcher,
   addToAvailableChargesWorker,
+  createNewEnrollmentWatcher,
+  createNewEnrollmentWorker,
   editEnrollmentDatesWatcher,
   editEnrollmentDatesWorker,
   editParticipantContactsWatcher,
@@ -1836,6 +1947,8 @@ export {
   getChargesForCaseWorker,
   getContactInfoWatcher,
   getContactInfoWorker,
+  getEnrollmentFromDiversionPlanWatcher,
+  getEnrollmentFromDiversionPlanWorker,
   getEnrollmentStatusWatcher,
   getEnrollmentStatusWorker,
   getInfoForEditCaseWatcher,

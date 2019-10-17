@@ -14,6 +14,9 @@ const addNewParticipantContacts :RequestSequence = newRequestSequence(ADD_NEW_PA
 const ADD_TO_AVAILABLE_CHARGES :'ADD_TO_AVAILABLE_CHARGES' = 'ADD_TO_AVAILABLE_CHARGES';
 const addToAvailableCharges :RequestSequence = newRequestSequence(ADD_TO_AVAILABLE_CHARGES);
 
+const CREATE_NEW_ENROLLMENT :'CREATE_NEW_ENROLLMENT' = 'CREATE_NEW_ENROLLMENT';
+const createNewEnrollment = newRequestSequence(CREATE_NEW_ENROLLMENT);
+
 const EDIT_ENROLLMENT_DATES :'EDIT_ENROLLMENT_DATES' = 'EDIT_ENROLLMENT_DATES';
 const editEnrollmentDates :RequestSequence = newRequestSequence(EDIT_ENROLLMENT_DATES);
 
@@ -49,6 +52,9 @@ const getChargesForCase :RequestSequence = newRequestSequence(GET_CHARGES_FOR_CA
 
 const GET_CONTACT_INFO :'GET_CONTACT_INFO' = 'GET_CONTACT_INFO';
 const getContactInfo :RequestSequence = newRequestSequence(GET_CONTACT_INFO);
+
+const GET_ENROLLMENT_FROM_DIVERSION_PLAN :'GET_ENROLLMENT_FROM_DIVERSION_PLAN' = 'GET_ENROLLMENT_FROM_DIVERSION_PLAN';
+const getEnrollmentFromDiversionPlan = newRequestSequence(GET_ENROLLMENT_FROM_DIVERSION_PLAN);
 
 const GET_ENROLLMENT_STATUS :'GET_ENROLLMENT_STATUS' = 'GET_ENROLLMENT_STATUS';
 const getEnrollmentStatus :RequestSequence = newRequestSequence(GET_ENROLLMENT_STATUS);
@@ -88,6 +94,7 @@ export {
   ADD_NEW_DIVERSION_PLAN_STATUS,
   ADD_NEW_PARTICIPANT_CONTACTS,
   ADD_TO_AVAILABLE_CHARGES,
+  CREATE_NEW_ENROLLMENT,
   EDIT_ENROLLMENT_DATES,
   EDIT_PARTICIPANT_CONTACTS,
   EDIT_PERSON_CASE,
@@ -99,10 +106,11 @@ export {
   GET_CASE_INFO,
   GET_CHARGES,
   GET_CHARGES_FOR_CASE,
-  GET_INFO_FOR_EDIT_PERSON,
   GET_CONTACT_INFO,
+  GET_ENROLLMENT_FROM_DIVERSION_PLAN,
   GET_ENROLLMENT_STATUS,
   GET_INFO_FOR_EDIT_CASE,
+  GET_INFO_FOR_EDIT_PERSON,
   GET_JUDGES,
   GET_JUDGE_FOR_CASE,
   GET_PARTICIPANT,
@@ -115,6 +123,7 @@ export {
   addNewDiversionPlanStatus,
   addNewParticipantContacts,
   addToAvailableCharges,
+  createNewEnrollment,
   editEnrollmentDates,
   editParticipantContacts,
   editPersonCase,
@@ -127,6 +136,7 @@ export {
   getCharges,
   getChargesForCase,
   getContactInfo,
+  getEnrollmentFromDiversionPlan,
   getEnrollmentStatus,
   getInfoForEditCase,
   getInfoForEditPerson,

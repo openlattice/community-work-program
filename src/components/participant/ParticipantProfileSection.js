@@ -54,10 +54,6 @@ const PersonNameHeader = styled.div`
   width: 100%;
 `;
 
-const PersonCard = styled(Card)`
-  height: 603px;
-`;
-
 const PersonInfoRow = styled.div`
   align-items: center;
   display: flex;
@@ -110,7 +106,7 @@ const ParticipantProfileSection = ({
         <SectionLabel subtle>Participant Profile</SectionLabel>
         <StyledEditButton mode="subtle" onClick={edit} />
       </SectionNameRow>
-      <PersonCard>
+      <Card>
         <PersonHeaderRow>
           {
             person && mugshot
@@ -161,7 +157,7 @@ const ParticipantProfileSection = ({
             <PersonValue>{ personAddress || EMPTY_FIELD }</PersonValue>
           </PersonInfoRow>
         </CardSegment>
-      </PersonCard>
+      </Card>
     </SectionWrapper>
   );
 };

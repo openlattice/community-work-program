@@ -14,6 +14,7 @@ import {
   addNewDiversionPlanStatus,
   addNewParticipantContacts,
   addToAvailableCharges,
+  createNewEnrollment,
   editEnrollmentDates,
   editParticipantContacts,
   editPersonCase,
@@ -26,6 +27,7 @@ import {
   getCharges,
   getChargesForCase,
   getContactInfo,
+  getEnrollmentFromDiversionPlan,
   getEnrollmentStatus,
   getInfoForEditCase,
   getInfoForEditPerson,
@@ -39,7 +41,6 @@ import {
   removeChargeFromCase,
 } from './ParticipantActions';
 import {
-  findEntityPathInMap,
   getEntityKeyId,
   getPropertyFqnFromEdm,
   getPropertyTypeIdFromEdm,
@@ -52,7 +53,6 @@ import {
   DATETIME_END,
   DIVERSION_PLAN_FQNS,
   ENTITY_KEY_ID,
-  INCIDENT_START_DATETIME,
   PEOPLE_FQNS,
   WORKSITE_PLAN_FQNS,
 } from '../../core/edm/constants/FullyQualifiedNames';
@@ -67,7 +67,7 @@ const {
 const { CASE_NUMBER_TEXT, COURT_CASE_TYPE } = CASE_FQNS;
 const { NOTES } = DIVERSION_PLAN_FQNS;
 const { PERSON_NOTES } = PEOPLE_FQNS;
-const { HOURS_WORKED, REQUIRED_HOURS } = WORKSITE_PLAN_FQNS;
+const { REQUIRED_HOURS } = WORKSITE_PLAN_FQNS;
 const {
   ACTIONS,
   ADD_CHARGES_TO_CASE,
@@ -75,8 +75,10 @@ const {
   ADD_NEW_PARTICIPANT_CONTACTS,
   ADD_TO_AVAILABLE_CHARGES,
   ADDRESS,
+  ALL_DIVERSION_PLANS,
   CHARGES,
   CHARGES_FOR_CASE,
+  CREATE_NEW_ENROLLMENT,
   DIVERSION_PLAN,
   EDIT_ENROLLMENT_DATES,
   EDIT_PARTICIPANT_CONTACTS,
@@ -92,6 +94,7 @@ const {
   GET_CHARGES,
   GET_CHARGES_FOR_CASE,
   GET_CONTACT_INFO,
+  GET_ENROLLMENT_FROM_DIVERSION_PLAN,
   GET_ENROLLMENT_STATUS,
   GET_INFO_FOR_EDIT_CASE,
   GET_INFO_FOR_EDIT_PERSON,
@@ -121,6 +124,9 @@ const INITIAL_STATE :Map<*, *> = fromJS({
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [ADD_TO_AVAILABLE_CHARGES]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [CREATE_NEW_ENROLLMENT]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [EDIT_ENROLLMENT_DATES]: {
@@ -156,6 +162,9 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     [GET_CONTACT_INFO]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
+    [GET_ENROLLMENT_FROM_DIVERSION_PLAN]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
     [GET_ENROLLMENT_STATUS]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
@@ -188,6 +197,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     },
   },
   [ADDRESS]: Map(),
+  [ALL_DIVERSION_PLANS]: List(),
   [CHARGES]: List(),
   [CHARGES_FOR_CASE]: List(),
   [DIVERSION_PLAN]: Map(),
@@ -354,6 +364,21 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
         FAILURE: () => state
           .setIn([ACTIONS, ADD_TO_AVAILABLE_CHARGES, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, ADD_TO_AVAILABLE_CHARGES, action.id]),
+      });
+    }
+
+    case createNewEnrollment.case(action.type): {
+
+      return createNewEnrollment.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, CREATE_NEW_ENROLLMENT, action.id], action)
+          .setIn([ACTIONS, CREATE_NEW_ENROLLMENT, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => state
+          .setIn([ACTIONS, CREATE_NEW_ENROLLMENT, REQUEST_STATE], RequestStates.SUCCESS),
+        FAILURE: () => state
+          .setIn([ACTIONS, CREATE_NEW_ENROLLMENT, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, CREATE_NEW_ENROLLMENT, action.id]),
       });
     }
 
@@ -759,6 +784,35 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
       });
     }
 
+    case getEnrollmentFromDiversionPlan.case(action.type): {
+
+      return getEnrollmentFromDiversionPlan.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, GET_ENROLLMENT_FROM_DIVERSION_PLAN, action.id], fromJS(action))
+          .setIn([ACTIONS, GET_ENROLLMENT_FROM_DIVERSION_PLAN, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+
+          if (!state.hasIn([ACTIONS, GET_ENROLLMENT_FROM_DIVERSION_PLAN, action.id])) {
+            return state;
+          }
+
+          const { value } = action;
+          if (value === null || value === undefined) {
+            return state;
+          }
+
+          return state
+            .set(ENROLLMENT_STATUS, value.enrollmentStatus)
+            .set(DIVERSION_PLAN, value.diversionPlan)
+            .setIn([ACTIONS, GET_ENROLLMENT_FROM_DIVERSION_PLAN, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, GET_ENROLLMENT_FROM_DIVERSION_PLAN, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, GET_ENROLLMENT_FROM_DIVERSION_PLAN, action.id])
+      });
+    }
+
     case getEnrollmentStatus.case(action.type): {
 
       return getEnrollmentStatus.reducer(state, action, {
@@ -780,6 +834,7 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
           return state
             .set(ENROLLMENT_STATUS, value.enrollmentStatus)
             .set(DIVERSION_PLAN, value.diversionPlan)
+            .set(ALL_DIVERSION_PLANS, value.allDiversionPlans)
             .setIn([ACTIONS, GET_ENROLLMENT_STATUS, REQUEST_STATE], RequestStates.SUCCESS);
         },
         FAILURE: () => state
