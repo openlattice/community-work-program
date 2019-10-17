@@ -43,6 +43,7 @@ import {
   ADD_WORKSITE,
   ADD_WORKSITE_CONTACT_AND_ADDRESS,
   EDIT_WORKSITE,
+  EDIT_WORKSITE_CONTACT_AND_ADDRESS,
   GET_ORGANIZATIONS,
   GET_WORKSITE,
   GET_WORKSITES,
@@ -54,6 +55,7 @@ import {
   addWorksite,
   addWorksiteContactAndAddress,
   editWorksite,
+  editWorksiteContactAndAddress,
   getOrganizations,
   getWorksite,
   getWorksiteAddress,
@@ -308,6 +310,87 @@ function* editWorksiteWorker(action :SequenceAction) :Generator<*, *, *> {
 function* editWorksiteWatcher() :Generator<*, *, *> {
 
   yield takeEvery(EDIT_WORKSITE, editWorksiteWorker);
+}
+
+/*
+ *
+ * WorksitesActions.editWorksiteContactAndAddress()
+ *
+ */
+
+function* editWorksiteContactAndAddressWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+  let response :Object = {};
+  let newPersonData :Map = Map();
+  let newPhoneData :Map = Map();
+  let newEmailData :Map = Map();
+  let newAddressData :Map = Map();
+
+  try {
+    yield put(editWorksiteContactAndAddress.request(id, value));
+
+    response = yield call(submitPartialReplaceWorker, submitPartialReplace(value));
+    if (response.error) {
+      throw response.error;
+    }
+    const { entityData } = value;
+    const app = yield select(getAppFromState);
+    const contactInfoESID :UUID = getEntitySetIdFromApp(app, CONTACT_INFORMATION);
+    const staffESID :UUID = getEntitySetIdFromApp(app, STAFF);
+    const addressESID :UUID = getEntitySetIdFromApp(app, ADDRESS);
+    const edm = yield select(getEdmFromState);
+
+    const storedEntities :Map = fromJS(entityData);
+    storedEntities.forEach((entities :Map, entitySetId :UUID) => {
+
+      if (entitySetId === staffESID) {
+        entities.forEach((addressValue, propertyTypeId) => {
+          const propertyTypeFqn = getPropertyFqnFromEdm(edm, propertyTypeId);
+          newPersonData = newPersonData.set(propertyTypeFqn, addressValue);
+        });
+      }
+
+      if (entitySetId === contactInfoESID) {
+        entities.forEach((contactEntity :Map) => {
+          contactEntity.forEach((contactValue, propertyTypeId) => {
+            if (propertyTypeId === getPropertyTypeIdFromEdm(edm, PHONE_NUMBER)) {
+              newPhoneData = newPhoneData.set(PHONE_NUMBER, contactValue);
+            }
+            if (propertyTypeId === getPropertyTypeIdFromEdm(edm, EMAIL)) {
+              newEmailData = newEmailData.set(EMAIL, contactValue);
+            }
+          });
+        });
+      }
+
+      if (entitySetId === addressESID) {
+        entities.forEach((addressValue, propertyTypeId) => {
+          const propertyTypeFqn = getPropertyFqnFromEdm(edm, propertyTypeId);
+          newAddressData = newAddressData.set(propertyTypeFqn, addressValue);
+        });
+      }
+    });
+
+    yield put(editWorksiteContactAndAddress.success(id, {
+      newAddressData,
+      newEmailData,
+      newPersonData,
+      newPhoneData,
+    }));
+  }
+  catch (error) {
+    LOG.error('caught exception in editWorksiteContactAndAddressWorker()', error);
+    yield put(editWorksiteContactAndAddress.failure(id, error));
+  }
+  finally {
+    yield put(editWorksiteContactAndAddress.finally(id));
+  }
+}
+
+function* editWorksiteContactAndAddressWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(EDIT_WORKSITE_CONTACT_AND_ADDRESS, editWorksiteContactAndAddressWorker);
 }
 
 /*
@@ -782,6 +865,8 @@ export {
   addWorksiteContactAndAddressWorker,
   editWorksiteWatcher,
   editWorksiteWorker,
+  editWorksiteContactAndAddressWatcher,
+  editWorksiteContactAndAddressWorker,
   getOrganizationsWatcher,
   getOrganizationsWorker,
   getWorksiteWatcher,

@@ -17,6 +17,7 @@ import {
   addWorksite,
   addWorksiteContactAndAddress,
   editWorksite,
+  editWorksiteContactAndAddress,
   getOrganizations,
   getWorksite,
   getWorksiteAddress,
@@ -35,6 +36,7 @@ const {
   CONTACT_PERSON,
   CONTACT_PHONE,
   EDIT_WORKSITE,
+  EDIT_WORKSITE_CONTACT_AND_ADDRESS,
   GET_ORGANIZATIONS,
   GET_WORKSITE,
   GET_WORKSITE_ADDRESS,
@@ -65,6 +67,9 @@ const INITIAL_STATE :Map<*, *> = fromJS({
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [EDIT_WORKSITE]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [EDIT_WORKSITE_CONTACT_AND_ADDRESS]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [GET_ORGANIZATIONS]: {
@@ -227,6 +232,55 @@ export default function worksitesReducer(state :Map<*, *> = INITIAL_STATE, actio
         FAILURE: () => state
           .setIn([ACTIONS, EDIT_WORKSITE, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, EDIT_WORKSITE, action.id]),
+      });
+    }
+
+    case editWorksiteContactAndAddress.case(action.type): {
+
+      return editWorksiteContactAndAddress.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, EDIT_WORKSITE_CONTACT_AND_ADDRESS, action.id], action)
+          .setIn([ACTIONS, EDIT_WORKSITE_CONTACT_AND_ADDRESS, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+
+          const seqAction :SequenceAction = action;
+          const successValue :Object = seqAction.value;
+          const {
+            newAddressData,
+            newEmailData,
+            newPersonData,
+            newPhoneData,
+          } = successValue;
+
+          let worksiteAddress = state.get(WORKSITE_ADDRESS);
+          let contactEmail = state.get(CONTACT_EMAIL);
+          let contactPerson = state.get(CONTACT_PERSON);
+          let contactPhone = state.get(CONTACT_PHONE);
+
+          newAddressData.forEach((value, fqn) => {
+            worksiteAddress = worksiteAddress.set(fqn, value);
+          });
+          newEmailData.forEach((value, fqn) => {
+            contactEmail = contactEmail.set(fqn, value);
+          });
+          newPersonData.forEach((value, fqn) => {
+            contactPerson = contactPerson.set(fqn, value);
+          });
+          newPhoneData.forEach((value, fqn) => {
+            contactPhone = contactPhone.set(fqn, value);
+          });
+
+          return state
+            .set(CONTACT_PERSON, contactPerson)
+            .set(CONTACT_PHONE, contactPhone)
+            .set(CONTACT_EMAIL, contactEmail)
+            .set(WORKSITE_ADDRESS, worksiteAddress)
+            .setIn([ACTIONS, EDIT_WORKSITE_CONTACT_AND_ADDRESS, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, EDIT_WORKSITE_CONTACT_AND_ADDRESS, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, EDIT_WORKSITE_CONTACT_AND_ADDRESS, action.id]),
       });
     }
 

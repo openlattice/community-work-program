@@ -130,11 +130,11 @@ class EditWorksiteInfoForm extends Component<Props> {
       worksiteAddress,
     } = this.props;
     const entityIndexToIdMap :Map = Map().withMutations((map :Map) => {
+      map.setIn([ADDRESS, 0], getEntityKeyId(worksiteAddress));
       map.setIn([CONTACT_INFORMATION, 0], getEntityKeyId(contactPhone));
       map.setIn([CONTACT_INFORMATION, 1], getEntityKeyId(contactEmail));
       map.setIn([STAFF, 0], getEntityKeyId(contactPerson));
       map.setIn([WORKSITE, 0], getEntityKeyId(worksite));
-      map.setIn([WORKSITE_ADDRESS, 0], getEntityKeyId(worksiteAddress));
     });
     return entityIndexToIdMap;
   }

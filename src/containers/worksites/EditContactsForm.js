@@ -8,7 +8,7 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import type { RequestSequence } from 'redux-reqseq';
 
-import { addWorksiteContactAndAddress } from './WorksitesActions';
+import { addWorksiteContactAndAddress, editWorksiteContactAndAddress } from './WorksitesActions';
 import {
   ADDRESS_FQNS,
   APP_TYPE_FQNS,
@@ -45,6 +45,7 @@ const {
 type Props = {
   actions:{
     addWorksiteContactAndAddress :RequestSequence;
+    editWorksiteContactAndAddress :RequestSequence;
   },
   contactEmail :Map;
   contactPerson :Map;
@@ -184,7 +185,7 @@ class EditContactsForm extends Component<Props, State> {
     } = this.state;
 
     const formContext = {
-      // editAction: actions.editPersonCase,
+      editAction: actions.editWorksiteContactAndAddress,
       entityIndexToIdMap,
       entitySetIds,
       propertyTypeIds,
@@ -208,6 +209,7 @@ class EditContactsForm extends Component<Props, State> {
 const mapDispatchToProps = dispatch => ({
   actions: bindActionCreators({
     addWorksiteContactAndAddress,
+    editWorksiteContactAndAddress,
   }, dispatch)
 });
 
