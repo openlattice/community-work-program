@@ -15,6 +15,7 @@ import { WORKSITE_STATUSES } from './WorksitesConstants';
 import {
   addOrganization,
   addWorksite,
+  addWorksiteContactAndAddress,
   editWorksite,
   getOrganizations,
   getWorksite,
@@ -29,6 +30,7 @@ const {
   ACTIONS,
   ADD_ORGANIZATION,
   ADD_WORKSITE,
+  ADD_WORKSITE_CONTACT_AND_ADDRESS,
   CONTACT_EMAIL,
   CONTACT_PERSON,
   CONTACT_PHONE,
@@ -57,6 +59,9 @@ const INITIAL_STATE :Map<*, *> = fromJS({
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [ADD_WORKSITE]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [ADD_WORKSITE_CONTACT_AND_ADDRESS]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [EDIT_WORKSITE]: {
@@ -162,6 +167,37 @@ export default function worksitesReducer(state :Map<*, *> = INITIAL_STATE, actio
         FAILURE: () => state
           .setIn([ACTIONS, ADD_WORKSITE, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, ADD_WORKSITE, action.id]),
+      });
+    }
+
+    case addWorksiteContactAndAddress.case(action.type): {
+
+      return addWorksiteContactAndAddress.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, ADD_WORKSITE_CONTACT_AND_ADDRESS, action.id], action)
+          .setIn([ACTIONS, ADD_WORKSITE_CONTACT_AND_ADDRESS, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+
+          const seqAction :SequenceAction = action;
+          const successValue :Object = seqAction.value;
+          const {
+            contactEmail,
+            contactPerson,
+            contactPhone,
+            worksiteAddress,
+          } = successValue;
+
+          return state
+            .set(CONTACT_PERSON, contactPerson)
+            .set(CONTACT_PHONE, contactPhone)
+            .set(CONTACT_EMAIL, contactEmail)
+            .set(WORKSITE_ADDRESS, worksiteAddress)
+            .setIn([ACTIONS, ADD_WORKSITE_CONTACT_AND_ADDRESS, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, ADD_WORKSITE_CONTACT_AND_ADDRESS, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, ADD_WORKSITE_CONTACT_AND_ADDRESS, action.id]),
       });
     }
 

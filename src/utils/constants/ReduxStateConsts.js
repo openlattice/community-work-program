@@ -121,6 +121,7 @@ export const WORKSITES = {
   ACTIONS: 'actions',
   ADD_ORGANIZATION: 'addOrganization',
   ADD_WORKSITE: 'addWorksite',
+  ADD_WORKSITE_CONTACT_AND_ADDRESS: 'addWorksiteContactAndAddress',
   CONTACT_PERSON: 'contactPerson',
   CONTACT_EMAIL: 'contactEmail',
   CONTACT_PHONE: 'contactPhone',
