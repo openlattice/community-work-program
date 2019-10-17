@@ -2,12 +2,14 @@
 import React, { Component } from 'react';
 import styled from 'styled-components';
 import { List, Map } from 'immutable';
+import { DateTime } from 'luxon';
 import {
   Button,
   Card,
   CardSegment,
   CardStack,
   IconSplash,
+  Select,
 } from 'lattice-ui-kit';
 import { faTools } from '@fortawesome/pro-light-svg-icons';
 import { connect } from 'react-redux';
@@ -26,13 +28,14 @@ import {
 import ParticipantWorkScheduleContainer from './schedule/ParticipantWorkScheduleContainer';
 import ProgramCompletionBanner from './ProgramCompletionBanner';
 
+import CreateNewEnrollmentModal from './CreateNewEnrollmentModal';
 import AssignedWorksite from './assignedworksites/AssignedWorksite';
 import AssignWorksiteModal from './assignedworksites/AssignWorksiteModal';
 import InfractionsContainer from './infractions/InfractionsContainer';
 import CreateWorkAppointmentModal from './schedule/CreateAppointmentModal';
 import LogoLoader from '../../components/LogoLoader';
 
-import { getAllParticipantInfo } from './ParticipantActions';
+import { getAllParticipantInfo, getEnrollmentFromDiversionPlan } from './ParticipantActions';
 import { goToRoute } from '../../core/router/RoutingActions';
 import { OL } from '../../core/style/Colors';
 import { PARTICIPANT_PROFILE_WIDTH } from '../../core/style/Sizes';
@@ -76,11 +79,14 @@ const { CHECK_INS_BY_APPOINTMENT, WORK_APPOINTMENTS_BY_WORKSITE_PLAN } = PARTICI
 const {
   ACTIONS,
   ADDRESS,
+  ALL_DIVERSION_PLANS,
   CHARGES_FOR_CASE,
+  CREATE_NEW_ENROLLMENT,
   DIVERSION_PLAN,
   EMAIL,
   ENROLLMENT_STATUS,
   GET_ALL_PARTICIPANT_INFO,
+  GET_ENROLLMENT_FROM_DIVERSION_PLAN,
   JUDGE,
   PARTICIPANT,
   PERSON_CASE,
@@ -101,8 +107,19 @@ const ENROLLMENT_STATUSES_EXCLUDING_PREENROLLMENT = Object.values(ENROLLMENT_STA
     && status !== ENROLLMENT_STATUSES.AWAITING_ORIENTATION);
 
 /* Constants for Modals */
+const NEW_ENROLLMENT = 'showNewEnrollmentModal';
 const ASSIGN_WORKSITE = 'showAssignWorksiteModal';
 const WORK_APPOINTMENT = 'showWorkAppointmentModal';
+
+const generateDiversionPlanOptions = (entities :List) :Object[] => {
+  const options = [];
+  entities.forEach((entity :Map) => {
+    const { [DATETIME_RECEIVED]: sentenceDateTime } = getEntityProperties(entity, [DATETIME_RECEIVED]);
+    const sentenceDate = DateTime.fromISO(sentenceDateTime).toLocaleString(DateTime.DATE_SHORT);
+    options.push({ label: `Enrollment ${sentenceDate}`, value: entity });
+  });
+  return options;
+};
 
 const ProfileWrapper = styled.div`
   display: flex;
@@ -117,7 +134,6 @@ const ProfileBody = styled.div`
   align-items: stretch;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
   margin-bottom: 30px;
   overflow-x: visible;
   overflow-y: auto;
@@ -125,29 +141,33 @@ const ProfileBody = styled.div`
   width: 100%;
 `;
 
-const GeneralInfoSection = styled(ProfileBody)`
-  height: 790px;
-  align-items: center;
-  flex-direction: row;
+const GeneralInfoSection = styled.div`
+  display: grid;
   font-size: 13px;
+  grid-gap: 16px 33px;
+  grid-template-columns: 383px 1fr;
+  height: 836px;
+  margin-bottom: 30px;
+  overflow-x: visible;
+  overflow-y: auto;
+  overflow-y: visible;
+  width: 100%;
 `;
 
 const ProfileInfoColumnWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  align-items: center;
+  display: grid;
+  grid-template-rows: 7% 78% 15%;
   height: 100%;
-  width: 383px;
+  row-gap: 15px;
+  width: 100%;
 `;
 
 const ProgramInfoColumnWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  align-items: center;
+  display: grid;
+  grid-template-rows: 7% 18% 28% 28.5% 15%;
   height: 100%;
-  width: 547px;
+  row-gap: 15px;
+  width: 100%;
 `;
 
 const NameRowWrapper = styled.div`
@@ -155,6 +175,12 @@ const NameRowWrapper = styled.div`
   width: 100%;
   display: flex;
   justify-content: space-between;
+  align-items: center;
+`;
+
+const TopRowWrapper = styled.div`
+  width: 100%;
+  display: flex;
   align-items: center;
 `;
 
@@ -174,19 +200,32 @@ const ScheduleButtonsWrapper = styled(ButtonsWrapper)`
   grid-template-columns: repeat(2, 1fr);
 `;
 
+const EnrollmentControlsWrapper = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-gap: 0 20px;
+  margin-top: 8px;
+  width: 100%;
+  height: 42px;
+`;
+
 type Props = {
   actions:{
     getAllParticipantInfo :RequestSequence;
+    getEnrollmentFromDiversionPlan :RequestSequence;
     goToRoute :RequestSequence;
   };
   address :Map;
+  allDiversionPlans :List;
   app :Map;
   chargesForCase :List;
   checkInsByAppointment :Map;
+  createNewEnrollmentRequestState :RequestState;
   diversionPlan :Map;
   email :Map;
   enrollmentStatus :Map;
   getAllParticipantInfoRequestState :RequestState;
+  getEnrollmentFromDiversionPlanRequestState :RequestState;
   initializeAppRequestState :RequestState;
   judge :Map;
   participant :Map;
@@ -206,6 +245,7 @@ type Props = {
 type State = {
   workStartDateTime :string;
   showAssignWorksiteModal :boolean;
+  showNewEnrollmentModal :boolean;
   showWorkAppointmentModal :boolean;
   worksiteNamesByWorksitePlan :Map;
 };
@@ -218,6 +258,7 @@ class ParticipantProfile extends Component<Props, State> {
     this.state = {
       workStartDateTime: '',
       [ASSIGN_WORKSITE]: false,
+      [NEW_ENROLLMENT]: false,
       [WORK_APPOINTMENT]: false,
       worksiteNamesByWorksitePlan: Map(),
     };
@@ -231,7 +272,12 @@ class ParticipantProfile extends Component<Props, State> {
   }
 
   componentDidUpdate(prevProps :Props) {
-    const { app, workAppointmentsByWorksitePlan, worksitesByWorksitePlan } = this.props;
+    const {
+      app,
+      createNewEnrollmentRequestState,
+      workAppointmentsByWorksitePlan,
+      worksitesByWorksitePlan
+    } = this.props;
     if (!prevProps.app.get(APP_TYPE_FQNS.PEOPLE) && app.get(APP_TYPE_FQNS.PEOPLE)) {
       this.loadProfile();
     }
@@ -240,6 +286,14 @@ class ParticipantProfile extends Component<Props, State> {
     }
     if (prevProps.workAppointmentsByWorksitePlan.count() !== workAppointmentsByWorksitePlan.count()) {
       this.setWorkStartDate();
+    }
+    if (prevProps.workAppointmentsByWorksitePlan.count() !== workAppointmentsByWorksitePlan.count()) {
+      this.setWorkStartDate();
+    }
+    if (prevProps.createNewEnrollmentRequestState === RequestStates.PENDING
+      && createNewEnrollmentRequestState !== RequestStates.PENDING) {
+      this.loadProfile();
+      this.handleHideModal(NEW_ENROLLMENT);
     }
   }
 
@@ -310,15 +364,23 @@ class ParticipantProfile extends Component<Props, State> {
     actions.goToRoute(Routes.EDIT_DATES.replace(':subjectId', personEKID));
   }
 
+  selectDiversionPlan = (option :Object) => {
+    const { actions } = this.props;
+    const { value } = option;
+    actions.getEnrollmentFromDiversionPlan({ diversionPlan: value });
+  }
+
   render() {
     const {
       actions,
       address,
+      allDiversionPlans,
       chargesForCase,
       diversionPlan,
       email,
       enrollmentStatus,
       getAllParticipantInfoRequestState,
+      getEnrollmentFromDiversionPlanRequestState,
       initializeAppRequestState,
       judge,
       participant,
@@ -335,13 +397,15 @@ class ParticipantProfile extends Component<Props, State> {
     } = this.props;
     const {
       showAssignWorksiteModal,
+      showNewEnrollmentModal,
       showWorkAppointmentModal,
       workStartDateTime,
       worksiteNamesByWorksitePlan
     } = this.state;
 
     if (initializeAppRequestState === RequestStates.PENDING
-        || getAllParticipantInfoRequestState === RequestStates.PENDING) {
+        || getAllParticipantInfoRequestState === RequestStates.PENDING
+        || getEnrollmentFromDiversionPlanRequestState === RequestStates.PENDING) {
       return (
         <LogoLoader
             loadingText="Please wait..."
@@ -374,6 +438,8 @@ class ParticipantProfile extends Component<Props, State> {
       REQUIRED_HOURS,
     ]);
 
+    const diversionPlanOptions :Object[] = generateDiversionPlanOptions(allDiversionPlans);
+
     return (
       <>
         {
@@ -386,16 +452,16 @@ class ParticipantProfile extends Component<Props, State> {
             )
         }
         <ProfileWrapper>
-          <NameRowWrapper>
-            <BackNavButton
-                onClick={() => {
-                  actions.goToRoute(Routes.PARTICIPANTS);
-                }}>
-              Back to Participants
-            </BackNavButton>
-          </NameRowWrapper>
           <GeneralInfoSection>
             <ProfileInfoColumnWrapper>
+              <TopRowWrapper>
+                <BackNavButton
+                    onClick={() => {
+                      actions.goToRoute(Routes.PARTICIPANTS);
+                    }}>
+                  Back to Participants
+                </BackNavButton>
+              </TopRowWrapper>
               <ParticipantProfileSection
                   address={address}
                   edit={this.editParticipant}
@@ -406,6 +472,13 @@ class ParticipantProfile extends Component<Props, State> {
                   notes={personNotes} />
             </ProfileInfoColumnWrapper>
             <ProgramInfoColumnWrapper>
+              <EnrollmentControlsWrapper>
+                <Select
+                    onChange={this.selectDiversionPlan}
+                    options={diversionPlanOptions}
+                    value={diversionPlanOptions.find(option => (option.value).equals(diversionPlan))} />
+                <Button onClick={() => this.handleShowModal(NEW_ENROLLMENT)}>Create New Enrollment</Button>
+              </EnrollmentControlsWrapper>
               <EnrollmentStatusSection
                   enrollmentStatus={enrollmentStatus}
                   firstName={firstName}
@@ -506,6 +579,9 @@ class ParticipantProfile extends Component<Props, State> {
               isOpen={showWorkAppointmentModal}
               onClose={() => this.handleHideModal(WORK_APPOINTMENT)}
               personEKID={personEKID} />
+          <CreateNewEnrollmentModal
+              isOpen={showNewEnrollmentModal}
+              onClose={() => this.handleHideModal(NEW_ENROLLMENT)} />
         </ProfileWrapper>
       </>
     );
@@ -521,13 +597,17 @@ const mapStateToProps = (state :Map<*, *>) => {
   const worksites = state.get(STATE.WORKSITES);
   return {
     [ADDRESS]: person.get(ADDRESS),
+    [ALL_DIVERSION_PLANS]: person.get(ALL_DIVERSION_PLANS),
     app,
     [CHARGES_FOR_CASE]: person.get(CHARGES_FOR_CASE),
-    [CHECK_INS_BY_APPOINTMENT]: participantSchedule.get(CHECK_INS_BY_APPOINTMENT),
+    [CHECK_INS_BY_APPOINTMENT]: person.get(CHECK_INS_BY_APPOINTMENT),
+    createNewEnrollmentRequestState: person.getIn([ACTIONS, CREATE_NEW_ENROLLMENT, REQUEST_STATE]),
     [DIVERSION_PLAN]: person.get(DIVERSION_PLAN),
     [EMAIL]: person.get(EMAIL),
     [ENROLLMENT_STATUS]: person.get(ENROLLMENT_STATUS),
     getAllParticipantInfoRequestState: person.getIn([ACTIONS, GET_ALL_PARTICIPANT_INFO, REQUEST_STATE]),
+    getEnrollmentFromDiversionPlanRequestState: person
+      .getIn([ACTIONS, GET_ENROLLMENT_FROM_DIVERSION_PLAN, REQUEST_STATE]),
     initializeAppRequestState: app.getIn([APP.ACTIONS, APP.INITIALIZE_APPLICATION, APP.REQUEST_STATE]),
     [JUDGE]: person.get(JUDGE),
     [PARTICIPANT]: person.get(PARTICIPANT),
@@ -547,6 +627,7 @@ const mapStateToProps = (state :Map<*, *>) => {
 const mapDispatchToProps = dispatch => ({
   actions: bindActionCreators({
     getAllParticipantInfo,
+    getEnrollmentFromDiversionPlan,
     goToRoute,
   }, dispatch)
 });

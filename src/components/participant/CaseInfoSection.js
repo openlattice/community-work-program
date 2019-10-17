@@ -1,6 +1,5 @@
 // @flow
 import React from 'react';
-import styled from 'styled-components';
 import startCase from 'lodash/startCase';
 import { DateTime } from 'luxon';
 import {
@@ -42,10 +41,6 @@ const labelMap :OrderedMap = OrderedMap({
   chargeDate: 'Charge date',
   requiredHours: 'Required hours',
 });
-
-const CaseInfoCard = styled(Card)`
-  height: 190px;
-`;
 
 type Props = {
   charges :List;
@@ -94,7 +89,7 @@ const CaseInfoSection = ({
         <SectionLabel subtle>Case Info</SectionLabel>
         <StyledEditButton mode="subtle" onClick={edit} />
       </SectionNameRow>
-      <CaseInfoCard>
+      <Card>
         <CardSegment padding="md" vertical>
           <DataGrid
               columns={3}
@@ -102,7 +97,7 @@ const CaseInfoSection = ({
               labelMap={labelMap}
               truncate />
         </CardSegment>
-      </CaseInfoCard>
+      </Card>
     </SectionWrapper>
   );
 };

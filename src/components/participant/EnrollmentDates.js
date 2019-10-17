@@ -1,6 +1,5 @@
 // @flow
 import React from 'react';
-import styled from 'styled-components';
 import { fromJS, Map, OrderedMap } from 'immutable';
 import { DateTime } from 'luxon';
 import { Card, CardSegment, DataGrid } from 'lattice-ui-kit';
@@ -23,10 +22,6 @@ const labelMap :OrderedMap = OrderedMap({
   workStartDate: 'Started work',
   sentenceEndDate: 'Sentence end date',
 });
-
-const DatesCard = styled(Card)`
-  height: 190px;
-`;
 
 type Props = {
   checkInDate :string;
@@ -67,14 +62,14 @@ const EnrollmentDates = ({
         <SectionLabel subtle>Enrollment Dates</SectionLabel>
         <StyledEditButton mode="subtle" onClick={edit} />
       </SectionNameRow>
-      <DatesCard>
+      <Card>
         <CardSegment padding="md" vertical>
           <DataGrid
               columns={3}
               data={data}
               labelMap={labelMap} />
         </CardSegment>
-      </DatesCard>
+      </Card>
     </SectionWrapper>
   );
 };

@@ -4,11 +4,10 @@ import { Label } from 'lattice-ui-kit';
 
 import { StyledEditButton } from '../controls/index';
 
-const SectionWrapper = styled.section`
-  align-items: stretch;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
+const SectionWrapper = styled.div`
+  display: grid;
+  grid-template-rows: 42px 1fr;
+  grid-gap: 5px 0;
   width: 100%;
 `;
 
