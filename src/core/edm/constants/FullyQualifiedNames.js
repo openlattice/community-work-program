@@ -55,6 +55,7 @@ export const APP_TYPE_FQNS = {
   STAFF: new FullyQualifiedName('app.staff'),
   SUBJECT_OF: new FullyQualifiedName('app.subjectof'),
   WARRANT_REQUEST: new FullyQualifiedName('app.warrantrequest'),
+  WORKS_AT: new FullyQualifiedName('app.worksat'),
   WORKSITE: new FullyQualifiedName('app.worksite'),
   WORKSITE_PLAN: new FullyQualifiedName('app.worksiteplan'),
 };
@@ -104,6 +105,11 @@ export const DIVERSION_PLAN_FQNS = {
   ORIENTATION_DATETIME: new FullyQualifiedName('ol.orientationdatetime'),
   REQUIRED_HOURS: new FullyQualifiedName('ol.requiredhours'),
   REQUIRED_HOURS_TEXT: new FullyQualifiedName('ol.requiredhourstext'),
+};
+
+/* ol.employee */
+export const EMPLOYEE_FQNS = {
+  TITLE: new FullyQualifiedName('person.title'),
 };
 
 /* ol.enrollment */
