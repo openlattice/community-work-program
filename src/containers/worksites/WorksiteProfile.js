@@ -2,18 +2,14 @@
 import React, { Component } from 'react';
 import styled from 'styled-components';
 import {
-  fromJS,
-  List,
   Map,
   OrderedMap
 } from 'immutable';
-import { DateTime } from 'luxon';
 import {
   Card,
   CardSegment,
   DataGrid,
   EditButton,
-  Table,
 } from 'lattice-ui-kit';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
@@ -42,7 +38,6 @@ import {
 } from '../../components/Layout';
 import { BackNavButton } from '../../components/controls/index';
 import { EMPTY_FIELD } from '../participants/ParticipantsConstants';
-import { OL } from '../../core/style/Colors';
 import * as Routes from '../../core/router/Routes';
 
 const { FULL_ADDRESS } = ADDRESS_FQNS;
@@ -78,13 +73,12 @@ const contactLabelMap :OrderedMap = OrderedMap({
 });
 
 const worksiteInfoLabelMap :OrderedMap = OrderedMap({
-  holidays: 'Holidays',
   availableWork: 'Available work',
   status: 'Status'
 });
 
 /* consts */
-const cardSegmentPadding = '30px 30px';
+const cardSegmentPadding = '40px 40px';
 
 /* styled components */
 const ProfileNameHeader = styled(ContainerHeader)`
@@ -199,7 +193,6 @@ class WorksiteProfile extends Component<Props> {
 
     const status = getWorksiteStatus(dateActive, dateInactive);
     const worksiteInfo :Map = Map({
-      holidays: '----',
       availableWork,
       status,
     });
@@ -234,19 +227,10 @@ class WorksiteProfile extends Component<Props> {
             </CardSegment>
             <CardSegment padding={cardSegmentPadding}>
               <DataGrid
-                  columns={4}
+                  columns={2}
                   data={worksiteInfo}
                   labelMap={worksiteInfoLabelMap} />
             </CardSegment>
-          </Card>
-          <HeaderRowWrapper>
-            <ProfileNameHeader>Hours of Operation</ProfileNameHeader>
-            <EditButton>Edit</EditButton>
-          </HeaderRowWrapper>
-          <Card>
-            <Table
-                headers={tableHeaders}
-                isLoading={false} />
           </Card>
         </ContainerInnerWrapper>
       </ContainerOuterWrapper>
