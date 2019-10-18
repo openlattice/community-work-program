@@ -8,9 +8,9 @@ import type { RequestState } from 'redux-reqseq';
 
 import EditInfractionForm from './EditInfractionForm';
 
-import { PERSON, STATE } from '../../../utils/constants/ReduxStateConsts';
+import { PERSON_INFRACTIONS, STATE } from '../../../utils/constants/ReduxStateConsts';
 
-const { ACTIONS, EDIT_INFRACTION_EVENT, REQUEST_STATE } = PERSON;
+const { ACTIONS, EDIT_INFRACTION_EVENT, REQUEST_STATE } = PERSON_INFRACTIONS;
 
 
 type Props = {
@@ -57,7 +57,7 @@ class EditInfractionModal extends Component<Props> {
 }
 
 const mapStateToProps = (state :Map) => ({
-  editInfractionEventRequestState: state.getIn([STATE.PERSON, ACTIONS, EDIT_INFRACTION_EVENT, REQUEST_STATE]),
+  editInfractionEventRequestState: state.getIn([STATE.INFRACTIONS, ACTIONS, EDIT_INFRACTION_EVENT, REQUEST_STATE]),
 });
 
 // $FlowFixMe

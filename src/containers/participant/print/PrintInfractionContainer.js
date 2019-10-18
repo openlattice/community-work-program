@@ -18,7 +18,7 @@ import type { Match } from 'react-router';
 import LogoLoader from '../../../components/LogoLoader';
 import ViolationHeader from '../../../assets/images/violation_header.png';
 
-import { getInfoForPrintInfraction } from '../ParticipantActions';
+import { getInfoForPrintInfraction } from '../infractions/InfractionsActions';
 import {
   APP_TYPE_FQNS,
   CASE_FQNS,
