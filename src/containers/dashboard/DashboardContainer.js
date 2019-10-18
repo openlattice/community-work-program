@@ -15,10 +15,7 @@ import { ErrorMessage } from '../../components/Layout';
 import { getDiversionPlans } from '../participants/ParticipantsActions';
 import { goToRoute } from '../../core/router/RoutingActions';
 import { PARTICIPANT_PROFILE } from '../../core/router/Routes';
-import {
-  APP_CONTENT_PADDING,
-  DASHBOARD_WIDTH,
-} from '../../core/style/Sizes';
+import { DASHBOARD_WIDTH } from '../../core/style/Sizes';
 import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
 import { ENROLLMENT_STATUSES, HOURS_CONSTS, INFRACTIONS_CONSTS } from '../../core/edm/constants/DataModelConsts';
 import { DIVERSION_PLAN_FQNS, ENROLLMENT_STATUS_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
@@ -42,28 +39,18 @@ const VIOLATIONS_WATCH_COLUMNS = ['NAME', '# OF VIO.', 'HRS. SERVED'];
 
 /* styled components */
 const DashboardWrapper = styled.div`
-  display: flex;
-  flex-direction: row;
-  justify-content: flex-start;
-  padding: ${APP_CONTENT_PADDING}px;
-  width: ${DASHBOARD_WIDTH};
-  position: relative;
   align-self: center;
+  display: flex;
+  flex-direction: column;
+  margin-top: 30px;
+  width: ${DASHBOARD_WIDTH};
 `;
 
 const DashboardBody = styled.div`
+  display: grid;
+  grid-gap: 30px 30px;
+  grid-template-columns: 1fr 1fr;
   width: 100%;
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  overflow-y: auto;
-`;
-
-const RightWrapper = styled.div`
-  width: 600px;
-  display: flex;
-  flex-direction: column;
-  margin: 0 0 30px 30px;
 `;
 
 type Props = {
@@ -247,7 +234,6 @@ class DashboardContainer extends Component<Props, State> {
   render() {
     const {
       currentDiversionPlansByParticipant,
-      enrollmentByParticipant,
       getDiversionPlansRequestState,
       initializeAppRequestState,
       hoursWorked,
@@ -292,15 +278,13 @@ class DashboardContainer extends Component<Props, State> {
                 includeStartDate: false,
                 includeWorkedHours: false
               }}
-              enrollment={enrollmentByParticipant}
               currentDiversionPlansMap={currentDiversionPlansByParticipant}
               handleSelect={this.handleOnSelectPerson}
               hours={hoursWorked}
               people={newParticipants}
               small
-              totalTableItems={newParticipants.count()}
-              width="700px" />
-          <RightWrapper>
+              totalTableItems={newParticipants.count()} />
+          <div>
             <ParticipantsTable
                 ageRequired={false}
                 bannerText="Pending Completion Review"
@@ -318,8 +302,7 @@ class DashboardContainer extends Component<Props, State> {
                 hours={hoursWorked}
                 people={pendingCompletionReview}
                 small
-                totalTableItems={pendingCompletionReview.count()}
-                width="600px" />
+                totalTableItems={pendingCompletionReview.count()} />
             <ParticipantsTable
                 ageRequired={false}
                 bannerText="Violations Watch"
@@ -338,9 +321,8 @@ class DashboardContainer extends Component<Props, State> {
                 people={violationsWatch}
                 small
                 totalTableItems={violationsWatch.count()}
-                violations={violationMap}
-                width="600px" />
-          </RightWrapper>
+                violations={violationMap} />
+          </div>
         </DashboardBody>
       </DashboardWrapper>
     );

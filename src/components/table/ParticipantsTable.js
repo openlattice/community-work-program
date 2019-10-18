@@ -36,22 +36,20 @@ type HeaderProps = {
 };
 
 const Headers = ({ columnHeaders, selected, sort } :HeaderProps) => (
-  <>
-    <HeaderRow>
-      <HeaderElement />
-      {
-        columnHeaders.map(header => (
-          <HeaderElement
-              key={header}
-              onClick={() => sort(header)}
-              selected={selected === header && Object.values(SORTABLE_PARTICIPANT_COLUMNS)
-                .indexOf(selected.toLowerCase()) !== -1}>
-            { header }
-          </HeaderElement>
-        ))
-      }
-    </HeaderRow>
-  </>
+  <HeaderRow>
+    <HeaderElement />
+    {
+      columnHeaders.map(header => (
+        <HeaderElement
+            key={header}
+            onClick={() => sort(header)}
+            selected={selected === header && Object.values(SORTABLE_PARTICIPANT_COLUMNS)
+              .indexOf(selected.toLowerCase()) !== -1}>
+          { header }
+        </HeaderElement>
+      ))
+    }
+  </HeaderRow>
 );
 
 Headers.defaultProps = {
@@ -226,7 +224,7 @@ const ParticipantsTable = ({
 
 ParticipantsTable.defaultProps = {
   alignCenter: false,
-  courtTypeByParticipant: Map(),
+  courtTypeByParticipant: undefined,
   currentDiversionPlansMap: undefined,
   enrollment: undefined,
   hours: Map(),

@@ -505,7 +505,7 @@ function* getInfractionsWorker(action :SequenceAction) :Generator<*, *, *> {
       .map((participantInfractions :List) => {
         const mappedList :List = participantInfractions
           .map((infraction :Map) => getNeighborDetails(infraction));
-        const sorted :List = sortEntitiesByDateProperty(mappedList, DATETIME);
+        const sorted :List = sortEntitiesByDateProperty(mappedList, [DATETIME]);
         return sorted;
       });
 
