@@ -6,7 +6,7 @@ import React from 'react';
 import styled from 'styled-components';
 import { List, Map } from 'immutable';
 import { Tag } from 'lattice-ui-kit';
-import { faCheckCircle, faExclamationCircle, faUserCircle } from '@fortawesome/pro-solid-svg-icons';
+import { faUserCircle } from '@fortawesome/pro-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 import { PersonPicture } from '../picture/PersonPicture';
@@ -23,14 +23,20 @@ import {
 } from './TableStyledComponents';
 import { ENROLLMENT_STATUSES } from '../../core/edm/constants/DataModelConsts';
 import { OL } from '../../core/style/Colors';
+import { TAGS } from '../../containers/dashboard/DashboardConstants';
 
 const { DOB, MUGSHOT, PICTURE } = PEOPLE_FQNS;
 
-const CellContentWrapper = styled.div`
-  align-items: center;
-  display: flex;
-  justify-content: space-between;
-  margin-right: 15px;
+const SubtleTag = styled(Tag)`
+  background-color: ${OL.WHITE};
+  border: 0.5px solid ${OL.GREEN02};
+  color: ${OL.GREEN02};
+  font-weight: 500;
+`;
+
+const ReportTag = styled(SubtleTag)`
+  border-color: ${OL.RED01};
+  color: ${OL.RED01};
 `;
 
 type Props = {
@@ -40,11 +46,11 @@ type Props = {
   handleSelect :(personEKID :string) => void;
   hoursRequired :number | string;
   hoursWorked :number | void;
-  includeWarning :boolean;
   person :Map;
   selected ? :boolean;
   small ? :boolean;
   status ? :string | void;
+  tag ? :string;
   violationsCount :number | void;
   warningsCount :number | void;
 };
@@ -56,11 +62,11 @@ const TableRow = ({
   handleSelect,
   hoursRequired,
   hoursWorked,
-  includeWarning,
   person,
   selected,
   small,
   status,
+  tag,
   violationsCount,
   warningsCount,
 } :Props) => {
@@ -74,7 +80,6 @@ const TableRow = ({
   } = dates;
 
   let photo = '';
-  let includeCheckedInCircle :boolean = false;
   let cellData :List = List();
 
   if (isDefined(person)) {
@@ -103,11 +108,8 @@ const TableRow = ({
       }
       if (!isDefined(hoursWorked) && isDefined(hoursRequired)) list.push(formatNumericalValue(hoursRequired));
       if (isDefined(courtType)) list.push(courtType);
+      if (isDefined(tag) || (isDefined(violationsCount) && !isDefined(status))) list.push('');
     });
-
-    if (isDefined(enrollmentDeadline) && status === ENROLLMENT_STATUSES.AWAITING_ORIENTATION) {
-      includeCheckedInCircle = true;
-    }
   }
 
   return (
@@ -120,23 +122,18 @@ const TableRow = ({
       {
         cellData.map((field :string, index :number) => {
           const text = Object.values(ENROLLMENT_STATUSES).includes(field) ? field : 'default';
-          if (includeCheckedInCircle && field === enrollmentDeadline) {
+
+          if (isDefined(tag) && index === (cellData.count() - 1)) {
+            if (tag === TAGS.REVIEW) {
+              return (
+                <Cell key={`${index}-${field}`} small={small} status={text}>
+                  <SubtleTag>Review</SubtleTag>
+                </Cell>
+              );
+            }
             return (
               <Cell key={`${index}-${field}`} small={small} status={text}>
-                <CellContentWrapper>
-                  <span>{ field }</span>
-                  <FontAwesomeIcon icon={faCheckCircle} color={OL.PINK01} />
-                </CellContentWrapper>
-              </Cell>
-            );
-          }
-          if (includeWarning && field === enrollmentDeadline) {
-            return (
-              <Cell key={`${index}-${field}`} small={small} status={text}>
-                <CellContentWrapper>
-                  <span>{ field }</span>
-                  <FontAwesomeIcon icon={faExclamationCircle} color={OL.PINK01} />
-                </CellContentWrapper>
+                <ReportTag>Report</ReportTag>
               </Cell>
             );
           }
@@ -152,7 +149,8 @@ const TableRow = ({
 TableRow.defaultProps = {
   selected: false,
   small: false,
-  status: undefined
+  status: undefined,
+  tag: undefined,
 };
 
 export default TableRow;

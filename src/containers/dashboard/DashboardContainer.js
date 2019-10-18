@@ -17,6 +17,7 @@ import { goToRoute } from '../../core/router/RoutingActions';
 import { PARTICIPANT_PROFILE } from '../../core/router/Routes';
 import { DASHBOARD_WIDTH } from '../../core/style/Sizes';
 import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
+import { getCheckInDeadline, getDateInISOFormat } from '../../utils/ScheduleUtils';
 import { ENROLLMENT_STATUSES, HOURS_CONSTS, INFRACTIONS_CONSTS } from '../../core/edm/constants/DataModelConsts';
 import { DIVERSION_PLAN_FQNS, ENROLLMENT_STATUS_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { APP, PEOPLE, STATE } from '../../utils/constants/ReduxStateConsts';
@@ -26,6 +27,7 @@ import {
   TAGS,
   VIOLATIONS_WATCH_COLUMNS,
 } from './DashboardConstants';
+import { EMPTY_FIELD } from '../participants/ParticipantsConstants';
 
 /* constants */
 const { DATETIME_RECEIVED } = DIVERSION_PLAN_FQNS;
@@ -194,6 +196,7 @@ class DashboardContainer extends Component<Props, State> {
   setParticipantsWithViolations = () => {
 
     const {
+      currentDiversionPlansByParticipant,
       enrollmentByParticipant,
       infractionCountsByParticipant,
       participants,
@@ -211,20 +214,21 @@ class DashboardContainer extends Component<Props, State> {
         && (status === ENROLLMENT_STATUSES.ACTIVE || status === ENROLLMENT_STATUSES.JOB_SEARCH);
     });
     // Get participants who haven't checked in by their check-in deadline:
-    // const noShows :List = participants.filter((participant :Map) => {
-    //   const personEKID :UUID = getEntityKeyId(participant);
-    //   const sentenceTerm = sentenceTermsByParticipant.get(personEKID);
-    //   const { [DATETIME_START]: sentenceDate } = getEntityProperties(sentenceTerm, [DATETIME_START]);
-    //   let checkInDeadline = '';
-    //   if (sentenceDate) checkInDeadline = DateTime.fromISO(sentenceDate).plus({ hours: 48 });
-    //   let pastDeadline = false;
-    //   if (checkInDeadline) {
-    //     const now = DateTime.local();
-    //     pastDeadline = now > checkInDeadline;
-    //   }
-    //   return pastDeadline;
-    // });
-    const noShows = List();
+    const noShows :List = participants.filter((participant :Map) => {
+      const personEKID :UUID = getEntityKeyId(participant);
+      const diversionPlan = currentDiversionPlansByParticipant.get(personEKID);
+      const { [DATETIME_RECEIVED]: sentenceDate } = getEntityProperties(diversionPlan, [DATETIME_RECEIVED]);
+
+      const checkInDeadline :string = getCheckInDeadline(sentenceDate);
+      if (checkInDeadline === EMPTY_FIELD) {
+        return false;
+      }
+      const checkInDeadlineAsISO :string = getDateInISOFormat(checkInDeadline);
+      const personStatus :string = enrollmentByParticipant.getIn([personEKID, STATUS, 0]);
+      return DateTime.local() > DateTime.fromISO(checkInDeadlineAsISO)
+        && personStatus === ENROLLMENT_STATUSES.AWAITING_CHECKIN
+        && !violationMap.get(personEKID);
+    });
 
     violationsWatch = violationsWatch.concat(noShows);
     this.setNewParticipants(noShows);

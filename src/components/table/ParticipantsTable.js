@@ -70,10 +70,10 @@ type Props = {
   hours ? :Map;
   noShows ? :List;
   people :List;
-  tag ? :string;
   selectedSortOption ? :string;
   small :boolean;
   sortByColumn ? :(header :string) => void;
+  tag ? :string;
   totalTableItems :number;
   violations ? :Map;
   warnings ? :Map;
@@ -93,10 +93,10 @@ const ParticipantsTable = ({
   hours,
   noShows,
   people,
-  tag,
   selectedSortOption,
   small,
   sortByColumn,
+  tag,
   totalTableItems,
   violations,
   warnings,
@@ -198,9 +198,14 @@ const ParticipantsTable = ({
             ? courtTypeByParticipant.get(personEKID, '')
             : undefined;
 
-          // No shows
-          // if person is a no show, should display an exclamation warning in Violations Watch table
-          const includeWarning :boolean = (isDefined(noShows) && noShows.includes(person));
+          // Tags for Pening Completion Review and Violations Watch tables
+          let tagToInclude;
+          if (isDefined(tag)) {
+            tagToInclude = tag;
+            if (isDefined(noShows) && !noShows.includes(person)) {
+              tagToInclude = undefined;
+            }
+          }
 
           return (
             <ParticipantsTableRow
@@ -211,10 +216,10 @@ const ParticipantsTable = ({
                 handleSelect={handleSelect}
                 hoursRequired={required}
                 hoursWorked={worked}
-                includeWarning={includeWarning}
                 person={person}
                 status={enrollmentStatus}
                 small={small}
+                tag={tagToInclude}
                 violationsCount={violationsCount}
                 warningsCount={warningsCount} />
           );
