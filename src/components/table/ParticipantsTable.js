@@ -70,6 +70,7 @@ type Props = {
   hours ? :Map;
   noShows ? :List;
   people :List;
+  tag ? :string;
   selectedSortOption ? :string;
   small :boolean;
   sortByColumn ? :(header :string) => void;
@@ -92,6 +93,7 @@ const ParticipantsTable = ({
   hours,
   noShows,
   people,
+  tag,
   selectedSortOption,
   small,
   sortByColumn,
@@ -229,6 +231,7 @@ ParticipantsTable.defaultProps = {
   enrollment: undefined,
   hours: Map(),
   noShows: undefined,
+  tag: undefined,
   selectedSortOption: '',
   sortByColumn: () => {},
   violations: undefined,

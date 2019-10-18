@@ -5,6 +5,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import { List, Map } from 'immutable';
+import { Tag } from 'lattice-ui-kit';
 import { faCheckCircle, faExclamationCircle, faUserCircle } from '@fortawesome/pro-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
