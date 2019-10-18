@@ -94,7 +94,10 @@ class DashboardContainer extends Component<Props, State> {
   }
 
   componentDidMount() {
-    const { participants } = this.props;
+    const { actions, app, participants } = this.props;
+    if (app.get(APP.SELECTED_ORG_ID)) {
+      actions.getDiversionPlans();
+    }
     if (participants.count() > 0) {
       this.setParticipantsWithHoursComplete();
       this.setParticipantsWithViolations();
