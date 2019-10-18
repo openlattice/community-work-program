@@ -526,10 +526,7 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
             const diversionPlanEKID = Object.keys(entityData[diversionPlanESID])[0];
             const storedPropertyValueMap = entityData[diversionPlanESID][diversionPlanEKID];
             const planNotes = Object.values(storedPropertyValueMap)[0];
-
-            let planNotesPlaceholder = diversionPlan.get(NOTES, 0);
-            planNotesPlaceholder = planNotes[0];
-            diversionPlan = diversionPlan.set(NOTES, planNotesPlaceholder);
+            diversionPlan = diversionPlan.set(NOTES, planNotes);
 
             return state
               .set(DIVERSION_PLAN, diversionPlan)

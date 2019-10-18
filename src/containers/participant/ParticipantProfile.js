@@ -437,7 +437,6 @@ class ParticipantProfile extends Component<Props, State> {
       ORIENTATION_DATETIME,
       REQUIRED_HOURS,
     ]);
-
     const diversionPlanOptions :Object[] = generateDiversionPlanOptions(allDiversionPlans);
 
     return (

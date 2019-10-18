@@ -33,7 +33,7 @@ type Props = {
 };
 
 const PersonNotes = ({ editPersonNotesRequestState, notes } :Props) => {
-
+  console.log('notes: ', notes);
   const [isEditModalVisible, setEditModalVisibility] = useState(false);
 
   return (

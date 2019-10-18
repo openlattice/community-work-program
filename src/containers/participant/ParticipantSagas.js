@@ -1523,7 +1523,7 @@ function* getEnrollmentStatusWorker(action :SequenceAction) :Generator<*, *, *> 
       throw response.error;
     }
     allDiversionPlans = fromJS(response.data[personEKID])
-      .map((planList :List) => planList.map((plan :Map) => getNeighborDetails(plan)));
+      .map((plan :List) => getNeighborDetails(plan));
 
     if (allDiversionPlans.count() > 0) {
 
