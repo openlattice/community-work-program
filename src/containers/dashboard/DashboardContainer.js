@@ -20,6 +20,12 @@ import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
 import { ENROLLMENT_STATUSES, HOURS_CONSTS, INFRACTIONS_CONSTS } from '../../core/edm/constants/DataModelConsts';
 import { DIVERSION_PLAN_FQNS, ENROLLMENT_STATUS_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { APP, PEOPLE, STATE } from '../../utils/constants/ReduxStateConsts';
+import {
+  NEW_PARTICIPANTS_COLUMNS,
+  PENDING_PARTICIPANTS_COLUMNS,
+  TAGS,
+  VIOLATIONS_WATCH_COLUMNS,
+} from './DashboardConstants';
 
 /* constants */
 const { DATETIME_RECEIVED } = DIVERSION_PLAN_FQNS;
@@ -32,10 +38,6 @@ const {
   INFRACTION_COUNTS_BY_PARTICIPANT,
   PARTICIPANTS,
 } = PEOPLE;
-
-const NEW_PARTICIPANTS_COLUMNS = ['NAME', 'SENT. DATE', 'CHECK-IN DEADLINE', 'REQ. HRS.'];
-const PENDING_PARTICIPANTS_COLUMNS = ['NAME', 'SENT. DATE', 'REQ. HRS.'];
-const VIOLATIONS_WATCH_COLUMNS = ['NAME', '# OF VIO.', 'HRS. SERVED'];
 
 /* styled components */
 const DashboardWrapper = styled.div`
@@ -302,6 +304,7 @@ class DashboardContainer extends Component<Props, State> {
                 hours={hoursWorked}
                 people={pendingCompletionReview}
                 small
+                tag={TAGS.REVIEW}
                 totalTableItems={pendingCompletionReview.count()} />
             <ParticipantsTable
                 ageRequired={false}
@@ -320,6 +323,7 @@ class DashboardContainer extends Component<Props, State> {
                 noShows={noShows}
                 people={violationsWatch}
                 small
+                tag={TAGS.REPORT}
                 totalTableItems={violationsWatch.count()}
                 violations={violationMap} />
           </div>
