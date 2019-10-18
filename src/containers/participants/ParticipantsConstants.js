@@ -1,7 +1,19 @@
 // @flow
 import { Map } from 'immutable';
 
-import { ENROLLMENT_STATUSES } from '../../core/edm/constants/DataModelConsts';
+import {
+  COURT_TYPES,
+  ENROLLMENT_STATUSES,
+  RACE_VALUES,
+  SEX_VALUES,
+} from '../../core/edm/constants/DataModelConsts';
+
+const generateOptions = (list :string[]) :Object[] => list.map(value => ({
+  label: value,
+  value
+}));
+
+export const EMPTY_FIELD = '----';
 
 export const ALL_PARTICIPANTS_COLUMNS = [
   'NAME',
@@ -18,7 +30,7 @@ export const ALL_PARTICIPANTS_COLUMNS = [
 /* Sort Participant Table */
 
 export const SORTABLE_PARTICIPANT_COLUMNS = {
-  // COURT_TYPE: 'court type',
+  COURT_TYPE: 'court type',
   NAME: 'name',
   SENT_END_DATE: 'sent. end date',
   STATUS: 'status',
@@ -41,11 +53,6 @@ export const STATUS_FILTER_OPTIONS = [
   {
     label: ENROLLMENT_STATUSES.ACTIVE,
     value: ENROLLMENT_STATUSES.ACTIVE,
-    filter: FILTERS.STATUS,
-  },
-  {
-    label: ENROLLMENT_STATUSES.ACTIVE_NONCOMPLIANT,
-    value: ENROLLMENT_STATUSES.ACTIVE_NONCOMPLIANT,
     filter: FILTERS.STATUS,
   },
   {
@@ -74,13 +81,23 @@ export const STATUS_FILTER_OPTIONS = [
     filter: FILTERS.STATUS,
   },
   {
-    label: ENROLLMENT_STATUSES.NO_SHOW,
-    value: ENROLLMENT_STATUSES.NO_SHOW,
+    label: ENROLLMENT_STATUSES.JOB_SEARCH,
+    value: ENROLLMENT_STATUSES.JOB_SEARCH,
     filter: FILTERS.STATUS,
   },
   {
     label: ENROLLMENT_STATUSES.REMOVED_NONCOMPLIANT,
     value: ENROLLMENT_STATUSES.REMOVED_NONCOMPLIANT,
+    filter: FILTERS.STATUS,
+  },
+  {
+    label: ENROLLMENT_STATUSES.SUCCESSFUL,
+    value: ENROLLMENT_STATUSES.SUCCESSFUL,
+    filter: FILTERS.STATUS,
+  },
+  {
+    label: ENROLLMENT_STATUSES.UNSUCCESSFUL,
+    value: ENROLLMENT_STATUSES.UNSUCCESSFUL,
     filter: FILTERS.STATUS,
   },
 ];
@@ -89,3 +106,7 @@ export const statusFilterDropdown :Map = Map().withMutations((map :Map) => {
   map.set('title', FILTERS.STATUS);
   map.set('enums', STATUS_FILTER_OPTIONS);
 });
+
+export const sexOptions = generateOptions(SEX_VALUES);
+export const raceOptions = generateOptions(RACE_VALUES);
+export const courtTypeOptions = generateOptions(COURT_TYPES);

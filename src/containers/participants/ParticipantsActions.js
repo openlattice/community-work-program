@@ -8,6 +8,12 @@ import type { RequestSequence } from 'redux-reqseq';
 const ADD_PARTICIPANT :'ADD_PARTICIPANT' = 'ADD_PARTICIPANT';
 const addParticipant :RequestSequence = newRequestSequence(ADD_PARTICIPANT);
 
+const GET_COURT_TYPE :'GET_COURT_TYPE' = 'GET_COURT_TYPE';
+const getCourtType :RequestSequence = newRequestSequence(GET_COURT_TYPE);
+
+const GET_DIVERSION_PLANS :'GET_DIVERSION_PLANS' = 'GET_DIVERSION_PLANS';
+const getDiversionPlans :RequestSequence = newRequestSequence(GET_DIVERSION_PLANS);
+
 const GET_ENROLLMENT_STATUSES :'GET_ENROLLMENT_STATUSES' = 'GET_ENROLLMENT_STATUSES';
 const getEnrollmentStatuses :RequestSequence = newRequestSequence(GET_ENROLLMENT_STATUSES);
 
@@ -20,12 +26,6 @@ const getInfractions :RequestSequence = newRequestSequence(GET_INFRACTIONS);
 const GET_PARTICIPANTS :'GET_PARTICIPANTS' = 'GET_PARTICIPANTS';
 const getParticipants :RequestSequence = newRequestSequence(GET_PARTICIPANTS);
 
-const GET_SENTENCES :'GET_SENTENCES' = 'GET_SENTENCES';
-const getSentences :RequestSequence = newRequestSequence(GET_SENTENCES);
-
-const GET_SENTENCE_TERMS :'GET_SENTENCE_TERMS' = 'GET_SENTENCE_TERMS';
-const getSentenceTerms :RequestSequence = newRequestSequence(GET_SENTENCE_TERMS);
-
 const RESET_REQUEST_STATE :'RESET_REQUEST_STATE' = 'RESET_REQUEST_STATE';
 function resetRequestState(actionType :string) {
   return {
@@ -36,19 +36,19 @@ function resetRequestState(actionType :string) {
 
 export {
   ADD_PARTICIPANT,
+  GET_COURT_TYPE,
+  GET_DIVERSION_PLANS,
   GET_ENROLLMENT_STATUSES,
   GET_HOURS_WORKED,
   GET_INFRACTIONS,
   GET_PARTICIPANTS,
-  GET_SENTENCES,
-  GET_SENTENCE_TERMS,
   RESET_REQUEST_STATE,
   addParticipant,
+  getCourtType,
+  getDiversionPlans,
   getEnrollmentStatuses,
   getHoursWorked,
   getInfractions,
   getParticipants,
-  getSentenceTerms,
-  getSentences,
   resetRequestState,
 };

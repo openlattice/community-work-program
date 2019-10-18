@@ -18,13 +18,14 @@ import {
   HeaderElement,
 } from './TableStyledComponents';
 import {
-  DATETIME_START,
+  DIVERSION_PLAN_FQNS,
   ENROLLMENT_STATUS_FQNS,
   ENTITY_KEY_ID,
 } from '../../core/edm/constants/FullyQualifiedNames';
 import { ENROLLMENT_STATUSES, HOURS_CONSTS } from '../../core/edm/constants/DataModelConsts';
 import { SORTABLE_PARTICIPANT_COLUMNS } from '../../containers/participants/ParticipantsConstants';
 
+const { DATETIME_RECEIVED } = DIVERSION_PLAN_FQNS;
 const { EFFECTIVE_DATE, STATUS } = ENROLLMENT_STATUS_FQNS;
 const { REQUIRED, WORKED } = HOURS_CONSTS;
 
@@ -64,14 +65,14 @@ type Props = {
   bannerText :string;
   columnHeaders :string[];
   config :Object;
-  courtType ? :string;
+  courtTypeByParticipant ? :Map;
+  currentDiversionPlansMap ? :Map;
   enrollment ? :Map;
   handleSelect :(personEKID :string) => void;
   hours ? :Map;
   noShows ? :List;
   people :List;
   selectedSortOption ? :string;
-  sentenceTerms ? :Map;
   small :boolean;
   sortByColumn ? :(header :string) => void;
   totalTableItems :number;
@@ -86,14 +87,14 @@ const ParticipantsTable = ({
   bannerText,
   columnHeaders,
   config,
-  courtType,
+  courtTypeByParticipant,
+  currentDiversionPlansMap,
   enrollment,
   handleSelect,
   hours,
   noShows,
   people,
   selectedSortOption,
-  sentenceTerms,
   small,
   sortByColumn,
   totalTableItems,
@@ -119,27 +120,30 @@ const ParticipantsTable = ({
             includeStartDate,
             includeWorkedHours,
           } = config;
-          const { [ENTITY_KEY_ID]: personEntityKeyId } :UUID = getEntityProperties(person, [ENTITY_KEY_ID]);
+          const { [ENTITY_KEY_ID]: personEKID } :UUID = getEntityProperties(person, [ENTITY_KEY_ID]);
 
           // Infractions
           // if violations and/or warnings (all participants) is defined, then we need to include violations count
           // if person not included in violations and/or warnings, but either is required, then return 0
           const violationsCount = isDefined(violations)
-            ? violations.get(personEntityKeyId, 0)
+            ? violations.get(personEKID, 0)
             : undefined;
           const warningsCount = isDefined(warnings)
-            ? warnings.get(personEntityKeyId, 0)
+            ? warnings.get(personEKID, 0)
             : undefined;
 
           // Dates
           // if sentenceTerms is defined and we need to include sentenceData:
           // get sentenceDate from sentenceTerms, and if doesn't exist, return empty ''
-          const sentenceDate = (isDefined(sentenceTerms) && includeSentenceDate)
-            ? sentenceTerms.getIn([personEntityKeyId, DATETIME_START, 0], '')
+          let sentenceDate = (isDefined(currentDiversionPlansMap) && includeSentenceDate)
+            ? currentDiversionPlansMap.getIn([personEKID, DATETIME_RECEIVED, 0])
             : undefined;
           // can only provide a valid sentenceEndDate if we have a valid sentenceDate
           // need to provide empty '' if sentenceEnd required but we don't have valid sentenceDate
           const sentenceDateObj = DateTime.fromISO(sentenceDate);
+          if (!sentenceDateObj.isValid && includeSentenceDate) {
+            sentenceDate = '';
+          }
           let sentenceEndDate;
           if (sentenceDateObj.isValid && includeSentenceEndDate) {
             sentenceEndDate = sentenceDateObj.plus({ days: 90 }).toLocaleString();
@@ -159,7 +163,7 @@ const ParticipantsTable = ({
           // we only have a start date if enrollment status has valid effective date
           // pass empty '' if startDate required but no effective date
           const startDate = (isDefined(enrollment) && includeStartDate)
-            ? enrollment.getIn([personEntityKeyId, EFFECTIVE_DATE, 0], '')
+            ? enrollment.getIn([personEKID, EFFECTIVE_DATE, 0], '')
             : undefined;
 
           const dates = {
@@ -173,14 +177,14 @@ const ParticipantsTable = ({
           // we can get enrollment status from enrollment or from absence of enrollment
           // need to pass empty '' if status is required
           const enrollmentStatus = isDefined(enrollment)
-            ? enrollment.getIn([personEntityKeyId, STATUS, 0], ENROLLMENT_STATUSES.AWAITING_CHECKIN)
+            ? enrollment.getIn([personEKID, STATUS, 0], ENROLLMENT_STATUSES.AWAITING_CHECKIN)
             : undefined;
 
           // Hours
           // we get both required and worked hours in the same Object
           // for each, we need to pass an empty '' if they're not defined/found
           // required hours are always included
-          const individualPersonHours = (isDefined(hours) && hours.count() > 0) ? hours.get(personEntityKeyId) : Map();
+          const individualPersonHours = (isDefined(hours) && hours.count() > 0) ? hours.get(personEKID) : Map();
           const individualHasHours = isDefined(individualPersonHours);
           const required = (individualHasHours && includeRequiredHours)
             ? individualPersonHours.get(REQUIRED, '')
@@ -190,7 +194,9 @@ const ParticipantsTable = ({
             : undefined;
 
           // Court type
-          // TODO: more information is needed on this—for now just an empty column in All Participants table
+          const courtType = (isDefined(courtTypeByParticipant))
+            ? courtTypeByParticipant.get(personEKID, '')
+            : undefined;
 
           // No shows
           // if person is a no show, should display an exclamation warning in Violations Watch table
@@ -201,7 +207,7 @@ const ParticipantsTable = ({
                 ageRequired={ageRequired}
                 courtType={courtType}
                 dates={dates}
-                key={personEntityKeyId}
+                key={personEKID}
                 handleSelect={handleSelect}
                 hoursRequired={required}
                 hoursWorked={worked}
@@ -220,12 +226,12 @@ const ParticipantsTable = ({
 
 ParticipantsTable.defaultProps = {
   alignCenter: false,
-  courtType: undefined,
+  courtTypeByParticipant: Map(),
+  currentDiversionPlansMap: undefined,
   enrollment: undefined,
   hours: Map(),
   noShows: undefined,
   selectedSortOption: '',
-  sentenceTerms: Map(),
   sortByColumn: () => {},
   violations: undefined,
   warnings: undefined,

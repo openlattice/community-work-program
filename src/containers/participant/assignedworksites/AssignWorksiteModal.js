@@ -8,9 +8,9 @@ import type { RequestState } from 'redux-reqseq';
 
 import AssignWorksiteForm from './AssignWorksiteForm';
 
-import { PERSON, STATE } from '../../../utils/constants/ReduxStateConsts';
+import { STATE, WORKSITE_PLANS } from '../../../utils/constants/ReduxStateConsts';
 
-const { ACTIONS, ADD_WORKSITE_PLAN, REQUEST_STATE } = PERSON;
+const { ACTIONS, ADD_WORKSITE_PLAN, REQUEST_STATE } = WORKSITE_PLANS;
 
 
 type Props = {
@@ -22,7 +22,7 @@ type Props = {
   worksites :List;
 };
 
-class AddParticipantModal extends Component<Props> {
+class AssignWorksiteModal extends Component<Props> {
 
   componentDidUpdate(prevProps :Props) {
     const { addWorksitePlanRequestState, onClose } = this.props;
@@ -60,8 +60,8 @@ class AddParticipantModal extends Component<Props> {
 }
 
 const mapStateToProps = (state :Map) => ({
-  addWorksitePlanRequestState: state.getIn([STATE.PERSON, ACTIONS, ADD_WORKSITE_PLAN, REQUEST_STATE]),
+  addWorksitePlanRequestState: state.getIn([STATE.WORKSITE_PLANS, ACTIONS, ADD_WORKSITE_PLAN, REQUEST_STATE]),
 });
 
 // $FlowFixMe
-export default connect(mapStateToProps)(AddParticipantModal);
+export default connect(mapStateToProps)(AssignWorksiteModal);

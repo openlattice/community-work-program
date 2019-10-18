@@ -5,6 +5,7 @@
 import React, { Component } from 'react';
 
 import styled from 'styled-components';
+import { Map } from 'immutable';
 import { AuthActions } from 'lattice-auth';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
@@ -13,13 +14,15 @@ import {
   Route,
   Switch,
 } from 'react-router-dom';
-import type { RequestSequence } from 'redux-reqseq';
+import { RequestStates } from 'redux-reqseq';
+import type { RequestSequence, RequestState } from 'redux-reqseq';
 
 import AppHeaderContainer from './AppHeaderContainer';
 import DashboardContainer from '../dashboard/DashboardContainer';
 import ParticipantProfileContainer from '../participant/ParticipantProfileContainer';
 import ParticipantsSearchContainer from '../participants/ParticipantsSearchContainer';
 import WorksitesContainer from '../worksites/WorksitesContainer';
+import WorkScheduleContainer from '../workschedule/WorkScheduleContainer';
 
 import * as AppActions from './AppActions';
 import * as ParticipantsActions from '../participants/ParticipantsActions';
@@ -29,6 +32,7 @@ import {
   APP_CONTAINER_WIDTH,
 } from '../../core/style/Sizes';
 import { OL } from '../../core/style/Colors';
+import { APP, STATE } from '../../utils/constants/ReduxStateConsts';
 
 const { logout } = AuthActions;
 
@@ -62,7 +66,11 @@ type Props = {
     initializeApplication :RequestSequence;
     logout :() => void;
     resetRequestState :(actionType :string) => void;
+    switchOrganization :RequestSequence;
   },
+  app :Map;
+  initializeAppRequestState :RequestState;
+  location :Object;
 };
 
 class AppContainer extends Component<Props> {
@@ -74,8 +82,20 @@ class AppContainer extends Component<Props> {
     actions.initializeApplication();
   }
 
+  switchOrganization = (organization :Object) => {
+    const { actions, app } = this.props;
+    const selectedOrganizationId = app.get(APP.SELECTED_ORG_ID);
+    if (organization.value !== selectedOrganizationId) {
+      actions.switchOrganization({
+        orgId: organization.value,
+        title: organization.label
+      });
+    }
+  }
+
   renderAppContent = () => (
     <Switch>
+      <Route path={Routes.WORK_SCHEDULE} component={WorkScheduleContainer} />
       <Route path={Routes.WORKSITES} component={WorksitesContainer} />
       <Route path={Routes.PARTICIPANT_PROFILE} component={ParticipantProfileContainer} />
       <Route path={Routes.PARTICIPANTS} component={ParticipantsSearchContainer} />
@@ -85,10 +105,28 @@ class AppContainer extends Component<Props> {
   );
 
   render() {
+    const { app, initializeAppRequestState, location } = this.props;
 
+    const { pathname } = location;
+    const isPrintView :boolean = pathname.substring(pathname.lastIndexOf('/')) === '/print';
+
+    const selectedOrg = app.get(APP.SELECTED_ORG_ID, '');
+    const orgList = app.get(APP.ORGS).entrySeq().map(([value, organization]) => {
+      const label = organization.get('title', '');
+      return { label, value };
+    });
+    const loading = initializeAppRequestState === RequestStates.PENDING;
     return (
       <AppContainerWrapper>
-        <AppHeaderContainer />
+        {
+          !isPrintView && (
+            <AppHeaderContainer
+                loading={loading}
+                organizations={orgList}
+                selectedOrg={selectedOrg}
+                switchOrg={this.switchOrganization} />
+          )
+        }
         <AppContentOuterWrapper>
           <AppContentInnerWrapper>
             { this.renderAppContent() }
@@ -99,13 +137,22 @@ class AppContainer extends Component<Props> {
   }
 }
 
+const mapStateToProps = (state :Map<*, *>) => {
+  const app = state.get(STATE.APP);
+  return {
+    app,
+    initializeAppRequestState: app.getIn([APP.ACTIONS, APP.INITIALIZE_APPLICATION, APP.REQUEST_STATE]),
+  };
+};
+
 const mapDispatchToProps = dispatch => ({
   actions: bindActionCreators({
     initializeApplication: AppActions.initializeApplication,
     logout,
     resetRequestState: ParticipantsActions.resetRequestState,
+    switchOrganization: AppActions.switchOrganization,
   }, dispatch)
 });
 
 // $FlowFixMe
-export default connect(null, mapDispatchToProps)(AppContainer);
+export default connect(mapStateToProps, mapDispatchToProps)(AppContainer);

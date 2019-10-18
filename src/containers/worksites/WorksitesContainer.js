@@ -95,6 +95,13 @@ class WorksitesContainer extends Component<Props, State> {
     };
   }
 
+  componentDidMount() {
+    const { actions, app } = this.props;
+    if (app.get(ORGANIZATION)) {
+      actions.getOrganizations();
+    }
+  }
+
   componentDidUpdate(prevProps :Props) {
     const {
       app,
