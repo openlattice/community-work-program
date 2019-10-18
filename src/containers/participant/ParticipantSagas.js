@@ -1140,19 +1140,20 @@ function* getJudgeForCaseWorker(action :SequenceAction) :Generator<*, *, *> {
   const workerResponse = {};
   let response :Object = {};
   let judge :Map = Map();
+  let judgesByCase :Map = Map();
 
   try {
     yield put(getJudgeForCase.request(id));
     if (value === null || value === undefined) {
       throw ERR_ACTION_VALUE_NOT_DEFINED;
     }
-    const { caseEKID } = value;
+    const { caseEKIDs } = value;
     const app = yield select(getAppFromState);
     const manualCourtCasesESID :UUID = getEntitySetIdFromApp(app, MANUAL_PRETRIAL_COURT_CASES);
     const judgesESID :UUID = getEntitySetIdFromApp(app, JUDGES);
 
     const searchFilter :Object = {
-      entityKeyIds: [caseEKID],
+      entityKeyIds: caseEKIDs,
       destinationEntitySetIds: [],
       sourceEntitySetIds: [judgesESID],
     };
@@ -1163,12 +1164,13 @@ function* getJudgeForCaseWorker(action :SequenceAction) :Generator<*, *, *> {
     if (response.error) {
       throw response.error;
     }
-    if (response.data[caseEKID]) {
-      const judgeResult :Map = fromJS(response.data[caseEKID][0]);
-      judge = getNeighborDetails(judgeResult);
+    const judgeResults = fromJS(response.data);
+    if (!judgeResults.isEmpty()) {
+      judgesByCase = judgeResults.map((result :Map) => getNeighborDetails(result.get(0)));
+      judge = getNeighborDetails(judgeResults.getIn([caseEKIDs[0], 0]));
     }
 
-    yield put(getJudgeForCase.success(id, judge));
+    yield put(getJudgeForCase.success(id, { judge, judgesByCase }));
   }
   catch (error) {
     workerResponse.error = error;
@@ -1329,7 +1331,7 @@ function* getCaseInfoWorker(action :SequenceAction) :Generator<*, *, *> {
 
     const caseEKID :UUID = getEntityKeyId(personCase);
     yield call(getChargesForCaseWorker, getChargesForCase({ caseEKID }));
-    yield call(getJudgeForCaseWorker, getJudgeForCase({ caseEKID }));
+    yield call(getJudgeForCaseWorker, getJudgeForCase({ caseEKIDs: [caseEKID] }));
 
     yield put(getCaseInfo.success(id, personCase));
   }
@@ -1521,7 +1523,7 @@ function* getEnrollmentStatusWorker(action :SequenceAction) :Generator<*, *, *> 
       throw response.error;
     }
     allDiversionPlans = fromJS(response.data[personEKID])
-      .map((planList :List) => planList.map((plan :Map) => getNeighborDetails(plan)));
+      .map((plan :List) => getNeighborDetails(plan));
 
     if (allDiversionPlans.count() > 0) {
 
@@ -1642,7 +1644,7 @@ function* getEnrollmentFromDiversionPlanWorker(action :SequenceAction) :Generato
       .map((enrollment :List) => getNeighborDetails(enrollment));
 
     if (enrollmentStatuses.count() > 0) {
-      enrollmentStatus = sortEntitiesByDateProperty(enrollmentStatuses, EFFECTIVE_DATE)
+      enrollmentStatus = sortEntitiesByDateProperty(enrollmentStatuses, [EFFECTIVE_DATE])
         .last();
     }
 

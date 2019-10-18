@@ -9,7 +9,7 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import type { RequestSequence } from 'redux-reqseq';
 
-import { deleteInfractionEvent } from '../ParticipantActions';
+import { deleteInfractionEvent } from './InfractionsActions';
 import { getEntitySetIdFromApp } from '../../../utils/DataUtils';
 import { APP_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { STATE } from '../../../utils/constants/ReduxStateConsts';

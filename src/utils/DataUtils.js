@@ -162,6 +162,7 @@ export {
   getEntityKeyId,
   getEntityProperties,
   getEntitySetIdFromApp,
+  getFirstNeighborValue,
   getNeighborDetails,
   getNeighborESID,
   getPersonFullName,
