@@ -437,7 +437,6 @@ class ParticipantProfile extends Component<Props, State> {
       ORIENTATION_DATETIME,
       REQUIRED_HOURS,
     ]);
-
     const diversionPlanOptions :Object[] = generateDiversionPlanOptions(allDiversionPlans);
 
     return (
@@ -600,7 +599,7 @@ const mapStateToProps = (state :Map<*, *>) => {
     [ALL_DIVERSION_PLANS]: person.get(ALL_DIVERSION_PLANS),
     app,
     [CHARGES_FOR_CASE]: person.get(CHARGES_FOR_CASE),
-    [CHECK_INS_BY_APPOINTMENT]: person.get(CHECK_INS_BY_APPOINTMENT),
+    [CHECK_INS_BY_APPOINTMENT]: participantSchedule.get(CHECK_INS_BY_APPOINTMENT),
     createNewEnrollmentRequestState: person.getIn([ACTIONS, CREATE_NEW_ENROLLMENT, REQUEST_STATE]),
     [DIVERSION_PLAN]: person.get(DIVERSION_PLAN),
     [EMAIL]: person.get(EMAIL),

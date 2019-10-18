@@ -14,12 +14,16 @@ import {
   TYPE_IDS_BY_FQNS,
   TYPES_BY_ID
 } from '../core/edm/constants/DataModelConsts';
-import { ENTITY_KEY_ID } from '../core/edm/constants/FullyQualifiedNames';
+import { ENTITY_KEY_ID, PEOPLE_FQNS } from '../core/edm/constants/FullyQualifiedNames';
 import { APP } from './constants/ReduxStateConsts';
+import { EMPTY_FIELD } from '../containers/participants/ParticipantsConstants';
+import { isDefined } from './LangUtils';
 
 const { FullyQualifiedName } = Models;
+const { FIRST_NAME, LAST_NAME } = PEOPLE_FQNS;
 
-export const getEntitySetIdFromApp = (app :Object | Map, fqn :FullyQualifiedName) => {
+/* entity and property types */
+const getEntitySetIdFromApp = (app :Object | Map, fqn :FullyQualifiedName) => {
 
   const orgId = app.get(APP.SELECTED_ORG_ID);
   return app.getIn([
@@ -29,16 +33,20 @@ export const getEntitySetIdFromApp = (app :Object | Map, fqn :FullyQualifiedName
   ]);
 };
 
-export const getPropertyTypeIdFromEdm = (
+const getPropertyTypeIdFromEdm = (
   edm :Object | Map, propertyFqn :FullyQualifiedName
 ) => edm.getIn([TYPE_IDS_BY_FQNS, propertyFqn]);
 
-export const getPropertyFqnFromEdm = (edm :Object | Map, propertyTypeId :UUID) => {
+const getPropertyFqnFromEdm = (edm :Object | Map, propertyTypeId :UUID) => {
   const propertyType = edm.getIn([TYPES_BY_ID, propertyTypeId, 'type']);
   return new FullyQualifiedName(propertyType);
 };
 
-export const getFirstNeighborValue = (
+const getNeighborESID = (neighbor :Map) => (neighbor.getIn([NEIGHBOR_ENTITY_SET, 'id']));
+const getAssociationNeighborESID = (neighbor :Map) => (neighbor.getIn([ASSOCIATION_ENTITY_SET, 'id']));
+
+/* entity data */
+const getFirstNeighborValue = (
   neighborObj :Map,
   fqn :FullyQualifiedName,
   defaultValue :string = ''
@@ -48,7 +56,7 @@ export const getFirstNeighborValue = (
   neighborObj.getIn([fqn, 0], neighborObj.get(fqn, defaultValue))
 );
 
-export const getEntityProperties = (entityObj :Map, propertyList :string[]) => {
+const getEntityProperties = (entityObj :Map, propertyList :string[]) => {
 
   const returnPropertyFields = {};
   if (propertyList.length && isImmutable(entityObj) && entityObj.count() > 0) {
@@ -61,7 +69,7 @@ export const getEntityProperties = (entityObj :Map, propertyList :string[]) => {
   return returnPropertyFields;
 };
 
-export const getNeighborDetails = (neighborObj :Map) :Map => {
+const getNeighborDetails = (neighborObj :Map) :Map => {
   let neighborDetails :Map = Map();
   if (isImmutable(neighborObj)) {
     neighborDetails = neighborObj.get(NEIGHBOR_DETAILS, neighborObj);
@@ -69,7 +77,7 @@ export const getNeighborDetails = (neighborObj :Map) :Map => {
   return neighborDetails;
 };
 
-export const getEntityKeyId = (entityObj :Map) :string => {
+const getEntityKeyId = (entityObj :Map) :string => {
   if (isImmutable(entityObj)) {
     const { [ENTITY_KEY_ID]: entityKeyId } = getEntityProperties(entityObj, [ENTITY_KEY_ID]);
     return entityKeyId;
@@ -77,7 +85,18 @@ export const getEntityKeyId = (entityObj :Map) :string => {
   return '';
 };
 
-export const sortEntitiesByDateProperty = (
+const getPersonFullName = (personEntity :Map) :string => {
+
+  let fullName :string = EMPTY_FIELD;
+  const { [FIRST_NAME]: firstName, [LAST_NAME]: lastName } = getEntityProperties(personEntity, [FIRST_NAME, LAST_NAME]);
+  if (!isDefined(firstName) || !isDefined(lastName)) return fullName;
+
+  fullName = `${firstName} ${lastName}`;
+  return fullName;
+};
+
+/* manipulate entity data */
+const sortEntitiesByDateProperty = (
   entityCollection :List | Map,
   datePropertyPath :FQN[]
 ) :List | Map => entityCollection
@@ -94,34 +113,7 @@ export const sortEntitiesByDateProperty = (
     return dateA < dateB ? -1 : 1;
   });
 
-export const getNeighborESID = (neighbor :Map) => (neighbor.getIn([NEIGHBOR_ENTITY_SET, 'id']));
-export const getAssociationNeighborESID = (neighbor :Map) => (neighbor.getIn([ASSOCIATION_ENTITY_SET, 'id']));
-
-export const getSearchTerm = (
-  propertyTypeId :UUID,
-  searchString :string
-) => `${SEARCH_PREFIX}.${propertyTypeId}:"${searchString}"`;
-
-export const getSearchTermNotExact = (
-  propertyTypeId :UUID,
-  searchString :string
-) => `${SEARCH_PREFIX}.${propertyTypeId}:${searchString}`;
-
-export const getUTCDateRangeSearchString = (PTID :UUID, timeUnits :string, startDate :DateTime, endDate :?DateTime) => {
-  let start = startDate.toUTC().toISO();
-  let end;
-  if (!endDate) {
-    start = startDate.startOf(timeUnits).toUTC().toISO();
-    end = startDate.endOf(timeUnits).toUTC().toISO();
-  }
-  else {
-    end = endDate.toUTC().toISO();
-  }
-  const dateRangeString = `[${start} TO ${end}]`;
-  return getSearchTermNotExact(PTID, dateRangeString);
-};
-
-export const findEntityPathInMap = (entityMap :Map, entityEKID :UUID) :any[] => {
+const findEntityPathInMap = (entityMap :Map, entityEKID :UUID) :any[] => {
 
   let keyEKID :string = '';
   let index :number = -1;
@@ -137,4 +129,47 @@ export const findEntityPathInMap = (entityMap :Map, entityEKID :UUID) :any[] => 
     });
   }
   return [keyEKID, index];
+};
+
+/* search queries */
+const getSearchTerm = (
+  propertyTypeId :UUID,
+  searchString :string
+) => `${SEARCH_PREFIX}.${propertyTypeId}:"${searchString}"`;
+
+const getSearchTermNotExact = (
+  propertyTypeId :UUID,
+  searchString :string
+) => `${SEARCH_PREFIX}.${propertyTypeId}:${searchString}`;
+
+const getUTCDateRangeSearchString = (PTID :UUID, timeUnits :string, startDate :DateTime, endDate :?DateTime) => {
+  let start = startDate.toUTC().toISO();
+  let end;
+  if (!endDate) {
+    start = startDate.startOf(timeUnits).toUTC().toISO();
+    end = startDate.endOf(timeUnits).toUTC().toISO();
+  }
+  else {
+    end = endDate.toUTC().toISO();
+  }
+  const dateRangeString = `[${start} TO ${end}]`;
+  return getSearchTermNotExact(PTID, dateRangeString);
+};
+
+export {
+  findEntityPathInMap,
+  getAssociationNeighborESID,
+  getEntityKeyId,
+  getEntityProperties,
+  getEntitySetIdFromApp,
+  getFirstNeighborValue,
+  getNeighborDetails,
+  getNeighborESID,
+  getPersonFullName,
+  getPropertyFqnFromEdm,
+  getPropertyTypeIdFromEdm,
+  getSearchTerm,
+  getSearchTermNotExact,
+  getUTCDateRangeSearchString,
+  sortEntitiesByDateProperty,
 };

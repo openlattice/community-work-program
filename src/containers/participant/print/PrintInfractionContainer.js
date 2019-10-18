@@ -18,7 +18,7 @@ import type { Match } from 'react-router';
 import LogoLoader from '../../../components/LogoLoader';
 import ViolationHeader from '../../../assets/images/violation_header.png';
 
-import { getInfoForPrintInfraction } from '../ParticipantActions';
+import { getInfoForPrintInfraction } from '../infractions/InfractionsActions';
 import {
   APP_TYPE_FQNS,
   CASE_FQNS,
@@ -29,7 +29,12 @@ import {
 } from '../../../core/edm/constants/FullyQualifiedNames';
 import { getEntityProperties } from '../../../utils/DataUtils';
 import { getValuesFromEntityList } from '../utils/EditCaseInfoUtils';
-import { APP, PERSON, STATE } from '../../../utils/constants/ReduxStateConsts';
+import {
+  APP,
+  PERSON,
+  PERSON_INFRACTIONS,
+  STATE
+} from '../../../utils/constants/ReduxStateConsts';
 
 const { PEOPLE } = APP_TYPE_FQNS;
 const { CASE_NUMBER_TEXT } = CASE_FQNS;
@@ -40,13 +45,15 @@ const { INITIALIZE_APPLICATION } = APP;
 const {
   ACTIONS,
   ALL_PARTICIPANT_CASES,
-  GET_INFO_FOR_PRINT_INFRACTION,
-  INFRACTION_EVENT,
-  INFRACTION_TYPE,
   JUDGES_BY_CASE,
   PARTICIPANT,
   REQUEST_STATE,
 } = PERSON;
+const {
+  GET_INFO_FOR_PRINT_INFRACTION,
+  INFRACTION_EVENT,
+  INFRACTION_TYPE,
+} = PERSON_INFRACTIONS;
 
 // $FlowFixMe
 const PenningtonSherrifsHeader = styled.img.attrs({
@@ -231,13 +238,14 @@ class PrintInfractionContainer extends Component<Props> {
 const mapStateToProps = (state) => {
   const app = state.get(STATE.APP);
   const person = state.get(STATE.PERSON);
+  const infractions = state.get(STATE.INFRACTIONS);
   return {
     app,
     [ALL_PARTICIPANT_CASES]: person.get(ALL_PARTICIPANT_CASES),
-    getInfoForPrintInfractionRequestState: person.getIn([ACTIONS, GET_INFO_FOR_PRINT_INFRACTION, REQUEST_STATE]),
+    getInfoForPrintInfractionRequestState: infractions.getIn([ACTIONS, GET_INFO_FOR_PRINT_INFRACTION, REQUEST_STATE]),
     initializeApplicationRequestState: app.getIn([ACTIONS, INITIALIZE_APPLICATION, REQUEST_STATE]),
-    [INFRACTION_EVENT]: person.get(INFRACTION_EVENT),
-    [INFRACTION_TYPE]: person.get(INFRACTION_TYPE),
+    [INFRACTION_EVENT]: infractions.get(INFRACTION_EVENT),
+    [INFRACTION_TYPE]: infractions.get(INFRACTION_TYPE),
     [JUDGES_BY_CASE]: person.get(JUDGES_BY_CASE),
     [PARTICIPANT]: person.get(PARTICIPANT),
   };

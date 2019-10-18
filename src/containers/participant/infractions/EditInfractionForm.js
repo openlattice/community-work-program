@@ -8,7 +8,7 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import type { RequestSequence } from 'redux-reqseq';
 
-import { editInfractionEvent } from '../ParticipantActions';
+import { editInfractionEvent } from './InfractionsActions';
 import { schema, uiSchema } from './schemas/EditInfractionSchemas';
 import {
   getEntityKeyId,
