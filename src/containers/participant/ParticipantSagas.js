@@ -1644,7 +1644,7 @@ function* getEnrollmentFromDiversionPlanWorker(action :SequenceAction) :Generato
       .map((enrollment :List) => getNeighborDetails(enrollment));
 
     if (enrollmentStatuses.count() > 0) {
-      enrollmentStatus = sortEntitiesByDateProperty(enrollmentStatuses, EFFECTIVE_DATE)
+      enrollmentStatus = sortEntitiesByDateProperty(enrollmentStatuses, [EFFECTIVE_DATE])
         .last();
     }
 
