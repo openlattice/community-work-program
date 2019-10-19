@@ -57,6 +57,7 @@ import {
   GET_PARTICIPANT,
   GET_PARTICIPANT_ADDRESS,
   GET_PARTICIPANT_CASES,
+  GET_PERSON_PHOTO,
   GET_PROGRAM_OUTCOME,
   MARK_DIVERSION_PLAN_AS_COMPLETE,
   REASSIGN_JUDGE,
@@ -87,6 +88,7 @@ import {
   getParticipant,
   getParticipantAddress,
   getParticipantCases,
+  getPersonPhoto,
   getProgramOutcome,
   markDiversionPlanAsComplete,
   reassignJudge,
@@ -146,6 +148,7 @@ const {
   COURT_CHARGE_LIST,
   DIVERSION_PLAN,
   ENROLLMENT_STATUS,
+  IMAGE,
   JUDGES,
   MANUAL_CHARGED_WITH,
   MANUAL_PRETRIAL_COURT_CASES,
@@ -1834,6 +1837,66 @@ function* getParticipantCasesWatcher() :Generator<*, *, *> {
 
 /*
  *
+ * ParticipantActions.getPersonPhoto()
+ *
+ */
+
+function* getPersonPhotoWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+  if (value === null || value === undefined) {
+    yield put(getPersonPhoto.failure(id, ERR_ACTION_VALUE_NOT_DEFINED));
+    return;
+  }
+  const workerResponse :Object = {};
+  let response :Object = {};
+  let personPhoto :Map = Map();
+
+  try {
+    yield put(getPersonPhoto.request(id));
+    const { personEKID } = value;
+
+    const app = yield select(getAppFromState);
+    const peopleESID :UUID = getEntitySetIdFromApp(app, PEOPLE);
+    const imageESID :UUID = getEntitySetIdFromApp(app, IMAGE);
+
+    const searchFilter = {
+      entityKeyIds: [personEKID],
+      destinationEntitySetIds: [],
+      sourceEntitySetIds: [imageESID],
+    };
+    response = yield call(
+      searchEntityNeighborsWithFilterWorker,
+      searchEntityNeighborsWithFilter({ entitySetId: peopleESID, filter: searchFilter })
+    );
+    if (response.error) {
+      throw response.error;
+    }
+    const result = fromJS(response.data);
+    if (!result.isEmpty()) {
+      personPhoto = getNeighborDetails(result.getIn([personEKID, 0]));
+    }
+
+    yield put(getPersonPhoto.success(id, personPhoto));
+  }
+  catch (error) {
+    workerResponse.error = error;
+    LOG.error('caught exception in getPersonPhotoWorker()', error);
+    yield put(getPersonPhoto.failure(id, error));
+  }
+  finally {
+    yield put(getPersonPhoto.finally(id));
+  }
+  return workerResponse;
+}
+
+function* getPersonPhotoWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(GET_PERSON_PHOTO, getPersonPhotoWorker);
+}
+
+/*
+ *
  * ParticipantActions.getInfoForEditCase()
  *
  */
@@ -1952,6 +2015,7 @@ function* getAllParticipantInfoWorker(action :SequenceAction) :Generator<*, *, *
       call(getParticipantAddressWorker, getParticipantAddress({ personEKID })),
       call(getParticipantInfractionsWorker, getParticipantInfractions({ personEKID })),
       call(getParticipantWorker, getParticipant({ personEKID })),
+      call(getPersonPhotoWorker, getPersonPhoto({ personEKID })),
       call(getWorksitesWorker, getWorksites()),
     ]);
     const responseError = workerResponses.reduce(
@@ -2030,6 +2094,8 @@ export {
   getParticipantCasesWorker,
   getParticipantWatcher,
   getParticipantWorker,
+  getPersonPhotoWatcher,
+  getPersonPhotoWorker,
   getProgramOutcomeWatcher,
   getProgramOutcomeWorker,
   markDiversionPlanAsCompleteWatcher,

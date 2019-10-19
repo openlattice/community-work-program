@@ -36,6 +36,7 @@ import {
   getParticipant,
   getParticipantAddress,
   getParticipantCases,
+  getPersonPhoto,
   getProgramOutcome,
   markDiversionPlanAsComplete,
   reassignJudge,
@@ -105,6 +106,7 @@ const {
   GET_PARTICIPANT,
   GET_PARTICIPANT_ADDRESS,
   GET_PARTICIPANT_CASES,
+  GET_PERSON_PHOTO,
   GET_PROGRAM_OUTCOME,
   JUDGE,
   JUDGES,
@@ -112,6 +114,7 @@ const {
   MARK_DIVERSION_PLAN_AS_COMPLETE,
   PARTICIPANT,
   PERSON_CASE,
+  PERSON_PHOTO,
   PHONE,
   PROGRAM_OUTCOME,
   REASSIGN_JUDGE,
@@ -184,9 +187,6 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     [GET_JUDGES]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
-    [GET_PROGRAM_OUTCOME]: {
-      [REQUEST_STATE]: RequestStates.STANDBY
-    },
     [MARK_DIVERSION_PLAN_AS_COMPLETE]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
@@ -197,6 +197,12 @@ const INITIAL_STATE :Map<*, *> = fromJS({
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [GET_PARTICIPANT_CASES]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [GET_PERSON_PHOTO]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [GET_PROGRAM_OUTCOME]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [REASSIGN_JUDGE]: {
@@ -215,6 +221,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [JUDGES]: List(),
   [PARTICIPANT]: Map(),
   [PERSON_CASE]: Map(),
+  [PERSON_PHOTO]: Map(),
   [PHONE]: Map(),
   [PROGRAM_OUTCOME]: Map(),
 });
@@ -1032,6 +1039,34 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
         FAILURE: () => state
           .setIn([ACTIONS, GET_PARTICIPANT_CASES, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, GET_PARTICIPANT_CASES, action.id])
+      });
+    }
+
+    case getPersonPhoto.case(action.type): {
+
+      return getPersonPhoto.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, GET_PERSON_PHOTO, action.id], fromJS(action))
+          .setIn([ACTIONS, GET_PERSON_PHOTO, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+
+          if (!state.hasIn([ACTIONS, GET_PERSON_PHOTO, action.id])) {
+            return state;
+          }
+
+          const { value } = action;
+          if (value === null || value === undefined) {
+            return state;
+          }
+
+          return state
+            .set(PERSON_PHOTO, value)
+            .setIn([ACTIONS, GET_PERSON_PHOTO, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, GET_PERSON_PHOTO, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, GET_PERSON_PHOTO, action.id])
       });
     }
 
