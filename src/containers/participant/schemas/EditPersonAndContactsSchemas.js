@@ -5,6 +5,7 @@ import {
   ADDRESS_FQNS,
   APP_TYPE_FQNS,
   CONTACT_INFO_FQNS,
+  IMAGE_FQNS,
   PEOPLE_FQNS
 } from '../../../core/edm/constants/FullyQualifiedNames';
 import { RACE_VALUES, SEX_VALUES } from '../../../core/edm/constants/DataModelConsts';
@@ -12,8 +13,14 @@ import { RACE_VALUES, SEX_VALUES } from '../../../core/edm/constants/DataModelCo
 const { getEntityAddressKey, getPageSectionKey } = DataProcessingUtils;
 
 const { FULL_ADDRESS } = ADDRESS_FQNS;
-const { ADDRESS, CONTACT_INFORMATION, PEOPLE } = APP_TYPE_FQNS;
+const {
+  ADDRESS,
+  CONTACT_INFORMATION,
+  IMAGE,
+  PEOPLE,
+} = APP_TYPE_FQNS;
 const { EMAIL, PHONE_NUMBER } = CONTACT_INFO_FQNS;
+const { IMAGE_DATA } = IMAGE_FQNS;
 const {
   DOB,
   ETHNICITY,
@@ -147,4 +154,34 @@ export const contactsUiSchema = {
     },
     'ui:options': { editable: true },
   },
+};
+
+export const personPhotoSchema = {
+  title: '',
+  type: 'object',
+  properties: {
+    [getPageSectionKey(1, 1)]: {
+      type: 'object',
+      title: '',
+      properties: {
+        [getEntityAddressKey(0, IMAGE, IMAGE_DATA)]: {
+          type: 'string',
+          format: 'data-url',
+          title: 'Person photo'
+        },
+      }
+    }
+  }
+};
+
+export const personPhotoUiSchema = {
+  [getPageSectionKey(1, 1)]: {
+    classNames: 'column-span-12 grid-container',
+    [getEntityAddressKey(0, IMAGE, IMAGE_DATA)]: {
+      classNames: 'column-span-12',
+      'ui:options': {
+        accept: '.jpg'
+      }
+    }
+  }
 };

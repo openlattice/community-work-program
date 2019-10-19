@@ -19,11 +19,14 @@ import {
   getInfoForEditPerson,
 } from './ParticipantActions';
 import { goToRoute } from '../../core/router/RoutingActions';
+import { submitDataGraph } from '../../core/sagas/data/DataActions';
 import {
   contactsSchema,
   contactsUiSchema,
   personSchema,
   personUiSchema,
+  personPhotoSchema,
+  personPhotoUiSchema,
 } from './schemas/EditPersonAndContactsSchemas';
 import {
   getEntityKeyId,
@@ -31,18 +34,21 @@ import {
   getEntitySetIdFromApp,
   getPropertyTypeIdFromEdm
 } from '../../utils/DataUtils';
+import { removeDataUriPrefix } from '../../utils/BinaryUtils';
 import { BackNavButton } from '../../components/controls/index';
 import { PARTICIPANT_PROFILE_WIDTH } from '../../core/style/Sizes';
 import {
   ADDRESS_FQNS,
   APP_TYPE_FQNS,
   CONTACT_INFO_FQNS,
+  IMAGE_FQNS,
   PEOPLE_FQNS,
 } from '../../core/edm/constants/FullyQualifiedNames';
 import { APP, PERSON, STATE } from '../../utils/constants/ReduxStateConsts';
 import * as Routes from '../../core/router/Routes';
 
 const {
+  VALUE_MAPPERS,
   getEntityAddressKey,
   getPageSectionKey,
   processAssociationEntityData,
@@ -54,10 +60,13 @@ const {
   ADDRESS,
   CONTACT_INFORMATION,
   CONTACT_INFO_GIVEN,
+  IMAGE,
+  IS_PICTURE_OF,
   LOCATED_AT,
   PEOPLE
 } = APP_TYPE_FQNS;
 const { EMAIL, PHONE_NUMBER, PREFERRED } = CONTACT_INFO_FQNS;
+const { IMAGE_DATA } = IMAGE_FQNS;
 const {
   DOB,
   ETHNICITY,
@@ -74,6 +83,17 @@ const {
   PHONE,
   REQUEST_STATE,
 } = PERSON;
+
+const imageValueMapper = (value :any, contentType :string = 'image/png') => ({
+  data: removeDataUriPrefix(value),
+  'content-type': contentType,
+});
+
+const mappers = {
+  [VALUE_MAPPERS]: {
+    [getEntityAddressKey(0, IMAGE, IMAGE_DATA)]: imageValueMapper
+  }
+};
 
 const FormWrapper = styled.div`
   display: flex;
@@ -95,6 +115,7 @@ type Props = {
     editPersonDetails :RequestSequence;
     getInfoForEditPerson :RequestSequence;
     goToRoute :RequestSequence;
+    submitDataGraph :RequestSequence;
   },
   address :Map;
   app :Map;
@@ -112,6 +133,8 @@ type State = {
   contactsPrepopulated :boolean;
   personFormData :Object;
   personPrepopulated :boolean;
+  personPhotoFormData :Object;
+  personPhotoPrepopulated :boolean;
 };
 
 class EditPersonAndContactsForm extends Component<Props, State> {
@@ -128,6 +151,8 @@ class EditPersonAndContactsForm extends Component<Props, State> {
       contactsPrepopulated,
       personFormData: personPrepopulated ? personFormData.toJS() : {},
       personPrepopulated,
+      personPhotoFormData: {},
+      personPhotoPrepopulated: false,
     };
   }
 
@@ -220,6 +245,8 @@ class EditPersonAndContactsForm extends Component<Props, State> {
       [ADDRESS]: getEntitySetIdFromApp(app, ADDRESS),
       [CONTACT_INFORMATION]: getEntitySetIdFromApp(app, CONTACT_INFORMATION),
       [CONTACT_INFO_GIVEN]: getEntitySetIdFromApp(app, CONTACT_INFO_GIVEN),
+      [IMAGE]: getEntitySetIdFromApp(app, IMAGE),
+      [IS_PICTURE_OF]: getEntitySetIdFromApp(app, IS_PICTURE_OF),
       [LOCATED_AT]: getEntitySetIdFromApp(app, LOCATED_AT),
       [PEOPLE]: getEntitySetIdFromApp(app, PEOPLE),
     };
@@ -233,6 +260,7 @@ class EditPersonAndContactsForm extends Component<Props, State> {
       [ETHNICITY]: getPropertyTypeIdFromEdm(edm, ETHNICITY),
       [FIRST_NAME]: getPropertyTypeIdFromEdm(edm, FIRST_NAME),
       [FULL_ADDRESS]: getPropertyTypeIdFromEdm(edm, FULL_ADDRESS),
+      [IMAGE_DATA]: getPropertyTypeIdFromEdm(edm, IMAGE_DATA),
       [LAST_NAME]: getPropertyTypeIdFromEdm(edm, LAST_NAME),
       [PHONE_NUMBER]: getPropertyTypeIdFromEdm(edm, PHONE_NUMBER),
       [PREFERRED]: getPropertyTypeIdFromEdm(edm, PREFERRED),
@@ -250,21 +278,21 @@ class EditPersonAndContactsForm extends Component<Props, State> {
     } = this.props;
 
     const entityIndexToIdMap :Map = Map().withMutations((map :Map) => {
-      map.setIn([PEOPLE, 0], getEntityKeyId(participant));
       map.setIn([ADDRESS, 0], getEntityKeyId(address));
       map.setIn([CONTACT_INFORMATION, 0], getEntityKeyId(phone));
       map.setIn([CONTACT_INFORMATION, 1], getEntityKeyId(email));
+      map.setIn([PEOPLE, 0], getEntityKeyId(participant));
     });
     return entityIndexToIdMap;
   }
 
-  getAssociations = () => {
+  getContactsAssociations = () => {
     const { participant } = this.props;
     const personEKID :UUID = getEntityKeyId(participant);
     return [
-      [LOCATED_AT, personEKID, PEOPLE, 0, ADDRESS],
       [CONTACT_INFO_GIVEN, 0, CONTACT_INFORMATION, personEKID, PEOPLE],
       [CONTACT_INFO_GIVEN, 1, CONTACT_INFORMATION, personEKID, PEOPLE],
+      [LOCATED_AT, personEKID, PEOPLE, 0, ADDRESS],
     ];
   }
 
@@ -287,11 +315,30 @@ class EditPersonAndContactsForm extends Component<Props, State> {
 
     const entityData :{} = processEntityData(dataToProcess, entitySetIds, propertyTypeIds);
     const associationEntityData :{} = processAssociationEntityData(
-      this.getAssociations(),
+      this.getContactsAssociations(),
       entitySetIds,
       propertyTypeIds
     );
     actions.addNewParticipantContacts({ associationEntityData, entityData });
+  }
+
+  handleOnSubmitPhoto = ({ formData } :Object) => {
+    const { actions, participant } = this.props;
+    const personEKID :UUID = getEntityKeyId(participant);
+    const associations = [
+      [IS_PICTURE_OF, 0, IMAGE, personEKID, PEOPLE, {}]
+    ];
+
+    const entitySetIds :Object = this.createEntitySetIdsMap();
+    const propertyTypeIds :Object = this.createPropertyTypeIdsMap();
+
+    const entityData :Object = processEntityData(formData, entitySetIds, propertyTypeIds, mappers);
+    const associationEntityData :Object = processAssociationEntityData(
+      associations,
+      entitySetIds,
+      propertyTypeIds
+    );
+    actions.submitDataGraph({ associationEntityData, entityData });
   }
 
   handleOnClickBackButton = () => {
@@ -314,6 +361,8 @@ class EditPersonAndContactsForm extends Component<Props, State> {
       contactsPrepopulated,
       personFormData,
       personPrepopulated,
+      personPhotoFormData,
+      personPhotoPrepopulated,
     } = this.state;
 
     if (initializeAppRequestState === RequestStates.PENDING
@@ -369,6 +418,15 @@ class EditPersonAndContactsForm extends Component<Props, State> {
                 schema={contactsSchema}
                 uiSchema={contactsUiSchema} />
           </Card>
+          <Card>
+            <CardHeader padding="sm">Add profile photo</CardHeader>
+            <Form
+                formContext={{}}
+                formData={personPhotoFormData}
+                onSubmit={this.handleOnSubmitPhoto}
+                schema={personPhotoSchema}
+                uiSchema={personPhotoUiSchema} />
+          </Card>
         </CardStack>
       </FormWrapper>
     );
@@ -398,6 +456,7 @@ const mapDispatchToProps = dispatch => ({
     editPersonDetails,
     getInfoForEditPerson,
     goToRoute,
+    submitDataGraph,
   }, dispatch)
 });
 
