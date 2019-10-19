@@ -33,8 +33,10 @@ export const APP_TYPE_FQNS = {
   ENROLLMENT_STATUS: new FullyQualifiedName('app.enrollmentstatus'),
   FULFILLS: new FullyQualifiedName('app.fulfills'),
   HAS: new FullyQualifiedName('app.has'),
+  IMAGE: new FullyQualifiedName('app.image'),
   INFRACTIONS: new FullyQualifiedName('app.infractions'),
   IS: new FullyQualifiedName('app.is'),
+  IS_PICTURE_OF: new FullyQualifiedName('app.ispictureof'),
   INFRACTION_EVENT: new FullyQualifiedName('app.infractionevent'),
   JUDGES: new FullyQualifiedName('app.judges'),
   LIVES_AT: new FullyQualifiedName('app.livesat'),
@@ -121,6 +123,11 @@ export const ENROLLMENT_STATUS_FQNS = {
   DATETIME_END: new FullyQualifiedName('ol.datetimeend'),
   EFFECTIVE_DATE: new FullyQualifiedName('ol.effectivedate'),
   STATUS: new FullyQualifiedName('ol.status'),
+};
+
+/* ol.image */
+export const IMAGE_FQNS = {
+  IMAGE_DATA: new FullyQualifiedName('ol.imagedata')
 };
 
 /* ol.notification */
