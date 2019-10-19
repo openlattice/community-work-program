@@ -34,6 +34,7 @@ import {
   ADD_CHARGES_TO_CASE,
   ADD_NEW_DIVERSION_PLAN_STATUS,
   ADD_NEW_PARTICIPANT_CONTACTS,
+  ADD_PERSON_PHOTO,
   ADD_TO_AVAILABLE_CHARGES,
   CREATE_NEW_ENROLLMENT,
   EDIT_ENROLLMENT_DATES,
@@ -65,6 +66,7 @@ import {
   addChargesToCase,
   addNewDiversionPlanStatus,
   addNewParticipantContacts,
+  addPersonPhoto,
   addToAvailableCharges,
   createNewEnrollment,
   editEnrollmentDates,
@@ -406,6 +408,43 @@ function* addNewDiversionPlanStatusWorker(action :SequenceAction) :Generator<*, 
 function* addNewDiversionPlanStatusWatcher() :Generator<*, *, *> {
 
   yield takeEvery(ADD_NEW_DIVERSION_PLAN_STATUS, addNewDiversionPlanStatusWorker);
+}
+
+/*
+ *
+ * ParticipantActions.addPersonPhoto()
+ *
+ */
+
+function* addPersonPhotoWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+  const workerResponse = {};
+  let response :Object = {};
+
+  try {
+    yield put(addPersonPhoto.request(id, value));
+
+    response = yield call(submitDataGraphWorker, submitDataGraph(value));
+    if (response.error) {
+      throw response.error;
+    }
+
+    yield put(addPersonPhoto.success(id));
+  }
+  catch (error) {
+    workerResponse.error = error;
+    LOG.error('caught exception in addPersonPhotoWorker()', error);
+    yield put(addPersonPhoto.failure(id, error));
+  }
+  finally {
+    yield put(addPersonPhoto.finally(id));
+  }
+}
+
+function* addPersonPhotoWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(ADD_PERSON_PHOTO, addPersonPhotoWorker);
 }
 
 /*
@@ -2048,6 +2087,8 @@ export {
   addNewDiversionPlanStatusWorker,
   addNewParticipantContactsWatcher,
   addNewParticipantContactsWorker,
+  addPersonPhotoWatcher,
+  addPersonPhotoWorker,
   addToAvailableChargesWatcher,
   addToAvailableChargesWorker,
   createNewEnrollmentWatcher,

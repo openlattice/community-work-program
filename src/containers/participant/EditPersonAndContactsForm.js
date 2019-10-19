@@ -14,12 +14,12 @@ import LogoLoader from '../../components/LogoLoader';
 
 import {
   addNewParticipantContacts,
+  addPersonPhoto,
   editParticipantContacts,
   editPersonDetails,
   getInfoForEditPerson,
 } from './ParticipantActions';
 import { goToRoute } from '../../core/router/RoutingActions';
-import { submitDataGraph } from '../../core/sagas/data/DataActions';
 import {
   contactsSchema,
   contactsUiSchema,
@@ -111,11 +111,11 @@ const ButtonWrapper = styled.div`
 type Props = {
   actions:{
     addNewParticipantContacts :RequestSequence;
+    addPersonPhoto :RequestSequence;
     editParticipantContacts :RequestSequence;
     editPersonDetails :RequestSequence;
     getInfoForEditPerson :RequestSequence;
     goToRoute :RequestSequence;
-    submitDataGraph :RequestSequence;
   },
   address :Map;
   app :Map;
@@ -338,7 +338,7 @@ class EditPersonAndContactsForm extends Component<Props, State> {
       entitySetIds,
       propertyTypeIds
     );
-    actions.submitDataGraph({ associationEntityData, entityData });
+    actions.addPersonPhoto({ associationEntityData, entityData });
   }
 
   handleOnClickBackButton = () => {
@@ -452,11 +452,11 @@ const mapStateToProps = (state :Map) => {
 const mapDispatchToProps = dispatch => ({
   actions: bindActionCreators({
     addNewParticipantContacts,
+    addPersonPhoto,
     editParticipantContacts,
     editPersonDetails,
     getInfoForEditPerson,
     goToRoute,
-    submitDataGraph,
   }, dispatch)
 });
 

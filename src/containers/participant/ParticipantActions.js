@@ -11,6 +11,9 @@ const addNewDiversionPlanStatus :RequestSequence = newRequestSequence(ADD_NEW_DI
 const ADD_NEW_PARTICIPANT_CONTACTS :'ADD_NEW_PARTICIPANT_CONTACTS' = 'ADD_NEW_PARTICIPANT_CONTACTS';
 const addNewParticipantContacts :RequestSequence = newRequestSequence(ADD_NEW_PARTICIPANT_CONTACTS);
 
+const ADD_PERSON_PHOTO :'ADD_PERSON_PHOTO' = 'ADD_PERSON_PHOTO';
+const addPersonPhoto :RequestSequence = newRequestSequence(ADD_PERSON_PHOTO);
+
 const ADD_TO_AVAILABLE_CHARGES :'ADD_TO_AVAILABLE_CHARGES' = 'ADD_TO_AVAILABLE_CHARGES';
 const addToAvailableCharges :RequestSequence = newRequestSequence(ADD_TO_AVAILABLE_CHARGES);
 
@@ -99,6 +102,7 @@ export {
   ADD_CHARGES_TO_CASE,
   ADD_NEW_DIVERSION_PLAN_STATUS,
   ADD_NEW_PARTICIPANT_CONTACTS,
+  ADD_PERSON_PHOTO,
   ADD_TO_AVAILABLE_CHARGES,
   CREATE_NEW_ENROLLMENT,
   EDIT_ENROLLMENT_DATES,
@@ -130,6 +134,7 @@ export {
   addChargesToCase,
   addNewDiversionPlanStatus,
   addNewParticipantContacts,
+  addPersonPhoto,
   addToAvailableCharges,
   createNewEnrollment,
   editEnrollmentDates,
