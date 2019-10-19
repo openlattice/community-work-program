@@ -90,6 +90,7 @@ const {
   JUDGE,
   PARTICIPANT,
   PERSON_CASE,
+  PERSON_PHOTO,
   PHONE,
   PROGRAM_OUTCOME,
   REQUEST_STATE,
@@ -231,6 +232,7 @@ type Props = {
   participant :Map;
   personCase :Map;
   personEKID :string;
+  personPhoto :Map;
   phone :Map;
   programOutcome :Map;
   violations :List;
@@ -385,6 +387,7 @@ class ParticipantProfile extends Component<Props, State> {
       judge,
       participant,
       personCase,
+      personPhoto,
       phone,
       programOutcome,
       violations,
@@ -466,6 +469,7 @@ class ParticipantProfile extends Component<Props, State> {
                   edit={this.editParticipant}
                   email={email}
                   person={participant}
+                  personPhoto={personPhoto}
                   phone={phone} />
               <PersonNotes
                   notes={personNotes} />
@@ -611,6 +615,7 @@ const mapStateToProps = (state :Map<*, *>) => {
     [JUDGE]: person.get(JUDGE),
     [PARTICIPANT]: person.get(PARTICIPANT),
     [PERSON_CASE]: person.get(PERSON_CASE),
+    [PERSON_PHOTO]: person.get(PERSON_PHOTO),
     [PHONE]: person.get(PHONE),
     [PROGRAM_OUTCOME]: person.get(PROGRAM_OUTCOME),
     [VIOLATIONS]: infractions.get(VIOLATIONS),
