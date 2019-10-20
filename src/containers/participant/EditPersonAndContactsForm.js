@@ -18,6 +18,7 @@ import {
   editParticipantContacts,
   editPersonDetails,
   getInfoForEditPerson,
+  updatePersonPhoto,
 } from './ParticipantActions';
 import { goToRoute } from '../../core/router/RoutingActions';
 import {
@@ -35,10 +36,11 @@ import {
   getPropertyTypeIdFromEdm
 } from '../../utils/DataUtils';
 import { getImageDataFromEntity, removeDataUriPrefix } from '../../utils/BinaryUtils';
-import { getPersonProfilePicture } from '../../utils/PeopleUtils';
+import { isDefined } from '../../utils/LangUtils';
 import { BackNavButton } from '../../components/controls/index';
 import { PersonPhoto, PersonPicture } from '../../components/picture/PersonPicture';
 import { PARTICIPANT_PROFILE_WIDTH } from '../../core/style/Sizes';
+import { OL } from '../../core/style/Colors';
 import {
   ADDRESS_FQNS,
   APP_TYPE_FQNS,
@@ -51,10 +53,13 @@ import * as Routes from '../../core/router/Routes';
 
 const {
   VALUE_MAPPERS,
+  findEntityAddressKeyFromMap,
   getEntityAddressKey,
   getPageSectionKey,
   processAssociationEntityData,
   processEntityData,
+  processEntityDataForPartialReplace,
+  replaceEntityAddressKeys,
 } = DataProcessingUtils;
 
 const { FULL_ADDRESS } = ADDRESS_FQNS;
@@ -80,11 +85,13 @@ const {
 } = PEOPLE_FQNS;
 const {
   ACTIONS,
+  ADD_PERSON_PHOTO,
   GET_INFO_FOR_EDIT_PERSON,
   PARTICIPANT,
   PERSON_PHOTO,
   PHONE,
   REQUEST_STATE,
+  UPDATE_PERSON_PHOTO,
 } = PERSON;
 
 const imageValueMapper = (value :any, contentType :string = 'image/png') => ({
@@ -115,7 +122,13 @@ const PreviewPhotoWrapper = styled.div`
   align-self: center;
   display: flex;
   justify-content: center;
-  margin-top: 30px;
+  margin: 30px 0;
+`;
+
+const SubmittedMessage = styled.div`
+  align-self: center;
+  color: ${OL.GREEN01};
+  font-weight: 600;
 `;
 
 type Props = {
@@ -126,8 +139,10 @@ type Props = {
     editPersonDetails :RequestSequence;
     getInfoForEditPerson :RequestSequence;
     goToRoute :RequestSequence;
+    updatePersonPhoto :RequestSequence;
   },
   address :Map;
+  addPersonPhotoRequestState :RequestState;
   app :Map;
   edm :Map;
   email :Map;
@@ -137,6 +152,7 @@ type Props = {
   participant :Map;
   personPhoto :Map;
   phone :Map;
+  updatePersonPhotoRequestState :RequestState;
 };
 
 type State = {
@@ -291,6 +307,7 @@ class EditPersonAndContactsForm extends Component<Props, State> {
       address,
       email,
       participant,
+      personPhoto,
       phone
     } = this.props;
 
@@ -298,6 +315,7 @@ class EditPersonAndContactsForm extends Component<Props, State> {
       map.setIn([ADDRESS, 0], getEntityKeyId(address));
       map.setIn([CONTACT_INFORMATION, 0], getEntityKeyId(phone));
       map.setIn([CONTACT_INFORMATION, 1], getEntityKeyId(email));
+      map.setIn([IMAGE, 0], getEntityKeyId(personPhoto));
       map.setIn([PEOPLE, 0], getEntityKeyId(participant));
     });
     return entityIndexToIdMap;
@@ -358,6 +376,33 @@ class EditPersonAndContactsForm extends Component<Props, State> {
     actions.addPersonPhoto({ associationEntityData, entityData });
   }
 
+  handleOnUpdatePhoto = ({ formData } :Object) => {
+    const { actions } = this.props;
+
+    const entityIndexToIdMap = this.createEntityIndexToIdMap();
+    const entitySetIds = this.createEntitySetIdsMap();
+    const propertyTypeIds = this.createPropertyTypeIdsMap();
+
+    const draftWithKeys = replaceEntityAddressKeys(
+      formData,
+      findEntityAddressKeyFromMap(entityIndexToIdMap)
+    );
+
+    const mappersWithKeys = replaceEntityAddressKeys(
+      mappers,
+      findEntityAddressKeyFromMap(entityIndexToIdMap)
+    );
+
+    const entityData = processEntityDataForPartialReplace(
+      draftWithKeys,
+      {},
+      entitySetIds,
+      propertyTypeIds,
+      mappersWithKeys
+    );
+    actions.updatePersonPhoto({ entityData });
+  }
+
   handleOnChangePhoto = ({ formData } :Object) => {
     this.setState({ personPhotoFormData: formData });
   }
@@ -374,9 +419,11 @@ class EditPersonAndContactsForm extends Component<Props, State> {
   render() {
     const {
       actions,
+      addPersonPhotoRequestState,
       getInfoForEditPersonRequestState,
       initializeAppRequestState,
       personPhoto,
+      updatePersonPhotoRequestState,
     } = this.props;
     const {
       contactsFormData,
@@ -417,6 +464,12 @@ class EditPersonAndContactsForm extends Component<Props, State> {
       entitySetIds,
       propertyTypeIds,
     };
+
+    let submitPhotoAction = this.handleOnSubmitPhoto;
+    if (!personPhoto.isEmpty()) {
+      submitPhotoAction = this.handleOnUpdatePhoto;
+    }
+
     return (
       <FormWrapper>
         <ButtonWrapper>
@@ -447,16 +500,27 @@ class EditPersonAndContactsForm extends Component<Props, State> {
           </Card>
           <Card>
             <CardHeader padding="sm">Add profile photo</CardHeader>
-            <PreviewPhotoWrapper>
-              <PersonPhoto>
-                <PersonPicture src={imagePreviewUrl} />
-              </PersonPhoto>
-            </PreviewPhotoWrapper>
+            {
+              isDefined(imagePreviewUrl)
+                && (
+                  <PreviewPhotoWrapper>
+                    <PersonPhoto>
+                      <PersonPicture src={imagePreviewUrl} />
+                    </PersonPhoto>
+                  </PreviewPhotoWrapper>
+                )
+            }
+            {
+              (addPersonPhotoRequestState === RequestStates.SUCCESS
+                || updatePersonPhotoRequestState === RequestStates.SUCCESS)
+              && (
+                <SubmittedMessage>Submitted!</SubmittedMessage>
+              )
+            }
             <Form
-                formContext={{}}
                 formData={personPhotoFormData}
                 onChange={this.handleOnChangePhoto}
-                onSubmit={this.handleOnSubmitPhoto}
+                onSubmit={submitPhotoAction}
                 schema={personPhotoSchema}
                 uiSchema={personPhotoUiSchema} />
           </Card>
@@ -472,6 +536,7 @@ const mapStateToProps = (state :Map) => {
   const person = state.get(STATE.PERSON);
   return ({
     [PERSON.ADDRESS]: person.get(PERSON.ADDRESS),
+    addPersonPhotoRequestState: person.getIn([ACTIONS, ADD_PERSON_PHOTO, REQUEST_STATE]),
     app,
     edm,
     [PERSON.EMAIL]: person.get(PERSON.EMAIL),
@@ -480,6 +545,7 @@ const mapStateToProps = (state :Map) => {
     [PARTICIPANT]: person.get(PARTICIPANT),
     [PERSON_PHOTO]: person.get(PERSON_PHOTO),
     [PHONE]: person.get(PHONE),
+    updatePersonPhotoRequestState: person.getIn([ACTIONS, UPDATE_PERSON_PHOTO, REQUEST_STATE]),
   });
 };
 
@@ -491,6 +557,7 @@ const mapDispatchToProps = dispatch => ({
     editPersonDetails,
     getInfoForEditPerson,
     goToRoute,
+    updatePersonPhoto,
   }, dispatch)
 });
 

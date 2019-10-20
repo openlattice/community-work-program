@@ -63,6 +63,7 @@ import {
   MARK_DIVERSION_PLAN_AS_COMPLETE,
   REASSIGN_JUDGE,
   REMOVE_CHARGE_FROM_CASE,
+  UPDATE_PERSON_PHOTO,
   addChargesToCase,
   addNewDiversionPlanStatus,
   addNewParticipantContacts,
@@ -95,6 +96,7 @@ import {
   markDiversionPlanAsComplete,
   reassignJudge,
   removeChargeFromCase,
+  updatePersonPhoto,
 } from './ParticipantActions';
 import {
   createOrReplaceAssociation,
@@ -426,9 +428,7 @@ function* addPersonPhotoWorker(action :SequenceAction) :Generator<*, *, *> {
     yield put(addPersonPhoto.request(id, value));
 
     response = yield call(submitDataGraphWorker, submitDataGraph(value));
-    if (response.error) {
-      throw response.error;
-    }
+    if (response.error) throw response.error;
 
     yield put(addPersonPhoto.success(id));
   }
@@ -445,6 +445,37 @@ function* addPersonPhotoWorker(action :SequenceAction) :Generator<*, *, *> {
 function* addPersonPhotoWatcher() :Generator<*, *, *> {
 
   yield takeEvery(ADD_PERSON_PHOTO, addPersonPhotoWorker);
+}
+
+/*
+ *
+ * ParticipantActions.updatePersonPhoto()
+ *
+ */
+
+function* updatePersonPhotoWorker(action :SequenceAction) :Generator<any, any, any> {
+
+  const { id, value } = action;
+  if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
+  let response :Object = {};
+
+  try {
+    yield put(updatePersonPhoto.request(id, value));
+
+    response = yield call(submitPartialReplaceWorker, submitPartialReplace(value));
+    if (response.error) throw response.error;
+
+    yield put(updatePersonPhoto.success(id));
+  }
+  catch (error) {
+    LOG.error('updatePersonPhotoWorker', error);
+    yield put(updatePersonPhoto.failure(id, error));
+  }
+}
+
+function* updatePersonPhotoWatcher() :Generator<any, any, any> {
+
+  yield takeEvery(UPDATE_PERSON_PHOTO, updatePersonPhotoWorker);
 }
 
 /*
@@ -2145,4 +2176,6 @@ export {
   reassignJudgeWorker,
   removeChargeFromCaseWatcher,
   removeChargeFromCaseWorker,
+  updatePersonPhotoWatcher,
+  updatePersonPhotoWorker,
 };

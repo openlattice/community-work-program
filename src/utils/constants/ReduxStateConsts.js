@@ -92,6 +92,7 @@ export const PERSON = {
   ADD_NEW_DIVERSION_PLAN_STATUS: 'addNewDiversionPlanStatus',
   ADD_NEW_PARTICIPANT_CONTACTS: 'addNewParticipantContacts',
   ADD_ORIENTATION_DATE: 'addOrientationDate',
+  ADD_PERSON_PHOTO: 'addPersonPhoto',
   ADD_TO_AVAILABLE_CHARGES: 'addToAvailableCharges',
   ALL_DIVERSION_PLANS: 'allDiversionPlans',
   ALL_PARTICIPANT_CASES: 'allParticipantCases',
@@ -141,6 +142,7 @@ export const PERSON = {
   REMOVE_CHARGE_FROM_CASE: 'removeChargeFromCase',
   REQUEST_STATE: 'requestState',
   REQUIRED_HOURS: 'requiredHours',
+  UPDATE_PERSON_PHOTO: 'updatePersonPhoto',
 };
 
 /* Work Schedule */
