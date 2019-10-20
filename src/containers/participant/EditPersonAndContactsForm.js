@@ -1,7 +1,7 @@
 // @flow
 import React, { Component } from 'react';
 import styled from 'styled-components';
-import { Map } from 'immutable';
+import { Map, getIn } from 'immutable';
 import { Card, CardHeader, CardStack } from 'lattice-ui-kit';
 import { Form, DataProcessingUtils } from 'lattice-fabricate';
 import { connect } from 'react-redux';
@@ -34,8 +34,10 @@ import {
   getEntitySetIdFromApp,
   getPropertyTypeIdFromEdm
 } from '../../utils/DataUtils';
-import { removeDataUriPrefix } from '../../utils/BinaryUtils';
+import { getImageDataFromEntity, removeDataUriPrefix } from '../../utils/BinaryUtils';
+import { getPersonProfilePicture } from '../../utils/PeopleUtils';
 import { BackNavButton } from '../../components/controls/index';
+import { PersonPhoto, PersonPicture } from '../../components/picture/PersonPicture';
 import { PARTICIPANT_PROFILE_WIDTH } from '../../core/style/Sizes';
 import {
   ADDRESS_FQNS,
@@ -80,6 +82,7 @@ const {
   ACTIONS,
   GET_INFO_FOR_EDIT_PERSON,
   PARTICIPANT,
+  PERSON_PHOTO,
   PHONE,
   REQUEST_STATE,
 } = PERSON;
@@ -108,6 +111,13 @@ const ButtonWrapper = styled.div`
   margin-bottom: 30px;
 `;
 
+const PreviewPhotoWrapper = styled.div`
+  align-self: center;
+  display: flex;
+  justify-content: center;
+  margin-top: 30px;
+`;
+
 type Props = {
   actions:{
     addNewParticipantContacts :RequestSequence;
@@ -125,6 +135,7 @@ type Props = {
   initializeAppRequestState :RequestState;
   match :Match;
   participant :Map;
+  personPhoto :Map;
   phone :Map;
 };
 
@@ -134,7 +145,6 @@ type State = {
   personFormData :Object;
   personPrepopulated :boolean;
   personPhotoFormData :Object;
-  personPhotoPrepopulated :boolean;
 };
 
 class EditPersonAndContactsForm extends Component<Props, State> {
@@ -152,7 +162,6 @@ class EditPersonAndContactsForm extends Component<Props, State> {
       personFormData: personPrepopulated ? personFormData.toJS() : {},
       personPrepopulated,
       personPhotoFormData: {},
-      personPhotoPrepopulated: false,
     };
   }
 
@@ -183,15 +192,17 @@ class EditPersonAndContactsForm extends Component<Props, State> {
   }
 
   prepopulateFormData = () => {
-    const { personFormData, contactsFormData } = this.constructOriginalData();
+    const { contactsFormData, personFormData, photoFormData } = this.constructOriginalData();
     const personPrepopulated = !personFormData.isEmpty();
     const contactsPrepopulated = !contactsFormData.isEmpty();
+    const personPhotoPrepopulated = !photoFormData.isEmpty();
 
     this.setState({
       contactsFormData: contactsPrepopulated ? contactsFormData.toJS() : {},
       contactsPrepopulated,
       personFormData: personPrepopulated ? personFormData.toJS() : {},
       personPrepopulated,
+      personPhotoFormData: personPhotoPrepopulated ? personPhotoPrepopulated.toJS() : {},
     });
   }
 
@@ -200,6 +211,7 @@ class EditPersonAndContactsForm extends Component<Props, State> {
       address,
       email,
       participant,
+      personPhoto,
       phone
     } = this.props;
 
@@ -236,7 +248,12 @@ class EditPersonAndContactsForm extends Component<Props, State> {
         map.setIn([getPageSectionKey(1, 3), getEntityAddressKey(0, ADDRESS, FULL_ADDRESS)], personAddress);
       }
     });
-    return { personFormData, contactsFormData };
+
+    const imageUrl = getImageDataFromEntity(personPhoto);
+    const photoFormData :Map = Map().withMutations((map :Map) => {
+      if (imageUrl) map.setIn([getPageSectionKey(1, 1), getEntityAddressKey(0, IMAGE, IMAGE_DATA)], imageUrl);
+    });
+    return { contactsFormData, personFormData, photoFormData };
   }
 
   createEntitySetIdsMap = () => {
@@ -341,6 +358,10 @@ class EditPersonAndContactsForm extends Component<Props, State> {
     actions.addPersonPhoto({ associationEntityData, entityData });
   }
 
+  handleOnChangePhoto = ({ formData } :Object) => {
+    this.setState({ personPhotoFormData: formData });
+  }
+
   handleOnClickBackButton = () => {
     const {
       actions,
@@ -355,6 +376,7 @@ class EditPersonAndContactsForm extends Component<Props, State> {
       actions,
       getInfoForEditPersonRequestState,
       initializeAppRequestState,
+      personPhoto,
     } = this.props;
     const {
       contactsFormData,
@@ -362,7 +384,6 @@ class EditPersonAndContactsForm extends Component<Props, State> {
       personFormData,
       personPrepopulated,
       personPhotoFormData,
-      personPhotoPrepopulated,
     } = this.state;
 
     if (initializeAppRequestState === RequestStates.PENDING
@@ -373,6 +394,12 @@ class EditPersonAndContactsForm extends Component<Props, State> {
             size={60} />
       );
     }
+
+    const existingPhotoUrl = getImageDataFromEntity(personPhoto);
+    const imagePreviewUrl = getIn(
+      personPhotoFormData,
+      [getPageSectionKey(1, 1), getEntityAddressKey(0, IMAGE, IMAGE_DATA)]
+    ) || existingPhotoUrl;
 
     const entityIndexToIdMap = this.createEntityIndexToIdMap();
     const entitySetIds = this.createEntitySetIdsMap();
@@ -420,9 +447,15 @@ class EditPersonAndContactsForm extends Component<Props, State> {
           </Card>
           <Card>
             <CardHeader padding="sm">Add profile photo</CardHeader>
+            <PreviewPhotoWrapper>
+              <PersonPhoto>
+                <PersonPicture src={imagePreviewUrl} />
+              </PersonPhoto>
+            </PreviewPhotoWrapper>
             <Form
                 formContext={{}}
                 formData={personPhotoFormData}
+                onChange={this.handleOnChangePhoto}
                 onSubmit={this.handleOnSubmitPhoto}
                 schema={personPhotoSchema}
                 uiSchema={personPhotoUiSchema} />
@@ -445,6 +478,7 @@ const mapStateToProps = (state :Map) => {
     getInfoForEditPersonRequestState: person.getIn([ACTIONS, GET_INFO_FOR_EDIT_PERSON, REQUEST_STATE]),
     initializeAppRequestState: app.getIn([APP.ACTIONS, APP.INITIALIZE_APPLICATION, APP.REQUEST_STATE]),
     [PARTICIPANT]: person.get(PARTICIPANT),
+    [PERSON_PHOTO]: person.get(PERSON_PHOTO),
     [PHONE]: person.get(PHONE),
   });
 };
