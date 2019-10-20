@@ -26,7 +26,7 @@ import {
   ENROLLMENT_STATUS_FQNS,
   PROGRAM_OUTCOME_FQNS,
 } from '../../core/edm/constants/FullyQualifiedNames';
-import { PERSON, STATE } from '../../utils/constants/ReduxStateConsts';
+import { PERSON, STATE, WORKSITE_PLANS } from '../../utils/constants/ReduxStateConsts';
 import { ENROLLMENT_STATUSES, WORKSITE_ENROLLMENT_STATUSES } from '../../core/edm/constants/DataModelConsts';
 import {
   ButtonsRow,
@@ -313,7 +313,7 @@ const mapStateToProps = (state :Map) => ({
   app: state.get(STATE.APP),
   diversionPlan: state.getIn([STATE.PERSON, PERSON.DIVERSION_PLAN]),
   edm: state.get(STATE.EDM),
-  worksitePlans: state.getIn([STATE.PERSON, PERSON.WORKSITE_PLANS]),
+  worksitePlans: state.getIn([STATE.WORKSITE_PLANS, WORKSITE_PLANS.WORKSITE_PLANS_LIST]),
 });
 
 const mapDispatchToProps = dispatch => ({

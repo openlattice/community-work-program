@@ -9,10 +9,13 @@ import { DataApiSagas, SearchApiSagas } from 'lattice-sagas';
 import * as AppSagas from '../../containers/app/AppSagas';
 import * as DataSagas from './data/DataSagas';
 import * as EDMSagas from '../edm/EDMSagas';
+import * as InfractionsSagas from '../../containers/participant/infractions/InfractionsSagas';
 import * as ParticipantSagas from '../../containers/participant/ParticipantSagas';
+import * as ParticipantScheduleSagas from '../../containers/participant/schedule/ParticipantScheduleSagas';
 import * as ParticipantsSagas from '../../containers/participants/ParticipantsSagas';
 import * as RoutingSagas from '../router/RoutingSagas';
 import * as WorkScheduleSagas from '../../containers/workschedule/WorkScheduleSagas';
+import * as WorksitePlanSagas from '../../containers/participant/assignedworksites/WorksitePlanSagas';
 import * as WorksitesSagas from '../../containers/worksites/WorksitesSagas';
 
 export default function* sagas() :Generator<*, *, *> {
@@ -36,6 +39,7 @@ export default function* sagas() :Generator<*, *, *> {
     fork(AppSagas.switchOrganizationWatcher),
 
     // DataSagas
+    fork(DataSagas.createOrReplaceAssociationWatcher),
     fork(DataSagas.deleteEntitiesWatcher),
     fork(DataSagas.submitDataGraphWatcher),
     fork(DataSagas.submitPartialReplaceWatcher),
@@ -43,35 +47,53 @@ export default function* sagas() :Generator<*, *, *> {
     // EDMSagas
     fork(EDMSagas.getEntityDataModelTypesWatcher),
 
+    // InfractionsSagas
+    fork(InfractionsSagas.addInfractionWatcher),
+    fork(InfractionsSagas.deleteInfractionEventWatcher),
+    fork(InfractionsSagas.getInfoForPrintInfractionWatcher),
+    fork(InfractionsSagas.editInfractionEventWatcher),
+    fork(InfractionsSagas.getInfractionWatcher),
+    fork(InfractionsSagas.getInfractionTypesWatcher),
+    fork(InfractionsSagas.getParticipantInfractionsWatcher),
+
     // ParticipantSagas
-    fork(ParticipantSagas.addInfractionWatcher),
+    fork(ParticipantSagas.addChargesToCaseWatcher),
     fork(ParticipantSagas.addNewDiversionPlanStatusWatcher),
-    fork(ParticipantSagas.addOrientationDateWatcher),
-    fork(ParticipantSagas.addWorksitePlanWatcher),
-    fork(ParticipantSagas.checkInForAppointmentWatcher),
-    fork(ParticipantSagas.createWorkAppointmentsWatcher),
-    fork(ParticipantSagas.deleteAppointmentWatcher),
-    fork(ParticipantSagas.editAppointmentWatcher),
-    fork(ParticipantSagas.editCaseAndHoursWatcher),
-    fork(ParticipantSagas.editCheckInDateWatcher),
+    fork(ParticipantSagas.addNewParticipantContactsWatcher),
+    fork(ParticipantSagas.addToAvailableChargesWatcher),
+    fork(ParticipantSagas.createNewEnrollmentWatcher),
+    fork(ParticipantSagas.editEnrollmentDatesWatcher),
+    fork(ParticipantSagas.editParticipantContactsWatcher),
+    fork(ParticipantSagas.editPersonCaseWatcher),
+    fork(ParticipantSagas.editPersonDetailsWatcher),
+    fork(ParticipantSagas.editPersonNotesWatcher),
     fork(ParticipantSagas.editPlanNotesWatcher),
-    fork(ParticipantSagas.editSentenceDateWatcher),
-    fork(ParticipantSagas.editWorksitePlanWatcher),
-    fork(ParticipantSagas.getAppointmentCheckInsWatcher),
+    fork(ParticipantSagas.editRequiredHoursWatcher),
     fork(ParticipantSagas.getAllParticipantInfoWatcher),
     fork(ParticipantSagas.getCaseInfoWatcher),
+    fork(ParticipantSagas.getChargesForCaseWatcher),
+    fork(ParticipantSagas.getChargesWatcher),
     fork(ParticipantSagas.getContactInfoWatcher),
+    fork(ParticipantSagas.getEnrollmentFromDiversionPlanWatcher),
     fork(ParticipantSagas.getEnrollmentStatusWatcher),
-    fork(ParticipantSagas.getInfractionTypesWatcher),
-    // fork(ParticipantSagas.getParticipantAddressWatcher),
-    fork(ParticipantSagas.getParticipantInfractionsWatcher),
+    fork(ParticipantSagas.getInfoForEditCaseWatcher),
+    fork(ParticipantSagas.getInfoForEditPersonWatcher),
+    fork(ParticipantSagas.getJudgeForCaseWatcher),
+    fork(ParticipantSagas.getJudgesWatcher),
+    fork(ParticipantSagas.getParticipantAddressWatcher),
     fork(ParticipantSagas.getParticipantWatcher),
-    fork(ParticipantSagas.getWorkAppointmentsWatcher),
-    fork(ParticipantSagas.getWorksiteByWorksitePlanWatcher),
-    fork(ParticipantSagas.getWorksitePlansWatcher),
-    fork(ParticipantSagas.getWorksitePlanStatusesWatcher),
     fork(ParticipantSagas.getProgramOutcomeWatcher),
     fork(ParticipantSagas.markDiversionPlanAsCompleteWatcher),
+    fork(ParticipantSagas.reassignJudgeWatcher),
+    fork(ParticipantSagas.removeChargeFromCaseWatcher),
+
+    // ParticipantScheduleSagas
+    fork(ParticipantScheduleSagas.checkInForAppointmentWatcher),
+    fork(ParticipantScheduleSagas.createWorkAppointmentsWatcher),
+    fork(ParticipantScheduleSagas.deleteAppointmentWatcher),
+    fork(ParticipantScheduleSagas.editAppointmentWatcher),
+    fork(ParticipantScheduleSagas.getAppointmentCheckInsWatcher),
+    fork(ParticipantScheduleSagas.getWorkAppointmentsWatcher),
 
     // ParticipantsSagas
     fork(ParticipantsSagas.addParticipantWatcher),
@@ -89,10 +111,24 @@ export default function* sagas() :Generator<*, *, *> {
     // WorksitesSagas
     fork(WorksitesSagas.addOrganizationWatcher),
     fork(WorksitesSagas.addWorksiteWatcher),
+    fork(WorksitesSagas.addWorksiteContactAndAddressWatcher),
+    fork(WorksitesSagas.editWorksiteWatcher),
+    fork(WorksitesSagas.editWorksiteContactAndAddressWatcher),
     fork(WorksitesSagas.getOrganizationsWatcher),
+    fork(WorksitesSagas.getWorksiteWatcher),
+    fork(WorksitesSagas.getWorksiteAddressWatcher),
+    fork(WorksitesSagas.getWorksiteContactWatcher),
     fork(WorksitesSagas.getWorksitesWatcher),
     fork(WorksitesSagas.getWorksitePlansWatcher),
     fork(WorksitesSagas.getWorksitesByOrgWatcher),
+
+    // WorksitePlanSagas
+    fork(WorksitePlanSagas.addWorksitePlanWatcher),
+    fork(WorksitePlanSagas.editWorksitePlanWatcher),
+    fork(WorksitePlanSagas.getWorksiteByWorksitePlanWatcher),
+    fork(WorksitePlanSagas.getWorksitePlansWatcher),
+    fork(WorksitePlanSagas.getWorksitePlanStatusesWatcher),
+    fork(WorksitePlanSagas.updateHoursWorkedWatcher),
 
     // RoutingSagas
     fork(RoutingSagas.goToRootWatcher),

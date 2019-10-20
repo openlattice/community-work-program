@@ -45,6 +45,7 @@ import {
   getEntitySetIdFromApp,
   getNeighborDetails,
   getNeighborESID,
+  getPropertyTypeIdFromEdm,
   sortEntitiesByDateProperty,
 } from '../../utils/DataUtils';
 import { STATE } from '../../utils/constants/ReduxStateConsts';
@@ -72,8 +73,8 @@ const {
   PEOPLE,
   WORKSITE_PLAN,
 } = APP_TYPE_FQNS;
+const { DATETIME, TYPE } = INFRACTION_FQNS;
 const { COURT_CASE_TYPE } = CASE_FQNS;
-const { TYPE } = INFRACTION_FQNS;
 const { COMPLETED, REQUIRED_HOURS } = DIVERSION_PLAN_FQNS;
 const { HOURS_WORKED } = WORKSITE_PLAN_FQNS;
 const { EFFECTIVE_DATE } = ENROLLMENT_STATUS_FQNS;
@@ -408,7 +409,7 @@ function* getEnrollmentStatusesWorker(action :SequenceAction) :Generator<*, *, *
           .filter((plan :Map) => getEntityKeyId(plan) === diversionPlanEKID)
           .get(0);
 
-        const sortedEnrollmentStatuses :List = sortEntitiesByDateProperty(enrollmentList, EFFECTIVE_DATE);
+        const sortedEnrollmentStatuses :List = sortEntitiesByDateProperty(enrollmentList, [EFFECTIVE_DATE]);
 
         const mostRecentStatus = sortedEnrollmentStatuses.last();
         const mostRecentStatusDate = DateTime.fromISO(mostRecentStatus.getIn([EFFECTIVE_DATE, 0]));
@@ -501,8 +502,12 @@ function* getInfractionsWorker(action :SequenceAction) :Generator<*, *, *> {
     }
 
     const infractionsMap :Map = fromJS(response.data)
-      .map((participant :Map) => participant
-        .map((infraction :Map) => getNeighborDetails(infraction)));
+      .map((participantInfractions :List) => {
+        const mappedList :List = participantInfractions
+          .map((infraction :Map) => getNeighborDetails(infraction));
+        const sorted :List = sortEntitiesByDateProperty(mappedList, [DATETIME]);
+        return sorted;
+      });
 
     const infractionCountMap :Map = infractionsMap.map((infractions :List) => {
       const infractionCount = { [INFRACTIONS_CONSTS.WARNING]: 0, [INFRACTIONS_CONSTS.VIOLATION]: 0 };

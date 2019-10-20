@@ -3,7 +3,9 @@
  */
 
 import React from 'react';
+import styled from 'styled-components';
 import { List, Map } from 'immutable';
+import { Tag } from 'lattice-ui-kit';
 import { faUserCircle } from '@fortawesome/pro-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
@@ -20,8 +22,22 @@ import {
   StyledPersonPhoto,
 } from './TableStyledComponents';
 import { ENROLLMENT_STATUSES } from '../../core/edm/constants/DataModelConsts';
+import { OL } from '../../core/style/Colors';
+import { TAGS } from '../../containers/dashboard/DashboardConstants';
 
 const { DOB, MUGSHOT, PICTURE } = PEOPLE_FQNS;
+
+const SubtleTag = styled(Tag)`
+  background-color: ${OL.WHITE};
+  border: 0.5px solid ${OL.GREEN02};
+  color: ${OL.GREEN02};
+  font-weight: 500;
+`;
+
+const ReportTag = styled(SubtleTag)`
+  border-color: ${OL.RED01};
+  color: ${OL.RED01};
+`;
 
 type Props = {
   ageRequired :boolean;
@@ -34,6 +50,7 @@ type Props = {
   selected ? :boolean;
   small ? :boolean;
   status ? :string | void;
+  tag ? :string;
   violationsCount :number | void;
   warningsCount :number | void;
 };
@@ -49,6 +66,7 @@ const TableRow = ({
   selected,
   small,
   status,
+  tag,
   violationsCount,
   warningsCount,
 } :Props) => {
@@ -90,6 +108,7 @@ const TableRow = ({
       }
       if (!isDefined(hoursWorked) && isDefined(hoursRequired)) list.push(formatNumericalValue(hoursRequired));
       if (isDefined(courtType)) list.push(courtType);
+      if (isDefined(tag) || (isDefined(violationsCount) && !isDefined(status))) list.push('');
     });
   }
 
@@ -103,6 +122,21 @@ const TableRow = ({
       {
         cellData.map((field :string, index :number) => {
           const text = Object.values(ENROLLMENT_STATUSES).includes(field) ? field : 'default';
+
+          if (isDefined(tag) && index === (cellData.count() - 1)) {
+            if (tag === TAGS.REVIEW) {
+              return (
+                <Cell key={`${index}-${field}`} small={small} status={text}>
+                  <SubtleTag>Review</SubtleTag>
+                </Cell>
+              );
+            }
+            return (
+              <Cell key={`${index}-${field}`} small={small} status={text}>
+                <ReportTag>Report</ReportTag>
+              </Cell>
+            );
+          }
           return (
             <Cell key={`${index}-${field}`} small={small} status={text}>{ field }</Cell>
           );
@@ -115,7 +149,8 @@ const TableRow = ({
 TableRow.defaultProps = {
   selected: false,
   small: false,
-  status: undefined
+  status: undefined,
+  tag: undefined,
 };
 
 export default TableRow;

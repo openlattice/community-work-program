@@ -1,15 +1,15 @@
 import styled from 'styled-components';
 
 export const PersonPicture = styled.img`
-  width: ${props => (props.small ? 30 : 36)}px;
-  height: auto;
+  /* width: ${props => (props.small ? 30 : 36)}px; */
+  height: 100%;
+  width: 100%;
 `;
 
 export const PersonPhoto = styled.div`
-  margin-right: 20px;
-  border-radius: 50%;
-  min-width: 36px;
-  height: 36px;
+  border-radius: 3px;
+  width: 152px;
+  height: 120px;
   position: relative;
   overflow: hidden;
   img {

@@ -36,22 +36,20 @@ type HeaderProps = {
 };
 
 const Headers = ({ columnHeaders, selected, sort } :HeaderProps) => (
-  <>
-    <HeaderRow>
-      <HeaderElement />
-      {
-        columnHeaders.map(header => (
-          <HeaderElement
-              key={header}
-              onClick={() => sort(header)}
-              selected={selected === header && Object.values(SORTABLE_PARTICIPANT_COLUMNS)
-                .indexOf(selected.toLowerCase()) !== -1}>
-            { header }
-          </HeaderElement>
-        ))
-      }
-    </HeaderRow>
-  </>
+  <HeaderRow>
+    <HeaderElement />
+    {
+      columnHeaders.map(header => (
+        <HeaderElement
+            key={header}
+            onClick={() => sort(header)}
+            selected={selected === header && Object.values(SORTABLE_PARTICIPANT_COLUMNS)
+              .indexOf(selected.toLowerCase()) !== -1}>
+          { header }
+        </HeaderElement>
+      ))
+    }
+  </HeaderRow>
 );
 
 Headers.defaultProps = {
@@ -70,10 +68,12 @@ type Props = {
   enrollment ? :Map;
   handleSelect :(personEKID :string) => void;
   hours ? :Map;
+  noShows ? :List;
   people :List;
   selectedSortOption ? :string;
   small :boolean;
   sortByColumn ? :(header :string) => void;
+  tag ? :string;
   totalTableItems :number;
   violations ? :Map;
   warnings ? :Map;
@@ -91,10 +91,12 @@ const ParticipantsTable = ({
   enrollment,
   handleSelect,
   hours,
+  noShows,
   people,
   selectedSortOption,
   small,
   sortByColumn,
+  tag,
   totalTableItems,
   violations,
   warnings,
@@ -196,6 +198,15 @@ const ParticipantsTable = ({
             ? courtTypeByParticipant.get(personEKID, '')
             : undefined;
 
+          // Tags for Pening Completion Review and Violations Watch tables
+          let tagToInclude;
+          if (isDefined(tag)) {
+            tagToInclude = tag;
+            if (isDefined(noShows) && !noShows.includes(person)) {
+              tagToInclude = undefined;
+            }
+          }
+
           return (
             <ParticipantsTableRow
                 ageRequired={ageRequired}
@@ -208,6 +219,7 @@ const ParticipantsTable = ({
                 person={person}
                 status={enrollmentStatus}
                 small={small}
+                tag={tagToInclude}
                 violationsCount={violationsCount}
                 warningsCount={warningsCount} />
           );
@@ -219,10 +231,12 @@ const ParticipantsTable = ({
 
 ParticipantsTable.defaultProps = {
   alignCenter: false,
-  courtTypeByParticipant: Map(),
+  courtTypeByParticipant: undefined,
   currentDiversionPlansMap: undefined,
   enrollment: undefined,
   hours: Map(),
+  noShows: undefined,
+  tag: undefined,
   selectedSortOption: '',
   sortByColumn: () => {},
   violations: undefined,

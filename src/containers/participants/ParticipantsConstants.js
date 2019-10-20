@@ -1,7 +1,17 @@
 // @flow
 import { Map } from 'immutable';
 
-import { ENROLLMENT_STATUSES } from '../../core/edm/constants/DataModelConsts';
+import {
+  COURT_TYPES,
+  ENROLLMENT_STATUSES,
+  RACE_VALUES,
+  SEX_VALUES,
+} from '../../core/edm/constants/DataModelConsts';
+
+const generateOptions = (list :string[]) :Object[] => list.map(value => ({
+  label: value,
+  value
+}));
 
 export const EMPTY_FIELD = '----';
 
@@ -96,3 +106,7 @@ export const statusFilterDropdown :Map = Map().withMutations((map :Map) => {
   map.set('title', FILTERS.STATUS);
   map.set('enums', STATUS_FILTER_OPTIONS);
 });
+
+export const sexOptions = generateOptions(SEX_VALUES);
+export const raceOptions = generateOptions(RACE_VALUES);
+export const courtTypeOptions = generateOptions(COURT_TYPES);

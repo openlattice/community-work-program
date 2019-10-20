@@ -2,12 +2,14 @@
 import React, { Component } from 'react';
 import styled from 'styled-components';
 import { List, Map } from 'immutable';
+import { DateTime } from 'luxon';
 import {
   Button,
   Card,
   CardSegment,
   CardStack,
   IconSplash,
+  Select,
 } from 'lattice-ui-kit';
 import { faTools } from '@fortawesome/pro-light-svg-icons';
 import { connect } from 'react-redux';
@@ -15,24 +17,25 @@ import { bindActionCreators } from 'redux';
 import { RequestStates } from 'redux-reqseq';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
-import GeneralInfo from '../../components/participant/GeneralInfo';
-import KeyDates from '../../components/participant/KeyDates';
-import CaseInfo from './cases/CaseInfo';
+import {
+  CaseInfoSection,
+  EnrollmentDates,
+  EnrollmentStatusSection,
+  ParticipantProfileSection,
+  PersonNotes,
+  ProgramNotes,
+} from '../../components/participant/index';
 import ParticipantWorkScheduleContainer from './schedule/ParticipantWorkScheduleContainer';
-import PlanNotes from './plannotes/PlanNotes';
 import ProgramCompletionBanner from './ProgramCompletionBanner';
 
+import CreateNewEnrollmentModal from './CreateNewEnrollmentModal';
 import AssignedWorksite from './assignedworksites/AssignedWorksite';
-import AddNewPlanStatusModal from './AddNewPlanStatusModal';
 import AssignWorksiteModal from './assignedworksites/AssignWorksiteModal';
 import InfractionsContainer from './infractions/InfractionsContainer';
 import CreateWorkAppointmentModal from './schedule/CreateAppointmentModal';
-import AddOrientationDateModal from './AddOrientationDateModal';
-import EditSentenceDateModal from './EditSentenceDateModal';
-import EditCheckInDateModal from './EditCheckInDateModal';
 import LogoLoader from '../../components/LogoLoader';
 
-import { getAllParticipantInfo } from './ParticipantActions';
+import { getAllParticipantInfo, getEnrollmentFromDiversionPlan } from './ParticipantActions';
 import { goToRoute } from '../../core/router/RoutingActions';
 import { OL } from '../../core/style/Colors';
 import { PARTICIPANT_PROFILE_WIDTH } from '../../core/style/Sizes';
@@ -42,6 +45,7 @@ import { getEntityKeyId, getEntityProperties, sortEntitiesByDateProperty } from 
 import { isDefined } from '../../utils/LangUtils';
 import {
   APP_TYPE_FQNS,
+  DATETIME_END,
   DATETIME_START,
   DIVERSION_PLAN_FQNS,
   ENROLLMENT_STATUS_FQNS,
@@ -52,9 +56,12 @@ import {
 import { ENROLLMENT_STATUSES } from '../../core/edm/constants/DataModelConsts';
 import {
   APP,
+  PARTICIPANT_SCHEDULE,
   PERSON,
+  PERSON_INFRACTIONS,
   STATE,
-  WORKSITES
+  WORKSITES,
+  WORKSITE_PLANS,
 } from '../../utils/constants/ReduxStateConsts';
 
 const {
@@ -65,42 +72,54 @@ const {
   REQUIRED_HOURS,
 } = DIVERSION_PLAN_FQNS;
 const { STATUS } = ENROLLMENT_STATUS_FQNS;
-const { FIRST_NAME } = PEOPLE_FQNS;
+const { FIRST_NAME, PERSON_NOTES } = PEOPLE_FQNS;
 const { NAME } = WORKSITE_FQNS;
+
+const { CHECK_INS_BY_APPOINTMENT, WORK_APPOINTMENTS_BY_WORKSITE_PLAN } = PARTICIPANT_SCHEDULE;
 const {
   ACTIONS,
   ADDRESS,
-  CHECK_INS_BY_APPOINTMENT,
+  ALL_DIVERSION_PLANS,
+  CHARGES_FOR_CASE,
+  CREATE_NEW_ENROLLMENT,
   DIVERSION_PLAN,
   EMAIL,
   ENROLLMENT_STATUS,
   GET_ALL_PARTICIPANT_INFO,
-  GET_WORK_APPOINTMENTS,
+  GET_ENROLLMENT_FROM_DIVERSION_PLAN,
+  JUDGE,
   PARTICIPANT,
   PERSON_CASE,
   PHONE,
   PROGRAM_OUTCOME,
   REQUEST_STATE,
-  VIOLATIONS,
-  WARNINGS,
-  WORK_APPOINTMENTS_BY_WORKSITE_PLAN,
-  WORKSITES_BY_WORKSITE_PLAN,
-  WORKSITE_PLANS,
-  WORKSITE_PLAN_STATUSES,
 } = PERSON;
+const { VIOLATIONS, WARNINGS } = PERSON_INFRACTIONS;
 const { WORKSITES_LIST } = WORKSITES;
+const {
+  WORKSITES_BY_WORKSITE_PLAN,
+  WORKSITE_PLANS_LIST,
+  WORKSITE_PLAN_STATUSES,
+} = WORKSITE_PLANS;
 
 const ENROLLMENT_STATUSES_EXCLUDING_PREENROLLMENT = Object.values(ENROLLMENT_STATUSES)
   .filter(status => status !== ENROLLMENT_STATUSES.AWAITING_CHECKIN
     && status !== ENROLLMENT_STATUSES.AWAITING_ORIENTATION);
 
 /* Constants for Modals */
+const NEW_ENROLLMENT = 'showNewEnrollmentModal';
 const ASSIGN_WORKSITE = 'showAssignWorksiteModal';
-const CHECK_IN_DATE = 'showCheckInDateModal';
-const ENROLLMENT = 'showEnrollmentModal';
-const ORIENTATION_DATE = 'showOrientationDateModal';
-const SENTENCE_DATE = 'showSentenceDateModal';
 const WORK_APPOINTMENT = 'showWorkAppointmentModal';
+
+const generateDiversionPlanOptions = (entities :List) :Object[] => {
+  const options = [];
+  entities.forEach((entity :Map) => {
+    const { [DATETIME_RECEIVED]: sentenceDateTime } = getEntityProperties(entity, [DATETIME_RECEIVED]);
+    const sentenceDate = DateTime.fromISO(sentenceDateTime).toLocaleString(DateTime.DATE_SHORT);
+    options.push({ label: `Enrollment ${sentenceDate}`, value: entity });
+  });
+  return options;
+};
 
 const ProfileWrapper = styled.div`
   display: flex;
@@ -115,11 +134,39 @@ const ProfileBody = styled.div`
   align-items: stretch;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
   margin-bottom: 30px;
   overflow-x: visible;
   overflow-y: auto;
   overflow-y: visible;
+  width: 100%;
+`;
+
+const GeneralInfoSection = styled.div`
+  display: grid;
+  font-size: 13px;
+  grid-gap: 16px 33px;
+  grid-template-columns: 383px 1fr;
+  height: 836px;
+  margin-bottom: 30px;
+  overflow-x: visible;
+  overflow-y: auto;
+  overflow-y: visible;
+  width: 100%;
+`;
+
+const ProfileInfoColumnWrapper = styled.div`
+  display: grid;
+  grid-template-rows: 7% 78% 15%;
+  height: 100%;
+  row-gap: 15px;
+  width: 100%;
+`;
+
+const ProgramInfoColumnWrapper = styled.div`
+  display: grid;
+  grid-template-rows: 7% 18% 28% 28.5% 15%;
+  height: 100%;
+  row-gap: 15px;
   width: 100%;
 `;
 
@@ -131,27 +178,16 @@ const NameRowWrapper = styled.div`
   align-items: center;
 `;
 
+const TopRowWrapper = styled.div`
+  width: 100%;
+  display: flex;
+  align-items: center;
+`;
+
 const NameHeader = styled.div`
   font-size: 26px;
   font-weight: 600;
   color: ${OL.BLACK};
-`;
-
-const BasicInfoWrapper = styled.div`
-  margin-top: 15px;
-  width: 100%;
-  height: 500px;
-  display: flex;
-  justify-content: space-between;
-`;
-
-const InnerColumnWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  align-items: center;
-  height: 100%;
-  width: 610px;
 `;
 
 const ButtonsWrapper = styled.div`
@@ -164,30 +200,44 @@ const ScheduleButtonsWrapper = styled(ButtonsWrapper)`
   grid-template-columns: repeat(2, 1fr);
 `;
 
+const EnrollmentControlsWrapper = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-gap: 0 20px;
+  margin-top: 8px;
+  width: 100%;
+  height: 42px;
+`;
+
 type Props = {
   actions:{
     getAllParticipantInfo :RequestSequence;
+    getEnrollmentFromDiversionPlan :RequestSequence;
     goToRoute :RequestSequence;
   };
-  address :string;
+  address :Map;
+  allDiversionPlans :List;
   app :Map;
+  chargesForCase :List;
   checkInsByAppointment :Map;
+  createNewEnrollmentRequestState :RequestState;
   diversionPlan :Map;
-  email :string;
+  email :Map;
   enrollmentStatus :Map;
   getAllParticipantInfoRequestState :RequestState;
-  getInitializeAppRequestState :RequestState;
-  getWorkAppointmentsRequestState :RequestState;
+  getEnrollmentFromDiversionPlanRequestState :RequestState;
+  initializeAppRequestState :RequestState;
+  judge :Map;
   participant :Map;
   personCase :Map;
   personEKID :string;
-  phone :string;
+  phone :Map;
   programOutcome :Map;
   violations :List;
   warnings :List;
   workAppointmentsByWorksitePlan :Map;
   worksitesByWorksitePlan :Map;
-  worksitePlans :List;
+  worksitePlansList :List;
   worksitePlanStatuses :Map;
   worksitesList :List;
 };
@@ -195,10 +245,7 @@ type Props = {
 type State = {
   workStartDateTime :string;
   showAssignWorksiteModal :boolean;
-  showCheckInDateModal :boolean;
-  showEnrollmentModal :boolean;
-  showOrientationDateModal :boolean;
-  showSentenceDateModal :boolean;
+  showNewEnrollmentModal :boolean;
   showWorkAppointmentModal :boolean;
   worksiteNamesByWorksitePlan :Map;
 };
@@ -211,10 +258,7 @@ class ParticipantProfile extends Component<Props, State> {
     this.state = {
       workStartDateTime: '',
       [ASSIGN_WORKSITE]: false,
-      [CHECK_IN_DATE]: false,
-      [ENROLLMENT]: false,
-      [ORIENTATION_DATE]: false,
-      [SENTENCE_DATE]: false,
+      [NEW_ENROLLMENT]: false,
       [WORK_APPOINTMENT]: false,
       worksiteNamesByWorksitePlan: Map(),
     };
@@ -228,7 +272,12 @@ class ParticipantProfile extends Component<Props, State> {
   }
 
   componentDidUpdate(prevProps :Props) {
-    const { app, workAppointmentsByWorksitePlan, worksitesByWorksitePlan } = this.props;
+    const {
+      app,
+      createNewEnrollmentRequestState,
+      workAppointmentsByWorksitePlan,
+      worksitesByWorksitePlan
+    } = this.props;
     if (!prevProps.app.get(APP_TYPE_FQNS.PEOPLE) && app.get(APP_TYPE_FQNS.PEOPLE)) {
       this.loadProfile();
     }
@@ -237,6 +286,14 @@ class ParticipantProfile extends Component<Props, State> {
     }
     if (prevProps.workAppointmentsByWorksitePlan.count() !== workAppointmentsByWorksitePlan.count()) {
       this.setWorkStartDate();
+    }
+    if (prevProps.workAppointmentsByWorksitePlan.count() !== workAppointmentsByWorksitePlan.count()) {
+      this.setWorkStartDate();
+    }
+    if (prevProps.createNewEnrollmentRequestState === RequestStates.PENDING
+      && createNewEnrollmentRequestState !== RequestStates.PENDING) {
+      this.loadProfile();
+      this.handleHideModal(NEW_ENROLLMENT);
     }
   }
 
@@ -263,7 +320,7 @@ class ParticipantProfile extends Component<Props, State> {
         .valueSeq()
         .toList()
         .flatten(1);
-      const sortedAppointments :List = sortEntitiesByDateProperty(appointments, INCIDENT_START_DATETIME);
+      const sortedAppointments :List = sortEntitiesByDateProperty(appointments, [INCIDENT_START_DATETIME]);
       sortedAppointments.forEach((appointment :Map) => {
         const appointmentEKID :UUID = getEntityKeyId(appointment);
         const checkIn :Map = checkInsByAppointment.get(appointmentEKID, Map());
@@ -292,15 +349,40 @@ class ParticipantProfile extends Component<Props, State> {
     actions.goToRoute(Routes.PRINT_PARTICIPANT_SCHEDULE.replace(':subjectId', personEKID));
   }
 
+  editParticipant = () => {
+    const { actions, personEKID } = this.props;
+    actions.goToRoute(Routes.EDIT_PARTICIPANT.replace(':subjectId', personEKID));
+  }
+
+  editCaseInfo = () => {
+    const { actions, personEKID } = this.props;
+    actions.goToRoute(Routes.EDIT_CASE_INFO.replace(':subjectId', personEKID));
+  }
+
+  editEnrollmentDates = () => {
+    const { actions, personEKID } = this.props;
+    actions.goToRoute(Routes.EDIT_DATES.replace(':subjectId', personEKID));
+  }
+
+  selectDiversionPlan = (option :Object) => {
+    const { actions } = this.props;
+    const { value } = option;
+    actions.getEnrollmentFromDiversionPlan({ diversionPlan: value });
+  }
+
   render() {
     const {
       actions,
       address,
+      allDiversionPlans,
+      chargesForCase,
       diversionPlan,
       email,
       enrollmentStatus,
       getAllParticipantInfoRequestState,
-      getInitializeAppRequestState,
+      getEnrollmentFromDiversionPlanRequestState,
+      initializeAppRequestState,
+      judge,
       participant,
       personCase,
       phone,
@@ -309,23 +391,21 @@ class ParticipantProfile extends Component<Props, State> {
       warnings,
       workAppointmentsByWorksitePlan,
       worksitesByWorksitePlan,
-      worksitePlans,
+      worksitePlansList,
       worksitePlanStatuses,
       worksitesList,
     } = this.props;
     const {
       showAssignWorksiteModal,
-      showCheckInDateModal,
-      showEnrollmentModal,
-      showOrientationDateModal,
-      showSentenceDateModal,
+      showNewEnrollmentModal,
       showWorkAppointmentModal,
       workStartDateTime,
       worksiteNamesByWorksitePlan
     } = this.state;
 
-    if (getInitializeAppRequestState === RequestStates.PENDING
-        || getAllParticipantInfoRequestState === RequestStates.PENDING) {
+    if (initializeAppRequestState === RequestStates.PENDING
+        || getAllParticipantInfoRequestState === RequestStates.PENDING
+        || getEnrollmentFromDiversionPlanRequestState === RequestStates.PENDING) {
       return (
         <LogoLoader
             loadingText="Please wait..."
@@ -334,29 +414,31 @@ class ParticipantProfile extends Component<Props, State> {
     }
 
     const personEKID :UUID = getEntityKeyId(participant);
-    const { [FIRST_NAME]: firstName } = getEntityProperties(participant, [FIRST_NAME]);
+    const {
+      [FIRST_NAME]: firstName,
+      [PERSON_NOTES]: personNotes
+    } = getEntityProperties(participant, [FIRST_NAME, PERSON_NOTES]);
     let { [STATUS]: status } = getEntityProperties(enrollmentStatus, [STATUS]);
     if (!isDefined(status)) status = ENROLLMENT_STATUSES.AWAITING_CHECKIN;
 
     const diversionPlanEKID :UUID = getEntityKeyId(diversionPlan);
     const {
       [CHECK_IN_DATETIME]: checkInDate,
+      [DATETIME_END]: sentenceEndDateTime,
       [DATETIME_RECEIVED]: sentenceDate,
       [ORIENTATION_DATETIME]: orientationDateTime,
       [NOTES]: planNotes,
       [REQUIRED_HOURS]: requiredHours,
     } = getEntityProperties(diversionPlan, [
       CHECK_IN_DATETIME,
+      DATETIME_END,
       DATETIME_RECEIVED,
       NOTES,
       ORIENTATION_DATETIME,
       REQUIRED_HOURS,
     ]);
+    const diversionPlanOptions :Object[] = generateDiversionPlanOptions(allDiversionPlans);
 
-    const orientationDateAlreadyRecorded :boolean = isDefined(diversionPlan.get(ORIENTATION_DATETIME));
-    const addOrEditButtonText :string = orientationDateAlreadyRecorded
-      ? 'Edit Orientation Date'
-      : 'Add Orientation Date';
     return (
       <>
         {
@@ -369,46 +451,55 @@ class ParticipantProfile extends Component<Props, State> {
             )
         }
         <ProfileWrapper>
-          <ProfileBody>
-            <NameRowWrapper>
-              <BackNavButton
-                  onClick={() => {
-                    actions.goToRoute(Routes.PARTICIPANTS);
-                  }}>
-                Back to Participants
-              </BackNavButton>
-              <ButtonsWrapper>
-                <Button onClick={() => this.handleShowModal(SENTENCE_DATE)}>Edit Sentence Date</Button>
-                <Button onClick={() => this.handleShowModal(CHECK_IN_DATE)}>Edit Check-In Date</Button>
-                <Button onClick={() => this.handleShowModal(ORIENTATION_DATE)}>{ addOrEditButtonText }</Button>
-                <Button mode="primary" onClick={() => this.handleShowModal(ENROLLMENT)}>
-                  Change Enrollment Status
-                </Button>
-              </ButtonsWrapper>
-            </NameRowWrapper>
-            <BasicInfoWrapper>
-              <GeneralInfo
+          <GeneralInfoSection>
+            <ProfileInfoColumnWrapper>
+              <TopRowWrapper>
+                <BackNavButton
+                    onClick={() => {
+                      actions.goToRoute(Routes.PARTICIPANTS);
+                    }}>
+                  Back to Participants
+                </BackNavButton>
+              </TopRowWrapper>
+              <ParticipantProfileSection
                   address={address}
+                  edit={this.editParticipant}
                   email={email}
                   person={participant}
-                  phone={phone}
-                  status={status} />
-              <InnerColumnWrapper>
-                <KeyDates
-                    checkInDate={checkInDate}
-                    orientationDateTime={orientationDateTime}
-                    sentenceDateTime={sentenceDate}
-                    workStartDateTime={workStartDateTime} />
-                <CaseInfo
-                    hours={requiredHours}
-                    personCase={personCase}
-                    warnings={warnings}
-                    violations={violations} />
-                <PlanNotes
-                    notes={planNotes} />
-              </InnerColumnWrapper>
-            </BasicInfoWrapper>
-          </ProfileBody>
+                  phone={phone} />
+              <PersonNotes
+                  notes={personNotes} />
+            </ProfileInfoColumnWrapper>
+            <ProgramInfoColumnWrapper>
+              <EnrollmentControlsWrapper>
+                <Select
+                    onChange={this.selectDiversionPlan}
+                    options={diversionPlanOptions}
+                    value={diversionPlanOptions.find(option => (option.value).equals(diversionPlan))} />
+                <Button onClick={() => this.handleShowModal(NEW_ENROLLMENT)}>Create New Enrollment</Button>
+              </EnrollmentControlsWrapper>
+              <EnrollmentStatusSection
+                  enrollmentStatus={enrollmentStatus}
+                  firstName={firstName}
+                  violations={violations}
+                  warnings={warnings} />
+              <EnrollmentDates
+                  checkInDate={checkInDate}
+                  edit={this.editEnrollmentDates}
+                  orientationDateTime={orientationDateTime}
+                  sentenceDateTime={sentenceDate}
+                  sentenceEndDateTime={sentenceEndDateTime}
+                  workStartDateTime={workStartDateTime} />
+              <CaseInfoSection
+                  charges={chargesForCase}
+                  edit={this.editCaseInfo}
+                  hours={requiredHours}
+                  judge={judge}
+                  personCase={personCase} />
+              <ProgramNotes
+                  notes={planNotes} />
+            </ProgramInfoColumnWrapper>
+          </GeneralInfoSection>
           {
             ENROLLMENT_STATUSES_EXCLUDING_PREENROLLMENT.includes(status) && (
               <ProfileBody>
@@ -417,7 +508,7 @@ class ParticipantProfile extends Component<Props, State> {
                   <Button onClick={() => this.handleShowModal(ASSIGN_WORKSITE)}>Add Work Site</Button>
                 </NameRowWrapper>
                 {
-                  worksitePlans.isEmpty()
+                  worksitePlansList.isEmpty()
                     ? (
                       <Card>
                         <CardSegment>
@@ -431,7 +522,7 @@ class ParticipantProfile extends Component<Props, State> {
                     : (
                       <CardStack>
                         {
-                          worksitePlans.map((worksitePlan :Map) => {
+                          worksitePlansList.map((worksitePlan :Map) => {
                             const worksitePlanEKID :UUID = getEntityKeyId(worksitePlan);
                             const worksite :Map = worksitesByWorksitePlan.get(worksitePlanEKID);
                             const worksitePlanStatus :Map = worksitePlanStatuses.get(worksitePlanEKID);
@@ -451,7 +542,7 @@ class ParticipantProfile extends Component<Props, State> {
             )
           }
           {
-            !worksitePlans.isEmpty() && (
+            !worksitePlansList.isEmpty() && (
               <ProfileBody>
                 <NameRowWrapper>
                   <NameHeader>Work Schedule</NameHeader>
@@ -475,13 +566,8 @@ class ParticipantProfile extends Component<Props, State> {
             </NameRowWrapper>
             <InfractionsContainer
                 currentStatus={status}
-                personEKID={personEKID} />
+                participant={participant} />
           </ProfileBody>
-          <AddNewPlanStatusModal
-              currentStatus={status}
-              isOpen={showEnrollmentModal}
-              onClose={() => this.handleHideModal(ENROLLMENT)}
-              personName={firstName} />
           <AssignWorksiteModal
               diversionPlanEKID={diversionPlanEKID}
               isOpen={showAssignWorksiteModal}
@@ -492,15 +578,9 @@ class ParticipantProfile extends Component<Props, State> {
               isOpen={showWorkAppointmentModal}
               onClose={() => this.handleHideModal(WORK_APPOINTMENT)}
               personEKID={personEKID} />
-          <AddOrientationDateModal
-              isOpen={showOrientationDateModal}
-              onClose={() => this.handleHideModal(ORIENTATION_DATE)} />
-          <EditSentenceDateModal
-              isOpen={showSentenceDateModal}
-              onClose={() => this.handleHideModal(SENTENCE_DATE)} />
-          <EditCheckInDateModal
-              isOpen={showCheckInDateModal}
-              onClose={() => this.handleHideModal(CHECK_IN_DATE)} />
+          <CreateNewEnrollmentModal
+              isOpen={showNewEnrollmentModal}
+              onClose={() => this.handleHideModal(NEW_ENROLLMENT)} />
         </ProfileWrapper>
       </>
     );
@@ -509,28 +589,36 @@ class ParticipantProfile extends Component<Props, State> {
 
 const mapStateToProps = (state :Map<*, *>) => {
   const app = state.get(STATE.APP);
+  const infractions = state.get(STATE.INFRACTIONS);
+  const participantSchedule = state.get(STATE.PARTICIPANT_SCHEDULE);
   const person = state.get(STATE.PERSON);
+  const worksitePlans = state.get(STATE.WORKSITE_PLANS);
   const worksites = state.get(STATE.WORKSITES);
   return {
     [ADDRESS]: person.get(ADDRESS),
+    [ALL_DIVERSION_PLANS]: person.get(ALL_DIVERSION_PLANS),
     app,
-    [CHECK_INS_BY_APPOINTMENT]: person.get(CHECK_INS_BY_APPOINTMENT),
+    [CHARGES_FOR_CASE]: person.get(CHARGES_FOR_CASE),
+    [CHECK_INS_BY_APPOINTMENT]: participantSchedule.get(CHECK_INS_BY_APPOINTMENT),
+    createNewEnrollmentRequestState: person.getIn([ACTIONS, CREATE_NEW_ENROLLMENT, REQUEST_STATE]),
     [DIVERSION_PLAN]: person.get(DIVERSION_PLAN),
     [EMAIL]: person.get(EMAIL),
     [ENROLLMENT_STATUS]: person.get(ENROLLMENT_STATUS),
     getAllParticipantInfoRequestState: person.getIn([ACTIONS, GET_ALL_PARTICIPANT_INFO, REQUEST_STATE]),
-    getInitializeAppRequestState: app.getIn([APP.ACTIONS, APP.INITIALIZE_APPLICATION, APP.REQUEST_STATE]),
-    getWorkAppointmentsRequestState: person.getIn([ACTIONS, GET_WORK_APPOINTMENTS, REQUEST_STATE]),
+    getEnrollmentFromDiversionPlanRequestState: person
+      .getIn([ACTIONS, GET_ENROLLMENT_FROM_DIVERSION_PLAN, REQUEST_STATE]),
+    initializeAppRequestState: app.getIn([APP.ACTIONS, APP.INITIALIZE_APPLICATION, APP.REQUEST_STATE]),
+    [JUDGE]: person.get(JUDGE),
     [PARTICIPANT]: person.get(PARTICIPANT),
     [PERSON_CASE]: person.get(PERSON_CASE),
     [PHONE]: person.get(PHONE),
     [PROGRAM_OUTCOME]: person.get(PROGRAM_OUTCOME),
-    [VIOLATIONS]: person.get(VIOLATIONS),
-    [WARNINGS]: person.get(WARNINGS),
-    [WORK_APPOINTMENTS_BY_WORKSITE_PLAN]: person.get(WORK_APPOINTMENTS_BY_WORKSITE_PLAN),
-    [WORKSITES_BY_WORKSITE_PLAN]: person.get(WORKSITES_BY_WORKSITE_PLAN),
-    [WORKSITE_PLANS]: person.get(WORKSITE_PLANS),
-    [WORKSITE_PLAN_STATUSES]: person.get(WORKSITE_PLAN_STATUSES),
+    [VIOLATIONS]: infractions.get(VIOLATIONS),
+    [WARNINGS]: infractions.get(WARNINGS),
+    [WORK_APPOINTMENTS_BY_WORKSITE_PLAN]: participantSchedule.get(WORK_APPOINTMENTS_BY_WORKSITE_PLAN),
+    [WORKSITES_BY_WORKSITE_PLAN]: worksitePlans.get(WORKSITES_BY_WORKSITE_PLAN),
+    [WORKSITE_PLANS_LIST]: worksitePlans.get(WORKSITE_PLANS_LIST),
+    [WORKSITE_PLAN_STATUSES]: worksitePlans.get(WORKSITE_PLAN_STATUSES),
     [WORKSITES_LIST]: worksites.get(WORKSITES_LIST),
   };
 };
@@ -538,6 +626,7 @@ const mapStateToProps = (state :Map<*, *>) => {
 const mapDispatchToProps = dispatch => ({
   actions: bindActionCreators({
     getAllParticipantInfo,
+    getEnrollmentFromDiversionPlan,
     goToRoute,
   }, dispatch)
 });

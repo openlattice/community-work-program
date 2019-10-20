@@ -17,7 +17,7 @@ import { bindActionCreators } from 'redux';
 import type { RequestSequence } from 'redux-reqseq';
 import type { FQN } from 'lattice';
 
-import { addWorksitePlan } from '../ParticipantActions';
+import { addWorksitePlan } from './WorksitePlanActions';
 import {
   getEntityKeyId,
   getEntityProperties,
@@ -174,7 +174,6 @@ class AssignWorksiteForm extends Component<Props, State> {
 
     const entityData :{} = processEntityData(newWorksitePlanData, entitySetIds, propertyTypeIds);
     const associationEntityData :{} = processAssociationEntityData(fromJS(associations), entitySetIds, propertyTypeIds);
-
     actions.addWorksitePlan({ associationEntityData, entityData });
   }
 

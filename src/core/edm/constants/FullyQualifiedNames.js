@@ -24,6 +24,7 @@ export const APP_TYPE_FQNS = {
   CHECK_IN_DETAILS: new FullyQualifiedName('app.checkindetails'),
   CONTACT_INFORMATION: new FullyQualifiedName('app.contactinformation'),
   CONTACT_INFO_GIVEN: new FullyQualifiedName('app.contactinfogiven'),
+  COURT_CHARGE_LIST: new FullyQualifiedName('publicsafety.courtchargelist'),
   COURT_PRETRIAL_CASES: new FullyQualifiedName('app.courtpretrialcases'),
   DIVERSION_PLAN: new FullyQualifiedName('app.diversionplan'),
   EMPLOYEE: new FullyQualifiedName('app.employee'),
@@ -38,6 +39,7 @@ export const APP_TYPE_FQNS = {
   JUDGES: new FullyQualifiedName('app.judges'),
   LIVES_AT: new FullyQualifiedName('app.livesat'),
   LOCATED_AT: new FullyQualifiedName('app.locatedat'),
+  MANUAL_CHARGED_WITH: new FullyQualifiedName('app.manualchargedwith'),
   MANUAL_COURT_CHARGES: new FullyQualifiedName('app.manualcourtcharges'),
   MANUAL_PRETRIAL_COURT_CASES: new FullyQualifiedName('app.manualpretrialcourtcases'),
   MANUAL_SENTENCED_WITH: new FullyQualifiedName('app.manualsentencedwith'),
@@ -46,6 +48,7 @@ export const APP_TYPE_FQNS = {
   ORGANIZATION: new FullyQualifiedName('app.organization'),
   PART_OF: new FullyQualifiedName('app.partof'),
   PEOPLE: new FullyQualifiedName('app.people'),
+  PRESIDES_OVER: new FullyQualifiedName('app.presidesover'),
   PROGRAM_OUTCOME: new FullyQualifiedName('app.programoutcome'),
   REGISTERED_FOR: new FullyQualifiedName('app.registeredfor'),
   RELATED_TO: new FullyQualifiedName('app.relatedto'),
@@ -55,6 +58,7 @@ export const APP_TYPE_FQNS = {
   STAFF: new FullyQualifiedName('app.staff'),
   SUBJECT_OF: new FullyQualifiedName('app.subjectof'),
   WARRANT_REQUEST: new FullyQualifiedName('app.warrantrequest'),
+  WORKS_AT: new FullyQualifiedName('app.worksat'),
   WORKSITE: new FullyQualifiedName('app.worksite'),
   WORKSITE_PLAN: new FullyQualifiedName('app.worksiteplan'),
 };
@@ -68,10 +72,22 @@ export const INCIDENT_START_DATETIME = new FullyQualifiedName('incident.startdat
 
 /* Property Type FQNs by Entity Type */
 
+/* geo.address */
+export const ADDRESS_FQNS = {
+  FULL_ADDRESS: new FullyQualifiedName('location.Address'),
+};
+
 /* publicsafety.pretrialstatuscaseprocessings */
 export const CASE_FQNS = {
   CASE_NUMBER_TEXT: new FullyQualifiedName('j.CaseNumberText'),
   COURT_CASE_TYPE: new FullyQualifiedName('justice.courtcasetype'),
+};
+
+/* justice.charge */
+export const CHARGE_FQNS = {
+  NAME: new FullyQualifiedName('ol.name'),
+  OL_ID: new FullyQualifiedName('ol.id'),
+  VIOLENT: new FullyQualifiedName('ol.violent'),
 };
 
 /* ol.encounter */
@@ -99,6 +115,11 @@ export const DIVERSION_PLAN_FQNS = {
   ORIENTATION_DATETIME: new FullyQualifiedName('ol.orientationdatetime'),
   REQUIRED_HOURS: new FullyQualifiedName('ol.requiredhours'),
   REQUIRED_HOURS_TEXT: new FullyQualifiedName('ol.requiredhourstext'),
+};
+
+/* ol.employee */
+export const EMPLOYEE_FQNS = {
+  TITLE: new FullyQualifiedName('person.title'),
 };
 
 /* ol.enrollment */
@@ -130,27 +151,18 @@ export const ORGANIZATION_FQNS = {
 
 /* general.person */
 export const PEOPLE_FQNS = {
-  FIRST_NAME: new FullyQualifiedName('nc.PersonGivenName'),
-  MIDDLE_NAME: new FullyQualifiedName('nc.PersonMiddleName'),
-  LAST_NAME: new FullyQualifiedName('nc.PersonSurName'),
-  SSN: new FullyQualifiedName('nc.SSN'),
   DOB: new FullyQualifiedName('nc.PersonBirthDate'),
-  AGE: new FullyQualifiedName('person.age'),
-  RACE: new FullyQualifiedName('nc.PersonRace'),
   ETHNICITY: new FullyQualifiedName('nc.PersonEthnicity'),
-  SEX: new FullyQualifiedName('nc.PersonSex'),
-  STATE_ID_NUMBER: new FullyQualifiedName('person.stateidnumber'),
-  MUGSHOT: new FullyQualifiedName('publicsafety.mugshot'),
-  HAIR_COLOR: new FullyQualifiedName('nc.PersonHairColorText'),
-  WEIGHT: new FullyQualifiedName('nc.PersonWeightMeasure'),
-  EYE_COLOR: new FullyQualifiedName('nc.PersonEyeColorText'),
-  SEX_OFFENDER: new FullyQualifiedName('j.SentenceRegisterSexOffenderIndicator'),
-  HEIGHT: new FullyQualifiedName('nc.PersonHeightMeasure'),
-  PICTURE: new FullyQualifiedName('person.picture'),
-  PERSON_ID: new FullyQualifiedName('nc.SubjectIdentification'),
-  ISSUING_JURISDICTION: new FullyQualifiedName('ol.idjurisdiction'),
-  NOTES: new FullyQualifiedName('housing.notes'),
+  FIRST_NAME: new FullyQualifiedName('nc.PersonGivenName'),
   GENDER: new FullyQualifiedName('bhr.gender'),
+  LAST_NAME: new FullyQualifiedName('nc.PersonSurName'),
+  MIDDLE_NAME: new FullyQualifiedName('nc.PersonMiddleName'),
+  MUGSHOT: new FullyQualifiedName('publicsafety.mugshot'),
+  PERSON_NOTES: new FullyQualifiedName('housing.notes'),
+  PICTURE: new FullyQualifiedName('person.picture'),
+  RACE: new FullyQualifiedName('nc.PersonRace'),
+  SEX: new FullyQualifiedName('nc.PersonSex'),
+  SSN: new FullyQualifiedName('nc.SSN'),
 };
 
 /* ol.programoutcome */
