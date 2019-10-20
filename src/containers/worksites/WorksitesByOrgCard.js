@@ -3,11 +3,15 @@ import React, { Component } from 'react';
 import styled from 'styled-components';
 import { List, Map } from 'immutable';
 import { Button, Card, CardSegment } from 'lattice-ui-kit';
+import { bindActionCreators } from 'redux';
+import { connect } from 'react-redux';
+import type { RequestSequence } from 'redux-reqseq';
 
 import WorksitesTable from '../../components/table/WorksitesTable';
 import AddWorksiteModal from './AddWorksiteModal';
 
-import { getEntityProperties } from '../../utils/DataUtils';
+import { goToRoute } from '../../core/router/RoutingActions';
+import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
 import { ORGANIZATION_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import {
   SmallSeparator,
@@ -16,6 +20,7 @@ import {
   Status,
 } from '../../components/Layout';
 import { OL } from '../../core/style/Colors';
+import * as Routes from '../../core/router/Routes';
 
 const { DESCRIPTION, ORGANIZATION_NAME } = ORGANIZATION_FQNS;
 
@@ -72,7 +77,9 @@ const StyledButton = styled(Button)`
 `;
 
 type Props = {
-  onClickWorksite ? :(worksite :Map) => void;
+  actions:{
+    goToRoute :RequestSequence;
+  };
   organization :Map;
   orgStatus :string;
   worksiteCount :string;
@@ -94,10 +101,6 @@ class WorksitesByOrgCard extends Component<Props, State> {
     };
   }
 
-  static defaultProps = {
-    onClickWorksite: () => {},
-  };
-
   handleShowAddWorksite = () => {
     this.setState({
       showAddWorksite: true
@@ -110,9 +113,14 @@ class WorksitesByOrgCard extends Component<Props, State> {
     });
   }
 
+  goToWorksiteProfile = (worksite :Map) => {
+    const { actions } = this.props;
+    const worksiteEKID :UUID = getEntityKeyId(worksite);
+    actions.goToRoute(Routes.WORKSITE_PROFILE.replace(':worksiteId', worksiteEKID));
+  }
+
   render() {
     const {
-      onClickWorksite,
       organization,
       orgStatus,
       worksiteCount,
@@ -152,7 +160,7 @@ class WorksitesByOrgCard extends Component<Props, State> {
                 <WorksitesTable
                     columnHeaders={WORKSITES_COLUMNS}
                     small={false}
-                    selectWorksite={onClickWorksite}
+                    selectWorksite={this.goToWorksiteProfile}
                     tableMargin="0"
                     worksites={worksites}
                     worksitesInfo={worksitesInfo} />
@@ -168,5 +176,11 @@ class WorksitesByOrgCard extends Component<Props, State> {
   }
 }
 
+const mapDispatchToProps = dispatch => ({
+  actions: bindActionCreators({
+    goToRoute,
+  }, dispatch)
+});
+
 // $FlowFixMe
-export default WorksitesByOrgCard;
+export default connect(null, mapDispatchToProps)(WorksitesByOrgCard);

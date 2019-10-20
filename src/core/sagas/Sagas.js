@@ -111,7 +111,13 @@ export default function* sagas() :Generator<*, *, *> {
     // WorksitesSagas
     fork(WorksitesSagas.addOrganizationWatcher),
     fork(WorksitesSagas.addWorksiteWatcher),
+    fork(WorksitesSagas.addWorksiteContactAndAddressWatcher),
+    fork(WorksitesSagas.editWorksiteWatcher),
+    fork(WorksitesSagas.editWorksiteContactAndAddressWatcher),
     fork(WorksitesSagas.getOrganizationsWatcher),
+    fork(WorksitesSagas.getWorksiteWatcher),
+    fork(WorksitesSagas.getWorksiteAddressWatcher),
+    fork(WorksitesSagas.getWorksiteContactWatcher),
     fork(WorksitesSagas.getWorksitesWatcher),
     fork(WorksitesSagas.getWorksitePlansWatcher),
     fork(WorksitesSagas.getWorksitesByOrgWatcher),
