@@ -54,7 +54,7 @@ export function formatImmutableValue(immutableMap :Map, property :any, backUpVal
 
 export function formatPairOfStrings(values :string[]) :string {
 
-  if (!values.length) return EMPTY_FIELD;
+  if (!values.length || values.every(v => v === values[0])) return EMPTY_FIELD;
   if (values.length === 1) return values[0];
   return `${values[0]}/${values[1]}`;
 }

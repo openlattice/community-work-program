@@ -58,7 +58,7 @@ export const HeaderElement = styled.span`
   color: ${props => (props.selected ? OL.PURPLE02 : OL.BLACK)};
   text-transform: uppercase;
   padding: 12px 30px 12px 0;
-  border-bottom: 1px solid ${OL.BLACK};
+  /* border-bottom: 1px solid ${OL.BLACK}; */
   text-align: left;
   &:hover {
     cursor: pointer;
