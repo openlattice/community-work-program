@@ -146,16 +146,6 @@ class DashboardContainer extends Component<Props, State> {
         const isAwaitingEnrollment :boolean = status === ENROLLMENT_STATUSES.AWAITING_CHECKIN
           || status === ENROLLMENT_STATUSES.AWAITING_ORIENTATION;
 
-        // if person was enrolled in CWP previously and is now enrolled again but doesn't have reflective status:
-        if (!isAwaitingEnrollment) {
-          // filter out the people who are simply active in CWP:
-          if (status === ENROLLMENT_STATUSES.ACTIVE
-              || status === ENROLLMENT_STATUSES.ACTIVE_REOPENED || status === ENROLLMENT_STATUSES.JOB_SEARCH) {
-            return false;
-          }
-          return true;
-        }
-
         return isAwaitingEnrollment;
       });
 
@@ -182,8 +172,9 @@ class DashboardContainer extends Component<Props, State> {
       const participantEnrollment = enrollmentByParticipant.get(getEntityKeyId(participant));
       const { [STATUS]: status } = getEntityProperties(participantEnrollment, [STATUS]);
       if (status !== ENROLLMENT_STATUSES.COMPLETED
-        || status !== ENROLLMENT_STATUSES.CLOSED
-        || status !== ENROLLMENT_STATUSES.REMOVED_NONCOMPLIANT) {
+        && status !== ENROLLMENT_STATUSES.CLOSED
+        && status !== ENROLLMENT_STATUSES.REMOVED_NONCOMPLIANT
+        && status !== ENROLLMENT_STATUSES.SUCCESSFUL) {
         pendingCompletionReview = pendingCompletionReview.push(participant);
       }
     });

@@ -13,13 +13,17 @@ import EditEnrollmentDatesForm from './EditEnrollmentDatesForm';
 import EditCaseInfoForm from './cases/EditCaseInfoForm';
 import * as Routes from '../../core/router/Routes';
 
-import { PERSON, STATE } from '../../utils/constants/ReduxStateConsts';
+import {
+  PARTICIPANT_SCHEDULE,
+  PERSON,
+  STATE,
+  WORKSITE_PLANS,
+} from '../../utils/constants/ReduxStateConsts';
 
-const {
-  PARTICIPANT,
-  WORK_APPOINTMENTS_BY_WORKSITE_PLAN,
-  WORKSITES_BY_WORKSITE_PLAN
-} = PERSON;
+const { WORK_APPOINTMENTS_BY_WORKSITE_PLAN } = PARTICIPANT_SCHEDULE;
+const { PARTICIPANT } = PERSON;
+const { WORKSITES_BY_WORKSITE_PLAN } = WORKSITE_PLANS;
+
 
 type Props = {
   match :Match;
@@ -66,10 +70,12 @@ const ParticipantProfileContainer = (props :Props) => {
 
 const mapStateToProps = (state :Map<*, *>) => {
   const person = state.get(STATE.PERSON);
+  const worksitePlans = state.get(STATE.WORKSITE_PLANS);
+  const participantSchedule = state.get(STATE.PARTICIPANT_SCHEDULE);
   return {
     [PARTICIPANT]: person.get(PARTICIPANT),
-    [WORK_APPOINTMENTS_BY_WORKSITE_PLAN]: person.get(WORK_APPOINTMENTS_BY_WORKSITE_PLAN),
-    [WORKSITES_BY_WORKSITE_PLAN]: person.get(WORKSITES_BY_WORKSITE_PLAN),
+    [WORK_APPOINTMENTS_BY_WORKSITE_PLAN]: participantSchedule.get(WORK_APPOINTMENTS_BY_WORKSITE_PLAN),
+    [WORKSITES_BY_WORKSITE_PLAN]: worksitePlans.get(WORKSITES_BY_WORKSITE_PLAN),
   };
 };
 
