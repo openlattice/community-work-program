@@ -10,6 +10,7 @@ import {
   CardSegment,
   DataGrid,
   EditButton,
+  Table,
 } from 'lattice-ui-kit';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
@@ -30,7 +31,7 @@ import {
 import { APP, STATE, WORKSITES } from '../../utils/constants/ReduxStateConsts';
 import { getEntityProperties, getPersonFullName } from '../../utils/DataUtils';
 import { formatAsDate } from '../../utils/DateTimeUtils';
-import { getWeekdayTableHeaders, getWorksiteStatus } from './WorksitesUtils';
+import { getWeekdayTableData, getWeekdayTableHeaders, getWorksiteStatus } from './WorksitesUtils';
 import {
   ContainerHeader,
   ContainerInnerWrapper,
@@ -55,6 +56,7 @@ const {
   CONTACT_PHONE,
   GET_WORKSITE,
   REQUEST_STATE,
+  SCHEDULE_BY_WEEKDAY,
   WORKSITE,
   WORKSITE_ADDRESS,
 } = WORKSITES;
@@ -81,6 +83,10 @@ const worksiteInfoLabelMap :OrderedMap = OrderedMap({
 const cardSegmentPadding = '40px 40px';
 
 /* styled components */
+const WorksitetProfileWrapper = styled(ContainerOuterWrapper)`
+  font-size: 13px;
+`;
+
 const ProfileNameHeader = styled(ContainerHeader)`
   margin: 30px 0;
 `;
@@ -103,6 +109,7 @@ type Props = {
   getWorksiteRequestState :RequestState;
   initializeAppRequestState :RequestState;
   match :Match;
+  scheduleByWeekday :Map;
   worksite :Map;
   worksiteAddress :Map;
 };
@@ -165,6 +172,7 @@ class WorksiteProfile extends Component<Props> {
       contactPhone,
       getWorksiteRequestState,
       initializeAppRequestState,
+      scheduleByWeekday,
       worksite,
       worksiteAddress,
     } = this.props;
@@ -208,9 +216,10 @@ class WorksiteProfile extends Component<Props> {
     });
 
     const tableHeaders = getWeekdayTableHeaders();
+    const tableData = getWeekdayTableData(scheduleByWeekday);
 
     return (
-      <ContainerOuterWrapper>
+      <WorksitetProfileWrapper>
         <ContainerInnerWrapper style={{ padding: '0' }}>
           <div>
             <BackNavButton
@@ -245,8 +254,15 @@ class WorksiteProfile extends Component<Props> {
           <HeaderRowWrapper>
             <ProfileNameHeader>Hours of Operation</ProfileNameHeader>
             <EditButton onClick={this.goToEditHoursOfOperation}>Edit</EditButton>
+          </HeaderRowWrapper>
+          <Card>
+            <Table
+                data={tableData}
+                headers={tableHeaders}
+                isLoading={false} />
+          </Card>
         </ContainerInnerWrapper>
-      </ContainerOuterWrapper>
+      </WorksitetProfileWrapper>
     );
   }
 }
@@ -261,6 +277,7 @@ const mapStateToProps = (state) => {
     [CONTACT_PHONE]: worksites.get(CONTACT_PHONE),
     getWorksiteRequestState: worksites.getIn([ACTIONS, GET_WORKSITE, REQUEST_STATE]),
     initializeAppRequestState: app.getIn([APP.ACTIONS, APP.INITIALIZE_APPLICATION, APP.REQUEST_STATE]),
+    [SCHEDULE_BY_WEEKDAY]: worksites.get(SCHEDULE_BY_WEEKDAY),
     [WORKSITE]: worksites.get(WORKSITE),
     [WORKSITE_ADDRESS]: worksites.get(WORKSITE_ADDRESS),
   });
