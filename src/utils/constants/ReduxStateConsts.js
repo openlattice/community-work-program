@@ -92,6 +92,7 @@ export const PERSON = {
   ADD_NEW_DIVERSION_PLAN_STATUS: 'addNewDiversionPlanStatus',
   ADD_NEW_PARTICIPANT_CONTACTS: 'addNewParticipantContacts',
   ADD_ORIENTATION_DATE: 'addOrientationDate',
+  ADD_PERSON_PHOTO: 'addPersonPhoto',
   ADD_TO_AVAILABLE_CHARGES: 'addToAvailableCharges',
   ALL_DIVERSION_PLANS: 'allDiversionPlans',
   ALL_PARTICIPANT_CASES: 'allParticipantCases',
@@ -125,6 +126,7 @@ export const PERSON = {
   GET_PARTICIPANT: 'getParticipant',
   GET_PARTICIPANT_ADDRESS: 'getParticipantAddress',
   GET_PARTICIPANT_CASES: 'getParticipantCases',
+  GET_PERSON_PHOTO: 'getPersonPhoto',
   GET_PROGRAM_OUTCOME: 'getProgramOutcome',
   GET_REQUIRED_HOURS: 'getRequiredHours',
   JUDGE: 'judge',
@@ -133,12 +135,14 @@ export const PERSON = {
   MARK_DIVERSION_PLAN_AS_COMPLETE: 'markDiversionPlanAsComplete',
   PARTICIPANT: 'participant',
   PERSON_CASE: 'personCase',
+  PERSON_PHOTO: 'personPhoto',
   PHONE: 'phone',
   PROGRAM_OUTCOME: 'programOutcome',
   REASSIGN_JUDGE: 'reassignJudge',
   REMOVE_CHARGE_FROM_CASE: 'removeChargeFromCase',
   REQUEST_STATE: 'requestState',
   REQUIRED_HOURS: 'requiredHours',
+  UPDATE_PERSON_PHOTO: 'updatePersonPhoto',
 };
 
 /* Work Schedule */

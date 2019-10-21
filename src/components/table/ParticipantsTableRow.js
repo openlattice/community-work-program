@@ -13,8 +13,8 @@ import { PersonPicture } from '../picture/PersonPicture';
 import { formatNumericalValue } from '../../utils/FormattingUtils';
 import { calculateAge, formatAsDate } from '../../utils/DateTimeUtils';
 import { ENTITY_KEY_ID, PEOPLE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
-import { getPersonName } from '../../utils/PeopleUtils';
 import { getEntityProperties } from '../../utils/DataUtils';
+import { getPersonFullName } from '../../utils/PeopleUtils';
 import { isDefined } from '../../utils/LangUtils';
 import {
   Cell,
@@ -93,7 +93,7 @@ const TableRow = ({
       ) : <FontAwesomeIcon icon={faUserCircle} color="#D8D8D8" size="2x" />;
 
     cellData = List().withMutations((list :List) => {
-      list.push(getPersonName(person));
+      list.push(getPersonFullName(person));
       if (ageRequired) list.push(formatNumericalValue(calculateAge(dateOfBirth)));
       if (isDefined(startDate)) list.push(formatAsDate(startDate));
       if (isDefined(sentenceDate)) list.push(formatAsDate(sentenceDate));

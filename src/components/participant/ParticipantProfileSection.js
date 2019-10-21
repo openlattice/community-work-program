@@ -7,8 +7,6 @@ import {
   CardSegment,
   Label,
 } from 'lattice-ui-kit';
-import { faUser } from '@fortawesome/pro-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { withRouter } from 'react-router-dom';
 
 import {
@@ -18,11 +16,15 @@ import {
   StyledEditButton,
 } from './SectionStyledComponents';
 import { OL } from '../../core/style/Colors';
-import { PersonPhoto, PersonPicture } from '../picture/PersonPicture';
 import { formatAsDate } from '../../utils/DateTimeUtils';
 import { formatPairOfStrings } from '../../utils/FormattingUtils';
 import { getEntityProperties } from '../../utils/DataUtils';
-import { ADDRESS_FQNS, CONTACT_INFO_FQNS, PEOPLE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { getPersonFullName, getPersonProfilePicture } from '../../utils/PeopleUtils';
+import {
+  ADDRESS_FQNS,
+  CONTACT_INFO_FQNS,
+  PEOPLE_FQNS,
+} from '../../core/edm/constants/FullyQualifiedNames';
 import { EMPTY_FIELD } from '../../containers/participants/ParticipantsConstants';
 
 const { FULL_ADDRESS } = ADDRESS_FQNS;
@@ -30,9 +32,6 @@ const { EMAIL, PHONE_NUMBER } = CONTACT_INFO_FQNS;
 const {
   DOB,
   ETHNICITY,
-  FIRST_NAME,
-  LAST_NAME,
-  MUGSHOT,
   RACE,
   SEX,
 } = PEOPLE_FQNS;
@@ -71,6 +70,7 @@ type Props = {
   edit :() => void;
   email :Map;
   person :Map;
+  personPhoto :Map;
   phone :Map;
 };
 
@@ -79,20 +79,19 @@ const ParticipantProfileSection = ({
   edit,
   email,
   person,
+  personPhoto,
   phone,
 } :Props) => {
 
   const {
     [DOB]: dateOfBirth,
-    [FIRST_NAME]: firstName,
-    [LAST_NAME]: lastName,
-    [MUGSHOT]: mugshot,
     [RACE]: race,
     [ETHNICITY]: ethnicity,
     [SEX]: sex,
-  } = getEntityProperties(person, [DOB, ETHNICITY, FIRST_NAME, LAST_NAME, MUGSHOT, RACE, SEX]);
+  } = getEntityProperties(person, [DOB, ETHNICITY, RACE, SEX]);
 
-  const fullName = `${firstName} ${lastName}`;
+  const picture = getPersonProfilePicture(person, personPhoto);
+  const fullName = getPersonFullName(person);
   const dob = formatAsDate(dateOfBirth);
   const raceAndEthnicity = formatPairOfStrings([race, ethnicity]);
 
@@ -108,17 +107,7 @@ const ParticipantProfileSection = ({
       </SectionNameRow>
       <Card>
         <PersonHeaderRow>
-          {
-            person && mugshot
-              ? (
-                <PersonPhoto>
-                  <PersonPicture src={mugshot} />
-                </PersonPhoto>
-              )
-              : (
-                <FontAwesomeIcon icon={faUser} size="6x" color="#D8D8D8" />
-              )
-          }
+          {picture}
           <PersonNameHeader>{ fullName }</PersonNameHeader>
         </PersonHeaderRow>
         <CardSegment noBleed padding="0">

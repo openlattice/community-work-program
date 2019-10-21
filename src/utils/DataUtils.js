@@ -14,13 +14,10 @@ import {
   TYPE_IDS_BY_FQNS,
   TYPES_BY_ID
 } from '../core/edm/constants/DataModelConsts';
-import { ENTITY_KEY_ID, PEOPLE_FQNS } from '../core/edm/constants/FullyQualifiedNames';
+import { ENTITY_KEY_ID } from '../core/edm/constants/FullyQualifiedNames';
 import { APP } from './constants/ReduxStateConsts';
-import { EMPTY_FIELD } from '../containers/participants/ParticipantsConstants';
-import { isDefined } from './LangUtils';
 
 const { FullyQualifiedName } = Models;
-const { FIRST_NAME, LAST_NAME } = PEOPLE_FQNS;
 
 /* entity and property types */
 const getEntitySetIdFromApp = (app :Object | Map, fqn :FullyQualifiedName) => {
@@ -83,16 +80,6 @@ const getEntityKeyId = (entityObj :Map) :string => {
     return entityKeyId;
   }
   return '';
-};
-
-const getPersonFullName = (personEntity :Map) :string => {
-
-  let fullName :string = EMPTY_FIELD;
-  const { [FIRST_NAME]: firstName, [LAST_NAME]: lastName } = getEntityProperties(personEntity, [FIRST_NAME, LAST_NAME]);
-  if (!isDefined(firstName) || !isDefined(lastName)) return fullName;
-
-  fullName = `${firstName} ${lastName}`;
-  return fullName;
 };
 
 /* manipulate entity data */
@@ -165,7 +152,6 @@ export {
   getFirstNeighborValue,
   getNeighborDetails,
   getNeighborESID,
-  getPersonFullName,
   getPropertyFqnFromEdm,
   getPropertyTypeIdFromEdm,
   getSearchTerm,
