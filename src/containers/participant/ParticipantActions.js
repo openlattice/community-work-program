@@ -11,6 +11,9 @@ const addNewDiversionPlanStatus :RequestSequence = newRequestSequence(ADD_NEW_DI
 const ADD_NEW_PARTICIPANT_CONTACTS :'ADD_NEW_PARTICIPANT_CONTACTS' = 'ADD_NEW_PARTICIPANT_CONTACTS';
 const addNewParticipantContacts :RequestSequence = newRequestSequence(ADD_NEW_PARTICIPANT_CONTACTS);
 
+const ADD_PERSON_PHOTO :'ADD_PERSON_PHOTO' = 'ADD_PERSON_PHOTO';
+const addPersonPhoto :RequestSequence = newRequestSequence(ADD_PERSON_PHOTO);
+
 const ADD_TO_AVAILABLE_CHARGES :'ADD_TO_AVAILABLE_CHARGES' = 'ADD_TO_AVAILABLE_CHARGES';
 const addToAvailableCharges :RequestSequence = newRequestSequence(ADD_TO_AVAILABLE_CHARGES);
 
@@ -78,7 +81,10 @@ const GET_PARTICIPANT_ADDRESS :'GET_PARTICIPANT_ADDRESS' = 'GET_PARTICIPANT_ADDR
 const getParticipantAddress :RequestSequence = newRequestSequence(GET_PARTICIPANT_ADDRESS);
 
 const GET_PARTICIPANT_CASES :'GET_PARTICIPANT_CASES' = 'GET_PARTICIPANT_CASES';
-const getParticipantCases = newRequestSequence(GET_PARTICIPANT_CASES);
+const getParticipantCases :RequestSequence = newRequestSequence(GET_PARTICIPANT_CASES);
+
+const GET_PERSON_PHOTO :'GET_PERSON_PHOTO' = 'GET_PERSON_PHOTO';
+const getPersonPhoto :RequestSequence = newRequestSequence(GET_PERSON_PHOTO);
 
 const GET_PROGRAM_OUTCOME :'GET_PROGRAM_OUTCOME' = 'GET_PROGRAM_OUTCOME';
 const getProgramOutcome :RequestSequence = newRequestSequence(GET_PROGRAM_OUTCOME);
@@ -92,10 +98,14 @@ const reassignJudge :RequestSequence = newRequestSequence(REASSIGN_JUDGE);
 const REMOVE_CHARGE_FROM_CASE :'REMOVE_CHARGE_FROM_CASE' = 'REMOVE_CHARGE_FROM_CASE';
 const removeChargeFromCase :RequestSequence = newRequestSequence(REMOVE_CHARGE_FROM_CASE);
 
+const UPDATE_PERSON_PHOTO :'UPDATE_PERSON_PHOTO' = 'UPDATE_PERSON_PHOTO';
+const updatePersonPhoto :RequestSequence = newRequestSequence(UPDATE_PERSON_PHOTO);
+
 export {
   ADD_CHARGES_TO_CASE,
   ADD_NEW_DIVERSION_PLAN_STATUS,
   ADD_NEW_PARTICIPANT_CONTACTS,
+  ADD_PERSON_PHOTO,
   ADD_TO_AVAILABLE_CHARGES,
   CREATE_NEW_ENROLLMENT,
   EDIT_ENROLLMENT_DATES,
@@ -119,13 +129,16 @@ export {
   GET_PARTICIPANT,
   GET_PARTICIPANT_ADDRESS,
   GET_PARTICIPANT_CASES,
+  GET_PERSON_PHOTO,
   GET_PROGRAM_OUTCOME,
   MARK_DIVERSION_PLAN_AS_COMPLETE,
   REASSIGN_JUDGE,
   REMOVE_CHARGE_FROM_CASE,
+  UPDATE_PERSON_PHOTO,
   addChargesToCase,
   addNewDiversionPlanStatus,
   addNewParticipantContacts,
+  addPersonPhoto,
   addToAvailableCharges,
   createNewEnrollment,
   editEnrollmentDates,
@@ -149,8 +162,10 @@ export {
   getParticipant,
   getParticipantAddress,
   getParticipantCases,
+  getPersonPhoto,
   getProgramOutcome,
   markDiversionPlanAsComplete,
   reassignJudge,
   removeChargeFromCase,
+  updatePersonPhoto,
 };

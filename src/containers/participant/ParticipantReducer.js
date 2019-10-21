@@ -13,6 +13,7 @@ import {
   addChargesToCase,
   addNewDiversionPlanStatus,
   addNewParticipantContacts,
+  addPersonPhoto,
   addToAvailableCharges,
   createNewEnrollment,
   editEnrollmentDates,
@@ -36,10 +37,12 @@ import {
   getParticipant,
   getParticipantAddress,
   getParticipantCases,
+  getPersonPhoto,
   getProgramOutcome,
   markDiversionPlanAsComplete,
   reassignJudge,
   removeChargeFromCase,
+  updatePersonPhoto,
 } from './ParticipantActions';
 import {
   getEntityKeyId,
@@ -74,6 +77,7 @@ const {
   ADD_CHARGES_TO_CASE,
   ADD_NEW_DIVERSION_PLAN_STATUS,
   ADD_NEW_PARTICIPANT_CONTACTS,
+  ADD_PERSON_PHOTO,
   ADD_TO_AVAILABLE_CHARGES,
   ADDRESS,
   ALL_DIVERSION_PLANS,
@@ -105,6 +109,7 @@ const {
   GET_PARTICIPANT,
   GET_PARTICIPANT_ADDRESS,
   GET_PARTICIPANT_CASES,
+  GET_PERSON_PHOTO,
   GET_PROGRAM_OUTCOME,
   JUDGE,
   JUDGES,
@@ -112,11 +117,13 @@ const {
   MARK_DIVERSION_PLAN_AS_COMPLETE,
   PARTICIPANT,
   PERSON_CASE,
+  PERSON_PHOTO,
   PHONE,
   PROGRAM_OUTCOME,
   REASSIGN_JUDGE,
   REMOVE_CHARGE_FROM_CASE,
   REQUEST_STATE,
+  UPDATE_PERSON_PHOTO,
 } = PERSON;
 
 const INITIAL_STATE :Map<*, *> = fromJS({
@@ -125,6 +132,9 @@ const INITIAL_STATE :Map<*, *> = fromJS({
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [ADD_NEW_DIVERSION_PLAN_STATUS]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [ADD_PERSON_PHOTO]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [ADD_TO_AVAILABLE_CHARGES]: {
@@ -184,9 +194,6 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     [GET_JUDGES]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
-    [GET_PROGRAM_OUTCOME]: {
-      [REQUEST_STATE]: RequestStates.STANDBY
-    },
     [MARK_DIVERSION_PLAN_AS_COMPLETE]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
@@ -199,7 +206,16 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     [GET_PARTICIPANT_CASES]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
+    [GET_PERSON_PHOTO]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [GET_PROGRAM_OUTCOME]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
     [REASSIGN_JUDGE]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [UPDATE_PERSON_PHOTO]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
   },
@@ -215,6 +231,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [JUDGES]: List(),
   [PARTICIPANT]: Map(),
   [PERSON_CASE]: Map(),
+  [PERSON_PHOTO]: Map(),
   [PHONE]: Map(),
   [PROGRAM_OUTCOME]: Map(),
 });
@@ -346,6 +363,21 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
           .set(EMAIL, Map())
           .setIn([ACTIONS, ADD_NEW_PARTICIPANT_CONTACTS, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, ADD_NEW_PARTICIPANT_CONTACTS, action.id]),
+      });
+    }
+
+    case addPersonPhoto.case(action.type): {
+
+      return addPersonPhoto.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, ADD_PERSON_PHOTO, action.id], action)
+          .setIn([ACTIONS, ADD_PERSON_PHOTO, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => state
+          .setIn([ACTIONS, ADD_PERSON_PHOTO, REQUEST_STATE], RequestStates.SUCCESS),
+        FAILURE: () => state
+          .setIn([ACTIONS, ADD_PERSON_PHOTO, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, ADD_PERSON_PHOTO, action.id]),
       });
     }
 
@@ -1035,6 +1067,34 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
       });
     }
 
+    case getPersonPhoto.case(action.type): {
+
+      return getPersonPhoto.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, GET_PERSON_PHOTO, action.id], fromJS(action))
+          .setIn([ACTIONS, GET_PERSON_PHOTO, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+
+          if (!state.hasIn([ACTIONS, GET_PERSON_PHOTO, action.id])) {
+            return state;
+          }
+
+          const { value } = action;
+          if (value === null || value === undefined) {
+            return state;
+          }
+
+          return state
+            .set(PERSON_PHOTO, value)
+            .setIn([ACTIONS, GET_PERSON_PHOTO, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, GET_PERSON_PHOTO, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, GET_PERSON_PHOTO, action.id])
+      });
+    }
+
     case getProgramOutcome.case(action.type): {
 
       return getProgramOutcome.reducer(state, action, {
@@ -1144,6 +1204,21 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
         FAILURE: () => state
           .setIn([ACTIONS, REMOVE_CHARGE_FROM_CASE, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, REMOVE_CHARGE_FROM_CASE, action.id])
+      });
+    }
+
+    case updatePersonPhoto.case(action.type): {
+
+      return updatePersonPhoto.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, UPDATE_PERSON_PHOTO, action.id], action)
+          .setIn([ACTIONS, UPDATE_PERSON_PHOTO, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => state
+          .setIn([ACTIONS, UPDATE_PERSON_PHOTO, REQUEST_STATE], RequestStates.SUCCESS),
+        FAILURE: () => state
+          .setIn([ACTIONS, UPDATE_PERSON_PHOTO, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, UPDATE_PERSON_PHOTO, action.id]),
       });
     }
 
