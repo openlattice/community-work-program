@@ -183,8 +183,6 @@ class EditWorksiteHoursForm extends Component<Props, State> {
       entitySetIds,
       propertyTypeIds,
     );
-    console.log('entityData: ', entityData);
-    console.log('associationEntityData: ', associationEntityData);
     actions.createWorksiteSchedule({ associationEntityData, entityData });
   }
 
