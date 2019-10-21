@@ -16,6 +16,7 @@ import {
   addOrganization,
   addWorksite,
   addWorksiteContactAndAddress,
+  createWorksiteSchedule,
   editWorksite,
   editWorksiteContactAndAddress,
   getOrganizations,
@@ -23,6 +24,7 @@ import {
   getWorksiteAddress,
   getWorksiteContact,
   getWorksitePlans,
+  getWorksiteSchedule,
   getWorksites,
   getWorksitesByOrg,
 } from './WorksitesActions';
@@ -35,18 +37,22 @@ const {
   CONTACT_EMAIL,
   CONTACT_PERSON,
   CONTACT_PHONE,
+  CREATE_WORKSITE_SCHEDULE,
   EDIT_WORKSITE,
   EDIT_WORKSITE_CONTACT_AND_ADDRESS,
   GET_ORGANIZATIONS,
   GET_WORKSITE,
   GET_WORKSITE_ADDRESS,
   GET_WORKSITE_CONTACT,
+  GET_WORKSITE_SCHEDULE,
   GET_WORKSITES,
   GET_WORKSITES_BY_ORG,
   GET_WORKSITE_PLANS,
   REQUEST_STATE,
   ORGANIZATION_STATUSES,
   ORGANIZATIONS_LIST,
+  SCHEDULE_BY_WEEKDAY,
+  SCHEDULE_FOR_FORM,
   WORKSITE,
   WORKSITE_ADDRESS,
   WORKSITES_BY_ORG,
@@ -61,6 +67,9 @@ const INITIAL_STATE :Map<*, *> = fromJS({
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [ADD_WORKSITE]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [CREATE_WORKSITE_SCHEDULE]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [ADD_WORKSITE_CONTACT_AND_ADDRESS]: {
@@ -84,6 +93,9 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     [GET_WORKSITE_CONTACT]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
+    [GET_WORKSITE_SCHEDULE]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
     [GET_WORKSITES]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
@@ -99,6 +111,8 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [CONTACT_PHONE]: Map(),
   [ORGANIZATIONS_LIST]: List(),
   [ORGANIZATION_STATUSES]: Map(),
+  [SCHEDULE_BY_WEEKDAY]: Map(),
+  [SCHEDULE_FOR_FORM]: Map(),
   [WORKSITES_BY_ORG]: Map(),
   [WORKSITES_INFO]: Map(),
   [WORKSITES_LIST]: List(),
@@ -206,6 +220,28 @@ export default function worksitesReducer(state :Map<*, *> = INITIAL_STATE, actio
       });
     }
 
+    case createWorksiteSchedule.case(action.type): {
+
+      return createWorksiteSchedule.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, CREATE_WORKSITE_SCHEDULE, action.id], action)
+          .setIn([ACTIONS, CREATE_WORKSITE_SCHEDULE, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+
+          const seqAction :SequenceAction = action;
+          const successValue :Object = seqAction.value;
+
+          return state
+            .set(SCHEDULE_FOR_FORM, successValue)
+            .setIn([ACTIONS, CREATE_WORKSITE_SCHEDULE, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, CREATE_WORKSITE_SCHEDULE, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, CREATE_WORKSITE_SCHEDULE, action.id]),
+      });
+    }
+
     case editWorksite.case(action.type): {
 
       return editWorksite.reducer(state, action, {
@@ -309,6 +345,30 @@ export default function worksitesReducer(state :Map<*, *> = INITIAL_STATE, actio
         FAILURE: () => state
           .setIn([ACTIONS, GET_WORKSITE_PLANS, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, GET_WORKSITE_PLANS, action.id])
+      });
+    }
+
+    case getWorksiteSchedule.case(action.type): {
+
+      return getWorksiteSchedule.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, GET_WORKSITE_SCHEDULE, action.id], action)
+          .setIn([ACTIONS, GET_WORKSITE_SCHEDULE, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+
+          const seqAction :SequenceAction = action;
+          const successValue :Object = seqAction.value;
+          const { scheduleByWeekday, scheduleForForm } = successValue;
+
+          return state
+            .set(SCHEDULE_BY_WEEKDAY, scheduleByWeekday)
+            .set(SCHEDULE_FOR_FORM, scheduleForForm)
+            .setIn([ACTIONS, GET_WORKSITE_SCHEDULE, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, GET_WORKSITE_SCHEDULE, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, GET_WORKSITE_SCHEDULE, action.id]),
       });
     }
 

@@ -29,19 +29,23 @@ import {
   getNeighborESID,
   getPropertyFqnFromEdm,
   getPropertyTypeIdFromEdm,
+  sortEntitiesByDateProperty,
 } from '../../utils/DataUtils';
+import { getWorksiteScheduleFromFormData, getWorksiteScheduleFromEntities } from '../../utils/ScheduleUtils';
 import { isDefined } from '../../utils/LangUtils';
 import { STATE } from '../../utils/constants/ReduxStateConsts';
 import {
   APP_TYPE_FQNS,
   CONTACT_INFO_FQNS,
   ENTITY_KEY_ID,
+  INCIDENT_START_DATETIME,
   WORKSITE_PLAN_FQNS
 } from '../../core/edm/constants/FullyQualifiedNames';
 import {
   ADD_ORGANIZATION,
   ADD_WORKSITE,
   ADD_WORKSITE_CONTACT_AND_ADDRESS,
+  CREATE_WORKSITE_SCHEDULE,
   EDIT_WORKSITE,
   EDIT_WORKSITE_CONTACT_AND_ADDRESS,
   GET_ORGANIZATIONS,
@@ -51,9 +55,11 @@ import {
   GET_WORKSITE_ADDRESS,
   GET_WORKSITE_CONTACT,
   GET_WORKSITE_PLANS,
+  GET_WORKSITE_SCHEDULE,
   addOrganization,
   addWorksite,
   addWorksiteContactAndAddress,
+  createWorksiteSchedule,
   editWorksite,
   editWorksiteContactAndAddress,
   getOrganizations,
@@ -61,6 +67,7 @@ import {
   getWorksiteAddress,
   getWorksiteContact,
   getWorksitePlans,
+  getWorksiteSchedule,
   getWorksites,
   getWorksitesByOrg,
 } from './WorksitesActions';
@@ -70,6 +77,7 @@ import { submitDataGraphWorker, submitPartialReplaceWorker } from '../../core/sa
 const { PAST, SCHEDULED, TOTAL_HOURS } = WORKSITE_INFO_CONSTS;
 const {
   ADDRESS,
+  APPOINTMENT,
   CONTACT_INFORMATION,
   EMPLOYEE,
   ORGANIZATION,
@@ -263,6 +271,60 @@ function* addOrganizationWorker(action :SequenceAction) :Generator<*, *, *> {
 function* addOrganizationWatcher() :Generator<*, *, *> {
 
   yield takeEvery(ADD_ORGANIZATION, addOrganizationWorker);
+}
+
+/*
+ *
+ * WorksitesActions.createWorksiteSchedule()
+ *
+ */
+
+function* createWorksiteScheduleWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+  const workerResponse = {};
+  let response :Object = {};
+  let scheduleForForm :Map = Map();
+
+  try {
+    yield put(createWorksiteSchedule.request(id, value));
+
+    response = yield call(submitDataGraphWorker, submitDataGraph(value));
+    if (response.error) throw response.error;
+
+    const app = yield select(getAppFromState);
+    const appointmentESID :UUID = getEntitySetIdFromApp(app, APPOINTMENT);
+    const edm = yield select(getEdmFromState);
+    const { entityData } = value;
+
+    let entities :List = fromJS(entityData[appointmentESID])
+      .map((appointment :Map) => {
+        let formattedAppointment :Map = Map();
+        appointment.forEach((apptValue :string, propertyTypeId :string) => {
+          const propertyTypeFqn = getPropertyFqnFromEdm(edm, propertyTypeId);
+          formattedAppointment = formattedAppointment.set(propertyTypeFqn, apptValue);
+        });
+        return formattedAppointment;
+      });
+
+    entities = sortEntitiesByDateProperty(entities, [INCIDENT_START_DATETIME]);
+    scheduleForForm = fromJS(getWorksiteScheduleFromEntities(entities));
+
+    yield put(createWorksiteSchedule.success(id, scheduleForForm));
+  }
+  catch (error) {
+    workerResponse.error = error;
+    LOG.error('caught exception in createWorksiteScheduleWorker()', error);
+    yield put(createWorksiteSchedule.failure(id, error));
+  }
+  finally {
+    yield put(createWorksiteSchedule.finally(id));
+  }
+}
+
+function* createWorksiteScheduleWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(CREATE_WORKSITE_SCHEDULE, createWorksiteScheduleWorker);
 }
 
 /*
@@ -808,6 +870,63 @@ function* getWorksiteContactWatcher() :Generator<*, *, *> {
 
 /*
  *
+ * WorksitesActions.getWorksiteSchedule()
+ *
+ */
+
+function* getWorksiteScheduleWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+  if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
+  let response :Object = {};
+  let scheduleForForm :Map = Map();
+  let scheduleByWeekday :Map = Map();
+
+  try {
+    yield put(getWorksiteSchedule.request(id));
+    const { worksiteEKID } = value;
+    const app = yield select(getAppFromState);
+    const worksiteESID = getEntitySetIdFromApp(app, WORKSITE);
+    const appointmentESID = getEntitySetIdFromApp(app, APPOINTMENT);
+
+    const searchFilter :{} = {
+      entityKeyIds: [worksiteEKID],
+      destinationEntitySetIds: [appointmentESID],
+      sourceEntitySetIds: [],
+    };
+    response = yield call(
+      searchEntityNeighborsWithFilterWorker,
+      searchEntityNeighborsWithFilter({ entitySetId: worksiteESID, filter: searchFilter })
+    );
+    if (response.error) {
+      throw response.error;
+    }
+    let appointmentResults :List = fromJS(response.data[worksiteEKID]);
+    if (isDefined(appointmentResults) && !appointmentResults.isEmpty()) {
+      appointmentResults = appointmentResults.map((result :Map) => getNeighborDetails(result));
+      appointmentResults = sortEntitiesByDateProperty(appointmentResults, [INCIDENT_START_DATETIME]);
+      scheduleForForm = fromJS(getWorksiteScheduleFromEntities(appointmentResults));
+      scheduleByWeekday = getWorksiteScheduleFromFormData(scheduleForForm);
+    }
+
+    yield put(getWorksiteSchedule.success(id, { scheduleByWeekday, scheduleForForm }));
+  }
+  catch (error) {
+    LOG.error('caught exception in getWorksiteScheduleWorker()', error);
+    yield put(getWorksiteSchedule.failure(id, error));
+  }
+  finally {
+    yield put(getWorksiteSchedule.finally(id));
+  }
+}
+
+function* getWorksiteScheduleWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(GET_WORKSITE_SCHEDULE, getWorksiteScheduleWorker);
+}
+
+/*
+ *
  * WorksitesActions.getWorksite()
  *
  */
@@ -838,6 +957,7 @@ function* getWorksiteWorker(action :SequenceAction) :Generator<*, *, *> {
     yield all([
       call(getWorksiteAddressWorker, getWorksiteAddress({ worksiteEKID })),
       call(getWorksiteContactWorker, getWorksiteContact({ worksiteEKID })),
+      call(getWorksiteScheduleWorker, getWorksiteSchedule({ worksiteEKID })),
     ]);
 
     yield put(getWorksite.success(id, worksite));
@@ -863,6 +983,8 @@ export {
   addWorksiteWorker,
   addWorksiteContactAndAddressWatcher,
   addWorksiteContactAndAddressWorker,
+  createWorksiteScheduleWatcher,
+  createWorksiteScheduleWorker,
   editWorksiteWatcher,
   editWorksiteWorker,
   editWorksiteContactAndAddressWatcher,
@@ -875,6 +997,8 @@ export {
   getWorksiteAddressWorker,
   getWorksiteContactWatcher,
   getWorksiteContactWorker,
+  getWorksiteScheduleWatcher,
+  getWorksiteScheduleWorker,
   getWorksitesWatcher,
   getWorksitesWorker,
   getWorksitePlansWatcher,

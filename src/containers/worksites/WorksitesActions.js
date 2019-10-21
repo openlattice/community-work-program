@@ -14,6 +14,9 @@ const addWorksite :RequestSequence = newRequestSequence(ADD_WORKSITE);
 const ADD_WORKSITE_CONTACT_AND_ADDRESS :'ADD_WORKSITE_CONTACT_AND_ADDRESS' = 'ADD_WORKSITE_CONTACT_AND_ADDRESS';
 const addWorksiteContactAndAddress :RequestSequence = newRequestSequence(ADD_WORKSITE_CONTACT_AND_ADDRESS);
 
+const CREATE_WORKSITE_SCHEDULE :'CREATE_WORKSITE_SCHEDULE' = 'CREATE_WORKSITE_SCHEDULE';
+const createWorksiteSchedule :RequestSequence = newRequestSequence(CREATE_WORKSITE_SCHEDULE);
+
 const EDIT_WORKSITE :'EDIT_WORKSITE' = 'EDIT_WORKSITE';
 const editWorksite :RequestSequence = newRequestSequence(EDIT_WORKSITE);
 
@@ -32,6 +35,9 @@ const getWorksiteAddress :RequestSequence = newRequestSequence(GET_WORKSITE_ADDR
 const GET_WORKSITE_CONTACT :'GET_WORKSITE_CONTACT' = 'GET_WORKSITE_CONTACT';
 const getWorksiteContact :RequestSequence = newRequestSequence(GET_WORKSITE_CONTACT);
 
+const GET_WORKSITE_SCHEDULE :'GET_WORKSITE_SCHEDULE' = 'GET_WORKSITE_SCHEDULE';
+const getWorksiteSchedule :RequestSequence = newRequestSequence(GET_WORKSITE_SCHEDULE);
+
 const GET_WORKSITES :'GET_WORKSITES' = 'GET_WORKSITES';
 const getWorksites :RequestSequence = newRequestSequence(GET_WORKSITES);
 
@@ -45,6 +51,7 @@ export {
   ADD_ORGANIZATION,
   ADD_WORKSITE,
   ADD_WORKSITE_CONTACT_AND_ADDRESS,
+  CREATE_WORKSITE_SCHEDULE,
   EDIT_WORKSITE,
   EDIT_WORKSITE_CONTACT_AND_ADDRESS,
   GET_ORGANIZATIONS,
@@ -54,9 +61,11 @@ export {
   GET_WORKSITE_ADDRESS,
   GET_WORKSITE_CONTACT,
   GET_WORKSITE_PLANS,
+  GET_WORKSITE_SCHEDULE,
   addOrganization,
   addWorksite,
   addWorksiteContactAndAddress,
+  createWorksiteSchedule,
   editWorksite,
   editWorksiteContactAndAddress,
   getOrganizations,
@@ -64,6 +73,7 @@ export {
   getWorksiteAddress,
   getWorksiteContact,
   getWorksitePlans,
+  getWorksiteSchedule,
   getWorksites,
   getWorksitesByOrg,
 };

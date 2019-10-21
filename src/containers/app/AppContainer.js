@@ -19,6 +19,7 @@ import type { RequestSequence, RequestState } from 'redux-reqseq';
 
 import AppHeaderContainer from './AppHeaderContainer';
 import DashboardContainer from '../dashboard/DashboardContainer';
+import EditWorksiteHoursForm from '../worksites/EditWorksiteHoursForm';
 import EditWorksiteInfoForm from '../worksites/EditWorksiteInfoForm';
 import ParticipantProfileContainer from '../participant/ParticipantProfileContainer';
 import ParticipantsSearchContainer from '../participants/ParticipantsSearchContainer';
@@ -97,6 +98,7 @@ class AppContainer extends Component<Props> {
 
   renderAppContent = () => (
     <Switch>
+      <Route path={Routes.EDIT_WORKSITE_HOURS} component={EditWorksiteHoursForm} />
       <Route path={Routes.EDIT_WORKSITE_PROFILE_INFO} component={EditWorksiteInfoForm} />
       <Route path={Routes.WORKSITE_PROFILE} component={WorksiteProfile} />
       <Route path={Routes.WORK_SCHEDULE} component={WorkScheduleContainer} />

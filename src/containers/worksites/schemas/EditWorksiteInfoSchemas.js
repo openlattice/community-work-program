@@ -5,8 +5,6 @@ import {
   ADDRESS_FQNS,
   APP_TYPE_FQNS,
   CONTACT_INFO_FQNS,
-  DATETIME_COMPLETED,
-  ENTITY_KEY_ID,
   PEOPLE_FQNS,
   WORKSITE_FQNS,
 } from '../../../core/edm/constants/FullyQualifiedNames';
