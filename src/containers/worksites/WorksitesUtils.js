@@ -1,4 +1,6 @@
 // @flow
+import { Map } from 'immutable';
+
 import { isDefined } from '../../utils/LangUtils';
 import { EMPTY_FIELD } from '../participants/ParticipantsConstants';
 
@@ -13,17 +15,18 @@ const getWorksiteStatus = (dateActive :string, dateInactive :string) :string => 
   return status;
 };
 
-const getWeekdayTableHeaders = () => {
+const daysOfTheWeek :string[] = [
+  'MON',
+  'TUES',
+  'WEDS',
+  'THURS',
+  'FRI',
+  'SAT',
+  'SUN',
+];
 
-  const daysOfTheWeek :string[] = [
-    'MON',
-    'TUES',
-    'WEDS',
-    'THURS',
-    'FRI',
-    'SAT',
-    'SUN',
-  ];
+const getWeekdayTableHeaders = () :Object[] => {
+
   const headers = [];
   daysOfTheWeek.forEach((day :string) => {
     headers.push({
@@ -43,7 +46,18 @@ const getWeekdayTableHeaders = () => {
   return headers;
 };
 
+const getWeekdayTableData = (scheduleByWeekdayNumber :Map) :Object[] => ([{
+  MON: scheduleByWeekdayNumber.get(1, ''),
+  TUES: scheduleByWeekdayNumber.get(2, ''),
+  WEDS: scheduleByWeekdayNumber.get(3, ''),
+  THURS: scheduleByWeekdayNumber.get(4, ''),
+  FRI: scheduleByWeekdayNumber.get(5, ''),
+  SAT: scheduleByWeekdayNumber.get(6, ''),
+  SUN: scheduleByWeekdayNumber.get(7, ''),
+}]);
+
 export {
+  getWeekdayTableData,
   getWeekdayTableHeaders,
   getWorksiteStatus,
 };

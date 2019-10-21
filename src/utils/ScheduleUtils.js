@@ -3,10 +3,21 @@
  */
 
 import { DateTime, Interval } from 'luxon';
+import { DataProcessingUtils } from 'lattice-fabricate';
+import {
+  List,
+  Map,
+  fromJS,
+  getIn,
+} from 'immutable';
 
 import { isDefined } from './LangUtils';
-import { DATETIME_END, INCIDENT_START_DATETIME } from '../core/edm/constants/FullyQualifiedNames';
+import { APP_TYPE_FQNS, DATETIME_END, INCIDENT_START_DATETIME } from '../core/edm/constants/FullyQualifiedNames';
 import { EMPTY_FIELD } from '../containers/participants/ParticipantsConstants';
+import { FEDERAL_HOLIDAYS } from '../containers/worksites/WorksitesConstants';
+
+const { getEntityAddressKey, getPageSectionKey } = DataProcessingUtils;
+const { APPOINTMENT } = APP_TYPE_FQNS;
 
 const getCombinedDateTime = (date :string, time :string) => {
   const datetimeString :string = date.concat(' ', time);
@@ -119,9 +130,15 @@ const get24HourTimeFromString = (timeString :string) :string => {
   return timeIn24Hour;
 };
 
-const getDateInISOFormat = (dateString :string) => (
+const getDateInISOFormat = (dateString :string) :string => (
   DateTime.fromFormat(dateString.split('/').join(' '), 'M d yyyy').toISODate()
 );
+
+const get12HourTimeFrom24HourTime = (time :string) :string => {
+  const randomDate = DateTime.local().toISODate();
+  const timeInDateTime :DateTime = DateTime.fromSQL(`${randomDate} ${time}`);
+  return timeInDateTime.toLocaleString(DateTime.TIME_SIMPLE);
+};
 
 const getCheckInDeadline = (sentenceDateTime :string) :string => {
 
@@ -145,13 +162,135 @@ const getSentenceEndDate = (sentenceEndDateTime :string, sentenceDateTime :strin
   return EMPTY_FIELD;
 };
 
+/* Worksite schedule utils */
+
+const getRemainingDatesInYearByWeekday = () :Object => {
+
+  const datesSortedByDays :Object = {
+    1: [],
+    2: [],
+    3: [],
+    4: [],
+    5: [],
+    6: [],
+    7: []
+  };
+
+  const firstDateOfMonth :string = DateTime.local().startOf('month');
+  const currentYear = DateTime.local().year;
+
+  let date = firstDateOfMonth;
+  while (currentYear === date.year) {
+    const { weekday } = date;
+    datesSortedByDays[weekday.toString()].push(date.toISODate());
+    date = date.plus({ days: 1 });
+  }
+  return datesSortedByDays;
+};
+
+const getEntitiesForWorksiteSchedule = (formData :Object) :Object => {
+
+  const entityData :Object = {
+    [getPageSectionKey(1, 1)]: {}
+  };
+  const datesInYearByWeekday :Map = fromJS(getRemainingDatesInYearByWeekday());
+  let counter = 0;
+
+  datesInYearByWeekday.forEach((listOfDatesByWeekday :List, weekdayKey :string) => {
+    const weekdayKeyAsNumber :number = parseInt(weekdayKey, 10);
+
+    listOfDatesByWeekday.forEach((weekdayDate :string) => {
+      const startTime = getIn(formData, [
+        getPageSectionKey(1, weekdayKeyAsNumber),
+        getEntityAddressKey(weekdayKeyAsNumber - 1, APPOINTMENT, INCIDENT_START_DATETIME)
+      ]);
+      const endTime = getIn(formData, [
+        getPageSectionKey(1, weekdayKeyAsNumber),
+        getEntityAddressKey(weekdayKeyAsNumber - 1, APPOINTMENT, DATETIME_END)
+      ]);
+      const startDateTime = getCombinedDateTime(weekdayDate, startTime);
+      const endDateTime = getCombinedDateTime(weekdayDate, endTime);
+      if (isDefined(startDateTime) && isDefined(endDateTime)) {
+        entityData[getPageSectionKey(1, 1)][getEntityAddressKey(
+          counter,
+          APPOINTMENT,
+          INCIDENT_START_DATETIME
+        )] = startDateTime;
+        entityData[getPageSectionKey(1, 1)][getEntityAddressKey(
+          counter,
+          APPOINTMENT,
+          DATETIME_END
+        )] = endDateTime;
+
+        counter += 1;
+      }
+    });
+  });
+
+  return entityData;
+};
+
+const getWorksiteScheduleFromEntities = (entities :List) :Object => {
+
+  const scheduleData :Object = {
+    [getPageSectionKey(1, 1)]: {},
+    [getPageSectionKey(1, 2)]: {},
+    [getPageSectionKey(1, 3)]: {},
+    [getPageSectionKey(1, 4)]: {},
+    [getPageSectionKey(1, 5)]: {},
+    [getPageSectionKey(1, 6)]: {},
+    [getPageSectionKey(1, 7)]: {},
+  };
+
+  entities.forEach((entity :Map) => {
+    const startDateTime = entity.getIn([INCIDENT_START_DATETIME, 0]);
+    const { weekday } :number = DateTime.fromISO(startDateTime);
+    if (!Object.keys(scheduleData[getPageSectionKey(1, weekday)]).length) {
+      const endDateTime = entity.getIn([DATETIME_END, 0]);
+      scheduleData[getPageSectionKey(1, weekday)][getEntityAddressKey(
+        weekday - 1,
+        APPOINTMENT,
+        INCIDENT_START_DATETIME
+      )] = DateTime.fromISO(startDateTime).toLocaleString(DateTime.TIME_24_SIMPLE);
+      scheduleData[getPageSectionKey(1, weekday)][getEntityAddressKey(
+        weekday - 1,
+        APPOINTMENT,
+        DATETIME_END
+      )] = DateTime.fromISO(endDateTime).toLocaleString(DateTime.TIME_24_SIMPLE);
+    }
+  });
+  return scheduleData;
+};
+
+const getWorksiteScheduleFromFormData = (scheduleData :Object) :Map => {
+
+  let scheduleByWeekday :Map = Map();
+  let counter :number = 0;
+  fromJS(scheduleData).forEach((section :Map) => {
+    const startTime = getIn(section, [getEntityAddressKey(counter, APPOINTMENT, INCIDENT_START_DATETIME)]);
+    const endTime = getIn(section, [getEntityAddressKey(counter, APPOINTMENT, DATETIME_END)]);
+    if (isDefined(startTime) && isDefined(endTime)) {
+      const readableStartTime :string = get12HourTimeFrom24HourTime(startTime);
+      const readableEndTime :string = get12HourTimeFrom24HourTime(endTime);
+      const times :string = `${readableStartTime} — ${readableEndTime}`;
+      scheduleByWeekday = scheduleByWeekday.set(counter + 1, times);
+    }
+    counter += 1;
+  });
+  return scheduleByWeekday;
+};
+
 export {
   get24HourTimeFromString,
   getCheckInDeadline,
   getCombinedDateTime,
   getCustomSchedule,
   getDateInISOFormat,
+  getEntitiesForWorksiteSchedule,
   getInfoFromTimeRange,
   getRegularlyRepeatingAppointments,
+  getRemainingDatesInYearByWeekday,
   getSentenceEndDate,
+  getWorksiteScheduleFromFormData,
+  getWorksiteScheduleFromEntities,
 };
