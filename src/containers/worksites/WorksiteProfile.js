@@ -148,6 +148,16 @@ class WorksiteProfile extends Component<Props> {
     actions.goToRoute(Routes.EDIT_WORKSITE_PROFILE_INFO.replace(':worksiteId', worksiteEKID));
   }
 
+  goToEditHoursOfOperation = () => {
+    const {
+      actions,
+      match: {
+        params: { worksiteId: worksiteEKID }
+      }
+    } = this.props;
+    actions.goToRoute(Routes.EDIT_WORKSITE_HOURS.replace(':worksiteId', worksiteEKID));
+  }
+
   render() {
     const {
       contactEmail,
@@ -232,6 +242,9 @@ class WorksiteProfile extends Component<Props> {
                   labelMap={worksiteInfoLabelMap} />
             </CardSegment>
           </Card>
+          <HeaderRowWrapper>
+            <ProfileNameHeader>Hours of Operation</ProfileNameHeader>
+            <EditButton onClick={this.goToEditHoursOfOperation}>Edit</EditButton>
         </ContainerInnerWrapper>
       </ContainerOuterWrapper>
     );
