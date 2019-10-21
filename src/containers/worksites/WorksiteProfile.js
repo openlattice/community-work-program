@@ -29,7 +29,8 @@ import {
   WORKSITE_FQNS,
 } from '../../core/edm/constants/FullyQualifiedNames';
 import { APP, STATE, WORKSITES } from '../../utils/constants/ReduxStateConsts';
-import { getEntityProperties, getPersonFullName } from '../../utils/DataUtils';
+import { getEntityProperties } from '../../utils/DataUtils';
+import { getPersonFullName } from '../../utils/PeopleUtils';
 import { formatAsDate } from '../../utils/DateTimeUtils';
 import { getWeekdayTableData, getWeekdayTableHeaders, getWorksiteStatus } from './WorksitesUtils';
 import {
