@@ -22,9 +22,11 @@ const { ACTIONS, EDIT_PLAN_NOTES, REQUEST_STATE } = PERSON;
 
 const TextWrapper = styled.div`
   align-self: center;
+  display: block;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  width: 490px;
 `;
 
 type Props = {
