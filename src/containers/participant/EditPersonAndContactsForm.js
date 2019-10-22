@@ -218,7 +218,7 @@ class EditPersonAndContactsForm extends Component<Props, State> {
       contactsPrepopulated,
       personFormData: personPrepopulated ? personFormData.toJS() : {},
       personPrepopulated,
-      personPhotoFormData: personPhotoPrepopulated ? personPhotoPrepopulated.toJS() : {},
+      personPhotoFormData: personPhotoPrepopulated ? photoFormData.toJS() : {},
     });
   }
 
