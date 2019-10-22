@@ -61,8 +61,12 @@ const PersonInfoRow = styled.div`
 `;
 
 const PersonValue = styled.div`
+  display: block;
+  overflow: hidden;
   text-align: left;
-  width: 60%;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 200px;
 `;
 
 type Props = {
