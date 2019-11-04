@@ -10,7 +10,7 @@ import type { RequestSequence } from 'redux-reqseq';
 import { reassignJudge } from '../ParticipantActions';
 import { APP_TYPE_FQNS, ENTITY_KEY_ID } from '../../../core/edm/constants/FullyQualifiedNames';
 import { judgeSchema, judgeUiSchema } from '../schemas/EditCaseInfoSchemas';
-import { hydrateJudgeSchema } from '../utils/EditCaseInfoUtils';
+import { disableJudgeForm, hydrateJudgeSchema } from '../utils/EditCaseInfoUtils';
 import { getEntityKeyId } from '../../../utils/DataUtils';
 
 const {
@@ -42,6 +42,7 @@ type State = {
   judgeFormData :Object;
   judgeFormSchema :Object;
   judgePrepopulated :boolean;
+  judgeFormUiSchema :Object;
 };
 
 class AssignJudgeForm extends Component<Props, State> {
@@ -50,6 +51,7 @@ class AssignJudgeForm extends Component<Props, State> {
     judgeFormData: {},
     judgeFormSchema: judgeSchema,
     judgePrepopulated: false,
+    judgeFormUiSchema: {},
   };
 
   componentDidMount() {
@@ -64,24 +66,36 @@ class AssignJudgeForm extends Component<Props, State> {
   }
 
   prepopulateFormData = () => {
-    const { judge, judges } = this.props;
+    const { judge, judges, personCase } = this.props;
 
-    const sectionOneKey = getPageSectionKey(1, 1);
+    let newJudgeSchema :Object = judgeSchema;
+    let newJudgeUiSchema :Object = judgeUiSchema;
+    let judgeFormData :Object = {};
+    let judgePrepopulated :boolean = false;
 
-    const judgePrepopulated = !judge.isEmpty();
-    const judgeFormData :{} = judgePrepopulated
-      ? {
-        [sectionOneKey]: {
-          [getEntityAddressKey(0, JUDGES, ENTITY_KEY_ID)]: [getEntityKeyId(judge)],
+    if (personCase.isEmpty()) {
+      newJudgeUiSchema = disableJudgeForm(judgeUiSchema);
+      judgePrepopulated = true;
+    }
+    else {
+      const sectionOneKey = getPageSectionKey(1, 1);
+
+      judgePrepopulated = !judge.isEmpty();
+      judgeFormData = judgePrepopulated
+        ? {
+          [sectionOneKey]: {
+            [getEntityAddressKey(0, JUDGES, ENTITY_KEY_ID)]: [getEntityKeyId(judge)],
+          }
         }
-      }
-      : {};
-    const newJudgeSchema = hydrateJudgeSchema(judgeSchema, judges);
+        : {};
+      newJudgeSchema = hydrateJudgeSchema(judgeSchema, judges);
+    }
 
     this.setState({
       judgeFormData,
       judgeFormSchema: newJudgeSchema,
       judgePrepopulated,
+      judgeFormUiSchema: newJudgeUiSchema,
     });
   }
 
@@ -142,6 +156,7 @@ class AssignJudgeForm extends Component<Props, State> {
       judgeFormData,
       judgePrepopulated,
       judgeFormSchema,
+      judgeFormUiSchema,
     } = this.state;
 
     const judgeFormContext = {
@@ -160,7 +175,7 @@ class AssignJudgeForm extends Component<Props, State> {
             onChange={this.handleOnChangeJudge}
             onSubmit={this.handleOnJudgeSubmit}
             schema={judgeFormSchema}
-            uiSchema={judgeUiSchema} />
+            uiSchema={judgeFormUiSchema} />
       </Card>
     );
   }
