@@ -199,7 +199,9 @@ class EditCaseInfoForm extends Component<Props, State> {
         params: { subjectId: personEKID }
       },
     } = this.props;
-    actions.goToRoute(Routes.PARTICIPANT_PROFILE.replace(':subjectId', personEKID));
+    if (personEKID) {
+      actions.goToRoute(Routes.PARTICIPANT_PROFILE.replace(':subjectId', personEKID));
+    }
   }
 
   render() {
