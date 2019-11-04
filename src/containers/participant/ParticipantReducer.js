@@ -505,7 +505,7 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
           if (storedSeqAction) {
 
             const { value } :Object = seqAction;
-            const { peopleESID } = value;
+            const { notesPTID, peopleESID } = value;
 
             const requestValue :Object = storedSeqAction.value;
             const { entityData } :Object = requestValue;
@@ -514,10 +514,11 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
 
             const personEKID = Object.keys(entityData[peopleESID])[0];
             const storedPropertyValueMap = entityData[peopleESID][personEKID];
-            const personNotes = Object.values(storedPropertyValueMap)[0];
+            const notesValue :string[] = storedPropertyValueMap[notesPTID];
+            const [personNotes] = notesValue;
 
             let personNotesPlaceholder = person.get(PERSON_NOTES, 0);
-            personNotesPlaceholder = personNotes[0];
+            personNotesPlaceholder = personNotes;
             person = person.set(PERSON_NOTES, personNotesPlaceholder);
 
             return state

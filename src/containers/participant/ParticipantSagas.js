@@ -135,6 +135,7 @@ import {
   DATETIME_COMPLETED,
   ENROLLMENT_STATUS_FQNS,
   ENTITY_KEY_ID,
+  PEOPLE_FQNS,
   WORKSITE_PLAN_FQNS,
 } from '../../core/edm/constants/FullyQualifiedNames';
 import { ASSOCIATION_DETAILS } from '../../core/edm/constants/DataModelConsts';
@@ -167,6 +168,7 @@ const {
   PREFERRED,
 } = CONTACT_INFO_FQNS;
 const { EFFECTIVE_DATE } = ENROLLMENT_STATUS_FQNS;
+const { PERSON_NOTES } = PEOPLE_FQNS;
 const { REQUIRED_HOURS } = WORKSITE_PLAN_FQNS;
 
 const getAppFromState = state => state.get(STATE.APP, Map());
@@ -762,8 +764,9 @@ function* editPersonNotesWorker(action :SequenceAction) :Generator<*, *, *> {
     const app = yield select(getAppFromState);
     const peopleESID = getEntitySetIdFromApp(app, PEOPLE);
     const edm = yield select(getEdmFromState);
+    const notesPTID = getPropertyTypeIdFromEdm(edm, PERSON_NOTES);
 
-    yield put(editPersonNotes.success(id, { edm, peopleESID }));
+    yield put(editPersonNotes.success(id, { edm, notesPTID, peopleESID }));
   }
   catch (error) {
     workerResponse.error = error;
