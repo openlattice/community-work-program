@@ -1,7 +1,7 @@
 // flow-typed signature: 689311caccb0db4742bdff80086a5a09
 // flow-typed version: c6154227d1/redux-saga_v1.x.x/flow_>=v0.104.x
 
-declare module "@redux-saga/core" {
+declare module "redux-saga" {
   // These types are copied directly from the redux libdef.
   // Importing them in this libdef causes a loss in type coverage.
 
@@ -439,7 +439,7 @@ declare module "@redux-saga/core" {
     | AllTakeEffect<*>;
 }
 
-declare module "@redux-saga/core/effects" {
+declare module "redux-saga/effects" {
   import type {
     ActionChannelEffect,
     AllEffect,
@@ -466,7 +466,7 @@ declare module "@redux-saga/core/effects" {
     PuttableChannel,
     FlushableChannel,
     AllTakeEffect,
-  } from "@redux-saga/core";
+  } from "redux-saga";
 
   declare export var effectTypes: $ReadOnly<{|
     TAKE: 'TAKE',
