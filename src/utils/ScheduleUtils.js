@@ -125,9 +125,7 @@ const getInfoFromTimeRange = (timeString :string) :Object => {
 const get24HourTimeFromString = (timeString :string) :string => {
   /* https://moment.github.io/luxon/docs/manual/parsing.html#table-of-tokens */
   const inputFormat :string = 'h mm a';
-  const time :DateTime = DateTime.fromFormat(timeString, inputFormat).toLocaleString(DateTime.TIME_SIMPLE);
-  const timeIn24Hour :string = time.toLowerCase().split(' ').join('');
-  return timeIn24Hour;
+  return DateTime.fromFormat(timeString, inputFormat).toLocaleString(DateTime.TIME_24_SIMPLE);
 };
 
 const getDateInISOFormat = (dateString :string) :string => (
