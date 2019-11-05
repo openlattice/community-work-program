@@ -57,8 +57,8 @@ const {
 } = APP_TYPE_FQNS;
 const { NAME } = WORKSITE_FQNS;
 
-const getAppFromState = state => state.get(STATE.APP, Map());
-const getEdmFromState = state => state.get(STATE.EDM, Map());
+const getAppFromState = (state) => state.get(STATE.APP, Map());
+const getEdmFromState = (state) => state.get(STATE.EDM, Map());
 
 /*
 appointment -> addresses -> work site plan -> based on -> work site

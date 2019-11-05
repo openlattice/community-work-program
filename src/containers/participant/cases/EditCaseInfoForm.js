@@ -172,7 +172,9 @@ class EditCaseInfoForm extends Component<Props> {
         params: { subjectId: personEKID }
       },
     } = this.props;
-    actions.goToRoute(Routes.PARTICIPANT_PROFILE.replace(':subjectId', personEKID));
+    if (personEKID) {
+      actions.goToRoute(Routes.PARTICIPANT_PROFILE.replace(':subjectId', personEKID));
+    }
   }
 
   render() {
@@ -259,7 +261,7 @@ const mapStateToProps = (state :Map) => {
   });
 };
 
-const mapDispatchToProps = dispatch => ({
+const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
     getInfoForEditCase,
     goToRoute,

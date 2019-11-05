@@ -22,6 +22,7 @@ import type { SequenceAction } from 'redux-reqseq';
 import Logger from '../../../utils/Logger';
 import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../../utils/Errors';
 
+/* eslint-disable import/no-cycle */
 import {
   ADD_INFRACTION,
   DELETE_INFRACTION_EVENT,
@@ -80,8 +81,8 @@ const { STATUS } = ENROLLMENT_STATUS_FQNS;
 const { CATEGORY } = INFRACTION_FQNS;
 const { TYPE } = INFRACTION_EVENT_FQNS;
 
-const getAppFromState = state => state.get(STATE.APP, Map());
-const getEdmFromState = state => state.get(STATE.EDM, Map());
+const getAppFromState = (state) => state.get(STATE.APP, Map());
+const getEdmFromState = (state) => state.get(STATE.EDM, Map());
 
 const LOG = new Logger('InfractionsSagas');
 /*
@@ -309,7 +310,7 @@ function* getInfoForPrintInfractionWorker(action :SequenceAction) :Generator<*, 
       call(getParticipantWorker, getParticipant({ personEKID })),
     ]);
     const responseError = workerResponses.reduce(
-      (error, workerResponse) => (error ? error : workerResponse.error),
+      (error, workerResponse) => error || workerResponse.error,
       undefined,
     );
     if (responseError) {

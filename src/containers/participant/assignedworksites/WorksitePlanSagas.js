@@ -23,6 +23,7 @@ import type { SequenceAction } from 'redux-reqseq';
 import Logger from '../../../utils/Logger';
 import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../../utils/Errors';
 
+/* eslint-disable import/no-cycle */
 import {
   ADD_WORKSITE_PLAN,
   EDIT_WORKSITE_PLAN,
@@ -72,9 +73,9 @@ const {
 const { EFFECTIVE_DATE } = ENROLLMENT_STATUS_FQNS;
 const { HOURS_WORKED } = WORKSITE_PLAN_FQNS;
 
-const getAppFromState = state => state.get(STATE.APP, Map());
-const getEdmFromState = state => state.get(STATE.EDM, Map());
-const getWorksitesListFromState = state => state.getIn([STATE.WORKSITES, WORKSITES.WORKSITES_LIST], List());
+const getAppFromState = (state) => state.get(STATE.APP, Map());
+const getEdmFromState = (state) => state.get(STATE.EDM, Map());
+const getWorksitesListFromState = (state) => state.getIn([STATE.WORKSITES, WORKSITES.WORKSITES_LIST], List());
 
 const LOG = new Logger('WorksitePlanSagas');
 
@@ -167,7 +168,7 @@ function* editWorksitePlanWorker(action :SequenceAction) :Generator<*, *, *> {
       }
       const { data } :Object = response;
       const { entityKeyIds } :Object = data;
-      worksitePlanStatusEKID = Object.values(entityKeyIds)[0];
+      [worksitePlanStatusEKID] = Object.values(entityKeyIds);
     }
 
     const app = yield select(getAppFromState);

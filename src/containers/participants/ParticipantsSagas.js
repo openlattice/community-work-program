@@ -45,7 +45,6 @@ import {
   getEntitySetIdFromApp,
   getNeighborDetails,
   getNeighborESID,
-  getPropertyTypeIdFromEdm,
   sortEntitiesByDateProperty,
 } from '../../utils/DataUtils';
 import { STATE } from '../../utils/constants/ReduxStateConsts';
@@ -79,8 +78,8 @@ const { COMPLETED, REQUIRED_HOURS } = DIVERSION_PLAN_FQNS;
 const { HOURS_WORKED } = WORKSITE_PLAN_FQNS;
 const { EFFECTIVE_DATE } = ENROLLMENT_STATUS_FQNS;
 
-const getAppFromState = state => state.get(STATE.APP, Map());
-const getEdmFromState = state => state.get(STATE.EDM, Map());
+const getAppFromState = (state) => state.get(STATE.APP, Map());
+const getEdmFromState = (state) => state.get(STATE.EDM, Map());
 
 const LOG = new Logger('ParticipantsSagas');
 
@@ -433,7 +432,7 @@ function* getEnrollmentStatusesWorker(action :SequenceAction) :Generator<*, *, *
      * 6. If no enrollment status for a person exists, set enrollment to empty Map().
      */
     const participantsWithoutEnrollmentStatus :UUID[] = participantEKIDs
-      .filter(ekid => !isDefined(enrollmentMap.get(ekid)));
+      .filter((ekid) => !isDefined(enrollmentMap.get(ekid)));
     participantsWithoutEnrollmentStatus.forEach((ekid :string) => {
       enrollmentMap = enrollmentMap.set(ekid, Map());
     });

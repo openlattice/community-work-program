@@ -50,7 +50,7 @@ const { EFFECTIVE_DATE, STATUS } = ENROLLMENT_STATUS_FQNS;
 const { HOURS_WORKED, REQUIRED_HOURS } = WORKSITE_PLAN_FQNS;
 
 const STATUS_OPTIONS :Object[] = Object.values(WORKSITE_ENROLLMENT_STATUSES)
-  .map((statusName :string) => ({ label: statusName, value: statusName }));
+  .map((statusName) => ({ label: statusName, value: statusName }));
 
 type Props = {
   actions:{
@@ -222,7 +222,7 @@ const mapStateToProps = (state :Map) => ({
   edm: state.get(STATE.EDM),
 });
 
-const mapDispatchToProps = dispatch => ({
+const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
     editWorksitePlan,
   }, dispatch)

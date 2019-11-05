@@ -3,11 +3,12 @@
  */
 
 import { Constants, Models } from 'lattice';
+import type { FQN } from 'lattice';
 
 const { FullyQualifiedName } = Models;
 
 const { OPENLATTICE_ID_FQN } = Constants;
-export const ENTITY_KEY_ID = OPENLATTICE_ID_FQN;
+export const ENTITY_KEY_ID :FQN = OPENLATTICE_ID_FQN;
 
 // NOTE: adding the ":Object" annotation to effectively turns off hundreds of these annoying flow errors
 // 2019-11-04 - Cannot assign computed property using `FullyQualifiedName` [1].
@@ -68,11 +69,11 @@ export const APP_TYPE_FQNS :Object = {
 };
 
 /* DateTime FQNs */
-export const DATETIME = new FullyQualifiedName('general.datetime');
-export const DATETIME_COMPLETED = new FullyQualifiedName('date.completeddatetime');
-export const DATETIME_END = new FullyQualifiedName('ol.datetimeend');
-export const DATETIME_START = new FullyQualifiedName('ol.datetimestart');
-export const INCIDENT_START_DATETIME = new FullyQualifiedName('incident.startdatetime');
+export const DATETIME :FQN = new FullyQualifiedName('general.datetime');
+export const DATETIME_COMPLETED :FQN = new FullyQualifiedName('date.completeddatetime');
+export const DATETIME_END :FQN = new FullyQualifiedName('ol.datetimeend');
+export const DATETIME_START :FQN = new FullyQualifiedName('ol.datetimestart');
+export const INCIDENT_START_DATETIME :FQN = new FullyQualifiedName('incident.startdatetime');
 
 /* Property Type FQNs by Entity Type */
 

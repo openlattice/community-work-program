@@ -104,7 +104,7 @@ const {
 } = WORKSITE_PLANS;
 
 const ENROLLMENT_STATUSES_EXCLUDING_PREENROLLMENT = Object.values(ENROLLMENT_STATUSES)
-  .filter(status => status !== ENROLLMENT_STATUSES.AWAITING_CHECKIN
+  .filter((status) => status !== ENROLLMENT_STATUSES.AWAITING_CHECKIN
     && status !== ENROLLMENT_STATUSES.AWAITING_ORIENTATION);
 
 /* Constants for Modals */
@@ -479,7 +479,7 @@ class ParticipantProfile extends Component<Props, State> {
                 <Select
                     onChange={this.selectDiversionPlan}
                     options={diversionPlanOptions}
-                    value={diversionPlanOptions.find(option => (option.value).equals(diversionPlan))} />
+                    value={diversionPlanOptions.find((option) => (option.value).equals(diversionPlan))} />
                 <Button onClick={() => this.handleShowModal(NEW_ENROLLMENT)}>Create New Enrollment</Button>
               </EnrollmentControlsWrapper>
               <EnrollmentStatusSection
@@ -628,7 +628,7 @@ const mapStateToProps = (state :Map<*, *>) => {
   };
 };
 
-const mapDispatchToProps = dispatch => ({
+const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
     getAllParticipantInfo,
     getEnrollmentFromDiversionPlan,

@@ -19,6 +19,7 @@ import type { SequenceAction } from 'redux-reqseq';
 import Logger from '../../../utils/Logger';
 import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../../utils/Errors';
 
+/* eslint-disable import/no-cycle */
 import {
   CHECK_IN_FOR_APPOINTMENT,
   CREATE_WORK_APPOINTMENTS,
@@ -67,8 +68,8 @@ const {
 } = APP_TYPE_FQNS;
 const { HOURS_WORKED } = WORKSITE_PLAN_FQNS;
 
-const getAppFromState = state => state.get(STATE.APP, Map());
-const getEdmFromState = state => state.get(STATE.EDM, Map());
+const getAppFromState = (state) => state.get(STATE.APP, Map());
+const getEdmFromState = (state) => state.get(STATE.EDM, Map());
 
 const LOG = new Logger('ParticipantScheduleSagas');
 
