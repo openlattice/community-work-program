@@ -36,6 +36,7 @@ import {
   ADD_NEW_PARTICIPANT_CONTACTS,
   ADD_PERSON_PHOTO,
   ADD_TO_AVAILABLE_CHARGES,
+  CREATE_CASE,
   CREATE_NEW_ENROLLMENT,
   EDIT_ENROLLMENT_DATES,
   EDIT_PARTICIPANT_CONTACTS,
@@ -69,6 +70,7 @@ import {
   addNewParticipantContacts,
   addPersonPhoto,
   addToAvailableCharges,
+  createCase,
   createNewEnrollment,
   editEnrollmentDates,
   editParticipantContacts,
@@ -169,9 +171,9 @@ const {
 const { EFFECTIVE_DATE } = ENROLLMENT_STATUS_FQNS;
 const { REQUIRED_HOURS } = WORKSITE_PLAN_FQNS;
 
-const getAppFromState = state => state.get(STATE.APP, Map());
-const getEdmFromState = state => state.get(STATE.EDM, Map());
-const getPersonFromState = state => state.get(STATE.PERSON, Map());
+const getAppFromState = (state) => state.get(STATE.APP, Map());
+const getEdmFromState = (state) => state.get(STATE.EDM, Map());
+const getPersonFromState = (state) => state.get(STATE.PERSON, Map());
 
 const LOG = new Logger('ParticipantSagas');
 
@@ -528,6 +530,56 @@ function* addToAvailableChargesWorker(action :SequenceAction) :Generator<*, *, *
 function* addToAvailableChargesWatcher() :Generator<*, *, *> {
 
   yield takeEvery(ADD_TO_AVAILABLE_CHARGES, addToAvailableChargesWorker);
+}
+
+/*
+ *
+ * ParticipantActions.createCase()
+ *
+ */
+
+function* createCaseWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+  const workerResponse = {};
+  let response :Object = {};
+
+  try {
+    yield put(createCase.request(id, value));
+
+    response = yield call(submitDataGraphWorker, submitDataGraph(value));
+    if (response.error) throw response.error;
+    const { data } :Object = response;
+    const { entityKeyIds } :Object = data;
+
+    const app = yield select(getAppFromState);
+    const edm = yield select(getEdmFromState);
+    const caseESID :UUID = getEntitySetIdFromApp(app, MANUAL_PRETRIAL_COURT_CASES);
+    const caseEKID = entityKeyIds[caseESID][0];
+
+    const { entityData } = value;
+    let newCase :Map = Map();
+    newCase = newCase.set(ENTITY_KEY_ID, caseEKID);
+    fromJS(entityData[caseESID][0]).forEach((caseValue, ptid) => {
+      const propertyTypeFqn :FQN = getPropertyFqnFromEdm(edm, ptid);
+      newCase = newCase.set(propertyTypeFqn, caseValue);
+    });
+
+    yield put(createCase.success(id, { newCase }));
+  }
+  catch (error) {
+    workerResponse.error = error;
+    LOG.error('caught exception in createCaseWorker()', error);
+    yield put(createCase.failure(id, error));
+  }
+  finally {
+    yield put(createCase.finally(id));
+  }
+}
+
+function* createCaseWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(CREATE_CASE, createCaseWorker);
 }
 
 /*
@@ -2122,6 +2174,8 @@ export {
   addPersonPhotoWorker,
   addToAvailableChargesWatcher,
   addToAvailableChargesWorker,
+  createCaseWatcher,
+  createCaseWorker,
   createNewEnrollmentWatcher,
   createNewEnrollmentWorker,
   editEnrollmentDatesWatcher,
