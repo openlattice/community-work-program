@@ -181,7 +181,7 @@ class AssignJudgeForm extends Component<Props, State> {
   }
 }
 
-const mapDispatchToProps = dispatch => ({
+const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
     reassignJudge,
   }, dispatch)
