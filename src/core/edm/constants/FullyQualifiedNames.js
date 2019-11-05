@@ -9,7 +9,9 @@ const { FullyQualifiedName } = Models;
 const { OPENLATTICE_ID_FQN } = Constants;
 export const ENTITY_KEY_ID = OPENLATTICE_ID_FQN;
 
-export const APP_TYPE_FQNS = {
+// NOTE: adding the ":Object" annotation to effectively turns off hundreds of these annoying flow errors
+// 2019-11-04 - Cannot assign computed property using `FullyQualifiedName` [1].
+export const APP_TYPE_FQNS :Object = {
   ADDRESS: new FullyQualifiedName('app.address'),
   ADDRESSES: new FullyQualifiedName('app.addresses'),
   APPEARS_IN: new FullyQualifiedName('app.appearsin'),
@@ -75,30 +77,30 @@ export const INCIDENT_START_DATETIME = new FullyQualifiedName('incident.startdat
 /* Property Type FQNs by Entity Type */
 
 /* geo.address */
-export const ADDRESS_FQNS = {
+export const ADDRESS_FQNS :Object = {
   FULL_ADDRESS: new FullyQualifiedName('location.Address'),
 };
 
 /* publicsafety.pretrialstatuscaseprocessings */
-export const CASE_FQNS = {
+export const CASE_FQNS :Object = {
   CASE_NUMBER_TEXT: new FullyQualifiedName('j.CaseNumberText'),
   COURT_CASE_TYPE: new FullyQualifiedName('justice.courtcasetype'),
 };
 
 /* justice.charge */
-export const CHARGE_FQNS = {
+export const CHARGE_FQNS :Object = {
   NAME: new FullyQualifiedName('ol.name'),
   OL_ID: new FullyQualifiedName('ol.id'),
   VIOLENT: new FullyQualifiedName('ol.violent'),
 };
 
 /* ol.encounter */
-export const CHECK_IN_FQNS = {
+export const CHECK_IN_FQNS :Object = {
   CHECKED_IN: new FullyQualifiedName('ol.checkedin'),
 };
 
 /* ol.contactinformation */
-export const CONTACT_INFO_FQNS = {
+export const CONTACT_INFO_FQNS :Object = {
   CELL_PHONE: new FullyQualifiedName('contact.cellphone'),
   EMAIL: new FullyQualifiedName('staff.email'),
   PHONE_NUMBER: new FullyQualifiedName('contact.phonenumber'),
@@ -106,7 +108,7 @@ export const CONTACT_INFO_FQNS = {
 };
 
 /* ol.diversionplan */
-export const DIVERSION_PLAN_FQNS = {
+export const DIVERSION_PLAN_FQNS :Object = {
   CHECK_IN_DATETIME: new FullyQualifiedName('ol.checkindatetime'),
   COMPLETED: new FullyQualifiedName('ol.completed'),
   CONCURRENT: new FullyQualifiedName('ol.concurrent'),
@@ -120,24 +122,24 @@ export const DIVERSION_PLAN_FQNS = {
 };
 
 /* ol.employee */
-export const EMPLOYEE_FQNS = {
+export const EMPLOYEE_FQNS :Object = {
   TITLE: new FullyQualifiedName('person.title'),
 };
 
 /* ol.enrollment */
-export const ENROLLMENT_STATUS_FQNS = {
+export const ENROLLMENT_STATUS_FQNS :Object = {
   DATETIME_END: new FullyQualifiedName('ol.datetimeend'),
   EFFECTIVE_DATE: new FullyQualifiedName('ol.effectivedate'),
   STATUS: new FullyQualifiedName('ol.status'),
 };
 
 /* ol.image */
-export const IMAGE_FQNS = {
+export const IMAGE_FQNS :Object = {
   IMAGE_DATA: new FullyQualifiedName('ol.imagedata')
 };
 
 /* ol.notification */
-export const INFRACTION_FQNS = {
+export const INFRACTION_FQNS :Object = {
   CATEGORY: new FullyQualifiedName('ol.category'),
   DATETIME: new FullyQualifiedName('general.datetime'),
   DESCRIPTION: new FullyQualifiedName('ol.description'),
@@ -145,19 +147,19 @@ export const INFRACTION_FQNS = {
 };
 
 /* ol.notificationevent */
-export const INFRACTION_EVENT_FQNS = {
+export const INFRACTION_EVENT_FQNS :Object = {
   NOTES: new FullyQualifiedName('ol.notes'),
   TYPE: new FullyQualifiedName('ol.type'),
 };
 
 /* ol.organization */
-export const ORGANIZATION_FQNS = {
+export const ORGANIZATION_FQNS :Object = {
   DESCRIPTION: new FullyQualifiedName('ol.description'),
   ORGANIZATION_NAME: new FullyQualifiedName('ol.organizationname'),
 };
 
 /* general.person */
-export const PEOPLE_FQNS = {
+export const PEOPLE_FQNS :Object = {
   DOB: new FullyQualifiedName('nc.PersonBirthDate'),
   ETHNICITY: new FullyQualifiedName('nc.PersonEthnicity'),
   FIRST_NAME: new FullyQualifiedName('nc.PersonGivenName'),
@@ -173,7 +175,7 @@ export const PEOPLE_FQNS = {
 };
 
 /* ol.programoutcome */
-export const PROGRAM_OUTCOME_FQNS = {
+export const PROGRAM_OUTCOME_FQNS :Object = {
   COMPLETED: new FullyQualifiedName('ol.completed'),
   DESCRIPTION: new FullyQualifiedName('ol.description'),
   HOURS_WORKED: new FullyQualifiedName('ol.hoursworked'),
@@ -181,7 +183,7 @@ export const PROGRAM_OUTCOME_FQNS = {
 
 
 /* ol.program */
-export const WORKSITE_FQNS = {
+export const WORKSITE_FQNS :Object = {
   DATETIME_END: new FullyQualifiedName('ol.datetimeend'),
   DATETIME_START: new FullyQualifiedName('ol.datetimestart'),
   DESCRIPTION: new FullyQualifiedName('ol.description'),
@@ -189,7 +191,7 @@ export const WORKSITE_FQNS = {
 };
 
 /* ol.individualactivityplan */
-export const WORKSITE_PLAN_FQNS = {
+export const WORKSITE_PLAN_FQNS :Object = {
   HOURS_WORKED: new FullyQualifiedName('ol.hoursworked'),
   REQUIRED_HOURS: new FullyQualifiedName('ol.requiredhours'),
 };
