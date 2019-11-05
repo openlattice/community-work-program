@@ -48,14 +48,7 @@ import {
   sortEntitiesByDateProperty,
 } from '../../utils/DataUtils';
 import { STATE } from '../../utils/constants/ReduxStateConsts';
-import {
-  APP_TYPE_FQNS,
-  CASE_FQNS,
-  DIVERSION_PLAN_FQNS,
-  ENROLLMENT_STATUS_FQNS,
-  INFRACTION_FQNS,
-  WORKSITE_PLAN_FQNS,
-} from '../../core/edm/constants/FullyQualifiedNames';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { isDefined } from '../../utils/LangUtils';
 import { INFRACTIONS_CONSTS } from '../../core/edm/constants/DataModelConsts';
 
@@ -72,11 +65,15 @@ const {
   PEOPLE,
   WORKSITE_PLAN,
 } = APP_TYPE_FQNS;
-const { DATETIME, TYPE } = INFRACTION_FQNS;
-const { COURT_CASE_TYPE } = CASE_FQNS;
-const { COMPLETED, REQUIRED_HOURS } = DIVERSION_PLAN_FQNS;
-const { HOURS_WORKED } = WORKSITE_PLAN_FQNS;
-const { EFFECTIVE_DATE } = ENROLLMENT_STATUS_FQNS;
+const {
+  COMPLETED,
+  COURT_CASE_TYPE,
+  DATETIME,
+  EFFECTIVE_DATE,
+  HOURS_WORKED,
+  REQUIRED_HOURS,
+  TYPE,
+} = PROPERTY_TYPE_FQNS;
 
 const getAppFromState = (state) => state.get(STATE.APP, Map());
 const getEdmFromState = (state) => state.get(STATE.EDM, Map());

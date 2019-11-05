@@ -10,7 +10,7 @@ import type { FQN } from 'lattice';
 import { isDefined } from '../../utils/LangUtils';
 import { getEntityProperties, getPropertyFqnFromEdm } from '../../utils/DataUtils';
 import { WORKSITES } from '../../utils/constants/ReduxStateConsts';
-import { ENTITY_KEY_ID, WORKSITE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { WORKSITE_STATUSES } from './WorksitesConstants';
 import {
   addOrganization,
@@ -59,7 +59,7 @@ const {
   WORKSITES_INFO,
   WORKSITES_LIST,
 } = WORKSITES;
-const { DATETIME_END, DATETIME_START } = WORKSITE_FQNS;
+const { DATETIME_END, DATETIME_START, ENTITY_KEY_ID } = PROPERTY_TYPE_FQNS;
 
 const INITIAL_STATE :Map<*, *> = fromJS({
   [ACTIONS]: {

@@ -17,11 +17,7 @@ import {
   getPropertyTypeIdFromEdm,
 } from '../../../utils/DataUtils';
 import { getCombinedDateTime } from '../../../utils/ScheduleUtils';
-import {
-  APP_TYPE_FQNS,
-  DATETIME_COMPLETED,
-  INFRACTION_EVENT_FQNS,
-} from '../../../core/edm/constants/FullyQualifiedNames';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { STATE } from '../../../utils/constants/ReduxStateConsts';
 
 const {
@@ -31,7 +27,7 @@ const {
 } = DataProcessingUtils;
 
 const { INFRACTION_EVENT } = APP_TYPE_FQNS;
-const { NOTES, TYPE } = INFRACTION_EVENT_FQNS;
+const { DATETIME_COMPLETED, NOTES, TYPE } = PROPERTY_TYPE_FQNS;
 
 const FormWrapper = styled.div`
   width: 600px;

@@ -21,7 +21,7 @@ import {
   getPropertyFqnFromEdm,
 } from '../../../utils/DataUtils';
 import { WORKSITE_PLANS } from '../../../utils/constants/ReduxStateConsts';
-import { ENTITY_KEY_ID } from '../../../core/edm/constants/FullyQualifiedNames';
+import { PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 
 const {
   ACTIONS,
@@ -36,6 +36,7 @@ const {
   WORKSITE_PLANS_LIST,
   WORKSITE_PLAN_STATUSES,
 } = WORKSITE_PLANS;
+const { ENTITY_KEY_ID } = PROPERTY_TYPE_FQNS;
 
 const INITIAL_STATE :Map<*, *> = fromJS({
   [ACTIONS]: {

@@ -19,7 +19,7 @@ import { DASHBOARD_WIDTH } from '../../core/style/Sizes';
 import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
 import { getCheckInDeadline, getDateInISOFormat } from '../../utils/ScheduleUtils';
 import { ENROLLMENT_STATUSES, HOURS_CONSTS, INFRACTIONS_CONSTS } from '../../core/edm/constants/DataModelConsts';
-import { DIVERSION_PLAN_FQNS, ENROLLMENT_STATUS_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { APP, PEOPLE, STATE } from '../../utils/constants/ReduxStateConsts';
 import {
   NEW_PARTICIPANTS_COLUMNS,
@@ -30,8 +30,7 @@ import {
 import { EMPTY_FIELD } from '../participants/ParticipantsConstants';
 
 /* constants */
-const { DATETIME_RECEIVED } = DIVERSION_PLAN_FQNS;
-const { STATUS } = ENROLLMENT_STATUS_FQNS;
+const { DATETIME_RECEIVED, STATUS } = PROPERTY_TYPE_FQNS;
 const { REQUIRED, WORKED } = HOURS_CONSTS;
 const {
   CURRENT_DIVERSION_PLANS_BY_PARTICIPANT,

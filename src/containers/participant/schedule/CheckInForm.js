@@ -27,14 +27,7 @@ import {
   FormWrapper,
   RowContent
 } from '../../../components/Layout';
-import {
-  APP_TYPE_FQNS,
-  CHECK_IN_FQNS,
-  DATETIME_START,
-  DATETIME_END,
-  ENTITY_KEY_ID,
-  WORKSITE_PLAN_FQNS,
-} from '../../../core/edm/constants/FullyQualifiedNames';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { PERSON, STATE } from '../../../utils/constants/ReduxStateConsts';
 
 const {
@@ -45,8 +38,14 @@ const {
   HAS,
   PEOPLE,
 } = APP_TYPE_FQNS;
-const { CHECKED_IN } = CHECK_IN_FQNS;
-const { HOURS_WORKED } = WORKSITE_PLAN_FQNS;
+const {
+  CHECKED_IN,
+  DATETIME_END,
+  DATETIME_START,
+  ENTITY_KEY_ID,
+  HOURS_WORKED,
+} = PROPERTY_TYPE_FQNS;
+
 const { PARTICIPANT } = PERSON;
 
 const {
@@ -247,7 +246,7 @@ const mapStateToProps = (state :Map) => {
   });
 };
 
-const mapDispatchToProps = dispatch => ({
+const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
     checkInForAppointment,
   }, dispatch)

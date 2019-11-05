@@ -24,11 +24,7 @@ import {
   addChargesToCase,
   removeChargeFromCase,
 } from '../ParticipantActions';
-import {
-  APP_TYPE_FQNS,
-  DATETIME_COMPLETED,
-  ENTITY_KEY_ID,
-} from '../../../core/edm/constants/FullyQualifiedNames';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import {
   chargeSchema,
   chargeUiSchema,
@@ -53,6 +49,7 @@ const {
   PEOPLE,
   REGISTERED_FOR,
 } = APP_TYPE_FQNS;
+const { DATETIME_COMPLETED, ENTITY_KEY_ID } = PROPERTY_TYPE_FQNS;
 
 const InnerCardHeader = styled.div`
   align-items: center;

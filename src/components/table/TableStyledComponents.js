@@ -5,19 +5,18 @@ import { StyleUtils } from 'lattice-ui-kit';
 import { ENROLLMENT_STATUS_COLORS, OL } from '../../core/style/Colors';
 import { PersonPhoto } from '../picture/PersonPicture';
 import { ENROLLMENT_STATUSES } from '../../core/edm/constants/DataModelConsts';
-import { WORKSITE_STATUSES } from '../../containers/worksites/WorksitesConstants';
 
 const { getStyleVariation } = StyleUtils;
 
 /* Table Styles */
 
 export const TableWrapper = styled.div`
-  width: ${props => (props.width ? props.width : '100%')};
+  width: ${(props) => (props.width ? props.width : '100%')};
   background-color: ${OL.WHITE};
   border: 1px solid ${OL.GREY11};
   border-radius: 5px;
-  margin: ${props => (props.margin ? props.margin : '0 0 30px 0')};
-  align-self: ${props => (props.alignCenter ? 'center' : 'start')};
+  margin: ${(props) => (props.margin ? props.margin : '0 0 30px 0')};
+  align-self: ${(props) => (props.alignCenter ? 'center' : 'start')};
 `;
 
 export const TableBanner = styled.div`
@@ -55,7 +54,7 @@ export const HeaderElement = styled.span`
   font-size: 10px;
   font-weight: 600;
   font-family: 'Open Sans', sans-serif;
-  color: ${props => (props.selected ? OL.PURPLE02 : OL.BLACK)};
+  color: ${(props) => (props.selected ? OL.PURPLE02 : OL.BLACK)};
   text-transform: uppercase;
   padding: 12px 30px 12px 0;
   /* border-bottom: 1px solid ${OL.BLACK}; */
@@ -92,7 +91,7 @@ export const Cell = styled.span`
   display: table-cell;
   padding: 7px 30px 7px 0;
   font-family: 'Open Sans', sans-serif;
-  font-size: ${props => (props.small ? '12' : '14')}px;
+  font-size: ${(props) => (props.small ? '12' : '14')}px;
   text-align: left;
   vertical-align: middle;
   color: ${statusColorVariation};
@@ -121,8 +120,8 @@ export const Row = styled.div`
 `;
 
 export const StyledPersonPhoto = styled(PersonPhoto)`
-  width: ${props => (props.small ? 30 : 36)}px;
-  ${props => (props.small
+  width: ${(props) => (props.small ? 30 : 36)}px;
+  ${(props) => (props.small
     ? (
       `min-width: 30px;
         height: 30px;

@@ -14,10 +14,11 @@ import {
   TYPE_IDS_BY_FQNS,
   TYPES_BY_ID
 } from '../core/edm/constants/DataModelConsts';
-import { ENTITY_KEY_ID } from '../core/edm/constants/FullyQualifiedNames';
+import { PROPERTY_TYPE_FQNS } from '../core/edm/constants/FullyQualifiedNames';
 import { APP } from './constants/ReduxStateConsts';
 
 const { FullyQualifiedName } = Models;
+const { ENTITY_KEY_ID } = PROPERTY_TYPE_FQNS;
 
 /* entity and property types */
 const getEntitySetIdFromApp = (app :Object | Map, fqn :FullyQualifiedName) => {

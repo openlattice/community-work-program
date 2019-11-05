@@ -51,10 +51,7 @@ import {
 import { updateHoursWorked } from '../assignedworksites/WorksitePlanActions';
 import { updateHoursWorkedWorker } from '../assignedworksites/WorksitePlanSagas';
 import { STATE } from '../../../utils/constants/ReduxStateConsts';
-import {
-  APP_TYPE_FQNS,
-  WORKSITE_PLAN_FQNS,
-} from '../../../core/edm/constants/FullyQualifiedNames';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 
 const { searchEntityNeighborsWithFilter } = SearchApiActions;
 const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
@@ -66,7 +63,7 @@ const {
   FULFILLS,
   WORKSITE_PLAN,
 } = APP_TYPE_FQNS;
-const { HOURS_WORKED } = WORKSITE_PLAN_FQNS;
+const { HOURS_WORKED } = PROPERTY_TYPE_FQNS;
 
 const getAppFromState = (state) => state.get(STATE.APP, Map());
 const getEdmFromState = (state) => state.get(STATE.EDM, Map());

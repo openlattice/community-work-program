@@ -18,16 +18,17 @@ import NoAppointmentsScheduled from './NoAppointmentsScheduled';
 
 import { isDefined } from '../../utils/LangUtils';
 import { getEntityKeyId, getEntityProperties, sortEntitiesByDateProperty } from '../../utils/DataUtils';
-import {
-  DATETIME_END,
-  ENTITY_KEY_ID,
-  INCIDENT_START_DATETIME,
-  PEOPLE_FQNS,
-} from '../../core/edm/constants/FullyQualifiedNames';
+import { PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { PARTICIPANT_SCHEDULE, STATE } from '../../utils/constants/ReduxStateConsts';
 import { EMPTY_FIELD } from '../participants/ParticipantsConstants';
 
-const { FIRST_NAME, LAST_NAME } = PEOPLE_FQNS;
+const {
+  DATETIME_END,
+  ENTITY_KEY_ID,
+  FIRST_NAME,
+  INCIDENT_START_DATETIME,
+  LAST_NAME,
+} = PROPERTY_TYPE_FQNS;
 const { ACTIONS, EDIT_APPOINTMENT, REQUEST_STATE } = PARTICIPANT_SCHEDULE;
 
 const OuterWrapper = styled.div`

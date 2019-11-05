@@ -19,11 +19,7 @@ import type { SequenceAction } from 'redux-reqseq';
 
 import Logger from '../../utils/Logger';
 import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../utils/Errors';
-import {
-  APP_TYPE_FQNS,
-  INCIDENT_START_DATETIME,
-  WORKSITE_FQNS
-} from '../../core/edm/constants/FullyQualifiedNames';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { STATE } from '../../utils/constants/ReduxStateConsts';
 import {
   FIND_APPOINTMENTS,
@@ -55,7 +51,7 @@ const {
   WORKSITE,
   WORKSITE_PLAN
 } = APP_TYPE_FQNS;
-const { NAME } = WORKSITE_FQNS;
+const { INCIDENT_START_DATETIME, NAME } = PROPERTY_TYPE_FQNS;
 
 const getAppFromState = (state) => state.get(STATE.APP, Map());
 const getEdmFromState = (state) => state.get(STATE.EDM, Map());

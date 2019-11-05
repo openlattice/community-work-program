@@ -25,18 +25,15 @@ import {
 } from '../../../utils/DataUtils';
 import { PERSON_INFRACTIONS } from '../../../utils/constants/ReduxStateConsts';
 import { INFRACTIONS_CONSTS } from '../../../core/edm/constants/DataModelConsts';
-import {
-  APP_TYPE_FQNS,
-  ENROLLMENT_STATUS_FQNS,
-  ENTITY_KEY_ID,
-  INFRACTION_EVENT_FQNS,
-  INFRACTION_FQNS,
-} from '../../../core/edm/constants/FullyQualifiedNames';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 
 const { WORKSITE_PLAN } = APP_TYPE_FQNS;
-const { STATUS } = ENROLLMENT_STATUS_FQNS;
-const { TYPE } = INFRACTION_EVENT_FQNS;
-const { CATEGORY } = INFRACTION_FQNS;
+const {
+  CATEGORY,
+  ENTITY_KEY_ID,
+  STATUS,
+  TYPE,
+} = PROPERTY_TYPE_FQNS;
 const {
   ACTIONS,
   ADD_INFRACTION_EVENT,

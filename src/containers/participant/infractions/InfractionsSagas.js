@@ -56,12 +56,7 @@ import {
   submitPartialReplaceWorker
 } from '../../../core/sagas/data/DataSagas';
 import { STATE } from '../../../utils/constants/ReduxStateConsts';
-import {
-  APP_TYPE_FQNS,
-  ENROLLMENT_STATUS_FQNS,
-  INFRACTION_EVENT_FQNS,
-  INFRACTION_FQNS,
-} from '../../../core/edm/constants/FullyQualifiedNames';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { INFRACTIONS_CONSTS } from '../../../core/edm/constants/DataModelConsts';
 
 const { getEntityData, getEntitySetData } = DataApiActions;
@@ -77,9 +72,7 @@ const {
   RESULTS_IN,
   WORKSITE_PLAN,
 } = APP_TYPE_FQNS;
-const { STATUS } = ENROLLMENT_STATUS_FQNS;
-const { CATEGORY } = INFRACTION_FQNS;
-const { TYPE } = INFRACTION_EVENT_FQNS;
+const { CATEGORY, STATUS, TYPE } = PROPERTY_TYPE_FQNS;
 
 const getAppFromState = (state) => state.get(STATE.APP, Map());
 const getEdmFromState = (state) => state.get(STATE.EDM, Map());

@@ -9,16 +9,16 @@ import {
 import { DateTime } from 'luxon';
 import { Card, CardSegment, DataGrid } from 'lattice-ui-kit';
 
-import {
-  DATETIME_END,
-  INCIDENT_START_DATETIME,
-  PEOPLE_FQNS,
-  WORKSITE_FQNS,
-} from '../../../core/edm/constants/FullyQualifiedNames';
+import { PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { getEntityKeyId, getEntityProperties, sortEntitiesByDateProperty } from '../../../utils/DataUtils';
 
-const { FIRST_NAME, LAST_NAME } = PEOPLE_FQNS;
-const { NAME } = WORKSITE_FQNS;
+const {
+  DATETIME_END,
+  FIRST_NAME,
+  INCIDENT_START_DATETIME,
+  LAST_NAME,
+  NAME,
+} = PROPERTY_TYPE_FQNS;
 
 const EMPTY_STRING = '';
 const SPACED_STRING = ' ';

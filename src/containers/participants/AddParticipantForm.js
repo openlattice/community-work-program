@@ -18,15 +18,7 @@ import type { FQN } from 'lattice';
 
 import { addParticipant } from './ParticipantsActions';
 import { getEntitySetIdFromApp, getPropertyTypeIdFromEdm } from '../../utils/DataUtils';
-import {
-  APP_TYPE_FQNS,
-  CASE_FQNS,
-  DATETIME_COMPLETED,
-  DATETIME_END,
-  DIVERSION_PLAN_FQNS,
-  ENROLLMENT_STATUS_FQNS,
-  PEOPLE_FQNS
-} from '../../core/edm/constants/FullyQualifiedNames';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { STATE } from '../../utils/constants/ReduxStateConsts';
 import { CWP, ENROLLMENT_STATUSES } from '../../core/edm/constants/DataModelConsts';
 import { courtTypeOptions } from './ParticipantsConstants';
@@ -52,20 +44,20 @@ const {
   PEOPLE,
   RELATED_TO,
 } = APP_TYPE_FQNS;
-const { CASE_NUMBER_TEXT, COURT_CASE_TYPE } = CASE_FQNS;
 const {
+  CASE_NUMBER_TEXT,
   COMPLETED,
+  COURT_CASE_TYPE,
   DATETIME_RECEIVED,
-  NAME,
-  REQUIRED_HOURS
-} = DIVERSION_PLAN_FQNS;
-const { EFFECTIVE_DATE, STATUS } = ENROLLMENT_STATUS_FQNS;
-const {
   DOB,
+  EFFECTIVE_DATE,
   FIRST_NAME,
   LAST_NAME,
+  NAME,
   PERSON_NOTES,
-} = PEOPLE_FQNS;
+  REQUIRED_HOURS,
+  STATUS,
+} = PROPERTY_TYPE_FQNS;
 
 type Props = {
   actions:{

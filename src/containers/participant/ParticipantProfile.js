@@ -43,16 +43,7 @@ import * as Routes from '../../core/router/Routes';
 import { BackNavButton } from '../../components/controls/index';
 import { getEntityKeyId, getEntityProperties, sortEntitiesByDateProperty } from '../../utils/DataUtils';
 import { isDefined } from '../../utils/LangUtils';
-import {
-  APP_TYPE_FQNS,
-  DATETIME_END,
-  DATETIME_START,
-  DIVERSION_PLAN_FQNS,
-  ENROLLMENT_STATUS_FQNS,
-  INCIDENT_START_DATETIME,
-  PEOPLE_FQNS,
-  WORKSITE_FQNS,
-} from '../../core/edm/constants/FullyQualifiedNames';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { ENROLLMENT_STATUSES } from '../../core/edm/constants/DataModelConsts';
 import {
   APP,
@@ -66,14 +57,18 @@ import {
 
 const {
   CHECK_IN_DATETIME,
+  DATETIME_END,
   DATETIME_RECEIVED,
+  DATETIME_START,
+  FIRST_NAME,
+  INCIDENT_START_DATETIME,
+  NAME,
   NOTES,
   ORIENTATION_DATETIME,
+  PERSON_NOTES,
   REQUIRED_HOURS,
-} = DIVERSION_PLAN_FQNS;
-const { STATUS } = ENROLLMENT_STATUS_FQNS;
-const { FIRST_NAME, PERSON_NOTES } = PEOPLE_FQNS;
-const { NAME } = WORKSITE_FQNS;
+  STATUS,
+} = PROPERTY_TYPE_FQNS;
 
 const { CHECK_INS_BY_APPOINTMENT, WORK_APPOINTMENTS_BY_WORKSITE_PLAN } = PARTICIPANT_SCHEDULE;
 const {

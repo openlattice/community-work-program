@@ -24,14 +24,7 @@ import {
   getEntitySetIdFromApp,
   getPropertyTypeIdFromEdm
 } from '../../../utils/DataUtils';
-import {
-  APP_TYPE_FQNS,
-  DATETIME,
-  DATETIME_START,
-  ENROLLMENT_STATUS_FQNS,
-  WORKSITE_FQNS,
-  WORKSITE_PLAN_FQNS,
-} from '../../../core/edm/constants/FullyQualifiedNames';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { WORKSITE_ENROLLMENT_STATUSES } from '../../../core/edm/constants/DataModelConsts';
 import { STATE } from '../../../utils/constants/ReduxStateConsts';
 import {
@@ -60,9 +53,13 @@ const {
   WORKSITE,
   WORKSITE_PLAN,
 } = APP_TYPE_FQNS;
-const { EFFECTIVE_DATE, STATUS } = ENROLLMENT_STATUS_FQNS;
-const { NAME } = WORKSITE_FQNS;
-const { HOURS_WORKED, REQUIRED_HOURS } = WORKSITE_PLAN_FQNS;
+const {
+  EFFECTIVE_DATE,
+  HOURS_WORKED,
+  NAME,
+  REQUIRED_HOURS,
+  STATUS,
+} = PROPERTY_TYPE_FQNS;
 const { PLANNED } = WORKSITE_ENROLLMENT_STATUSES;
 
 const WarningLabel = styled(Label)`

@@ -12,7 +12,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { PersonPicture } from '../picture/PersonPicture';
 import { formatNumericalValue } from '../../utils/FormattingUtils';
 import { calculateAge, formatAsDate } from '../../utils/DateTimeUtils';
-import { ENTITY_KEY_ID, PEOPLE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { getEntityProperties } from '../../utils/DataUtils';
 import { getPersonFullName } from '../../utils/PeopleUtils';
 import { isDefined } from '../../utils/LangUtils';
@@ -25,7 +25,12 @@ import { ENROLLMENT_STATUSES } from '../../core/edm/constants/DataModelConsts';
 import { OL } from '../../core/style/Colors';
 import { TAGS } from '../../containers/dashboard/DashboardConstants';
 
-const { DOB, MUGSHOT, PICTURE } = PEOPLE_FQNS;
+const {
+  DOB,
+  ENTITY_KEY_ID,
+  MUGSHOT,
+  PICTURE,
+} = PROPERTY_TYPE_FQNS;
 
 const SubtleTag = styled(Tag)`
   background-color: ${OL.WHITE};

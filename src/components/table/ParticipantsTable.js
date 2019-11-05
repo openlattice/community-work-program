@@ -17,16 +17,16 @@ import {
   HeaderRow,
   HeaderElement,
 } from './TableStyledComponents';
-import {
-  DIVERSION_PLAN_FQNS,
-  ENROLLMENT_STATUS_FQNS,
-  ENTITY_KEY_ID,
-} from '../../core/edm/constants/FullyQualifiedNames';
+import { PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { ENROLLMENT_STATUSES, HOURS_CONSTS } from '../../core/edm/constants/DataModelConsts';
 import { SORTABLE_PARTICIPANT_COLUMNS } from '../../containers/participants/ParticipantsConstants';
 
-const { DATETIME_RECEIVED } = DIVERSION_PLAN_FQNS;
-const { EFFECTIVE_DATE, STATUS } = ENROLLMENT_STATUS_FQNS;
+const {
+  DATETIME_RECEIVED,
+  EFFECTIVE_DATE,
+  ENTITY_KEY_ID,
+  STATUS,
+} = PROPERTY_TYPE_FQNS;
 const { REQUIRED, WORKED } = HOURS_CONSTS;
 
 type HeaderProps = {
@@ -39,7 +39,7 @@ const Headers = ({ columnHeaders, selected, sort } :HeaderProps) => (
   <HeaderRow>
     <HeaderElement />
     {
-      columnHeaders.map(header => (
+      columnHeaders.map((header) => (
         <HeaderElement
             key={header}
             onClick={() => sort(header)}

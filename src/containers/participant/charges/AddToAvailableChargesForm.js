@@ -1,36 +1,22 @@
 // @flow
 import React, { Component } from 'react';
-import styled from 'styled-components';
-import {
-  List,
-  Map,
-  fromJS,
-  getIn,
-} from 'immutable';
-import { DateTime } from 'luxon';
-import {
-  Card,
-  CardHeader,
-  CardStack
-} from 'lattice-ui-kit';
+import { Map } from 'immutable';
 import { Form, DataProcessingUtils } from 'lattice-fabricate';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import { RequestStates } from 'redux-reqseq';
-import type { RequestSequence, RequestState } from 'redux-reqseq';
-import type { Match } from 'react-router';
+import type { RequestSequence } from 'redux-reqseq';
 
 import { addToAvailableCharges } from '../ParticipantActions';
 import { schema, uiSchema } from './AddToAvailableChargesSchemas';
 import { getEntitySetIdFromApp, getPropertyTypeIdFromEdm } from '../../../utils/DataUtils';
-import { APP_TYPE_FQNS, CHARGE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { STATE } from '../../../utils/constants/ReduxStateConsts';
 
 const {
   processEntityData,
 } = DataProcessingUtils;
 const { COURT_CHARGE_LIST } = APP_TYPE_FQNS;
-const { NAME, OL_ID } = CHARGE_FQNS;
+const { NAME, OL_ID } = PROPERTY_TYPE_FQNS;
 
 type Props = {
   actions:{
@@ -85,7 +71,7 @@ const mapStateToProps = (state :Map) => {
   });
 };
 
-const mapDispatchToProps = dispatch => ({
+const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
     addToAvailableCharges,
   }, dispatch)

@@ -35,7 +35,7 @@ import {
   STATE,
   WORKSITES
 } from '../../utils/constants/ReduxStateConsts';
-import { APP_TYPE_FQNS, ORGANIZATION_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import {
   getOrganizations,
   getWorksitesByOrg,
@@ -43,7 +43,7 @@ import {
 } from './WorksitesActions';
 
 const { ORGANIZATION } = APP_TYPE_FQNS;
-const { ORGANIZATION_NAME } = ORGANIZATION_FQNS;
+const { ORGANIZATION_NAME } = PROPERTY_TYPE_FQNS;
 const {
   ACTIONS,
   GET_ORGANIZATIONS,

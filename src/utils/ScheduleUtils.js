@@ -12,12 +12,12 @@ import {
 } from 'immutable';
 
 import { isDefined } from './LangUtils';
-import { APP_TYPE_FQNS, DATETIME_END, INCIDENT_START_DATETIME } from '../core/edm/constants/FullyQualifiedNames';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../core/edm/constants/FullyQualifiedNames';
 import { EMPTY_FIELD } from '../containers/participants/ParticipantsConstants';
-import { FEDERAL_HOLIDAYS } from '../containers/worksites/WorksitesConstants';
 
 const { getEntityAddressKey, getPageSectionKey } = DataProcessingUtils;
 const { APPOINTMENT } = APP_TYPE_FQNS;
+const { DATETIME_END, INCIDENT_START_DATETIME } = PROPERTY_TYPE_FQNS;
 
 const getCombinedDateTime = (date :string, time :string) => {
   const datetimeString :string = date.concat(' ', time);

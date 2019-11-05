@@ -1,9 +1,9 @@
 // @flow
 
 import { isNonEmptyStringArray } from './LangUtils';
-import { IMAGE_FQNS } from '../core/edm/constants/FullyQualifiedNames';
+import { PROPERTY_TYPE_FQNS } from '../core/edm/constants/FullyQualifiedNames';
 
-const { IMAGE_DATA } = IMAGE_FQNS;
+const { IMAGE_DATA } = PROPERTY_TYPE_FQNS;
 
 const DATA_URL_PREFIX_REGEX = new RegExp(/^data:image\/.*base64,/);
 

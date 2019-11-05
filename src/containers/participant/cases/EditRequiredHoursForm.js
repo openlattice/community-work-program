@@ -8,7 +8,7 @@ import { bindActionCreators } from 'redux';
 import type { RequestSequence } from 'redux-reqseq';
 
 import { editRequiredHours } from '../ParticipantActions';
-import { APP_TYPE_FQNS, DIVERSION_PLAN_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import {
   requiredHoursSchema,
   requiredHoursUiSchema,
@@ -23,7 +23,7 @@ const {
 } = DataProcessingUtils;
 
 const { DIVERSION_PLAN } = APP_TYPE_FQNS;
-const { REQUIRED_HOURS } = DIVERSION_PLAN_FQNS;
+const { REQUIRED_HOURS } = PROPERTY_TYPE_FQNS;
 
 type Props = {
   actions:{

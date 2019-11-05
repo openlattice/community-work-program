@@ -19,7 +19,7 @@ import {
 } from './ParticipantsActions';
 import { PEOPLE } from '../../utils/constants/ReduxStateConsts';
 import { getPropertyFqnFromEdm } from '../../utils/DataUtils';
-import { DIVERSION_PLAN_FQNS, ENTITY_KEY_ID } from '../../core/edm/constants/FullyQualifiedNames';
+import { PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 
 const {
   ACTIONS,
@@ -40,7 +40,7 @@ const {
   PARTICIPANTS,
   REQUEST_STATE,
 } = PEOPLE;
-const { REQUIRED_HOURS } = DIVERSION_PLAN_FQNS;
+const { REQUIRED_HOURS } = PROPERTY_TYPE_FQNS;
 
 const DIVERSION_PLAN = 'diversionPlan';
 const PERSON = 'person';

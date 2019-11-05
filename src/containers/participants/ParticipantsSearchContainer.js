@@ -28,12 +28,7 @@ import {
 } from './ParticipantsConstants';
 import { APP, PEOPLE, STATE } from '../../utils/constants/ReduxStateConsts';
 import { ENROLLMENT_STATUSES, INFRACTIONS_CONSTS } from '../../core/edm/constants/DataModelConsts';
-import {
-  APP_TYPE_FQNS,
-  DIVERSION_PLAN_FQNS,
-  ENROLLMENT_STATUS_FQNS,
-  PEOPLE_FQNS,
-} from '../../core/edm/constants/FullyQualifiedNames';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 
 /*
  * constants
@@ -46,16 +41,19 @@ const {
   INFRACTION_COUNTS_BY_PARTICIPANT,
   PARTICIPANTS,
 } = PEOPLE;
-const { DATETIME_RECEIVED } = DIVERSION_PLAN_FQNS;
+const {
+  DATETIME_RECEIVED,
+  FIRST_NAME,
+  LAST_NAME,
+  STATUS,
+} = PROPERTY_TYPE_FQNS;
 const { VIOLATION, WARNING } = INFRACTIONS_CONSTS;
-const { STATUS } = ENROLLMENT_STATUS_FQNS;
-const { FIRST_NAME, LAST_NAME } = PEOPLE_FQNS;
 
 const dropdowns :List = List().withMutations((list :List) => {
   list.set(0, statusFilterDropdown);
 });
 const defaultFilterOption :Map = statusFilterDropdown.get('enums')
-  .find(obj => obj.value.toUpperCase() === ALL);
+  .find((obj) => obj.value.toUpperCase() === ALL);
 
 /*
  * styled components

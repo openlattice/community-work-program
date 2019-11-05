@@ -9,7 +9,6 @@ import {
   fromJS,
 } from 'immutable';
 import { Card, CardSegment, DataGrid } from 'lattice-ui-kit';
-import type { FQN } from 'lattice';
 
 import {
   SectionLabel,
@@ -19,19 +18,18 @@ import {
 } from './SectionStyledComponents';
 import { getEntityProperties, sortEntitiesByDateProperty } from '../../utils/DataUtils';
 import { formatNumericalValue } from '../../utils/FormattingUtils';
-import {
-  APP_TYPE_FQNS,
-  CASE_FQNS,
-  CHARGE_FQNS,
-  DATETIME_COMPLETED,
-  PEOPLE_FQNS
-} from '../../core/edm/constants/FullyQualifiedNames';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { EMPTY_FIELD } from '../../containers/participants/ParticipantsConstants';
 
 const { CHARGE_EVENT, COURT_CHARGE_LIST } = APP_TYPE_FQNS;
-const { CASE_NUMBER_TEXT, COURT_CASE_TYPE } = CASE_FQNS;
-const { NAME } = CHARGE_FQNS;
-const { FIRST_NAME, LAST_NAME } = PEOPLE_FQNS;
+const {
+  CASE_NUMBER_TEXT,
+  COURT_CASE_TYPE,
+  DATETIME_COMPLETED,
+  FIRST_NAME,
+  LAST_NAME,
+  NAME,
+} = PROPERTY_TYPE_FQNS;
 
 const labelMap :OrderedMap = OrderedMap({
   judge: 'Judge',

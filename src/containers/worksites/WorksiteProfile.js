@@ -22,12 +22,7 @@ import LogoLoader from '../../components/LogoLoader';
 
 import { getWorksite } from './WorksitesActions';
 import { goToRoute } from '../../core/router/RoutingActions';
-import {
-  ADDRESS_FQNS,
-  APP_TYPE_FQNS,
-  CONTACT_INFO_FQNS,
-  WORKSITE_FQNS,
-} from '../../core/edm/constants/FullyQualifiedNames';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { APP, STATE, WORKSITES } from '../../utils/constants/ReduxStateConsts';
 import { getEntityProperties } from '../../utils/DataUtils';
 import { getPersonFullName } from '../../utils/PeopleUtils';
@@ -42,14 +37,15 @@ import { BackNavButton } from '../../components/controls/index';
 import { EMPTY_FIELD } from '../participants/ParticipantsConstants';
 import * as Routes from '../../core/router/Routes';
 
-const { FULL_ADDRESS } = ADDRESS_FQNS;
-const { EMAIL, PHONE_NUMBER } = CONTACT_INFO_FQNS;
 const {
   DATETIME_END,
   DATETIME_START,
   DESCRIPTION,
+  EMAIL,
+  FULL_ADDRESS,
   NAME,
-} = WORKSITE_FQNS;
+  PHONE_NUMBER,
+} = PROPERTY_TYPE_FQNS;
 const {
   ACTIONS,
   CONTACT_EMAIL,

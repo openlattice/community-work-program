@@ -22,16 +22,11 @@ import {
   getPropertyTypeIdFromEdm
 } from '../../utils/DataUtils';
 import { getEntitiesForWorksiteSchedule } from '../../utils/ScheduleUtils';
-import {
-  APP_TYPE_FQNS,
-  INCIDENT_START_DATETIME,
-  DATETIME_END,
-} from '../../core/edm/constants/FullyQualifiedNames';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { APP, STATE, WORKSITES } from '../../utils/constants/ReduxStateConsts';
 import * as Routes from '../../core/router/Routes';
 
 const {
-  getEntityAddressKey,
   getPageSectionKey,
   processEntityData,
   processAssociationEntityData,
@@ -42,6 +37,7 @@ const {
   RELATED_TO,
   WORKSITE,
 } = APP_TYPE_FQNS;
+const { DATETIME_END, INCIDENT_START_DATETIME } = PROPERTY_TYPE_FQNS;
 
 const {
   ACTIONS,

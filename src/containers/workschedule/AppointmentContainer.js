@@ -26,14 +26,14 @@ import {
   STATE,
   WORK_SCHEDULE,
 } from '../../utils/constants/ReduxStateConsts';
-import { ENTITY_KEY_ID, PEOPLE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { OL } from '../../core/style/Colors';
 import { ButtonWrapper } from '../../components/Layout';
 
 const { CHECK_INS_BY_APPOINTMENT } = PARTICIPANT_SCHEDULE;
 const { PARTICIPANT } = PERSON;
 const { PERSON_BY_APPOINTMENT_EKID } = WORK_SCHEDULE;
-const { FIRST_NAME, LAST_NAME } = PEOPLE_FQNS;
+const { ENTITY_KEY_ID, FIRST_NAME, LAST_NAME } = PROPERTY_TYPE_FQNS;
 
 const OuterWrapper = styled.div`
   width: 100%;

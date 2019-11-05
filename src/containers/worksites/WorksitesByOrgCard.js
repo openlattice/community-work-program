@@ -12,7 +12,7 @@ import AddWorksiteModal from './AddWorksiteModal';
 
 import { goToRoute } from '../../core/router/RoutingActions';
 import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
-import { ORGANIZATION_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import {
   SmallSeparator,
   SubtitleWrapper,
@@ -22,7 +22,7 @@ import {
 import { OL } from '../../core/style/Colors';
 import * as Routes from '../../core/router/Routes';
 
-const { DESCRIPTION, ORGANIZATION_NAME } = ORGANIZATION_FQNS;
+const { DESCRIPTION, ORGANIZATION_NAME } = PROPERTY_TYPE_FQNS;
 
 const WORKSITES_COLUMNS = [
   'WORK SITE NAME',

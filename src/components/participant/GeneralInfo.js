@@ -11,7 +11,7 @@ import { ENROLLMENT_STATUS_COLORS, OL } from '../../core/style/Colors';
 import { PersonPhoto, PersonPicture } from '../picture/PersonPicture';
 import { formatAsDate } from '../../utils/DateTimeUtils';
 import { getEntityProperties } from '../../utils/DataUtils';
-import { PEOPLE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { ENROLLMENT_STATUSES } from '../../core/edm/constants/DataModelConsts';
 
 const { getStyleVariation } = StyleUtils;
@@ -20,7 +20,7 @@ const {
   MUGSHOT,
   FIRST_NAME,
   LAST_NAME
-} = PEOPLE_FQNS;
+} = PROPERTY_TYPE_FQNS;
 
 const statusColorVariation = getStyleVariation('status', {
   default: OL.GREY02,

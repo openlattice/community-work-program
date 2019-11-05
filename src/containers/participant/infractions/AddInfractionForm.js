@@ -26,16 +26,7 @@ import {
 } from '../../../utils/DataUtils';
 import { getCombinedDateTime } from '../../../utils/ScheduleUtils';
 import { STATUS_FILTER_OPTIONS } from '../../participants/ParticipantsConstants';
-import {
-  APP_TYPE_FQNS,
-  DATETIME_COMPLETED,
-  DATETIME_END,
-  ENROLLMENT_STATUS_FQNS,
-  INCIDENT_START_DATETIME,
-  INFRACTION_EVENT_FQNS,
-  INFRACTION_FQNS,
-  WORKSITE_FQNS,
-} from '../../../core/edm/constants/FullyQualifiedNames';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import {
   PARTICIPANT_SCHEDULE,
   PERSON_INFRACTIONS,
@@ -70,10 +61,18 @@ const {
   SUBJECT_OF,
   WORKSITE_PLAN,
 } = APP_TYPE_FQNS;
-const { EFFECTIVE_DATE, STATUS } = ENROLLMENT_STATUS_FQNS;
-const { CATEGORY } = INFRACTION_FQNS;
-const { NOTES, TYPE } = INFRACTION_EVENT_FQNS;
-const { NAME } = WORKSITE_FQNS;
+const {
+  CATEGORY,
+  DATETIME_COMPLETED,
+  DATETIME_END,
+  EFFECTIVE_DATE,
+  INCIDENT_START_DATETIME,
+  NAME,
+  NOTES,
+  STATUS,
+  TYPE,
+} = PROPERTY_TYPE_FQNS;
+
 const { INFRACTION_TYPES } = PERSON_INFRACTIONS;
 const {
   WORKSITE_PLANS_LIST,

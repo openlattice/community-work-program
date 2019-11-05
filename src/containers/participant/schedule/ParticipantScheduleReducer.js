@@ -22,12 +22,7 @@ import {
   getPropertyTypeIdFromEdm,
 } from '../../../utils/DataUtils';
 import { PARTICIPANT_SCHEDULE } from '../../../utils/constants/ReduxStateConsts';
-import {
-  DATETIME_END,
-  ENTITY_KEY_ID,
-  INCIDENT_START_DATETIME,
-  WORKSITE_PLAN_FQNS,
-} from '../../../core/edm/constants/FullyQualifiedNames';
+import { PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 
 const {
   ACTIONS,
@@ -41,7 +36,12 @@ const {
   REQUEST_STATE,
   WORK_APPOINTMENTS_BY_WORKSITE_PLAN,
 } = PARTICIPANT_SCHEDULE;
-const { HOURS_WORKED } = WORKSITE_PLAN_FQNS;
+const {
+  DATETIME_END,
+  ENTITY_KEY_ID,
+  INCIDENT_START_DATETIME,
+  HOURS_WORKED,
+} = PROPERTY_TYPE_FQNS;
 
 const INITIAL_STATE :Map<*, *> = fromJS({
   [ACTIONS]: {

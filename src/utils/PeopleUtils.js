@@ -4,13 +4,13 @@ import { faUser } from '@fortawesome/pro-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 import { PersonPhoto, PersonPicture } from '../components/picture/PersonPicture';
-import { PEOPLE_FQNS } from '../core/edm/constants/FullyQualifiedNames';
+import { PROPERTY_TYPE_FQNS } from '../core/edm/constants/FullyQualifiedNames';
 import { EMPTY_FIELD } from '../containers/participants/ParticipantsConstants';
 import { isDefined } from './LangUtils';
 import { getEntityProperties } from './DataUtils';
 import { getImageDataFromEntity } from './BinaryUtils';
 
-const { FIRST_NAME, LAST_NAME, MUGSHOT } = PEOPLE_FQNS;
+const { FIRST_NAME, LAST_NAME, MUGSHOT } = PROPERTY_TYPE_FQNS;
 
 const getPersonFullName = (personEntity :Map) :string => {
 

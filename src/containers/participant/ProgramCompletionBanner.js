@@ -13,12 +13,12 @@ import { DateTime } from 'luxon';
 
 import { getEntityProperties } from '../../utils/DataUtils';
 import { formatNumericalValue } from '../../utils/FormattingUtils';
-import { DATETIME_COMPLETED, PROGRAM_OUTCOME_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { ENROLLMENT_STATUSES } from '../../core/edm/constants/DataModelConsts';
 import { OL } from '../../core/style/Colors';
 import { EMPTY_FIELD } from '../participants/ParticipantsConstants';
 
-const { DESCRIPTION, HOURS_WORKED } = PROGRAM_OUTCOME_FQNS;
+const { DATETIME_COMPLETED, DESCRIPTION, HOURS_WORKED } = PROPERTY_TYPE_FQNS;
 
 const successfulStatuses = [ENROLLMENT_STATUSES.COMPLETED, ENROLLMENT_STATUSES.SUCCESSFUL];
 
