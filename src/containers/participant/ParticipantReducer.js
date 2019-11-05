@@ -424,7 +424,6 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
           const seqAction :SequenceAction = action;
           const successValue :Object = seqAction.value;
           const { newCase } = successValue;
-          console.log('reducer newCase: ', newCase);
 
           return state
             .set(PERSON_CASE, newCase)
