@@ -48,6 +48,8 @@ const {
   CASE_NUMBER_TEXT,
   COMPLETED,
   COURT_CASE_TYPE,
+  DATETIME_COMPLETED,
+  DATETIME_END,
   DATETIME_RECEIVED,
   DOB,
   EFFECTIVE_DATE,
@@ -285,7 +287,7 @@ const mapStateToProps = (state :Map) => ({
   edm: state.get(STATE.EDM),
 });
 
-const mapDispatchToProps = dispatch => ({
+const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
     addParticipant,
   }, dispatch)

@@ -172,7 +172,9 @@ class EditWorksiteInfoForm extends Component<Props> {
         params: { worksiteId: worksiteEKID }
       },
     } = this.props;
-    actions.goToRoute(Routes.WORKSITE_PROFILE.replace(':worksiteId', worksiteEKID));
+    if (worksiteEKID) {
+      actions.goToRoute(Routes.WORKSITE_PROFILE.replace(':worksiteId', worksiteEKID));
+    }
   }
 
   render() {
@@ -244,7 +246,7 @@ const mapStateToProps = (state :Map) => {
   });
 };
 
-const mapDispatchToProps = dispatch => ({
+const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
     getWorksite,
     goToRoute,

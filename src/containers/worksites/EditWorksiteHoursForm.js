@@ -85,7 +85,7 @@ type State = {
 
 class EditWorksiteHoursForm extends Component<Props, State> {
 
-  constructor(props) {
+  constructor(props :Props) {
     super(props);
     const formData = props.scheduleForForm.toJS();
     const prepopulated = !props.scheduleForForm.isEmpty();
@@ -189,7 +189,9 @@ class EditWorksiteHoursForm extends Component<Props, State> {
         params: { worksiteId: worksiteEKID }
       },
     } = this.props;
-    actions.goToRoute(Routes.WORKSITE_PROFILE.replace(':worksiteId', worksiteEKID));
+    if (worksiteEKID) {
+      actions.goToRoute(Routes.WORKSITE_PROFILE.replace(':worksiteId', worksiteEKID));
+    }
   }
 
   render() {

@@ -149,7 +149,9 @@ class WorksiteProfile extends Component<Props> {
         params: { worksiteId: worksiteEKID }
       }
     } = this.props;
-    actions.goToRoute(Routes.EDIT_WORKSITE_PROFILE_INFO.replace(':worksiteId', worksiteEKID));
+    if (worksiteEKID) {
+      actions.goToRoute(Routes.EDIT_WORKSITE_PROFILE_INFO.replace(':worksiteId', worksiteEKID));
+    }
   }
 
   goToEditHoursOfOperation = () => {
@@ -159,7 +161,9 @@ class WorksiteProfile extends Component<Props> {
         params: { worksiteId: worksiteEKID }
       }
     } = this.props;
-    actions.goToRoute(Routes.EDIT_WORKSITE_HOURS.replace(':worksiteId', worksiteEKID));
+    if (worksiteEKID) {
+      actions.goToRoute(Routes.EDIT_WORKSITE_HOURS.replace(':worksiteId', worksiteEKID));
+    }
   }
 
   render() {

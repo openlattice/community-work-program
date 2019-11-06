@@ -29,10 +29,12 @@ class SearchContainer extends Component<Props, State> {
     const { search } = this.props;
 
     this.setState({
-      searchedName: e.target.value
+      // $FlowFixMe
+      searchedName: e.currentTarget.value
     });
 
-    search(e.target.value);
+    // $FlowFixMe
+    search(e.currentTarget.value);
   }
 
   render() {

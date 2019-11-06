@@ -215,6 +215,7 @@ class DashboardContainer extends Component<Props, State> {
       }
       const checkInDeadlineAsISO :string = getDateInISOFormat(checkInDeadline);
       const personStatus :string = enrollmentByParticipant.getIn([personEKID, STATUS, 0]);
+      // $FlowFixMe
       return DateTime.local() > DateTime.fromISO(checkInDeadlineAsISO)
         && personStatus === ENROLLMENT_STATUSES.AWAITING_CHECKIN
         && !violationMap.get(personEKID);

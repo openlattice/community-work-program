@@ -163,6 +163,7 @@ function* editWorksitePlanWorker(action :SequenceAction) :Generator<*, *, *> {
       }
       const { data } :Object = response;
       const { entityKeyIds } :Object = data;
+      // $FlowFixMe
       [worksitePlanStatusEKID] = Object.values(entityKeyIds);
     }
 

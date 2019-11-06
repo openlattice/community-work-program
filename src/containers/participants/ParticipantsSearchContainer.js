@@ -270,6 +270,7 @@ class ParticipantsSearchContainer extends Component<Props, State> {
       if ((!sentEndDateA.isValid && !sentEndDateB.isValid) || (sentEndDateA.hasSame(sentEndDateB, 'millisecond'))) {
         return 0;
       }
+      // $FlowFixMe
       return (sentEndDateA < sentEndDateB) ? 1 : -1;
     });
     return sortedBySentEndDate;

@@ -20,8 +20,9 @@ export function formatStringValueOrValues(rawValue :string | string[]) :string {
   return rawValue.join(', ');
 }
 
-export function formatNumericalValue(rawValue :number) :string {
+export function formatNumericalValue(rawValue :number | string | void) :string {
 
+  if (typeof rawValue === 'string') return rawValue;
   if (!isDefined(rawValue)) return '';
   return (rawValue).toString();
 }

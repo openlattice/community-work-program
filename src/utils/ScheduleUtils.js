@@ -39,6 +39,7 @@ const getRegularlyRepeatingAppointments = (
   const endsOnDateObj :DateTime = DateTime.fromISO(endsOnDate);
 
   const intervalObj :Interval = Interval.fromDateTimes(endDateTimeObj, endsOnDateObj);
+  // $FlowFixMe
   let intervalInUnitsGiven :number = intervalObj.length(units);
   if (isDefined(repetitionInterval) && repetitionInterval !== 1) {
     intervalInUnitsGiven /= repetitionInterval;
@@ -165,16 +166,16 @@ const getSentenceEndDate = (sentenceEndDateTime :string, sentenceDateTime :strin
 const getRemainingDatesInYearByWeekday = () :Object => {
 
   const datesSortedByDays :Object = {
-    1: [],
-    2: [],
-    3: [],
-    4: [],
-    5: [],
-    6: [],
-    7: []
+    [(1).toString()]: [],
+    [(2).toString()]: [],
+    [(3).toString()]: [],
+    [(4).toString()]: [],
+    [(5).toString()]: [],
+    [(6).toString()]: [],
+    [(7).toString()]: []
   };
 
-  const firstDateOfMonth :string = DateTime.local().startOf('month');
+  const firstDateOfMonth :DateTime = DateTime.local().startOf('month');
   const currentYear = DateTime.local().year;
 
   let date = firstDateOfMonth;
@@ -242,7 +243,7 @@ const getWorksiteScheduleFromEntities = (entities :List) :Object => {
 
   entities.forEach((entity :Map) => {
     const startDateTime = entity.getIn([INCIDENT_START_DATETIME, 0]);
-    const { weekday } :number = DateTime.fromISO(startDateTime);
+    const { weekday } = DateTime.fromISO(startDateTime);
     if (!Object.keys(scheduleData[getPageSectionKey(1, weekday)]).length) {
       const endDateTime = entity.getIn([DATETIME_END, 0]);
       scheduleData[getPageSectionKey(1, weekday)][getEntityAddressKey(

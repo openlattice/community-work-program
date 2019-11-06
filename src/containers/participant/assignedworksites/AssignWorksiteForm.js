@@ -54,6 +54,8 @@ const {
   WORKSITE_PLAN,
 } = APP_TYPE_FQNS;
 const {
+  DATETIME,
+  DATETIME_START,
   EFFECTIVE_DATE,
   HOURS_WORKED,
   NAME,
@@ -252,7 +254,7 @@ const mapStateToProps = (state :Map) => ({
   edm: state.get(STATE.EDM),
 });
 
-const mapDispatchToProps = dispatch => ({
+const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
     addWorksitePlan,
   }, dispatch)

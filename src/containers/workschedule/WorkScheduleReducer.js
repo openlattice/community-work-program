@@ -48,7 +48,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [WORKSITE_NAMES_BY_APPOINTMENT_EKID]: Map(),
 });
 
-export default function worksitesReducer(state :Map<*, *> = INITIAL_STATE, action :SequenceAction) :Map<*, *> {
+export default function worksitesReducer(state :Map<*, *> = INITIAL_STATE, action :Object) :Map<*, *> {
 
   switch (action.type) {
 

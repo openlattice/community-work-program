@@ -146,8 +146,9 @@ export default function worksitesReducer(state :Map<*, *> = INITIAL_STATE, actio
             const storedWorksiteEntity :Map = Map(entityData[worksiteESID][0]);
 
             const { associationEntityData } :Object = storedValue;
-            const operatesAssociation = Object.values(associationEntityData)[0];
-            const orgEKID = operatesAssociation[0].srcEntityKeyId;
+            const operatesAssociationArray = (Object.values(associationEntityData)[0] :any);
+            const [operatesAssociation] :any = operatesAssociationArray;
+            const orgEKID = operatesAssociation.srcEntityKeyId;
 
             let newWorksite :Map = Map();
             storedWorksiteEntity.forEach((worksiteValue, id) => {

@@ -40,7 +40,7 @@ const {
   PARTICIPANTS,
   REQUEST_STATE,
 } = PEOPLE;
-const { REQUIRED_HOURS } = PROPERTY_TYPE_FQNS;
+const { ENTITY_KEY_ID, REQUIRED_HOURS } = PROPERTY_TYPE_FQNS;
 
 const DIVERSION_PLAN = 'diversionPlan';
 const PERSON = 'person';

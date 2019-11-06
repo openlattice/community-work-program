@@ -46,7 +46,7 @@ const getAssociationNeighborESID = (neighbor :Map) => (neighbor.getIn([ASSOCIATI
 /* entity data */
 const getFirstNeighborValue = (
   neighborObj :Map,
-  fqn :FullyQualifiedName,
+  fqn :FullyQualifiedName | string,
   defaultValue :string = ''
 ) => neighborObj.getIn(
 
@@ -98,6 +98,7 @@ const sortEntitiesByDateProperty = (
     if (dateA.toISO() === dateB.toISO()) {
       return 0;
     }
+    // $FlowFixMe
     return dateA < dateB ? -1 : 1;
   });
 
@@ -130,7 +131,7 @@ const getSearchTermNotExact = (
   searchString :string
 ) => `${SEARCH_PREFIX}.${propertyTypeId}:${searchString}`;
 
-const getUTCDateRangeSearchString = (PTID :UUID, timeUnits :string, startDate :DateTime, endDate :?DateTime) => {
+const getUTCDateRangeSearchString = (PTID :UUID, timeUnits :any, startDate :DateTime, endDate :?DateTime) => {
   let start = startDate.toUTC().toISO();
   let end;
   if (!endDate) {

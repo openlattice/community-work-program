@@ -16,7 +16,7 @@ import type { RequestState } from 'redux-reqseq';
 import AppointmentContainer from './AppointmentContainer';
 import NoAppointmentsScheduled from './NoAppointmentsScheduled';
 
-import { isDefined } from '../../utils/LangUtils';
+import { isDefined, isNonEmptyArray } from '../../utils/LangUtils';
 import { getEntityKeyId, getEntityProperties, sortEntitiesByDateProperty } from '../../utils/DataUtils';
 import { PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { PARTICIPANT_SCHEDULE, STATE } from '../../utils/constants/ReduxStateConsts';
@@ -55,6 +55,11 @@ class AppointmentListContainer extends Component<Props, State> {
     fullWorkAppointments: List(),
   };
 
+  static defaultProps = {
+    personByAppointmentEKID: undefined,
+    worksitesToInclude: undefined,
+  };
+
   componentDidUpdate(prevProps :Props) {
     const { appointments, editAppointmentsRequestState, isLoading } = this.props;
     if (prevProps.appointments.count() !== appointments.count()
@@ -75,6 +80,7 @@ class AppointmentListContainer extends Component<Props, State> {
     let { worksitesToInclude } = this.props;
 
     if (isDefined(worksitesToInclude)) {
+      // $FlowFixMe
       worksitesToInclude = worksitesToInclude.map((option :Object) => option.label);
     }
 
@@ -95,16 +101,15 @@ class AppointmentListContainer extends Component<Props, State> {
 
       let personName :string = '';
       if (isDefined(personByAppointmentEKID)) {
+        // $FlowFixMe
         const person :Map = personByAppointmentEKID.get(appointmentEKID);
         const { [FIRST_NAME]: firstName, [LAST_NAME]: lastName } = getEntityProperties(person, [FIRST_NAME, LAST_NAME]);
         personName = `${firstName} ${lastName}`;
       }
       const worksiteName :string = worksiteNamesByAppointmentEKID.get(appointmentEKID, EMPTY_FIELD);
 
-      if (isDefined(worksitesToInclude) && worksitesToInclude.length) {
-        if (!worksitesToInclude.includes(worksiteName)) {
-          return;
-        }
+      if (isNonEmptyArray(worksitesToInclude) && !worksitesToInclude.includes(worksiteName)) {
+        return;
       }
 
       const fullWorkAppointment :OrderedMap = fromJS({
@@ -134,12 +139,6 @@ class AppointmentListContainer extends Component<Props, State> {
     );
   }
 }
-
-// $FlowFixMe
-AppointmentListContainer.defaultProps = {
-  personByAppointmentEKID: undefined,
-  worksitesToInclude: undefined,
-};
 
 const mapStateToProps = (state :Map) => {
   const participantSchedule = state.get(STATE.PARTICIPANT_SCHEDULE);

@@ -413,6 +413,7 @@ function* getEnrollmentStatusesWorker(action :SequenceAction) :Generator<*, *, *
         let { [EFFECTIVE_DATE]: storedStatusDate } = getEntityProperties(personEnrollment, [EFFECTIVE_DATE]);
         storedStatusDate = DateTime.fromISO(storedStatusDate);
 
+        // $FlowFixMe
         if (storedStatusDate < mostRecentStatusDate || personEnrollment.count() === 0) {
           personEnrollment = mostRecentStatus;
 

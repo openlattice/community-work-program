@@ -201,8 +201,7 @@ class WorkScheduleContainer extends Component<Props, State> {
     } = this.props;
     const { worksites } = this.state;
     const isLoading :boolean = findAppointmentsRequestState === RequestStates.PENDING;
-    const hasSearched :boolean = findAppointmentsRequestState === RequestStates.SUCCESS
-      || findAppointmentsRequestState === RequestStates.FINALLY;
+    const hasSearched :boolean = findAppointmentsRequestState === RequestStates.SUCCESS;
     const worksitesToInclude :Object[] | void = worksites.get('worksites');
     return (
       <ScheduleOuterWrapper>

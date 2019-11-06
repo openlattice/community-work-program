@@ -1,4 +1,5 @@
 // @flow
+import { Map } from 'immutable';
 
 import { isNonEmptyStringArray } from './LangUtils';
 import { PROPERTY_TYPE_FQNS } from '../core/edm/constants/FullyQualifiedNames';
@@ -10,7 +11,7 @@ const DATA_URL_PREFIX_REGEX = new RegExp(/^data:image\/.*base64,/);
 const removeDataUriPrefix = (value :string) => {
   const match = value.match(DATA_URL_PREFIX_REGEX);
 
-  if (isNonEmptyStringArray(match) && Array.isArray(match)) {
+  if (Array.isArray(match) && isNonEmptyStringArray(match)) {
     const dataUri = match[0];
     return value.slice(dataUri.length);
   }

@@ -52,10 +52,10 @@ type Props = {
   hoursRequired :number | string;
   hoursWorked :number | void;
   person :Map;
-  selected ? :boolean;
-  small ? :boolean;
-  status ? :string | void;
-  tag ? :string;
+  selected :boolean;
+  small :boolean;
+  status :string | void;
+  tag :string | void;
   violationsCount :number | void;
   warningsCount :number | void;
 };
@@ -152,10 +152,16 @@ const TableRow = ({
 };
 
 TableRow.defaultProps = {
+  courtType: undefined,
+  hoursRequired: undefined,
+  hoursWorked: undefined,
+  person: undefined,
   selected: false,
   small: false,
   status: undefined,
   tag: undefined,
+  violationsCount: undefined,
+  warningsCount: undefined,
 };
 
 export default TableRow;
