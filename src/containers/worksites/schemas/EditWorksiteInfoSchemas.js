@@ -140,7 +140,7 @@ const addressSchema = {
   properties: {
     [getPageSectionKey(1, 1)]: {
       type: 'object',
-      title: 'Work site address',
+      title: '',
       properties: {
         [getEntityAddressKey(0, ADDRESS, FULL_ADDRESS)]: {
           type: 'string',
