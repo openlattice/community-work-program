@@ -100,7 +100,7 @@ class EditWorksiteForm extends Component<Props, State> {
 
     return (
       <Card>
-        <CardHeader padding="sm">Edit Worksite Info</CardHeader>
+        <CardHeader padding="sm">Edit Work Site Info</CardHeader>
         <Form
             disabled
             formContext={formContext}
