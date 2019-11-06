@@ -457,6 +457,52 @@ function* editWorksiteContactAndAddressWatcher() :Generator<*, *, *> {
 
 /*
  *
+ * WorksitesActions.editWorksiteContactAndAddress()
+ *
+ */
+
+// function* editWorksiteAddressWorker(action :SequenceAction) :Generator<*, *, *> {
+//
+//   const { id, value } = action;
+//   let response :Object = {};
+//   let newAddressData :Map = Map();
+//
+//   try {
+//     yield put(editWorksiteAddress.request(id, value));
+//
+//     response = yield call(submitPartialReplaceWorker, submitPartialReplace(value));
+//     if (response.error) {
+//       throw response.error;
+//     }
+//     const { entityData } = value;
+//     const app = yield select(getAppFromState);
+//     const addressESID :UUID = getEntitySetIdFromApp(app, ADDRESS);
+//     const edm = yield select(getEdmFromState);
+//
+//     const storedEntities :Map = fromJS(entityData[addressESID]);
+//     storedEntities.forEach((addressValue, propertyTypeId) => {
+//       const propertyTypeFqn = getPropertyFqnFromEdm(edm, propertyTypeId);
+//       newAddressData = newAddressData.set(propertyTypeFqn, addressValue);
+//     });
+//
+//     yield put(editWorksiteAddress.success(id, { newAddressData }));
+//   }
+//   catch (error) {
+//     LOG.error('caught exception in editWorksiteAddressWorker()', error);
+//     yield put(editWorksiteAddress.failure(id, error));
+//   }
+//   finally {
+//     yield put(editWorksiteAddress.finally(id));
+//   }
+// }
+//
+// function* editWorksiteAddressWatcher() :Generator<*, *, *> {
+//
+//   yield takeEvery(EDIT_WORKSITE_ADDRESS, editWorksiteAddressWorker);
+// }
+
+/*
+ *
  * WorksitesActions.getWorksitePlans()
  *
  */
