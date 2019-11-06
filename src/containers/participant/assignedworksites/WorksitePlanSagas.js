@@ -53,9 +53,6 @@ import { getWorkAppointmentsWorker } from '../schedule/ParticipantScheduleSagas'
 import { STATE, WORKSITES } from '../../../utils/constants/ReduxStateConsts';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 
-const { UpdateTypes } = Types;
-const { updateEntityData } = DataApiActions;
-const { updateEntityDataWorker } = DataApiSagas;
 const { searchEntityNeighborsWithFilter } = SearchApiActions;
 const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
 const {
@@ -448,12 +445,11 @@ function* updateHoursWorkedWorker(action :SequenceAction) :Generator<*, *, *> {
           [hoursWorkedPTID]: [hoursWorkedToDate]
         }
       };
+      const entityData :{} = {
+        [worksitePlanESID]: worksitePlanDataToUpdate
+      };
 
-      response = yield call(updateEntityDataWorker, updateEntityData({
-        entitySetId: worksitePlanESID,
-        entities: worksitePlanDataToUpdate,
-        updateType: UpdateTypes.PartialReplace,
-      }));
+      response = yield call(submitPartialReplaceWorker, submitPartialReplace({ entityData }));
       if (response.error) {
         throw response.error;
       }
