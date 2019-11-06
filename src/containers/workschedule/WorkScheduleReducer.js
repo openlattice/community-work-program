@@ -15,7 +15,7 @@ import {
   EDIT_APPOINTMENT,
   deleteAppointment,
   editAppointment,
-} from '../participant/schedule/ParticipantScheduleActions';
+} from '../participant/assignedworksites/WorksitePlanActions';
 import { getEntityKeyId, getPropertyTypeIdFromEdm } from '../../utils/DataUtils';
 import { WORK_SCHEDULE } from '../../utils/constants/ReduxStateConsts';
 import { PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';

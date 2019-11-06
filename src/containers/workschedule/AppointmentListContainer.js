@@ -19,7 +19,7 @@ import NoAppointmentsScheduled from './NoAppointmentsScheduled';
 import { isDefined, isNonEmptyArray } from '../../utils/LangUtils';
 import { getEntityKeyId, getEntityProperties, sortEntitiesByDateProperty } from '../../utils/DataUtils';
 import { PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
-import { PARTICIPANT_SCHEDULE, STATE } from '../../utils/constants/ReduxStateConsts';
+import { WORKSITE_PLANS, STATE } from '../../utils/constants/ReduxStateConsts';
 import { EMPTY_FIELD } from '../participants/ParticipantsConstants';
 
 const {
@@ -29,7 +29,7 @@ const {
   INCIDENT_START_DATETIME,
   LAST_NAME,
 } = PROPERTY_TYPE_FQNS;
-const { ACTIONS, EDIT_APPOINTMENT, REQUEST_STATE } = PARTICIPANT_SCHEDULE;
+const { ACTIONS, EDIT_APPOINTMENT, REQUEST_STATE } = WORKSITE_PLANS;
 
 const OuterWrapper = styled.div`
   width: 100%;
@@ -141,9 +141,9 @@ class AppointmentListContainer extends Component<Props, State> {
 }
 
 const mapStateToProps = (state :Map) => {
-  const participantSchedule = state.get(STATE.PARTICIPANT_SCHEDULE);
+  const worksitePlans = state.get(STATE.WORKSITE_PLANS);
   return ({
-    editAppointmentsRequestState: participantSchedule.getIn([ACTIONS, EDIT_APPOINTMENT, REQUEST_STATE]),
+    editAppointmentsRequestState: worksitePlans.getIn([ACTIONS, EDIT_APPOINTMENT, REQUEST_STATE]),
   });
 };
 

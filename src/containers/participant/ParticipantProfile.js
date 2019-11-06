@@ -47,7 +47,6 @@ import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/Full
 import { ENROLLMENT_STATUSES } from '../../core/edm/constants/DataModelConsts';
 import {
   APP,
-  PARTICIPANT_SCHEDULE,
   PERSON,
   PERSON_INFRACTIONS,
   STATE,
@@ -70,7 +69,6 @@ const {
   STATUS,
 } = PROPERTY_TYPE_FQNS;
 
-const { CHECK_INS_BY_APPOINTMENT, WORK_APPOINTMENTS_BY_WORKSITE_PLAN } = PARTICIPANT_SCHEDULE;
 const {
   ACTIONS,
   ADDRESS,
@@ -93,6 +91,8 @@ const {
 const { VIOLATIONS, WARNINGS } = PERSON_INFRACTIONS;
 const { WORKSITES_LIST } = WORKSITES;
 const {
+  CHECK_INS_BY_APPOINTMENT,
+  WORK_APPOINTMENTS_BY_WORKSITE_PLAN,
   WORKSITES_BY_WORKSITE_PLAN,
   WORKSITE_PLANS_LIST,
   WORKSITE_PLAN_STATUSES,
@@ -589,7 +589,6 @@ class ParticipantProfile extends Component<Props, State> {
 const mapStateToProps = (state :Map<*, *>) => {
   const app = state.get(STATE.APP);
   const infractions = state.get(STATE.INFRACTIONS);
-  const participantSchedule = state.get(STATE.PARTICIPANT_SCHEDULE);
   const person = state.get(STATE.PERSON);
   const worksitePlans = state.get(STATE.WORKSITE_PLANS);
   const worksites = state.get(STATE.WORKSITES);
@@ -598,7 +597,7 @@ const mapStateToProps = (state :Map<*, *>) => {
     [ALL_DIVERSION_PLANS]: person.get(ALL_DIVERSION_PLANS),
     app,
     [CHARGES_FOR_CASE]: person.get(CHARGES_FOR_CASE),
-    [CHECK_INS_BY_APPOINTMENT]: participantSchedule.get(CHECK_INS_BY_APPOINTMENT),
+    [CHECK_INS_BY_APPOINTMENT]: worksitePlans.get(CHECK_INS_BY_APPOINTMENT),
     createNewEnrollmentRequestState: person.getIn([ACTIONS, CREATE_NEW_ENROLLMENT, REQUEST_STATE]),
     [DIVERSION_PLAN]: person.get(DIVERSION_PLAN),
     [EMAIL]: person.get(EMAIL),
@@ -615,7 +614,7 @@ const mapStateToProps = (state :Map<*, *>) => {
     [PROGRAM_OUTCOME]: person.get(PROGRAM_OUTCOME),
     [VIOLATIONS]: infractions.get(VIOLATIONS),
     [WARNINGS]: infractions.get(WARNINGS),
-    [WORK_APPOINTMENTS_BY_WORKSITE_PLAN]: participantSchedule.get(WORK_APPOINTMENTS_BY_WORKSITE_PLAN),
+    [WORK_APPOINTMENTS_BY_WORKSITE_PLAN]: worksitePlans.get(WORK_APPOINTMENTS_BY_WORKSITE_PLAN),
     [WORKSITES_BY_WORKSITE_PLAN]: worksitePlans.get(WORKSITES_BY_WORKSITE_PLAN),
     [WORKSITE_PLANS_LIST]: worksitePlans.get(WORKSITE_PLANS_LIST),
     [WORKSITE_PLAN_STATUSES]: worksitePlans.get(WORKSITE_PLAN_STATUSES),

@@ -27,8 +27,8 @@ import {
   findAppointments,
   getWorksiteAndPersonNames,
 } from './WorkScheduleActions';
-import { getAppointmentCheckIns } from '../participant/schedule/ParticipantScheduleActions';
-import { getAppointmentCheckInsWorker } from '../participant/schedule/ParticipantScheduleSagas';
+import { getAppointmentCheckIns } from '../participant/assignedworksites/WorksitePlanActions';
+import { getAppointmentCheckInsWorker } from '../participant/assignedworksites/WorksitePlanSagas';
 import {
   getEntityKeyId,
   getEntityProperties,

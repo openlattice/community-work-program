@@ -16,7 +16,7 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import type { RequestSequence } from 'redux-reqseq';
 
-import { createWorkAppointments } from './ParticipantScheduleActions';
+import { createWorkAppointments } from '../assignedworksites/WorksitePlanActions';
 import {
   getEntityProperties,
   getEntitySetIdFromApp,

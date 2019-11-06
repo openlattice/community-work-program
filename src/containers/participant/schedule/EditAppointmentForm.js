@@ -1,13 +1,12 @@
 // @flow
 import React, { Component } from 'react';
 import { fromJS, Map } from 'immutable';
-import { DateTime } from 'luxon';
 import { Form, DataProcessingUtils } from 'lattice-fabricate';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import type { RequestSequence } from 'redux-reqseq';
 
-import { editAppointment } from './ParticipantScheduleActions';
+import { editAppointment } from '../assignedworksites/WorksitePlanActions';
 import { schema, uiSchema } from './schemas/EditAppointmentSchemas';
 import { getEntitySetIdFromApp, getPropertyTypeIdFromEdm } from '../../../utils/DataUtils';
 import {
