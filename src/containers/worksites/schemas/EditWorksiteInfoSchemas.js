@@ -108,16 +108,6 @@ const contactsSchema = {
         },
       }
     },
-    [getPageSectionKey(1, 3)]: {
-      type: 'object',
-      title: 'Work site address',
-      properties: {
-        [getEntityAddressKey(0, ADDRESS, FULL_ADDRESS)]: {
-          type: 'string',
-          title: 'Full address',
-        },
-      }
-    }
   },
 };
 
@@ -142,7 +132,27 @@ const contactsUiSchema = {
     },
     'ui:options': { editable: true },
   },
-  [getPageSectionKey(1, 3)]: {
+};
+
+const addressSchema = {
+  type: 'object',
+  title: '',
+  properties: {
+    [getPageSectionKey(1, 1)]: {
+      type: 'object',
+      title: 'Work site address',
+      properties: {
+        [getEntityAddressKey(0, ADDRESS, FULL_ADDRESS)]: {
+          type: 'string',
+          title: 'Full address',
+        },
+      }
+    }
+  },
+};
+
+const addressUiSchema = {
+  [getPageSectionKey(1, 1)]: {
     classNames: 'column-span-12 grid-container',
     [getEntityAddressKey(0, ADDRESS, FULL_ADDRESS)]: {
       classNames: 'column-span-6'
@@ -152,6 +162,8 @@ const contactsUiSchema = {
 };
 
 export {
+  addressSchema,
+  addressUiSchema,
   contactsSchema,
   contactsUiSchema,
   worksiteSchema,
