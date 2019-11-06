@@ -129,6 +129,14 @@ export const PERSON = {
   UPDATE_PERSON_PHOTO: 'updatePersonPhoto',
 };
 
+/* Print Participant */
+
+export const PRINT_PARTICIPANT = {
+  ACTIONS: 'actions',
+  GET_INFO_FOR_PRINT_INFRACTION: 'getInfoForPrintInfraction',
+  REQUEST_STATE: 'requestState',
+};
+
 /* Work Schedule */
 
 export const WORK_SCHEDULE = {

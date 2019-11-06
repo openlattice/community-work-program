@@ -28,7 +28,6 @@ import { DataProcessingUtils } from 'lattice-fabricate';
 import type { SequenceAction } from 'redux-reqseq';
 import type { FQN } from 'lattice';
 
-/* eslint-disable import/no-cycle */
 import Logger from '../../utils/Logger';
 import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../utils/Errors';
 import {

@@ -18,7 +18,7 @@ import type { Match } from 'react-router';
 import LogoLoader from '../../../components/LogoLoader';
 import ViolationHeader from '../../../assets/images/violation_header.png';
 
-import { getInfoForPrintInfraction } from '../infractions/InfractionsActions';
+import { getInfoForPrintInfraction } from './PrintParticipantActions';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { getEntityProperties } from '../../../utils/DataUtils';
 import { getValuesFromEntityList } from '../utils/EditCaseInfoUtils';
@@ -249,7 +249,7 @@ const mapStateToProps = (state) => {
   };
 };
 
-const mapDispatchToProps = dispatch => ({
+const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
     getInfoForPrintInfraction,
   }, dispatch)

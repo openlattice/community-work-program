@@ -12,6 +12,7 @@ import * as EDMSagas from '../edm/EDMSagas';
 import * as InfractionsSagas from '../../containers/participant/infractions/InfractionsSagas';
 import * as ParticipantSagas from '../../containers/participant/ParticipantSagas';
 import * as ParticipantsSagas from '../../containers/participants/ParticipantsSagas';
+import * as PrintParticipantSagas from '../../containers/participant/print/PrintParticipantSagas';
 import * as RoutingSagas from '../router/RoutingSagas';
 import * as WorkScheduleSagas from '../../containers/workschedule/WorkScheduleSagas';
 import * as WorksitePlanSagas from '../../containers/participant/assignedworksites/WorksitePlanSagas';
@@ -49,7 +50,6 @@ export default function* sagas() :Generator<*, *, *> {
     // InfractionsSagas
     fork(InfractionsSagas.addInfractionWatcher),
     fork(InfractionsSagas.deleteInfractionEventWatcher),
-    fork(InfractionsSagas.getInfoForPrintInfractionWatcher),
     fork(InfractionsSagas.editInfractionEventWatcher),
     fork(InfractionsSagas.getInfractionWatcher),
     fork(InfractionsSagas.getInfractionTypesWatcher),
@@ -96,6 +96,9 @@ export default function* sagas() :Generator<*, *, *> {
     fork(ParticipantsSagas.getHoursWorkedWatcher),
     fork(ParticipantsSagas.getInfractionsWatcher),
     fork(ParticipantsSagas.getParticipantsWatcher),
+
+    // PrintParticipantSagas
+    fork(PrintParticipantSagas.getInfoForPrintInfractionWatcher),
 
     // WorkScheduleSagas
     fork(WorkScheduleSagas.findAppointmentsWatcher),
