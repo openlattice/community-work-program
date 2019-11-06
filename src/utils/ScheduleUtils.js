@@ -69,7 +69,7 @@ const getCustomSchedule = (
   startDateTime :string,
   endDateTime :string,
   endsOnDate :string,
-  units :string,
+  units :DurationUnit,
   repetitionInterval :number
 ) => {
 

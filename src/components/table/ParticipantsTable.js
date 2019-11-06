@@ -63,21 +63,21 @@ type Props = {
   bannerText :string;
   columnHeaders :string[];
   config :Object;
-  courtTypeByParticipant :Map;
-  currentDiversionPlansMap :Map;
-  enrollment :Map;
+  courtTypeByParticipant ?:Map;
+  currentDiversionPlansMap ?:Map;
+  enrollment ?:Map;
   handleSelect :(personEKID :string) => void;
-  hours :Map;
-  noShows :List;
+  hours ?:Map;
+  noShows ?:List;
   people :List;
-  selectedSortOption :string;
+  selectedSortOption ?:string;
   small :boolean;
-  sortByColumn :(header :string) => void;
-  tag :string | void;
+  sortByColumn ?:(header :string) => void;
+  tag ?:string;
   totalTableItems :number;
-  violations :Map;
-  warnings :Map;
-  width :string;
+  violations ?:Map;
+  warnings ?:Map;
+  width ?:string;
 };
 
 const ParticipantsTable = ({
@@ -127,11 +127,9 @@ const ParticipantsTable = ({
            * if person not included in violations and/or warnings, but either is required, then return 0
            */
           const violationsCount = isDefined(violations)
-            // $FlowFixMe
             ? violations.get(personEKID, 0)
             : undefined;
           const warningsCount = isDefined(warnings)
-            // $FlowFixMe
             ? warnings.get(personEKID, 0)
             : undefined;
 

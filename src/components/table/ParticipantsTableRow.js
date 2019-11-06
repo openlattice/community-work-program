@@ -46,18 +46,18 @@ const ReportTag = styled(SubtleTag)`
 
 type Props = {
   ageRequired :boolean;
-  courtType :string | void;
+  courtType ?:string;
   dates :Object;
   handleSelect :(personEKID :string) => void;
   hoursRequired :number | string;
-  hoursWorked :number | void;
+  hoursWorked ?:number;
   person :Map;
   selected :boolean;
   small :boolean;
-  status :string | void;
-  tag :string | void;
-  violationsCount :number | void;
-  warningsCount :number | void;
+  status ?:string;
+  tag ?:string;
+  violationsCount ?:number;
+  warningsCount ?:number;
 };
 
 const TableRow = ({

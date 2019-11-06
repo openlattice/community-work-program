@@ -376,7 +376,7 @@ const mapStateToProps = (state :Map<*, *>) => {
   };
 };
 
-const mapDispatchToProps = dispatch => ({
+const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
     getDiversionPlans,
     goToRoute,
