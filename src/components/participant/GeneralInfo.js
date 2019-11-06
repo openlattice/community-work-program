@@ -72,6 +72,7 @@ const InfoRow = styled.div`
   margin: 8px 0;
   padding: 0 0 8px 0;
   width: 100%;
+
   :last-of-type {
     border: none;
   }
@@ -79,7 +80,7 @@ const InfoRow = styled.div`
 
 const Value = styled.div`
   color: ${statusColorVariation};
-  font-weight: ${props => props.fontWeight};
+  font-weight: ${(props) => props.fontWeight};
   text-align: left;
   width: 60%;
 `;

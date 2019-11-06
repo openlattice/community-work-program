@@ -59,9 +59,11 @@ export const HeaderElement = styled.span`
   padding: 12px 30px 12px 0;
   /* border-bottom: 1px solid ${OL.BLACK}; */
   text-align: left;
+
   &:hover {
     cursor: pointer;
   }
+
   &:active {
     color: ${OL.PURPLE03};
   }
@@ -101,19 +103,24 @@ export const Row = styled.div`
   display: table-row;
   padding: 7px 30px;
   border-bottom: 1px solid ${OL.GREY11};
+
   ${Cell}:first-child {
     padding-left: 30px;
   }
+
   ${Cell}:last-child {
     padding-right: 30px;
   }
+
   &:hover {
     cursor: pointer;
     background: ${OL.GREY14};
   }
+
   &:active {
     background-color: ${OL.PURPLE06};
   }
+
   :last-of-type {
     border: none;
   }

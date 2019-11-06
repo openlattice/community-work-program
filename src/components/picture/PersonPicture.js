@@ -11,8 +11,9 @@ export const PersonPhoto = styled.div`
   height: 78px;
   position: relative;
   overflow: hidden;
+
   img {
-      display: inline;
-      margin: 0 auto;
+    display: inline;
+    margin: 0 auto;
   }
 `;
