@@ -11,8 +11,8 @@ import * as DataSagas from './data/DataSagas';
 import * as EDMSagas from '../edm/EDMSagas';
 import * as InfractionsSagas from '../../containers/participant/infractions/InfractionsSagas';
 import * as ParticipantSagas from '../../containers/participant/ParticipantSagas';
-import * as ParticipantScheduleSagas from '../../containers/participant/schedule/ParticipantScheduleSagas';
 import * as ParticipantsSagas from '../../containers/participants/ParticipantsSagas';
+import * as PrintParticipantSagas from '../../containers/participant/print/PrintParticipantSagas';
 import * as RoutingSagas from '../router/RoutingSagas';
 import * as WorkScheduleSagas from '../../containers/workschedule/WorkScheduleSagas';
 import * as WorksitePlanSagas from '../../containers/participant/assignedworksites/WorksitePlanSagas';
@@ -50,7 +50,6 @@ export default function* sagas() :Generator<*, *, *> {
     // InfractionsSagas
     fork(InfractionsSagas.addInfractionWatcher),
     fork(InfractionsSagas.deleteInfractionEventWatcher),
-    fork(InfractionsSagas.getInfoForPrintInfractionWatcher),
     fork(InfractionsSagas.editInfractionEventWatcher),
     fork(InfractionsSagas.getInfractionWatcher),
     fork(InfractionsSagas.getInfractionTypesWatcher),
@@ -90,14 +89,6 @@ export default function* sagas() :Generator<*, *, *> {
     fork(ParticipantSagas.removeChargeFromCaseWatcher),
     fork(ParticipantSagas.updatePersonPhotoWatcher),
 
-    // ParticipantScheduleSagas
-    fork(ParticipantScheduleSagas.checkInForAppointmentWatcher),
-    fork(ParticipantScheduleSagas.createWorkAppointmentsWatcher),
-    fork(ParticipantScheduleSagas.deleteAppointmentWatcher),
-    fork(ParticipantScheduleSagas.editAppointmentWatcher),
-    fork(ParticipantScheduleSagas.getAppointmentCheckInsWatcher),
-    fork(ParticipantScheduleSagas.getWorkAppointmentsWatcher),
-
     // ParticipantsSagas
     fork(ParticipantsSagas.addParticipantWatcher),
     fork(ParticipantsSagas.getCourtTypeWatcher),
@@ -106,6 +97,9 @@ export default function* sagas() :Generator<*, *, *> {
     fork(ParticipantsSagas.getHoursWorkedWatcher),
     fork(ParticipantsSagas.getInfractionsWatcher),
     fork(ParticipantsSagas.getParticipantsWatcher),
+
+    // PrintParticipantSagas
+    fork(PrintParticipantSagas.getInfoForPrintInfractionWatcher),
 
     // WorkScheduleSagas
     fork(WorkScheduleSagas.findAppointmentsWatcher),
@@ -129,10 +123,16 @@ export default function* sagas() :Generator<*, *, *> {
 
     // WorksitePlanSagas
     fork(WorksitePlanSagas.addWorksitePlanWatcher),
+    fork(WorksitePlanSagas.checkInForAppointmentWatcher),
+    fork(WorksitePlanSagas.createWorkAppointmentsWatcher),
+    fork(WorksitePlanSagas.deleteAppointmentWatcher),
+    fork(WorksitePlanSagas.editAppointmentWatcher),
     fork(WorksitePlanSagas.editWorksitePlanWatcher),
+    fork(WorksitePlanSagas.getAppointmentCheckInsWatcher),
+    fork(WorksitePlanSagas.getWorkAppointmentsWatcher),
     fork(WorksitePlanSagas.getWorksiteByWorksitePlanWatcher),
-    fork(WorksitePlanSagas.getWorksitePlansWatcher),
     fork(WorksitePlanSagas.getWorksitePlanStatusesWatcher),
+    fork(WorksitePlanSagas.getWorksitePlansWatcher),
     fork(WorksitePlanSagas.updateHoursWorkedWatcher),
 
     // RoutingSagas

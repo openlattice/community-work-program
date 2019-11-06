@@ -52,27 +52,23 @@ import {
 } from '../../utils/DataUtils';
 import { isDefined } from '../../utils/LangUtils';
 import { PERSON } from '../../utils/constants/ReduxStateConsts';
-import {
-  APP_TYPE_FQNS,
-  CASE_FQNS,
-  DATETIME_END,
-  DIVERSION_PLAN_FQNS,
-  ENTITY_KEY_ID,
-  PEOPLE_FQNS,
-  WORKSITE_PLAN_FQNS,
-} from '../../core/edm/constants/FullyQualifiedNames';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 
 const { COURT_CHARGE_LIST } = APP_TYPE_FQNS;
 const {
+  CASE_NUMBER_TEXT,
   CHECK_IN_DATETIME,
   COMPLETED,
+  COURT_CASE_TYPE,
+  DATETIME_END,
   DATETIME_RECEIVED,
+  ENTITY_KEY_ID,
+  NOTES,
   ORIENTATION_DATETIME,
-} = DIVERSION_PLAN_FQNS;
-const { CASE_NUMBER_TEXT, COURT_CASE_TYPE } = CASE_FQNS;
-const { NOTES } = DIVERSION_PLAN_FQNS;
-const { PERSON_NOTES } = PEOPLE_FQNS;
-const { REQUIRED_HOURS } = WORKSITE_PLAN_FQNS;
+  PERSON_NOTES,
+  REQUIRED_HOURS,
+} = PROPERTY_TYPE_FQNS;
+
 const {
   ACTIONS,
   ADD_CHARGES_TO_CASE,
@@ -533,7 +529,7 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
           if (storedSeqAction) {
 
             const { value } :Object = seqAction;
-            const { peopleESID } = value;
+            const { notesPTID, peopleESID } = value;
 
             const requestValue :Object = storedSeqAction.value;
             const { entityData } :Object = requestValue;
@@ -542,10 +538,11 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
 
             const personEKID = Object.keys(entityData[peopleESID])[0];
             const storedPropertyValueMap = entityData[peopleESID][personEKID];
-            const personNotes = Object.values(storedPropertyValueMap)[0];
+            const notesValue :string[] = storedPropertyValueMap[notesPTID];
+            const [personNotes] = notesValue;
 
             let personNotesPlaceholder = person.get(PERSON_NOTES, 0);
-            personNotesPlaceholder = personNotes[0];
+            personNotesPlaceholder = personNotes;
             person = person.set(PERSON_NOTES, personNotesPlaceholder);
 
             return state

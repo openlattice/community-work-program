@@ -8,7 +8,7 @@ import { bindActionCreators } from 'redux';
 import type { RequestSequence } from 'redux-reqseq';
 
 import { reassignJudge } from '../ParticipantActions';
-import { APP_TYPE_FQNS, ENTITY_KEY_ID } from '../../../core/edm/constants/FullyQualifiedNames';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { judgeSchema, judgeUiSchema } from '../schemas/EditCaseInfoSchemas';
 import { disableJudgeForm, hydrateJudgeSchema } from '../utils/EditCaseInfoUtils';
 import { getEntityKeyId } from '../../../utils/DataUtils';
@@ -24,6 +24,7 @@ const {
   MANUAL_PRETRIAL_COURT_CASES,
   PRESIDES_OVER,
 } = APP_TYPE_FQNS;
+const { ENTITY_KEY_ID } = PROPERTY_TYPE_FQNS;
 
 type Props = {
   actions:{

@@ -10,10 +10,10 @@ import { Cell, Row } from './TableStyledComponents';
 import { formatImmutableValue } from '../../utils/FormattingUtils';
 import { formatAsDate } from '../../utils/DateTimeUtils';
 import { getEntityProperties } from '../../utils/DataUtils';
-import { WORKSITE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { WORKSITE_INFO_CONSTS } from '../../containers/worksites/WorksitesConstants';
 
-const { DATETIME_END, DATETIME_START, NAME } = WORKSITE_FQNS;
+const { DATETIME_END, DATETIME_START, NAME } = PROPERTY_TYPE_FQNS;
 const { PAST, SCHEDULED, TOTAL_HOURS } = WORKSITE_INFO_CONSTS;
 
 type Props = {

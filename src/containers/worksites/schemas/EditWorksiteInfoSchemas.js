@@ -1,31 +1,28 @@
 // @flow
 import { DataProcessingUtils } from 'lattice-fabricate';
 
-import {
-  ADDRESS_FQNS,
-  APP_TYPE_FQNS,
-  CONTACT_INFO_FQNS,
-  PEOPLE_FQNS,
-  WORKSITE_FQNS,
-} from '../../../core/edm/constants/FullyQualifiedNames';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 
 const { getEntityAddressKey, getPageSectionKey } = DataProcessingUtils;
 
-const { FULL_ADDRESS } = ADDRESS_FQNS;
+
 const {
   ADDRESS,
   CONTACT_INFORMATION,
   STAFF,
   WORKSITE,
 } = APP_TYPE_FQNS;
-const { EMAIL, PHONE_NUMBER } = CONTACT_INFO_FQNS;
-const { FIRST_NAME, LAST_NAME } = PEOPLE_FQNS;
 const {
   DATETIME_END,
   DATETIME_START,
   DESCRIPTION,
+  EMAIL,
+  FIRST_NAME,
+  FULL_ADDRESS,
+  LAST_NAME,
   NAME,
-} = WORKSITE_FQNS;
+  PHONE_NUMBER,
+} = PROPERTY_TYPE_FQNS;
 
 const worksiteSchema = {
   type: 'object',

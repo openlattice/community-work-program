@@ -8,7 +8,7 @@ import { bindActionCreators } from 'redux';
 import type { RequestSequence } from 'redux-reqseq';
 
 import { createCase, editPersonCase } from '../ParticipantActions';
-import { APP_TYPE_FQNS, CASE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { caseSchema, caseUiSchema } from '../schemas/EditCaseInfoSchemas';
 import { getEntityProperties } from '../../../utils/DataUtils';
 
@@ -26,7 +26,7 @@ const {
   PEOPLE,
   RELATED_TO,
 } = APP_TYPE_FQNS;
-const { CASE_NUMBER_TEXT, COURT_CASE_TYPE } = CASE_FQNS;
+const { CASE_NUMBER_TEXT, COURT_CASE_TYPE } = PROPERTY_TYPE_FQNS;
 
 type Props = {
   actions:{

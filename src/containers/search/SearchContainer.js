@@ -25,14 +25,14 @@ class SearchContainer extends Component<Props, State> {
     };
   }
 
-  onChange = (e :Event) => {
+  onChange = (e :SyntheticEvent<HTMLInputElement>) => {
     const { search } = this.props;
 
     this.setState({
-      searchedName: e.target.value
+      searchedName: e.currentTarget.value
     });
 
-    search(e.target.value);
+    search(e.currentTarget.value);
   }
 
   render() {

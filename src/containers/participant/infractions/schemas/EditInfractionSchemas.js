@@ -1,16 +1,12 @@
 // @flow
 import { DataProcessingUtils } from 'lattice-fabricate';
 
-import {
-  APP_TYPE_FQNS,
-  DATETIME_COMPLETED,
-  INFRACTION_EVENT_FQNS
-} from '../../../../core/edm/constants/FullyQualifiedNames';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../../core/edm/constants/FullyQualifiedNames';
 import { INFRACTIONS_CONSTS } from '../../../../core/edm/constants/DataModelConsts';
 
 const { getEntityAddressKey, getPageSectionKey } = DataProcessingUtils;
 const { INFRACTION_EVENT } = APP_TYPE_FQNS;
-const { NOTES, TYPE } = INFRACTION_EVENT_FQNS;
+const { DATETIME_COMPLETED, NOTES, TYPE } = PROPERTY_TYPE_FQNS;
 
 const INFRACTION_OPTIONS :string[] = [
   INFRACTIONS_CONSTS.VIOLATION,

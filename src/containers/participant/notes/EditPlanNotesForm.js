@@ -17,10 +17,7 @@ import {
   getEntitySetIdFromApp,
   getPropertyTypeIdFromEdm
 } from '../../../utils/DataUtils';
-import {
-  APP_TYPE_FQNS,
-  DIVERSION_PLAN_FQNS,
-} from '../../../core/edm/constants/FullyQualifiedNames';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { PERSON, STATE } from '../../../utils/constants/ReduxStateConsts';
 import {
   ButtonsRow,
@@ -30,7 +27,7 @@ import {
 } from '../../../components/Layout';
 
 const { DIVERSION_PLAN } = APP_TYPE_FQNS;
-const { NOTES } = DIVERSION_PLAN_FQNS;
+const { NOTES } = PROPERTY_TYPE_FQNS;
 
 const TextAreaWrapper = styled.div`
   min-width: 400px;

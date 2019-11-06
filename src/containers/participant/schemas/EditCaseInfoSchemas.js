@@ -1,13 +1,7 @@
 // @flow
 import { DataProcessingUtils } from 'lattice-fabricate';
 
-import {
-  APP_TYPE_FQNS,
-  CASE_FQNS,
-  DATETIME_COMPLETED,
-  DIVERSION_PLAN_FQNS,
-  ENTITY_KEY_ID,
-} from '../../../core/edm/constants/FullyQualifiedNames';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { COURT_TYPES } from '../../../core/edm/constants/DataModelConsts';
 
 const { getEntityAddressKey, getPageSectionKey } = DataProcessingUtils;
@@ -19,8 +13,13 @@ const {
   JUDGES,
   MANUAL_PRETRIAL_COURT_CASES,
 } = APP_TYPE_FQNS;
-const { CASE_NUMBER_TEXT, COURT_CASE_TYPE } = CASE_FQNS;
-const { REQUIRED_HOURS } = DIVERSION_PLAN_FQNS;
+const {
+  CASE_NUMBER_TEXT,
+  COURT_CASE_TYPE,
+  DATETIME_COMPLETED,
+  ENTITY_KEY_ID,
+  REQUIRED_HOURS,
+} = PROPERTY_TYPE_FQNS;
 
 export const judgeSchema = {
   type: 'object',

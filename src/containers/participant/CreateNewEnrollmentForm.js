@@ -17,14 +17,7 @@ import type { FQN } from 'lattice';
 
 import { createNewEnrollment } from './ParticipantActions';
 import { getEntityKeyId, getEntitySetIdFromApp, getPropertyTypeIdFromEdm } from '../../utils/DataUtils';
-import {
-  APP_TYPE_FQNS,
-  CASE_FQNS,
-  DATETIME_COMPLETED,
-  DATETIME_END,
-  DIVERSION_PLAN_FQNS,
-  ENROLLMENT_STATUS_FQNS,
-} from '../../core/edm/constants/FullyQualifiedNames';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { PERSON, STATE } from '../../utils/constants/ReduxStateConsts';
 import { CWP, ENROLLMENT_STATUSES } from '../../core/edm/constants/DataModelConsts';
 import { courtTypeOptions } from '../participants/ParticipantsConstants';
@@ -50,14 +43,19 @@ const {
   PEOPLE,
   RELATED_TO,
 } = APP_TYPE_FQNS;
-const { CASE_NUMBER_TEXT, COURT_CASE_TYPE } = CASE_FQNS;
 const {
+  CASE_NUMBER_TEXT,
   COMPLETED,
+  COURT_CASE_TYPE,
+  DATETIME_COMPLETED,
+  DATETIME_END,
   DATETIME_RECEIVED,
+  EFFECTIVE_DATE,
   NAME,
-  REQUIRED_HOURS
-} = DIVERSION_PLAN_FQNS;
-const { EFFECTIVE_DATE, STATUS } = ENROLLMENT_STATUS_FQNS;
+  REQUIRED_HOURS,
+  STATUS,
+} = PROPERTY_TYPE_FQNS;
+
 const { PARTICIPANT } = PERSON;
 
 type Props = {
@@ -256,7 +254,7 @@ const mapStateToProps = (state :Map<*, *>) => {
   };
 };
 
-const mapDispatchToProps = dispatch => ({
+const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
     createNewEnrollment,
   }, dispatch)

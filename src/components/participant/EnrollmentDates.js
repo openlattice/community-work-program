@@ -12,7 +12,6 @@ import {
 } from './SectionStyledComponents';
 import { formatAsDate } from '../../utils/DateTimeUtils';
 import { getCheckInDeadline, getSentenceEndDate } from '../../utils/ScheduleUtils';
-import { EMPTY_FIELD } from '../../containers/participants/ParticipantsConstants';
 
 const labelMap :OrderedMap = OrderedMap({
   sentenceDate: 'Sentence date',

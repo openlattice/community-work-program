@@ -60,8 +60,7 @@ class ParticipantWorkScheduleContainer extends Component<Props, State> {
       .toList()
       .flatten(1);
     const worksiteNamesByAppointmentEKID :Map = this.getWorksiteNamesMap();
-    const hasSearched :boolean = getAllParticipantInfoRequestState === RequestStates.SUCCESS
-      || getAllParticipantInfoRequestState.FINALLY;
+    const hasSearched :boolean = getAllParticipantInfoRequestState === RequestStates.SUCCESS;
     return (
       <OuterWrapper>
         <AppointmentListContainer
