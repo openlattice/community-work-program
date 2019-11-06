@@ -11,6 +11,7 @@ import type { Match } from 'react-router';
 
 import EditWorksiteForm from './EditWorksiteForm';
 import EditContactsForm from './EditContactsForm';
+import EditWorksiteAddressForm from './EditWorksiteAddressForm';
 import LogoLoader from '../../components/LogoLoader';
 
 import { getWorksite } from './WorksitesActions';
@@ -177,7 +178,9 @@ class EditWorksiteInfoForm extends Component<Props> {
         params: { worksiteId: worksiteEKID }
       },
     } = this.props;
-    actions.goToRoute(Routes.WORKSITE_PROFILE.replace(':worksiteId', worksiteEKID));
+    if (worksiteEKID) {
+      actions.goToRoute(Routes.WORKSITE_PROFILE.replace(':worksiteId', worksiteEKID));
+    }
   }
 
   render() {
@@ -227,6 +230,12 @@ class EditWorksiteInfoForm extends Component<Props> {
               propertyTypeIds={propertyTypeIds}
               worksite={worksite}
               worksiteAddress={worksiteAddress} />
+          <EditWorksiteAddressForm
+              entityIndexToIdMap={entityIndexToIdMap}
+              entitySetIds={entitySetIds}
+              propertyTypeIds={propertyTypeIds}
+              worksite={worksite}
+              worksiteAddress={worksiteAddress} />
         </CardStack>
       </FormWrapper>
     );
@@ -249,7 +258,7 @@ const mapStateToProps = (state :Map) => {
   });
 };
 
-const mapDispatchToProps = dispatch => ({
+const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
     getWorksite,
     goToRoute,
