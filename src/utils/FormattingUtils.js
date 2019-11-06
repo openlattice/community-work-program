@@ -2,9 +2,9 @@
 import { isImmutable, Map } from 'immutable';
 import isNumber from 'lodash/isNumber';
 import isString from 'lodash/isString';
+import toString from 'lodash/toString';
 
 import {
-  isDefined,
   isEmptyString,
   isNonEmptyString,
   isNonEmptyStringArray
@@ -20,13 +20,6 @@ export function formatStringValueOrValues(rawValue :string | string[]) :string {
   return rawValue.join(', ');
 }
 
-export function formatNumericalValue(rawValue :number | string | void) :string {
-
-  if (typeof rawValue === 'string') return rawValue;
-  if (!isDefined(rawValue)) return '';
-  return (rawValue).toString();
-}
-
 export function formatImmutableValue(immutableMap :Map, property :any, backUpValue :any) :string {
 
   let value = backUpValue;
@@ -36,7 +29,7 @@ export function formatImmutableValue(immutableMap :Map, property :any, backUpVal
       return formatStringValueOrValues(backUpValue);
     }
     if (isNumber(backUpValue)) {
-      return formatNumericalValue(backUpValue);
+      return toString(backUpValue);
     }
     return '';
   }
@@ -47,7 +40,7 @@ export function formatImmutableValue(immutableMap :Map, property :any, backUpVal
   }
 
   if (isNumber(value)) {
-    return formatNumericalValue(value);
+    return toString(value);
   }
 
   return '';
@@ -55,7 +48,7 @@ export function formatImmutableValue(immutableMap :Map, property :any, backUpVal
 
 export function formatPairOfStrings(values :string[]) :string {
 
-  if (!values.length || values.every(v => v === values[0])) return EMPTY_FIELD;
+  if (!values.length || values.every((v) => v === values[0])) return EMPTY_FIELD;
   if (values.length === 1) return values[0];
   return `${values[0]}/${values[1]}`;
 }

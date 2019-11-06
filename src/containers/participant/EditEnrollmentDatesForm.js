@@ -188,6 +188,7 @@ class EditCaseInfoForm extends Component<Props, State> {
     return {
       [CHECK_IN_DATETIME]: getPropertyTypeIdFromEdm(edm, CHECK_IN_DATETIME),
       [DATETIME_END]: getPropertyTypeIdFromEdm(edm, DATETIME_END),
+      [DATETIME_RECEIVED]: getPropertyTypeIdFromEdm(edm, DATETIME_RECEIVED),
       [DATETIME_START]: getPropertyTypeIdFromEdm(edm, DATETIME_START),
       [ORIENTATION_DATETIME]: getPropertyTypeIdFromEdm(edm, ORIENTATION_DATETIME),
     };

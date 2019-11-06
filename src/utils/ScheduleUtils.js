@@ -10,6 +10,7 @@ import {
   fromJS,
   getIn,
 } from 'immutable';
+import type { DurationUnit } from 'luxon';
 
 import { isDefined } from './LangUtils';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../core/edm/constants/FullyQualifiedNames';
@@ -29,7 +30,7 @@ const getRegularlyRepeatingAppointments = (
   startDateTime :string,
   endDateTime :string,
   endsOnDate :string,
-  units :string,
+  units :DurationUnit,
   repetitionInterval ? :number
 ) => {
 
@@ -39,7 +40,6 @@ const getRegularlyRepeatingAppointments = (
   const endsOnDateObj :DateTime = DateTime.fromISO(endsOnDate);
 
   const intervalObj :Interval = Interval.fromDateTimes(endDateTimeObj, endsOnDateObj);
-  // $FlowFixMe
   let intervalInUnitsGiven :number = intervalObj.length(units);
   if (isDefined(repetitionInterval) && repetitionInterval !== 1) {
     intervalInUnitsGiven /= repetitionInterval;
@@ -165,15 +165,17 @@ const getSentenceEndDate = (sentenceEndDateTime :string, sentenceDateTime :strin
 
 const getRemainingDatesInYearByWeekday = () :Object => {
 
+  /* eslint-disable quote-props */
   const datesSortedByDays :Object = {
-    [(1).toString()]: [],
-    [(2).toString()]: [],
-    [(3).toString()]: [],
-    [(4).toString()]: [],
-    [(5).toString()]: [],
-    [(6).toString()]: [],
-    [(7).toString()]: []
+    '1': [],
+    '2': [],
+    '3': [],
+    '4': [],
+    '5': [],
+    '6': [],
+    '7': [],
   };
+  /* eslint-enable */
 
   const firstDateOfMonth :DateTime = DateTime.local().startOf('month');
   const currentYear = DateTime.local().year;

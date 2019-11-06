@@ -26,7 +26,7 @@ const getPersonFullName = (personEntity :Map) :string => {
 
 const getPersonProfilePicture = (person :Map, image :Map) => {
 
-  const defaultIcon :Element<*> = <FontAwesomeIcon icon={faUser} size="6x" color="#D8D8D8" />;
+  const defaultIcon :Element<any> = <FontAwesomeIcon icon={faUser} size="6x" color="#D8D8D8" />;
 
   const { [MUGSHOT]: mugshot } = getEntityProperties(person, [MUGSHOT]);
   if (isDefined(mugshot) && mugshot.length) {

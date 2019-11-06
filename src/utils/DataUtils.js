@@ -89,17 +89,9 @@ const sortEntitiesByDateProperty = (
   datePropertyPath :FQN[]
 ) :List | Map => entityCollection
 
-  .sort((entityObjA :Map, entityObjB :Map) => {
-    const dateA = DateTime.fromISO(entityObjA.getIn(datePropertyPath.concat([0])));
-    const dateB = DateTime.fromISO(entityObjB.getIn(datePropertyPath.concat([0])));
-    if (!dateA.isValid || !dateB.isValid) {
-      return 0;
-    }
-    if (dateA.toISO() === dateB.toISO()) {
-      return 0;
-    }
-    // $FlowFixMe
-    return dateA < dateB ? -1 : 1;
+  .sortBy((entityObj :Map) => {
+    const date = DateTime.fromISO(entityObj.getIn(datePropertyPath.concat([0])));
+    return date.valueOf();
   });
 
 const findEntityPathInMap = (entityMap :Map, entityEKID :UUID) :any[] => {

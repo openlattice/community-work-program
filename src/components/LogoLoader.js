@@ -28,7 +28,7 @@ const Ellipse = styled.div`
   background: #b898ff;
   border-radius: 500px;
   display: block;
-  height: ${(props :Object) => (props.size ? (parseFloat(props.size) * 0.5).toString() : (25).toString())}px;
+  height: ${(props :Object) => (props.size ? props.size * 0.5 : 25)}px;
   opacity: 0;
   transform-origin: center;
   transform: rotate(-45deg);

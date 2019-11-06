@@ -25,15 +25,13 @@ class SearchContainer extends Component<Props, State> {
     };
   }
 
-  onChange = (e :Event) => {
+  onChange = (e :SyntheticEvent<HTMLInputElement>) => {
     const { search } = this.props;
 
     this.setState({
-      // $FlowFixMe
       searchedName: e.currentTarget.value
     });
 
-    // $FlowFixMe
     search(e.currentTarget.value);
   }
 

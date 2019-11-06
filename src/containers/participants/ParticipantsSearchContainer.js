@@ -250,28 +250,10 @@ class ParticipantsSearchContainer extends Component<Props, State> {
   sortBySentenceEndDate = (people :List) => {
     const { currentDiversionPlansByParticipant } = this.props;
 
-    const sortedBySentEndDate :List = people.sort((personA, personB) => {
-      const personAEKID :UUID = getEntityKeyId(personA);
-      const personBEKID :UUID = getEntityKeyId(personB);
-      const { [DATETIME_RECEIVED]: personASentDate } = getEntityProperties(
-        currentDiversionPlansByParticipant.get(personAEKID), [DATETIME_RECEIVED]
-      );
-      const { [DATETIME_RECEIVED]: personBSentDate } = getEntityProperties(
-        currentDiversionPlansByParticipant.get(personBEKID), [DATETIME_RECEIVED]
-      );
-      const sentEndDateA = DateTime.fromISO(personASentDate).plus({ days: 90 });
-      const sentEndDateB = DateTime.fromISO(personBSentDate).plus({ days: 90 });
-      if (sentEndDateB.isValid && !sentEndDateA.isValid) {
-        return -1;
-      }
-      if (sentEndDateA.isValid && !sentEndDateB.isValid) {
-        return 1;
-      }
-      if ((!sentEndDateA.isValid && !sentEndDateB.isValid) || (sentEndDateA.hasSame(sentEndDateB, 'millisecond'))) {
-        return 0;
-      }
-      // $FlowFixMe
-      return (sentEndDateA < sentEndDateB) ? 1 : -1;
+    const sortedBySentEndDate = people.sortBy((person :Map) => {
+      const personEKID :UUID = getEntityKeyId(person);
+      const time = DateTime.fromISO(currentDiversionPlansByParticipant.getIn([personEKID, DATETIME_RECEIVED, 0]));
+      return time.valueOf();
     });
     return sortedBySentEndDate;
   }

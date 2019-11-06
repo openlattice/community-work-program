@@ -1,6 +1,7 @@
 // @flow
 import React from 'react';
 import startCase from 'lodash/startCase';
+import toString from 'lodash/toString';
 import { DateTime } from 'luxon';
 import {
   List,
@@ -17,7 +18,6 @@ import {
   StyledEditButton,
 } from './SectionStyledComponents';
 import { getEntityProperties, sortEntitiesByDateProperty } from '../../utils/DataUtils';
-import { formatNumericalValue } from '../../utils/FormattingUtils';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { EMPTY_FIELD } from '../../containers/participants/ParticipantsConstants';
 
@@ -79,7 +79,7 @@ const CaseInfoSection = ({
     docketNumber: caseNumbers || EMPTY_FIELD,
     charge: chargeName || EMPTY_FIELD,
     chargeDate: chargeDate || EMPTY_FIELD,
-    requiredHours: formatNumericalValue(hours) || EMPTY_FIELD,
+    requiredHours: toString(hours) || EMPTY_FIELD,
   });
   return (
     <SectionWrapper>
