@@ -12,7 +12,6 @@ import {
   addInfraction,
   deleteInfractionEvent,
   editInfractionEvent,
-  getInfoForPrintInfraction,
   getInfraction,
   getInfractionTypes,
   getParticipantInfractions,
@@ -25,24 +24,20 @@ import {
 } from '../../../utils/DataUtils';
 import { PERSON_INFRACTIONS } from '../../../utils/constants/ReduxStateConsts';
 import { INFRACTIONS_CONSTS } from '../../../core/edm/constants/DataModelConsts';
-import {
-  APP_TYPE_FQNS,
-  ENROLLMENT_STATUS_FQNS,
-  ENTITY_KEY_ID,
-  INFRACTION_EVENT_FQNS,
-  INFRACTION_FQNS,
-} from '../../../core/edm/constants/FullyQualifiedNames';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 
 const { WORKSITE_PLAN } = APP_TYPE_FQNS;
-const { STATUS } = ENROLLMENT_STATUS_FQNS;
-const { TYPE } = INFRACTION_EVENT_FQNS;
-const { CATEGORY } = INFRACTION_FQNS;
+const {
+  CATEGORY,
+  ENTITY_KEY_ID,
+  STATUS,
+  TYPE,
+} = PROPERTY_TYPE_FQNS;
 const {
   ACTIONS,
   ADD_INFRACTION_EVENT,
   DELETE_INFRACTION_EVENT,
   EDIT_INFRACTION_EVENT,
-  GET_INFO_FOR_PRINT_INFRACTION,
   GET_INFRACTION,
   GET_INFRACTION_TYPES,
   GET_PARTICIPANT_INFRACTIONS,
@@ -298,28 +293,6 @@ export default function infractionsReducer(state :Map<*, *> = INITIAL_STATE, act
           .setIn([ACTIONS, GET_INFRACTION, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, GET_INFRACTION, action.id])
           .setIn([ACTIONS, GET_INFRACTION, REQUEST_STATE], RequestStates.SUCCESS)
-      });
-    }
-
-    case getInfoForPrintInfraction.case(action.type): {
-
-      return getInfoForPrintInfraction.reducer(state, action, {
-
-        REQUEST: () => state
-          .setIn([ACTIONS, GET_INFO_FOR_PRINT_INFRACTION, action.id], action)
-          .setIn([ACTIONS, GET_INFO_FOR_PRINT_INFRACTION, REQUEST_STATE], RequestStates.PENDING),
-        SUCCESS: () => {
-
-          if (!state.hasIn([ACTIONS, GET_INFO_FOR_PRINT_INFRACTION, action.id])) {
-            return state;
-          }
-
-          return state
-            .setIn([ACTIONS, GET_INFO_FOR_PRINT_INFRACTION, REQUEST_STATE], RequestStates.SUCCESS);
-        },
-        FAILURE: () => state
-          .setIn([ACTIONS, GET_INFO_FOR_PRINT_INFRACTION, REQUEST_STATE], RequestStates.FAILURE),
-        FINALLY: () => state.deleteIn([ACTIONS, GET_INFO_FOR_PRINT_INFRACTION, action.id])
       });
     }
 

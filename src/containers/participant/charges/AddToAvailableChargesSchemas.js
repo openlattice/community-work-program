@@ -1,12 +1,12 @@
 // @flow
 import { DataProcessingUtils } from 'lattice-fabricate';
 
-import { APP_TYPE_FQNS, CHARGE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 
 const { getEntityAddressKey, getPageSectionKey } = DataProcessingUtils;
 
 const { COURT_CHARGE_LIST } = APP_TYPE_FQNS;
-const { NAME, OL_ID } = CHARGE_FQNS;
+const { NAME, OL_ID } = PROPERTY_TYPE_FQNS;
 
 export const schema = {
   type: 'object',

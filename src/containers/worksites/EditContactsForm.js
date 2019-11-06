@@ -1,7 +1,6 @@
 // @flow
 import React, { Component } from 'react';
 import { Map, hasIn } from 'immutable';
-import { DateTime } from 'luxon';
 import { Card, CardHeader } from 'lattice-ui-kit';
 import { Form, DataProcessingUtils } from 'lattice-fabricate';
 import { connect } from 'react-redux';
@@ -9,17 +8,10 @@ import { bindActionCreators } from 'redux';
 import type { RequestSequence } from 'redux-reqseq';
 
 import { addWorksiteContactAndAddress, editWorksiteContactAndAddress } from './WorksitesActions';
-import {
-  ADDRESS_FQNS,
-  APP_TYPE_FQNS,
-  CONTACT_INFO_FQNS,
-  EMPLOYEE_FQNS,
-  PEOPLE_FQNS,
-} from '../../core/edm/constants/FullyQualifiedNames';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { contactsSchema, contactsUiSchema } from './schemas/EditWorksiteInfoSchemas';
 import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
 
-const { FULL_ADDRESS } = ADDRESS_FQNS;
 const {
   ADDRESS,
   CONTACT_INFORMATION,
@@ -31,9 +23,14 @@ const {
   WORKS_AT,
   WORKSITE,
 } = APP_TYPE_FQNS;
-const { EMAIL, PHONE_NUMBER } = CONTACT_INFO_FQNS;
-const { TITLE } = EMPLOYEE_FQNS;
-const { FIRST_NAME, LAST_NAME } = PEOPLE_FQNS;
+const {
+  EMAIL,
+  FIRST_NAME,
+  FULL_ADDRESS,
+  LAST_NAME,
+  PHONE_NUMBER,
+  TITLE,
+} = PROPERTY_TYPE_FQNS;
 
 const {
   getEntityAddressKey,

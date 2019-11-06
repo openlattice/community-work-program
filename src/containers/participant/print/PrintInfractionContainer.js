@@ -18,15 +18,8 @@ import type { Match } from 'react-router';
 import LogoLoader from '../../../components/LogoLoader';
 import ViolationHeader from '../../../assets/images/violation_header.png';
 
-import { getInfoForPrintInfraction } from '../infractions/InfractionsActions';
-import {
-  APP_TYPE_FQNS,
-  CASE_FQNS,
-  DATETIME_COMPLETED,
-  INFRACTION_FQNS,
-  INFRACTION_EVENT_FQNS,
-  PEOPLE_FQNS,
-} from '../../../core/edm/constants/FullyQualifiedNames';
+import { getInfoForPrintInfraction } from './PrintParticipantActions';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { getEntityProperties } from '../../../utils/DataUtils';
 import { getValuesFromEntityList } from '../utils/EditCaseInfoUtils';
 import {
@@ -37,10 +30,15 @@ import {
 } from '../../../utils/constants/ReduxStateConsts';
 
 const { PEOPLE } = APP_TYPE_FQNS;
-const { CASE_NUMBER_TEXT } = CASE_FQNS;
-const { CATEGORY } = INFRACTION_FQNS;
-const { NOTES } = INFRACTION_EVENT_FQNS;
-const { DOB, FIRST_NAME, LAST_NAME } = PEOPLE_FQNS;
+const {
+  CASE_NUMBER_TEXT,
+  CATEGORY,
+  DATETIME_COMPLETED,
+  DOB,
+  FIRST_NAME,
+  LAST_NAME,
+  NOTES,
+} = PROPERTY_TYPE_FQNS;
 const { INITIALIZE_APPLICATION } = APP;
 const {
   ACTIONS,
@@ -251,7 +249,7 @@ const mapStateToProps = (state) => {
   };
 };
 
-const mapDispatchToProps = dispatch => ({
+const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
     getInfoForPrintInfraction,
   }, dispatch)

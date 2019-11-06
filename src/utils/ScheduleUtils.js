@@ -10,14 +10,15 @@ import {
   fromJS,
   getIn,
 } from 'immutable';
+import type { DurationUnit } from 'luxon';
 
 import { isDefined } from './LangUtils';
-import { APP_TYPE_FQNS, DATETIME_END, INCIDENT_START_DATETIME } from '../core/edm/constants/FullyQualifiedNames';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../core/edm/constants/FullyQualifiedNames';
 import { EMPTY_FIELD } from '../containers/participants/ParticipantsConstants';
-import { FEDERAL_HOLIDAYS } from '../containers/worksites/WorksitesConstants';
 
 const { getEntityAddressKey, getPageSectionKey } = DataProcessingUtils;
 const { APPOINTMENT } = APP_TYPE_FQNS;
+const { DATETIME_END, INCIDENT_START_DATETIME } = PROPERTY_TYPE_FQNS;
 
 const getCombinedDateTime = (date :string, time :string) => {
   const datetimeString :string = date.concat(' ', time);
@@ -29,7 +30,7 @@ const getRegularlyRepeatingAppointments = (
   startDateTime :string,
   endDateTime :string,
   endsOnDate :string,
-  units :string,
+  units :DurationUnit,
   repetitionInterval ? :number
 ) => {
 
@@ -68,7 +69,7 @@ const getCustomSchedule = (
   startDateTime :string,
   endDateTime :string,
   endsOnDate :string,
-  units :string,
+  units :DurationUnit,
   repetitionInterval :number
 ) => {
 
@@ -125,9 +126,7 @@ const getInfoFromTimeRange = (timeString :string) :Object => {
 const get24HourTimeFromString = (timeString :string) :string => {
   /* https://moment.github.io/luxon/docs/manual/parsing.html#table-of-tokens */
   const inputFormat :string = 'h mm a';
-  const time :DateTime = DateTime.fromFormat(timeString, inputFormat).toLocaleString(DateTime.TIME_SIMPLE);
-  const timeIn24Hour :string = time.toLowerCase().split(' ').join('');
-  return timeIn24Hour;
+  return DateTime.fromFormat(timeString, inputFormat).toLocaleString(DateTime.TIME_24_SIMPLE);
 };
 
 const getDateInISOFormat = (dateString :string) :string => (
@@ -166,17 +165,19 @@ const getSentenceEndDate = (sentenceEndDateTime :string, sentenceDateTime :strin
 
 const getRemainingDatesInYearByWeekday = () :Object => {
 
+  /* eslint-disable quote-props */
   const datesSortedByDays :Object = {
-    1: [],
-    2: [],
-    3: [],
-    4: [],
-    5: [],
-    6: [],
-    7: []
+    '1': [],
+    '2': [],
+    '3': [],
+    '4': [],
+    '5': [],
+    '6': [],
+    '7': [],
   };
+  /* eslint-enable */
 
-  const firstDateOfMonth :string = DateTime.local().startOf('month');
+  const firstDateOfMonth :DateTime = DateTime.local().startOf('month');
   const currentYear = DateTime.local().year;
 
   let date = firstDateOfMonth;
@@ -244,7 +245,7 @@ const getWorksiteScheduleFromEntities = (entities :List) :Object => {
 
   entities.forEach((entity :Map) => {
     const startDateTime = entity.getIn([INCIDENT_START_DATETIME, 0]);
-    const { weekday } :number = DateTime.fromISO(startDateTime);
+    const { weekday } = DateTime.fromISO(startDateTime);
     if (!Object.keys(scheduleData[getPageSectionKey(1, weekday)]).length) {
       const endDateTime = entity.getIn([DATETIME_END, 0]);
       scheduleData[getPageSectionKey(1, weekday)][getEntityAddressKey(

@@ -15,7 +15,6 @@ import type { SequenceAction } from 'redux-reqseq';
 import Logger from '../../../utils/Logger';
 import { ERR_ACTION_VALUE_NOT_DEFINED, ERR_ACTION_VALUE_TYPE, ERR_WORKER_SAGA } from '../../../utils/Errors';
 import { isDefined } from '../../../utils/LangUtils';
-import { isValidUUID } from '../../../utils/ValidationUtils';
 import {
   CREATE_OR_REPLACE_ASSOCIATION,
   DELETE_ENTITIES,

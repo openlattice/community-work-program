@@ -9,7 +9,7 @@ import { bindActionCreators } from 'redux';
 import type { RequestSequence } from 'redux-reqseq';
 
 import { editWorksite } from './WorksitesActions';
-import { APP_TYPE_FQNS, WORKSITE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { worksiteSchema, worksiteUiSchema } from './schemas/EditWorksiteInfoSchemas';
 import { getEntityProperties } from '../../utils/DataUtils';
 
@@ -19,7 +19,7 @@ const {
   DATETIME_START,
   DESCRIPTION,
   NAME,
-} = WORKSITE_FQNS;
+} = PROPERTY_TYPE_FQNS;
 
 const {
   getEntityAddressKey,

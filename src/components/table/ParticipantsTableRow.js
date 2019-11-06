@@ -4,15 +4,15 @@
 
 import React from 'react';
 import styled from 'styled-components';
+import toString from 'lodash/toString';
 import { List, Map } from 'immutable';
 import { Tag } from 'lattice-ui-kit';
 import { faUserCircle } from '@fortawesome/pro-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 import { PersonPicture } from '../picture/PersonPicture';
-import { formatNumericalValue } from '../../utils/FormattingUtils';
 import { calculateAge, formatAsDate } from '../../utils/DateTimeUtils';
-import { ENTITY_KEY_ID, PEOPLE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { getEntityProperties } from '../../utils/DataUtils';
 import { getPersonFullName } from '../../utils/PeopleUtils';
 import { isDefined } from '../../utils/LangUtils';
@@ -25,7 +25,12 @@ import { ENROLLMENT_STATUSES } from '../../core/edm/constants/DataModelConsts';
 import { OL } from '../../core/style/Colors';
 import { TAGS } from '../../containers/dashboard/DashboardConstants';
 
-const { DOB, MUGSHOT, PICTURE } = PEOPLE_FQNS;
+const {
+  DOB,
+  ENTITY_KEY_ID,
+  MUGSHOT,
+  PICTURE,
+} = PROPERTY_TYPE_FQNS;
 
 const SubtleTag = styled(Tag)`
   background-color: ${OL.WHITE};
@@ -41,18 +46,18 @@ const ReportTag = styled(SubtleTag)`
 
 type Props = {
   ageRequired :boolean;
-  courtType :string | void;
+  courtType ?:string;
   dates :Object;
   handleSelect :(personEKID :string) => void;
   hoursRequired :number | string;
-  hoursWorked :number | void;
+  hoursWorked ?:number;
   person :Map;
-  selected ? :boolean;
-  small ? :boolean;
-  status ? :string | void;
-  tag ? :string;
-  violationsCount :number | void;
-  warningsCount :number | void;
+  selected :boolean;
+  small :boolean;
+  status ?:string;
+  tag ?:string;
+  violationsCount ?:number;
+  warningsCount ?:number;
 };
 
 const TableRow = ({
@@ -94,19 +99,19 @@ const TableRow = ({
 
     cellData = List().withMutations((list :List) => {
       list.push(getPersonFullName(person));
-      if (ageRequired) list.push(formatNumericalValue(calculateAge(dateOfBirth)));
+      if (ageRequired) list.push(toString(calculateAge(dateOfBirth)));
       if (isDefined(startDate)) list.push(formatAsDate(startDate));
       if (isDefined(sentenceDate)) list.push(formatAsDate(sentenceDate));
       if (isDefined(enrollmentDeadline)) list.push(enrollmentDeadline);
       if (isDefined(sentenceEndDate)) list.push(sentenceEndDate);
       if (isDefined(status)) list.push(status);
-      if (isDefined(warningsCount)) list.push(formatNumericalValue(warningsCount));
-      if (isDefined(violationsCount)) list.push(formatNumericalValue(violationsCount));
+      if (isDefined(warningsCount)) list.push(toString(warningsCount));
+      if (isDefined(violationsCount)) list.push(toString(violationsCount));
       if (isDefined(hoursWorked) && isDefined(hoursRequired)) {
         if (!hoursWorked && !hoursRequired) list.push('');
-        else list.push(`${formatNumericalValue(hoursWorked)} / ${(formatNumericalValue(hoursRequired))}`);
+        else list.push(`${toString(hoursWorked)} / ${(toString(hoursRequired))}`);
       }
-      if (!isDefined(hoursWorked) && isDefined(hoursRequired)) list.push(formatNumericalValue(hoursRequired));
+      if (!isDefined(hoursWorked) && isDefined(hoursRequired)) list.push(toString(hoursRequired));
       if (isDefined(courtType)) list.push(courtType);
       if (isDefined(tag) || (isDefined(violationsCount) && !isDefined(status))) list.push('');
     });
@@ -147,10 +152,16 @@ const TableRow = ({
 };
 
 TableRow.defaultProps = {
+  courtType: undefined,
+  hoursRequired: undefined,
+  hoursWorked: undefined,
+  person: undefined,
   selected: false,
   small: false,
   status: undefined,
   tag: undefined,
+  violationsCount: undefined,
+  warningsCount: undefined,
 };
 
 export default TableRow;

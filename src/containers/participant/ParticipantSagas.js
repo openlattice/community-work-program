@@ -129,14 +129,7 @@ import {
 import { isDefined } from '../../utils/LangUtils';
 import { getCombinedDateTime } from '../../utils/ScheduleUtils';
 import { PERSON, STATE } from '../../utils/constants/ReduxStateConsts';
-import {
-  APP_TYPE_FQNS,
-  CONTACT_INFO_FQNS,
-  DATETIME_COMPLETED,
-  ENROLLMENT_STATUS_FQNS,
-  ENTITY_KEY_ID,
-  WORKSITE_PLAN_FQNS,
-} from '../../core/edm/constants/FullyQualifiedNames';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { ASSOCIATION_DETAILS } from '../../core/edm/constants/DataModelConsts';
 
 const { getEntityData, getEntitySetData } = DataApiActions;
@@ -162,16 +155,19 @@ const {
   REGISTERED_FOR,
 } = APP_TYPE_FQNS;
 const {
+  DATETIME_COMPLETED,
+  EFFECTIVE_DATE,
   EMAIL,
+  ENTITY_KEY_ID,
+  PERSON_NOTES,
   PHONE_NUMBER,
   PREFERRED,
-} = CONTACT_INFO_FQNS;
-const { EFFECTIVE_DATE } = ENROLLMENT_STATUS_FQNS;
-const { REQUIRED_HOURS } = WORKSITE_PLAN_FQNS;
+  REQUIRED_HOURS,
+} = PROPERTY_TYPE_FQNS;
 
-const getAppFromState = state => state.get(STATE.APP, Map());
-const getEdmFromState = state => state.get(STATE.EDM, Map());
-const getPersonFromState = state => state.get(STATE.PERSON, Map());
+const getAppFromState = (state) => state.get(STATE.APP, Map());
+const getEdmFromState = (state) => state.get(STATE.EDM, Map());
+const getPersonFromState = (state) => state.get(STATE.PERSON, Map());
 
 const LOG = new Logger('ParticipantSagas');
 
@@ -762,8 +758,9 @@ function* editPersonNotesWorker(action :SequenceAction) :Generator<*, *, *> {
     const app = yield select(getAppFromState);
     const peopleESID = getEntitySetIdFromApp(app, PEOPLE);
     const edm = yield select(getEdmFromState);
+    const notesPTID = getPropertyTypeIdFromEdm(edm, PERSON_NOTES);
 
-    yield put(editPersonNotes.success(id, { edm, peopleESID }));
+    yield put(editPersonNotes.success(id, { edm, notesPTID, peopleESID }));
   }
   catch (error) {
     workerResponse.error = error;
@@ -1914,10 +1911,7 @@ function* getParticipantCasesWatcher() :Generator<*, *, *> {
 function* getPersonPhotoWorker(action :SequenceAction) :Generator<*, *, *> {
 
   const { id, value } = action;
-  if (value === null || value === undefined) {
-    yield put(getPersonPhoto.failure(id, ERR_ACTION_VALUE_NOT_DEFINED));
-    return;
-  }
+  if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
   const workerResponse :Object = {};
   let response :Object = {};
   let personPhoto :Map = Map();
@@ -1990,7 +1984,7 @@ function* getInfoForEditCaseWorker(action :SequenceAction) :Generator<*, *, *> {
       call(getChargesWorker, getCharges()),
     ]);
     const responseError = workerResponses.reduce(
-      (error, workerResponse) => (error ? error : workerResponse.error),
+      (error, workerResponse) => error || workerResponse.error,
       undefined,
     );
     if (responseError) {
@@ -2037,7 +2031,7 @@ function* getInfoForEditPersonWorker(action :SequenceAction) :Generator<*, *, *>
       call(getParticipantAddressWorker, getParticipantAddress({ personEKID })),
     ]);
     const responseError = workerResponses.reduce(
-      (error, workerResponse) => (error ? error : workerResponse.error),
+      (error, workerResponse) => error || workerResponse.error,
       undefined,
     );
     if (responseError) {
@@ -2089,7 +2083,7 @@ function* getAllParticipantInfoWorker(action :SequenceAction) :Generator<*, *, *
       call(getWorksitesWorker, getWorksites()),
     ]);
     const responseError = workerResponses.reduce(
-      (error, workerResponse) => (error ? error : workerResponse.error),
+      (error, workerResponse) => error || workerResponse.error,
       undefined,
     );
     if (responseError) {

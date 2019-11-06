@@ -10,9 +10,9 @@ import EditWorksitePlanForm from './EditWorksitePlanForm';
 
 import { getEntityKeyId } from '../../../utils/DataUtils';
 import { STATE, WORKSITE_PLANS } from '../../../utils/constants/ReduxStateConsts';
-import { WORKSITE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
+import { PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 
-const { NAME } = WORKSITE_FQNS;
+const { NAME } = PROPERTY_TYPE_FQNS;
 const {
   ACTIONS,
   EDIT_WORKSITE_PLAN,

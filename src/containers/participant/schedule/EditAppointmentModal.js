@@ -8,9 +8,9 @@ import type { RequestState } from 'redux-reqseq';
 
 import EditAppointmentForm from './EditAppointmentForm';
 
-import { PARTICIPANT_SCHEDULE, STATE } from '../../../utils/constants/ReduxStateConsts';
+import { WORKSITE_PLANS, STATE } from '../../../utils/constants/ReduxStateConsts';
 
-const { ACTIONS, EDIT_APPOINTMENT, REQUEST_STATE } = PARTICIPANT_SCHEDULE;
+const { ACTIONS, EDIT_APPOINTMENT, REQUEST_STATE } = WORKSITE_PLANS;
 
 type Props = {
   appointment :Map;
@@ -60,7 +60,7 @@ class EditAppointmentModal extends Component<Props> {
 
 const mapStateToProps = (state :Map) => ({
   editAppointmentRequestState: state
-    .getIn([STATE.PARTICIPANT_SCHEDULE, ACTIONS, EDIT_APPOINTMENT, REQUEST_STATE]),
+    .getIn([STATE.WORKSITE_PLANS, ACTIONS, EDIT_APPOINTMENT, REQUEST_STATE]),
 });
 
 // $FlowFixMe

@@ -1,13 +1,12 @@
 // @flow
 import React, { Component } from 'react';
 import { fromJS, Map } from 'immutable';
-import { DateTime } from 'luxon';
 import { Form, DataProcessingUtils } from 'lattice-fabricate';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import type { RequestSequence } from 'redux-reqseq';
 
-import { editAppointment } from './ParticipantScheduleActions';
+import { editAppointment } from '../assignedworksites/WorksitePlanActions';
 import { schema, uiSchema } from './schemas/EditAppointmentSchemas';
 import { getEntitySetIdFromApp, getPropertyTypeIdFromEdm } from '../../../utils/DataUtils';
 import {
@@ -16,11 +15,7 @@ import {
   getDateInISOFormat,
   getInfoFromTimeRange,
 } from '../../../utils/ScheduleUtils';
-import {
-  APP_TYPE_FQNS,
-  DATETIME_END,
-  INCIDENT_START_DATETIME
-} from '../../../core/edm/constants/FullyQualifiedNames';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { STATE } from '../../../utils/constants/ReduxStateConsts';
 
 const {
@@ -30,6 +25,7 @@ const {
 } = DataProcessingUtils;
 
 const { APPOINTMENT } = APP_TYPE_FQNS;
+const { DATETIME_END, INCIDENT_START_DATETIME } = PROPERTY_TYPE_FQNS;
 
 type Props = {
   actions:{
@@ -157,7 +153,7 @@ const mapStateToProps = (state :Map) => {
   });
 };
 
-const mapDispatchToProps = dispatch => ({
+const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
     editAppointment,
   }, dispatch)

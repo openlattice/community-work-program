@@ -20,12 +20,7 @@ import { addNewDiversionPlanStatus, markDiversionPlanAsComplete } from './Partic
 import { getEntityKeyId, getEntitySetIdFromApp, getPropertyTypeIdFromEdm } from '../../utils/DataUtils';
 import { getCombinedDateTime } from '../../utils/ScheduleUtils';
 import { STATUS_FILTER_OPTIONS } from '../participants/ParticipantsConstants';
-import {
-  APP_TYPE_FQNS,
-  DATETIME_COMPLETED,
-  ENROLLMENT_STATUS_FQNS,
-  PROGRAM_OUTCOME_FQNS,
-} from '../../core/edm/constants/FullyQualifiedNames';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { PERSON, STATE, WORKSITE_PLANS } from '../../utils/constants/ReduxStateConsts';
 import { ENROLLMENT_STATUSES, WORKSITE_ENROLLMENT_STATUSES } from '../../core/edm/constants/DataModelConsts';
 import {
@@ -49,8 +44,14 @@ const {
   RESULTS_IN,
   WORKSITE_PLAN,
 } = APP_TYPE_FQNS;
-const { EFFECTIVE_DATE, STATUS } = ENROLLMENT_STATUS_FQNS;
-const { COMPLETED, DESCRIPTION, HOURS_WORKED } = PROGRAM_OUTCOME_FQNS;
+const {
+  COMPLETED,
+  DATETIME_COMPLETED,
+  DESCRIPTION,
+  EFFECTIVE_DATE,
+  HOURS_WORKED,
+  STATUS,
+} = PROPERTY_TYPE_FQNS;
 
 const ENROLLMENT_STATUS_OPTIONS :Object[] = STATUS_FILTER_OPTIONS
   .slice(1)
@@ -316,7 +317,7 @@ const mapStateToProps = (state :Map) => ({
   worksitePlans: state.getIn([STATE.WORKSITE_PLANS, WORKSITE_PLANS.WORKSITE_PLANS_LIST]),
 });
 
-const mapDispatchToProps = dispatch => ({
+const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
     addNewDiversionPlanStatus,
     markDiversionPlanAsComplete,

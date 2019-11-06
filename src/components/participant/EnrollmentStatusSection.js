@@ -1,6 +1,7 @@
 // @flow
 import React, { useState } from 'react';
 import styled from 'styled-components';
+import toString from 'lodash/toString';
 import {
   fromJS,
   List,
@@ -25,13 +26,12 @@ import {
   StyledEditButton,
 } from './SectionStyledComponents';
 import { getEntityProperties } from '../../utils/DataUtils';
-import { formatNumericalValue } from '../../utils/FormattingUtils';
-import { ENROLLMENT_STATUS_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { ENROLLMENT_STATUSES } from '../../core/edm/constants/DataModelConsts';
 import { EMPTY_FIELD } from '../../containers/participants/ParticipantsConstants';
 import { ENROLLMENT_STATUS_COLORS, OL } from '../../core/style/Colors';
 
-const { STATUS } = ENROLLMENT_STATUS_FQNS;
+const { STATUS } = PROPERTY_TYPE_FQNS;
 const { getStyleVariation } = StyleUtils;
 
 const statusColorVariation = getStyleVariation('status', {
@@ -82,8 +82,8 @@ const EnrollmentStatusSection = ({
   const { [STATUS]: status } = getEntityProperties(enrollmentStatus, [STATUS]);
 
   const data :Map = fromJS({
-    warnings: formatNumericalValue(warnings.count()) || EMPTY_FIELD,
-    violations: formatNumericalValue(violations.count()) || EMPTY_FIELD,
+    warnings: toString(warnings.count()) || EMPTY_FIELD,
+    violations: toString(violations.count()) || EMPTY_FIELD,
   });
 
   return (

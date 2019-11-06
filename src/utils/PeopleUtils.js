@@ -1,16 +1,18 @@
 // @flow
 import React from 'react';
+import { Map } from 'immutable';
 import { faUser } from '@fortawesome/pro-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import type { Element } from 'react';
 
 import { PersonPhoto, PersonPicture } from '../components/picture/PersonPicture';
-import { PEOPLE_FQNS } from '../core/edm/constants/FullyQualifiedNames';
+import { PROPERTY_TYPE_FQNS } from '../core/edm/constants/FullyQualifiedNames';
 import { EMPTY_FIELD } from '../containers/participants/ParticipantsConstants';
 import { isDefined } from './LangUtils';
 import { getEntityProperties } from './DataUtils';
 import { getImageDataFromEntity } from './BinaryUtils';
 
-const { FIRST_NAME, LAST_NAME, MUGSHOT } = PEOPLE_FQNS;
+const { FIRST_NAME, LAST_NAME, MUGSHOT } = PROPERTY_TYPE_FQNS;
 
 const getPersonFullName = (personEntity :Map) :string => {
 
@@ -24,7 +26,7 @@ const getPersonFullName = (personEntity :Map) :string => {
 
 const getPersonProfilePicture = (person :Map, image :Map) => {
 
-  const defaultIcon :React.Element = <FontAwesomeIcon icon={faUser} size="6x" color="#D8D8D8" />;
+  const defaultIcon :Element<any> = <FontAwesomeIcon icon={faUser} size="6x" color="#D8D8D8" />;
 
   const { [MUGSHOT]: mugshot } = getEntityProperties(person, [MUGSHOT]);
   if (isDefined(mugshot) && mugshot.length) {
