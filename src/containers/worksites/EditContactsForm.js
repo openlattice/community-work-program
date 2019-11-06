@@ -193,7 +193,7 @@ class EditContactsForm extends Component<Props, State> {
 
     return (
       <Card>
-        <CardHeader padding="sm">Edit Work Site Contacts</CardHeader>
+        <CardHeader mode="primary" padding="sm">Edit Work Site Contacts</CardHeader>
         <Form
             disabled={prepopulated}
             formContext={formContext}

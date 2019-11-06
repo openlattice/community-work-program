@@ -100,7 +100,7 @@ class EditWorksiteForm extends Component<Props, State> {
 
     return (
       <Card>
-        <CardHeader padding="sm">Edit Work Site Info</CardHeader>
+        <CardHeader mode="primary" padding="sm">Edit Work Site Info</CardHeader>
         <Form
             disabled
             formContext={formContext}
@@ -112,7 +112,7 @@ class EditWorksiteForm extends Component<Props, State> {
   }
 }
 
-const mapDispatchToProps = dispatch => ({
+const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
     editWorksite,
   }, dispatch)
