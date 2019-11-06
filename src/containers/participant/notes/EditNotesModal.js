@@ -3,9 +3,10 @@ import React, { Component } from 'react';
 import { Modal } from 'lattice-ui-kit';
 import { RequestStates } from 'redux-reqseq';
 import type { RequestState } from 'redux-reqseq';
+import type { ComponentType } from 'react';
 
 type Props = {
-  editForm :React.Node;
+  editForm :ComponentType<*>;
   editRequestState :RequestState;
   isOpen :boolean;
   onClose :() => void;

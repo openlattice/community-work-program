@@ -6,32 +6,33 @@ import React from 'react';
 import styled, { keyframes } from 'styled-components';
 
 const KeyFrames = keyframes`
-  0%{
+  0% {
     transform: scale(0.5) rotate(-45deg);
     opacity: 0;
   }
+
   50% {
     transform: scale(1.2) rotate(-45deg);
     opacity: 0.75;
   }
-  100%{
+
+  100% {
     transform: scale(0.5) rotate(-45deg);
     opacity: 0;
   }
 `;
 
 const Ellipse = styled.div`
-  display: block;
-  border-radius: 50%;
-  transform-origin: center;
-  transform: rotate(-45deg);
-  width: ${props => (props.size ? props.size : 50)}px;
-  height: ${props => (props.size ? (props.size * 0.5) : 25)}px;
-  border-radius: 500px;
-  background: #b898ff;
-  opacity: 0;
   animation: ${KeyFrames} 3s ease-in-out 3s infinite;
   animation-delay: 0.3s;
+  background: #b898ff;
+  border-radius: 500px;
+  display: block;
+  height: ${(props :Object) => (props.size ? props.size * 0.5 : 25)}px;
+  opacity: 0;
+  transform-origin: center;
+  transform: rotate(-45deg);
+  width: ${(props :Object) => (props.size ? props.size : (50).toString())}px;
 `;
 
 const EllipseTop = styled(Ellipse)`
@@ -44,17 +45,16 @@ const EllipseBottom = styled(Ellipse)`
 
 
 const LoadingText = styled.div`
-  margin-top: 30px;
-  width: 100%;
   font-size: 16px;
+  margin-bottom: 20%;
+  margin-top: 30px;
   text-align: center;
   width: 100%;
-  margin-bottom: 20%;
 `;
 
 const Container = styled.div`
   width: 100%;
-  min-height: ${props => (props.size ? (props.size * 1.5) : 75)}px;
+  min-height: ${(props :Object) => (props.size ? (parseFloat(props.size) * 1.5).toString() : (75).toString())}px;
   margin-top: 20%;
   display: flex;
   flex-direction: column;

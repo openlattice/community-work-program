@@ -24,7 +24,6 @@ const ToolBarInnerWrapper = styled.div`
   height: 100%;
   max-width: ${APP_CONTAINER_MAX_WIDTH}px;
   min-width: ${APP_CONTAINER_WIDTH}px;
-  padding: ${APP_CONTENT_PADDING}px;
   display: flex;
   flex: 1 0 auto;
   justify-content: space-between;

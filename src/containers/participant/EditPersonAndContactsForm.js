@@ -41,13 +41,7 @@ import { BackNavButton } from '../../components/controls/index';
 import { PersonPhoto, PersonPicture } from '../../components/picture/PersonPicture';
 import { PARTICIPANT_PROFILE_WIDTH } from '../../core/style/Sizes';
 import { OL } from '../../core/style/Colors';
-import {
-  ADDRESS_FQNS,
-  APP_TYPE_FQNS,
-  CONTACT_INFO_FQNS,
-  IMAGE_FQNS,
-  PEOPLE_FQNS,
-} from '../../core/edm/constants/FullyQualifiedNames';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { APP, PERSON, STATE } from '../../utils/constants/ReduxStateConsts';
 import * as Routes from '../../core/router/Routes';
 
@@ -62,7 +56,6 @@ const {
   replaceEntityAddressKeys,
 } = DataProcessingUtils;
 
-const { FULL_ADDRESS } = ADDRESS_FQNS;
 const {
   ADDRESS,
   CONTACT_INFORMATION,
@@ -72,17 +65,21 @@ const {
   LOCATED_AT,
   PEOPLE
 } = APP_TYPE_FQNS;
-const { EMAIL, PHONE_NUMBER, PREFERRED } = CONTACT_INFO_FQNS;
-const { IMAGE_DATA } = IMAGE_FQNS;
 const {
   DOB,
+  EMAIL,
   ETHNICITY,
   FIRST_NAME,
+  FULL_ADDRESS,
+  IMAGE_DATA,
   LAST_NAME,
   MUGSHOT,
+  PHONE_NUMBER,
+  PREFERRED,
   RACE,
   SEX,
-} = PEOPLE_FQNS;
+} = PROPERTY_TYPE_FQNS;
+
 const {
   ACTIONS,
   ADD_PERSON_PHOTO,
@@ -549,7 +546,7 @@ const mapStateToProps = (state :Map) => {
   });
 };
 
-const mapDispatchToProps = dispatch => ({
+const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
     addNewParticipantContacts,
     addPersonPhoto,

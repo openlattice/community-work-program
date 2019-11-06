@@ -6,15 +6,14 @@ import { DataGrid, Modal } from 'lattice-ui-kit';
 import { DateTime } from 'luxon';
 
 import { getEntityProperties } from '../../../utils/DataUtils';
-import {
-  CHECK_IN_FQNS,
+import { PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
+
+const {
+  CHECKED_IN,
   DATETIME_END,
   DATETIME_START,
-  WORKSITE_PLAN_FQNS
-} from '../../../core/edm/constants/FullyQualifiedNames';
-
-const { CHECKED_IN } = CHECK_IN_FQNS;
-const { HOURS_WORKED } = WORKSITE_PLAN_FQNS;
+  HOURS_WORKED,
+} = PROPERTY_TYPE_FQNS;
 
 const labelMap :OrderedMap = OrderedMap({
   checkedIn: 'Checked in?',

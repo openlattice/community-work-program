@@ -10,7 +10,7 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import type { RequestSequence } from 'redux-reqseq';
 
-import { deleteAppointment } from './ParticipantScheduleActions';
+import { deleteAppointment } from '../assignedworksites/WorksitePlanActions';
 import { getEntitySetIdFromApp } from '../../../utils/DataUtils';
 import { APP_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { STATE } from '../../../utils/constants/ReduxStateConsts';
@@ -101,7 +101,7 @@ const mapStateToProps = (state :Map) => ({
   app: state.get(STATE.APP),
 });
 
-const mapDispatchToProps = dispatch => ({
+const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
     deleteAppointment,
   }, dispatch)

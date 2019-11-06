@@ -24,7 +24,7 @@ import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
 import { ContainerHeader } from '../../components/Layout';
 import { SEARCH_CONTAINER_WIDTH } from '../../core/style/Sizes';
 import { STATE, WORKSITES, WORK_SCHEDULE } from '../../utils/constants/ReduxStateConsts';
-import { APP_TYPE_FQNS, WORKSITE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { timePeriods, TIME_PERIOD_OPTIONS } from './WorkScheduleConstants';
 
 const { WORKSITES_LIST } = WORKSITES;
@@ -36,7 +36,7 @@ const {
   REQUEST_STATE,
   WORKSITE_NAMES_BY_APPOINTMENT_EKID,
 } = WORK_SCHEDULE;
-const { NAME } = WORKSITE_FQNS;
+const { NAME } = PROPERTY_TYPE_FQNS;
 
 const ScheduleOuterWrapper = styled.div`
   display: flex;
@@ -201,8 +201,7 @@ class WorkScheduleContainer extends Component<Props, State> {
     } = this.props;
     const { worksites } = this.state;
     const isLoading :boolean = findAppointmentsRequestState === RequestStates.PENDING;
-    const hasSearched :boolean = findAppointmentsRequestState === RequestStates.SUCCESS
-      || findAppointmentsRequestState === RequestStates.FINALLY;
+    const hasSearched :boolean = findAppointmentsRequestState === RequestStates.SUCCESS;
     const worksitesToInclude :Object[] | void = worksites.get('worksites');
     return (
       <ScheduleOuterWrapper>

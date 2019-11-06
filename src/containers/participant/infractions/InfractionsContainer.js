@@ -23,7 +23,7 @@ import { getEntityKeyId, getEntityProperties, sortEntitiesByDateProperty } from 
 import { formatAsDate } from '../../../utils/DateTimeUtils';
 import { getParticipantInfractions } from './InfractionsActions';
 import { PERSON_INFRACTIONS, STATE, WORKSITE_PLANS } from '../../../utils/constants/ReduxStateConsts';
-import { DATETIME_COMPLETED, INFRACTION_EVENT_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
+import { PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { ContainerOuterWrapper } from '../../../components/Layout';
 
 const InfractionsOuterWrapper = styled(ContainerOuterWrapper)`
@@ -40,7 +40,7 @@ const IconSplashWrapper = styled.div`
   padding: 50px 0 70px 0;
 `;
 
-const { TYPE } = INFRACTION_EVENT_FQNS;
+const { DATETIME_COMPLETED, TYPE } = PROPERTY_TYPE_FQNS;
 const {
   ACTIONS,
   REQUEST_STATE,

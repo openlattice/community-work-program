@@ -43,20 +43,10 @@ import * as Routes from '../../core/router/Routes';
 import { BackNavButton } from '../../components/controls/index';
 import { getEntityKeyId, getEntityProperties, sortEntitiesByDateProperty } from '../../utils/DataUtils';
 import { isDefined } from '../../utils/LangUtils';
-import {
-  APP_TYPE_FQNS,
-  DATETIME_END,
-  DATETIME_START,
-  DIVERSION_PLAN_FQNS,
-  ENROLLMENT_STATUS_FQNS,
-  INCIDENT_START_DATETIME,
-  PEOPLE_FQNS,
-  WORKSITE_FQNS,
-} from '../../core/edm/constants/FullyQualifiedNames';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { ENROLLMENT_STATUSES } from '../../core/edm/constants/DataModelConsts';
 import {
   APP,
-  PARTICIPANT_SCHEDULE,
   PERSON,
   PERSON_INFRACTIONS,
   STATE,
@@ -66,16 +56,19 @@ import {
 
 const {
   CHECK_IN_DATETIME,
+  DATETIME_END,
   DATETIME_RECEIVED,
+  DATETIME_START,
+  FIRST_NAME,
+  INCIDENT_START_DATETIME,
+  NAME,
   NOTES,
   ORIENTATION_DATETIME,
+  PERSON_NOTES,
   REQUIRED_HOURS,
-} = DIVERSION_PLAN_FQNS;
-const { STATUS } = ENROLLMENT_STATUS_FQNS;
-const { FIRST_NAME, PERSON_NOTES } = PEOPLE_FQNS;
-const { NAME } = WORKSITE_FQNS;
+  STATUS,
+} = PROPERTY_TYPE_FQNS;
 
-const { CHECK_INS_BY_APPOINTMENT, WORK_APPOINTMENTS_BY_WORKSITE_PLAN } = PARTICIPANT_SCHEDULE;
 const {
   ACTIONS,
   ADDRESS,
@@ -98,13 +91,15 @@ const {
 const { VIOLATIONS, WARNINGS } = PERSON_INFRACTIONS;
 const { WORKSITES_LIST } = WORKSITES;
 const {
+  CHECK_INS_BY_APPOINTMENT,
+  WORK_APPOINTMENTS_BY_WORKSITE_PLAN,
   WORKSITES_BY_WORKSITE_PLAN,
   WORKSITE_PLANS_LIST,
   WORKSITE_PLAN_STATUSES,
 } = WORKSITE_PLANS;
 
 const ENROLLMENT_STATUSES_EXCLUDING_PREENROLLMENT = Object.values(ENROLLMENT_STATUSES)
-  .filter(status => status !== ENROLLMENT_STATUSES.AWAITING_CHECKIN
+  .filter((status) => status !== ENROLLMENT_STATUSES.AWAITING_CHECKIN
     && status !== ENROLLMENT_STATUSES.AWAITING_ORIENTATION);
 
 /* Constants for Modals */
@@ -479,7 +474,7 @@ class ParticipantProfile extends Component<Props, State> {
                 <Select
                     onChange={this.selectDiversionPlan}
                     options={diversionPlanOptions}
-                    value={diversionPlanOptions.find(option => (option.value).equals(diversionPlan))} />
+                    value={diversionPlanOptions.find((option) => (option.value).equals(diversionPlan))} />
                 <Button onClick={() => this.handleShowModal(NEW_ENROLLMENT)}>Create New Enrollment</Button>
               </EnrollmentControlsWrapper>
               <EnrollmentStatusSection
@@ -594,7 +589,6 @@ class ParticipantProfile extends Component<Props, State> {
 const mapStateToProps = (state :Map<*, *>) => {
   const app = state.get(STATE.APP);
   const infractions = state.get(STATE.INFRACTIONS);
-  const participantSchedule = state.get(STATE.PARTICIPANT_SCHEDULE);
   const person = state.get(STATE.PERSON);
   const worksitePlans = state.get(STATE.WORKSITE_PLANS);
   const worksites = state.get(STATE.WORKSITES);
@@ -603,7 +597,7 @@ const mapStateToProps = (state :Map<*, *>) => {
     [ALL_DIVERSION_PLANS]: person.get(ALL_DIVERSION_PLANS),
     app,
     [CHARGES_FOR_CASE]: person.get(CHARGES_FOR_CASE),
-    [CHECK_INS_BY_APPOINTMENT]: participantSchedule.get(CHECK_INS_BY_APPOINTMENT),
+    [CHECK_INS_BY_APPOINTMENT]: worksitePlans.get(CHECK_INS_BY_APPOINTMENT),
     createNewEnrollmentRequestState: person.getIn([ACTIONS, CREATE_NEW_ENROLLMENT, REQUEST_STATE]),
     [DIVERSION_PLAN]: person.get(DIVERSION_PLAN),
     [EMAIL]: person.get(EMAIL),
@@ -620,7 +614,7 @@ const mapStateToProps = (state :Map<*, *>) => {
     [PROGRAM_OUTCOME]: person.get(PROGRAM_OUTCOME),
     [VIOLATIONS]: infractions.get(VIOLATIONS),
     [WARNINGS]: infractions.get(WARNINGS),
-    [WORK_APPOINTMENTS_BY_WORKSITE_PLAN]: participantSchedule.get(WORK_APPOINTMENTS_BY_WORKSITE_PLAN),
+    [WORK_APPOINTMENTS_BY_WORKSITE_PLAN]: worksitePlans.get(WORK_APPOINTMENTS_BY_WORKSITE_PLAN),
     [WORKSITES_BY_WORKSITE_PLAN]: worksitePlans.get(WORKSITES_BY_WORKSITE_PLAN),
     [WORKSITE_PLANS_LIST]: worksitePlans.get(WORKSITE_PLANS_LIST),
     [WORKSITE_PLAN_STATUSES]: worksitePlans.get(WORKSITE_PLAN_STATUSES),
@@ -628,7 +622,7 @@ const mapStateToProps = (state :Map<*, *>) => {
   };
 };
 
-const mapDispatchToProps = dispatch => ({
+const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
     getAllParticipantInfo,
     getEnrollmentFromDiversionPlan,

@@ -9,10 +9,10 @@ import type { RequestState } from 'redux-reqseq';
 import AddWorksiteForm from './AddWorksiteForm';
 
 import { getEntityProperties } from '../../utils/DataUtils';
-import { ORGANIZATION_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { WORKSITES, STATE } from '../../utils/constants/ReduxStateConsts';
 
-const { ORGANIZATION_NAME } = ORGANIZATION_FQNS;
+const { ORGANIZATION_NAME } = PROPERTY_TYPE_FQNS;
 const { ACTIONS, ADD_WORKSITE, REQUEST_STATE } = WORKSITES;
 
 

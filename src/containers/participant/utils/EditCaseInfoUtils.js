@@ -3,18 +3,17 @@ import { List, Map, setIn } from 'immutable';
 import { DataProcessingUtils } from 'lattice-fabricate';
 import type { FQN } from 'lattice';
 
-import {
-  APP_TYPE_FQNS,
-  CHARGE_FQNS,
-  ENTITY_KEY_ID,
-  PEOPLE_FQNS
-} from '../../../core/edm/constants/FullyQualifiedNames';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { getEntityKeyId, getFirstNeighborValue } from '../../../utils/DataUtils';
 
 const { getEntityAddressKey, getPageSectionKey } = DataProcessingUtils;
 const { COURT_CHARGE_LIST, JUDGES } = APP_TYPE_FQNS;
-const { NAME } = CHARGE_FQNS;
-const { FIRST_NAME, LAST_NAME } = PEOPLE_FQNS;
+const {
+  ENTITY_KEY_ID,
+  FIRST_NAME,
+  LAST_NAME,
+  NAME,
+} = PROPERTY_TYPE_FQNS;
 
 const getValuesFromEntityList = (entities :List, propertyList :FQN[]) => {
 

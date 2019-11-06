@@ -34,13 +34,7 @@ import {
 import { getWorksiteScheduleFromFormData, getWorksiteScheduleFromEntities } from '../../utils/ScheduleUtils';
 import { isDefined } from '../../utils/LangUtils';
 import { STATE } from '../../utils/constants/ReduxStateConsts';
-import {
-  APP_TYPE_FQNS,
-  CONTACT_INFO_FQNS,
-  ENTITY_KEY_ID,
-  INCIDENT_START_DATETIME,
-  WORKSITE_PLAN_FQNS
-} from '../../core/edm/constants/FullyQualifiedNames';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import {
   ADD_ORGANIZATION,
   ADD_WORKSITE,
@@ -85,8 +79,14 @@ const {
   WORKSITE,
   WORKSITE_PLAN,
 } = APP_TYPE_FQNS;
-const { EMAIL, PHONE_NUMBER } = CONTACT_INFO_FQNS;
-const { HOURS_WORKED, REQUIRED_HOURS } = WORKSITE_PLAN_FQNS;
+const {
+  EMAIL,
+  ENTITY_KEY_ID,
+  HOURS_WORKED,
+  INCIDENT_START_DATETIME,
+  PHONE_NUMBER,
+  REQUIRED_HOURS,
+} = PROPERTY_TYPE_FQNS;
 
 const LOG = new Logger('WorksitesSagas');
 const { searchEntityNeighborsWithFilter } = SearchApiActions;
@@ -94,8 +94,8 @@ const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
 const { getEntityData, getEntitySetData } = DataApiActions;
 const { getEntityDataWorker, getEntitySetDataWorker } = DataApiSagas;
 
-const getAppFromState = state => state.get(STATE.APP, Map());
-const getEdmFromState = state => state.get(STATE.EDM, Map());
+const getAppFromState = (state) => state.get(STATE.APP, Map());
+const getEdmFromState = (state) => state.get(STATE.EDM, Map());
 
 /*
  *

@@ -35,6 +35,7 @@ export const ButtonWrapper = styled.div`
   display: flex;
   align-items: center;
   margin-left: 15px;
+
   &:hover {
     cursor: pointer;
   }
@@ -137,8 +138,9 @@ export const MenuItem = styled.span`
   justify-content: center;
   align-items: center;
   margin-right: 20px;
-  color: ${props => (props.selected ? OL.GREY15 : OL.GREY02)};
+  color: ${(props) => (props.selected ? OL.GREY15 : OL.GREY02)};
   font-weight: 600;
+
   &:hover {
     cursor: pointer;
     color: ${OL.GREY01};
@@ -164,7 +166,7 @@ export const TableFooter = styled.div`
 export const FooterCell = styled.span`
   padding: 15px 0;
   font-family: 'Open Sans', sans-serif;
-  font-size: ${props => (props.small ? '12' : '14')}px;
+  font-size: ${(props) => (props.small ? '12' : '14')}px;
   font-weight: 600;
   text-align: left;
   color: ${OL.GREY15};
@@ -200,6 +202,7 @@ export const RowContent = styled.div`
   flex-grow: 1;
   margin: 0 20px 10px 0;
   min-width: 250px;
+
   :last-of-type {
     margin-right: 0;
   }

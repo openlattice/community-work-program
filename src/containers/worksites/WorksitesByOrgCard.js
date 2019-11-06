@@ -12,7 +12,7 @@ import AddWorksiteModal from './AddWorksiteModal';
 
 import { goToRoute } from '../../core/router/RoutingActions';
 import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
-import { ORGANIZATION_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import {
   SmallSeparator,
   SubtitleWrapper,
@@ -22,7 +22,7 @@ import {
 import { OL } from '../../core/style/Colors';
 import * as Routes from '../../core/router/Routes';
 
-const { DESCRIPTION, ORGANIZATION_NAME } = ORGANIZATION_FQNS;
+const { DESCRIPTION, ORGANIZATION_NAME } = PROPERTY_TYPE_FQNS;
 
 const WORKSITES_COLUMNS = [
   'WORK SITE NAME',
@@ -35,12 +35,15 @@ const WORKSITES_COLUMNS = [
 
 const OrgCard = styled(Card)`
   padding: 10px 20px;
+
   & > ${CardSegment} {
     border: none;
   }
+
   & > ${CardSegment}:first-child {
     justify-content: center;
   }
+
   & > ${CardSegment}:last-child {
     margin: 0 -20px 0 -20px;
     padding: 0;
@@ -57,10 +60,12 @@ const OrganizationName = styled.h1`
   color: ${OL.GREY15};
   font-weight: 600;
   font-size: 20px;
+
   &:hover {
     cursor: pointer;
     color: ${OL.PURPLE02};
   }
+
   &:active {
     color: ${OL.PURPLE01};
   }
@@ -176,7 +181,7 @@ class WorksitesByOrgCard extends Component<Props, State> {
   }
 }
 
-const mapDispatchToProps = dispatch => ({
+const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
     goToRoute,
   }, dispatch)
