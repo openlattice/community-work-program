@@ -17,8 +17,11 @@ const addPersonPhoto :RequestSequence = newRequestSequence(ADD_PERSON_PHOTO);
 const ADD_TO_AVAILABLE_CHARGES :'ADD_TO_AVAILABLE_CHARGES' = 'ADD_TO_AVAILABLE_CHARGES';
 const addToAvailableCharges :RequestSequence = newRequestSequence(ADD_TO_AVAILABLE_CHARGES);
 
+const CREATE_CASE :'CREATE_CASE' = 'CREATE_CASE';
+const createCase :RequestSequence = newRequestSequence(CREATE_CASE);
+
 const CREATE_NEW_ENROLLMENT :'CREATE_NEW_ENROLLMENT' = 'CREATE_NEW_ENROLLMENT';
-const createNewEnrollment = newRequestSequence(CREATE_NEW_ENROLLMENT);
+const createNewEnrollment :RequestSequence = newRequestSequence(CREATE_NEW_ENROLLMENT);
 
 const EDIT_ENROLLMENT_DATES :'EDIT_ENROLLMENT_DATES' = 'EDIT_ENROLLMENT_DATES';
 const editEnrollmentDates :RequestSequence = newRequestSequence(EDIT_ENROLLMENT_DATES);
@@ -57,7 +60,7 @@ const GET_CONTACT_INFO :'GET_CONTACT_INFO' = 'GET_CONTACT_INFO';
 const getContactInfo :RequestSequence = newRequestSequence(GET_CONTACT_INFO);
 
 const GET_ENROLLMENT_FROM_DIVERSION_PLAN :'GET_ENROLLMENT_FROM_DIVERSION_PLAN' = 'GET_ENROLLMENT_FROM_DIVERSION_PLAN';
-const getEnrollmentFromDiversionPlan = newRequestSequence(GET_ENROLLMENT_FROM_DIVERSION_PLAN);
+const getEnrollmentFromDiversionPlan :RequestSequence = newRequestSequence(GET_ENROLLMENT_FROM_DIVERSION_PLAN);
 
 const GET_ENROLLMENT_STATUS :'GET_ENROLLMENT_STATUS' = 'GET_ENROLLMENT_STATUS';
 const getEnrollmentStatus :RequestSequence = newRequestSequence(GET_ENROLLMENT_STATUS);
@@ -107,6 +110,7 @@ export {
   ADD_NEW_PARTICIPANT_CONTACTS,
   ADD_PERSON_PHOTO,
   ADD_TO_AVAILABLE_CHARGES,
+  CREATE_CASE,
   CREATE_NEW_ENROLLMENT,
   EDIT_ENROLLMENT_DATES,
   EDIT_PARTICIPANT_CONTACTS,
@@ -140,6 +144,7 @@ export {
   addNewParticipantContacts,
   addPersonPhoto,
   addToAvailableCharges,
+  createCase,
   createNewEnrollment,
   editEnrollmentDates,
   editParticipantContacts,
