@@ -134,39 +134,42 @@ class EditContactsForm extends Component<Props, State> {
       propertyTypeIds,
       worksite
     } = this.props;
+    console.log('formData: ', formData);
 
-    const worksiteEKID :UUID = getEntityKeyId(worksite);
-    const dataToProcess = formData;
-    dataToProcess[getPageSectionKey(1, 4)] = {};
-    dataToProcess[getPageSectionKey(1, 4)][getEntityAddressKey(0, EMPLOYEE, TITLE)] = 'worksite employee';
+    // const contactIndexMapper = (index :number) => index +
 
-    if (!Object.keys(formData[getPageSectionKey(1, 1)]).length) {
-      dataToProcess[getPageSectionKey(1, 1)][getEntityAddressKey(0, STAFF, FIRST_NAME)] = '';
-    }
-    if (!hasIn(formData, [getPageSectionKey(1, 2), getEntityAddressKey(0, CONTACT_INFORMATION, PHONE_NUMBER)])) {
-      dataToProcess[getPageSectionKey(1, 2)][getEntityAddressKey(0, CONTACT_INFORMATION, PHONE_NUMBER)] = '';
-    }
-    if (!hasIn(formData, [getPageSectionKey(1, 2), getEntityAddressKey(0, CONTACT_INFORMATION, PHONE_NUMBER)])) {
-      dataToProcess[getPageSectionKey(1, 2)][getEntityAddressKey(0, CONTACT_INFORMATION, PHONE_NUMBER)] = '';
-    }
-    if (!hasIn(formData, [getPageSectionKey(1, 2), getEntityAddressKey(1, CONTACT_INFORMATION, EMAIL)])) {
-      dataToProcess[getPageSectionKey(1, 2)][getEntityAddressKey(1, CONTACT_INFORMATION, EMAIL)] = '';
-    }
-    if (!Object.keys(formData[getPageSectionKey(1, 3)]).length) {
-      dataToProcess[getPageSectionKey(1, 3)][getEntityAddressKey(0, ADDRESS, FULL_ADDRESS)] = '';
-    }
-
-    const associations = [];
-    associations.push([LOCATED_AT, worksiteEKID, WORKSITE, 0, ADDRESS, {}]);
-    associations.push([IS, 0, STAFF, 0, EMPLOYEE, {}]);
-    associations.push([WORKS_AT, 0, EMPLOYEE, worksiteEKID, WORKSITE, {}]);
-    associations.push([CONTACT_INFO_GIVEN, 0, CONTACT_INFORMATION, 0, EMPLOYEE, {}]);
-    associations.push([CONTACT_INFO_GIVEN, 1, CONTACT_INFORMATION, 0, EMPLOYEE, {}]);
-
-    const entityData :Object = processEntityData(dataToProcess, entitySetIds, propertyTypeIds);
-    const associationEntityData :Object = processAssociationEntityData(associations, entitySetIds, propertyTypeIds);
-
-    actions.addWorksiteContactAndAddress({ associationEntityData, entityData });
+    // const worksiteEKID :UUID = getEntityKeyId(worksite);
+    // const dataToProcess = formData;
+    // dataToProcess[getPageSectionKey(1, 4)] = {};
+    // dataToProcess[getPageSectionKey(1, 4)][getEntityAddressKey(0, EMPLOYEE, TITLE)] = 'worksite employee';
+    //
+    // if (!Object.keys(formData[getPageSectionKey(1, 1)]).length) {
+    //   dataToProcess[getPageSectionKey(1, 1)][getEntityAddressKey(0, STAFF, FIRST_NAME)] = '';
+    // }
+    // if (!hasIn(formData, [getPageSectionKey(1, 2), getEntityAddressKey(0, CONTACT_INFORMATION, PHONE_NUMBER)])) {
+    //   dataToProcess[getPageSectionKey(1, 2)][getEntityAddressKey(0, CONTACT_INFORMATION, PHONE_NUMBER)] = '';
+    // }
+    // if (!hasIn(formData, [getPageSectionKey(1, 2), getEntityAddressKey(0, CONTACT_INFORMATION, PHONE_NUMBER)])) {
+    //   dataToProcess[getPageSectionKey(1, 2)][getEntityAddressKey(0, CONTACT_INFORMATION, PHONE_NUMBER)] = '';
+    // }
+    // if (!hasIn(formData, [getPageSectionKey(1, 2), getEntityAddressKey(1, CONTACT_INFORMATION, EMAIL)])) {
+    //   dataToProcess[getPageSectionKey(1, 2)][getEntityAddressKey(1, CONTACT_INFORMATION, EMAIL)] = '';
+    // }
+    // if (!Object.keys(formData[getPageSectionKey(1, 3)]).length) {
+    //   dataToProcess[getPageSectionKey(1, 3)][getEntityAddressKey(0, ADDRESS, FULL_ADDRESS)] = '';
+    // }
+    //
+    // const associations = [];
+    // associations.push([LOCATED_AT, worksiteEKID, WORKSITE, 0, ADDRESS, {}]);
+    // associations.push([IS, 0, STAFF, 0, EMPLOYEE, {}]);
+    // associations.push([WORKS_AT, 0, EMPLOYEE, worksiteEKID, WORKSITE, {}]);
+    // associations.push([CONTACT_INFO_GIVEN, 0, CONTACT_INFORMATION, 0, EMPLOYEE, {}]);
+    // associations.push([CONTACT_INFO_GIVEN, 1, CONTACT_INFORMATION, 0, EMPLOYEE, {}]);
+    //
+    // const entityData :Object = processEntityData(dataToProcess, entitySetIds, propertyTypeIds);
+    // const associationEntityData :Object = processAssociationEntityData(associations, entitySetIds, propertyTypeIds);
+    //
+    // actions.addWorksiteContactAndAddress({ associationEntityData, entityData });
   }
 
   render() {
@@ -182,7 +185,10 @@ class EditContactsForm extends Component<Props, State> {
     } = this.state;
 
     const formContext = {
-      editAction: actions.editWorksiteContactAndAddress,
+      addActions: {
+        addContact: this.handleOnSubmit
+      },
+      // editAction: actions.editWorksiteContactAndAddress,
       entityIndexToIdMap,
       entitySetIds,
       propertyTypeIds,
