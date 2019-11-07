@@ -64,6 +64,19 @@ const hydrateJudgeSchema = (schema :Object, judges :List) => {
   return newSchema;
 };
 
+const disableJudgeForm = (uiSchema :Object) :Object => {
+  const newUiSchema = setIn(
+    uiSchema,
+    [
+      getPageSectionKey(1, 1),
+      'ui:options',
+      'editable'
+    ],
+    false
+  );
+  return newUiSchema;
+};
+
 const hydrateChargeSchema = (schema :Object, charges :List) => {
   const [values, labels] = getValuesFromEntityList(charges, [NAME]);
   let newSchema = setIn(
@@ -94,7 +107,22 @@ const hydrateChargeSchema = (schema :Object, charges :List) => {
   return newSchema;
 };
 
+const disableChargesForm = (uiSchema :Object) :Object => {
+  const newUiSchema = setIn(
+    uiSchema,
+    [
+      getPageSectionKey(1, 1),
+      'ui:options',
+      'addable'
+    ],
+    false
+  );
+  return newUiSchema;
+};
+
 export {
+  disableChargesForm,
+  disableJudgeForm,
   getValuesFromEntityList,
   hydrateChargeSchema,
   hydrateJudgeSchema,
