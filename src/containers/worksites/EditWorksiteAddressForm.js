@@ -1,38 +1,25 @@
 // @flow
 import React, { Component } from 'react';
-import { Map, hasIn } from 'immutable';
+import { Map } from 'immutable';
 import { Card, CardHeader } from 'lattice-ui-kit';
 import { Form, DataProcessingUtils } from 'lattice-fabricate';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import type { RequestSequence } from 'redux-reqseq';
 
-import { addWorksiteContactAndAddress, editWorksiteContactAndAddress } from './WorksitesActions';
-import {
-  ADDRESS_FQNS,
-  APP_TYPE_FQNS,
-  CONTACT_INFO_FQNS,
-  EMPLOYEE_FQNS,
-  PEOPLE_FQNS,
-} from '../../core/edm/constants/FullyQualifiedNames';
+import { addWorksiteAddress, editWorksiteAddress } from './WorksitesActions';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { addressSchema, addressUiSchema } from './schemas/EditWorksiteInfoSchemas';
 import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
 
-const { FULL_ADDRESS } = ADDRESS_FQNS;
 const {
   ADDRESS,
-  CONTACT_INFORMATION,
-  CONTACT_INFO_GIVEN,
-  EMPLOYEE,
-  IS,
   LOCATED_AT,
-  STAFF,
-  WORKS_AT,
   WORKSITE,
 } = APP_TYPE_FQNS;
-const { EMAIL, PHONE_NUMBER } = CONTACT_INFO_FQNS;
-const { TITLE } = EMPLOYEE_FQNS;
-const { FIRST_NAME, LAST_NAME } = PEOPLE_FQNS;
+const {
+  FULL_ADDRESS,
+} = PROPERTY_TYPE_FQNS;
 
 const {
   getEntityAddressKey,
@@ -43,8 +30,8 @@ const {
 
 type Props = {
   actions:{
-    addWorksiteContactAndAddress :RequestSequence;
-    editWorksiteContactAndAddress :RequestSequence;
+    addWorksiteAddress :RequestSequence;
+    editWorksiteAddress :RequestSequence;
   },
   entityIndexToIdMap :Map;
   entitySetIds :Object;
@@ -101,45 +88,20 @@ class EditWorksiteAddressForm extends Component<Props, State> {
   }
 
   handleOnSubmit = ({ formData } :Object) => {
-    // const {
-    //   actions,
-    //   entitySetIds,
-    //   propertyTypeIds,
-    //   worksite
-    // } = this.props;
-    //
-    // const worksiteEKID :UUID = getEntityKeyId(worksite);
-    // const dataToProcess = formData;
-    // dataToProcess[getPageSectionKey(1, 4)] = {};
-    // dataToProcess[getPageSectionKey(1, 4)][getEntityAddressKey(0, EMPLOYEE, TITLE)] = 'worksite employee';
-    //
-    // if (!Object.keys(formData[getPageSectionKey(1, 1)]).length) {
-    //   dataToProcess[getPageSectionKey(1, 1)][getEntityAddressKey(0, STAFF, FIRST_NAME)] = '';
-    // }
-    // if (!hasIn(formData, [getPageSectionKey(1, 2), getEntityAddressKey(0, CONTACT_INFORMATION, PHONE_NUMBER)])) {
-    //   dataToProcess[getPageSectionKey(1, 2)][getEntityAddressKey(0, CONTACT_INFORMATION, PHONE_NUMBER)] = '';
-    // }
-    // if (!hasIn(formData, [getPageSectionKey(1, 2), getEntityAddressKey(0, CONTACT_INFORMATION, PHONE_NUMBER)])) {
-    //   dataToProcess[getPageSectionKey(1, 2)][getEntityAddressKey(0, CONTACT_INFORMATION, PHONE_NUMBER)] = '';
-    // }
-    // if (!hasIn(formData, [getPageSectionKey(1, 2), getEntityAddressKey(1, CONTACT_INFORMATION, EMAIL)])) {
-    //   dataToProcess[getPageSectionKey(1, 2)][getEntityAddressKey(1, CONTACT_INFORMATION, EMAIL)] = '';
-    // }
-    // if (!Object.keys(formData[getPageSectionKey(1, 3)]).length) {
-    //   dataToProcess[getPageSectionKey(1, 3)][getEntityAddressKey(0, ADDRESS, FULL_ADDRESS)] = '';
-    // }
-    //
-    // const associations = [];
-    // associations.push([LOCATED_AT, worksiteEKID, WORKSITE, 0, ADDRESS, {}]);
-    // associations.push([IS, 0, STAFF, 0, EMPLOYEE, {}]);
-    // associations.push([WORKS_AT, 0, EMPLOYEE, worksiteEKID, WORKSITE, {}]);
-    // associations.push([CONTACT_INFO_GIVEN, 0, CONTACT_INFORMATION, 0, EMPLOYEE, {}]);
-    // associations.push([CONTACT_INFO_GIVEN, 1, CONTACT_INFORMATION, 0, EMPLOYEE, {}]);
-    //
-    // const entityData :Object = processEntityData(dataToProcess, entitySetIds, propertyTypeIds);
-    // const associationEntityData :Object = processAssociationEntityData(associations, entitySetIds, propertyTypeIds);
-    //
-    // actions.addWorksiteContactAndAddress({ associationEntityData, entityData });
+    const {
+      actions,
+      entitySetIds,
+      propertyTypeIds,
+      worksite
+    } = this.props;
+
+    const worksiteEKID :UUID = getEntityKeyId(worksite);
+    const associations = [
+      [LOCATED_AT, worksiteEKID, WORKSITE, 0, ADDRESS, {}]
+    ];
+    const entityData :Object = processEntityData(formData, entitySetIds, propertyTypeIds);
+    const associationEntityData :Object = processAssociationEntityData(associations, entitySetIds, propertyTypeIds);
+    actions.addWorksiteAddress({ associationEntityData, entityData });
   }
 
   render() {
@@ -155,7 +117,7 @@ class EditWorksiteAddressForm extends Component<Props, State> {
     } = this.state;
 
     const formContext = {
-      editAction: actions.editWorksiteContactAndAddress,
+      editAction: actions.editWorksiteAddress,
       entityIndexToIdMap,
       entitySetIds,
       propertyTypeIds,
@@ -178,8 +140,8 @@ class EditWorksiteAddressForm extends Component<Props, State> {
 
 const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
-    addWorksiteContactAndAddress,
-    editWorksiteContactAndAddress,
+    addWorksiteAddress,
+    editWorksiteAddress,
   }, dispatch)
 });
 
