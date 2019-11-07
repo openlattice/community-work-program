@@ -78,56 +78,57 @@ const contactsSchema = {
   title: '',
   properties: {
     [getPageSectionKey(1, 1)]: {
-      type: 'object',
-      title: 'Contact name',
-      properties: {
-        [getEntityAddressKey(0, STAFF, FIRST_NAME)]: {
-          type: 'string',
-          title: 'First name',
-        },
-        [getEntityAddressKey(0, STAFF, LAST_NAME)]: {
-          type: 'string',
-          title: 'Last name',
-        },
-      }
-    },
-    [getPageSectionKey(1, 2)]: {
-      type: 'object',
-      title: 'Contact methods',
-      properties: {
-        [getEntityAddressKey(0, CONTACT_INFORMATION, PHONE_NUMBER)]: {
-          type: 'string',
-          title: 'Phone number',
-        },
-        [getEntityAddressKey(1, CONTACT_INFORMATION, EMAIL)]: {
-          type: 'string',
-          title: 'Email',
-        },
-      }
+      type: 'array',
+      title: '',
+      items: {
+        type: 'object',
+        properties: {
+          [getEntityAddressKey(-1, STAFF, FIRST_NAME)]: {
+            type: 'string',
+            title: 'First name',
+          },
+          [getEntityAddressKey(-1, STAFF, LAST_NAME)]: {
+            type: 'string',
+            title: 'Last name',
+          },
+          [getEntityAddressKey(-1, CONTACT_INFORMATION, PHONE_NUMBER)]: {
+            type: 'string',
+            title: 'Phone number',
+          },
+          [getEntityAddressKey(-2, CONTACT_INFORMATION, EMAIL)]: {
+            type: 'string',
+            title: 'Email',
+          },
+        }
+      },
+      default: [{}]
     },
   },
 };
 
 const contactsUiSchema = {
   [getPageSectionKey(1, 1)]: {
-    classNames: 'column-span-12 grid-container',
-    [getEntityAddressKey(0, STAFF, FIRST_NAME)]: {
-      classNames: 'column-span-6'
+    classNames: 'column-span-12',
+    'ui:options': {
+      addButtonText: '+ Add Contact',
+      orderable: false,
+      addActionKey: 'addContact'
     },
-    [getEntityAddressKey(0, STAFF, LAST_NAME)]: {
-      classNames: 'column-span-6'
-    },
-    'ui:options': { editable: true },
-  },
-  [getPageSectionKey(1, 2)]: {
-    classNames: 'column-span-12 grid-container',
-    [getEntityAddressKey(0, CONTACT_INFORMATION, PHONE_NUMBER)]: {
-      classNames: 'column-span-6'
-    },
-    [getEntityAddressKey(1, CONTACT_INFORMATION, EMAIL)]: {
-      classNames: 'column-span-6'
-    },
-    'ui:options': { editable: true },
+    items: {
+      classNames: 'grid-container',
+      [getEntityAddressKey(-1, STAFF, FIRST_NAME)]: {
+        classNames: 'column-span-6'
+      },
+      [getEntityAddressKey(-1, STAFF, LAST_NAME)]: {
+        classNames: 'column-span-6'
+      },
+      [getEntityAddressKey(-1, CONTACT_INFORMATION, PHONE_NUMBER)]: {
+        classNames: 'column-span-6'
+      },
+      [getEntityAddressKey(-2, CONTACT_INFORMATION, EMAIL)]: {
+        classNames: 'column-span-6'
+      },
+    }
   },
 };
 
