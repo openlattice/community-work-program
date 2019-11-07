@@ -54,7 +54,7 @@ const ProgramNotes = ({ editPlanNotesRequestState, notes } :Props) => {
           editRequestState={editPlanNotesRequestState}
           isOpen={isEditModalVisible}
           onClose={() => setEditModalVisibility(false)}
-          title="Profile Notes" />
+          title="Program Notes" />
     </SectionWrapper>
   );
 };

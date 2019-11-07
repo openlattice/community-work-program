@@ -210,16 +210,16 @@ class AddParticipantForm extends Component<Props, State> {
       <FormWrapper>
         <FormRow>
           <RowContent>
-            <Label>First name</Label>
+            <Label>Last name</Label>
             <Input
-                name={getEntityAddressKey(0, PEOPLE, FIRST_NAME)}
+                name={getEntityAddressKey(0, PEOPLE, LAST_NAME)}
                 onChange={this.handleInputChange}
                 type="text" />
           </RowContent>
           <RowContent>
-            <Label>Last name</Label>
+            <Label>First name</Label>
             <Input
-                name={getEntityAddressKey(0, PEOPLE, LAST_NAME)}
+                name={getEntityAddressKey(0, PEOPLE, FIRST_NAME)}
                 onChange={this.handleInputChange}
                 type="text" />
           </RowContent>
@@ -262,7 +262,7 @@ class AddParticipantForm extends Component<Props, State> {
         </FormRow>
         <FormRow>
           <RowContent>
-            <Label>Notes</Label>
+            <Label>Profile Notes</Label>
             <TextArea
                 name={getEntityAddressKey(0, PEOPLE, PERSON_NOTES)}
                 onChange={this.handleInputChange} />
