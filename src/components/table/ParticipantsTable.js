@@ -17,29 +17,29 @@ import {
   HeaderRow,
   HeaderElement,
 } from './TableStyledComponents';
-import {
-  DIVERSION_PLAN_FQNS,
-  ENROLLMENT_STATUS_FQNS,
-  ENTITY_KEY_ID,
-} from '../../core/edm/constants/FullyQualifiedNames';
+import { PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { ENROLLMENT_STATUSES, HOURS_CONSTS } from '../../core/edm/constants/DataModelConsts';
 import { SORTABLE_PARTICIPANT_COLUMNS } from '../../containers/participants/ParticipantsConstants';
 
-const { DATETIME_RECEIVED } = DIVERSION_PLAN_FQNS;
-const { EFFECTIVE_DATE, STATUS } = ENROLLMENT_STATUS_FQNS;
+const {
+  DATETIME_RECEIVED,
+  EFFECTIVE_DATE,
+  ENTITY_KEY_ID,
+  STATUS,
+} = PROPERTY_TYPE_FQNS;
 const { REQUIRED, WORKED } = HOURS_CONSTS;
 
 type HeaderProps = {
   columnHeaders :string[];
-  selected ? :string;
-  sort ? :(header :string) => void;
+  selected :string;
+  sort :(header :string) => void;
 };
 
 const Headers = ({ columnHeaders, selected, sort } :HeaderProps) => (
   <HeaderRow>
     <HeaderElement />
     {
-      columnHeaders.map(header => (
+      columnHeaders.map((header) => (
         <HeaderElement
             key={header}
             onClick={() => sort(header)}
@@ -59,25 +59,25 @@ Headers.defaultProps = {
 
 type Props = {
   ageRequired :boolean;
-  alignCenter ? :boolean;
+  alignCenter :boolean;
   bannerText :string;
   columnHeaders :string[];
   config :Object;
-  courtTypeByParticipant ? :Map;
-  currentDiversionPlansMap ? :Map;
-  enrollment ? :Map;
+  courtTypeByParticipant ?:Map;
+  currentDiversionPlansMap ?:Map;
+  enrollment ?:Map;
   handleSelect :(personEKID :string) => void;
-  hours ? :Map;
-  noShows ? :List;
+  hours ?:Map;
+  noShows ?:List;
   people :List;
-  selectedSortOption ? :string;
+  selectedSortOption ?:string;
   small :boolean;
-  sortByColumn ? :(header :string) => void;
-  tag ? :string;
+  sortByColumn ?:(header :string) => void;
+  tag ?:string;
   totalTableItems :number;
-  violations ? :Map;
-  warnings ? :Map;
-  width ? :string;
+  violations ?:Map;
+  warnings ?:Map;
+  width ?:string;
 };
 
 const ParticipantsTable = ({
@@ -120,11 +120,12 @@ const ParticipantsTable = ({
             includeStartDate,
             includeWorkedHours,
           } = config;
-          const { [ENTITY_KEY_ID]: personEKID } :UUID = getEntityProperties(person, [ENTITY_KEY_ID]);
+          const { [ENTITY_KEY_ID]: personEKID } = getEntityProperties(person, [ENTITY_KEY_ID]);
 
-          // Infractions
-          // if violations and/or warnings (all participants) is defined, then we need to include violations count
-          // if person not included in violations and/or warnings, but either is required, then return 0
+          /* Infractions
+           * if violations and/or warnings (all participants) is defined, then we need to include violations count
+           * if person not included in violations and/or warnings, but either is required, then return 0
+           */
           const violationsCount = isDefined(violations)
             ? violations.get(personEKID, 0)
             : undefined;
@@ -132,14 +133,17 @@ const ParticipantsTable = ({
             ? warnings.get(personEKID, 0)
             : undefined;
 
-          // Dates
-          // if sentenceTerms is defined and we need to include sentenceData:
-          // get sentenceDate from sentenceTerms, and if doesn't exist, return empty ''
+          /* Dates:
+           * if sentenceTerms is defined and we need to include sentenceData:
+           * get sentenceDate from sentenceTerms, and if doesn't exist, return empty ''
+           */
           let sentenceDate = (isDefined(currentDiversionPlansMap) && includeSentenceDate)
             ? currentDiversionPlansMap.getIn([personEKID, DATETIME_RECEIVED, 0])
             : undefined;
-          // can only provide a valid sentenceEndDate if we have a valid sentenceDate
-          // need to provide empty '' if sentenceEnd required but we don't have valid sentenceDate
+          /* can only provide a valid sentenceEndDate if we have a valid sentenceDate
+           * need to provide empty '' if sentenceEnd required but we don't have valid sentenceDate
+           */
+          // $FlowFixMe
           const sentenceDateObj = DateTime.fromISO(sentenceDate);
           if (!sentenceDateObj.isValid && includeSentenceDate) {
             sentenceDate = '';
@@ -151,8 +155,9 @@ const ParticipantsTable = ({
           if (!sentenceDateObj.isValid && includeSentenceEndDate) {
             sentenceEndDate = '';
           }
-          // can only provide a valid deadline date if we have a valid Sentence Date
-          // need to provide empty '' if deadline required but we don't have valid sentenceDate
+          /* can only provide a valid deadline date if we have a valid Sentence Date
+           * need to provide empty '' if deadline required but we don't have valid sentenceDate
+           */
           let enrollmentDeadline;
           if (sentenceDateObj.isValid && includeDeadline) {
             enrollmentDeadline = sentenceDateObj.plus({ hours: 48 }).toLocaleString();
@@ -160,8 +165,9 @@ const ParticipantsTable = ({
           if (!sentenceDateObj.isValid && includeDeadline) {
             enrollmentDeadline = '';
           }
-          // we only have a start date if enrollment status has valid effective date
-          // pass empty '' if startDate required but no effective date
+          /* we only have a start date if enrollment status has valid effective date
+           * pass empty '' if startDate required but no effective date\
+           */
           const startDate = (isDefined(enrollment) && includeStartDate)
             ? enrollment.getIn([personEKID, EFFECTIVE_DATE, 0], '')
             : undefined;
@@ -173,17 +179,19 @@ const ParticipantsTable = ({
             startDate,
           };
 
-          // Status
-          // we can get enrollment status from enrollment or from absence of enrollment
-          // need to pass empty '' if status is required
+          /* Status:
+           * we can get enrollment status from enrollment or from absence of enrollment
+           * need to pass empty '' if status is required
+           */
           const enrollmentStatus = isDefined(enrollment)
             ? enrollment.getIn([personEKID, STATUS, 0], ENROLLMENT_STATUSES.AWAITING_CHECKIN)
             : undefined;
 
-          // Hours
-          // we get both required and worked hours in the same Object
-          // for each, we need to pass an empty '' if they're not defined/found
-          // required hours are always included
+          /* Hours:
+           * we get both required and worked hours in the same Object
+           * for each, we need to pass an empty '' if they're not defined/found
+           * required hours are always included
+           */
           const individualPersonHours = (isDefined(hours) && hours.count() > 0) ? hours.get(personEKID) : Map();
           const individualHasHours = isDefined(individualPersonHours);
           const required = (individualHasHours && includeRequiredHours)
@@ -193,12 +201,12 @@ const ParticipantsTable = ({
             ? individualPersonHours.get(WORKED, '')
             : undefined;
 
-          // Court type
+          /* Court type */
           const courtType = (isDefined(courtTypeByParticipant))
             ? courtTypeByParticipant.get(personEKID, '')
             : undefined;
 
-          // Tags for Pening Completion Review and Violations Watch tables
+          /* Tags for Pening Completion Review and Violations Watch tables */
           let tagToInclude;
           if (isDefined(tag)) {
             tagToInclude = tag;
@@ -239,8 +247,8 @@ ParticipantsTable.defaultProps = {
   tag: undefined,
   selectedSortOption: '',
   sortByColumn: () => {},
-  violations: undefined,
-  warnings: undefined,
+  violations: Map(),
+  warnings: Map(),
   width: '100%',
 };
 

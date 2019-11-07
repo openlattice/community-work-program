@@ -8,9 +8,9 @@ import type { RequestState } from 'redux-reqseq';
 
 import DeleteAppointmentForm from './DeleteAppointmentForm';
 
-import { PARTICIPANT_SCHEDULE, STATE } from '../../../utils/constants/ReduxStateConsts';
+import { WORKSITE_PLANS, STATE } from '../../../utils/constants/ReduxStateConsts';
 
-const { ACTIONS, DELETE_APPOINTMENT, REQUEST_STATE } = PARTICIPANT_SCHEDULE;
+const { ACTIONS, DELETE_APPOINTMENT, REQUEST_STATE } = WORKSITE_PLANS;
 
 type Props = {
   appointment :Object;
@@ -56,7 +56,7 @@ class DeleteAppointmentModal extends Component<Props> {
 }
 
 const mapStateToProps = (state :Map) => ({
-  deleteAppointmentRequestState: state.getIn([STATE.PARTICIPANT_SCHEDULE, ACTIONS, DELETE_APPOINTMENT, REQUEST_STATE]),
+  deleteAppointmentRequestState: state.getIn([STATE.WORKSITE_PLANS, ACTIONS, DELETE_APPOINTMENT, REQUEST_STATE]),
 });
 
 // $FlowFixMe

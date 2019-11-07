@@ -11,9 +11,6 @@ const deleteInfractionEvent = newRequestSequence(DELETE_INFRACTION_EVENT);
 const EDIT_INFRACTION_EVENT:'EDIT_INFRACTION_EVENT' = 'EDIT_INFRACTION_EVENT';
 const editInfractionEvent = newRequestSequence(EDIT_INFRACTION_EVENT);
 
-const GET_INFO_FOR_PRINT_INFRACTION :'GET_INFO_FOR_PRINT_INFRACTION' = 'GET_INFO_FOR_PRINT_INFRACTION';
-const getInfoForPrintInfraction = newRequestSequence(GET_INFO_FOR_PRINT_INFRACTION);
-
 const GET_INFRACTION :'GET_INFRACTION' = 'GET_INFRACTION';
 const getInfraction :RequestSequence = newRequestSequence(GET_INFRACTION);
 
@@ -27,7 +24,6 @@ export {
   ADD_INFRACTION,
   DELETE_INFRACTION_EVENT,
   EDIT_INFRACTION_EVENT,
-  GET_INFO_FOR_PRINT_INFRACTION,
   GET_INFRACTION,
   GET_INFRACTION_TYPES,
   GET_PARTICIPANT_INFRACTIONS,
@@ -35,7 +31,6 @@ export {
   deleteInfractionEvent,
   editInfractionEvent,
   getInfraction,
-  getInfoForPrintInfraction,
   getInfractionTypes,
   getParticipantInfractions,
 };

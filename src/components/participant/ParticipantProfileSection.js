@@ -20,21 +20,18 @@ import { formatAsDate } from '../../utils/DateTimeUtils';
 import { formatPairOfStrings } from '../../utils/FormattingUtils';
 import { getEntityProperties } from '../../utils/DataUtils';
 import { getPersonFullName, getPersonProfilePicture } from '../../utils/PeopleUtils';
-import {
-  ADDRESS_FQNS,
-  CONTACT_INFO_FQNS,
-  PEOPLE_FQNS,
-} from '../../core/edm/constants/FullyQualifiedNames';
+import { PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { EMPTY_FIELD } from '../../containers/participants/ParticipantsConstants';
 
-const { FULL_ADDRESS } = ADDRESS_FQNS;
-const { EMAIL, PHONE_NUMBER } = CONTACT_INFO_FQNS;
 const {
   DOB,
+  EMAIL,
   ETHNICITY,
+  FULL_ADDRESS,
+  PHONE_NUMBER,
   RACE,
   SEX,
-} = PEOPLE_FQNS;
+} = PROPERTY_TYPE_FQNS;
 
 const PersonHeaderRow = styled.div`
   align-items: center;

@@ -1,34 +1,29 @@
 // @flow
 import { DataProcessingUtils } from 'lattice-fabricate';
 
-import {
-  ADDRESS_FQNS,
-  APP_TYPE_FQNS,
-  CONTACT_INFO_FQNS,
-  IMAGE_FQNS,
-  PEOPLE_FQNS
-} from '../../../core/edm/constants/FullyQualifiedNames';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { RACE_VALUES, SEX_VALUES } from '../../../core/edm/constants/DataModelConsts';
 
 const { getEntityAddressKey, getPageSectionKey } = DataProcessingUtils;
 
-const { FULL_ADDRESS } = ADDRESS_FQNS;
 const {
   ADDRESS,
   CONTACT_INFORMATION,
   IMAGE,
   PEOPLE,
 } = APP_TYPE_FQNS;
-const { EMAIL, PHONE_NUMBER } = CONTACT_INFO_FQNS;
-const { IMAGE_DATA } = IMAGE_FQNS;
 const {
   DOB,
+  EMAIL,
   ETHNICITY,
   FIRST_NAME,
+  FULL_ADDRESS,
+  IMAGE_DATA,
   LAST_NAME,
+  PHONE_NUMBER,
   RACE,
   SEX,
-} = PEOPLE_FQNS;
+} = PROPERTY_TYPE_FQNS;
 
 export const personSchema = {
   type: 'object',

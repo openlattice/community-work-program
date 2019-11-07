@@ -18,12 +18,7 @@ import {
   getEnrollmentStatus,
 } from './ParticipantActions';
 import { goToRoute } from '../../core/router/RoutingActions';
-import {
-  APP_TYPE_FQNS,
-  DATETIME_END,
-  DATETIME_START,
-  DIVERSION_PLAN_FQNS,
-} from '../../core/edm/constants/FullyQualifiedNames';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import {
   schema,
   uiSchema,
@@ -42,7 +37,13 @@ import * as Routes from '../../core/router/Routes';
 const { getEntityAddressKey, getPageSectionKey } = DataProcessingUtils;
 
 const { DIVERSION_PLAN } = APP_TYPE_FQNS;
-const { CHECK_IN_DATETIME, DATETIME_RECEIVED, ORIENTATION_DATETIME } = DIVERSION_PLAN_FQNS;
+const {
+  CHECK_IN_DATETIME,
+  DATETIME_END,
+  DATETIME_RECEIVED,
+  DATETIME_START,
+  ORIENTATION_DATETIME,
+} = PROPERTY_TYPE_FQNS;
 
 const {
   ACTIONS,
@@ -187,6 +188,7 @@ class EditCaseInfoForm extends Component<Props, State> {
     return {
       [CHECK_IN_DATETIME]: getPropertyTypeIdFromEdm(edm, CHECK_IN_DATETIME),
       [DATETIME_END]: getPropertyTypeIdFromEdm(edm, DATETIME_END),
+      [DATETIME_RECEIVED]: getPropertyTypeIdFromEdm(edm, DATETIME_RECEIVED),
       [DATETIME_START]: getPropertyTypeIdFromEdm(edm, DATETIME_START),
       [ORIENTATION_DATETIME]: getPropertyTypeIdFromEdm(edm, ORIENTATION_DATETIME),
     };
@@ -199,7 +201,9 @@ class EditCaseInfoForm extends Component<Props, State> {
         params: { subjectId: personEKID }
       },
     } = this.props;
-    actions.goToRoute(Routes.PARTICIPANT_PROFILE.replace(':subjectId', personEKID));
+    if (personEKID) {
+      actions.goToRoute(Routes.PARTICIPANT_PROFILE.replace(':subjectId', personEKID));
+    }
   }
 
   render() {
@@ -266,7 +270,7 @@ const mapStateToProps = (state :Map) => {
   });
 };
 
-const mapDispatchToProps = dispatch => ({
+const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
     editEnrollmentDates,
     getEnrollmentStatus,

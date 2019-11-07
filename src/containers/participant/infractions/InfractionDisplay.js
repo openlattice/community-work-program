@@ -30,22 +30,19 @@ import * as Routes from '../../../core/router/Routes';
 import { goToRoute } from '../../../core/router/RoutingActions';
 import { getEntityKeyId, getEntityProperties } from '../../../utils/DataUtils';
 import { formatAsDate, formatAsTime } from '../../../utils/DateTimeUtils';
-import {
-  APP_TYPE_FQNS,
-  DATETIME_COMPLETED,
-  ENROLLMENT_STATUS_FQNS,
-  INFRACTION_FQNS,
-  INFRACTION_EVENT_FQNS,
-  WORKSITE_FQNS,
-} from '../../../core/edm/constants/FullyQualifiedNames';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { EMPTY_FIELD } from '../../participants/ParticipantsConstants';
 import { OL } from '../../../core/style/Colors';
 
 const { WORKSITE_PLAN } = APP_TYPE_FQNS;
-const { STATUS } = ENROLLMENT_STATUS_FQNS;
-const { CATEGORY } = INFRACTION_FQNS;
-const { NOTES, TYPE } = INFRACTION_EVENT_FQNS;
-const { NAME } = WORKSITE_FQNS;
+const {
+  CATEGORY,
+  DATETIME_COMPLETED,
+  NAME,
+  NOTES,
+  STATUS,
+  TYPE,
+} = PROPERTY_TYPE_FQNS;
 
 const labelMap :OrderedMap = OrderedMap({
   infractionType: 'Infraction type',

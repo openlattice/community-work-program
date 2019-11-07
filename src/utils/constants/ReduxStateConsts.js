@@ -4,7 +4,6 @@ export const STATE = {
   EDM: 'edm',
   INFRACTIONS: 'infractions',
   ORGANIZATION: 'organization',
-  PARTICIPANT_SCHEDULE: 'participantSchedule',
   PEOPLE: 'people',
   PERSON: 'person',
   WORKSITES: 'worksites',
@@ -45,21 +44,6 @@ export const PERSON_INFRACTIONS = {
   REQUEST_STATE: 'requestState',
   VIOLATIONS: 'violations',
   WARNINGS: 'warnings',
-};
-
-/* Participant Schedule */
-
-export const PARTICIPANT_SCHEDULE = {
-  ACTIONS: 'actions',
-  CHECK_INS_BY_APPOINTMENT: 'checkInsByAppointment',
-  CHECK_IN_FOR_APPOINTMENT: 'checkInForAppointment',
-  CREATE_WORK_APPOINTMENTS: 'createWorkAppointments',
-  DELETE_APPOINTMENT: 'deleteAppointment',
-  EDIT_APPOINTMENT: 'editAppointment',
-  GET_APPOINTMENT_CHECK_INS: 'getAppointmentCheckIns',
-  GET_WORK_APPOINTMENTS: 'getWorkAppointments',
-  REQUEST_STATE: 'requestState',
-  WORK_APPOINTMENTS_BY_WORKSITE_PLAN: 'workAppointmentsByWorksitePlan',
 };
 
 /* People */
@@ -145,6 +129,14 @@ export const PERSON = {
   UPDATE_PERSON_PHOTO: 'updatePersonPhoto',
 };
 
+/* Print Participant */
+
+export const PRINT_PARTICIPANT = {
+  ACTIONS: 'actions',
+  GET_INFO_FOR_PRINT_INFRACTION: 'getInfoForPrintInfraction',
+  REQUEST_STATE: 'requestState',
+};
+
 /* Work Schedule */
 
 export const WORK_SCHEDULE = {
@@ -162,15 +154,23 @@ export const WORK_SCHEDULE = {
 export const WORKSITE_PLANS = {
   ACTIONS: 'actions',
   ADD_WORKSITE_PLAN: 'addWorksitePlan',
+  CHECK_INS_BY_APPOINTMENT: 'checkInsByAppointment',
+  CHECK_IN_FOR_APPOINTMENT: 'checkInForAppointment',
+  CREATE_WORK_APPOINTMENTS: 'createWorkAppointments',
+  DELETE_APPOINTMENT: 'deleteAppointment',
+  EDIT_APPOINTMENT: 'editAppointment',
   EDIT_WORKSITE_PLAN: 'editWorksitePlan',
+  GET_APPOINTMENT_CHECK_INS: 'getAppointmentCheckIns',
   GET_WORKSITE_BY_WORKSITE_PLAN: 'getWorksiteByWorksitePlan',
   GET_WORKSITE_PLANS: 'getWorksitePlans',
   GET_WORKSITE_PLAN_STATUSES: 'getWorksitePlanStatuses',
+  GET_WORK_APPOINTMENTS: 'getWorkAppointments',
   REQUEST_STATE: 'requestState',
   UPDATE_HOURS_WORKED: 'updateHoursWorked',
   WORKSITES_BY_WORKSITE_PLAN: 'worksitesByWorksitePlan',
   WORKSITE_PLANS_LIST: 'worksitePlansList',
   WORKSITE_PLAN_STATUSES: 'worksitePlanStatuses',
+  WORK_APPOINTMENTS_BY_WORKSITE_PLAN: 'workAppointmentsByWorksitePlan',
 };
 
 /* Worksites (and organizations) */

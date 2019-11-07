@@ -14,10 +14,11 @@ import {
   TYPE_IDS_BY_FQNS,
   TYPES_BY_ID
 } from '../core/edm/constants/DataModelConsts';
-import { ENTITY_KEY_ID } from '../core/edm/constants/FullyQualifiedNames';
+import { PROPERTY_TYPE_FQNS } from '../core/edm/constants/FullyQualifiedNames';
 import { APP } from './constants/ReduxStateConsts';
 
 const { FullyQualifiedName } = Models;
+const { ENTITY_KEY_ID } = PROPERTY_TYPE_FQNS;
 
 /* entity and property types */
 const getEntitySetIdFromApp = (app :Object | Map, fqn :FullyQualifiedName) => {
@@ -45,7 +46,7 @@ const getAssociationNeighborESID = (neighbor :Map) => (neighbor.getIn([ASSOCIATI
 /* entity data */
 const getFirstNeighborValue = (
   neighborObj :Map,
-  fqn :FullyQualifiedName,
+  fqn :FullyQualifiedName | string,
   defaultValue :string = ''
 ) => neighborObj.getIn(
 
@@ -88,16 +89,9 @@ const sortEntitiesByDateProperty = (
   datePropertyPath :FQN[]
 ) :List | Map => entityCollection
 
-  .sort((entityObjA :Map, entityObjB :Map) => {
-    const dateA = DateTime.fromISO(entityObjA.getIn(datePropertyPath.concat([0])));
-    const dateB = DateTime.fromISO(entityObjB.getIn(datePropertyPath.concat([0])));
-    if (!dateA.isValid || !dateB.isValid) {
-      return 0;
-    }
-    if (dateA.toISO() === dateB.toISO()) {
-      return 0;
-    }
-    return dateA < dateB ? -1 : 1;
+  .sortBy((entityObj :Map) => {
+    const date = DateTime.fromISO(entityObj.getIn(datePropertyPath.concat([0])));
+    return date.valueOf();
   });
 
 const findEntityPathInMap = (entityMap :Map, entityEKID :UUID) :any[] => {
@@ -129,7 +123,7 @@ const getSearchTermNotExact = (
   searchString :string
 ) => `${SEARCH_PREFIX}.${propertyTypeId}:${searchString}`;
 
-const getUTCDateRangeSearchString = (PTID :UUID, timeUnits :string, startDate :DateTime, endDate :?DateTime) => {
+const getUTCDateRangeSearchString = (PTID :UUID, timeUnits :any, startDate :DateTime, endDate :?DateTime) => {
   let start = startDate.toUTC().toISO();
   let end;
   if (!endDate) {

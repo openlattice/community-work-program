@@ -5,7 +5,6 @@ import {
   fromJS,
 } from 'immutable';
 import {
-  all,
   call,
   put,
   select,
@@ -26,20 +25,16 @@ import {
   ADD_INFRACTION,
   DELETE_INFRACTION_EVENT,
   EDIT_INFRACTION_EVENT,
-  GET_INFO_FOR_PRINT_INFRACTION,
   GET_INFRACTION,
   GET_INFRACTION_TYPES,
   GET_PARTICIPANT_INFRACTIONS,
   addInfraction,
   deleteInfractionEvent,
   editInfractionEvent,
-  getInfoForPrintInfraction,
   getInfraction,
   getInfractionTypes,
   getParticipantInfractions,
 } from './InfractionsActions';
-import { getParticipant, getParticipantCases } from '../ParticipantActions';
-import { getParticipantWorker, getParticipantCasesWorker } from '../ParticipantSagas';
 import {
   getEntityKeyId,
   getEntityProperties,
@@ -55,12 +50,7 @@ import {
   submitPartialReplaceWorker
 } from '../../../core/sagas/data/DataSagas';
 import { STATE } from '../../../utils/constants/ReduxStateConsts';
-import {
-  APP_TYPE_FQNS,
-  ENROLLMENT_STATUS_FQNS,
-  INFRACTION_EVENT_FQNS,
-  INFRACTION_FQNS,
-} from '../../../core/edm/constants/FullyQualifiedNames';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { INFRACTIONS_CONSTS } from '../../../core/edm/constants/DataModelConsts';
 
 const { getEntityData, getEntitySetData } = DataApiActions;
@@ -76,12 +66,10 @@ const {
   RESULTS_IN,
   WORKSITE_PLAN,
 } = APP_TYPE_FQNS;
-const { STATUS } = ENROLLMENT_STATUS_FQNS;
-const { CATEGORY } = INFRACTION_FQNS;
-const { TYPE } = INFRACTION_EVENT_FQNS;
+const { CATEGORY, STATUS, TYPE } = PROPERTY_TYPE_FQNS;
 
-const getAppFromState = state => state.get(STATE.APP, Map());
-const getEdmFromState = state => state.get(STATE.EDM, Map());
+const getAppFromState = (state) => state.get(STATE.APP, Map());
+const getEdmFromState = (state) => state.get(STATE.EDM, Map());
 
 const LOG = new Logger('InfractionsSagas');
 /*
@@ -287,52 +275,6 @@ function* getInfractionWatcher() :Generator<*, *, *> {
 
 /*
  *
- * InfractionsActions.getInfoForPrintInfraction()
- *
- */
-
-function* getInfoForPrintInfractionWorker(action :SequenceAction) :Generator<*, *, *> {
-
-  const { id, value } = action;
-  if (value === null || value === undefined) {
-    yield put(getInfoForPrintInfraction.failure(id, ERR_ACTION_VALUE_NOT_DEFINED));
-    return;
-  }
-
-  try {
-    yield put(getInfoForPrintInfraction.request(id));
-    const { infractionEventEKID, personEKID } = value;
-
-    const workerResponses = yield all([
-      call(getParticipantCasesWorker, getParticipantCases({ personEKID })),
-      call(getInfractionWorker, getInfraction({ infractionEventEKID })),
-      call(getParticipantWorker, getParticipant({ personEKID })),
-    ]);
-    const responseError = workerResponses.reduce(
-      (error, workerResponse) => (error ? error : workerResponse.error),
-      undefined,
-    );
-    if (responseError) {
-      throw responseError;
-    }
-    yield put(getInfoForPrintInfraction.success(id));
-  }
-  catch (error) {
-    LOG.error('caught exception in getInfoForPrintInfractionWorker()', error);
-    yield put(getInfoForPrintInfraction.failure(id, error));
-  }
-  finally {
-    yield put(getInfoForPrintInfraction.finally(id));
-  }
-}
-
-function* getInfoForPrintInfractionWatcher() :Generator<*, *, *> {
-
-  yield takeEvery(GET_INFO_FOR_PRINT_INFRACTION, getInfoForPrintInfractionWorker);
-}
-
-/*
- *
  * InfractionsActions.getInfractionTypes()
  *
  */
@@ -507,8 +449,6 @@ export {
   deleteInfractionEventWorker,
   editInfractionEventWatcher,
   editInfractionEventWorker,
-  getInfoForPrintInfractionWatcher,
-  getInfoForPrintInfractionWorker,
   getInfractionWatcher,
   getInfractionWorker,
   getInfractionTypesWatcher,

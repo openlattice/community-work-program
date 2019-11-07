@@ -14,17 +14,16 @@ import { faTools } from '@fortawesome/pro-light-svg-icons';
 import EditWorksitePlanModal from './EditWorksitePlanModal';
 
 import { getEntityProperties } from '../../../utils/DataUtils';
-import {
-  ENROLLMENT_STATUS_FQNS,
-  WORKSITE_FQNS,
-  WORKSITE_PLAN_FQNS
-} from '../../../core/edm/constants/FullyQualifiedNames';
+import { PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { WORKSITE_ENROLLMENT_STATUSES } from '../../../core/edm/constants/DataModelConsts';
 import { ENROLLMENT_STATUS_COLORS, OL } from '../../../core/style/Colors';
 
-const { STATUS } = ENROLLMENT_STATUS_FQNS;
-const { NAME } = WORKSITE_FQNS;
-const { HOURS_WORKED, REQUIRED_HOURS } = WORKSITE_PLAN_FQNS;
+const {
+  HOURS_WORKED,
+  NAME,
+  REQUIRED_HOURS,
+  STATUS,
+} = PROPERTY_TYPE_FQNS;
 const { getStyleVariation } = StyleUtils;
 
 const statusColorVariation = getStyleVariation('color', {
