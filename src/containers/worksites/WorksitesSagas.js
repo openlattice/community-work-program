@@ -38,9 +38,11 @@ import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/Full
 import {
   ADD_ORGANIZATION,
   ADD_WORKSITE,
+  ADD_WORKSITE_ADDRESS,
   ADD_WORKSITE_CONTACT_AND_ADDRESS,
   CREATE_WORKSITE_SCHEDULE,
   EDIT_WORKSITE,
+  EDIT_WORKSITE_ADDRESS,
   EDIT_WORKSITE_CONTACT_AND_ADDRESS,
   GET_ORGANIZATIONS,
   GET_WORKSITE,
@@ -52,9 +54,11 @@ import {
   GET_WORKSITE_SCHEDULE,
   addOrganization,
   addWorksite,
+  addWorksiteAddress,
   addWorksiteContactAndAddress,
   createWorksiteSchedule,
   editWorksite,
+  editWorksiteAddress,
   editWorksiteContactAndAddress,
   getOrganizations,
   getWorksite,
@@ -138,6 +142,60 @@ function* addWorksiteWorker(action :SequenceAction) :Generator<*, *, *> {
 function* addWorksiteWatcher() :Generator<*, *, *> {
 
   yield takeEvery(ADD_WORKSITE, addWorksiteWorker);
+}
+
+/*
+ *
+ * WorksitesActions.addWorksiteAddress()
+ *
+ */
+
+function* addWorksiteAddressWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+  const workerResponse = {};
+  let response :Object = {};
+  let worksiteAddress :Map = Map();
+
+  try {
+    yield put(addWorksiteAddress.request(id, value));
+
+    response = yield call(submitDataGraphWorker, submitDataGraph(value));
+    if (response.error) {
+      throw response.error;
+    }
+    const { data } :Object = response;
+    const { entityKeyIds } :Object = data;
+
+    const app = yield select(getAppFromState);
+    const edm = yield select(getEdmFromState);
+    const addressESID :UUID = getEntitySetIdFromApp(app, ADDRESS);
+    const addressEKID :UUID = entityKeyIds[addressESID][0];
+
+    const { entityData } :Object = value;
+
+    const storedAddressData :Map = fromJS(entityData[addressESID][0]);
+    storedAddressData.forEach((addressValue, propertyTypeId) => {
+      const propertyTypeFqn = getPropertyFqnFromEdm(edm, propertyTypeId);
+      worksiteAddress = worksiteAddress.set(propertyTypeFqn, addressValue);
+    });
+    worksiteAddress = worksiteAddress.set(ENTITY_KEY_ID, addressEKID);
+
+    yield put(addWorksiteAddress.success(id, { worksiteAddress }));
+  }
+  catch (error) {
+    workerResponse.error = error;
+    LOG.error('caught exception in addWorksiteAddressWorker()', error);
+    yield put(addWorksiteAddress.failure(id, error));
+  }
+  finally {
+    yield put(addWorksiteAddress.finally(id));
+  }
+}
+
+function* addWorksiteAddressWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(ADD_WORKSITE_ADDRESS, addWorksiteAddressWorker);
 }
 
 /*
@@ -461,45 +519,45 @@ function* editWorksiteContactAndAddressWatcher() :Generator<*, *, *> {
  *
  */
 
-// function* editWorksiteAddressWorker(action :SequenceAction) :Generator<*, *, *> {
-//
-//   const { id, value } = action;
-//   let response :Object = {};
-//   let newAddressData :Map = Map();
-//
-//   try {
-//     yield put(editWorksiteAddress.request(id, value));
-//
-//     response = yield call(submitPartialReplaceWorker, submitPartialReplace(value));
-//     if (response.error) {
-//       throw response.error;
-//     }
-//     const { entityData } = value;
-//     const app = yield select(getAppFromState);
-//     const addressESID :UUID = getEntitySetIdFromApp(app, ADDRESS);
-//     const edm = yield select(getEdmFromState);
-//
-//     const storedEntities :Map = fromJS(entityData[addressESID]);
-//     storedEntities.forEach((addressValue, propertyTypeId) => {
-//       const propertyTypeFqn = getPropertyFqnFromEdm(edm, propertyTypeId);
-//       newAddressData = newAddressData.set(propertyTypeFqn, addressValue);
-//     });
-//
-//     yield put(editWorksiteAddress.success(id, { newAddressData }));
-//   }
-//   catch (error) {
-//     LOG.error('caught exception in editWorksiteAddressWorker()', error);
-//     yield put(editWorksiteAddress.failure(id, error));
-//   }
-//   finally {
-//     yield put(editWorksiteAddress.finally(id));
-//   }
-// }
-//
-// function* editWorksiteAddressWatcher() :Generator<*, *, *> {
-//
-//   yield takeEvery(EDIT_WORKSITE_ADDRESS, editWorksiteAddressWorker);
-// }
+function* editWorksiteAddressWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+  let response :Object = {};
+  let newAddressData :Map = Map();
+
+  try {
+    yield put(editWorksiteAddress.request(id, value));
+
+    response = yield call(submitPartialReplaceWorker, submitPartialReplace(value));
+    if (response.error) {
+      throw response.error;
+    }
+    const { entityData } = value;
+    const app = yield select(getAppFromState);
+    const addressESID :UUID = getEntitySetIdFromApp(app, ADDRESS);
+    const edm = yield select(getEdmFromState);
+
+    const storedEntities :Map = fromJS(entityData[addressESID]);
+    storedEntities.valueSeq().get(0).forEach((addressValue, propertyTypeId) => {
+      const propertyTypeFqn = getPropertyFqnFromEdm(edm, propertyTypeId);
+      newAddressData = newAddressData.set(propertyTypeFqn, addressValue);
+    });
+
+    yield put(editWorksiteAddress.success(id, { newAddressData }));
+  }
+  catch (error) {
+    LOG.error('caught exception in editWorksiteAddressWorker()', error);
+    yield put(editWorksiteAddress.failure(id, error));
+  }
+  finally {
+    yield put(editWorksiteAddress.finally(id));
+  }
+}
+
+function* editWorksiteAddressWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(EDIT_WORKSITE_ADDRESS, editWorksiteAddressWorker);
+}
 
 /*
  *
@@ -1027,12 +1085,16 @@ export {
   addOrganizationWorker,
   addWorksiteWatcher,
   addWorksiteWorker,
+  addWorksiteAddressWatcher,
+  addWorksiteAddressWorker,
   addWorksiteContactAndAddressWatcher,
   addWorksiteContactAndAddressWorker,
   createWorksiteScheduleWatcher,
   createWorksiteScheduleWorker,
   editWorksiteWatcher,
   editWorksiteWorker,
+  editWorksiteAddressWatcher,
+  editWorksiteAddressWorker,
   editWorksiteContactAndAddressWatcher,
   editWorksiteContactAndAddressWorker,
   getOrganizationsWatcher,

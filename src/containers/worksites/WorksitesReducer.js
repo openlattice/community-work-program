@@ -15,9 +15,11 @@ import { WORKSITE_STATUSES } from './WorksitesConstants';
 import {
   addOrganization,
   addWorksite,
+  addWorksiteAddress,
   addWorksiteContactAndAddress,
   createWorksiteSchedule,
   editWorksite,
+  editWorksiteAddress,
   editWorksiteContactAndAddress,
   getOrganizations,
   getWorksite,
@@ -33,12 +35,14 @@ const {
   ACTIONS,
   ADD_ORGANIZATION,
   ADD_WORKSITE,
+  ADD_WORKSITE_ADDRESS,
   ADD_WORKSITE_CONTACT_AND_ADDRESS,
   CONTACT_EMAIL,
   CONTACT_PERSON,
   CONTACT_PHONE,
   CREATE_WORKSITE_SCHEDULE,
   EDIT_WORKSITE,
+  EDIT_WORKSITE_ADDRESS,
   EDIT_WORKSITE_CONTACT_AND_ADDRESS,
   GET_ORGANIZATIONS,
   GET_WORKSITE,
@@ -69,6 +73,9 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     [ADD_WORKSITE]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
+    [ADD_WORKSITE_ADDRESS]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
     [CREATE_WORKSITE_SCHEDULE]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
@@ -76,6 +83,9 @@ const INITIAL_STATE :Map<*, *> = fromJS({
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [EDIT_WORKSITE]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [EDIT_WORKSITE_ADDRESS]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [EDIT_WORKSITE_CONTACT_AND_ADDRESS]: {
@@ -190,6 +200,29 @@ export default function worksitesReducer(state :Map<*, *> = INITIAL_STATE, actio
       });
     }
 
+    case addWorksiteAddress.case(action.type): {
+
+      return addWorksiteAddress.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, ADD_WORKSITE_ADDRESS, action.id], action)
+          .setIn([ACTIONS, ADD_WORKSITE_ADDRESS, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+
+          const seqAction :SequenceAction = action;
+          const successValue :Object = seqAction.value;
+          const { worksiteAddress } = successValue;
+
+          return state
+            .set(WORKSITE_ADDRESS, worksiteAddress)
+            .setIn([ACTIONS, ADD_WORKSITE_ADDRESS, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, ADD_WORKSITE_ADDRESS, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, ADD_WORKSITE_ADDRESS, action.id]),
+      });
+    }
+
     case addWorksiteContactAndAddress.case(action.type): {
 
       return addWorksiteContactAndAddress.reducer(state, action, {
@@ -269,6 +302,35 @@ export default function worksitesReducer(state :Map<*, *> = INITIAL_STATE, actio
         FAILURE: () => state
           .setIn([ACTIONS, EDIT_WORKSITE, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, EDIT_WORKSITE, action.id]),
+      });
+    }
+
+    case editWorksiteAddress.case(action.type): {
+
+      return editWorksiteAddress.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, EDIT_WORKSITE_ADDRESS, action.id], action)
+          .setIn([ACTIONS, EDIT_WORKSITE_ADDRESS, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+
+          const seqAction :SequenceAction = action;
+          const successValue :Object = seqAction.value;
+          const { newAddressData } = successValue;
+
+          let worksiteAddress = state.get(WORKSITE_ADDRESS);
+
+          newAddressData.forEach((value, fqn) => {
+            worksiteAddress = worksiteAddress.set(fqn, value);
+          });
+
+          return state
+            .set(WORKSITE_ADDRESS, worksiteAddress)
+            .setIn([ACTIONS, EDIT_WORKSITE_ADDRESS, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, EDIT_WORKSITE_ADDRESS, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, EDIT_WORKSITE_ADDRESS, action.id]),
       });
     }
 
