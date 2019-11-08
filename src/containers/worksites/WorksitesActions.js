@@ -17,6 +17,9 @@ const addWorksiteAddress :RequestSequence = newRequestSequence(ADD_WORKSITE_ADDR
 const ADD_WORKSITE_CONTACT_AND_ADDRESS :'ADD_WORKSITE_CONTACT_AND_ADDRESS' = 'ADD_WORKSITE_CONTACT_AND_ADDRESS';
 const addWorksiteContactAndAddress :RequestSequence = newRequestSequence(ADD_WORKSITE_CONTACT_AND_ADDRESS);
 
+const ADD_WORKSITE_CONTACTS :'ADD_WORKSITE_CONTACTS' = 'ADD_WORKSITE_CONTACTS';
+const addWorksiteContacts :RequestSequence = newRequestSequence(ADD_WORKSITE_CONTACTS);
+
 const CREATE_WORKSITE_SCHEDULE :'CREATE_WORKSITE_SCHEDULE' = 'CREATE_WORKSITE_SCHEDULE';
 const createWorksiteSchedule :RequestSequence = newRequestSequence(CREATE_WORKSITE_SCHEDULE);
 
@@ -57,6 +60,7 @@ export {
   ADD_ORGANIZATION,
   ADD_WORKSITE,
   ADD_WORKSITE_ADDRESS,
+  ADD_WORKSITE_CONTACTS,
   ADD_WORKSITE_CONTACT_AND_ADDRESS,
   CREATE_WORKSITE_SCHEDULE,
   EDIT_WORKSITE,
@@ -73,6 +77,7 @@ export {
   addOrganization,
   addWorksite,
   addWorksiteAddress,
+  addWorksiteContacts,
   addWorksiteContactAndAddress,
   createWorksiteSchedule,
   editWorksite,

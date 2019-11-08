@@ -39,6 +39,7 @@ import {
   ADD_ORGANIZATION,
   ADD_WORKSITE,
   ADD_WORKSITE_ADDRESS,
+  ADD_WORKSITE_CONTACTS,
   ADD_WORKSITE_CONTACT_AND_ADDRESS,
   CREATE_WORKSITE_SCHEDULE,
   EDIT_WORKSITE,
@@ -55,6 +56,7 @@ import {
   addOrganization,
   addWorksite,
   addWorksiteAddress,
+  addWorksiteContacts,
   addWorksiteContactAndAddress,
   createWorksiteSchedule,
   editWorksite,
@@ -286,6 +288,85 @@ function* addWorksiteContactAndAddressWorker(action :SequenceAction) :Generator<
 function* addWorksiteContactAndAddressWatcher() :Generator<*, *, *> {
 
   yield takeEvery(ADD_WORKSITE_CONTACT_AND_ADDRESS, addWorksiteContactAndAddressWorker);
+}
+
+/*
+ *
+ * WorksitesActions.addWorksiteContacts()
+ *
+ */
+
+function* addWorksiteContactsWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+  const workerResponse = {};
+  let response :Object = {};
+  let contactPerson :Map = Map();
+  let contactPhone :Map = Map();
+  let contactEmail :Map = Map();
+
+  try {
+    yield put(addWorksiteContacts.request(id, value));
+
+    response = yield call(submitDataGraphWorker, submitDataGraph(value));
+    if (response.error) {
+      throw response.error;
+    }
+    const { data } :Object = response;
+    const { entityKeyIds } :Object = data;
+
+    const app = yield select(getAppFromState);
+    const edm = yield select(getEdmFromState);
+
+    const contactInfoESID :UUID = getEntitySetIdFromApp(app, CONTACT_INFORMATION);
+    const staffESID :UUID = getEntitySetIdFromApp(app, STAFF);
+
+    const staffEKID :UUID = entityKeyIds[staffESID][0];
+
+    const { entityData } :Object = value;
+
+    const storedStaffData :Map = fromJS(entityData[staffESID][0]);
+    storedStaffData.forEach((staffValue, propertyTypeId) => {
+      const propertyTypeFqn = getPropertyFqnFromEdm(edm, propertyTypeId);
+      contactPerson = contactPerson.set(propertyTypeFqn, staffValue);
+    });
+    contactPerson = contactPerson.set(ENTITY_KEY_ID, staffEKID);
+
+    const storedContactData :List = fromJS(entityData[contactInfoESID]);
+    storedContactData.forEach((contactEntity :Map, index :number) => {
+
+      contactEntity.forEach((contactValue, propertyTypeId) => {
+
+        if (propertyTypeId === getPropertyTypeIdFromEdm(edm, PHONE_NUMBER)) {
+          contactPhone = contactPhone.set(PHONE_NUMBER, contactValue);
+          contactPhone = contactPhone.set(ENTITY_KEY_ID, entityKeyIds[contactInfoESID][index]);
+        }
+        if (propertyTypeId === getPropertyTypeIdFromEdm(edm, EMAIL)) {
+          contactEmail = contactEmail.set(EMAIL, contactValue);
+          contactEmail = contactEmail.set(ENTITY_KEY_ID, entityKeyIds[contactInfoESID][index]);
+        }
+      });
+    });
+
+    yield put(addWorksiteContacts.success(id, {
+      contactEmail,
+      contactPerson,
+      contactPhone,
+    }));
+  }
+  catch (error) {
+    workerResponse.error = error;
+    LOG.error('caught exception in addWorksiteContactsWorker()', error);
+    yield put(addWorksiteContacts.failure(id, error));
+  }
+  finally {
+    yield put(addWorksiteContacts.finally(id));
+  }
+}
+
+function* addWorksiteContactsWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(ADD_WORKSITE_CONTACTS, addWorksiteContactsWorker);
 }
 
 /*
@@ -914,13 +995,56 @@ function* getWorksiteContactWorker(action :SequenceAction) :Generator<*, *, *> {
     if (response.error) {
       throw response.error;
     }
+    console.log('response: ', response);
     let results :List = fromJS(response.data[worksiteEKID]);
     if (isDefined(results) && !results.isEmpty()) {
 
-      const employee = getNeighborDetails(results.get(0));
-      const employeeEKID :UUID = getEntityKeyId(employee);
+      const employeeEKIDs = [];
+      results.forEach((result :Map) => {
+        const ekid :UUID = getEntityKeyId(getNeighborDetails(result));
+        employeeEKIDs.push(ekid);
+      });
       const staffESID :UUID = getEntitySetIdFromApp(app, STAFF);
       const contactInfoESID :UUID = getEntitySetIdFromApp(app, CONTACT_INFORMATION);
+      searchFilter = {
+        entityKeyIds: employeeEKIDs,
+        destinationEntitySetIds: [],
+        sourceEntitySetIds: [staffESID, contactInfoESID],
+      };
+      response = yield call(
+        searchEntityNeighborsWithFilterWorker,
+        searchEntityNeighborsWithFilter({ entitySetId: employeeESID, filter: searchFilter })
+      );
+      if (response.error) {
+        throw response.error;
+      }
+      console.log('response 2: ', response);
+      results = fromJS(response.data);
+      if (isDefined(results) && !results.isEmpty()) {
+
+        results.forEach((result :Map) => {
+          if (getNeighborESID(result) === staffESID) {
+            contactPerson = getNeighborDetails(result);
+          }
+          if (getNeighborESID(result) === contactInfoESID) {
+            const { [EMAIL]: emailFound, [PHONE_NUMBER]: phoneFound } = getEntityProperties(
+              result, [EMAIL, PHONE_NUMBER]
+            );
+            if (emailFound) {
+              contactEmail = getNeighborDetails(result);
+            }
+            if (phoneFound) {
+              contactPhone = getNeighborDetails(result);
+            }
+          }
+        });
+      }
+
+
+      const employee = getNeighborDetails(results.get(0));
+      const employeeEKID :UUID = getEntityKeyId(employee);
+      // const staffESID :UUID = getEntitySetIdFromApp(app, STAFF);
+      // const contactInfoESID :UUID = getEntitySetIdFromApp(app, CONTACT_INFORMATION);
 
       searchFilter = {
         entityKeyIds: [employeeEKID],
@@ -1087,6 +1211,8 @@ export {
   addWorksiteWorker,
   addWorksiteAddressWatcher,
   addWorksiteAddressWorker,
+  addWorksiteContactsWatcher,
+  addWorksiteContactsWorker,
   addWorksiteContactAndAddressWatcher,
   addWorksiteContactAndAddressWorker,
   createWorksiteScheduleWatcher,

@@ -16,6 +16,7 @@ import {
   addOrganization,
   addWorksite,
   addWorksiteAddress,
+  addWorksiteContacts,
   addWorksiteContactAndAddress,
   createWorksiteSchedule,
   editWorksite,
@@ -36,6 +37,7 @@ const {
   ADD_ORGANIZATION,
   ADD_WORKSITE,
   ADD_WORKSITE_ADDRESS,
+  ADD_WORKSITE_CONTACTS,
   ADD_WORKSITE_CONTACT_AND_ADDRESS,
   CONTACT_EMAIL,
   CONTACT_PERSON,
@@ -59,6 +61,7 @@ const {
   SCHEDULE_FOR_FORM,
   WORKSITE,
   WORKSITE_ADDRESS,
+  WORKSITE_CONTACTS,
   WORKSITES_BY_ORG,
   WORKSITES_INFO,
   WORKSITES_LIST,
@@ -124,6 +127,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [SCHEDULE_BY_WEEKDAY]: Map(),
   [SCHEDULE_FOR_FORM]: Map(),
   [WORKSITES_BY_ORG]: Map(),
+  [WORKSITE_CONTACTS]: List(),
   [WORKSITES_INFO]: Map(),
   [WORKSITES_LIST]: List(),
   [WORKSITE]: Map(),
@@ -251,6 +255,35 @@ export default function worksitesReducer(state :Map<*, *> = INITIAL_STATE, actio
         FAILURE: () => state
           .setIn([ACTIONS, ADD_WORKSITE_CONTACT_AND_ADDRESS, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, ADD_WORKSITE_CONTACT_AND_ADDRESS, action.id]),
+      });
+    }
+
+    case addWorksiteContacts.case(action.type): {
+
+      return addWorksiteContacts.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, ADD_WORKSITE_CONTACTS, action.id], action)
+          .setIn([ACTIONS, ADD_WORKSITE_CONTACTS, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+
+          const seqAction :SequenceAction = action;
+          const successValue :Object = seqAction.value;
+          const {
+            contactEmail,
+            contactPerson,
+            contactPhone,
+          } = successValue;
+
+          return state
+            .set(CONTACT_PERSON, contactPerson)
+            .set(CONTACT_PHONE, contactPhone)
+            .set(CONTACT_EMAIL, contactEmail)
+            .setIn([ACTIONS, ADD_WORKSITE_CONTACTS, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, ADD_WORKSITE_CONTACTS, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, ADD_WORKSITE_CONTACTS, action.id]),
       });
     }
 
