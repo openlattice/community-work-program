@@ -1,7 +1,7 @@
 // @flow
 import React, { Component } from 'react';
 import styled from 'styled-components';
-import { Map } from 'immutable';
+import { List, Map } from 'immutable';
 import { CardStack } from 'lattice-ui-kit';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
@@ -51,12 +51,10 @@ const {
 } = PROPERTY_TYPE_FQNS;
 const {
   ACTIONS,
-  CONTACT_EMAIL,
-  CONTACT_PERSON,
-  CONTACT_PHONE,
   GET_WORKSITE,
   REQUEST_STATE,
   WORKSITE_ADDRESS,
+  WORKSITE_CONTACTS,
 } = WORKSITES;
 
 const FormWrapper = styled.div`
@@ -87,6 +85,7 @@ type Props = {
   match :Match;
   worksite :Map;
   worksiteAddress :Map;
+  worksiteContacts :List;
 };
 
 class EditWorksiteInfoForm extends Component<Props> {
@@ -180,13 +179,11 @@ class EditWorksiteInfoForm extends Component<Props> {
 
   render() {
     const {
-      contactEmail,
-      contactPerson,
-      contactPhone,
       getWorksiteRequestState,
       initializeAppRequestState,
       worksite,
       worksiteAddress,
+      worksiteContacts,
     } = this.props;
 
     if (initializeAppRequestState === RequestStates.PENDING
@@ -217,14 +214,12 @@ class EditWorksiteInfoForm extends Component<Props> {
               propertyTypeIds={propertyTypeIds}
               worksite={worksite} />
           <EditContactsForm
-              contactEmail={contactEmail}
-              contactPerson={contactPerson}
-              contactPhone={contactPhone}
               entityIndexToIdMap={entityIndexToIdMap}
               entitySetIds={entitySetIds}
               propertyTypeIds={propertyTypeIds}
               worksite={worksite}
-              worksiteAddress={worksiteAddress} />
+              worksiteAddress={worksiteAddress}
+              worksiteContacts={worksiteContacts} />
           <EditWorksiteAddressForm
               entityIndexToIdMap={entityIndexToIdMap}
               entitySetIds={entitySetIds}
@@ -242,14 +237,12 @@ const mapStateToProps = (state :Map) => {
   const worksites = state.get(STATE.WORKSITES);
   return ({
     app,
-    [CONTACT_EMAIL]: worksites.get(CONTACT_EMAIL),
-    [CONTACT_PERSON]: worksites.get(CONTACT_PERSON),
-    [CONTACT_PHONE]: worksites.get(CONTACT_PHONE),
     edm: state.get(STATE.EDM),
     getWorksiteRequestState: worksites.getIn([ACTIONS, GET_WORKSITE, REQUEST_STATE]),
     initializeAppRequestState: app.getIn([APP.ACTIONS, APP.INITIALIZE_APPLICATION, APP.REQUEST_STATE]),
     [WORKSITES.WORKSITE]: worksites.get(WORKSITES.WORKSITE),
     [WORKSITE_ADDRESS]: worksites.get(WORKSITE_ADDRESS),
+    [WORKSITE_CONTACTS]: worksites.get(WORKSITE_CONTACTS),
   });
 };
 

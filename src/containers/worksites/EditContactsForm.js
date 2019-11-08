@@ -13,7 +13,6 @@ import { contactsSchema, contactsUiSchema } from './schemas/EditWorksiteInfoSche
 import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
 
 const {
-  ADDRESS,
   CONTACT_INFORMATION,
   CONTACT_INFO_GIVEN,
   EMPLOYEE,
@@ -25,7 +24,6 @@ const {
 const {
   EMAIL,
   FIRST_NAME,
-  FULL_ADDRESS,
   LAST_NAME,
   PHONE_NUMBER,
   TITLE,
@@ -43,13 +41,11 @@ type Props = {
     addWorksiteContacts :RequestSequence;
     editWorksiteContactAndAddress :RequestSequence;
   },
-  contactEmail :Map;
-  contactPerson :Map;
-  contactPhone :Map;
   entityIndexToIdMap :Map;
   entitySetIds :Object;
   propertyTypeIds :Object;
   worksite :Map;
+  worksiteContacts :List;
 };
 
 type State = {
@@ -69,45 +65,44 @@ class EditContactsForm extends Component<Props, State> {
   }
 
   componentDidUpdate(prevProps :Props) {
-    const {
-      contactEmail,
-      contactPerson,
-      contactPhone,
-    } = this.props;
-    if (!prevProps.contactEmail.equals(contactEmail)
-        || !prevProps.contactPerson.equals(contactPerson)
-        || !prevProps.contactPhone.equals(contactPhone)) {
+    const { worksiteContacts } = this.props;
+    if (!prevProps.worksiteContacts.equals(worksiteContacts)) {
       this.prepopulateFormData();
     }
   }
 
   prepopulateFormData = () => {
-    const {
-      contactEmail,
-      contactPerson,
-      contactPhone,
-    } = this.props;
+    const { worksiteContacts } = this.props;
 
-    const prepopulated = !(contactEmail.isEmpty() && contactPerson.isEmpty()
-      && contactPhone.isEmpty());
-    const formData = {};
+    const prepopulated = !(worksiteContacts.isEmpty());
+    const formData :Object = {};
     if (prepopulated) {
-      const {
-        [FIRST_NAME]: firstName,
-        [LAST_NAME]: lastName,
-      } = getEntityProperties(contactPerson, [FIRST_NAME, LAST_NAME]);
-      const { [PHONE_NUMBER]: phoneNumber } = getEntityProperties(contactPhone, [PHONE_NUMBER]);
-      const { [EMAIL]: email } = getEntityProperties(contactEmail, [EMAIL]);
 
       const sectionOneKey = getPageSectionKey(1, 1);
+      formData[sectionOneKey] = [];
 
-      formData[sectionOneKey] = {};
-      // formData[sectionOneKey][getEntityAddressKey(0, STAFF, FIRST_NAME)] = firstName;
-      // formData[sectionOneKey][getEntityAddressKey(0, STAFF, LAST_NAME)] = lastName;
+      const contact :Object = {};
+      let arrayIndex :number = -1;
+      worksiteContacts.forEach((contactMap :Map) => {
+        const contactPerson = contactMap.get(STAFF, Map());
+        const {
+          [FIRST_NAME]: firstName,
+          [LAST_NAME]: lastName,
+        } = getEntityProperties(contactPerson, [FIRST_NAME, LAST_NAME]);
+        contact[getEntityAddressKey(arrayIndex, STAFF, FIRST_NAME)] = firstName;
+        contact[getEntityAddressKey(arrayIndex, STAFF, LAST_NAME)] = lastName;
 
-      // formData[sectionTwoKey] = {};
-      // formData[sectionTwoKey][getEntityAddressKey(0, CONTACT_INFORMATION, PHONE_NUMBER)] = phoneNumber;
-      // formData[sectionTwoKey][getEntityAddressKey(1, CONTACT_INFORMATION, EMAIL)] = email;
+        const contactPhone = contactMap.get(PHONE_NUMBER);
+        const { [PHONE_NUMBER]: phoneNumber } = getEntityProperties(contactPhone, [PHONE_NUMBER]);
+        contact[getEntityAddressKey(arrayIndex, CONTACT_INFORMATION, PHONE_NUMBER)] = phoneNumber;
+
+        const contactEmail = contactMap.get(EMAIL);
+        const { [EMAIL]: email } = getEntityProperties(contactEmail, [EMAIL]);
+        contact[getEntityAddressKey(arrayIndex - 1, CONTACT_INFORMATION, EMAIL)] = email;
+
+        formData[sectionOneKey].push(contact);
+        arrayIndex -= 1;
+      });
     }
 
     this.setState({
