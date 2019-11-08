@@ -25,7 +25,7 @@ import {
   getOrganizations,
   getWorksite,
   getWorksiteAddress,
-  getWorksiteContact,
+  getWorksiteContacts,
   getWorksitePlans,
   getWorksiteSchedule,
   getWorksites,
@@ -39,9 +39,6 @@ const {
   ADD_WORKSITE_ADDRESS,
   ADD_WORKSITE_CONTACTS,
   ADD_WORKSITE_CONTACT_AND_ADDRESS,
-  CONTACT_EMAIL,
-  CONTACT_PERSON,
-  CONTACT_PHONE,
   CREATE_WORKSITE_SCHEDULE,
   EDIT_WORKSITE,
   EDIT_WORKSITE_ADDRESS,
@@ -49,7 +46,7 @@ const {
   GET_ORGANIZATIONS,
   GET_WORKSITE,
   GET_WORKSITE_ADDRESS,
-  GET_WORKSITE_CONTACT,
+  GET_WORKSITE_CONTACTS,
   GET_WORKSITE_SCHEDULE,
   GET_WORKSITES,
   GET_WORKSITES_BY_ORG,
@@ -103,7 +100,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     [GET_WORKSITE_ADDRESS]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
-    [GET_WORKSITE_CONTACT]: {
+    [GET_WORKSITE_CONTACTS]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [GET_WORKSITE_SCHEDULE]: {
@@ -119,9 +116,6 @@ const INITIAL_STATE :Map<*, *> = fromJS({
       [REQUEST_STATE]: RequestStates.STANDBY
     },
   },
-  [CONTACT_EMAIL]: Map(),
-  [CONTACT_PERSON]: Map(),
-  [CONTACT_PHONE]: Map(),
   [ORGANIZATIONS_LIST]: List(),
   [ORGANIZATION_STATUSES]: Map(),
   [SCHEDULE_BY_WEEKDAY]: Map(),
@@ -246,9 +240,6 @@ export default function worksitesReducer(state :Map<*, *> = INITIAL_STATE, actio
           } = successValue;
 
           return state
-            .set(CONTACT_PERSON, contactPerson)
-            .set(CONTACT_PHONE, contactPhone)
-            .set(CONTACT_EMAIL, contactEmail)
             .set(WORKSITE_ADDRESS, worksiteAddress)
             .setIn([ACTIONS, ADD_WORKSITE_CONTACT_AND_ADDRESS, REQUEST_STATE], RequestStates.SUCCESS);
         },
@@ -276,9 +267,6 @@ export default function worksitesReducer(state :Map<*, *> = INITIAL_STATE, actio
           } = successValue;
 
           return state
-            .set(CONTACT_PERSON, contactPerson)
-            .set(CONTACT_PHONE, contactPhone)
-            .set(CONTACT_EMAIL, contactEmail)
             .setIn([ACTIONS, ADD_WORKSITE_CONTACTS, REQUEST_STATE], RequestStates.SUCCESS);
         },
         FAILURE: () => state
@@ -386,27 +374,24 @@ export default function worksitesReducer(state :Map<*, *> = INITIAL_STATE, actio
           } = successValue;
 
           let worksiteAddress = state.get(WORKSITE_ADDRESS);
-          let contactEmail = state.get(CONTACT_EMAIL);
-          let contactPerson = state.get(CONTACT_PERSON);
-          let contactPhone = state.get(CONTACT_PHONE);
+          // let contactEmail = state.get(CONTACT_EMAIL);
+          // let contactPerson = state.get(CONTACT_PERSON);
+          // let contactPhone = state.get(CONTACT_PHONE);
 
           newAddressData.forEach((value, fqn) => {
             worksiteAddress = worksiteAddress.set(fqn, value);
           });
-          newEmailData.forEach((value, fqn) => {
-            contactEmail = contactEmail.set(fqn, value);
-          });
-          newPersonData.forEach((value, fqn) => {
-            contactPerson = contactPerson.set(fqn, value);
-          });
-          newPhoneData.forEach((value, fqn) => {
-            contactPhone = contactPhone.set(fqn, value);
-          });
+          // newEmailData.forEach((value, fqn) => {
+          //   contactEmail = contactEmail.set(fqn, value);
+          // });
+          // newPersonData.forEach((value, fqn) => {
+          //   contactPerson = contactPerson.set(fqn, value);
+          // });
+          // newPhoneData.forEach((value, fqn) => {
+          //   contactPhone = contactPhone.set(fqn, value);
+          // });
 
           return state
-            .set(CONTACT_PERSON, contactPerson)
-            .set(CONTACT_PHONE, contactPhone)
-            .set(CONTACT_EMAIL, contactEmail)
             .set(WORKSITE_ADDRESS, worksiteAddress)
             .setIn([ACTIONS, EDIT_WORKSITE_CONTACT_AND_ADDRESS, REQUEST_STATE], RequestStates.SUCCESS);
         },
@@ -685,16 +670,16 @@ export default function worksitesReducer(state :Map<*, *> = INITIAL_STATE, actio
       });
     }
 
-    case getWorksiteContact.case(action.type): {
+    case getWorksiteContacts.case(action.type): {
 
-      return getWorksiteContact.reducer(state, action, {
+      return getWorksiteContacts.reducer(state, action, {
 
         REQUEST: () => state
-          .setIn([ACTIONS, GET_WORKSITE_CONTACT, action.id], fromJS(action))
-          .setIn([ACTIONS, GET_WORKSITE_CONTACT, REQUEST_STATE], RequestStates.PENDING),
+          .setIn([ACTIONS, GET_WORKSITE_CONTACTS, action.id], fromJS(action))
+          .setIn([ACTIONS, GET_WORKSITE_CONTACTS, REQUEST_STATE], RequestStates.PENDING),
         SUCCESS: () => {
 
-          if (!state.hasIn([ACTIONS, GET_WORKSITE_CONTACT, action.id])) {
+          if (!state.hasIn([ACTIONS, GET_WORKSITE_CONTACTS, action.id])) {
             return state;
           }
 
@@ -702,17 +687,15 @@ export default function worksitesReducer(state :Map<*, *> = INITIAL_STATE, actio
           if (value === null || value === undefined) {
             return state;
           }
-          const { contactEmail, contactPerson, contactPhone } = value;
+          const { worksiteContacts } = value;
 
           return state
-            .set(CONTACT_PERSON, contactPerson)
-            .set(CONTACT_EMAIL, contactEmail)
-            .set(CONTACT_PHONE, contactPhone)
-            .setIn([ACTIONS, GET_WORKSITE_CONTACT, REQUEST_STATE], RequestStates.SUCCESS);
+            .set(WORKSITE_CONTACTS, worksiteContacts)
+            .setIn([ACTIONS, GET_WORKSITE_CONTACTS, REQUEST_STATE], RequestStates.SUCCESS);
         },
         FAILURE: () => state
-          .setIn([ACTIONS, GET_WORKSITE_CONTACT, REQUEST_STATE], RequestStates.FAILURE),
-        FINALLY: () => state.deleteIn([ACTIONS, GET_WORKSITE_CONTACT, action.id])
+          .setIn([ACTIONS, GET_WORKSITE_CONTACTS, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, GET_WORKSITE_CONTACTS, action.id])
       });
     }
 
