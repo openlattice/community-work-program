@@ -118,17 +118,27 @@ class EditWorksiteInfoForm extends Component<Props> {
 
   createEntityIndexToIdMap = () => {
     const {
-      contactEmail,
-      contactPerson,
-      contactPhone,
       worksite,
       worksiteAddress,
+      worksiteContacts,
     } = this.props;
+
+    const personEKIDs :UUID[] = [];
+    const phoneEKIDs :UUID[] = [];
+    const emailEKIDs :UUID[] = [];
+    worksiteContacts.forEach((contactMap :Map) => {
+      const person = contactMap.get(STAFF);
+      personEKIDs.push(getEntityKeyId(person));
+      const phone = contactMap.get(PHONE_NUMBER);
+      phoneEKIDs.push(getEntityKeyId(phone));
+      const email = contactMap.get(EMAIL);
+      emailEKIDs.push(getEntityKeyId(email));
+    });
     const entityIndexToIdMap :Map = Map().withMutations((map :Map) => {
       map.setIn([ADDRESS, 0], getEntityKeyId(worksiteAddress));
-      map.setIn([CONTACT_INFORMATION, 0], getEntityKeyId(contactPhone));
-      map.setIn([CONTACT_INFORMATION, 1], getEntityKeyId(contactEmail));
-      map.setIn([STAFF, 0], getEntityKeyId(contactPerson));
+      map.setIn([CONTACT_INFORMATION, -1], phoneEKIDs);
+      map.setIn([CONTACT_INFORMATION, -2], emailEKIDs);
+      map.setIn([STAFF, -1], personEKIDs);
       map.setIn([WORKSITE, 0], getEntityKeyId(worksite));
     });
     return entityIndexToIdMap;
