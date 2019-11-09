@@ -128,6 +128,9 @@ const contactsUiSchema = {
       [getEntityAddressKey(-2, CONTACT_INFORMATION, EMAIL)]: {
         classNames: 'column-span-6'
       },
+      'ui:options': {
+        editable: true
+      }
     }
   },
 };
