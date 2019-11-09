@@ -81,27 +81,25 @@ class EditContactsForm extends Component<Props, State> {
       const sectionOneKey = getPageSectionKey(1, 1);
       formData[sectionOneKey] = [];
 
-      const contact :Object = {};
-      let arrayIndex :number = -1;
       worksiteContacts.forEach((contactMap :Map) => {
+        const contact :Object = {};
         const contactPerson = contactMap.get(STAFF, Map());
         const {
           [FIRST_NAME]: firstName,
           [LAST_NAME]: lastName,
         } = getEntityProperties(contactPerson, [FIRST_NAME, LAST_NAME]);
-        contact[getEntityAddressKey(arrayIndex, STAFF, FIRST_NAME)] = firstName;
-        contact[getEntityAddressKey(arrayIndex, STAFF, LAST_NAME)] = lastName;
+        contact[getEntityAddressKey(-1, STAFF, FIRST_NAME)] = firstName;
+        contact[getEntityAddressKey(-1, STAFF, LAST_NAME)] = lastName;
 
         const contactPhone = contactMap.get(PHONE_NUMBER);
         const { [PHONE_NUMBER]: phoneNumber } = getEntityProperties(contactPhone, [PHONE_NUMBER]);
-        contact[getEntityAddressKey(arrayIndex, CONTACT_INFORMATION, PHONE_NUMBER)] = phoneNumber;
+        contact[getEntityAddressKey(-1, CONTACT_INFORMATION, PHONE_NUMBER)] = phoneNumber;
 
         const contactEmail = contactMap.get(EMAIL);
         const { [EMAIL]: email } = getEntityProperties(contactEmail, [EMAIL]);
-        contact[getEntityAddressKey(arrayIndex - 1, CONTACT_INFORMATION, EMAIL)] = email;
+        contact[getEntityAddressKey(-2, CONTACT_INFORMATION, EMAIL)] = email;
 
         formData[sectionOneKey].push(contact);
-        arrayIndex -= 1;
       });
     }
 
@@ -158,7 +156,7 @@ class EditContactsForm extends Component<Props, State> {
     const associationEntityData :Object = processAssociationEntityData(associations, entitySetIds, propertyTypeIds);
     console.log('entityData: ', entityData);
     console.log('associationEntityData: ', associationEntityData);
-    actions.addWorksiteContacts({ associationEntityData, entityData });
+    actions.addWorksiteContacts({ associationEntityData, contacts, entityData });
   }
 
   render() {
