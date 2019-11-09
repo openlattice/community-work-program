@@ -76,9 +76,6 @@ type Props = {
     goToRoute :RequestSequence;
   },
   app :Map;
-  contactEmail :Map;
-  contactPerson :Map;
-  contactPhone :Map;
   edm :Map;
   getWorksiteRequestState :RequestState;
   initializeAppRequestState :RequestState;
