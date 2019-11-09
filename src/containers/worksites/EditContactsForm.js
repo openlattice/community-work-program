@@ -1,13 +1,18 @@
 // @flow
 import React, { Component } from 'react';
-import { Map, fromJS, getIn } from 'immutable';
+import {
+  List,
+  Map,
+  fromJS,
+  getIn
+} from 'immutable';
 import { Card, CardHeader } from 'lattice-ui-kit';
 import { Form, DataProcessingUtils } from 'lattice-fabricate';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import type { RequestSequence } from 'redux-reqseq';
 
-import { addWorksiteContacts, deleteWorksiteContact, editWorksiteContactAndAddress } from './WorksitesActions';
+import { addWorksiteContacts, deleteWorksiteContact, editWorksiteContact } from './WorksitesActions';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { contactsSchema, contactsUiSchema } from './schemas/EditWorksiteInfoSchemas';
 import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
@@ -40,7 +45,7 @@ type Props = {
   actions:{
     addWorksiteContacts :RequestSequence;
     deleteWorksiteContact :RequestSequence;
-    editWorksiteContactAndAddress :RequestSequence;
+    editWorksiteContact :RequestSequence;
   },
   entityIndexToIdMap :Map;
   entitySetIds :Object;
@@ -56,10 +61,14 @@ type State = {
 
 class EditContactsForm extends Component<Props, State> {
 
-  state = {
-    formData: {},
-    prepopulated: false,
-  };
+  constructor(props :Props) {
+    super(props);
+
+    this.state = {
+      formData: {},
+      prepopulated: false,
+    };
+  }
 
   componentDidMount() {
     this.prepopulateFormData();
@@ -117,12 +126,8 @@ class EditContactsForm extends Component<Props, State> {
       propertyTypeIds,
       worksite
     } = this.props;
-    console.log('formData: ', formData);
-
-    // const contactIndexMapper = (index :number) => index +
 
     const storedContactData :[] = getIn(formData, [getPageSectionKey(1, 1)]);
-    console.log('storedContactData: ', storedContactData);
     const newContactsList :Object[] = storedContactData.map((contact :{}, index :number) => {
       const newContact :{} = {};
       newContact[getEntityAddressKey(0, EMPLOYEE, TITLE)] = 'worksite employee';
@@ -138,11 +143,10 @@ class EditContactsForm extends Component<Props, State> {
       ] || '';
       return newContact;
     });
-    console.log('newContactsList: ', newContactsList);
+
     const contacts = {
-      [getPageSectionKey(1, 1)]: {}
+      [getPageSectionKey(1, 1)]: newContactsList
     };
-    contacts[getPageSectionKey(1, 1)] = newContactsList;
 
     const associations = [];
     const worksiteEKID :UUID = getEntityKeyId(worksite);
@@ -155,8 +159,6 @@ class EditContactsForm extends Component<Props, State> {
 
     const entityData :Object = processEntityData(contacts, entitySetIds, propertyTypeIds);
     const associationEntityData :Object = processAssociationEntityData(associations, entitySetIds, propertyTypeIds);
-    console.log('entityData: ', entityData);
-    console.log('associationEntityData: ', associationEntityData);
     actions.addWorksiteContacts({ associationEntityData, contacts, entityData });
   }
 
@@ -177,7 +179,7 @@ class EditContactsForm extends Component<Props, State> {
         addContact: this.handleOnSubmit
       },
       deleteAction: actions.deleteWorksiteContact,
-      // editAction: actions.editWorksiteContactAndAddress,
+      editAction: actions.editWorksiteContact,
       entityIndexToIdMap,
       entitySetIds,
       propertyTypeIds,
@@ -202,7 +204,7 @@ const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
     addWorksiteContacts,
     deleteWorksiteContact,
-    editWorksiteContactAndAddress,
+    editWorksiteContact,
   }, dispatch)
 });
 
