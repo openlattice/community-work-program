@@ -2,8 +2,10 @@
 import React, { Component } from 'react';
 import styled from 'styled-components';
 import {
+  List,
   Map,
-  OrderedMap
+  OrderedMap,
+  fromJS,
 } from 'immutable';
 import {
   Card,
@@ -37,6 +39,7 @@ import { BackNavButton } from '../../components/controls/index';
 import { EMPTY_FIELD } from '../participants/ParticipantsConstants';
 import * as Routes from '../../core/router/Routes';
 
+const { STAFF } = APP_TYPE_FQNS;
 const {
   DATETIME_END,
   DATETIME_START,
@@ -48,14 +51,12 @@ const {
 } = PROPERTY_TYPE_FQNS;
 const {
   ACTIONS,
-  CONTACT_EMAIL,
-  CONTACT_PERSON,
-  CONTACT_PHONE,
   GET_WORKSITE,
   REQUEST_STATE,
   SCHEDULE_BY_WEEKDAY,
   WORKSITE,
   WORKSITE_ADDRESS,
+  WORKSITE_CONTACTS,
 } = WORKSITES;
 
 /* Label Maps */
@@ -65,9 +66,9 @@ const datesLabelMap :OrderedMap = OrderedMap({
 });
 
 const contactLabelMap :OrderedMap = OrderedMap({
-  contactName: 'Contact name',
-  contactPhone: 'Contact phone',
-  contactEmail: 'Contact email',
+  contactNames: 'Contact name',
+  contactPhones: 'Contact phone',
+  contactEmails: 'Contact email',
   address: 'Address',
 });
 
@@ -100,15 +101,13 @@ type Props = {
     goToRoute :RequestSequence;
   },
   app :Map;
-  contactEmail :Map;
-  contactPerson :Map;
-  contactPhone :Map;
   getWorksiteRequestState :RequestState;
   initializeAppRequestState :RequestState;
   match :Match;
   scheduleByWeekday :Map;
   worksite :Map;
   worksiteAddress :Map;
+  worksiteContacts :Map;
 };
 
 class WorksiteProfile extends Component<Props> {
@@ -166,16 +165,53 @@ class WorksiteProfile extends Component<Props> {
     }
   }
 
+  formatWorksiteContacts = () => {
+    const { worksiteAddress, worksiteContacts } = this.props;
+
+    const { [FULL_ADDRESS]: address } = getEntityProperties(worksiteAddress, [FULL_ADDRESS]);
+    let contactsAndAddress :Map = fromJS({
+      contactNames: '',
+      contactPhones: '',
+      contactEmails: '',
+      address: address || EMPTY_FIELD,
+    });
+
+    if (!worksiteContacts.isEmpty()) {
+
+      worksiteContacts.forEach((contactMap :Map) => {
+        const person :Map = contactMap.get(STAFF, Map());
+        const fullName :string = getPersonFullName(person);
+        contactsAndAddress = contactsAndAddress
+          .set('contactNames', `${contactsAndAddress.get('contactNames')}\n${fullName}`);
+
+        const contactPhone :Map = contactMap.get(PHONE_NUMBER, Map());
+        const { [PHONE_NUMBER]: phoneNumber } = getEntityProperties(contactPhone, [PHONE_NUMBER]);
+        contactsAndAddress = contactsAndAddress
+          .set('contactPhones', `${contactsAndAddress.get('contactPhones')}\n${phoneNumber}`);
+
+        const contactEmail :Map = contactMap.get(EMAIL, Map());
+        const { [EMAIL]: email } = getEntityProperties(contactEmail, [EMAIL]);
+        contactsAndAddress = contactsAndAddress
+          .set('contactEmails', `${contactsAndAddress.get('contactEmails')}\n${email}`);
+      });
+    }
+    console.log('contactsAndAddress: ', contactsAndAddress.toJS());
+
+    contactsAndAddress = contactsAndAddress.map((value :any) => {
+      if (List.isList(value) && value.isEmpty()) {
+        return EMPTY_FIELD;
+      }
+      return value;
+    });
+    return contactsAndAddress;
+  }
+
   render() {
     const {
-      contactEmail,
-      contactPerson,
-      contactPhone,
       getWorksiteRequestState,
       initializeAppRequestState,
       scheduleByWeekday,
       worksite,
-      worksiteAddress,
     } = this.props;
 
     if (initializeAppRequestState === RequestStates.PENDING
@@ -193,22 +229,13 @@ class WorksiteProfile extends Component<Props> {
       [DESCRIPTION]: availableWork,
       [NAME]: worksiteName
     } = getEntityProperties(worksite, [DATETIME_END, DATETIME_START, DESCRIPTION, NAME]);
-    const fullName = getPersonFullName(contactPerson);
-    const { [PHONE_NUMBER]: phoneNumber } = getEntityProperties(contactPhone, [PHONE_NUMBER]);
-    const { [EMAIL]: email } = getEntityProperties(contactEmail, [EMAIL]);
-    const { [FULL_ADDRESS]: address } = getEntityProperties(worksiteAddress, [FULL_ADDRESS]);
 
     const dates :Map = Map({
       dateFirstActive: formatAsDate(dateActive),
       dateInactive: formatAsDate(dateInactive),
     });
 
-    const contact :Map = Map({
-      contactName: fullName,
-      contactPhone: phoneNumber || EMPTY_FIELD,
-      contactEmail: email || EMPTY_FIELD,
-      address: address || EMPTY_FIELD,
-    });
+    const contactsAndAddress :Map = this.formatWorksiteContacts();
 
     const status = getWorksiteStatus(dateActive, dateInactive);
     const worksiteInfo :Map = Map({
@@ -242,7 +269,7 @@ class WorksiteProfile extends Component<Props> {
             <CardSegment padding={cardSegmentPadding}>
               <DataGrid
                   columns={4}
-                  data={contact}
+                  data={contactsAndAddress}
                   labelMap={contactLabelMap} />
             </CardSegment>
             <CardSegment padding={cardSegmentPadding}>
@@ -273,18 +300,16 @@ const mapStateToProps = (state) => {
   const worksites = state.get(STATE.WORKSITES);
   return ({
     app,
-    [CONTACT_EMAIL]: worksites.get(CONTACT_EMAIL),
-    [CONTACT_PERSON]: worksites.get(CONTACT_PERSON),
-    [CONTACT_PHONE]: worksites.get(CONTACT_PHONE),
     getWorksiteRequestState: worksites.getIn([ACTIONS, GET_WORKSITE, REQUEST_STATE]),
     initializeAppRequestState: app.getIn([APP.ACTIONS, APP.INITIALIZE_APPLICATION, APP.REQUEST_STATE]),
     [SCHEDULE_BY_WEEKDAY]: worksites.get(SCHEDULE_BY_WEEKDAY),
     [WORKSITE]: worksites.get(WORKSITE),
     [WORKSITE_ADDRESS]: worksites.get(WORKSITE_ADDRESS),
+    [WORKSITE_CONTACTS]: worksites.get(WORKSITE_CONTACTS),
   });
 };
 
-const mapDispatchToProps = dispatch => ({
+const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
     getWorksite,
     goToRoute,
