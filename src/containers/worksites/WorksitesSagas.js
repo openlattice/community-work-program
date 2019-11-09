@@ -41,7 +41,6 @@ import {
   ADD_WORKSITE,
   ADD_WORKSITE_ADDRESS,
   ADD_WORKSITE_CONTACTS,
-  ADD_WORKSITE_CONTACT_AND_ADDRESS,
   CREATE_WORKSITE_SCHEDULE,
   EDIT_WORKSITE,
   EDIT_WORKSITE_ADDRESS,
@@ -58,7 +57,6 @@ import {
   addWorksite,
   addWorksiteAddress,
   addWorksiteContacts,
-  addWorksiteContactAndAddress,
   createWorksiteSchedule,
   editWorksite,
   editWorksiteAddress,
@@ -100,7 +98,6 @@ const { searchEntityNeighborsWithFilter } = SearchApiActions;
 const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
 const { getEntityData, getEntitySetData } = DataApiActions;
 const { getEntityDataWorker, getEntitySetDataWorker } = DataApiSagas;
-const { getEntityAddressKey, parseEntityAddressKey, getPageSectionKey } = DataProcessingUtils;
 
 const getAppFromState = (state) => state.get(STATE.APP, Map());
 const getEdmFromState = (state) => state.get(STATE.EDM, Map());
@@ -200,96 +197,6 @@ function* addWorksiteAddressWorker(action :SequenceAction) :Generator<*, *, *> {
 function* addWorksiteAddressWatcher() :Generator<*, *, *> {
 
   yield takeEvery(ADD_WORKSITE_ADDRESS, addWorksiteAddressWorker);
-}
-
-/*
- *
- * WorksitesActions.addWorksiteContactAndAddress()
- *
- */
-
-function* addWorksiteContactAndAddressWorker(action :SequenceAction) :Generator<*, *, *> {
-
-  const { id, value } = action;
-  const workerResponse = {};
-  let response :Object = {};
-  let worksiteAddress :Map = Map();
-  let contactPerson :Map = Map();
-  let contactPhone :Map = Map();
-  let contactEmail :Map = Map();
-
-  try {
-    yield put(addWorksiteContactAndAddress.request(id, value));
-
-    response = yield call(submitDataGraphWorker, submitDataGraph(value));
-    if (response.error) {
-      throw response.error;
-    }
-    const { data } :Object = response;
-    const { entityKeyIds } :Object = data;
-
-    const app = yield select(getAppFromState);
-    const edm = yield select(getEdmFromState);
-
-    const contactInfoESID :UUID = getEntitySetIdFromApp(app, CONTACT_INFORMATION);
-    const staffESID :UUID = getEntitySetIdFromApp(app, STAFF);
-    const addressESID :UUID = getEntitySetIdFromApp(app, ADDRESS);
-
-    const staffEKID :UUID = entityKeyIds[staffESID][0];
-    const addressEKID :UUID = entityKeyIds[addressESID][0];
-
-    const { entityData } :Object = value;
-
-    const storedAddressData :Map = fromJS(entityData[addressESID][0]);
-    storedAddressData.forEach((addressValue, propertyTypeId) => {
-      const propertyTypeFqn = getPropertyFqnFromEdm(edm, propertyTypeId);
-      worksiteAddress = worksiteAddress.set(propertyTypeFqn, addressValue);
-    });
-    worksiteAddress = worksiteAddress.set(ENTITY_KEY_ID, addressEKID);
-
-    const storedStaffData :Map = fromJS(entityData[staffESID][0]);
-    storedStaffData.forEach((staffValue, propertyTypeId) => {
-      const propertyTypeFqn = getPropertyFqnFromEdm(edm, propertyTypeId);
-      contactPerson = contactPerson.set(propertyTypeFqn, staffValue);
-    });
-    contactPerson = contactPerson.set(ENTITY_KEY_ID, staffEKID);
-
-    const storedContactData :List = fromJS(entityData[contactInfoESID]);
-    storedContactData.forEach((contactEntity :Map, index :number) => {
-
-      contactEntity.forEach((contactValue, propertyTypeId) => {
-
-        if (propertyTypeId === getPropertyTypeIdFromEdm(edm, PHONE_NUMBER)) {
-          contactPhone = contactPhone.set(PHONE_NUMBER, contactValue);
-          contactPhone = contactPhone.set(ENTITY_KEY_ID, entityKeyIds[contactInfoESID][index]);
-        }
-        if (propertyTypeId === getPropertyTypeIdFromEdm(edm, EMAIL)) {
-          contactEmail = contactEmail.set(EMAIL, contactValue);
-          contactEmail = contactEmail.set(ENTITY_KEY_ID, entityKeyIds[contactInfoESID][index]);
-        }
-      });
-    });
-
-    yield put(addWorksiteContactAndAddress.success(id, {
-      contactEmail,
-      contactPerson,
-      contactPhone,
-      worksiteAddress,
-    }));
-  }
-  catch (error) {
-    workerResponse.error = error;
-    LOG.error('caught exception in addWorksiteContactAndAddressWorker()', error);
-    yield put(addWorksiteContactAndAddress.failure(id, error));
-  }
-  finally {
-    yield put(addWorksiteContactAndAddress.finally(id));
-  }
-}
-
-function* addWorksiteContactAndAddressWatcher() :Generator<*, *, *> {
-
-  yield takeEvery(ADD_WORKSITE_CONTACT_AND_ADDRESS, addWorksiteContactAndAddressWorker);
 }
 
 /*
@@ -1162,8 +1069,6 @@ export {
   addWorksiteAddressWorker,
   addWorksiteContactsWatcher,
   addWorksiteContactsWorker,
-  addWorksiteContactAndAddressWatcher,
-  addWorksiteContactAndAddressWorker,
   createWorksiteScheduleWatcher,
   createWorksiteScheduleWorker,
   editWorksiteWatcher,

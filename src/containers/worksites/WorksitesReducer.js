@@ -17,7 +17,6 @@ import {
   addWorksite,
   addWorksiteAddress,
   addWorksiteContacts,
-  addWorksiteContactAndAddress,
   createWorksiteSchedule,
   editWorksite,
   editWorksiteAddress,
@@ -38,7 +37,6 @@ const {
   ADD_WORKSITE,
   ADD_WORKSITE_ADDRESS,
   ADD_WORKSITE_CONTACTS,
-  ADD_WORKSITE_CONTACT_AND_ADDRESS,
   CREATE_WORKSITE_SCHEDULE,
   EDIT_WORKSITE,
   EDIT_WORKSITE_ADDRESS,
@@ -79,7 +77,6 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     [CREATE_WORKSITE_SCHEDULE]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
-    [ADD_WORKSITE_CONTACT_AND_ADDRESS]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [EDIT_WORKSITE]: {
@@ -221,31 +218,6 @@ export default function worksitesReducer(state :Map<*, *> = INITIAL_STATE, actio
       });
     }
 
-    case addWorksiteContactAndAddress.case(action.type): {
-
-      return addWorksiteContactAndAddress.reducer(state, action, {
-
-        REQUEST: () => state
-          .setIn([ACTIONS, ADD_WORKSITE_CONTACT_AND_ADDRESS, action.id], action)
-          .setIn([ACTIONS, ADD_WORKSITE_CONTACT_AND_ADDRESS, REQUEST_STATE], RequestStates.PENDING),
-        SUCCESS: () => {
-
-          const seqAction :SequenceAction = action;
-          const successValue :Object = seqAction.value;
-          const {
-            worksiteAddress,
-          } = successValue;
-
-          return state
-            .set(WORKSITE_ADDRESS, worksiteAddress)
-            .setIn([ACTIONS, ADD_WORKSITE_CONTACT_AND_ADDRESS, REQUEST_STATE], RequestStates.SUCCESS);
-        },
-        FAILURE: () => state
-          .setIn([ACTIONS, ADD_WORKSITE_CONTACT_AND_ADDRESS, REQUEST_STATE], RequestStates.FAILURE),
-        FINALLY: () => state.deleteIn([ACTIONS, ADD_WORKSITE_CONTACT_AND_ADDRESS, action.id]),
-      });
-    }
-
     case addWorksiteContacts.case(action.type): {
 
       return addWorksiteContacts.reducer(state, action, {
@@ -261,7 +233,6 @@ export default function worksitesReducer(state :Map<*, *> = INITIAL_STATE, actio
 
           let worksiteContacts = state.get(WORKSITE_CONTACTS);
           worksiteContacts = worksiteContacts.concat(newWorksiteContacts);
-          console.log('worksiteContacts: ', worksiteContacts.toJS());
 
           return state
             .set(WORKSITE_CONTACTS, worksiteContacts)
