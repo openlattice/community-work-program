@@ -16,6 +16,7 @@ import {
   SearchApiActions,
   SearchApiSagas
 } from 'lattice-sagas';
+import { DataProcessingUtils } from 'lattice-fabricate';
 import type { SequenceAction } from 'redux-reqseq';
 
 import Logger from '../../utils/Logger';
@@ -99,6 +100,7 @@ const { searchEntityNeighborsWithFilter } = SearchApiActions;
 const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
 const { getEntityData, getEntitySetData } = DataApiActions;
 const { getEntityDataWorker, getEntitySetDataWorker } = DataApiSagas;
+const { getEntityAddressKey, parseEntityAddressKey, getPageSectionKey } = DataProcessingUtils;
 
 const getAppFromState = (state) => state.get(STATE.APP, Map());
 const getEdmFromState = (state) => state.get(STATE.EDM, Map());
@@ -301,58 +303,43 @@ function* addWorksiteContactsWorker(action :SequenceAction) :Generator<*, *, *> 
   const { id, value } = action;
   const workerResponse = {};
   let response :Object = {};
-  let contactPerson :Map = Map();
-  let contactPhone :Map = Map();
-  let contactEmail :Map = Map();
+  let newWorksiteContacts :List = List();
 
   try {
     yield put(addWorksiteContacts.request(id, value));
+    const { associationEntityData, entityData } :Object = value;
 
-    response = yield call(submitDataGraphWorker, submitDataGraph(value));
+    response = yield call(submitDataGraphWorker, submitDataGraph({ associationEntityData, entityData }));
     if (response.error) {
       throw response.error;
     }
-    const { data } :Object = response;
-    const { entityKeyIds } :Object = data;
 
-    const app = yield select(getAppFromState);
-    const edm = yield select(getEdmFromState);
-
-    const contactInfoESID :UUID = getEntitySetIdFromApp(app, CONTACT_INFORMATION);
-    const staffESID :UUID = getEntitySetIdFromApp(app, STAFF);
-
-    const staffEKID :UUID = entityKeyIds[staffESID][0];
-
-    const { entityData } :Object = value;
-
-    const storedStaffData :Map = fromJS(entityData[staffESID][0]);
-    storedStaffData.forEach((staffValue, propertyTypeId) => {
-      const propertyTypeFqn = getPropertyFqnFromEdm(edm, propertyTypeId);
-      contactPerson = contactPerson.set(propertyTypeFqn, staffValue);
-    });
-    contactPerson = contactPerson.set(ENTITY_KEY_ID, staffEKID);
-
-    const storedContactData :List = fromJS(entityData[contactInfoESID]);
-    storedContactData.forEach((contactEntity :Map, index :number) => {
-
-      contactEntity.forEach((contactValue, propertyTypeId) => {
-
-        if (propertyTypeId === getPropertyTypeIdFromEdm(edm, PHONE_NUMBER)) {
-          contactPhone = contactPhone.set(PHONE_NUMBER, contactValue);
-          contactPhone = contactPhone.set(ENTITY_KEY_ID, entityKeyIds[contactInfoESID][index]);
+    const { contacts } = value;
+    const newContactData :Object = contacts[getPageSectionKey(1, 1)][0];
+    let newContact :Map = Map();
+    fromJS(newContactData).forEach((contactValue :string, entityAddressKey :string) => {
+      const { entityIndex, entitySetName, propertyTypeFQN } = parseEntityAddressKey(entityAddressKey);
+      if (entitySetName === STAFF.toString()) {
+        let staffMember :Map = newContact.get(STAFF, Map());
+        staffMember = staffMember.set(propertyTypeFQN, contactValue);
+        newContact = newContact.set(STAFF, staffMember);
+      }
+      if (entitySetName === CONTACT_INFORMATION.toString()) {
+        if (entityIndex === 0) {
+          let contactMethod :Map = newContact.get(PHONE_NUMBER, Map());
+          contactMethod = contactMethod.set(propertyTypeFQN, contactValue);
+          newContact = newContact.set(PHONE_NUMBER, contactMethod);
         }
-        if (propertyTypeId === getPropertyTypeIdFromEdm(edm, EMAIL)) {
-          contactEmail = contactEmail.set(EMAIL, contactValue);
-          contactEmail = contactEmail.set(ENTITY_KEY_ID, entityKeyIds[contactInfoESID][index]);
+        if (entityIndex === 1) {
+          let contactMethod :Map = newContact.get(EMAIL, Map());
+          contactMethod = contactMethod.set(propertyTypeFQN, contactValue);
+          newContact = newContact.set(EMAIL, contactMethod);
         }
-      });
+      }
     });
+    newWorksiteContacts = newWorksiteContacts.push(newContact);
 
-    yield put(addWorksiteContacts.success(id, {
-      contactEmail,
-      contactPerson,
-      contactPhone,
-    }));
+    yield put(addWorksiteContacts.success(id, { newWorksiteContacts }));
   }
   catch (error) {
     workerResponse.error = error;

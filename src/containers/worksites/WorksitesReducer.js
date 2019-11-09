@@ -233,9 +233,6 @@ export default function worksitesReducer(state :Map<*, *> = INITIAL_STATE, actio
           const seqAction :SequenceAction = action;
           const successValue :Object = seqAction.value;
           const {
-            contactEmail,
-            contactPerson,
-            contactPhone,
             worksiteAddress,
           } = successValue;
 
@@ -260,13 +257,14 @@ export default function worksitesReducer(state :Map<*, *> = INITIAL_STATE, actio
 
           const seqAction :SequenceAction = action;
           const successValue :Object = seqAction.value;
-          const {
-            contactEmail,
-            contactPerson,
-            contactPhone,
-          } = successValue;
+          const { newWorksiteContacts } = successValue;
+
+          let worksiteContacts = state.get(WORKSITE_CONTACTS);
+          worksiteContacts = worksiteContacts.concat(newWorksiteContacts);
+          console.log('worksiteContacts: ', worksiteContacts.toJS());
 
           return state
+            .set(WORKSITE_CONTACTS, worksiteContacts)
             .setIn([ACTIONS, ADD_WORKSITE_CONTACTS, REQUEST_STATE], RequestStates.SUCCESS);
         },
         FAILURE: () => state
