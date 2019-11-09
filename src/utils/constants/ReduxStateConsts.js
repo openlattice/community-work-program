@@ -182,6 +182,7 @@ export const WORKSITES = {
   ADD_WORKSITE_ADDRESS: 'addWorksiteAddress',
   ADD_WORKSITE_CONTACTS: 'addWorksiteContacts',
   CREATE_WORKSITE_SCHEDULE: 'createWorksiteSchedule',
+  DELETE_WORKSITE_CONTACT: 'deleteWorksiteContact',
   EDIT_WORKSITE: 'editWorksite',
   EDIT_WORKSITE_ADDRESS: 'editWorksiteAddress',
   EDIT_WORKSITE_CONTACT_AND_ADDRESS: 'editWorksiteContactAndAddress',

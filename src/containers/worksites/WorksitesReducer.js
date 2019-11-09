@@ -18,6 +18,7 @@ import {
   addWorksiteAddress,
   addWorksiteContacts,
   createWorksiteSchedule,
+  deleteWorksiteContact,
   editWorksite,
   editWorksiteAddress,
   editWorksiteContactAndAddress,
@@ -38,6 +39,7 @@ const {
   ADD_WORKSITE_ADDRESS,
   ADD_WORKSITE_CONTACTS,
   CREATE_WORKSITE_SCHEDULE,
+  DELETE_WORKSITE_CONTACT,
   EDIT_WORKSITE,
   EDIT_WORKSITE_ADDRESS,
   EDIT_WORKSITE_CONTACT_AND_ADDRESS,
@@ -77,6 +79,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     [CREATE_WORKSITE_SCHEDULE]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
+    [DELETE_WORKSITE_CONTACT]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [EDIT_WORKSITE]: {
@@ -263,6 +266,21 @@ export default function worksitesReducer(state :Map<*, *> = INITIAL_STATE, actio
         FAILURE: () => state
           .setIn([ACTIONS, CREATE_WORKSITE_SCHEDULE, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, CREATE_WORKSITE_SCHEDULE, action.id]),
+      });
+    }
+
+    case deleteWorksiteContact.case(action.type): {
+
+      return deleteWorksiteContact.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, ADD_WORKSITE_CONTACTS, action.id], action)
+          .setIn([ACTIONS, ADD_WORKSITE_CONTACTS, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => state
+          .setIn([ACTIONS, ADD_WORKSITE_CONTACTS, REQUEST_STATE], RequestStates.SUCCESS),
+        FAILURE: () => state
+          .setIn([ACTIONS, ADD_WORKSITE_CONTACTS, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, ADD_WORKSITE_CONTACTS, action.id]),
       });
     }
 

@@ -42,6 +42,7 @@ import {
   ADD_WORKSITE_ADDRESS,
   ADD_WORKSITE_CONTACTS,
   CREATE_WORKSITE_SCHEDULE,
+  DELETE_WORKSITE_CONTACT,
   EDIT_WORKSITE,
   EDIT_WORKSITE_ADDRESS,
   EDIT_WORKSITE_CONTACT_AND_ADDRESS,
@@ -58,6 +59,7 @@ import {
   addWorksiteAddress,
   addWorksiteContacts,
   createWorksiteSchedule,
+  deleteWorksiteContact,
   editWorksite,
   editWorksiteAddress,
   editWorksiteContactAndAddress,
@@ -70,8 +72,12 @@ import {
   getWorksites,
   getWorksitesByOrg,
 } from './WorksitesActions';
-import { submitDataGraph, submitPartialReplace } from '../../core/sagas/data/DataActions';
-import { submitDataGraphWorker, submitPartialReplaceWorker } from '../../core/sagas/data/DataSagas';
+import { deleteEntities, submitDataGraph, submitPartialReplace } from '../../core/sagas/data/DataActions';
+import {
+  deleteEntitiesWorker,
+  submitDataGraphWorker,
+  submitPartialReplaceWorker
+} from '../../core/sagas/data/DataSagas';
 
 const { PAST, SCHEDULED, TOTAL_HOURS } = WORKSITE_INFO_CONSTS;
 const {
@@ -98,6 +104,7 @@ const { searchEntityNeighborsWithFilter } = SearchApiActions;
 const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
 const { getEntityData, getEntitySetData } = DataApiActions;
 const { getEntityDataWorker, getEntitySetDataWorker } = DataApiSagas;
+const { getPageSectionKey, parseEntityAddressKey } = DataProcessingUtils;
 
 const getAppFromState = (state) => state.get(STATE.APP, Map());
 const getEdmFromState = (state) => state.get(STATE.EDM, Map());
@@ -358,6 +365,56 @@ function* createWorksiteScheduleWorker(action :SequenceAction) :Generator<*, *, 
 function* createWorksiteScheduleWatcher() :Generator<*, *, *> {
 
   yield takeEvery(CREATE_WORKSITE_SCHEDULE, createWorksiteScheduleWorker);
+}
+
+/*
+ *
+ * WorksitesActions.deleteWorksiteContact()
+ *
+ */
+
+function* deleteWorksiteContactWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+  if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
+  const workerResponse = {};
+  let response :Object = {};
+
+  try {
+    yield put(deleteWorksiteContact.request(id, value));
+
+    const { entityData } = value;
+
+    const entitiesToDelete :Object[] = [];
+    fromJS(entityData).forEach((setOfEKIDs :Set<UUID>, entitySetId :UUID) => {
+      setOfEKIDs.forEach((entityKeyId :UUID) => {
+        entitiesToDelete.push({
+          entitySetId,
+          entityKeyId
+        });
+      });
+    });
+
+    response = yield call(deleteEntitiesWorker, deleteEntities(entitiesToDelete));
+    if (response.error) {
+      throw response.error;
+    }
+
+    yield put(deleteWorksiteContact.success(id));
+  }
+  catch (error) {
+    workerResponse.error = error;
+    LOG.error('caught exception in deleteWorksiteContactWorker()', error);
+    yield put(deleteWorksiteContact.failure(id, error));
+  }
+  finally {
+    yield put(deleteWorksiteContact.finally(id));
+  }
+}
+
+function* deleteWorksiteContactWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(DELETE_WORKSITE_CONTACT, deleteWorksiteContactWorker);
 }
 
 /*
@@ -1071,6 +1128,8 @@ export {
   addWorksiteContactsWorker,
   createWorksiteScheduleWatcher,
   createWorksiteScheduleWorker,
+  deleteWorksiteContactWatcher,
+  deleteWorksiteContactWorker,
   editWorksiteWatcher,
   editWorksiteWorker,
   editWorksiteAddressWatcher,

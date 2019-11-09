@@ -7,7 +7,7 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import type { RequestSequence } from 'redux-reqseq';
 
-import { addWorksiteContacts, editWorksiteContactAndAddress } from './WorksitesActions';
+import { addWorksiteContacts, deleteWorksiteContact, editWorksiteContactAndAddress } from './WorksitesActions';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { contactsSchema, contactsUiSchema } from './schemas/EditWorksiteInfoSchemas';
 import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
@@ -39,6 +39,7 @@ const {
 type Props = {
   actions:{
     addWorksiteContacts :RequestSequence;
+    deleteWorksiteContact :RequestSequence;
     editWorksiteContactAndAddress :RequestSequence;
   },
   entityIndexToIdMap :Map;
@@ -175,6 +176,7 @@ class EditContactsForm extends Component<Props, State> {
       addActions: {
         addContact: this.handleOnSubmit
       },
+      deleteAction: actions.deleteWorksiteContact,
       // editAction: actions.editWorksiteContactAndAddress,
       entityIndexToIdMap,
       entitySetIds,
@@ -199,6 +201,7 @@ class EditContactsForm extends Component<Props, State> {
 const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
     addWorksiteContacts,
+    deleteWorksiteContact,
     editWorksiteContactAndAddress,
   }, dispatch)
 });
