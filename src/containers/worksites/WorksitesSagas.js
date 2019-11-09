@@ -29,7 +29,6 @@ import {
   getNeighborDetails,
   getNeighborESID,
   getPropertyFqnFromEdm,
-  getPropertyTypeIdFromEdm,
   sortEntitiesByDateProperty,
 } from '../../utils/DataUtils';
 import { getWorksiteScheduleFromFormData, getWorksiteScheduleFromEntities } from '../../utils/ScheduleUtils';
@@ -45,7 +44,7 @@ import {
   DELETE_WORKSITE_CONTACT,
   EDIT_WORKSITE,
   EDIT_WORKSITE_ADDRESS,
-  EDIT_WORKSITE_CONTACT_AND_ADDRESS,
+  EDIT_WORKSITE_CONTACT,
   GET_ORGANIZATIONS,
   GET_WORKSITE,
   GET_WORKSITES,
@@ -62,7 +61,7 @@ import {
   deleteWorksiteContact,
   editWorksite,
   editWorksiteAddress,
-  editWorksiteContactAndAddress,
+  editWorksiteContact,
   getOrganizations,
   getWorksite,
   getWorksiteAddress,
@@ -466,83 +465,61 @@ function* editWorksiteWatcher() :Generator<*, *, *> {
 
 /*
  *
- * WorksitesActions.editWorksiteContactAndAddress()
+ * WorksitesActions.editWorksiteContact()
  *
  */
 
-function* editWorksiteContactAndAddressWorker(action :SequenceAction) :Generator<*, *, *> {
+function* editWorksiteContactWorker(action :SequenceAction) :Generator<*, *, *> {
 
   const { id, value } = action;
   let response :Object = {};
-  let newPersonData :Map = Map();
-  let newPhoneData :Map = Map();
-  let newEmailData :Map = Map();
-  let newAddressData :Map = Map();
+  let newlyEditedContact :Map = Map();
 
   try {
-    yield put(editWorksiteContactAndAddress.request(id, value));
+    yield put(editWorksiteContact.request(id, value));
 
     response = yield call(submitPartialReplaceWorker, submitPartialReplace(value));
     if (response.error) {
       throw response.error;
     }
-    const { entityData } = value;
-    const app = yield select(getAppFromState);
-    const contactInfoESID :UUID = getEntitySetIdFromApp(app, CONTACT_INFORMATION);
-    const staffESID :UUID = getEntitySetIdFromApp(app, STAFF);
-    const addressESID :UUID = getEntitySetIdFromApp(app, ADDRESS);
-    const edm = yield select(getEdmFromState);
 
-    const storedEntities :Map = fromJS(entityData);
-    storedEntities.forEach((entities :Map, entitySetId :UUID) => {
+    const { properties } = value;
 
-      if (entitySetId === staffESID) {
-        entities.forEach((addressValue, propertyTypeId) => {
-          const propertyTypeFqn = getPropertyFqnFromEdm(edm, propertyTypeId);
-          newPersonData = newPersonData.set(propertyTypeFqn, addressValue);
-        });
+    fromJS(properties).forEach((contactValue :string, entityAddressKey :string) => {
+
+      const { entityIndex, entitySetName, propertyTypeFQN } = parseEntityAddressKey(entityAddressKey);
+      if (entitySetName === STAFF.toString()) {
+        let staffMember :Map = newlyEditedContact.get(STAFF, Map());
+        staffMember = staffMember.set(propertyTypeFQN, contactValue);
+        newlyEditedContact = newlyEditedContact.set(STAFF, staffMember);
       }
-
-      if (entitySetId === contactInfoESID) {
-        entities.forEach((contactEntity :Map) => {
-          contactEntity.forEach((contactValue, propertyTypeId) => {
-            if (propertyTypeId === getPropertyTypeIdFromEdm(edm, PHONE_NUMBER)) {
-              newPhoneData = newPhoneData.set(PHONE_NUMBER, contactValue);
-            }
-            if (propertyTypeId === getPropertyTypeIdFromEdm(edm, EMAIL)) {
-              newEmailData = newEmailData.set(EMAIL, contactValue);
-            }
-          });
-        });
-      }
-
-      if (entitySetId === addressESID) {
-        entities.forEach((addressValue, propertyTypeId) => {
-          const propertyTypeFqn = getPropertyFqnFromEdm(edm, propertyTypeId);
-          newAddressData = newAddressData.set(propertyTypeFqn, addressValue);
-        });
+      if (entitySetName === CONTACT_INFORMATION.toString()) {
+        if (entityIndex === -1) {
+          let contactMethod :Map = newlyEditedContact.get(PHONE_NUMBER, Map());
+          contactMethod = contactMethod.set(propertyTypeFQN, contactValue);
+          newlyEditedContact = newlyEditedContact.set(PHONE_NUMBER, contactMethod);
+        }
+        if (entityIndex === -2) {
+          let contactMethod :Map = newlyEditedContact.get(EMAIL, Map());
+          contactMethod = contactMethod.set(propertyTypeFQN, contactValue);
+          newlyEditedContact = newlyEditedContact.set(EMAIL, contactMethod);
+        }
       }
     });
-
-    yield put(editWorksiteContactAndAddress.success(id, {
-      newAddressData,
-      newEmailData,
-      newPersonData,
-      newPhoneData,
-    }));
+    yield put(editWorksiteContact.success(id, { newlyEditedContact }));
   }
   catch (error) {
-    LOG.error('caught exception in editWorksiteContactAndAddressWorker()', error);
-    yield put(editWorksiteContactAndAddress.failure(id, error));
+    LOG.error('caught exception in editWorksiteContactWorker()', error);
+    yield put(editWorksiteContact.failure(id, error));
   }
   finally {
-    yield put(editWorksiteContactAndAddress.finally(id));
+    yield put(editWorksiteContact.finally(id));
   }
 }
 
-function* editWorksiteContactAndAddressWatcher() :Generator<*, *, *> {
+function* editWorksiteContactWatcher() :Generator<*, *, *> {
 
-  yield takeEvery(EDIT_WORKSITE_CONTACT_AND_ADDRESS, editWorksiteContactAndAddressWorker);
+  yield takeEvery(EDIT_WORKSITE_CONTACT, editWorksiteContactWorker);
 }
 
 /*
@@ -1134,8 +1111,8 @@ export {
   editWorksiteWorker,
   editWorksiteAddressWatcher,
   editWorksiteAddressWorker,
-  editWorksiteContactAndAddressWatcher,
-  editWorksiteContactAndAddressWorker,
+  editWorksiteContactWatcher,
+  editWorksiteContactWorker,
   getOrganizationsWatcher,
   getOrganizationsWorker,
   getWorksiteWatcher,

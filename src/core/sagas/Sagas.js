@@ -113,7 +113,7 @@ export default function* sagas() :Generator<*, *, *> {
     fork(WorksitesSagas.deleteWorksiteContactWatcher),
     fork(WorksitesSagas.editWorksiteWatcher),
     fork(WorksitesSagas.editWorksiteAddressWatcher),
-    fork(WorksitesSagas.editWorksiteContactAndAddressWatcher),
+    fork(WorksitesSagas.editWorksiteContactWatcher),
     fork(WorksitesSagas.getOrganizationsWatcher),
     fork(WorksitesSagas.getWorksiteWatcher),
     fork(WorksitesSagas.getWorksiteAddressWatcher),

@@ -185,7 +185,7 @@ export const WORKSITES = {
   DELETE_WORKSITE_CONTACT: 'deleteWorksiteContact',
   EDIT_WORKSITE: 'editWorksite',
   EDIT_WORKSITE_ADDRESS: 'editWorksiteAddress',
-  EDIT_WORKSITE_CONTACT_AND_ADDRESS: 'editWorksiteContactAndAddress',
+  EDIT_WORKSITE_CONTACT: 'editWorksiteContact',
   GET_ORGANIZATIONS: 'getOrganizations',
   GET_WORKSITE: 'getWorksite',
   GET_WORKSITES: 'getWorksites',

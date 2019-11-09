@@ -29,8 +29,8 @@ const editWorksite :RequestSequence = newRequestSequence(EDIT_WORKSITE);
 const EDIT_WORKSITE_ADDRESS :'EDIT_WORKSITE_ADDRESS' = 'EDIT_WORKSITE_ADDRESS';
 const editWorksiteAddress :RequestSequence = newRequestSequence(EDIT_WORKSITE_ADDRESS);
 
-const EDIT_WORKSITE_CONTACT_AND_ADDRESS :'EDIT_WORKSITE_CONTACT_AND_ADDRESS' = 'EDIT_WORKSITE_CONTACT_AND_ADDRESS';
-const editWorksiteContactAndAddress :RequestSequence = newRequestSequence(EDIT_WORKSITE_CONTACT_AND_ADDRESS);
+const EDIT_WORKSITE_CONTACT :'EDIT_WORKSITE_CONTACT' = 'EDIT_WORKSITE_CONTACT';
+const editWorksiteContact :RequestSequence = newRequestSequence(EDIT_WORKSITE_CONTACT);
 
 const GET_ORGANIZATIONS :'GET_ORGANIZATIONS' = 'GET_ORGANIZATIONS';
 const getOrganizations :RequestSequence = newRequestSequence(GET_ORGANIZATIONS);
@@ -65,7 +65,7 @@ export {
   DELETE_WORKSITE_CONTACT,
   EDIT_WORKSITE,
   EDIT_WORKSITE_ADDRESS,
-  EDIT_WORKSITE_CONTACT_AND_ADDRESS,
+  EDIT_WORKSITE_CONTACT,
   GET_ORGANIZATIONS,
   GET_WORKSITE,
   GET_WORKSITES,
@@ -82,7 +82,7 @@ export {
   deleteWorksiteContact,
   editWorksite,
   editWorksiteAddress,
-  editWorksiteContactAndAddress,
+  editWorksiteContact,
   getOrganizations,
   getWorksite,
   getWorksiteAddress,
