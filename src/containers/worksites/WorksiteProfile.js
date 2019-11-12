@@ -233,7 +233,7 @@ class WorksiteProfile extends Component<Props> {
 
     const contacts :Map = this.formatWorksiteContacts();
     const contactsKeys :List = contacts.keySeq().toList();
-    const contactsHeaders = ['Contact names', 'Contact Phones', 'Contact emails'];
+    const contactsHeaders = ['Contact name', 'Contact Phone', 'Contact email'];
 
     const status = getWorksiteStatus(dateActive, dateInactive);
     const worksiteInfo :Map = Map({
@@ -268,7 +268,7 @@ class WorksiteProfile extends Component<Props> {
               <ContactLabelsRow>
                 {
                   contactsHeaders.map((label :string) => (
-                    <Label subtle>{ label }</Label>
+                    <Label key={label} subtle>{ label }</Label>
                   ))
                 }
               </ContactLabelsRow>
@@ -278,8 +278,8 @@ class WorksiteProfile extends Component<Props> {
                   return (
                     <ContactLabelsRow key={row}>
                       {
-                        rowValues.map((value :string) => (
-                          <div>{ value }</div>
+                        rowValues.map((value :string, index :number) => (
+                          <div key={`${contactsHeaders[index]}-${value}`}>{ value }</div>
                         ))
                       }
                     </ContactLabelsRow>
