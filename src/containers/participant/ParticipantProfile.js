@@ -82,6 +82,7 @@ const {
   ENROLLMENT_STATUS,
   GET_ALL_PARTICIPANT_INFO,
   GET_ENROLLMENT_FROM_DIVERSION_PLAN,
+  ENROLLMENT_HISTORY_DATA,
   JUDGE,
   PARTICIPANT,
   PERSON_CASE,
@@ -211,6 +212,7 @@ type Props = {
   createNewEnrollmentRequestState :RequestState;
   diversionPlan :Map;
   email :Map;
+  enrollmentHistoryData :List;
   enrollmentStatus :Map;
   getAllParticipantInfoRequestState :RequestState;
   getEnrollmentFromDiversionPlanRequestState :RequestState;
@@ -367,6 +369,7 @@ class ParticipantProfile extends Component<Props, State> {
       chargesForCase,
       diversionPlan,
       email,
+      enrollmentHistoryData,
       enrollmentStatus,
       getAllParticipantInfoRequestState,
       getEnrollmentFromDiversionPlanRequestState,
@@ -428,8 +431,8 @@ class ParticipantProfile extends Component<Props, State> {
       REQUIRED_HOURS,
     ]);
     const diversionPlanOptions :Object[] = generateDiversionPlanOptions(allDiversionPlans);
-    console.log('diversionPlanOptions: ', diversionPlanOptions);
     const enrollmentHeaders :Object[] = generateEnrollmentHeaders();
+    const enrollmentData :Object[] = enrollmentHistoryData.toJS();
 
     return (
       <>
@@ -606,6 +609,7 @@ const mapStateToProps = (state :Map<*, *>) => {
     createNewEnrollmentRequestState: person.getIn([ACTIONS, CREATE_NEW_ENROLLMENT, REQUEST_STATE]),
     [DIVERSION_PLAN]: person.get(DIVERSION_PLAN),
     [EMAIL]: person.get(EMAIL),
+    [ENROLLMENT_HISTORY_DATA]: person.get(ENROLLMENT_HISTORY_DATA),
     [ENROLLMENT_STATUS]: person.get(ENROLLMENT_STATUS),
     getAllParticipantInfoRequestState: person.getIn([ACTIONS, GET_ALL_PARTICIPANT_INFO, REQUEST_STATE]),
     getEnrollmentFromDiversionPlanRequestState: person
