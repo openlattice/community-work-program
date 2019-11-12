@@ -29,7 +29,7 @@ import {
   chargeSchema,
   chargeUiSchema,
 } from '../schemas/EditCaseInfoSchemas';
-import { hydrateChargeSchema } from '../utils/EditCaseInfoUtils';
+import { disableChargesForm, hydrateChargeSchema } from '../utils/EditCaseInfoUtils';
 import { getEntityKeyId } from '../../../utils/DataUtils';
 import { getCombinedDateTime } from '../../../utils/ScheduleUtils';
 
@@ -75,18 +75,24 @@ type Props = {
 type State = {
   chargesFormData :Object;
   chargesFormSchema :Object;
+  chargesFormUiSchema :Object;
   chargesPrepopulated :boolean;
   isAvailableChargesModalVisible :boolean;
 };
 
 class EditChargesForm extends Component<Props, State> {
 
-  state = {
-    chargesFormData: {},
-    chargesFormSchema: chargeSchema,
-    chargesPrepopulated: false,
-    isAvailableChargesModalVisible: false,
-  };
+  constructor(props :Props) {
+    super(props);
+
+    this.state = {
+      chargesFormData: {},
+      chargesFormSchema: chargeSchema,
+      chargesFormUiSchema: chargeUiSchema,
+      chargesPrepopulated: false,
+      isAvailableChargesModalVisible: false,
+    };
+  }
 
   componentDidMount() {
     this.prepopulateFormData();
@@ -104,12 +110,21 @@ class EditChargesForm extends Component<Props, State> {
     const {
       charges,
       chargesForCase,
+      personCase,
     } = this.props;
 
     const sectionOneKey = getPageSectionKey(1, 1);
-    const chargesPrepopulated = !chargesForCase.isEmpty();
+    let chargesPrepopulated :boolean = !chargesForCase.isEmpty();
+    let newChargeUiSchema :Object = chargeUiSchema;
+
+    if (personCase.isEmpty()) {
+      chargesPrepopulated = true;
+      newChargeUiSchema = disableChargesForm(chargeUiSchema);
+    }
+
     let chargesFormData :{} = {};
-    if (chargesPrepopulated) {
+    let newChargeSchema :Object = chargeSchema;
+    if (!chargesForCase.isEmpty()) {
       chargesFormData = {
         [sectionOneKey]: []
       };
@@ -121,12 +136,14 @@ class EditChargesForm extends Component<Props, State> {
         chargesFormData[sectionOneKey][index][getEntityAddressKey(-1, COURT_CHARGE_LIST, ENTITY_KEY_ID)] = chargeEKID;
         chargesFormData[sectionOneKey][index][getEntityAddressKey(-1, CHARGE_EVENT, DATETIME_COMPLETED)] = dateCharged;
       });
+      newChargeSchema = hydrateChargeSchema(chargeSchema, charges);
     }
-    const newChargeSchema = hydrateChargeSchema(chargeSchema, charges);
+
 
     this.setState({
       chargesFormData,
       chargesFormSchema: newChargeSchema,
+      chargesFormUiSchema: newChargeUiSchema,
       chargesPrepopulated,
     });
   }
@@ -157,7 +174,6 @@ class EditChargesForm extends Component<Props, State> {
     chargesFormData[getPageSectionKey(1, 1)] = newChargesList;
 
     const entityData :{} = processEntityData(chargesFormData, entitySetIds, propertyTypeIds);
-
     const associations = [];
 
     const personEKID = getEntityKeyId(participant);
@@ -199,8 +215,10 @@ class EditChargesForm extends Component<Props, State> {
       propertyTypeIds,
     } = this.props;
     const {
+
       chargesFormData,
       chargesFormSchema,
+      chargesFormUiSchema,
       chargesPrepopulated,
       isAvailableChargesModalVisible,
     } = this.state;
@@ -214,7 +232,6 @@ class EditChargesForm extends Component<Props, State> {
       entitySetIds,
       propertyTypeIds,
     };
-
 
     return (
       <>
@@ -232,7 +249,7 @@ class EditChargesForm extends Component<Props, State> {
               onChange={this.handleOnChangeCharges}
               onSubmit={this.handleOnChargesSubmit}
               schema={chargesFormSchema}
-              uiSchema={chargeUiSchema} />
+              uiSchema={chargesFormUiSchema} />
         </Card>
         <AddToAvailableChargesModal
             isOpen={isAvailableChargesModalVisible}
@@ -242,7 +259,7 @@ class EditChargesForm extends Component<Props, State> {
   }
 }
 
-const mapDispatchToProps = dispatch => ({
+const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
     addChargesToCase,
     removeChargeFromCase,

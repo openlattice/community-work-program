@@ -15,6 +15,7 @@ import {
   addNewParticipantContacts,
   addPersonPhoto,
   addToAvailableCharges,
+  createCase,
   createNewEnrollment,
   editEnrollmentDates,
   editParticipantContacts,
@@ -80,6 +81,7 @@ const {
   ALL_PARTICIPANT_CASES,
   CHARGES,
   CHARGES_FOR_CASE,
+  CREATE_CASE,
   CREATE_NEW_ENROLLMENT,
   DIVERSION_PLAN,
   EDIT_ENROLLMENT_DATES,
@@ -134,6 +136,9 @@ const INITIAL_STATE :Map<*, *> = fromJS({
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [ADD_TO_AVAILABLE_CHARGES]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [CREATE_CASE]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [CREATE_NEW_ENROLLMENT]: {
@@ -400,6 +405,29 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
         FAILURE: () => state
           .setIn([ACTIONS, ADD_TO_AVAILABLE_CHARGES, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, ADD_TO_AVAILABLE_CHARGES, action.id]),
+      });
+    }
+
+    case createCase.case(action.type): {
+
+      return createCase.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, CREATE_CASE, action.id], action)
+          .setIn([ACTIONS, CREATE_CASE, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+
+          const seqAction :SequenceAction = action;
+          const successValue :Object = seqAction.value;
+          const { newCase } = successValue;
+
+          return state
+            .set(PERSON_CASE, newCase)
+            .setIn([ACTIONS, CREATE_CASE, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, CREATE_CASE, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, CREATE_CASE, action.id]),
       });
     }
 

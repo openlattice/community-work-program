@@ -82,6 +82,7 @@ export const PERSON = {
   ALL_PARTICIPANT_CASES: 'allParticipantCases',
   CHARGES: 'charges',
   CHARGES_FOR_CASE: 'chargesForCase',
+  CREATE_CASE: 'createCase',
   CREATE_NEW_ENROLLMENT: 'createNewEnrollment',
   DIVERSION_PLAN: 'diversionPlan',
   EDIT_CHECK_IN_DATE: 'editCheckInDate',

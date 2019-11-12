@@ -39,6 +39,7 @@ const {
   PEOPLE,
   PRESIDES_OVER,
   REGISTERED_FOR,
+  RELATED_TO,
 } = APP_TYPE_FQNS;
 const {
   CASE_NUMBER_TEXT,
@@ -150,6 +151,7 @@ class EditCaseInfoForm extends Component<Props> {
       [PRESIDES_OVER]: getEntitySetIdFromApp(app, PRESIDES_OVER),
       [PEOPLE]: getEntitySetIdFromApp(app, PEOPLE),
       [REGISTERED_FOR]: getEntitySetIdFromApp(app, REGISTERED_FOR),
+      [RELATED_TO]: getEntitySetIdFromApp(app, RELATED_TO),
     };
   }
 
@@ -201,6 +203,9 @@ class EditCaseInfoForm extends Component<Props> {
     const entitySetIds = this.createEntitySetIdsMap();
     const propertyTypeIds = this.createPropertyTypeIdsMap();
 
+    const personEKID :UUID = getEntityKeyId(participant);
+    const diversionPlanEKID :UUID = getEntityKeyId(diversionPlan);
+
     return (
       <FormWrapper>
         <ButtonWrapper>
@@ -219,9 +224,11 @@ class EditCaseInfoForm extends Component<Props> {
               personCase={personCase}
               propertyTypeIds={propertyTypeIds} />
           <EditCaseForm
+              diversionPlanEKID={diversionPlanEKID}
               entityIndexToIdMap={entityIndexToIdMap}
               entitySetIds={entitySetIds}
               personCase={personCase}
+              personEKID={personEKID}
               propertyTypeIds={propertyTypeIds} />
           <EditChargesForm
               charges={charges}
