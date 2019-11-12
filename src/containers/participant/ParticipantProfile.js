@@ -10,6 +10,7 @@ import {
   CardStack,
   IconSplash,
   Select,
+  Table,
 } from 'lattice-ui-kit';
 import { faTools } from '@fortawesome/pro-light-svg-icons';
 import { connect } from 'react-redux';
@@ -41,6 +42,7 @@ import { OL } from '../../core/style/Colors';
 import { PARTICIPANT_PROFILE_WIDTH } from '../../core/style/Sizes';
 import * as Routes from '../../core/router/Routes';
 import { BackNavButton } from '../../components/controls/index';
+import { generateDiversionPlanOptions, generateEnrollmentHeaders } from './utils/ParticipantProfileUtils';
 import { getEntityKeyId, getEntityProperties, sortEntitiesByDateProperty } from '../../utils/DataUtils';
 import { isDefined } from '../../utils/LangUtils';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
@@ -106,16 +108,6 @@ const ENROLLMENT_STATUSES_EXCLUDING_PREENROLLMENT = Object.values(ENROLLMENT_STA
 const NEW_ENROLLMENT = 'showNewEnrollmentModal';
 const ASSIGN_WORKSITE = 'showAssignWorksiteModal';
 const WORK_APPOINTMENT = 'showWorkAppointmentModal';
-
-const generateDiversionPlanOptions = (entities :List) :Object[] => {
-  const options = [];
-  entities.forEach((entity :Map) => {
-    const { [DATETIME_RECEIVED]: sentenceDateTime } = getEntityProperties(entity, [DATETIME_RECEIVED]);
-    const sentenceDate = DateTime.fromISO(sentenceDateTime).toLocaleString(DateTime.DATE_SHORT);
-    options.push({ label: `Enrollment ${sentenceDate}`, value: entity });
-  });
-  return options;
-};
 
 const ProfileWrapper = styled.div`
   display: flex;
@@ -436,6 +428,8 @@ class ParticipantProfile extends Component<Props, State> {
       REQUIRED_HOURS,
     ]);
     const diversionPlanOptions :Object[] = generateDiversionPlanOptions(allDiversionPlans);
+    console.log('diversionPlanOptions: ', diversionPlanOptions);
+    const enrollmentHeaders :Object[] = generateEnrollmentHeaders();
 
     return (
       <>
@@ -566,6 +560,17 @@ class ParticipantProfile extends Component<Props, State> {
             <InfractionsContainer
                 currentStatus={status}
                 participant={participant} />
+          </ProfileBody>
+          <ProfileBody>
+            <NameRowWrapper>
+              <NameHeader>Enrollment History</NameHeader>
+            </NameRowWrapper>
+            <Card>
+              <Table
+                  data={enrollmentData}
+                  headers={enrollmentHeaders}
+                  isLoading={false} />
+            </Card>
           </ProfileBody>
           <AssignWorksiteModal
               diversionPlanEKID={diversionPlanEKID}
