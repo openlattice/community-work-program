@@ -12,6 +12,7 @@ import {
   CardSegment,
   DataGrid,
   EditButton,
+  Label,
   Table,
 } from 'lattice-ui-kit';
 import { connect } from 'react-redux';
@@ -63,13 +64,7 @@ const {
 const datesLabelMap :OrderedMap = OrderedMap({
   dateFirstActive: 'Date first active',
   dateInactive: 'Date marked inactive',
-});
-
-const contactLabelMap :OrderedMap = OrderedMap({
-  contactNames: 'Contact name',
-  contactPhones: 'Contact phone',
-  contactEmails: 'Contact email',
-  address: 'Address',
+  address: 'Address'
 });
 
 const worksiteInfoLabelMap :OrderedMap = OrderedMap({
@@ -93,6 +88,14 @@ const HeaderRowWrapper = styled.div`
   align-items: center;
   display: flex;
   justify-content: space-between;
+`;
+
+const ContactLabelsRow = styled.div`
+  display: grid;
+  flex: 1;
+  grid-auto-flow: row;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-gap: 20px 30px;
 `;
 
 type Props = {
@@ -166,44 +169,34 @@ class WorksiteProfile extends Component<Props> {
   }
 
   formatWorksiteContacts = () => {
-    const { worksiteAddress, worksiteContacts } = this.props;
+    const { worksiteContacts } = this.props;
 
-    const { [FULL_ADDRESS]: address } = getEntityProperties(worksiteAddress, [FULL_ADDRESS]);
-    let contactsAndAddress :Map = fromJS({
-      contactNames: '',
-      contactPhones: '',
-      contactEmails: '',
-      address: address || EMPTY_FIELD,
+    let contacts :Map = fromJS({
+      row0: []
     });
 
     if (!worksiteContacts.isEmpty()) {
 
-      worksiteContacts.forEach((contactMap :Map) => {
+      worksiteContacts.forEach((contactMap :Map, index :number) => {
+
         const person :Map = contactMap.get(STAFF, Map());
         const fullName :string = getPersonFullName(person);
-        contactsAndAddress = contactsAndAddress
-          .set('contactNames', `${contactsAndAddress.get('contactNames')}\n${fullName}`);
-
         const contactPhone :Map = contactMap.get(PHONE_NUMBER, Map());
         const { [PHONE_NUMBER]: phoneNumber } = getEntityProperties(contactPhone, [PHONE_NUMBER]);
-        contactsAndAddress = contactsAndAddress
-          .set('contactPhones', `${contactsAndAddress.get('contactPhones')}\n${phoneNumber}`);
-
         const contactEmail :Map = contactMap.get(EMAIL, Map());
         const { [EMAIL]: email } = getEntityProperties(contactEmail, [EMAIL]);
-        contactsAndAddress = contactsAndAddress
-          .set('contactEmails', `${contactsAndAddress.get('contactEmails')}\n${email}`);
+
+        let contactArray :List = contacts.get(`row${index}`, List());
+        contactArray = contactArray.push(fullName);
+        contactArray = contactArray.push(phoneNumber);
+        contactArray = contactArray.push(email);
+        contacts = contacts.set(`row${index}`, contactArray);
       });
     }
-    console.log('contactsAndAddress: ', contactsAndAddress.toJS());
-
-    contactsAndAddress = contactsAndAddress.map((value :any) => {
-      if (List.isList(value) && value.isEmpty()) {
-        return EMPTY_FIELD;
-      }
-      return value;
-    });
-    return contactsAndAddress;
+    else {
+      contacts = contacts.set('row0', [EMPTY_FIELD, EMPTY_FIELD, EMPTY_FIELD]);
+    }
+    return contacts;
   }
 
   render() {
@@ -212,6 +205,7 @@ class WorksiteProfile extends Component<Props> {
       initializeAppRequestState,
       scheduleByWeekday,
       worksite,
+      worksiteAddress,
     } = this.props;
 
     if (initializeAppRequestState === RequestStates.PENDING
@@ -230,12 +224,16 @@ class WorksiteProfile extends Component<Props> {
       [NAME]: worksiteName
     } = getEntityProperties(worksite, [DATETIME_END, DATETIME_START, DESCRIPTION, NAME]);
 
-    const dates :Map = Map({
+    const { [FULL_ADDRESS]: address } = getEntityProperties(worksiteAddress, [FULL_ADDRESS]);
+    const datesAndAddress :Map = Map({
       dateFirstActive: formatAsDate(dateActive),
       dateInactive: formatAsDate(dateInactive),
+      address
     });
 
-    const contactsAndAddress :Map = this.formatWorksiteContacts();
+    const contacts :Map = this.formatWorksiteContacts();
+    const contactsKeys :List = contacts.keySeq().toList();
+    const contactsHeaders = ['Contact names', 'Contact Phones', 'Contact emails'];
 
     const status = getWorksiteStatus(dateActive, dateInactive);
     const worksiteInfo :Map = Map({
@@ -263,14 +261,31 @@ class WorksiteProfile extends Component<Props> {
             <CardSegment padding={cardSegmentPadding}>
               <DataGrid
                   columns={4}
-                  data={dates}
+                  data={datesAndAddress}
                   labelMap={datesLabelMap} />
             </CardSegment>
-            <CardSegment padding={cardSegmentPadding}>
-              <DataGrid
-                  columns={4}
-                  data={contactsAndAddress}
-                  labelMap={contactLabelMap} />
+            <CardSegment padding={cardSegmentPadding} vertical>
+              <ContactLabelsRow>
+                {
+                  contactsHeaders.map((label :string) => (
+                    <Label subtle>{ label }</Label>
+                  ))
+                }
+              </ContactLabelsRow>
+              {
+                contactsKeys.map((row :string) => {
+                  const rowValues = contacts.get(row);
+                  return (
+                    <ContactLabelsRow key={row}>
+                      {
+                        rowValues.map((value :string) => (
+                          <div>{ value }</div>
+                        ))
+                      }
+                    </ContactLabelsRow>
+                  );
+                })
+              }
             </CardSegment>
             <CardSegment padding={cardSegmentPadding}>
               <DataGrid
