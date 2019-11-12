@@ -11,6 +11,7 @@ import {
   setIn,
 } from 'immutable';
 import { DateTime } from 'luxon';
+import toString from 'lodash/toString';
 import {
   all,
   call,
@@ -50,6 +51,7 @@ import {
   GET_CHARGES,
   GET_CHARGES_FOR_CASE,
   GET_CONTACT_INFO,
+  GET_ENROLLMENT_HISTORY,
   GET_ENROLLMENT_FROM_DIVERSION_PLAN,
   GET_ENROLLMENT_STATUS,
   GET_INFO_FOR_EDIT_CASE,
@@ -84,6 +86,7 @@ import {
   getCharges,
   getChargesForCase,
   getContactInfo,
+  getEnrollmentHistory,
   getEnrollmentFromDiversionPlan,
   getEnrollmentStatus,
   getInfoForEditCase,
@@ -129,7 +132,10 @@ import {
   sortEntitiesByDateProperty,
 } from '../../utils/DataUtils';
 import { isDefined } from '../../utils/LangUtils';
+import { formatAsDate } from '../../utils/DateTimeUtils';
 import { getCombinedDateTime } from '../../utils/ScheduleUtils';
+import { enrollmentHeaderNames } from './utils/ParticipantProfileUtils';
+import { EMPTY_FIELD } from '../participants/ParticipantsConstants';
 import { PERSON, STATE } from '../../utils/constants/ReduxStateConsts';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { ASSOCIATION_DETAILS } from '../../core/edm/constants/DataModelConsts';
@@ -158,13 +164,17 @@ const {
 } = APP_TYPE_FQNS;
 const {
   DATETIME_COMPLETED,
+  DATETIME_RECEIVED,
   EFFECTIVE_DATE,
   EMAIL,
   ENTITY_KEY_ID,
+  HOURS_WORKED,
+  ORIENTATION_DATETIME,
   PERSON_NOTES,
   PHONE_NUMBER,
   PREFERRED,
   REQUIRED_HOURS,
+  STATUS,
 } = PROPERTY_TYPE_FQNS;
 
 const getAppFromState = (state) => state.get(STATE.APP, Map());
@@ -1604,6 +1614,95 @@ function* getProgramOutcomeWatcher() :Generator<*, *, *> {
 
 /*
  *
+ * ParticipantActions.getEnrollmentHistory()
+ *
+ */
+
+function* getEnrollmentHistoryWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+  let response :Object = {};
+  let programOutcomesByDiversionPlan :Map = Map();
+
+  try {
+    yield put(getEnrollmentHistory.request(id));
+    if (value === null || value === undefined) {
+      throw ERR_ACTION_VALUE_NOT_DEFINED;
+    }
+    const { allDiversionPlans, mostRecentEnrollmentStatusesByDiversionPlan } = value;
+    const app = yield select(getAppFromState);
+    const diversionPlanEKIDs :UUID[] = [];
+    allDiversionPlans.forEach((diversionPlan :Map) => {
+      diversionPlanEKIDs.push(getEntityKeyId(diversionPlan));
+    });
+    const diversionPlanESID :UUID = getEntitySetIdFromApp(app, DIVERSION_PLAN);
+    const programOutcomeESID :UUID = getEntitySetIdFromApp(app, PROGRAM_OUTCOME);
+
+    const outcomeFilter :Object = {
+      entityKeyIds: diversionPlanEKIDs,
+      destinationEntitySetIds: [programOutcomeESID],
+      sourceEntitySetIds: [],
+    };
+    response = yield call(
+      searchEntityNeighborsWithFilterWorker,
+      searchEntityNeighborsWithFilter({ entitySetId: diversionPlanESID, filter: outcomeFilter })
+    );
+    if (response.error) {
+      throw response.error;
+    }
+    const results :Map = fromJS(response.data);
+    if (!results.isEmpty()) {
+      programOutcomesByDiversionPlan = results.map((outcomeList :List) => getNeighborDetails(outcomeList.get(0)));
+    }
+    let enrollmentHistoryData = [];
+    allDiversionPlans.forEach((diversionPlan :Map) => {
+      const diversionPlanEKID :UUID = getEntityKeyId(diversionPlan);
+      const {
+        [DATETIME_RECEIVED]: sentenceDateTime,
+        [ORIENTATION_DATETIME]: orientationDateTime
+      } = getEntityProperties(diversionPlan, [DATETIME_RECEIVED, ORIENTATION_DATETIME]);
+      const enrollmentStatus :Map = mostRecentEnrollmentStatusesByDiversionPlan.get(diversionPlanEKID);
+      const { [STATUS]: status } = getEntityProperties(enrollmentStatus, [STATUS]);
+      const outcome :Map = programOutcomesByDiversionPlan.get(diversionPlanEKID);
+      const {
+        [DATETIME_COMPLETED]: completionDateTime,
+        [HOURS_WORKED]: totalHoursWorked
+      } = getEntityProperties(outcome, [DATETIME_COMPLETED, HOURS_WORKED]);
+
+      const sentenceDate :string = formatAsDate(sentenceDateTime);
+      const orientationDate :string = formatAsDate(orientationDateTime);
+      const completionDate :string = formatAsDate(completionDateTime);
+
+      const diversionPlanObject :Object = {
+        [enrollmentHeaderNames[0]]: status || EMPTY_FIELD,
+        [enrollmentHeaderNames[1]]: sentenceDate,
+        [enrollmentHeaderNames[2]]: orientationDate,
+        [enrollmentHeaderNames[3]]: completionDate,
+        [enrollmentHeaderNames[4]]: toString(totalHoursWorked) || EMPTY_FIELD,
+      };
+      enrollmentHistoryData.push(diversionPlanObject);
+    });
+    enrollmentHistoryData = fromJS(enrollmentHistoryData).sortBy((
+      enrollmentObj :Map
+    ) => DateTime.fromISO(enrollmentObj.get(enrollmentHeaderNames[1])));
+    yield put(getEnrollmentHistory.success(id, enrollmentHistoryData));
+  }
+  catch (error) {
+    LOG.error('caught exception in getEnrollmentHistoryWorker()', error);
+    yield put(getEnrollmentHistory.failure(id, error));
+  }
+  finally {
+    yield put(getEnrollmentHistory.finally(id));
+  }
+}
+
+function* getEnrollmentHistoryWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(GET_ENROLLMENT_HISTORY, getEnrollmentHistoryWorker);
+}
+
+/*
+ *
  * ParticipantActions.getEnrollmentStatus()
  *
  */
@@ -1675,9 +1774,10 @@ function* getEnrollmentStatusWorker(action :SequenceAction) :Generator<*, *, *> 
       /*
        * 3. Find most recent enrollment status, if any exist.
        */
+      let mostRecentEnrollmentStatusesByDiversionPlan :Map = Map();
       if (enrollmentStatusesByDiversionPlan.count() > 0) {
 
-        const mostRecentEnrollmentStatusesByDiversionPlan :Map = enrollmentStatusesByDiversionPlan
+        mostRecentEnrollmentStatusesByDiversionPlan = enrollmentStatusesByDiversionPlan
           .map((statusList :List) => {
             const sortedStatusList :List = sortEntitiesByDateProperty(statusList, [EFFECTIVE_DATE]);
             return sortedStatusList.last();
@@ -1703,6 +1803,10 @@ function* getEnrollmentStatusWorker(action :SequenceAction) :Generator<*, *, *> 
         yield all([
           call(getWorksitePlansWorker, getWorksitePlans({ diversionPlan })),
           call(getProgramOutcomeWorker, getProgramOutcome({ diversionPlan })),
+          call(getEnrollmentHistoryWorker, getEnrollmentHistory({
+            allDiversionPlans,
+            mostRecentEnrollmentStatusesByDiversionPlan
+          })),
         ]);
       }
     }
@@ -2196,6 +2300,8 @@ export {
   getChargesWorker,
   getContactInfoWatcher,
   getContactInfoWorker,
+  getEnrollmentHistoryWatcher,
+  getEnrollmentHistoryWorker,
   getEnrollmentFromDiversionPlanWatcher,
   getEnrollmentFromDiversionPlanWorker,
   getEnrollmentStatusWatcher,

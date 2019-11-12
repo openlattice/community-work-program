@@ -29,6 +29,7 @@ import {
   getCharges,
   getChargesForCase,
   getContactInfo,
+  getEnrollmentHistory,
   getEnrollmentFromDiversionPlan,
   getEnrollmentStatus,
   getInfoForEditCase,
@@ -92,12 +93,14 @@ const {
   EDIT_PLAN_NOTES,
   EDIT_REQUIRED_HOURS,
   EMAIL,
+  ENROLLMENT_HISTORY_DATA,
   ENROLLMENT_STATUS,
   GET_ALL_PARTICIPANT_INFO,
   GET_CASE_INFO,
   GET_CHARGES,
   GET_CHARGES_FOR_CASE,
   GET_CONTACT_INFO,
+  GET_ENROLLMENT_HISTORY,
   GET_ENROLLMENT_FROM_DIVERSION_PLAN,
   GET_ENROLLMENT_STATUS,
   GET_INFO_FOR_EDIT_CASE,
@@ -177,6 +180,9 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     [GET_CONTACT_INFO]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
+    [GET_ENROLLMENT_HISTORY]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
     [GET_ENROLLMENT_FROM_DIVERSION_PLAN]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
@@ -227,6 +233,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [CHARGES_FOR_CASE]: List(),
   [DIVERSION_PLAN]: Map(),
   [EMAIL]: Map(),
+  [ENROLLMENT_HISTORY_DATA]: List(),
   [ENROLLMENT_STATUS]: Map(),
   [JUDGE]: Map(),
   [JUDGES]: List(),
@@ -872,6 +879,34 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
         FAILURE: () => state
           .setIn([ACTIONS, GET_ENROLLMENT_FROM_DIVERSION_PLAN, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, GET_ENROLLMENT_FROM_DIVERSION_PLAN, action.id])
+      });
+    }
+
+    case getEnrollmentHistory.case(action.type): {
+
+      return getEnrollmentHistory.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, GET_ENROLLMENT_HISTORY, action.id], fromJS(action))
+          .setIn([ACTIONS, GET_ENROLLMENT_HISTORY, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+
+          if (!state.hasIn([ACTIONS, GET_ENROLLMENT_HISTORY, action.id])) {
+            return state;
+          }
+
+          const { value } = action;
+          if (value === null || value === undefined) {
+            return state;
+          }
+
+          return state
+            .set(ENROLLMENT_HISTORY_DATA, value)
+            .setIn([ACTIONS, GET_ENROLLMENT_HISTORY, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, GET_ENROLLMENT_HISTORY, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, GET_ENROLLMENT_HISTORY, action.id])
       });
     }
 
