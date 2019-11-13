@@ -19,7 +19,6 @@ import LogoLoader from '../../components/LogoLoader';
 import { findAppointments } from './WorkScheduleActions';
 import { getEntityKeyId, getEntityProperties, sortEntitiesByDateProperty } from '../../utils/DataUtils';
 import { getPersonFullName } from '../../utils/PeopleUtils';
-import { isDefined } from '../../utils/LangUtils';
 import { APP, STATE, WORK_SCHEDULE } from '../../utils/constants/ReduxStateConsts';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 
