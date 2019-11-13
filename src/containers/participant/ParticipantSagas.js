@@ -1679,6 +1679,7 @@ function* getEnrollmentHistoryWorker(action :SequenceAction) :Generator<*, *, *>
         [enrollmentHeaderNames[2]]: orientationDate,
         [enrollmentHeaderNames[3]]: completionDate,
         [enrollmentHeaderNames[4]]: toString(totalHoursWorked) || EMPTY_FIELD,
+        id: diversionPlanEKID
       };
       enrollmentHistoryData.push(diversionPlanObject);
     });
