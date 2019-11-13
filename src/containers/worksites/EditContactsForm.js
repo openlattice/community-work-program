@@ -150,7 +150,7 @@ class EditContactsForm extends Component<Props, State> {
 
     const associations = [];
     const worksiteEKID :UUID = getEntityKeyId(worksite);
-    fromJS(newContactsList).forEach((contact :Map, index :number) => {
+    newContactsList.forEach((contact :Map, index :number) => {
       associations.push([IS, index, STAFF, index, EMPLOYEE, {}]);
       associations.push([WORKS_AT, index, EMPLOYEE, worksiteEKID, WORKSITE, {}]);
       associations.push([CONTACT_INFO_GIVEN, index, CONTACT_INFORMATION, index, EMPLOYEE, {}]);

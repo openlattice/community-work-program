@@ -171,9 +171,9 @@ class WorksiteProfile extends Component<Props> {
   formatWorksiteContacts = () => {
     const { worksiteContacts } = this.props;
 
-    let contacts :Map = fromJS({
+    const contacts :Object = {
       row0: []
-    });
+    };
 
     if (!worksiteContacts.isEmpty()) {
 
@@ -186,15 +186,15 @@ class WorksiteProfile extends Component<Props> {
         const contactEmail :Map = contactMap.get(EMAIL, Map());
         const { [EMAIL]: email } = getEntityProperties(contactEmail, [EMAIL]);
 
-        let contactArray :List = contacts.get(`row${index}`, List());
-        contactArray = contactArray.push(fullName);
-        contactArray = contactArray.push(phoneNumber);
-        contactArray = contactArray.push(email);
-        contacts = contacts.set(`row${index}`, contactArray);
+        const contactArray :string[] = contacts[`row${index}`] || [];
+        contactArray.push(fullName);
+        contactArray.push(phoneNumber);
+        contactArray.push(email);
+        contacts[`row${index}`] = contactArray;
       });
     }
     else {
-      contacts = contacts.set('row0', [EMPTY_FIELD, EMPTY_FIELD, EMPTY_FIELD]);
+      contacts.row0 = [EMPTY_FIELD, EMPTY_FIELD, EMPTY_FIELD];
     }
     return contacts;
   }
@@ -231,8 +231,8 @@ class WorksiteProfile extends Component<Props> {
       address
     });
 
-    const contacts :Map = this.formatWorksiteContacts();
-    const contactsKeys :List = contacts.keySeq().toList();
+    const contacts :Object = this.formatWorksiteContacts();
+    const contactsKeys :string[] = Object.keys(contacts);
     const contactsHeaders = ['Contact name', 'Contact Phone', 'Contact email'];
 
     const status = getWorksiteStatus(dateActive, dateInactive);
@@ -274,7 +274,7 @@ class WorksiteProfile extends Component<Props> {
               </ContactLabelsRow>
               {
                 contactsKeys.map((row :string) => {
-                  const rowValues = contacts.get(row);
+                  const rowValues = contacts[row];
                   return (
                     <ContactLabelsRow key={row}>
                       {
