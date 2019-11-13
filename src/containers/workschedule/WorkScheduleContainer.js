@@ -75,6 +75,13 @@ const FieldsWrapper = styled.div`
   grid-gap: 0 20px;
 `;
 
+const ButtonsWrapper = styled.div`
+  display: grid;
+  grid-template-columns: minmax(min-content, 1fr) minmax(min-content, 1fr);
+  grid-gap: 0 15px;
+  margin-left: 8px;
+`;
+
 type Props = {
   actions:{
     findAppointments :RequestSequence;
@@ -187,7 +194,10 @@ class WorkScheduleContainer extends Component<Props, State> {
                 options={WORKSITES_OPTIONS} />
           </div>
         </FieldsWrapper>
-        <Button mode="primary" onClick={this.getAppointments}>Display Appointments</Button>
+        <ButtonsWrapper>
+          <Button onClick={() => {}}>Print Schedule</Button>
+          <Button mode="primary" onClick={this.getAppointments}>Display Appointments</Button>
+        </ButtonsWrapper>
       </FieldsRowWrapper>
     );
   }
