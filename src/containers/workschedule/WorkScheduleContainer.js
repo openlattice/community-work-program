@@ -164,8 +164,7 @@ class WorkScheduleContainer extends Component<Props, State> {
   goToPrintSchedule = () => {
     const { actions } = this.props;
     const { selectedDate, timePeriod, worksites } = this.state;
-    const { month } = DateTime.fromISO(selectedDate);
-    const timeframe = timePeriod.toLowerCase();
+
     let worksiteEKIDs :string = 'all';
     if (!worksites.isEmpty()) {
       worksiteEKIDs = '';
@@ -173,12 +172,13 @@ class WorkScheduleContainer extends Component<Props, State> {
       worksiteList.forEach((worksite :Object) => {
         worksiteEKIDs = worksiteEKIDs.concat(',', worksite.value);
       });
-      worksiteEKIDs = worksiteEKIDs.slice(1); // first char was a comma
+      worksiteEKIDs = worksiteEKIDs.slice(1); // 0th char was a comma
     }
+
     actions.goToRoute(
       Routes.PRINT_WORK_SCHEDULE
-        .replace(':month', toString(month))
-        .replace(':timeframe', timeframe)
+        .replace(':date', selectedDate)
+        .replace(':timeframe', timePeriod)
         .replace(':worksites', worksiteEKIDs)
     );
   }
