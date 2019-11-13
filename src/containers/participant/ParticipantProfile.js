@@ -2,7 +2,6 @@
 import React, { Component } from 'react';
 import styled from 'styled-components';
 import { List, Map } from 'immutable';
-import { DateTime } from 'luxon';
 import {
   Button,
   Card,
@@ -26,6 +25,7 @@ import {
   PersonNotes,
   ProgramNotes,
 } from '../../components/participant/index';
+import EnrollmentTableRow from './enrollment/EnrollmentTableRow';
 import ParticipantWorkScheduleContainer from './schedule/ParticipantWorkScheduleContainer';
 import ProgramCompletionBanner from './ProgramCompletionBanner';
 
@@ -569,10 +569,15 @@ class ParticipantProfile extends Component<Props, State> {
               <NameHeader>Enrollment History</NameHeader>
             </NameRowWrapper>
             <Card>
-              <Table
-                  data={enrollmentData}
-                  headers={enrollmentHeaders}
-                  isLoading={false} />
+              <CardSegment vertical>
+                <Table
+                    components={{
+                      Row: EnrollmentTableRow
+                    }}
+                    data={enrollmentData}
+                    headers={enrollmentHeaders}
+                    isLoading={false} />
+              </CardSegment>
             </Card>
           </ProfileBody>
           <AssignWorksiteModal
