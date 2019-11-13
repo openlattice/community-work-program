@@ -3,6 +3,7 @@ import React, { Component } from 'react';
 import styled from 'styled-components';
 import { List, Map } from 'immutable';
 import startCase from 'lodash/startCase';
+import toString from 'lodash/toString';
 import { DateTime } from 'luxon';
 import {
   Button,
@@ -17,9 +18,11 @@ import { RequestStates } from 'redux-reqseq';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
 import AppointmentListContainer from './AppointmentListContainer';
+import * as Routes from '../../core/router/Routes';
 
 import { findAppointments } from './WorkScheduleActions';
 import { getWorksites } from '../worksites/WorksitesActions';
+import { goToRoute } from '../../core/router/RoutingActions';
 import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
 import { ContainerHeader } from '../../components/Layout';
 import { SEARCH_CONTAINER_WIDTH } from '../../core/style/Sizes';
@@ -86,6 +89,7 @@ type Props = {
   actions:{
     findAppointments :RequestSequence;
     getWorksites :RequestSequence;
+    goToRoute :RequestSequence;
   };
   app :Map;
   appointments :List;
@@ -157,6 +161,28 @@ class WorkScheduleContainer extends Component<Props, State> {
     actions.findAppointments({ selectedDate, timePeriod });
   }
 
+  goToPrintSchedule = () => {
+    const { actions } = this.props;
+    const { selectedDate, timePeriod, worksites } = this.state;
+    const { month } = DateTime.fromISO(selectedDate);
+    const timeframe = timePeriod.toLowerCase();
+    let worksiteEKIDs :string = 'all';
+    if (!worksites.isEmpty()) {
+      worksiteEKIDs = '';
+      const worksiteList :Object[] = worksites.get('worksites');
+      worksiteList.forEach((worksite :Object) => {
+        worksiteEKIDs = worksiteEKIDs.concat(',', worksite.value);
+      });
+      worksiteEKIDs = worksiteEKIDs.slice(1); // first char was a comma
+    }
+    actions.goToRoute(
+      Routes.PRINT_WORK_SCHEDULE
+        .replace(':month', toString(month))
+        .replace(':timeframe', timeframe)
+        .replace(':worksites', worksiteEKIDs)
+    );
+  }
+
   renderFields = () => {
     const { worksitesList } = this.props;
 
@@ -195,7 +221,7 @@ class WorkScheduleContainer extends Component<Props, State> {
           </div>
         </FieldsWrapper>
         <ButtonsWrapper>
-          <Button onClick={() => {}}>Print Schedule</Button>
+          <Button onClick={this.goToPrintSchedule}>Print Schedule</Button>
           <Button mode="primary" onClick={this.getAppointments}>Display Appointments</Button>
         </ButtonsWrapper>
       </FieldsRowWrapper>
@@ -250,6 +276,7 @@ const mapDispatchToProps = (dispatch :Function) :Object => ({
   actions: bindActionCreators({
     findAppointments,
     getWorksites,
+    goToRoute,
   }, dispatch)
 });
 
