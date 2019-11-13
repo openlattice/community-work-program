@@ -165,21 +165,21 @@ class WorkScheduleContainer extends Component<Props, State> {
     const { actions } = this.props;
     const { selectedDate, timePeriod, worksites } = this.state;
 
-    let worksiteEKIDs :string = 'all';
+    let worksiteNames :string = 'all';
     if (!worksites.isEmpty()) {
-      worksiteEKIDs = '';
       const worksiteList :Object[] = worksites.get('worksites');
+      worksiteNames = '';
       worksiteList.forEach((worksite :Object) => {
-        worksiteEKIDs = worksiteEKIDs.concat(',', worksite.value);
+        worksiteNames = worksiteNames.concat(',', worksite.label);
       });
-      worksiteEKIDs = worksiteEKIDs.slice(1); // 0th char was a comma
+      worksiteNames = worksiteNames.slice(1); // 0th char was a comma
     }
 
     actions.goToRoute(
       Routes.PRINT_WORK_SCHEDULE
         .replace(':date', selectedDate)
         .replace(':timeframe', timePeriod)
-        .replace(':worksites', worksiteEKIDs)
+        .replace(':worksites', worksiteNames)
     );
   }
 
