@@ -1438,11 +1438,10 @@ function* getCaseInfoWorker(action :SequenceAction) :Generator<*, *, *> {
     if (value === null || value === undefined) {
       throw ERR_ACTION_VALUE_NOT_DEFINED;
     }
-    const { diversionPlan } = value;
+    const { diversionPlanEKID } = value;
     const app = yield select(getAppFromState);
     const diversionPlanESID = getEntitySetIdFromApp(app, DIVERSION_PLAN);
     const manualCourtCases = getEntitySetIdFromApp(app, MANUAL_PRETRIAL_COURT_CASES);
-    const diversionPlanEKID = getEntityKeyId(diversionPlan);
 
     const searchFilter :Object = {
       entityKeyIds: [diversionPlanEKID],
@@ -1574,9 +1573,8 @@ function* getProgramOutcomeWorker(action :SequenceAction) :Generator<*, *, *> {
     if (value === null || value === undefined) {
       throw ERR_ACTION_VALUE_NOT_DEFINED;
     }
-    const { diversionPlan } = value;
+    const { diversionPlanEKID } = value;
     const app = yield select(getAppFromState);
-    const diversionPlanEKID :UUID = getEntityKeyId(diversionPlan);
     const diversionPlanESID :UUID = getEntitySetIdFromApp(app, DIVERSION_PLAN);
     const programOutcomeESID :UUID = getEntitySetIdFromApp(app, PROGRAM_OUTCOME);
 
@@ -1796,14 +1794,15 @@ function* getEnrollmentStatusWorker(action :SequenceAction) :Generator<*, *, *> 
 
       // some integrated people won't have enrollment statuses but will have a diversion plan:
       if (diversionPlan.isEmpty()) diversionPlan = allDiversionPlans.get(0);
+      const diversionPlanEKID :UUID = getEntityKeyId(diversionPlan);
 
-      yield call(getCaseInfoWorker, getCaseInfo({ diversionPlan }));
+      yield call(getCaseInfoWorker, getCaseInfo({ diversionPlanEKID }));
       /* If populating profile, call getWorksitePlans() to find all worksite plans for current diversion plan */
       const { populateProfile } = value;
       if (populateProfile) {
         yield all([
-          call(getWorksitePlansWorker, getWorksitePlans({ diversionPlan })),
-          call(getProgramOutcomeWorker, getProgramOutcome({ diversionPlan })),
+          call(getWorksitePlansWorker, getWorksitePlans({ diversionPlanEKID })),
+          call(getProgramOutcomeWorker, getProgramOutcome({ diversionPlanEKID })),
           call(getEnrollmentHistoryWorker, getEnrollmentHistory({
             allDiversionPlans,
             mostRecentEnrollmentStatusesByDiversionPlan
@@ -1876,9 +1875,9 @@ function* getEnrollmentFromDiversionPlanWorker(action :SequenceAction) :Generato
     }
 
     yield all([
-      call(getCaseInfoWorker, getCaseInfo({ diversionPlan })),
-      call(getWorksitePlansWorker, getWorksitePlans({ diversionPlan })),
-      call(getProgramOutcomeWorker, getProgramOutcome({ diversionPlan })),
+      call(getCaseInfoWorker, getCaseInfo({ diversionPlanEKID })),
+      call(getWorksitePlansWorker, getWorksitePlans({ diversionPlanEKID })),
+      call(getProgramOutcomeWorker, getProgramOutcome({ diversionPlanEKID })),
     ]);
 
     yield put(getEnrollmentFromDiversionPlan.success(id, { diversionPlan, enrollmentStatus }));

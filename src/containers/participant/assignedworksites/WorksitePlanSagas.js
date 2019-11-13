@@ -657,20 +657,22 @@ function* getWorksitePlansWorker(action :SequenceAction) :Generator<*, *, *> {
     const worksitePlanESID :UUID = getEntitySetIdFromApp(app, WORKSITE_PLAN);
     const diversionPlanEKID :UUID = getEntityKeyId(diversionPlan);
 
-    const searchFilter :Object = {
-      entityKeyIds: [diversionPlanEKID],
-      destinationEntitySetIds: [],
-      sourceEntitySetIds: [worksitePlanESID],
-    };
-    response = yield call(
-      searchEntityNeighborsWithFilterWorker,
-      searchEntityNeighborsWithFilter({ entitySetId: diversionPlanESID, filter: searchFilter })
-    );
-    if (response.error) {
-      throw response.error;
+    if (diversionPlanEKID) {
+      const searchFilter :Object = {
+        entityKeyIds: [diversionPlanEKID],
+        destinationEntitySetIds: [],
+        sourceEntitySetIds: [worksitePlanESID],
+      };
+      response = yield call(
+        searchEntityNeighborsWithFilterWorker,
+        searchEntityNeighborsWithFilter({ entitySetId: diversionPlanESID, filter: searchFilter })
+      );
+      if (response.error) {
+        throw response.error;
+      }
     }
 
-    if (response.data[diversionPlanEKID]) {
+    if (response.data && response.data[diversionPlanEKID]) {
       worksitePlans = fromJS(response.data[diversionPlanEKID])
         .map((worksitePlan :Map) => getNeighborDetails(worksitePlan));
 
