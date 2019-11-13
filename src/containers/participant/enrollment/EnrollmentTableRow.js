@@ -53,9 +53,9 @@ class EnrollmentTableRow extends Component<Props> {
     className: undefined
   }
 
-  selectDiversionPlan = (option :Object | string) => {
+  selectDiversionPlan = (ekid :string) => {
     const { actions, allDiversionPlans } = this.props;
-    const diversionPlan :Map = allDiversionPlans.find((plan :Map) => getEntityKeyId(plan) === option);
+    const diversionPlan :Map = allDiversionPlans.find((plan :Map) => getEntityKeyId(plan) === ekid);
 
     if (isDefined(diversionPlan) && !diversionPlan.isEmpty()) {
       actions.getEnrollmentFromDiversionPlan({ diversionPlan });
