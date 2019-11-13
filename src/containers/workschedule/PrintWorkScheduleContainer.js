@@ -19,6 +19,7 @@ import LogoLoader from '../../components/LogoLoader';
 import { findAppointments } from './WorkScheduleActions';
 import { getEntityKeyId, getEntityProperties, sortEntitiesByDateProperty } from '../../utils/DataUtils';
 import { getPersonFullName } from '../../utils/PeopleUtils';
+import { isDefined } from '../../utils/LangUtils';
 import { APP, STATE, WORK_SCHEDULE } from '../../utils/constants/ReduxStateConsts';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 
@@ -109,6 +110,9 @@ class PrintWorkScheduleContainer extends Component<Props> {
       appointments,
       findAppointmentsRequestState,
       initializeApplicationRequestState,
+      match: {
+        params: { worksites }
+      },
       personByAppointmentEKID,
       worksiteNamesByAppointmentEKID,
     } = this.props;
@@ -123,6 +127,17 @@ class PrintWorkScheduleContainer extends Component<Props> {
     }
 
     const sortedAppointments :List = this.sortAppointmentsByDate(appointments);
+    let worksiteNames :string[] = [];
+    if (worksites !== undefined && worksites !== null && worksites !== 'all') {
+      worksiteNames = worksites.split(',');
+    }
+    const filteredAppointments :List = sortedAppointments.filter((appointment :Map) => {
+      const appointmentEKID :UUID = getEntityKeyId(appointment);
+      const worksiteName :string = worksiteNamesByAppointmentEKID.get(appointmentEKID);
+      if (!worksiteNames.length) return true;
+      if (worksiteNames.includes(worksiteName)) return true;
+      return false;
+    });
     return (
       <Card>
         <CardSegment padding="sm" vertical>
@@ -135,7 +150,7 @@ class PrintWorkScheduleContainer extends Component<Props> {
               labelMap={headerLabelMap} />
         </CardSegment>
         {
-          sortedAppointments.map((appointment :Map) => {
+          filteredAppointments.map((appointment :Map) => {
             const appointmentEKID :UUID = getEntityKeyId(appointment);
             const worksiteName :string = worksiteNamesByAppointmentEKID.get(appointmentEKID);
             const person :Map = personByAppointmentEKID.get(appointmentEKID);
