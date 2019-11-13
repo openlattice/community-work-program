@@ -23,6 +23,7 @@ import EditWorksiteHoursForm from '../worksites/EditWorksiteHoursForm';
 import EditWorksiteInfoForm from '../worksites/EditWorksiteInfoForm';
 import ParticipantProfileContainer from '../participant/ParticipantProfileContainer';
 import ParticipantsSearchContainer from '../participants/ParticipantsSearchContainer';
+import PrintWorkScheduleContainer from '../workschedule/PrintWorkScheduleContainer';
 import WorksiteProfile from '../worksites/WorksiteProfile';
 import WorksitesContainer from '../worksites/WorksitesContainer';
 import WorkScheduleContainer from '../workschedule/WorkScheduleContainer';
@@ -101,6 +102,7 @@ class AppContainer extends Component<Props> {
       <Route path={Routes.EDIT_WORKSITE_HOURS} component={EditWorksiteHoursForm} />
       <Route path={Routes.EDIT_WORKSITE_PROFILE_INFO} component={EditWorksiteInfoForm} />
       <Route path={Routes.WORKSITE_PROFILE} component={WorksiteProfile} />
+      <Route path={Routes.PRINT_WORK_SCHEDULE} component={PrintWorkScheduleContainer} />
       <Route path={Routes.WORK_SCHEDULE} component={WorkScheduleContainer} />
       <Route path={Routes.WORKSITES} component={WorksitesContainer} />
       <Route path={Routes.PARTICIPANT_PROFILE} component={ParticipantProfileContainer} />
@@ -151,7 +153,7 @@ const mapStateToProps = (state :Map<*, *>) => {
   };
 };
 
-const mapDispatchToProps = dispatch => ({
+const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
     initializeApplication: AppActions.initializeApplication,
     logout,
