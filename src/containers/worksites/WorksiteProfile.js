@@ -2,14 +2,17 @@
 import React, { Component } from 'react';
 import styled from 'styled-components';
 import {
+  List,
   Map,
-  OrderedMap
+  OrderedMap,
+  fromJS,
 } from 'immutable';
 import {
   Card,
   CardSegment,
   DataGrid,
   EditButton,
+  Label,
   Table,
 } from 'lattice-ui-kit';
 import { connect } from 'react-redux';
@@ -37,6 +40,7 @@ import { BackNavButton } from '../../components/controls/index';
 import { EMPTY_FIELD } from '../participants/ParticipantsConstants';
 import * as Routes from '../../core/router/Routes';
 
+const { STAFF } = APP_TYPE_FQNS;
 const {
   DATETIME_END,
   DATETIME_START,
@@ -48,27 +52,19 @@ const {
 } = PROPERTY_TYPE_FQNS;
 const {
   ACTIONS,
-  CONTACT_EMAIL,
-  CONTACT_PERSON,
-  CONTACT_PHONE,
   GET_WORKSITE,
   REQUEST_STATE,
   SCHEDULE_BY_WEEKDAY,
   WORKSITE,
   WORKSITE_ADDRESS,
+  WORKSITE_CONTACTS,
 } = WORKSITES;
 
 /* Label Maps */
 const datesLabelMap :OrderedMap = OrderedMap({
   dateFirstActive: 'Date first active',
   dateInactive: 'Date marked inactive',
-});
-
-const contactLabelMap :OrderedMap = OrderedMap({
-  contactName: 'Contact name',
-  contactPhone: 'Contact phone',
-  contactEmail: 'Contact email',
-  address: 'Address',
+  address: 'Address'
 });
 
 const worksiteInfoLabelMap :OrderedMap = OrderedMap({
@@ -94,21 +90,27 @@ const HeaderRowWrapper = styled.div`
   justify-content: space-between;
 `;
 
+const ContactLabelsRow = styled.div`
+  display: grid;
+  flex: 1;
+  grid-auto-flow: row;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-gap: 20px 30px;
+`;
+
 type Props = {
   actions:{
     getWorksite :RequestSequence;
     goToRoute :RequestSequence;
   },
   app :Map;
-  contactEmail :Map;
-  contactPerson :Map;
-  contactPhone :Map;
   getWorksiteRequestState :RequestState;
   initializeAppRequestState :RequestState;
   match :Match;
   scheduleByWeekday :Map;
   worksite :Map;
   worksiteAddress :Map;
+  worksiteContacts :Map;
 };
 
 class WorksiteProfile extends Component<Props> {
@@ -166,11 +168,39 @@ class WorksiteProfile extends Component<Props> {
     }
   }
 
+  formatWorksiteContacts = () => {
+    const { worksiteContacts } = this.props;
+
+    const contacts :Object = {
+      row0: []
+    };
+
+    if (!worksiteContacts.isEmpty()) {
+
+      worksiteContacts.forEach((contactMap :Map, index :number) => {
+
+        const person :Map = contactMap.get(STAFF, Map());
+        const fullName :string = getPersonFullName(person);
+        const contactPhone :Map = contactMap.get(PHONE_NUMBER, Map());
+        const { [PHONE_NUMBER]: phoneNumber } = getEntityProperties(contactPhone, [PHONE_NUMBER]);
+        const contactEmail :Map = contactMap.get(EMAIL, Map());
+        const { [EMAIL]: email } = getEntityProperties(contactEmail, [EMAIL]);
+
+        const contactArray :string[] = contacts[`row${index}`] || [];
+        contactArray.push(fullName);
+        contactArray.push(phoneNumber);
+        contactArray.push(email);
+        contacts[`row${index}`] = contactArray;
+      });
+    }
+    else {
+      contacts.row0 = [EMPTY_FIELD, EMPTY_FIELD, EMPTY_FIELD];
+    }
+    return contacts;
+  }
+
   render() {
     const {
-      contactEmail,
-      contactPerson,
-      contactPhone,
       getWorksiteRequestState,
       initializeAppRequestState,
       scheduleByWeekday,
@@ -193,22 +223,17 @@ class WorksiteProfile extends Component<Props> {
       [DESCRIPTION]: availableWork,
       [NAME]: worksiteName
     } = getEntityProperties(worksite, [DATETIME_END, DATETIME_START, DESCRIPTION, NAME]);
-    const fullName = getPersonFullName(contactPerson);
-    const { [PHONE_NUMBER]: phoneNumber } = getEntityProperties(contactPhone, [PHONE_NUMBER]);
-    const { [EMAIL]: email } = getEntityProperties(contactEmail, [EMAIL]);
-    const { [FULL_ADDRESS]: address } = getEntityProperties(worksiteAddress, [FULL_ADDRESS]);
 
-    const dates :Map = Map({
+    const { [FULL_ADDRESS]: address } = getEntityProperties(worksiteAddress, [FULL_ADDRESS]);
+    const datesAndAddress :Map = Map({
       dateFirstActive: formatAsDate(dateActive),
       dateInactive: formatAsDate(dateInactive),
+      address
     });
 
-    const contact :Map = Map({
-      contactName: fullName,
-      contactPhone: phoneNumber || EMPTY_FIELD,
-      contactEmail: email || EMPTY_FIELD,
-      address: address || EMPTY_FIELD,
-    });
+    const contacts :Object = this.formatWorksiteContacts();
+    const contactsKeys :string[] = Object.keys(contacts);
+    const contactsHeaders = ['Contact name', 'Contact Phone', 'Contact email'];
 
     const status = getWorksiteStatus(dateActive, dateInactive);
     const worksiteInfo :Map = Map({
@@ -236,14 +261,31 @@ class WorksiteProfile extends Component<Props> {
             <CardSegment padding={cardSegmentPadding}>
               <DataGrid
                   columns={4}
-                  data={dates}
+                  data={datesAndAddress}
                   labelMap={datesLabelMap} />
             </CardSegment>
-            <CardSegment padding={cardSegmentPadding}>
-              <DataGrid
-                  columns={4}
-                  data={contact}
-                  labelMap={contactLabelMap} />
+            <CardSegment padding={cardSegmentPadding} vertical>
+              <ContactLabelsRow>
+                {
+                  contactsHeaders.map((label :string) => (
+                    <Label key={label} subtle>{ label }</Label>
+                  ))
+                }
+              </ContactLabelsRow>
+              {
+                contactsKeys.map((row :string) => {
+                  const rowValues = contacts[row];
+                  return (
+                    <ContactLabelsRow key={row}>
+                      {
+                        rowValues.map((value :string, index :number) => (
+                          <div key={`${contactsHeaders[index]}-${value}`}>{ value }</div>
+                        ))
+                      }
+                    </ContactLabelsRow>
+                  );
+                })
+              }
             </CardSegment>
             <CardSegment padding={cardSegmentPadding}>
               <DataGrid
@@ -273,14 +315,12 @@ const mapStateToProps = (state) => {
   const worksites = state.get(STATE.WORKSITES);
   return ({
     app,
-    [CONTACT_EMAIL]: worksites.get(CONTACT_EMAIL),
-    [CONTACT_PERSON]: worksites.get(CONTACT_PERSON),
-    [CONTACT_PHONE]: worksites.get(CONTACT_PHONE),
     getWorksiteRequestState: worksites.getIn([ACTIONS, GET_WORKSITE, REQUEST_STATE]),
     initializeAppRequestState: app.getIn([APP.ACTIONS, APP.INITIALIZE_APPLICATION, APP.REQUEST_STATE]),
     [SCHEDULE_BY_WEEKDAY]: worksites.get(SCHEDULE_BY_WEEKDAY),
     [WORKSITE]: worksites.get(WORKSITE),
     [WORKSITE_ADDRESS]: worksites.get(WORKSITE_ADDRESS),
+    [WORKSITE_CONTACTS]: worksites.get(WORKSITE_CONTACTS),
   });
 };
 

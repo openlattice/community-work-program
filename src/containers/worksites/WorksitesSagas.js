@@ -16,6 +16,7 @@ import {
   SearchApiActions,
   SearchApiSagas
 } from 'lattice-sagas';
+import { DataProcessingUtils } from 'lattice-fabricate';
 import type { SequenceAction } from 'redux-reqseq';
 
 import Logger from '../../utils/Logger';
@@ -28,7 +29,6 @@ import {
   getNeighborDetails,
   getNeighborESID,
   getPropertyFqnFromEdm,
-  getPropertyTypeIdFromEdm,
   sortEntitiesByDateProperty,
 } from '../../utils/DataUtils';
 import { getWorksiteScheduleFromFormData, getWorksiteScheduleFromEntities } from '../../utils/ScheduleUtils';
@@ -38,35 +38,45 @@ import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/Full
 import {
   ADD_ORGANIZATION,
   ADD_WORKSITE,
-  ADD_WORKSITE_CONTACT_AND_ADDRESS,
+  ADD_WORKSITE_ADDRESS,
+  ADD_WORKSITE_CONTACTS,
   CREATE_WORKSITE_SCHEDULE,
+  DELETE_WORKSITE_CONTACT,
   EDIT_WORKSITE,
-  EDIT_WORKSITE_CONTACT_AND_ADDRESS,
+  EDIT_WORKSITE_ADDRESS,
+  EDIT_WORKSITE_CONTACT,
   GET_ORGANIZATIONS,
   GET_WORKSITE,
   GET_WORKSITES,
   GET_WORKSITES_BY_ORG,
   GET_WORKSITE_ADDRESS,
-  GET_WORKSITE_CONTACT,
+  GET_WORKSITE_CONTACTS,
   GET_WORKSITE_PLANS,
   GET_WORKSITE_SCHEDULE,
   addOrganization,
   addWorksite,
-  addWorksiteContactAndAddress,
+  addWorksiteAddress,
+  addWorksiteContacts,
   createWorksiteSchedule,
+  deleteWorksiteContact,
   editWorksite,
-  editWorksiteContactAndAddress,
+  editWorksiteAddress,
+  editWorksiteContact,
   getOrganizations,
   getWorksite,
   getWorksiteAddress,
-  getWorksiteContact,
+  getWorksiteContacts,
   getWorksitePlans,
   getWorksiteSchedule,
   getWorksites,
   getWorksitesByOrg,
 } from './WorksitesActions';
-import { submitDataGraph, submitPartialReplace } from '../../core/sagas/data/DataActions';
-import { submitDataGraphWorker, submitPartialReplaceWorker } from '../../core/sagas/data/DataSagas';
+import { deleteEntities, submitDataGraph, submitPartialReplace } from '../../core/sagas/data/DataActions';
+import {
+  deleteEntitiesWorker,
+  submitDataGraphWorker,
+  submitPartialReplaceWorker
+} from '../../core/sagas/data/DataSagas';
 
 const { PAST, SCHEDULED, TOTAL_HOURS } = WORKSITE_INFO_CONSTS;
 const {
@@ -93,6 +103,7 @@ const { searchEntityNeighborsWithFilter } = SearchApiActions;
 const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
 const { getEntityData, getEntitySetData } = DataApiActions;
 const { getEntityDataWorker, getEntitySetDataWorker } = DataApiSagas;
+const { getPageSectionKey, parseEntityAddressKey } = DataProcessingUtils;
 
 const getAppFromState = (state) => state.get(STATE.APP, Map());
 const getEdmFromState = (state) => state.get(STATE.EDM, Map());
@@ -106,7 +117,6 @@ const getEdmFromState = (state) => state.get(STATE.EDM, Map());
 function* addWorksiteWorker(action :SequenceAction) :Generator<*, *, *> {
 
   const { id, value } = action;
-  const workerResponse = {};
   let response :Object = {};
 
   try {
@@ -126,8 +136,7 @@ function* addWorksiteWorker(action :SequenceAction) :Generator<*, *, *> {
     yield put(addWorksite.success(id, { edm, worksiteEKID, worksiteESID }));
   }
   catch (error) {
-    workerResponse.error = error;
-    LOG.error('caught exception in addWorksiteWorker()', error);
+    LOG.error(action.type, error);
     yield put(addWorksite.failure(id, error));
   }
   finally {
@@ -142,22 +151,18 @@ function* addWorksiteWatcher() :Generator<*, *, *> {
 
 /*
  *
- * WorksitesActions.addWorksiteContactAndAddress()
+ * WorksitesActions.addWorksiteAddress()
  *
  */
 
-function* addWorksiteContactAndAddressWorker(action :SequenceAction) :Generator<*, *, *> {
+function* addWorksiteAddressWorker(action :SequenceAction) :Generator<*, *, *> {
 
   const { id, value } = action;
-  const workerResponse = {};
   let response :Object = {};
   let worksiteAddress :Map = Map();
-  let contactPerson :Map = Map();
-  let contactPhone :Map = Map();
-  let contactEmail :Map = Map();
 
   try {
-    yield put(addWorksiteContactAndAddress.request(id, value));
+    yield put(addWorksiteAddress.request(id, value));
 
     response = yield call(submitDataGraphWorker, submitDataGraph(value));
     if (response.error) {
@@ -168,12 +173,7 @@ function* addWorksiteContactAndAddressWorker(action :SequenceAction) :Generator<
 
     const app = yield select(getAppFromState);
     const edm = yield select(getEdmFromState);
-
-    const contactInfoESID :UUID = getEntitySetIdFromApp(app, CONTACT_INFORMATION);
-    const staffESID :UUID = getEntitySetIdFromApp(app, STAFF);
     const addressESID :UUID = getEntitySetIdFromApp(app, ADDRESS);
-
-    const staffEKID :UUID = entityKeyIds[staffESID][0];
     const addressEKID :UUID = entityKeyIds[addressESID][0];
 
     const { entityData } :Object = value;
@@ -185,49 +185,82 @@ function* addWorksiteContactAndAddressWorker(action :SequenceAction) :Generator<
     });
     worksiteAddress = worksiteAddress.set(ENTITY_KEY_ID, addressEKID);
 
-    const storedStaffData :Map = fromJS(entityData[staffESID][0]);
-    storedStaffData.forEach((staffValue, propertyTypeId) => {
-      const propertyTypeFqn = getPropertyFqnFromEdm(edm, propertyTypeId);
-      contactPerson = contactPerson.set(propertyTypeFqn, staffValue);
-    });
-    contactPerson = contactPerson.set(ENTITY_KEY_ID, staffEKID);
-
-    const storedContactData :List = fromJS(entityData[contactInfoESID]);
-    storedContactData.forEach((contactEntity :Map, index :number) => {
-
-      contactEntity.forEach((contactValue, propertyTypeId) => {
-
-        if (propertyTypeId === getPropertyTypeIdFromEdm(edm, PHONE_NUMBER)) {
-          contactPhone = contactPhone.set(PHONE_NUMBER, contactValue);
-          contactPhone = contactPhone.set(ENTITY_KEY_ID, entityKeyIds[contactInfoESID][index]);
-        }
-        if (propertyTypeId === getPropertyTypeIdFromEdm(edm, EMAIL)) {
-          contactEmail = contactEmail.set(EMAIL, contactValue);
-          contactEmail = contactEmail.set(ENTITY_KEY_ID, entityKeyIds[contactInfoESID][index]);
-        }
-      });
-    });
-
-    yield put(addWorksiteContactAndAddress.success(id, {
-      contactEmail,
-      contactPerson,
-      contactPhone,
-      worksiteAddress,
-    }));
+    yield put(addWorksiteAddress.success(id, { worksiteAddress }));
   }
   catch (error) {
-    workerResponse.error = error;
-    LOG.error('caught exception in addWorksiteContactAndAddressWorker()', error);
-    yield put(addWorksiteContactAndAddress.failure(id, error));
+    LOG.error(action.type, error);
+    yield put(addWorksiteAddress.failure(id, error));
   }
   finally {
-    yield put(addWorksiteContactAndAddress.finally(id));
+    yield put(addWorksiteAddress.finally(id));
   }
 }
 
-function* addWorksiteContactAndAddressWatcher() :Generator<*, *, *> {
+function* addWorksiteAddressWatcher() :Generator<*, *, *> {
 
-  yield takeEvery(ADD_WORKSITE_CONTACT_AND_ADDRESS, addWorksiteContactAndAddressWorker);
+  yield takeEvery(ADD_WORKSITE_ADDRESS, addWorksiteAddressWorker);
+}
+
+/*
+ *
+ * WorksitesActions.addWorksiteContacts()
+ *
+ */
+
+function* addWorksiteContactsWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+  let response :Object = {};
+  let newWorksiteContacts :List = List();
+
+  try {
+    yield put(addWorksiteContacts.request(id, value));
+    const { associationEntityData, entityData } :Object = value;
+
+    response = yield call(submitDataGraphWorker, submitDataGraph({ associationEntityData, entityData }));
+    if (response.error) {
+      throw response.error;
+    }
+
+    const { contacts } = value;
+    const newContactData :Object = contacts[getPageSectionKey(1, 1)][0];
+    let newContact :Map = Map();
+    fromJS(newContactData).forEach((contactValue :string, entityAddressKey :string) => {
+      const { entityIndex, entitySetName, propertyTypeFQN } = parseEntityAddressKey(entityAddressKey);
+      if (entitySetName === STAFF.toString()) {
+        let staffMember :Map = newContact.get(STAFF, Map());
+        staffMember = staffMember.set(propertyTypeFQN, contactValue);
+        newContact = newContact.set(STAFF, staffMember);
+      }
+      if (entitySetName === CONTACT_INFORMATION.toString()) {
+        if (entityIndex === 0) {
+          let contactMethod :Map = newContact.get(PHONE_NUMBER, Map());
+          contactMethod = contactMethod.set(propertyTypeFQN, contactValue);
+          newContact = newContact.set(PHONE_NUMBER, contactMethod);
+        }
+        if (entityIndex === 1) {
+          let contactMethod :Map = newContact.get(EMAIL, Map());
+          contactMethod = contactMethod.set(propertyTypeFQN, contactValue);
+          newContact = newContact.set(EMAIL, contactMethod);
+        }
+      }
+    });
+    newWorksiteContacts = newWorksiteContacts.push(newContact);
+
+    yield put(addWorksiteContacts.success(id, { newWorksiteContacts }));
+  }
+  catch (error) {
+    LOG.error(action.type, error);
+    yield put(addWorksiteContacts.failure(id, error));
+  }
+  finally {
+    yield put(addWorksiteContacts.finally(id));
+  }
+}
+
+function* addWorksiteContactsWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(ADD_WORKSITE_CONTACTS, addWorksiteContactsWorker);
 }
 
 /*
@@ -329,6 +362,54 @@ function* createWorksiteScheduleWatcher() :Generator<*, *, *> {
 
 /*
  *
+ * WorksitesActions.deleteWorksiteContact()
+ *
+ */
+
+function* deleteWorksiteContactWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+  if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
+  let response :Object = {};
+
+  try {
+    yield put(deleteWorksiteContact.request(id, value));
+
+    const { entityData } = value;
+
+    const entitiesToDelete :Object[] = [];
+    fromJS(entityData).forEach((setOfEKIDs :Set<UUID>, entitySetId :UUID) => {
+      setOfEKIDs.forEach((entityKeyId :UUID) => {
+        entitiesToDelete.push({
+          entitySetId,
+          entityKeyId
+        });
+      });
+    });
+
+    response = yield call(deleteEntitiesWorker, deleteEntities(entitiesToDelete));
+    if (response.error) {
+      throw response.error;
+    }
+
+    yield put(deleteWorksiteContact.success(id));
+  }
+  catch (error) {
+    LOG.error(action.type, error);
+    yield put(deleteWorksiteContact.failure(id, error));
+  }
+  finally {
+    yield put(deleteWorksiteContact.finally(id));
+  }
+}
+
+function* deleteWorksiteContactWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(DELETE_WORKSITE_CONTACT, deleteWorksiteContactWorker);
+}
+
+/*
+ *
  * WorksitesActions.editWorksite()
  *
  */
@@ -361,7 +442,7 @@ function* editWorksiteWorker(action :SequenceAction) :Generator<*, *, *> {
     yield put(editWorksite.success(id, { newWorksiteData }));
   }
   catch (error) {
-    LOG.error('caught exception in editWorksiteWorker()', error);
+    LOG.error(action.type, error);
     yield put(editWorksite.failure(id, error));
   }
   finally {
@@ -376,21 +457,77 @@ function* editWorksiteWatcher() :Generator<*, *, *> {
 
 /*
  *
+ * WorksitesActions.editWorksiteContact()
+ *
+ */
+
+function* editWorksiteContactWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+  let response :Object = {};
+  let newlyEditedContact :Map = Map();
+
+  try {
+    yield put(editWorksiteContact.request(id, value));
+
+    response = yield call(submitPartialReplaceWorker, submitPartialReplace(value));
+    if (response.error) {
+      throw response.error;
+    }
+
+    const { properties } = value;
+
+    fromJS(properties).forEach((contactValue :string, entityAddressKey :string) => {
+
+      const { entityIndex, entitySetName, propertyTypeFQN } = parseEntityAddressKey(entityAddressKey);
+      if (entitySetName === STAFF.toString()) {
+        let staffMember :Map = newlyEditedContact.get(STAFF, Map());
+        staffMember = staffMember.set(propertyTypeFQN, contactValue);
+        newlyEditedContact = newlyEditedContact.set(STAFF, staffMember);
+      }
+      if (entitySetName === CONTACT_INFORMATION.toString()) {
+        if (entityIndex === -1) {
+          let contactMethod :Map = newlyEditedContact.get(PHONE_NUMBER, Map());
+          contactMethod = contactMethod.set(propertyTypeFQN, contactValue);
+          newlyEditedContact = newlyEditedContact.set(PHONE_NUMBER, contactMethod);
+        }
+        if (entityIndex === -2) {
+          let contactMethod :Map = newlyEditedContact.get(EMAIL, Map());
+          contactMethod = contactMethod.set(propertyTypeFQN, contactValue);
+          newlyEditedContact = newlyEditedContact.set(EMAIL, contactMethod);
+        }
+      }
+    });
+    yield put(editWorksiteContact.success(id, { newlyEditedContact }));
+  }
+  catch (error) {
+    LOG.error(action.type, error);
+    yield put(editWorksiteContact.failure(id, error));
+  }
+  finally {
+    yield put(editWorksiteContact.finally(id));
+  }
+}
+
+function* editWorksiteContactWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(EDIT_WORKSITE_CONTACT, editWorksiteContactWorker);
+}
+
+/*
+ *
  * WorksitesActions.editWorksiteContactAndAddress()
  *
  */
 
-function* editWorksiteContactAndAddressWorker(action :SequenceAction) :Generator<*, *, *> {
+function* editWorksiteAddressWorker(action :SequenceAction) :Generator<*, *, *> {
 
   const { id, value } = action;
   let response :Object = {};
-  let newPersonData :Map = Map();
-  let newPhoneData :Map = Map();
-  let newEmailData :Map = Map();
   let newAddressData :Map = Map();
 
   try {
-    yield put(editWorksiteContactAndAddress.request(id, value));
+    yield put(editWorksiteAddress.request(id, value));
 
     response = yield call(submitPartialReplaceWorker, submitPartialReplace(value));
     if (response.error) {
@@ -398,61 +535,29 @@ function* editWorksiteContactAndAddressWorker(action :SequenceAction) :Generator
     }
     const { entityData } = value;
     const app = yield select(getAppFromState);
-    const contactInfoESID :UUID = getEntitySetIdFromApp(app, CONTACT_INFORMATION);
-    const staffESID :UUID = getEntitySetIdFromApp(app, STAFF);
     const addressESID :UUID = getEntitySetIdFromApp(app, ADDRESS);
     const edm = yield select(getEdmFromState);
 
-    const storedEntities :Map = fromJS(entityData);
-    storedEntities.forEach((entities :Map, entitySetId :UUID) => {
-
-      if (entitySetId === staffESID) {
-        entities.forEach((addressValue, propertyTypeId) => {
-          const propertyTypeFqn = getPropertyFqnFromEdm(edm, propertyTypeId);
-          newPersonData = newPersonData.set(propertyTypeFqn, addressValue);
-        });
-      }
-
-      if (entitySetId === contactInfoESID) {
-        entities.forEach((contactEntity :Map) => {
-          contactEntity.forEach((contactValue, propertyTypeId) => {
-            if (propertyTypeId === getPropertyTypeIdFromEdm(edm, PHONE_NUMBER)) {
-              newPhoneData = newPhoneData.set(PHONE_NUMBER, contactValue);
-            }
-            if (propertyTypeId === getPropertyTypeIdFromEdm(edm, EMAIL)) {
-              newEmailData = newEmailData.set(EMAIL, contactValue);
-            }
-          });
-        });
-      }
-
-      if (entitySetId === addressESID) {
-        entities.forEach((addressValue, propertyTypeId) => {
-          const propertyTypeFqn = getPropertyFqnFromEdm(edm, propertyTypeId);
-          newAddressData = newAddressData.set(propertyTypeFqn, addressValue);
-        });
-      }
+    const storedEntities :Map = fromJS(entityData[addressESID]);
+    storedEntities.valueSeq().get(0).forEach((addressValue, propertyTypeId) => {
+      const propertyTypeFqn = getPropertyFqnFromEdm(edm, propertyTypeId);
+      newAddressData = newAddressData.set(propertyTypeFqn, addressValue);
     });
 
-    yield put(editWorksiteContactAndAddress.success(id, {
-      newAddressData,
-      newEmailData,
-      newPersonData,
-      newPhoneData,
-    }));
+    yield put(editWorksiteAddress.success(id, { newAddressData }));
   }
   catch (error) {
-    LOG.error('caught exception in editWorksiteContactAndAddressWorker()', error);
-    yield put(editWorksiteContactAndAddress.failure(id, error));
+    LOG.error(action.type, error);
+    yield put(editWorksiteAddress.failure(id, error));
   }
   finally {
-    yield put(editWorksiteContactAndAddress.finally(id));
+    yield put(editWorksiteAddress.finally(id));
   }
 }
 
-function* editWorksiteContactAndAddressWatcher() :Generator<*, *, *> {
+function* editWorksiteAddressWatcher() :Generator<*, *, *> {
 
-  yield takeEvery(EDIT_WORKSITE_CONTACT_AND_ADDRESS, editWorksiteContactAndAddressWorker);
+  yield takeEvery(EDIT_WORKSITE_ADDRESS, editWorksiteAddressWorker);
 }
 
 /*
@@ -546,7 +651,7 @@ function* getWorksitePlansWorker(action :SequenceAction) :Generator<*, *, *> {
   }
   catch (error) {
     workerResponse.error = error;
-    LOG.error('caught exception in getWorksitePlansWorker()', error);
+    LOG.error(action.type, error);
     yield put(getWorksitePlans.failure(id, error));
   }
   finally {
@@ -617,7 +722,7 @@ function* getWorksitesByOrgWorker(action :SequenceAction) :Generator<*, *, *> {
   }
   catch (error) {
     workerResponse.error = error;
-    LOG.error('caught exception in getWorksitesByOrgWorker()', error);
+    LOG.error(action.type, error);
     yield put(getWorksitesByOrg.failure(id, error));
   }
   finally {
@@ -669,7 +774,7 @@ function* getOrganizationsWorker(action :SequenceAction) :Generator<*, *, *> {
   }
   catch (error) {
     workerResponse.error = error;
-    LOG.error('caught exception in getOrganizationsWorker()', error);
+    LOG.error(action.type, error);
     yield put(getOrganizations.failure(id, error));
   }
   finally {
@@ -711,7 +816,7 @@ function* getWorksitesWorker(action :SequenceAction) :Generator<*, *, *> {
   }
   catch (error) {
     workerResponse.error = error;
-    LOG.error('caught exception in getWorksitesWorker()', error);
+    LOG.error(action.type, error);
     yield put(getWorksites.failure(id, error));
   }
   finally {
@@ -763,7 +868,7 @@ function* getWorksiteAddressWorker(action :SequenceAction) :Generator<*, *, *> {
     yield put(getWorksiteAddress.success(id, address));
   }
   catch (error) {
-    LOG.error('caught exception in getWorksiteAddressWorker()', error);
+    LOG.error(action.type, error);
     yield put(getWorksiteAddress.failure(id, error));
   }
   finally {
@@ -778,21 +883,19 @@ function* getWorksiteAddressWatcher() :Generator<*, *, *> {
 
 /*
  *
- * WorksitesActions.getWorksiteContact()
+ * WorksitesActions.getWorksiteContacts()
  *
  */
 
-function* getWorksiteContactWorker(action :SequenceAction) :Generator<*, *, *> {
+function* getWorksiteContactsWorker(action :SequenceAction) :Generator<*, *, *> {
 
   const { id, value } = action;
   if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
   let response :Object = {};
-  let contactPerson :Map = Map();
-  let contactEmail :Map = Map();
-  let contactPhone :Map = Map();
+  let worksiteContacts :List = List();
 
   try {
-    yield put(getWorksiteContact.request(id));
+    yield put(getWorksiteContacts.request(id));
     const { worksiteEKID } = value;
     const app = yield select(getAppFromState);
     const worksiteESID :UUID = getEntitySetIdFromApp(app, WORKSITE);
@@ -813,13 +916,15 @@ function* getWorksiteContactWorker(action :SequenceAction) :Generator<*, *, *> {
     let results :List = fromJS(response.data[worksiteEKID]);
     if (isDefined(results) && !results.isEmpty()) {
 
-      const employee = getNeighborDetails(results.get(0));
-      const employeeEKID :UUID = getEntityKeyId(employee);
+      const employeeEKIDs = [];
+      results.forEach((result :Map) => {
+        const ekid :UUID = getEntityKeyId(getNeighborDetails(result));
+        employeeEKIDs.push(ekid);
+      });
       const staffESID :UUID = getEntitySetIdFromApp(app, STAFF);
       const contactInfoESID :UUID = getEntitySetIdFromApp(app, CONTACT_INFORMATION);
-
       searchFilter = {
-        entityKeyIds: [employeeEKID],
+        entityKeyIds: employeeEKIDs,
         destinationEntitySetIds: [],
         sourceEntitySetIds: [staffESID, contactInfoESID],
       };
@@ -830,42 +935,47 @@ function* getWorksiteContactWorker(action :SequenceAction) :Generator<*, *, *> {
       if (response.error) {
         throw response.error;
       }
-      results = fromJS(response.data[employeeEKID]);
+      results = fromJS(response.data);
       if (isDefined(results) && !results.isEmpty()) {
 
-        results.forEach((result :Map) => {
-          if (getNeighborESID(result) === staffESID) {
-            contactPerson = getNeighborDetails(result);
-          }
-          if (getNeighborESID(result) === contactInfoESID) {
-            const { [EMAIL]: emailFound, [PHONE_NUMBER]: phoneFound } = getEntityProperties(
-              result, [EMAIL, PHONE_NUMBER]
-            );
-            if (emailFound) {
-              contactEmail = getNeighborDetails(result);
+        results.forEach((neighborList :List) => {
+
+          let worksiteContact :Map = Map();
+          neighborList.forEach((neighbor :Map) => {
+            if (getNeighborESID(neighbor) === staffESID) {
+              worksiteContact = worksiteContact.set(STAFF, getNeighborDetails(neighbor));
             }
-            if (phoneFound) {
-              contactPhone = getNeighborDetails(result);
+            if (getNeighborESID(neighbor) === contactInfoESID) {
+              const { [EMAIL]: emailFound, [PHONE_NUMBER]: phoneFound } = getEntityProperties(
+                neighbor, [EMAIL, PHONE_NUMBER]
+              );
+              if (emailFound) {
+                worksiteContact = worksiteContact.set(EMAIL, getNeighborDetails(neighbor));
+              }
+              if (phoneFound) {
+                worksiteContact = worksiteContact.set(PHONE_NUMBER, getNeighborDetails(neighbor));
+              }
             }
-          }
+          });
+          worksiteContacts = worksiteContacts.push(worksiteContact);
         });
       }
     }
 
-    yield put(getWorksiteContact.success(id, { contactEmail, contactPerson, contactPhone }));
+    yield put(getWorksiteContacts.success(id, { worksiteContacts }));
   }
   catch (error) {
-    LOG.error('caught exception in getWorksiteContactWorker()', error);
-    yield put(getWorksiteContact.failure(id, error));
+    LOG.error(action.type, error);
+    yield put(getWorksiteContacts.failure(id, error));
   }
   finally {
-    yield put(getWorksiteContact.finally(id));
+    yield put(getWorksiteContacts.finally(id));
   }
 }
 
-function* getWorksiteContactWatcher() :Generator<*, *, *> {
+function* getWorksiteContactsWatcher() :Generator<*, *, *> {
 
-  yield takeEvery(GET_WORKSITE_CONTACT, getWorksiteContactWorker);
+  yield takeEvery(GET_WORKSITE_CONTACTS, getWorksiteContactsWorker);
 }
 
 /*
@@ -912,7 +1022,7 @@ function* getWorksiteScheduleWorker(action :SequenceAction) :Generator<*, *, *> 
     yield put(getWorksiteSchedule.success(id, { scheduleByWeekday, scheduleForForm }));
   }
   catch (error) {
-    LOG.error('caught exception in getWorksiteScheduleWorker()', error);
+    LOG.error(action.type, error);
     yield put(getWorksiteSchedule.failure(id, error));
   }
   finally {
@@ -956,14 +1066,14 @@ function* getWorksiteWorker(action :SequenceAction) :Generator<*, *, *> {
 
     yield all([
       call(getWorksiteAddressWorker, getWorksiteAddress({ worksiteEKID })),
-      call(getWorksiteContactWorker, getWorksiteContact({ worksiteEKID })),
+      call(getWorksiteContactsWorker, getWorksiteContacts({ worksiteEKID })),
       call(getWorksiteScheduleWorker, getWorksiteSchedule({ worksiteEKID })),
     ]);
 
     yield put(getWorksite.success(id, worksite));
   }
   catch (error) {
-    LOG.error('caught exception in getWorksiteWorker()', error);
+    LOG.error(action.type, error);
     yield put(getWorksite.failure(id, error));
   }
   finally {
@@ -981,22 +1091,28 @@ export {
   addOrganizationWorker,
   addWorksiteWatcher,
   addWorksiteWorker,
-  addWorksiteContactAndAddressWatcher,
-  addWorksiteContactAndAddressWorker,
+  addWorksiteAddressWatcher,
+  addWorksiteAddressWorker,
+  addWorksiteContactsWatcher,
+  addWorksiteContactsWorker,
   createWorksiteScheduleWatcher,
   createWorksiteScheduleWorker,
+  deleteWorksiteContactWatcher,
+  deleteWorksiteContactWorker,
   editWorksiteWatcher,
   editWorksiteWorker,
-  editWorksiteContactAndAddressWatcher,
-  editWorksiteContactAndAddressWorker,
+  editWorksiteAddressWatcher,
+  editWorksiteAddressWorker,
+  editWorksiteContactWatcher,
+  editWorksiteContactWorker,
   getOrganizationsWatcher,
   getOrganizationsWorker,
   getWorksiteWatcher,
   getWorksiteWorker,
   getWorksiteAddressWatcher,
   getWorksiteAddressWorker,
-  getWorksiteContactWatcher,
-  getWorksiteContactWorker,
+  getWorksiteContactsWatcher,
+  getWorksiteContactsWorker,
   getWorksiteScheduleWatcher,
   getWorksiteScheduleWorker,
   getWorksitesWatcher,
