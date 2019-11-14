@@ -1,11 +1,6 @@
 // @flow
 import React, { Component } from 'react';
-import {
-  List,
-  Map,
-  fromJS,
-  getIn
-} from 'immutable';
+import { List, Map, getIn } from 'immutable';
 import { Card, CardHeader } from 'lattice-ui-kit';
 import { Form, DataProcessingUtils } from 'lattice-fabricate';
 import { connect } from 'react-redux';
@@ -63,22 +58,12 @@ class EditContactsForm extends Component<Props, State> {
 
   constructor(props :Props) {
     super(props);
+    const { formData, prepopulated } = this.prepopulateFormData();
 
     this.state = {
-      formData: {},
-      prepopulated: false,
+      formData,
+      prepopulated,
     };
-  }
-
-  componentDidMount() {
-    this.prepopulateFormData();
-  }
-
-  componentDidUpdate(prevProps :Props) {
-    const { worksiteContacts } = this.props;
-    if (!prevProps.worksiteContacts.equals(worksiteContacts)) {
-      this.prepopulateFormData();
-    }
   }
 
   prepopulateFormData = () => {
@@ -113,10 +98,7 @@ class EditContactsForm extends Component<Props, State> {
       });
     }
 
-    this.setState({
-      formData,
-      prepopulated,
-    });
+    return { formData, prepopulated };
   }
 
   handleOnSubmit = ({ formData } :Object) => {
