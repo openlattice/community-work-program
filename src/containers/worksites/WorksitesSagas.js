@@ -117,7 +117,6 @@ const getEdmFromState = (state) => state.get(STATE.EDM, Map());
 function* addWorksiteWorker(action :SequenceAction) :Generator<*, *, *> {
 
   const { id, value } = action;
-  const workerResponse = {};
   let response :Object = {};
 
   try {
@@ -137,8 +136,7 @@ function* addWorksiteWorker(action :SequenceAction) :Generator<*, *, *> {
     yield put(addWorksite.success(id, { edm, worksiteEKID, worksiteESID }));
   }
   catch (error) {
-    workerResponse.error = error;
-    LOG.error('caught exception in addWorksiteWorker()', error);
+    LOG.error(action.type, error);
     yield put(addWorksite.failure(id, error));
   }
   finally {
@@ -160,7 +158,6 @@ function* addWorksiteWatcher() :Generator<*, *, *> {
 function* addWorksiteAddressWorker(action :SequenceAction) :Generator<*, *, *> {
 
   const { id, value } = action;
-  const workerResponse = {};
   let response :Object = {};
   let worksiteAddress :Map = Map();
 
@@ -191,8 +188,7 @@ function* addWorksiteAddressWorker(action :SequenceAction) :Generator<*, *, *> {
     yield put(addWorksiteAddress.success(id, { worksiteAddress }));
   }
   catch (error) {
-    workerResponse.error = error;
-    LOG.error('caught exception in addWorksiteAddressWorker()', error);
+    LOG.error(action.type, error);
     yield put(addWorksiteAddress.failure(id, error));
   }
   finally {
@@ -214,7 +210,6 @@ function* addWorksiteAddressWatcher() :Generator<*, *, *> {
 function* addWorksiteContactsWorker(action :SequenceAction) :Generator<*, *, *> {
 
   const { id, value } = action;
-  const workerResponse = {};
   let response :Object = {};
   let newWorksiteContacts :List = List();
 
@@ -255,8 +250,7 @@ function* addWorksiteContactsWorker(action :SequenceAction) :Generator<*, *, *> 
     yield put(addWorksiteContacts.success(id, { newWorksiteContacts }));
   }
   catch (error) {
-    workerResponse.error = error;
-    LOG.error('caught exception in addWorksiteContactsWorker()', error);
+    LOG.error(action.type, error);
     yield put(addWorksiteContacts.failure(id, error));
   }
   finally {
@@ -376,7 +370,6 @@ function* deleteWorksiteContactWorker(action :SequenceAction) :Generator<*, *, *
 
   const { id, value } = action;
   if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
-  const workerResponse = {};
   let response :Object = {};
 
   try {
@@ -402,8 +395,7 @@ function* deleteWorksiteContactWorker(action :SequenceAction) :Generator<*, *, *
     yield put(deleteWorksiteContact.success(id));
   }
   catch (error) {
-    workerResponse.error = error;
-    LOG.error('caught exception in deleteWorksiteContactWorker()', error);
+    LOG.error(action.type, error);
     yield put(deleteWorksiteContact.failure(id, error));
   }
   finally {
@@ -450,7 +442,7 @@ function* editWorksiteWorker(action :SequenceAction) :Generator<*, *, *> {
     yield put(editWorksite.success(id, { newWorksiteData }));
   }
   catch (error) {
-    LOG.error('caught exception in editWorksiteWorker()', error);
+    LOG.error(action.type, error);
     yield put(editWorksite.failure(id, error));
   }
   finally {
@@ -509,7 +501,7 @@ function* editWorksiteContactWorker(action :SequenceAction) :Generator<*, *, *> 
     yield put(editWorksiteContact.success(id, { newlyEditedContact }));
   }
   catch (error) {
-    LOG.error('caught exception in editWorksiteContactWorker()', error);
+    LOG.error(action.type, error);
     yield put(editWorksiteContact.failure(id, error));
   }
   finally {
@@ -555,7 +547,7 @@ function* editWorksiteAddressWorker(action :SequenceAction) :Generator<*, *, *> 
     yield put(editWorksiteAddress.success(id, { newAddressData }));
   }
   catch (error) {
-    LOG.error('caught exception in editWorksiteAddressWorker()', error);
+    LOG.error(action.type, error);
     yield put(editWorksiteAddress.failure(id, error));
   }
   finally {
@@ -659,7 +651,7 @@ function* getWorksitePlansWorker(action :SequenceAction) :Generator<*, *, *> {
   }
   catch (error) {
     workerResponse.error = error;
-    LOG.error('caught exception in getWorksitePlansWorker()', error);
+    LOG.error(action.type, error);
     yield put(getWorksitePlans.failure(id, error));
   }
   finally {
@@ -730,7 +722,7 @@ function* getWorksitesByOrgWorker(action :SequenceAction) :Generator<*, *, *> {
   }
   catch (error) {
     workerResponse.error = error;
-    LOG.error('caught exception in getWorksitesByOrgWorker()', error);
+    LOG.error(action.type, error);
     yield put(getWorksitesByOrg.failure(id, error));
   }
   finally {
@@ -782,7 +774,7 @@ function* getOrganizationsWorker(action :SequenceAction) :Generator<*, *, *> {
   }
   catch (error) {
     workerResponse.error = error;
-    LOG.error('caught exception in getOrganizationsWorker()', error);
+    LOG.error(action.type, error);
     yield put(getOrganizations.failure(id, error));
   }
   finally {
@@ -824,7 +816,7 @@ function* getWorksitesWorker(action :SequenceAction) :Generator<*, *, *> {
   }
   catch (error) {
     workerResponse.error = error;
-    LOG.error('caught exception in getWorksitesWorker()', error);
+    LOG.error(action.type, error);
     yield put(getWorksites.failure(id, error));
   }
   finally {
@@ -876,7 +868,7 @@ function* getWorksiteAddressWorker(action :SequenceAction) :Generator<*, *, *> {
     yield put(getWorksiteAddress.success(id, address));
   }
   catch (error) {
-    LOG.error('caught exception in getWorksiteAddressWorker()', error);
+    LOG.error(action.type, error);
     yield put(getWorksiteAddress.failure(id, error));
   }
   finally {
@@ -973,7 +965,7 @@ function* getWorksiteContactsWorker(action :SequenceAction) :Generator<*, *, *> 
     yield put(getWorksiteContacts.success(id, { worksiteContacts }));
   }
   catch (error) {
-    LOG.error('caught exception in getWorksiteContactsWorker()', error);
+    LOG.error(action.type, error);
     yield put(getWorksiteContacts.failure(id, error));
   }
   finally {
@@ -1030,7 +1022,7 @@ function* getWorksiteScheduleWorker(action :SequenceAction) :Generator<*, *, *> 
     yield put(getWorksiteSchedule.success(id, { scheduleByWeekday, scheduleForForm }));
   }
   catch (error) {
-    LOG.error('caught exception in getWorksiteScheduleWorker()', error);
+    LOG.error(action.type, error);
     yield put(getWorksiteSchedule.failure(id, error));
   }
   finally {
@@ -1081,7 +1073,7 @@ function* getWorksiteWorker(action :SequenceAction) :Generator<*, *, *> {
     yield put(getWorksite.success(id, worksite));
   }
   catch (error) {
-    LOG.error('caught exception in getWorksiteWorker()', error);
+    LOG.error(action.type, error);
     yield put(getWorksite.failure(id, error));
   }
   finally {
