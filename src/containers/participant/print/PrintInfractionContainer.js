@@ -7,6 +7,7 @@ import {
   Card,
   CardSegment,
   Label,
+  PlusButton,
   Select,
 } from 'lattice-ui-kit';
 import { bindActionCreators } from 'redux';
@@ -73,7 +74,14 @@ const RowWrapper = styled.div`
   display: grid;
   grid-template-columns: 300px 300px;
   grid-gap: 5px 30px;
+  margin: 10px 0;
   width: 100%;
+`;
+
+const ButtonWrapper = styled.div`
+  align-items: center;
+  display: flex;
+  justify-content: flex-end;
 `;
 
 type Props = {
@@ -91,7 +99,19 @@ type Props = {
   participant :Map;
 };
 
-class PrintInfractionContainer extends Component<Props> {
+type State = {
+  caseFieldRowCount :number;
+}
+
+class PrintInfractionContainer extends Component<Props, State> {
+
+  constructor(props :Props) {
+    super(props);
+
+    this.state = {
+      caseFieldRowCount: 1
+    };
+  }
 
   componentDidMount() {
     const {
@@ -119,6 +139,12 @@ class PrintInfractionContainer extends Component<Props> {
     }
   }
 
+  addCaseFieldsRow = () => {
+    this.setState((prevState :Object) => (
+      { caseFieldRowCount: prevState.caseFieldRowCount + 1 }
+    ));
+  }
+
   render() {
     const {
       allParticipantCases,
@@ -129,6 +155,7 @@ class PrintInfractionContainer extends Component<Props> {
       judgesByCase,
       participant,
     } = this.props;
+    const { caseFieldRowCount } = this.state;
 
     if (initializeApplicationRequestState === RequestStates.PENDING
         || getInfoForPrintInfractionRequestState === RequestStates.PENDING) {
@@ -165,6 +192,11 @@ class PrintInfractionContainer extends Component<Props> {
     const casesOptions = [];
     caseValues.forEach((caseEKID :UUID, i :number) => casesOptions.push({ value: caseEKID, label: caseLabels[i] }));
 
+    const caseFieldRowArray :number[] = [];
+    for (let i = 0; i < caseFieldRowCount; i += 1) {
+      caseFieldRowArray.push(i);
+    }
+
     return (
       <Card>
         <CardSegment>
@@ -187,38 +219,33 @@ class PrintInfractionContainer extends Component<Props> {
           <TextWrapper>{ infractionCategory }</TextWrapper>
         </CardSegment>
         <CardSegment vertical>
-          <Label subtle>File #1</Label>
-          <RowWrapper>
-            <div>
-              <Label subtle>Docket #</Label>
-              <Select
-                  borderless
-                  options={casesOptions} />
-            </div>
-            <div>
-              <Label subtle>Judge</Label>
-              <Select
-                  borderless
-                  options={judgesOptions} />
-            </div>
-          </RowWrapper>
-        </CardSegment>
-        <CardSegment vertical>
-          <Label subtle>File #2</Label>
-          <RowWrapper>
-            <div>
-              <Label subtle>Docket #</Label>
-              <Select
-                  borderless
-                  options={casesOptions} />
-            </div>
-            <div>
-              <Label subtle>Judge</Label>
-              <Select
-                  borderless
-                  options={judgesOptions} />
-            </div>
-          </RowWrapper>
+          {
+            caseFieldRowArray.map((num :number) => (
+              <div key={num}>
+                <RowWrapper>
+                  <div>
+                    <Label subtle>Docket #</Label>
+                    <Select
+                        borderless
+                        options={casesOptions} />
+                  </div>
+                  <div>
+                    <Label subtle>Judge</Label>
+                    <Select
+                        borderless
+                        options={judgesOptions} />
+                  </div>
+                </RowWrapper>
+                {
+                  (num === caseFieldRowArray[caseFieldRowArray.length - 1]) && (
+                    <ButtonWrapper>
+                      <PlusButton onClick={this.addCaseFieldsRow} />
+                    </ButtonWrapper>
+                  )
+                }
+              </div>
+            ))
+          }
         </CardSegment>
         <CardSegment vertical>
           <Label subtle>Narrative</Label>
