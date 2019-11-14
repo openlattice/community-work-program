@@ -1,6 +1,7 @@
 // @flow
 import React, { Component } from 'react';
 import styled from 'styled-components';
+import { Table } from 'lattice-ui-kit';
 import { List, Map } from 'immutable';
 import { DateTime } from 'luxon';
 import { bindActionCreators } from 'redux';
@@ -19,6 +20,7 @@ import { PARTICIPANT_PROFILE } from '../../core/router/Routes';
 import { SEARCH_CONTAINER_WIDTH } from '../../core/style/Sizes';
 import { isDefined } from '../../utils/LangUtils';
 import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
+import { getPersonFullName } from '../../utils/PeopleUtils';
 import {
   ALL,
   ALL_PARTICIPANTS_COLUMNS,
@@ -287,6 +289,24 @@ class ParticipantsSearchContainer extends Component<Props, State> {
       return courtTypeA.localeCompare(courtTypeB, undefined, { sensitivity: 'base' });
     });
     return sortedByCourtType;
+  }
+
+  aggregateTableData = () => {
+    const {
+      courtTypeByParticipant,
+      currentDiversionPlansMap,
+      enrollment,
+      hoursWorked,
+      infractionCountsByParticipant,
+    } = this.props;
+    const { peopleToRender } = this.state;
+
+    const data :Object[] = [];
+    peopleToRender.forEach((person :Map) => {
+      const personRow = {};
+
+      const personName :string = getPersonFullName(person);
+    });
   }
 
   render() {
