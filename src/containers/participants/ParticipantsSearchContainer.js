@@ -1,7 +1,8 @@
 // @flow
 import React, { Component } from 'react';
 import styled from 'styled-components';
-import { Table } from 'lattice-ui-kit';
+import toString from 'lodash/toString';
+import { Card, Table } from 'lattice-ui-kit';
 import { List, Map } from 'immutable';
 import { DateTime } from 'luxon';
 import { bindActionCreators } from 'redux';
@@ -9,9 +10,10 @@ import { connect } from 'react-redux';
 import { RequestStates } from 'redux-reqseq';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
-import ParticipantsTable from '../../components/table/ParticipantsTable';
 import AddParticipantModal from './AddParticipantModal';
 import LogoLoader from '../../components/LogoLoader';
+import ParticipantsTable from '../../components/table/ParticipantsTable';
+import ParticipantsTableRow from './tables/ParticipantsTableRow';
 
 import { ToolBar } from '../../components/controls/index';
 import { getDiversionPlans } from './ParticipantsActions';
@@ -20,21 +22,23 @@ import { PARTICIPANT_PROFILE } from '../../core/router/Routes';
 import { SEARCH_CONTAINER_WIDTH } from '../../core/style/Sizes';
 import { isDefined } from '../../utils/LangUtils';
 import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
-import { getPersonFullName } from '../../utils/PeopleUtils';
+import { calculateAge, formatAsDate } from '../../utils/DateTimeUtils';
+import { getHoursServed, getPersonFullName, getPersonPictureForTable } from '../../utils/PeopleUtils';
+import { getSentenceEndDate } from '../../utils/ScheduleUtils';
+import { generateTableHeaders } from '../../utils/FormattingUtils';
 import {
   ALL,
   ALL_PARTICIPANTS_COLUMNS,
+  EMPTY_FIELD,
   FILTERS,
   SORTABLE_PARTICIPANT_COLUMNS,
   statusFilterDropdown,
 } from './ParticipantsConstants';
 import { APP, PEOPLE, STATE } from '../../utils/constants/ReduxStateConsts';
-import { ENROLLMENT_STATUSES, INFRACTIONS_CONSTS } from '../../core/edm/constants/DataModelConsts';
+import { ENROLLMENT_STATUSES, HOURS_CONSTS, INFRACTIONS_CONSTS } from '../../core/edm/constants/DataModelConsts';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { OL } from '../../core/style/Colors';
 
-/*
- * constants
- */
 const {
   COURT_TYPE_BY_PARTICIPANT,
   CURRENT_DIVERSION_PLANS_BY_PARTICIPANT,
@@ -44,12 +48,15 @@ const {
   PARTICIPANTS,
 } = PEOPLE;
 const {
+  DATETIME_END,
   DATETIME_RECEIVED,
+  DOB,
   FIRST_NAME,
   LAST_NAME,
   STATUS,
 } = PROPERTY_TYPE_FQNS;
 const { VIOLATION, WARNING } = INFRACTIONS_CONSTS;
+const { REQUIRED, WORKED } = HOURS_CONSTS;
 
 const dropdowns :List = List().withMutations((list :List) => {
   list.set(0, statusFilterDropdown);
@@ -57,9 +64,6 @@ const dropdowns :List = List().withMutations((list :List) => {
 const defaultFilterOption :Map = statusFilterDropdown.get('enums')
   .find((obj) => obj.value.toUpperCase() === ALL);
 
-/*
- * styled components
- */
 
 const ParticipantSearchOuterWrapper = styled.div`
   display: flex;
@@ -78,9 +82,10 @@ const ParticipantSearchInnerWrapper = styled.div`
   align-self: center;
 `;
 
-/*
- * Props
- */
+const AllParticipantsTable = styled(Table)`
+  font-size: 12px;
+  color: ${OL.GREY02};
+`;
 
 type Props = {
   actions:{
@@ -104,10 +109,6 @@ type State = {
   selectedFilterOption :Map;
   selectedSortOption :Map;
 };
-
-/*
- * React component
- */
 
 class ParticipantsSearchContainer extends Component<Props, State> {
 
@@ -294,19 +295,48 @@ class ParticipantsSearchContainer extends Component<Props, State> {
   aggregateTableData = () => {
     const {
       courtTypeByParticipant,
-      currentDiversionPlansMap,
-      enrollment,
+      currentDiversionPlansByParticipant,
+      enrollmentByParticipant,
       hoursWorked,
       infractionCountsByParticipant,
     } = this.props;
     const { peopleToRender } = this.state;
 
     const data :Object[] = [];
-    peopleToRender.forEach((person :Map) => {
-      const personRow = {};
+    if (!peopleToRender.isEmpty()) {
+      peopleToRender.forEach((person :Map) => {
 
-      const personName :string = getPersonFullName(person);
-    });
+        const { [DOB]: dateOfBirth } = getEntityProperties(person, [DOB]);
+        const personEKID :UUID = getEntityKeyId(person);
+        const diversionPlan :Map = currentDiversionPlansByParticipant.get(personEKID);
+        const {
+          [DATETIME_END]: sentenceEndDateTime,
+          [DATETIME_RECEIVED]: sentenceDateTime
+        } = getEntityProperties(diversionPlan, [DATETIME_END, DATETIME_RECEIVED]);
+        const enrollmentStatus :Map = enrollmentByParticipant.get(personEKID);
+        const { [STATUS]: status } = getEntityProperties(enrollmentStatus, [STATUS]);
+        const warningsCount :number = infractionCountsByParticipant.getIn([personEKID, WARNING]);
+        const violationsCount :number = infractionCountsByParticipant.getIn([personEKID, VIOLATION]);
+        const personHours :Map = hoursWorked.get(personEKID);
+        const hoursServed :string = getHoursServed(personHours.get(WORKED), personHours.get(REQUIRED));
+
+        const personRow :Object = {
+          [ALL_PARTICIPANTS_COLUMNS[0]]: getPersonPictureForTable(person, true),
+          [ALL_PARTICIPANTS_COLUMNS[1]]: getPersonFullName(person),
+          [ALL_PARTICIPANTS_COLUMNS[2]]: toString(calculateAge(dateOfBirth)),
+          [ALL_PARTICIPANTS_COLUMNS[3]]: formatAsDate(sentenceDateTime),
+          [ALL_PARTICIPANTS_COLUMNS[4]]: getSentenceEndDate(sentenceEndDateTime, sentenceDateTime),
+          [ALL_PARTICIPANTS_COLUMNS[5]]: status,
+          [ALL_PARTICIPANTS_COLUMNS[6]]: toString(warningsCount),
+          [ALL_PARTICIPANTS_COLUMNS[7]]: toString(violationsCount),
+          [ALL_PARTICIPANTS_COLUMNS[8]]: hoursServed,
+          [ALL_PARTICIPANTS_COLUMNS[9]]: courtTypeByParticipant.get(personEKID) || EMPTY_FIELD,
+          id: personEKID,
+        };
+        data.push(personRow);
+      });
+    }
+    return data;
   }
 
   render() {
@@ -336,6 +366,9 @@ class ParticipantsSearchContainer extends Component<Props, State> {
     const warningMap :Map = infractionCountsByParticipant.map((count :Map) => count.get(WARNING));
     const violationMap :Map = infractionCountsByParticipant.map((count :Map) => count.get(VIOLATION));
 
+    const tableData :Object[] = this.aggregateTableData();
+    const tableHeaders :Object[] = generateTableHeaders(ALL_PARTICIPANTS_COLUMNS);
+
     return (
       <ParticipantSearchOuterWrapper>
         <ToolBar
@@ -349,7 +382,7 @@ class ParticipantsSearchContainer extends Component<Props, State> {
               ageRequired
               alignCenter
               bannerText="All Participants"
-              columnHeaders={ALL_PARTICIPANTS_COLUMNS}
+              columnHeaders={ALL_PARTICIPANTS_COLUMNS.slice(1)}
               config={{
                 includeDeadline: false,
                 includeRequiredHours: true,
@@ -371,6 +404,17 @@ class ParticipantsSearchContainer extends Component<Props, State> {
               violations={violationMap}
               warnings={warningMap}
               width="100%" />
+        </ParticipantSearchInnerWrapper>
+        <ParticipantSearchInnerWrapper style={{ width: SEARCH_CONTAINER_WIDTH }}>
+          <Card>
+            <AllParticipantsTable
+                components={{
+                  Row: ParticipantsTableRow
+                }}
+                data={tableData}
+                headers={tableHeaders}
+                isLoading={false} />
+          </Card>
         </ParticipantSearchInnerWrapper>
         <AddParticipantModal
             isOpen={showAddParticipant}
