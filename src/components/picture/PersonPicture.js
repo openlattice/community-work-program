@@ -17,3 +17,17 @@ export const PersonPhoto = styled.div`
     margin: 0 auto;
   }
 `;
+
+export const StyledPersonPhoto = styled(PersonPhoto)`
+  width: ${(props) => (props.small ? 30 : 36)}px;
+  ${(props) => (props.small
+    ? (
+      `min-width: 30px;
+        height: 30px;
+        display: flex;
+        justify-content: center;
+        align-items: center;`
+    )
+    : ''
+  )}
+`;
