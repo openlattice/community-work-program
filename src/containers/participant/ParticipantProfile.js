@@ -42,9 +42,10 @@ import { OL } from '../../core/style/Colors';
 import { PARTICIPANT_PROFILE_WIDTH } from '../../core/style/Sizes';
 import * as Routes from '../../core/router/Routes';
 import { BackNavButton } from '../../components/controls/index';
-import { generateDiversionPlanOptions, generateEnrollmentHeaders } from './utils/ParticipantProfileUtils';
+import { generateDiversionPlanOptions } from './utils/ParticipantProfileUtils';
 import { getEntityKeyId, getEntityProperties, sortEntitiesByDateProperty } from '../../utils/DataUtils';
 import { isDefined } from '../../utils/LangUtils';
+import { generateTableHeaders } from '../../utils/FormattingUtils';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { ENROLLMENT_STATUSES } from '../../core/edm/constants/DataModelConsts';
 import {
@@ -104,6 +105,8 @@ const {
 const ENROLLMENT_STATUSES_EXCLUDING_PREENROLLMENT = Object.values(ENROLLMENT_STATUSES)
   .filter((status) => status !== ENROLLMENT_STATUSES.AWAITING_CHECKIN
     && status !== ENROLLMENT_STATUSES.AWAITING_ORIENTATION);
+
+export const enrollmentHeaderNames = ['STATUS', 'SENTENCE', 'ORIENTATION', 'COMPLETION', 'HOURS'];
 
 /* Constants for Modals */
 const NEW_ENROLLMENT = 'showNewEnrollmentModal';
@@ -431,7 +434,7 @@ class ParticipantProfile extends Component<Props, State> {
       REQUIRED_HOURS,
     ]);
     const diversionPlanOptions :Object[] = generateDiversionPlanOptions(allDiversionPlans);
-    const enrollmentHeaders :Object[] = generateEnrollmentHeaders();
+    const enrollmentHeaders :Object[] = generateTableHeaders(enrollmentHeaderNames);
     const enrollmentData :Object[] = enrollmentHistoryData.toJS();
 
     return (
