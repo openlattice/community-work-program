@@ -1,18 +1,24 @@
 // @flow
 import React from 'react';
+import toString from 'lodash/toString';
 import { Map } from 'immutable';
-import { faUser } from '@fortawesome/pro-solid-svg-icons';
+import { faUser, faUserCircle } from '@fortawesome/pro-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import type { Element } from 'react';
 
-import { PersonPhoto, PersonPicture } from '../components/picture/PersonPicture';
+import { PersonPhoto, PersonPicture, StyledPersonPhoto } from '../components/picture/PersonPicture';
 import { PROPERTY_TYPE_FQNS } from '../core/edm/constants/FullyQualifiedNames';
 import { EMPTY_FIELD } from '../containers/participants/ParticipantsConstants';
 import { isDefined } from './LangUtils';
 import { getEntityProperties } from './DataUtils';
 import { getImageDataFromEntity } from './BinaryUtils';
 
-const { FIRST_NAME, LAST_NAME, MUGSHOT } = PROPERTY_TYPE_FQNS;
+const {
+  FIRST_NAME,
+  LAST_NAME,
+  MUGSHOT,
+  PICTURE,
+} = PROPERTY_TYPE_FQNS;
 
 const getPersonFullName = (personEntity :Map) :string => {
 
@@ -24,7 +30,7 @@ const getPersonFullName = (personEntity :Map) :string => {
   return fullName;
 };
 
-const getPersonProfilePicture = (person :Map, image :Map) => {
+const getPersonProfilePicture = (person :Map, image :Map) :Element<*> => {
 
   const defaultIcon :Element<any> = <FontAwesomeIcon icon={faUser} size="6x" color="#D8D8D8" />;
 
@@ -48,7 +54,34 @@ const getPersonProfilePicture = (person :Map, image :Map) => {
   return defaultIcon;
 };
 
+const getPersonPictureForTable = (person :Map, small :boolean) :Element<*> => {
+
+  const { [MUGSHOT]: mugshot, [PICTURE]: picture } = getEntityProperties(person, [MUGSHOT, PICTURE]);
+  const photo :string = mugshot || picture;
+
+  if (photo) {
+    return (
+      <StyledPersonPhoto small={small}>
+        <PersonPicture src={photo} alt="" />
+      </StyledPersonPhoto>
+    );
+  }
+  return (
+    <FontAwesomeIcon icon={faUserCircle} color="#D8D8D8" size="2x" />
+  );
+};
+
+const getHoursServed = (hoursWorked :number, hoursRequired :number) :string => {
+
+  if (!hoursWorked && !hoursRequired) return EMPTY_FIELD;
+  if (!isDefined(hoursWorked) || !isDefined(hoursRequired)) return EMPTY_FIELD;
+  if (hoursRequired === 0) return EMPTY_FIELD;
+  return `${toString(hoursWorked)} / ${toString(hoursRequired)}`;
+};
+
 export {
+  getHoursServed,
   getPersonFullName,
+  getPersonPictureForTable,
   getPersonProfilePicture,
 };
