@@ -7,6 +7,7 @@ import {
   Card,
   CardSegment,
   Label,
+  MinusButton,
   PlusButton,
   Select,
 } from 'lattice-ui-kit';
@@ -78,10 +79,14 @@ const RowWrapper = styled.div`
   width: 100%;
 `;
 
-const ButtonWrapper = styled.div`
+const ButtonsWrapper = styled.div`
   align-items: center;
   display: flex;
   justify-content: flex-end;
+`;
+
+const ButtonWrapper = styled.div`
+  margin-left: 10px;
 `;
 
 type Props = {
@@ -142,6 +147,12 @@ class PrintInfractionContainer extends Component<Props, State> {
   addCaseFieldsRow = () => {
     this.setState((prevState :Object) => (
       { caseFieldRowCount: prevState.caseFieldRowCount + 1 }
+    ));
+  }
+
+  removeCaseFieldsRow = () => {
+    this.setState((prevState :Object) => (
+      { caseFieldRowCount: prevState.caseFieldRowCount - 1 }
     ));
   }
 
@@ -238,9 +249,14 @@ class PrintInfractionContainer extends Component<Props, State> {
                 </RowWrapper>
                 {
                   (num === caseFieldRowArray[caseFieldRowArray.length - 1]) && (
-                    <ButtonWrapper>
-                      <PlusButton onClick={this.addCaseFieldsRow} />
-                    </ButtonWrapper>
+                    <ButtonsWrapper>
+                      <ButtonWrapper>
+                        <MinusButton onClick={this.removeCaseFieldsRow} />
+                      </ButtonWrapper>
+                      <ButtonWrapper>
+                        <PlusButton onClick={this.addCaseFieldsRow} />
+                      </ButtonWrapper>
+                    </ButtonsWrapper>
                   )
                 }
               </div>
