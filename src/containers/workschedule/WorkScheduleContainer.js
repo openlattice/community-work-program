@@ -3,6 +3,7 @@ import React, { Component } from 'react';
 import styled from 'styled-components';
 import { List, Map } from 'immutable';
 import startCase from 'lodash/startCase';
+import toString from 'lodash/toString';
 import { DateTime } from 'luxon';
 import {
   Button,
@@ -17,9 +18,11 @@ import { RequestStates } from 'redux-reqseq';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
 import AppointmentListContainer from './AppointmentListContainer';
+import * as Routes from '../../core/router/Routes';
 
 import { findAppointments } from './WorkScheduleActions';
 import { getWorksites } from '../worksites/WorksitesActions';
+import { goToRoute } from '../../core/router/RoutingActions';
 import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
 import { ContainerHeader } from '../../components/Layout';
 import { SEARCH_CONTAINER_WIDTH } from '../../core/style/Sizes';
@@ -75,10 +78,18 @@ const FieldsWrapper = styled.div`
   grid-gap: 0 20px;
 `;
 
+const ButtonsWrapper = styled.div`
+  display: grid;
+  grid-template-columns: minmax(min-content, 1fr) minmax(min-content, 1fr);
+  grid-gap: 0 15px;
+  margin-left: 8px;
+`;
+
 type Props = {
   actions:{
     findAppointments :RequestSequence;
     getWorksites :RequestSequence;
+    goToRoute :RequestSequence;
   };
   app :Map;
   appointments :List;
@@ -150,6 +161,28 @@ class WorkScheduleContainer extends Component<Props, State> {
     actions.findAppointments({ selectedDate, timePeriod });
   }
 
+  goToPrintSchedule = () => {
+    const { actions } = this.props;
+    const { selectedDate, timePeriod, worksites } = this.state;
+
+    let worksiteNames :string = 'all';
+    if (!worksites.isEmpty()) {
+      const worksiteList :Object[] = worksites.get('worksites');
+      worksiteNames = '';
+      worksiteList.forEach((worksite :Object) => {
+        worksiteNames = worksiteNames.concat(',', worksite.label);
+      });
+      worksiteNames = worksiteNames.slice(1); // 0th char was a comma
+    }
+
+    actions.goToRoute(
+      Routes.PRINT_WORK_SCHEDULE
+        .replace(':date', selectedDate)
+        .replace(':timeframe', timePeriod)
+        .replace(':worksites', worksiteNames)
+    );
+  }
+
   renderFields = () => {
     const { worksitesList } = this.props;
 
@@ -187,7 +220,10 @@ class WorkScheduleContainer extends Component<Props, State> {
                 options={WORKSITES_OPTIONS} />
           </div>
         </FieldsWrapper>
-        <Button mode="primary" onClick={this.getAppointments}>Display Appointments</Button>
+        <ButtonsWrapper>
+          <Button onClick={this.goToPrintSchedule}>Print Schedule</Button>
+          <Button mode="primary" onClick={this.getAppointments}>Display Appointments</Button>
+        </ButtonsWrapper>
       </FieldsRowWrapper>
     );
   }
@@ -240,6 +276,7 @@ const mapDispatchToProps = (dispatch :Function) :Object => ({
   actions: bindActionCreators({
     findAppointments,
     getWorksites,
+    goToRoute,
   }, dispatch)
 });
 
