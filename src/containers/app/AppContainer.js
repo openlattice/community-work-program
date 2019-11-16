@@ -32,9 +32,8 @@ import * as AppActions from './AppActions';
 import * as ParticipantsActions from '../participants/ParticipantsActions';
 import * as Routes from '../../core/router/Routes';
 
-import {
-  APP_CONTAINER_WIDTH,
-} from '../../core/style/Sizes';
+import { ContactSupport } from '../../components/controls/index';
+import { APP_CONTAINER_WIDTH } from '../../core/style/Sizes';
 import { OL } from '../../core/style/Colors';
 import { APP, STATE } from '../../utils/constants/ReduxStateConsts';
 
@@ -138,6 +137,7 @@ class AppContainer extends Component<Props> {
         <AppContentOuterWrapper>
           <AppContentInnerWrapper>
             { this.renderAppContent() }
+            <ContactSupport />
           </AppContentInnerWrapper>
         </AppContentOuterWrapper>
       </AppContainerWrapper>

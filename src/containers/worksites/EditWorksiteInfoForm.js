@@ -1,7 +1,7 @@
 // @flow
 import React, { Component } from 'react';
 import styled from 'styled-components';
-import { Map } from 'immutable';
+import { List, Map } from 'immutable';
 import { CardStack } from 'lattice-ui-kit';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
@@ -11,6 +11,7 @@ import type { Match } from 'react-router';
 
 import EditWorksiteForm from './EditWorksiteForm';
 import EditContactsForm from './EditContactsForm';
+import EditWorksiteAddressForm from './EditWorksiteAddressForm';
 import LogoLoader from '../../components/LogoLoader';
 
 import { getWorksite } from './WorksitesActions';
@@ -50,12 +51,10 @@ const {
 } = PROPERTY_TYPE_FQNS;
 const {
   ACTIONS,
-  CONTACT_EMAIL,
-  CONTACT_PERSON,
-  CONTACT_PHONE,
   GET_WORKSITE,
   REQUEST_STATE,
   WORKSITE_ADDRESS,
+  WORKSITE_CONTACTS,
 } = WORKSITES;
 
 const FormWrapper = styled.div`
@@ -77,15 +76,13 @@ type Props = {
     goToRoute :RequestSequence;
   },
   app :Map;
-  contactEmail :Map;
-  contactPerson :Map;
-  contactPhone :Map;
   edm :Map;
   getWorksiteRequestState :RequestState;
   initializeAppRequestState :RequestState;
   match :Match;
   worksite :Map;
   worksiteAddress :Map;
+  worksiteContacts :List;
 };
 
 class EditWorksiteInfoForm extends Component<Props> {
@@ -118,17 +115,27 @@ class EditWorksiteInfoForm extends Component<Props> {
 
   createEntityIndexToIdMap = () => {
     const {
-      contactEmail,
-      contactPerson,
-      contactPhone,
       worksite,
       worksiteAddress,
+      worksiteContacts,
     } = this.props;
+
+    const personEKIDs :UUID[] = [];
+    const phoneEKIDs :UUID[] = [];
+    const emailEKIDs :UUID[] = [];
+    worksiteContacts.forEach((contactMap :Map) => {
+      const person = contactMap.get(STAFF);
+      personEKIDs.push(getEntityKeyId(person));
+      const phone = contactMap.get(PHONE_NUMBER);
+      phoneEKIDs.push(getEntityKeyId(phone));
+      const email = contactMap.get(EMAIL);
+      emailEKIDs.push(getEntityKeyId(email));
+    });
     const entityIndexToIdMap :Map = Map().withMutations((map :Map) => {
       map.setIn([ADDRESS, 0], getEntityKeyId(worksiteAddress));
-      map.setIn([CONTACT_INFORMATION, 0], getEntityKeyId(contactPhone));
-      map.setIn([CONTACT_INFORMATION, 1], getEntityKeyId(contactEmail));
-      map.setIn([STAFF, 0], getEntityKeyId(contactPerson));
+      map.setIn([CONTACT_INFORMATION, -1], phoneEKIDs);
+      map.setIn([CONTACT_INFORMATION, -2], emailEKIDs);
+      map.setIn([STAFF, -1], personEKIDs);
       map.setIn([WORKSITE, 0], getEntityKeyId(worksite));
     });
     return entityIndexToIdMap;
@@ -179,13 +186,11 @@ class EditWorksiteInfoForm extends Component<Props> {
 
   render() {
     const {
-      contactEmail,
-      contactPerson,
-      contactPhone,
       getWorksiteRequestState,
       initializeAppRequestState,
       worksite,
       worksiteAddress,
+      worksiteContacts,
     } = this.props;
 
     if (initializeAppRequestState === RequestStates.PENDING
@@ -216,9 +221,13 @@ class EditWorksiteInfoForm extends Component<Props> {
               propertyTypeIds={propertyTypeIds}
               worksite={worksite} />
           <EditContactsForm
-              contactEmail={contactEmail}
-              contactPerson={contactPerson}
-              contactPhone={contactPhone}
+              entityIndexToIdMap={entityIndexToIdMap}
+              entitySetIds={entitySetIds}
+              propertyTypeIds={propertyTypeIds}
+              worksite={worksite}
+              worksiteAddress={worksiteAddress}
+              worksiteContacts={worksiteContacts} />
+          <EditWorksiteAddressForm
               entityIndexToIdMap={entityIndexToIdMap}
               entitySetIds={entitySetIds}
               propertyTypeIds={propertyTypeIds}
@@ -235,14 +244,12 @@ const mapStateToProps = (state :Map) => {
   const worksites = state.get(STATE.WORKSITES);
   return ({
     app,
-    [CONTACT_EMAIL]: worksites.get(CONTACT_EMAIL),
-    [CONTACT_PERSON]: worksites.get(CONTACT_PERSON),
-    [CONTACT_PHONE]: worksites.get(CONTACT_PHONE),
     edm: state.get(STATE.EDM),
     getWorksiteRequestState: worksites.getIn([ACTIONS, GET_WORKSITE, REQUEST_STATE]),
     initializeAppRequestState: app.getIn([APP.ACTIONS, APP.INITIALIZE_APPLICATION, APP.REQUEST_STATE]),
     [WORKSITES.WORKSITE]: worksites.get(WORKSITES.WORKSITE),
     [WORKSITE_ADDRESS]: worksites.get(WORKSITE_ADDRESS),
+    [WORKSITE_CONTACTS]: worksites.get(WORKSITE_CONTACTS),
   });
 };
 
