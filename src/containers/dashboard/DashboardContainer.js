@@ -2,9 +2,7 @@
 import React, { Component } from 'react';
 import styled from 'styled-components';
 import toString from 'lodash/toString';
-import { CardSegment, CardStack, Tag } from 'lattice-ui-kit';
-import { faUserSlash } from '@fortawesome/pro-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { CardStack, Tag } from 'lattice-ui-kit';
 import { List, Map } from 'immutable';
 import { DateTime } from 'luxon';
 import { bindActionCreators } from 'redux';
