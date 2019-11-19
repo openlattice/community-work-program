@@ -1,12 +1,10 @@
 // @flow
 import React from 'react';
-// import { Types } from 'lattice-ui-kit';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import type { Node } from 'react';
 import { faSort, faSortUp, faSortDown } from '@fortawesome/pro-duotone-svg-icons';
+import type { Node } from 'react';
 
 import { Cell } from './styled/index';
-// import type { SortOrder } from '../../types';
 
 type Props = {
   cellStyle ? :Object;
