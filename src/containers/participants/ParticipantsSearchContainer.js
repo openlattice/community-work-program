@@ -10,6 +10,7 @@ import type { RequestSequence, RequestState } from 'redux-reqseq';
 
 import AddParticipantModal from './AddParticipantModal';
 import LogoLoader from '../../components/LogoLoader';
+import NoParticipantsFound from '../dashboard/NoParticipantsFound';
 import ParticipantsTableRow from '../../components/table/ParticipantsTableRow';
 import TableHeaderRow from '../../components/table/TableHeaderRow';
 import TableHeadCell from '../../components/table/TableHeadCell';
@@ -304,16 +305,24 @@ class ParticipantsSearchContainer extends Component<Props, State> {
             <TableHeader padding="40px">
               All Participants
             </TableHeader>
-            <CustomTable
-                components={{
-                  Cell: TableCell,
-                  HeadCell: TableHeadCell,
-                  Header: TableHeaderRow,
-                  Row: ParticipantsTableRow
-                }}
-                data={tableData}
-                headers={tableHeaders}
-                isLoading={false} />
+            {
+              tableData.length > 0
+                ? (
+                  <CustomTable
+                      components={{
+                        Cell: TableCell,
+                        HeadCell: TableHeadCell,
+                        Header: TableHeaderRow,
+                        Row: ParticipantsTableRow
+                      }}
+                      data={tableData}
+                      headers={tableHeaders}
+                      isLoading={false} />
+                )
+                : (
+                  <NoParticipantsFound text="No participants found. Add a new participant and check here again!" />
+                )
+            }
           </TableCard>
         </ParticipantSearchInnerWrapper>
         <AddParticipantModal
