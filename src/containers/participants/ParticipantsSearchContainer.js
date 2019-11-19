@@ -2,7 +2,6 @@
 import React, { Component } from 'react';
 import styled from 'styled-components';
 import toString from 'lodash/toString';
-import { Card, CardSegment, Table } from 'lattice-ui-kit';
 import { List, Map } from 'immutable';
 import { DateTime } from 'luxon';
 import { bindActionCreators } from 'redux';
@@ -13,11 +12,16 @@ import type { RequestSequence, RequestState } from 'redux-reqseq';
 import AddParticipantModal from './AddParticipantModal';
 import LogoLoader from '../../components/LogoLoader';
 import ParticipantsTable from '../../components/table/ParticipantsTable';
-import ParticipantsTableRow from './tables/ParticipantsTableRow';
-import ParticipantsTableHeaderRow from './tables/ParticipantsTableHeaderRow';
-import ParticipantsHeadCell from './tables/ParticipantsHeadCell';
+import ParticipantsTableRow from '../../components/table/ParticipantsTableRow';
+import TableHeaderRow from '../../components/table/TableHeaderRow';
+import TableHeadCell from '../../components/table/TableHeadCell';
 
-import { Cell } from './tables/styled/index';
+import {
+  TableCell,
+  CustomTable,
+  TableCard,
+  TableHeader,
+} from '../../components/table/styled/index';
 import { ToolBar } from '../../components/controls/index';
 import { getDiversionPlans } from './ParticipantsActions';
 import { goToRoute } from '../../core/router/RoutingActions';
@@ -40,7 +44,6 @@ import {
 import { APP, PEOPLE, STATE } from '../../utils/constants/ReduxStateConsts';
 import { ENROLLMENT_STATUSES, HOURS_CONSTS, INFRACTIONS_CONSTS } from '../../core/edm/constants/DataModelConsts';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
-import { OL } from '../../core/style/Colors';
 
 const {
   COURT_TYPE_BY_PARTICIPANT,
@@ -83,23 +86,6 @@ const ParticipantSearchInnerWrapper = styled.div`
   min-width: ${SEARCH_CONTAINER_WIDTH}px;
   position: relative;
   align-self: center;
-`;
-
-const AllParticipantsCard = styled(Card)`
-  & > ${CardSegment} {
-    border: none;
-  }
-`;
-
-const AllParticipantsTable = styled(Table)`
-  font-size: 12px;
-  color: ${OL.GREY02};
-`;
-
-const AllParticipantsHeader = styled(CardSegment)`
-  color: ${OL.BLACK};
-  font-size: 24px;
-  font-weight: 600;
 `;
 
 type Props = {
@@ -423,21 +409,21 @@ class ParticipantsSearchContainer extends Component<Props, State> {
               width="100%" />
         </ParticipantSearchInnerWrapper>
         <ParticipantSearchInnerWrapper style={{ width: SEARCH_CONTAINER_WIDTH }}>
-          <AllParticipantsCard>
-            <AllParticipantsHeader padding="40px">
+          <TableCard>
+            <TableHeader padding="40px">
               All Participants
-            </AllParticipantsHeader>
-            <AllParticipantsTable
+            </TableHeader>
+            <CustomTable
                 components={{
-                  Cell,
-                  HeadCell: ParticipantsHeadCell,
-                  Header: ParticipantsTableHeaderRow,
+                  Cell: TableCell,
+                  HeadCell: TableHeadCell,
+                  Header: TableHeaderRow,
                   Row: ParticipantsTableRow
                 }}
                 data={tableData}
                 headers={tableHeaders}
                 isLoading={false} />
-          </AllParticipantsCard>
+          </TableCard>
         </ParticipantSearchInnerWrapper>
         <AddParticipantModal
             isOpen={showAddParticipant}

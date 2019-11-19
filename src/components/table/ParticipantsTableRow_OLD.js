@@ -1,0 +1,167 @@
+/*
+ * @flow
+ */
+
+import React from 'react';
+import styled from 'styled-components';
+import toString from 'lodash/toString';
+import { List, Map } from 'immutable';
+import { Tag } from 'lattice-ui-kit';
+import { faUserCircle } from '@fortawesome/pro-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+
+import { PersonPicture } from '../picture/PersonPicture';
+import { calculateAge, formatAsDate } from '../../utils/DateTimeUtils';
+import { PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { getEntityProperties } from '../../utils/DataUtils';
+import { getPersonFullName } from '../../utils/PeopleUtils';
+import { isDefined } from '../../utils/LangUtils';
+import {
+  Cell,
+  Row,
+  StyledPersonPhoto,
+} from './TableStyledComponents';
+import { ENROLLMENT_STATUSES } from '../../core/edm/constants/DataModelConsts';
+import { OL } from '../../core/style/Colors';
+import { TAGS } from '../../containers/dashboard/DashboardConstants';
+
+const {
+  DOB,
+  ENTITY_KEY_ID,
+  MUGSHOT,
+  PICTURE,
+} = PROPERTY_TYPE_FQNS;
+
+const SubtleTag = styled(Tag)`
+  background-color: ${OL.WHITE};
+  border: 0.5px solid ${OL.GREEN02};
+  color: ${OL.GREEN02};
+  font-weight: 500;
+`;
+
+const ReportTag = styled(SubtleTag)`
+  border-color: ${OL.RED01};
+  color: ${OL.RED01};
+`;
+
+type Props = {
+  ageRequired :boolean;
+  courtType ?:string;
+  dates :Object;
+  handleSelect :(personEKID :string) => void;
+  hoursRequired :number | string;
+  hoursWorked ?:number;
+  person :Map;
+  selected :boolean;
+  small :boolean;
+  status ?:string;
+  tag ?:string;
+  violationsCount ?:number;
+  warningsCount ?:number;
+};
+
+const TableRow = ({
+  ageRequired,
+  courtType,
+  dates,
+  handleSelect,
+  hoursRequired,
+  hoursWorked,
+  person,
+  selected,
+  small,
+  status,
+  tag,
+  violationsCount,
+  warningsCount,
+} :Props) => {
+
+  const { [ENTITY_KEY_ID]: personEKID, [DOB]: dateOfBirth } = getEntityProperties(person, [ENTITY_KEY_ID, DOB]);
+  const {
+    enrollmentDeadline,
+    sentenceDate,
+    sentenceEndDate,
+    startDate,
+  } = dates;
+
+  let photo = '';
+  let cellData :List = List();
+
+  if (isDefined(person)) {
+
+    photo = person.getIn([MUGSHOT, 0]) || person.getIn([PICTURE, 0]);
+    photo = photo
+      ? (
+        <StyledPersonPhoto small={small}>
+          <PersonPicture src={photo} alt="" />
+        </StyledPersonPhoto>
+      ) : <FontAwesomeIcon icon={faUserCircle} color="#D8D8D8" size="2x" />;
+
+    cellData = List().withMutations((list :List) => {
+      list.push(getPersonFullName(person));
+      if (ageRequired) list.push(toString(calculateAge(dateOfBirth)));
+      if (isDefined(startDate)) list.push(formatAsDate(startDate));
+      if (isDefined(sentenceDate)) list.push(formatAsDate(sentenceDate));
+      if (isDefined(enrollmentDeadline)) list.push(enrollmentDeadline);
+      if (isDefined(sentenceEndDate)) list.push(sentenceEndDate);
+      if (isDefined(status)) list.push(status);
+      if (isDefined(warningsCount)) list.push(toString(warningsCount));
+      if (isDefined(violationsCount)) list.push(toString(violationsCount));
+      if (isDefined(hoursWorked) && isDefined(hoursRequired)) {
+        if (!hoursWorked && !hoursRequired) list.push('');
+        else list.push(`${toString(hoursWorked)} / ${(toString(hoursRequired))}`);
+      }
+      if (!isDefined(hoursWorked) && isDefined(hoursRequired)) list.push(toString(hoursRequired));
+      if (isDefined(courtType)) list.push(courtType);
+      if (isDefined(tag) || (isDefined(violationsCount) && !isDefined(status))) list.push('');
+    });
+  }
+
+  return (
+    <Row
+        active={selected}
+        onClick={() => {
+          handleSelect(personEKID);
+        }}>
+      <Cell small={small}>{ photo }</Cell>
+      {
+        cellData.map((field :string, index :number) => {
+          const text = Object.values(ENROLLMENT_STATUSES).includes(field) ? field : 'default';
+
+          if (isDefined(tag) && index === (cellData.count() - 1)) {
+            if (tag === TAGS.REVIEW) {
+              return (
+                <Cell key={`${index}-${field}`} small={small} status={text}>
+                  <SubtleTag>Review</SubtleTag>
+                </Cell>
+              );
+            }
+            return (
+              <Cell key={`${index}-${field}`} small={small} status={text}>
+                <ReportTag>Report</ReportTag>
+              </Cell>
+            );
+          }
+          return (
+            <Cell key={`${index}-${field}`} small={small} status={text}>{ field }</Cell>
+          );
+        })
+      }
+    </Row>
+  );
+};
+
+TableRow.defaultProps = {
+  courtType: undefined,
+  hoursRequired: undefined,
+  hoursWorked: undefined,
+  person: undefined,
+  selected: false,
+  small: false,
+  status: undefined,
+  tag: undefined,
+  violationsCount: undefined,
+  warningsCount: undefined,
+};
+
+export default TableRow;

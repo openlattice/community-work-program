@@ -3,9 +3,9 @@ import React from 'react';
 import styled from 'styled-components';
 import isFunction from 'lodash/isFunction';
 
-import { StyledParticipantsRow } from './styled/index';
+import { StyledTableRow } from './styled/index';
 
-const StyledHeaderRow = styled(StyledParticipantsRow)`
+const StyledHeaderRow = styled(StyledTableRow)`
   border-bottom: 1px solid black;
 `;
 

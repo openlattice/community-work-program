@@ -1,9 +1,13 @@
-// @flow
 import styled from 'styled-components';
-import { StyleUtils } from 'lattice-ui-kit';
+import {
+  Card,
+  CardSegment,
+  Table,
+  StyleUtils,
+} from 'lattice-ui-kit';
 
-import { ENROLLMENT_STATUSES } from '../../../../core/edm/constants/DataModelConsts';
-import { ENROLLMENT_STATUS_COLORS, OL } from '../../../../core/style/Colors';
+import { ENROLLMENT_STATUS_COLORS, OL } from '../../../core/style/Colors';
+import { ENROLLMENT_STATUSES } from '../../../core/edm/constants/DataModelConsts';
 
 const { getStickyPosition, getStyleVariation } = StyleUtils;
 
@@ -40,7 +44,24 @@ const whiteSpaceVariation = getStyleVariation('whiteSpace', {
   [shortHeaders[5]]: 'nowrap',
 }, 'normal');
 
-const Cell = styled.td`
+const TableCard = styled(Card)`
+  & > ${CardSegment} {
+    border: none;
+  }
+`;
+
+const TableHeader = styled(CardSegment)`
+  color: ${OL.BLACK};
+  font-size: 24px;
+  font-weight: 600;
+`;
+
+const CustomTable = styled(Table)`
+  font-size: 12px;
+  color: ${OL.GREY02};
+`;
+
+const TableCell = styled.td`
   font-family: 'Open Sans', sans-serif;
   font-size: 12px;
   padding: 7px 30px 7px 0;
@@ -53,7 +74,7 @@ const Cell = styled.td`
   ${(props) => props.cellStyle};
 `;
 
-const StyledParticipantsRow = styled.tr`
+const StyledTableRow = styled.tr`
   background-color: ${OL.WHITE};
   border-bottom: 1px solid ${OL.GREY05};
   font-size: 12px;
@@ -65,13 +86,13 @@ const StyledParticipantsRow = styled.tr`
     ${getStickyPosition}
   }
 
-  ${Cell}:first-child {
+  ${TableCell}:first-child {
     padding-left: 30px;
     width: 84px;
     white-space: nowrap;
   }
 
-  ${Cell}:last-child {
+  ${TableCell}:last-child {
     padding-right: 30px;
   }
 
@@ -86,6 +107,9 @@ const StyledParticipantsRow = styled.tr`
 `;
 
 export {
-  Cell,
-  StyledParticipantsRow,
+  CustomTable,
+  StyledTableRow,
+  TableCard,
+  TableCell,
+  TableHeader,
 };

@@ -5,7 +5,7 @@ import React from 'react';
 import { Map, List } from 'immutable';
 import { DateTime } from 'luxon';
 
-import ParticipantsTableRow from './ParticipantsTableRow';
+import ParticipantsTableRow from './ParticipantsTableRow_OLD';
 
 import { getEntityProperties } from '../../utils/DataUtils';
 import { isDefined } from '../../utils/LangUtils';

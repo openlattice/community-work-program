@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSort, faSortUp, faSortDown } from '@fortawesome/pro-duotone-svg-icons';
 import type { Node } from 'react';
 
-import { Cell } from './styled/index';
+import { TableCell } from './styled/index';
 
 type Props = {
   cellStyle ? :Object;
@@ -34,7 +34,7 @@ const HeadCell = (props :Props) => {
   if (order === 'desc') icon = faSortDown;
 
   return (
-    <Cell
+    <TableCell
         as="th"
         cellStyle={cellStyle}
         className={className}
@@ -43,7 +43,7 @@ const HeadCell = (props :Props) => {
         whiteSpace={whiteSpace}>
       {children}
       { (sortable) && <span><FontAwesomeIcon icon={icon} fixedWidth /></span> }
-    </Cell>
+    </TableCell>
   );
 
 };
