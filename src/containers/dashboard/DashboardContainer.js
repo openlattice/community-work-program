@@ -9,6 +9,7 @@ import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { RequestStates } from 'redux-reqseq';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
+import type { Element } from 'react';
 
 import LogoLoader from '../../components/LogoLoader';
 import NoParticipantsFound from './NoParticipantsFound';
@@ -53,6 +54,13 @@ const {
   INFRACTION_COUNTS_BY_PARTICIPANT,
   PARTICIPANTS,
 } = PEOPLE;
+
+const tableComponents :Object = {
+  Cell: TableCell,
+  HeadCell: TableHeadCell,
+  Header: TableHeaderRow,
+  Row: ParticipantsTableRow
+};
 
 /* styled components */
 const DashboardWrapper = styled.div`
@@ -340,7 +348,7 @@ class DashboardContainer extends Component<Props, State> {
         const requiredHours :number = personHours.get(REQUIRED, undefined);
         const hoursServed :string = getHoursServed(workedHours, requiredHours);
 
-        let reportTag :string = '';
+        let reportTag :Element<any> | string = '';
         if (noShows.includes(person)) reportTag = <ReportTag>Report</ReportTag>;
 
         const personRow :Object = {
@@ -398,12 +406,7 @@ class DashboardContainer extends Component<Props, State> {
                 newParticipantsTableData.length > 0
                   ? (
                     <CustomTable
-                        components={{
-                          Cell: TableCell,
-                          HeadCell: TableHeadCell,
-                          Header: TableHeaderRow,
-                          Row: ParticipantsTableRow
-                        }}
+                        components={tableComponents}
                         data={newParticipantsTableData}
                         headers={newParticipantsTableHeaders}
                         isLoading={false} />
@@ -423,12 +426,7 @@ class DashboardContainer extends Component<Props, State> {
                 pendingCompletionTableData.length > 0
                   ? (
                     <CustomTable
-                        components={{
-                          Cell: TableCell,
-                          HeadCell: TableHeadCell,
-                          Header: TableHeaderRow,
-                          Row: ParticipantsTableRow
-                        }}
+                        components={tableComponents}
                         data={pendingCompletionTableData}
                         headers={pendingCompletionTableHeaders}
                         isLoading={false} />
@@ -446,12 +444,7 @@ class DashboardContainer extends Component<Props, State> {
                 violationsWatchTableData.length > 0
                   ? (
                     <CustomTable
-                        components={{
-                          Cell: TableCell,
-                          HeadCell: TableHeadCell,
-                          Header: TableHeaderRow,
-                          Row: ParticipantsTableRow
-                        }}
+                        components={tableComponents}
                         data={violationsWatchTableData}
                         headers={violationsWatchTableHeaders}
                         isLoading={false} />
