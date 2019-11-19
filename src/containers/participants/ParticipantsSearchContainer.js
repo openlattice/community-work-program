@@ -2,7 +2,7 @@
 import React, { Component } from 'react';
 import styled from 'styled-components';
 import toString from 'lodash/toString';
-import { Card, Table } from 'lattice-ui-kit';
+import { Card, CardSegment, Table } from 'lattice-ui-kit';
 import { List, Map } from 'immutable';
 import { DateTime } from 'luxon';
 import { bindActionCreators } from 'redux';
@@ -14,7 +14,10 @@ import AddParticipantModal from './AddParticipantModal';
 import LogoLoader from '../../components/LogoLoader';
 import ParticipantsTable from '../../components/table/ParticipantsTable';
 import ParticipantsTableRow from './tables/ParticipantsTableRow';
+import ParticipantsTableHeaderRow from './tables/ParticipantsTableHeaderRow';
+import ParticipantsHeadCell from './tables/ParticipantsHeadCell';
 
+import { Cell } from './tables/styled/index';
 import { ToolBar } from '../../components/controls/index';
 import { getDiversionPlans } from './ParticipantsActions';
 import { goToRoute } from '../../core/router/RoutingActions';
@@ -85,6 +88,13 @@ const ParticipantSearchInnerWrapper = styled.div`
 const AllParticipantsTable = styled(Table)`
   font-size: 12px;
   color: ${OL.GREY02};
+`;
+
+const AllParticipantsHeader = styled(CardSegment)`
+  color: ${OL.BLACK};
+  font-size: 24px;
+  font-weight: 600;
+  border-bottom: 0;
 `;
 
 type Props = {
@@ -315,10 +325,12 @@ class ParticipantsSearchContainer extends Component<Props, State> {
         } = getEntityProperties(diversionPlan, [DATETIME_END, DATETIME_RECEIVED]);
         const enrollmentStatus :Map = enrollmentByParticipant.get(personEKID);
         const { [STATUS]: status } = getEntityProperties(enrollmentStatus, [STATUS]);
-        const warningsCount :number = infractionCountsByParticipant.getIn([personEKID, WARNING]);
-        const violationsCount :number = infractionCountsByParticipant.getIn([personEKID, VIOLATION]);
+        const warningsCount :number = infractionCountsByParticipant.getIn([personEKID, WARNING], 0);
+        const violationsCount :number = infractionCountsByParticipant.getIn([personEKID, VIOLATION], 0);
         const personHours :Map = hoursWorked.get(personEKID);
-        const hoursServed :string = getHoursServed(personHours.get(WORKED), personHours.get(REQUIRED));
+        const worked :number = personHours.get(WORKED);
+        const required :number = personHours.get(REQUIRED);
+        const hoursServed :string = getHoursServed(worked, required);
 
         const personRow :Object = {
           [ALL_PARTICIPANTS_COLUMNS[0]]: getPersonPictureForTable(person, true),
@@ -407,8 +419,14 @@ class ParticipantsSearchContainer extends Component<Props, State> {
         </ParticipantSearchInnerWrapper>
         <ParticipantSearchInnerWrapper style={{ width: SEARCH_CONTAINER_WIDTH }}>
           <Card>
+            <AllParticipantsHeader padding="40px">
+              All Participants
+            </AllParticipantsHeader>
             <AllParticipantsTable
                 components={{
+                  Cell,
+                  HeadCell: ParticipantsHeadCell,
+                  Header: ParticipantsTableHeaderRow,
                   Row: ParticipantsTableRow
                 }}
                 data={tableData}
