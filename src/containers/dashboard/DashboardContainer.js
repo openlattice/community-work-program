@@ -1,6 +1,7 @@
 // @flow
 import React, { Component } from 'react';
 import styled from 'styled-components';
+import toString from 'lodash/toString';
 import { List, Map } from 'immutable';
 import { DateTime } from 'luxon';
 import { bindActionCreators } from 'redux';
@@ -10,7 +11,16 @@ import type { RequestSequence, RequestState } from 'redux-reqseq';
 
 import ParticipantsTable from '../../components/table/ParticipantsTable';
 import LogoLoader from '../../components/LogoLoader';
+import ParticipantsTableRow from '../../components/table/ParticipantsTableRow';
+import TableHeaderRow from '../../components/table/TableHeaderRow';
+import TableHeadCell from '../../components/table/TableHeadCell';
 
+import {
+  TableCell,
+  CustomTable,
+  TableCard,
+  TableHeader,
+} from '../../components/table/styled/index';
 import { ErrorMessage } from '../../components/Layout';
 import { getDiversionPlans } from '../participants/ParticipantsActions';
 import { goToRoute } from '../../core/router/RoutingActions';
@@ -18,6 +28,9 @@ import { PARTICIPANT_PROFILE } from '../../core/router/Routes';
 import { DASHBOARD_WIDTH } from '../../core/style/Sizes';
 import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
 import { getCheckInDeadline, getDateInISOFormat } from '../../utils/ScheduleUtils';
+import { formatAsDate } from '../../utils/DateTimeUtils';
+import { getPersonFullName, getPersonPictureForTable } from '../../utils/PeopleUtils';
+import { generateTableHeaders } from '../../utils/FormattingUtils';
 import { ENROLLMENT_STATUSES, HOURS_CONSTS, INFRACTIONS_CONSTS } from '../../core/edm/constants/DataModelConsts';
 import { PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { APP, PEOPLE, STATE } from '../../utils/constants/ReduxStateConsts';
@@ -46,7 +59,7 @@ const DashboardWrapper = styled.div`
   display: flex;
   flex-direction: column;
   margin-top: 30px;
-  width: ${DASHBOARD_WIDTH};
+  width: ${DASHBOARD_WIDTH}px;
 `;
 
 const DashboardBody = styled.div`
@@ -231,6 +244,40 @@ class DashboardContainer extends Component<Props, State> {
     });
   }
 
+  aggregateNewParticipantsData = () => {
+    const {
+      currentDiversionPlansByParticipant,
+      hoursWorked,
+    } = this.props;
+    const { newParticipants } = this.state;
+
+    const data :Object[] = [];
+    if (!newParticipants.isEmpty()) {
+      newParticipants.forEach((person :Map) => {
+
+        const personEKID :UUID = getEntityKeyId(person);
+        const diversionPlan :Map = currentDiversionPlansByParticipant.get(personEKID);
+        const { [DATETIME_RECEIVED]: sentenceDateTime } = getEntityProperties(diversionPlan, [DATETIME_RECEIVED]);
+        const sentenceDate :string = formatAsDate(sentenceDateTime);
+        const checkInDeadline :string = getCheckInDeadline(sentenceDateTime);
+        const personHours :Map = hoursWorked.get(personEKID);
+        let requiredHours :number | string = personHours.get(REQUIRED, EMPTY_FIELD);
+        requiredHours = toString(requiredHours);
+
+        const personRow :Object = {
+          [NEW_PARTICIPANTS_COLUMNS[0]]: getPersonPictureForTable(person, true),
+          [NEW_PARTICIPANTS_COLUMNS[1]]: getPersonFullName(person),
+          [NEW_PARTICIPANTS_COLUMNS[2]]: sentenceDate,
+          [NEW_PARTICIPANTS_COLUMNS[3]]: checkInDeadline,
+          [NEW_PARTICIPANTS_COLUMNS[4]]: requiredHours,
+          id: personEKID,
+        };
+        data.push(personRow);
+      });
+    }
+    return data;
+  }
+
   render() {
     const {
       currentDiversionPlansByParticipant,
@@ -239,7 +286,6 @@ class DashboardContainer extends Component<Props, State> {
       hoursWorked,
     } = this.props;
     const {
-      newParticipants,
       noShows,
       pendingCompletionReview,
       violationMap,
@@ -263,27 +309,29 @@ class DashboardContainer extends Component<Props, State> {
       );
     }
 
+    const newParticipantsTableData = this.aggregateNewParticipantsData();
+    const tableHeaders :Object[] = generateTableHeaders(NEW_PARTICIPANTS_COLUMNS);
+
     return (
       <DashboardWrapper>
         <DashboardBody>
-          <ParticipantsTable
-              ageRequired={false}
-              bannerText="New Participants"
-              columnHeaders={NEW_PARTICIPANTS_COLUMNS}
-              config={{
-                includeDeadline: true,
-                includeRequiredHours: true,
-                includeSentenceDate: true,
-                includeSentenceEndDate: false,
-                includeStartDate: false,
-                includeWorkedHours: false
-              }}
-              currentDiversionPlansMap={currentDiversionPlansByParticipant}
-              handleSelect={this.handleOnSelectPerson}
-              hours={hoursWorked}
-              people={newParticipants}
-              small
-              totalTableItems={newParticipants.count()} />
+          <div>
+            <TableCard>
+              <TableHeader>
+                New Participants
+              </TableHeader>
+              <CustomTable
+                  components={{
+                    Cell: TableCell,
+                    HeadCell: TableHeadCell,
+                    Header: TableHeaderRow,
+                    Row: ParticipantsTableRow
+                  }}
+                  data={newParticipantsTableData}
+                  headers={tableHeaders}
+                  isLoading={false} />
+            </TableCard>
+          </div>
           <div>
             <ParticipantsTable
                 ageRequired={false}
