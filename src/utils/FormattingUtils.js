@@ -61,14 +61,14 @@ const generateTableHeaders = (headers :string[]) :Object[] => {
       cellStyle: {
         backgroundColor: 'white',
         color: 'black',
-        fontSize: '11px',
+        fontSize: '10px',
         fontWeight: '600',
-        padding: '15px 10px',
+        padding: '15px 0',
         textAlign: 'left',
       },
       key: header,
       label: header,
-      sortable: true,
+      sortable: header || false,
     });
   });
   return tableHeaders;
