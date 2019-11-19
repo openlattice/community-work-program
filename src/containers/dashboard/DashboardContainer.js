@@ -317,7 +317,7 @@ class DashboardContainer extends Component<Props, State> {
         <DashboardBody>
           <div>
             <TableCard>
-              <TableHeader>
+              <TableHeader padding="40px">
                 New Participants
               </TableHeader>
               <CustomTable

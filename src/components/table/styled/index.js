@@ -24,24 +24,34 @@ const statusColorVariation = getStyleVariation('status', {
   [ENROLLMENT_STATUSES.UNSUCCESSFUL]: ENROLLMENT_STATUS_COLORS.UNSUCCESSFUL,
 }, OL.GREY02);
 
-const shortHeaders = ['AGE', 'SENT. DATE', 'SENT. END DATE', '# OF WARN.', '# OF VIO.', 'HRS. SERVED'];
+const headersToCustomize = [
+  'AGE',
+  'SENT. DATE',
+  'SENT. END DATE',
+  '# OF WARN.',
+  '# OF VIO.',
+  'HRS. SERVED',
+  'REQ. HRS.'
+];
 const widthVariation = getStyleVariation('width', {
   default: 'auto',
-  [shortHeaders[0]]: '55px',
-  [shortHeaders[1]]: '105px',
-  [shortHeaders[2]]: '105px',
-  [shortHeaders[3]]: '98px',
-  [shortHeaders[4]]: '83px',
-  [shortHeaders[5]]: '95px',
+  [headersToCustomize[0]]: '55px',
+  [headersToCustomize[1]]: '105px',
+  [headersToCustomize[2]]: '105px',
+  [headersToCustomize[3]]: '98px',
+  [headersToCustomize[4]]: '83px',
+  [headersToCustomize[5]]: '95px',
+  [headersToCustomize[6]]: '95px',
 }, 'auto');
 const whiteSpaceVariation = getStyleVariation('whiteSpace', {
   default: 'normal',
-  [shortHeaders[0]]: 'nowrap',
-  [shortHeaders[1]]: '105px',
-  [shortHeaders[2]]: '105px',
-  [shortHeaders[3]]: 'nowrap',
-  [shortHeaders[4]]: 'nowrap',
-  [shortHeaders[5]]: 'nowrap',
+  [headersToCustomize[0]]: 'nowrap',
+  [headersToCustomize[1]]: '105px',
+  [headersToCustomize[2]]: '105px',
+  [headersToCustomize[3]]: 'nowrap',
+  [headersToCustomize[4]]: 'nowrap',
+  [headersToCustomize[5]]: 'nowrap',
+  [headersToCustomize[6]]: 'nowrap',
 }, 'normal');
 
 const TableCard = styled(Card)`
