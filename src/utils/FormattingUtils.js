@@ -68,7 +68,7 @@ const generateTableHeaders = (headers :string[]) :Object[] => {
       },
       key: header,
       label: header,
-      sortable: header || false,
+      sortable: (header && header !== ' ') || false,
     });
   });
   return tableHeaders;

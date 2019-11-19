@@ -2,6 +2,9 @@
 import React, { Component } from 'react';
 import styled from 'styled-components';
 import toString from 'lodash/toString';
+import { CardSegment, CardStack, Tag } from 'lattice-ui-kit';
+import { faUserSlash } from '@fortawesome/pro-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { List, Map } from 'immutable';
 import { DateTime } from 'luxon';
 import { bindActionCreators } from 'redux';
@@ -9,8 +12,8 @@ import { connect } from 'react-redux';
 import { RequestStates } from 'redux-reqseq';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
-import ParticipantsTable from '../../components/table/ParticipantsTable';
 import LogoLoader from '../../components/LogoLoader';
+import NoParticipantsFound from './NoParticipantsFound';
 import ParticipantsTableRow from '../../components/table/ParticipantsTableRow';
 import TableHeaderRow from '../../components/table/TableHeaderRow';
 import TableHeadCell from '../../components/table/TableHeadCell';
@@ -29,7 +32,7 @@ import { DASHBOARD_WIDTH } from '../../core/style/Sizes';
 import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
 import { getCheckInDeadline, getDateInISOFormat } from '../../utils/ScheduleUtils';
 import { formatAsDate } from '../../utils/DateTimeUtils';
-import { getPersonFullName, getPersonPictureForTable } from '../../utils/PeopleUtils';
+import { getPersonFullName, getHoursServed, getPersonPictureForTable } from '../../utils/PeopleUtils';
 import { generateTableHeaders } from '../../utils/FormattingUtils';
 import { ENROLLMENT_STATUSES, HOURS_CONSTS, INFRACTIONS_CONSTS } from '../../core/edm/constants/DataModelConsts';
 import { PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
@@ -37,10 +40,10 @@ import { APP, PEOPLE, STATE } from '../../utils/constants/ReduxStateConsts';
 import {
   NEW_PARTICIPANTS_COLUMNS,
   PENDING_PARTICIPANTS_COLUMNS,
-  TAGS,
   VIOLATIONS_WATCH_COLUMNS,
 } from './DashboardConstants';
 import { EMPTY_FIELD } from '../participants/ParticipantsConstants';
+import { OL } from '../../core/style/Colors';
 
 /* constants */
 const { DATETIME_RECEIVED, STATUS } = PROPERTY_TYPE_FQNS;
@@ -67,6 +70,18 @@ const DashboardBody = styled.div`
   grid-gap: 30px 30px;
   grid-template-columns: 1fr 1fr;
   width: 100%;
+`;
+
+const SubtleTag = styled(Tag)`
+  background-color: ${OL.WHITE};
+  border: 0.5px solid ${OL.GREEN02};
+  color: ${OL.GREEN02};
+  font-weight: 500;
+`;
+
+const ReportTag = styled(SubtleTag)`
+  border-color: ${OL.RED01};
+  color: ${OL.RED01};
 `;
 
 type Props = {
@@ -278,19 +293,74 @@ class DashboardContainer extends Component<Props, State> {
     return data;
   }
 
-  render() {
+  aggregatePendingCompletionData = () => {
     const {
       currentDiversionPlansByParticipant,
-      getDiversionPlansRequestState,
-      initializeAppRequestState,
       hoursWorked,
     } = this.props;
-    const {
-      noShows,
-      pendingCompletionReview,
-      violationMap,
-      violationsWatch,
-    } = this.state;
+    const { pendingCompletionReview } = this.state;
+
+    const data :Object[] = [];
+    if (!pendingCompletionReview.isEmpty()) {
+      pendingCompletionReview.forEach((person :Map) => {
+
+        const personEKID :UUID = getEntityKeyId(person);
+        const diversionPlan :Map = currentDiversionPlansByParticipant.get(personEKID);
+        const { [DATETIME_RECEIVED]: sentenceDateTime } = getEntityProperties(diversionPlan, [DATETIME_RECEIVED]);
+        const sentenceDate :string = formatAsDate(sentenceDateTime);
+        const personHours :Map = hoursWorked.get(personEKID);
+        let requiredHours :number | string = personHours.get(REQUIRED, EMPTY_FIELD);
+        requiredHours = toString(requiredHours);
+
+        const personRow :Object = {
+          [PENDING_PARTICIPANTS_COLUMNS[0]]: getPersonPictureForTable(person, true),
+          [PENDING_PARTICIPANTS_COLUMNS[1]]: getPersonFullName(person),
+          [PENDING_PARTICIPANTS_COLUMNS[2]]: sentenceDate,
+          [PENDING_PARTICIPANTS_COLUMNS[3]]: requiredHours,
+          [PENDING_PARTICIPANTS_COLUMNS[4]]: <SubtleTag>Review</SubtleTag>,
+          id: personEKID,
+        };
+        data.push(personRow);
+      });
+    }
+    return data;
+  }
+
+  aggregateViolationsWatchData = () => {
+    const { hoursWorked } = this.props;
+    const { noShows, violationMap, violationsWatch } = this.state;
+
+    const data :Object[] = [];
+
+    if (!violationsWatch.isEmpty()) {
+      violationsWatch.forEach((person :Map) => {
+
+        const personEKID :UUID = getEntityKeyId(person);
+        const violationsCount = violationMap.get(personEKID, 0);
+        const personHours :Map = hoursWorked.get(personEKID);
+        const workedHours :number = personHours.get(WORKED, undefined);
+        const requiredHours :number = personHours.get(REQUIRED, undefined);
+        const hoursServed :string = getHoursServed(workedHours, requiredHours);
+
+        let reportTag :string = '';
+        if (noShows.includes(person)) reportTag = <ReportTag>Report</ReportTag>;
+
+        const personRow :Object = {
+          [VIOLATIONS_WATCH_COLUMNS[0]]: getPersonPictureForTable(person, true),
+          [VIOLATIONS_WATCH_COLUMNS[1]]: getPersonFullName(person),
+          [VIOLATIONS_WATCH_COLUMNS[2]]: toString(violationsCount),
+          [VIOLATIONS_WATCH_COLUMNS[3]]: hoursServed,
+          [VIOLATIONS_WATCH_COLUMNS[4]]: reportTag,
+          id: personEKID,
+        };
+        data.push(personRow);
+      });
+    }
+    return data;
+  }
+
+  render() {
+    const { getDiversionPlansRequestState, initializeAppRequestState } = this.props;
 
     if (getDiversionPlansRequestState === RequestStates.PENDING
         || initializeAppRequestState === RequestStates.PENDING) {
@@ -310,7 +380,13 @@ class DashboardContainer extends Component<Props, State> {
     }
 
     const newParticipantsTableData = this.aggregateNewParticipantsData();
-    const tableHeaders :Object[] = generateTableHeaders(NEW_PARTICIPANTS_COLUMNS);
+    const newParticipantsTableHeaders :Object[] = generateTableHeaders(NEW_PARTICIPANTS_COLUMNS);
+
+    const pendingCompletionTableData = this.aggregatePendingCompletionData();
+    const pendingCompletionTableHeaders :Object[] = generateTableHeaders(PENDING_PARTICIPANTS_COLUMNS);
+
+    const violationsWatchTableData = this.aggregateViolationsWatchData();
+    const violationsWatchTableHeaders :Object[] = generateTableHeaders(VIOLATIONS_WATCH_COLUMNS);
 
     return (
       <DashboardWrapper>
@@ -320,59 +396,74 @@ class DashboardContainer extends Component<Props, State> {
               <TableHeader padding="40px">
                 New Participants
               </TableHeader>
-              <CustomTable
-                  components={{
-                    Cell: TableCell,
-                    HeadCell: TableHeadCell,
-                    Header: TableHeaderRow,
-                    Row: ParticipantsTableRow
-                  }}
-                  data={newParticipantsTableData}
-                  headers={tableHeaders}
-                  isLoading={false} />
+              {
+                newParticipantsTableData.length > 0
+                  ? (
+                    <CustomTable
+                        components={{
+                          Cell: TableCell,
+                          HeadCell: TableHeadCell,
+                          Header: TableHeaderRow,
+                          Row: ParticipantsTableRow
+                        }}
+                        data={newParticipantsTableData}
+                        headers={newParticipantsTableHeaders}
+                        isLoading={false} />
+                  )
+                  : (
+                    <NoParticipantsFound text="No new participants at this time." />
+                  )
+              }
             </TableCard>
           </div>
-          <div>
-            <ParticipantsTable
-                ageRequired={false}
-                bannerText="Pending Completion Review"
-                columnHeaders={PENDING_PARTICIPANTS_COLUMNS}
-                config={{
-                  includeDeadline: false,
-                  includeRequiredHours: true,
-                  includeSentenceDate: true,
-                  includeSentenceEndDate: false,
-                  includeStartDate: false,
-                  includeWorkedHours: false
-                }}
-                currentDiversionPlansMap={currentDiversionPlansByParticipant}
-                handleSelect={this.handleOnSelectPerson}
-                hours={hoursWorked}
-                people={pendingCompletionReview}
-                small
-                tag={TAGS.REVIEW}
-                totalTableItems={pendingCompletionReview.count()} />
-            <ParticipantsTable
-                ageRequired={false}
-                bannerText="Violations Watch"
-                columnHeaders={VIOLATIONS_WATCH_COLUMNS}
-                config={{
-                  includeDeadline: false,
-                  includeRequiredHours: true,
-                  includeSentenceDate: false,
-                  includeSentenceEndDate: false,
-                  includeStartDate: false,
-                  includeWorkedHours: true
-                }}
-                handleSelect={this.handleOnSelectPerson}
-                hours={hoursWorked}
-                noShows={noShows}
-                people={violationsWatch}
-                small
-                tag={TAGS.REPORT}
-                totalTableItems={violationsWatch.count()}
-                violations={violationMap} />
-          </div>
+          <CardStack>
+            <TableCard>
+              <TableHeader padding="40px">
+                Pending Completion Review
+              </TableHeader>
+              {
+                pendingCompletionTableData.length > 0
+                  ? (
+                    <CustomTable
+                        components={{
+                          Cell: TableCell,
+                          HeadCell: TableHeadCell,
+                          Header: TableHeaderRow,
+                          Row: ParticipantsTableRow
+                        }}
+                        data={pendingCompletionTableData}
+                        headers={pendingCompletionTableHeaders}
+                        isLoading={false} />
+                  )
+                  : (
+                    <NoParticipantsFound text="No participants pending completion review." />
+                  )
+              }
+            </TableCard>
+            <TableCard>
+              <TableHeader padding="40px">
+                Violations Watch
+              </TableHeader>
+              {
+                violationsWatchTableData.length > 0
+                  ? (
+                    <CustomTable
+                        components={{
+                          Cell: TableCell,
+                          HeadCell: TableHeadCell,
+                          Header: TableHeaderRow,
+                          Row: ParticipantsTableRow
+                        }}
+                        data={violationsWatchTableData}
+                        headers={violationsWatchTableHeaders}
+                        isLoading={false} />
+                  )
+                  : (
+                    <NoParticipantsFound text="No current participants with violations." />
+                  )
+              }
+            </TableCard>
+          </CardStack>
         </DashboardBody>
       </DashboardWrapper>
     );
