@@ -85,6 +85,12 @@ const ParticipantSearchInnerWrapper = styled.div`
   align-self: center;
 `;
 
+const AllParticipantsCard = styled(Card)`
+  & > ${CardSegment} {
+    border: none;
+  }
+`;
+
 const AllParticipantsTable = styled(Table)`
   font-size: 12px;
   color: ${OL.GREY02};
@@ -94,7 +100,6 @@ const AllParticipantsHeader = styled(CardSegment)`
   color: ${OL.BLACK};
   font-size: 24px;
   font-weight: 600;
-  border-bottom: 0;
 `;
 
 type Props = {
@@ -418,7 +423,7 @@ class ParticipantsSearchContainer extends Component<Props, State> {
               width="100%" />
         </ParticipantSearchInnerWrapper>
         <ParticipantSearchInnerWrapper style={{ width: SEARCH_CONTAINER_WIDTH }}>
-          <Card>
+          <AllParticipantsCard>
             <AllParticipantsHeader padding="40px">
               All Participants
             </AllParticipantsHeader>
@@ -432,7 +437,7 @@ class ParticipantsSearchContainer extends Component<Props, State> {
                 data={tableData}
                 headers={tableHeaders}
                 isLoading={false} />
-          </Card>
+          </AllParticipantsCard>
         </ParticipantSearchInnerWrapper>
         <AddParticipantModal
             isOpen={showAddParticipant}
