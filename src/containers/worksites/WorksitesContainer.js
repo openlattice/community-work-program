@@ -58,8 +58,7 @@ const dropdowns :List = List().withMutations((list :List) => {
   list.set(0, statusFilterDropdown);
 });
 const defaultFilterOption :Map = statusFilterDropdown.get('enums')
-  .find(obj => obj.value.toUpperCase() === ALL);
-
+  .find((obj :Object) => obj.value.toUpperCase() === ALL);
 
 type Props = {
   actions:{
@@ -216,7 +215,6 @@ class WorksitesContainer extends Component<Props, State> {
     const {
       getOrganizationsRequestState,
       initializeAppRequestState,
-      organizationStatuses,
       worksitesByOrg,
       worksitesInfo,
     } = this.props;
@@ -273,7 +271,6 @@ class WorksitesContainer extends Component<Props, State> {
                   <WorksitesByOrgCard
                       key={orgEKID}
                       organization={org}
-                      orgStatus={organizationStatuses.get(orgEKID)}
                       worksiteCount={orgWorksiteCount}
                       worksites={orgWorksites}
                       worksitesInfo={worksitesInfo} />
@@ -304,7 +301,7 @@ const mapStateToProps = (state :Map<*, *>) => {
   };
 };
 
-const mapDispatchToProps = dispatch => ({
+const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
     getOrganizations,
     getWorksitesByOrg,
