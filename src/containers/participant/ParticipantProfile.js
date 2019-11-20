@@ -2,7 +2,6 @@
 import React, { Component } from 'react';
 import styled from 'styled-components';
 import { List, Map } from 'immutable';
-import { DateTime } from 'luxon';
 import {
   Button,
   Card,
@@ -10,6 +9,7 @@ import {
   CardStack,
   IconSplash,
   Select,
+  Table,
 } from 'lattice-ui-kit';
 import { faTools } from '@fortawesome/pro-light-svg-icons';
 import { connect } from 'react-redux';
@@ -25,6 +25,7 @@ import {
   PersonNotes,
   ProgramNotes,
 } from '../../components/participant/index';
+import EnrollmentTableRow from './enrollment/EnrollmentTableRow';
 import ParticipantWorkScheduleContainer from './schedule/ParticipantWorkScheduleContainer';
 import ProgramCompletionBanner from './ProgramCompletionBanner';
 
@@ -41,6 +42,7 @@ import { OL } from '../../core/style/Colors';
 import { PARTICIPANT_PROFILE_WIDTH } from '../../core/style/Sizes';
 import * as Routes from '../../core/router/Routes';
 import { BackNavButton } from '../../components/controls/index';
+import { generateDiversionPlanOptions, generateEnrollmentHeaders } from './utils/ParticipantProfileUtils';
 import { getEntityKeyId, getEntityProperties, sortEntitiesByDateProperty } from '../../utils/DataUtils';
 import { isDefined } from '../../utils/LangUtils';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
@@ -80,6 +82,7 @@ const {
   ENROLLMENT_STATUS,
   GET_ALL_PARTICIPANT_INFO,
   GET_ENROLLMENT_FROM_DIVERSION_PLAN,
+  ENROLLMENT_HISTORY_DATA,
   JUDGE,
   PARTICIPANT,
   PERSON_CASE,
@@ -106,16 +109,6 @@ const ENROLLMENT_STATUSES_EXCLUDING_PREENROLLMENT = Object.values(ENROLLMENT_STA
 const NEW_ENROLLMENT = 'showNewEnrollmentModal';
 const ASSIGN_WORKSITE = 'showAssignWorksiteModal';
 const WORK_APPOINTMENT = 'showWorkAppointmentModal';
-
-const generateDiversionPlanOptions = (entities :List) :Object[] => {
-  const options = [];
-  entities.forEach((entity :Map) => {
-    const { [DATETIME_RECEIVED]: sentenceDateTime } = getEntityProperties(entity, [DATETIME_RECEIVED]);
-    const sentenceDate = DateTime.fromISO(sentenceDateTime).toLocaleString(DateTime.DATE_SHORT);
-    options.push({ label: `Enrollment ${sentenceDate}`, value: entity });
-  });
-  return options;
-};
 
 const ProfileWrapper = styled.div`
   display: flex;
@@ -219,6 +212,7 @@ type Props = {
   createNewEnrollmentRequestState :RequestState;
   diversionPlan :Map;
   email :Map;
+  enrollmentHistoryData :List;
   enrollmentStatus :Map;
   getAllParticipantInfoRequestState :RequestState;
   getEnrollmentFromDiversionPlanRequestState :RequestState;
@@ -375,6 +369,7 @@ class ParticipantProfile extends Component<Props, State> {
       chargesForCase,
       diversionPlan,
       email,
+      enrollmentHistoryData,
       enrollmentStatus,
       getAllParticipantInfoRequestState,
       getEnrollmentFromDiversionPlanRequestState,
@@ -436,6 +431,8 @@ class ParticipantProfile extends Component<Props, State> {
       REQUIRED_HOURS,
     ]);
     const diversionPlanOptions :Object[] = generateDiversionPlanOptions(allDiversionPlans);
+    const enrollmentHeaders :Object[] = generateEnrollmentHeaders();
+    const enrollmentData :Object[] = enrollmentHistoryData.toJS();
 
     return (
       <>
@@ -567,6 +564,22 @@ class ParticipantProfile extends Component<Props, State> {
                 currentStatus={status}
                 participant={participant} />
           </ProfileBody>
+          <ProfileBody>
+            <NameRowWrapper>
+              <NameHeader>Enrollment History</NameHeader>
+            </NameRowWrapper>
+            <Card>
+              <CardSegment vertical>
+                <Table
+                    components={{
+                      Row: EnrollmentTableRow
+                    }}
+                    data={enrollmentData}
+                    headers={enrollmentHeaders}
+                    isLoading={false} />
+              </CardSegment>
+            </Card>
+          </ProfileBody>
           <AssignWorksiteModal
               diversionPlanEKID={diversionPlanEKID}
               isOpen={showAssignWorksiteModal}
@@ -601,6 +614,7 @@ const mapStateToProps = (state :Map<*, *>) => {
     createNewEnrollmentRequestState: person.getIn([ACTIONS, CREATE_NEW_ENROLLMENT, REQUEST_STATE]),
     [DIVERSION_PLAN]: person.get(DIVERSION_PLAN),
     [EMAIL]: person.get(EMAIL),
+    [ENROLLMENT_HISTORY_DATA]: person.get(ENROLLMENT_HISTORY_DATA),
     [ENROLLMENT_STATUS]: person.get(ENROLLMENT_STATUS),
     getAllParticipantInfoRequestState: person.getIn([ACTIONS, GET_ALL_PARTICIPANT_INFO, REQUEST_STATE]),
     getEnrollmentFromDiversionPlanRequestState: person

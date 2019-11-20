@@ -23,6 +23,7 @@ import EditWorksiteHoursForm from '../worksites/EditWorksiteHoursForm';
 import EditWorksiteInfoForm from '../worksites/EditWorksiteInfoForm';
 import ParticipantProfileContainer from '../participant/ParticipantProfileContainer';
 import ParticipantsSearchContainer from '../participants/ParticipantsSearchContainer';
+import PrintWorkScheduleContainer from '../workschedule/PrintWorkScheduleContainer';
 import WorksiteProfile from '../worksites/WorksiteProfile';
 import WorksitesContainer from '../worksites/WorksitesContainer';
 import WorkScheduleContainer from '../workschedule/WorkScheduleContainer';
@@ -31,9 +32,8 @@ import * as AppActions from './AppActions';
 import * as ParticipantsActions from '../participants/ParticipantsActions';
 import * as Routes from '../../core/router/Routes';
 
-import {
-  APP_CONTAINER_WIDTH,
-} from '../../core/style/Sizes';
+import { ContactSupport } from '../../components/controls/index';
+import { APP_CONTAINER_WIDTH } from '../../core/style/Sizes';
 import { OL } from '../../core/style/Colors';
 import { APP, STATE } from '../../utils/constants/ReduxStateConsts';
 
@@ -101,6 +101,7 @@ class AppContainer extends Component<Props> {
       <Route path={Routes.EDIT_WORKSITE_HOURS} component={EditWorksiteHoursForm} />
       <Route path={Routes.EDIT_WORKSITE_PROFILE_INFO} component={EditWorksiteInfoForm} />
       <Route path={Routes.WORKSITE_PROFILE} component={WorksiteProfile} />
+      <Route path={Routes.PRINT_WORK_SCHEDULE} component={PrintWorkScheduleContainer} />
       <Route path={Routes.WORK_SCHEDULE} component={WorkScheduleContainer} />
       <Route path={Routes.WORKSITES} component={WorksitesContainer} />
       <Route path={Routes.PARTICIPANT_PROFILE} component={ParticipantProfileContainer} />
@@ -136,6 +137,7 @@ class AppContainer extends Component<Props> {
         <AppContentOuterWrapper>
           <AppContentInnerWrapper>
             { this.renderAppContent() }
+            <ContactSupport />
           </AppContentInnerWrapper>
         </AppContentOuterWrapper>
       </AppContainerWrapper>
@@ -151,7 +153,7 @@ const mapStateToProps = (state :Map<*, *>) => {
   };
 };
 
-const mapDispatchToProps = dispatch => ({
+const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
     initializeApplication: AppActions.initializeApplication,
     logout,

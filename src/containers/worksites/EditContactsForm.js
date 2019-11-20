@@ -1,24 +1,22 @@
 // @flow
 import React, { Component } from 'react';
-import { Map, hasIn } from 'immutable';
+import { List, Map, getIn } from 'immutable';
 import { Card, CardHeader } from 'lattice-ui-kit';
 import { Form, DataProcessingUtils } from 'lattice-fabricate';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import type { RequestSequence } from 'redux-reqseq';
 
-import { addWorksiteContactAndAddress, editWorksiteContactAndAddress } from './WorksitesActions';
+import { addWorksiteContacts, deleteWorksiteContact, editWorksiteContact } from './WorksitesActions';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { contactsSchema, contactsUiSchema } from './schemas/EditWorksiteInfoSchemas';
 import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
 
 const {
-  ADDRESS,
   CONTACT_INFORMATION,
   CONTACT_INFO_GIVEN,
   EMPLOYEE,
   IS,
-  LOCATED_AT,
   STAFF,
   WORKS_AT,
   WORKSITE,
@@ -26,7 +24,6 @@ const {
 const {
   EMAIL,
   FIRST_NAME,
-  FULL_ADDRESS,
   LAST_NAME,
   PHONE_NUMBER,
   TITLE,
@@ -41,17 +38,15 @@ const {
 
 type Props = {
   actions:{
-    addWorksiteContactAndAddress :RequestSequence;
-    editWorksiteContactAndAddress :RequestSequence;
+    addWorksiteContacts :RequestSequence;
+    deleteWorksiteContact :RequestSequence;
+    editWorksiteContact :RequestSequence;
   },
-  contactEmail :Map;
-  contactPerson :Map;
-  contactPhone :Map;
   entityIndexToIdMap :Map;
   entitySetIds :Object;
   propertyTypeIds :Object;
   worksite :Map;
-  worksiteAddress :Map;
+  worksiteContacts :List;
 };
 
 type State = {
@@ -61,70 +56,49 @@ type State = {
 
 class EditContactsForm extends Component<Props, State> {
 
-  state = {
-    formData: {},
-    prepopulated: false,
-  };
+  constructor(props :Props) {
+    super(props);
+    const { formData, prepopulated } = this.prepopulateFormData();
 
-  componentDidMount() {
-    this.prepopulateFormData();
-  }
-
-  componentDidUpdate(prevProps :Props) {
-    const {
-      contactEmail,
-      contactPerson,
-      contactPhone,
-      worksiteAddress,
-    } = this.props;
-    if (!prevProps.contactEmail.equals(contactEmail)
-        || !prevProps.contactPerson.equals(contactPerson)
-        || !prevProps.contactPhone.equals(contactPhone)
-        || !prevProps.worksiteAddress.equals(worksiteAddress)) {
-      this.prepopulateFormData();
-    }
+    this.state = {
+      formData,
+      prepopulated,
+    };
   }
 
   prepopulateFormData = () => {
-    const {
-      contactEmail,
-      contactPerson,
-      contactPhone,
-      worksiteAddress,
-    } = this.props;
+    const { worksiteContacts } = this.props;
 
-    const prepopulated = !(contactEmail.isEmpty() && contactPerson.isEmpty()
-      && contactPhone.isEmpty() && worksiteAddress.isEmpty());
-    const formData = {};
+    const prepopulated = !(worksiteContacts.isEmpty());
+    const formData :Object = {};
     if (prepopulated) {
-      const {
-        [FIRST_NAME]: firstName,
-        [LAST_NAME]: lastName,
-      } = getEntityProperties(contactPerson, [FIRST_NAME, LAST_NAME]);
-      const { [PHONE_NUMBER]: phoneNumber } = getEntityProperties(contactPhone, [PHONE_NUMBER]);
-      const { [EMAIL]: email } = getEntityProperties(contactEmail, [EMAIL]);
-      const { [FULL_ADDRESS]: address } = getEntityProperties(worksiteAddress, [FULL_ADDRESS]);
 
       const sectionOneKey = getPageSectionKey(1, 1);
-      const sectionTwoKey = getPageSectionKey(1, 2);
-      const sectionThreeKey = getPageSectionKey(1, 3);
+      formData[sectionOneKey] = [];
 
-      formData[sectionOneKey] = {};
-      formData[sectionOneKey][getEntityAddressKey(0, STAFF, FIRST_NAME)] = firstName;
-      formData[sectionOneKey][getEntityAddressKey(0, STAFF, LAST_NAME)] = lastName;
+      worksiteContacts.forEach((contactMap :Map) => {
+        const contact :Object = {};
+        const contactPerson = contactMap.get(STAFF, Map());
+        const {
+          [FIRST_NAME]: firstName,
+          [LAST_NAME]: lastName,
+        } = getEntityProperties(contactPerson, [FIRST_NAME, LAST_NAME]);
+        contact[getEntityAddressKey(-1, STAFF, FIRST_NAME)] = firstName;
+        contact[getEntityAddressKey(-1, STAFF, LAST_NAME)] = lastName;
 
-      formData[sectionTwoKey] = {};
-      formData[sectionTwoKey][getEntityAddressKey(0, CONTACT_INFORMATION, PHONE_NUMBER)] = phoneNumber;
-      formData[sectionTwoKey][getEntityAddressKey(1, CONTACT_INFORMATION, EMAIL)] = email;
+        const contactPhone = contactMap.get(PHONE_NUMBER);
+        const { [PHONE_NUMBER]: phoneNumber } = getEntityProperties(contactPhone, [PHONE_NUMBER]);
+        contact[getEntityAddressKey(-1, CONTACT_INFORMATION, PHONE_NUMBER)] = phoneNumber;
 
-      formData[sectionThreeKey] = {};
-      formData[sectionThreeKey][getEntityAddressKey(0, ADDRESS, FULL_ADDRESS)] = address;
+        const contactEmail = contactMap.get(EMAIL);
+        const { [EMAIL]: email } = getEntityProperties(contactEmail, [EMAIL]);
+        contact[getEntityAddressKey(-2, CONTACT_INFORMATION, EMAIL)] = email;
+
+        formData[sectionOneKey].push(contact);
+      });
     }
 
-    this.setState({
-      formData,
-      prepopulated,
-    });
+    return { formData, prepopulated };
   }
 
   handleOnSubmit = ({ formData } :Object) => {
@@ -135,38 +109,39 @@ class EditContactsForm extends Component<Props, State> {
       worksite
     } = this.props;
 
-    const worksiteEKID :UUID = getEntityKeyId(worksite);
-    const dataToProcess = formData;
-    dataToProcess[getPageSectionKey(1, 4)] = {};
-    dataToProcess[getPageSectionKey(1, 4)][getEntityAddressKey(0, EMPLOYEE, TITLE)] = 'worksite employee';
+    const storedContactData :[] = getIn(formData, [getPageSectionKey(1, 1)]);
+    const newContactsList :Object[] = storedContactData.map((contact :{}, index :number) => {
+      const newContact :{} = {};
+      newContact[getEntityAddressKey(0, EMPLOYEE, TITLE)] = 'worksite employee';
+      newContact[getEntityAddressKey(index, STAFF, FIRST_NAME)] = contact[getEntityAddressKey(-1, STAFF, FIRST_NAME)]
+        || '';
+      newContact[getEntityAddressKey(index, STAFF, LAST_NAME)] = contact[getEntityAddressKey(-1, STAFF, LAST_NAME)]
+        || '';
+      newContact[getEntityAddressKey(index, CONTACT_INFORMATION, PHONE_NUMBER)] = contact[getEntityAddressKey(
+        -1, CONTACT_INFORMATION, PHONE_NUMBER
+      )] || '';
+      newContact[getEntityAddressKey(index + 1, CONTACT_INFORMATION, EMAIL)] = contact[
+        getEntityAddressKey(-2, CONTACT_INFORMATION, EMAIL)
+      ] || '';
+      return newContact;
+    });
 
-    if (!Object.keys(formData[getPageSectionKey(1, 1)]).length) {
-      dataToProcess[getPageSectionKey(1, 1)][getEntityAddressKey(0, STAFF, FIRST_NAME)] = '';
-    }
-    if (!hasIn(formData, [getPageSectionKey(1, 2), getEntityAddressKey(0, CONTACT_INFORMATION, PHONE_NUMBER)])) {
-      dataToProcess[getPageSectionKey(1, 2)][getEntityAddressKey(0, CONTACT_INFORMATION, PHONE_NUMBER)] = '';
-    }
-    if (!hasIn(formData, [getPageSectionKey(1, 2), getEntityAddressKey(0, CONTACT_INFORMATION, PHONE_NUMBER)])) {
-      dataToProcess[getPageSectionKey(1, 2)][getEntityAddressKey(0, CONTACT_INFORMATION, PHONE_NUMBER)] = '';
-    }
-    if (!hasIn(formData, [getPageSectionKey(1, 2), getEntityAddressKey(1, CONTACT_INFORMATION, EMAIL)])) {
-      dataToProcess[getPageSectionKey(1, 2)][getEntityAddressKey(1, CONTACT_INFORMATION, EMAIL)] = '';
-    }
-    if (!Object.keys(formData[getPageSectionKey(1, 3)]).length) {
-      dataToProcess[getPageSectionKey(1, 3)][getEntityAddressKey(0, ADDRESS, FULL_ADDRESS)] = '';
-    }
+    const contacts = {
+      [getPageSectionKey(1, 1)]: newContactsList
+    };
 
     const associations = [];
-    associations.push([LOCATED_AT, worksiteEKID, WORKSITE, 0, ADDRESS, {}]);
-    associations.push([IS, 0, STAFF, 0, EMPLOYEE, {}]);
-    associations.push([WORKS_AT, 0, EMPLOYEE, worksiteEKID, WORKSITE, {}]);
-    associations.push([CONTACT_INFO_GIVEN, 0, CONTACT_INFORMATION, 0, EMPLOYEE, {}]);
-    associations.push([CONTACT_INFO_GIVEN, 1, CONTACT_INFORMATION, 0, EMPLOYEE, {}]);
+    const worksiteEKID :UUID = getEntityKeyId(worksite);
+    newContactsList.forEach((contact :Map, index :number) => {
+      associations.push([IS, index, STAFF, index, EMPLOYEE, {}]);
+      associations.push([WORKS_AT, index, EMPLOYEE, worksiteEKID, WORKSITE, {}]);
+      associations.push([CONTACT_INFO_GIVEN, index, CONTACT_INFORMATION, index, EMPLOYEE, {}]);
+      associations.push([CONTACT_INFO_GIVEN, index + 1, CONTACT_INFORMATION, index, EMPLOYEE, {}]);
+    });
 
-    const entityData :Object = processEntityData(dataToProcess, entitySetIds, propertyTypeIds);
+    const entityData :Object = processEntityData(contacts, entitySetIds, propertyTypeIds);
     const associationEntityData :Object = processAssociationEntityData(associations, entitySetIds, propertyTypeIds);
-
-    actions.addWorksiteContactAndAddress({ associationEntityData, entityData });
+    actions.addWorksiteContacts({ associationEntityData, contacts, entityData });
   }
 
   render() {
@@ -182,7 +157,11 @@ class EditContactsForm extends Component<Props, State> {
     } = this.state;
 
     const formContext = {
-      editAction: actions.editWorksiteContactAndAddress,
+      addActions: {
+        addContact: this.handleOnSubmit
+      },
+      deleteAction: actions.deleteWorksiteContact,
+      editAction: actions.editWorksiteContact,
       entityIndexToIdMap,
       entitySetIds,
       propertyTypeIds,
@@ -190,7 +169,7 @@ class EditContactsForm extends Component<Props, State> {
 
     return (
       <Card>
-        <CardHeader padding="sm">Edit Worksite Contacts</CardHeader>
+        <CardHeader mode="primary" padding="sm">Edit Work Site Contacts</CardHeader>
         <Form
             disabled={prepopulated}
             formContext={formContext}
@@ -203,10 +182,11 @@ class EditContactsForm extends Component<Props, State> {
   }
 }
 
-const mapDispatchToProps = dispatch => ({
+const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
-    addWorksiteContactAndAddress,
-    editWorksiteContactAndAddress,
+    addWorksiteContacts,
+    deleteWorksiteContact,
+    editWorksiteContact,
   }, dispatch)
 });
 

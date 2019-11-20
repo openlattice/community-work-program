@@ -80,7 +80,6 @@ class AppointmentListContainer extends Component<Props, State> {
     let { worksitesToInclude } = this.props;
 
     if (isDefined(worksitesToInclude)) {
-      // $FlowFixMe
       worksitesToInclude = worksitesToInclude.map((option :Object) => option.label);
     }
 
