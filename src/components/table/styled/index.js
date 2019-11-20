@@ -22,6 +22,7 @@ const statusColorVariation = getStyleVariation('status', {
   [ENROLLMENT_STATUSES.REMOVED_NONCOMPLIANT]: ENROLLMENT_STATUS_COLORS.REMOVED_NONCOMPLIANT,
   [ENROLLMENT_STATUSES.SUCCESSFUL]: ENROLLMENT_STATUS_COLORS.SUCCESSFUL,
   [ENROLLMENT_STATUSES.UNSUCCESSFUL]: ENROLLMENT_STATUS_COLORS.UNSUCCESSFUL,
+  Inactive: ENROLLMENT_STATUS_COLORS.UNSUCCESSFUL,
 }, OL.GREY02);
 
 const headersToCustomize = [
@@ -31,7 +32,10 @@ const headersToCustomize = [
   '# OF WARN.',
   '# OF VIO.',
   'HRS. SERVED',
-  'REQ. HRS.'
+  'REQ. HRS.',
+  'SCHED. PARTIC.',
+  'PAST PARTIC.',
+  'TOTAL HOURS'
 ];
 const widthVariation = getStyleVariation('width', {
   default: 'auto',
@@ -42,6 +46,9 @@ const widthVariation = getStyleVariation('width', {
   [headersToCustomize[4]]: '83px',
   [headersToCustomize[5]]: '95px',
   [headersToCustomize[6]]: '95px',
+  [headersToCustomize[7]]: '130px',
+  [headersToCustomize[8]]: '130px',
+  [headersToCustomize[9]]: '130px',
 }, 'auto');
 const whiteSpaceVariation = getStyleVariation('whiteSpace', {
   default: 'normal',
@@ -52,6 +59,9 @@ const whiteSpaceVariation = getStyleVariation('whiteSpace', {
   [headersToCustomize[4]]: 'nowrap',
   [headersToCustomize[5]]: 'nowrap',
   [headersToCustomize[6]]: 'nowrap',
+  [headersToCustomize[7]]: 'nowrap',
+  [headersToCustomize[8]]: 'nowrap',
+  [headersToCustomize[9]]: 'nowrap',
 }, 'normal');
 
 const TableCard = styled(Card)`
