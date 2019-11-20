@@ -5,7 +5,7 @@ import React from 'react';
 import styled from 'styled-components';
 import { List, Map } from 'immutable';
 
-import WorksitesTableRow from './WorksitesTableRow';
+import WorksitesTableRow from './WorksitesTableRow_OLD';
 
 import {
   TableWrapper,
