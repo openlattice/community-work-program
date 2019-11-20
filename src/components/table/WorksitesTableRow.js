@@ -1,72 +1,81 @@
-/*
- * @flow
- */
-
-import React from 'react';
+// @flow
+import React, { Component } from 'react';
 import styled from 'styled-components';
-import { Map } from 'immutable';
+import { bindActionCreators } from 'redux';
+import { connect } from 'react-redux';
+import type { RowData } from 'lattice-ui-kit';
+import type { RequestSequence } from 'redux-reqseq';
 
-import { Cell, Row } from './TableStyledComponents';
-import { formatImmutableValue } from '../../utils/FormattingUtils';
-import { formatAsDate } from '../../utils/DateTimeUtils';
-import { getEntityProperties } from '../../utils/DataUtils';
-import { PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
-import { WORKSITE_INFO_CONSTS } from '../../containers/worksites/WorksitesConstants';
+import { goToRoute } from '../../core/router/RoutingActions';
+import * as Routes from '../../core/router/Routes';
+import { StyledTableRow, TableCell } from './styled/index';
 
-const { DATETIME_END, DATETIME_START, NAME } = PROPERTY_TYPE_FQNS;
-const { PAST, SCHEDULED, TOTAL_HOURS } = WORKSITE_INFO_CONSTS;
+export const WorksitesRow = styled(StyledTableRow)`
+  ${TableCell}:first-child {
+    padding-left: 50px;
+    width: 300px;
+    white-space: normal;
+  }
 
-type Props = {
-  worksite :Map,
-  worksiteInfo :Map;
-  selectWorksite ? :(selectedWorksite :Map) => void;
-  small ? :boolean,
-};
-
-const WorksitesCell = styled(Cell)`
-  padding: 12px 30px 12px 0;
+  ${TableCell}:last-child {
+    padding-right: 50px;
+  }
 `;
 
-const TableRow = ({
-  worksite,
-  worksiteInfo,
-  selectWorksite,
-  small
-} :Props) => {
-
-  const {
-    [DATETIME_END]: endDateTime,
-    [DATETIME_START]: startDateTime,
-    [NAME]: worksiteName
-  } = getEntityProperties(worksite, [DATETIME_END, DATETIME_START, NAME]);
-
-  const startDate = formatAsDate(startDateTime);
-  const status = (startDateTime && !endDateTime) ? 'Active' : 'Inactive';
-  const scheduledParticipantCount = formatImmutableValue(worksiteInfo, SCHEDULED, 0);
-  const pastParticipantCount = formatImmutableValue(worksiteInfo, PAST, 0);
-  const totalHours = formatImmutableValue(worksiteInfo, TOTAL_HOURS, 0);
-
-  return (
-    <Row
-        onClick={() => {
-          if (selectWorksite) {
-            selectWorksite(worksite);
-          }
-        }}>
-      <WorksitesCell small={small} />
-      <WorksitesCell small={small}>{ worksiteName }</WorksitesCell>
-      <WorksitesCell small={small} status={status}>{ status }</WorksitesCell>
-      <WorksitesCell small={small}>{ startDate }</WorksitesCell>
-      <WorksitesCell small={small}>{ scheduledParticipantCount }</WorksitesCell>
-      <WorksitesCell small={small}>{ pastParticipantCount }</WorksitesCell>
-      <WorksitesCell small={small}>{ totalHours }</WorksitesCell>
-    </Row>
-  );
+type Props = {
+  actions:{
+    goToRoute :RequestSequence;
+  };
+  className ? :string;
+  components :Object;
+  data :RowData;
+  headers :Object[];
 };
 
-TableRow.defaultProps = {
-  selectWorksite: () => {},
-  small: false,
-};
+class WorksitesTableRow extends Component<Props> {
 
-export default TableRow;
+  static defaultProps = {
+    className: undefined
+  }
+
+  goToWorksiteProfile = () => {
+    const { actions, data } = this.props;
+    const { id: worksiteEKID } = data;
+    actions.goToRoute(Routes.WORKSITE_PROFILE.replace(':worksiteId', worksiteEKID));
+  }
+
+  render() {
+    const {
+      className,
+      components,
+      data,
+      headers,
+    } = this.props;
+
+    const { id } = data;
+
+    const cells = headers
+      .map((header) => (
+        <components.Cell
+            key={`${id}_cell_${header.key}`}
+            status={data[header.key]}>
+          {data[header.key]}
+        </components.Cell>
+      ));
+
+    return (
+      <WorksitesRow className={className} onClick={this.goToWorksiteProfile}>
+        {cells}
+      </WorksitesRow>
+    );
+  }
+}
+
+const mapDispatchToProps = (dispatch) => ({
+  actions: bindActionCreators({
+    goToRoute,
+  }, dispatch)
+});
+
+// $FlowFixMe
+export default connect(null, mapDispatchToProps)(WorksitesTableRow);
