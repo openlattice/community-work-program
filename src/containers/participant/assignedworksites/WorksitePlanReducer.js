@@ -109,11 +109,10 @@ const INITIAL_STATE :Map<*, *> = fromJS({
 
 export default function worksitePlanReducer(state :Map<*, *> = INITIAL_STATE, action :SequenceAction) :Map<*, *> {
 
-  if (action.type === CLEAR_APPOINTMENTS_AND_PLANS) {
-    return INITIAL_STATE;
-  }
-
   switch (action.type) {
+
+    case CLEAR_APPOINTMENTS_AND_PLANS:
+      return INITIAL_STATE;
 
     case checkInForAppointment.case(action.type): {
 
