@@ -74,6 +74,11 @@ const TableHeader = styled(CardSegment)`
   color: ${OL.BLACK};
   font-size: 24px;
   font-weight: 600;
+  align-items: center;
+`;
+
+const TableName = styled.div`
+  margin-right: 10px;
 `;
 
 const CustomTable = styled(Table)`
@@ -136,4 +141,5 @@ export {
   TableCard,
   TableCell,
   TableHeader,
+  TableName,
 };
