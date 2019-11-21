@@ -36,6 +36,7 @@ const {
   ADD_WORKSITE_PLAN,
   CHECK_INS_BY_APPOINTMENT,
   CHECK_IN_FOR_APPOINTMENT,
+  CLEAR_APPOINTMENTS_AND_PLANS,
   CREATE_WORK_APPOINTMENTS,
   DELETE_APPOINTMENT,
   EDIT_APPOINTMENT,
@@ -109,6 +110,9 @@ const INITIAL_STATE :Map<*, *> = fromJS({
 export default function worksitePlanReducer(state :Map<*, *> = INITIAL_STATE, action :SequenceAction) :Map<*, *> {
 
   switch (action.type) {
+
+    case CLEAR_APPOINTMENTS_AND_PLANS:
+      return INITIAL_STATE;
 
     case checkInForAppointment.case(action.type): {
 
