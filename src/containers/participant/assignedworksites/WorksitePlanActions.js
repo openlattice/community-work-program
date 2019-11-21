@@ -5,13 +5,13 @@ import type { RequestSequence } from 'redux-reqseq';
 const ADD_WORKSITE_PLAN :'ADD_WORKSITE_PLAN' = 'ADD_WORKSITE_PLAN';
 const addWorksitePlan :RequestSequence = newRequestSequence(ADD_WORKSITE_PLAN);
 
+const CHECK_IN_FOR_APPOINTMENT :'CHECK_IN_FOR_APPOINTMENT' = 'CHECK_IN_FOR_APPOINTMENT';
+const checkInForAppointment :RequestSequence = newRequestSequence(CHECK_IN_FOR_APPOINTMENT);
+
 const CLEAR_APPOINTMENTS_AND_PLANS :'CLEAR_APPOINTMENTS_AND_PLANS' = 'CLEAR_APPOINTMENTS_AND_PLANS';
 const clearAppointmentsAndPlans = () => ({
   type: CLEAR_APPOINTMENTS_AND_PLANS
 });
-
-const CHECK_IN_FOR_APPOINTMENT :'CHECK_IN_FOR_APPOINTMENT' = 'CHECK_IN_FOR_APPOINTMENT';
-const checkInForAppointment :RequestSequence = newRequestSequence(CHECK_IN_FOR_APPOINTMENT);
 
 const CREATE_WORK_APPOINTMENTS :'CREATE_WORK_APPOINTMENTS' = 'CREATE_WORK_APPOINTMENTS';
 const createWorkAppointments :RequestSequence = newRequestSequence(CREATE_WORK_APPOINTMENTS);
@@ -45,8 +45,8 @@ const updateHoursWorked :RequestSequence = newRequestSequence(UPDATE_HOURS_WORKE
 
 export {
   ADD_WORKSITE_PLAN,
-  CLEAR_APPOINTMENTS_AND_PLANS,
   CHECK_IN_FOR_APPOINTMENT,
+  CLEAR_APPOINTMENTS_AND_PLANS,
   CREATE_WORK_APPOINTMENTS,
   DELETE_APPOINTMENT,
   EDIT_APPOINTMENT,
@@ -58,8 +58,8 @@ export {
   GET_WORK_APPOINTMENTS,
   UPDATE_HOURS_WORKED,
   addWorksitePlan,
-  clearAppointmentsAndPlans,
   checkInForAppointment,
+  clearAppointmentsAndPlans,
   createWorkAppointments,
   deleteAppointment,
   editAppointment,
