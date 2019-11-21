@@ -14,6 +14,7 @@ import LogoLoader from '../../components/LogoLoader';
 import { ErrorMessage } from '../../components/Layout';
 import { getDiversionPlans } from '../participants/ParticipantsActions';
 import { goToRoute } from '../../core/router/RoutingActions';
+import { clearAppointmentsAndPlans } from '../participant/assignedworksites/WorksitePlanActions';
 import { PARTICIPANT_PROFILE } from '../../core/router/Routes';
 import { DASHBOARD_WIDTH } from '../../core/style/Sizes';
 import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
@@ -58,6 +59,7 @@ const DashboardBody = styled.div`
 
 type Props = {
   actions:{
+    clearAppointmentsAndPlans :RequestSequence;
     getDiversionPlans :RequestSequence;
     goToRoute :RequestSequence;
   };
@@ -119,6 +121,7 @@ class DashboardContainer extends Component<Props, State> {
 
   handleOnSelectPerson = (personEKID :string) => {
     const { actions } = this.props;
+    actions.clearAppointmentsAndPlans();
     actions.goToRoute(PARTICIPANT_PROFILE.replace(':subjectId', personEKID));
   }
 
@@ -348,6 +351,7 @@ const mapStateToProps = (state :Map<*, *>) => {
 
 const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
+    clearAppointmentsAndPlans,
     getDiversionPlans,
     goToRoute,
   }, dispatch)

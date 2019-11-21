@@ -15,6 +15,7 @@ import LogoLoader from '../../components/LogoLoader';
 import { ToolBar } from '../../components/controls/index';
 import { getDiversionPlans } from './ParticipantsActions';
 import { goToRoute } from '../../core/router/RoutingActions';
+import { clearAppointmentsAndPlans } from '../participant/assignedworksites/WorksitePlanActions';
 import { PARTICIPANT_PROFILE } from '../../core/router/Routes';
 import { SEARCH_CONTAINER_WIDTH } from '../../core/style/Sizes';
 import { isDefined } from '../../utils/LangUtils';
@@ -82,6 +83,7 @@ const ParticipantSearchInnerWrapper = styled.div`
 
 type Props = {
   actions:{
+    clearAppointmentsAndPlans :RequestSequence;
     getDiversionPlans :RequestSequence;
     goToRoute :RequestSequence;
   };
@@ -168,6 +170,7 @@ class ParticipantsSearchContainer extends Component<Props, State> {
 
   handleOnSelectPerson = (personEKID :string) => {
     const { actions } = this.props;
+    actions.clearAppointmentsAndPlans();
     actions.goToRoute(PARTICIPANT_PROFILE.replace(':subjectId', personEKID));
   }
 
@@ -378,6 +381,7 @@ const mapStateToProps = (state :Map<*, *>) => {
 
 const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
+    clearAppointmentsAndPlans,
     getDiversionPlans,
     goToRoute,
   }, dispatch)
