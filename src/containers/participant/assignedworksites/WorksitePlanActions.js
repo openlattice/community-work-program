@@ -8,6 +8,11 @@ const addWorksitePlan :RequestSequence = newRequestSequence(ADD_WORKSITE_PLAN);
 const CHECK_IN_FOR_APPOINTMENT :'CHECK_IN_FOR_APPOINTMENT' = 'CHECK_IN_FOR_APPOINTMENT';
 const checkInForAppointment :RequestSequence = newRequestSequence(CHECK_IN_FOR_APPOINTMENT);
 
+const CLEAR_APPOINTMENTS_AND_PLANS :'CLEAR_APPOINTMENTS_AND_PLANS' = 'CLEAR_APPOINTMENTS_AND_PLANS';
+const clearAppointmentsAndPlans = () => ({
+  type: CLEAR_APPOINTMENTS_AND_PLANS
+});
+
 const CREATE_WORK_APPOINTMENTS :'CREATE_WORK_APPOINTMENTS' = 'CREATE_WORK_APPOINTMENTS';
 const createWorkAppointments :RequestSequence = newRequestSequence(CREATE_WORK_APPOINTMENTS);
 
@@ -41,6 +46,7 @@ const updateHoursWorked :RequestSequence = newRequestSequence(UPDATE_HOURS_WORKE
 export {
   ADD_WORKSITE_PLAN,
   CHECK_IN_FOR_APPOINTMENT,
+  CLEAR_APPOINTMENTS_AND_PLANS,
   CREATE_WORK_APPOINTMENTS,
   DELETE_APPOINTMENT,
   EDIT_APPOINTMENT,
@@ -53,6 +59,7 @@ export {
   UPDATE_HOURS_WORKED,
   addWorksitePlan,
   checkInForAppointment,
+  clearAppointmentsAndPlans,
   createWorkAppointments,
   deleteAppointment,
   editAppointment,
