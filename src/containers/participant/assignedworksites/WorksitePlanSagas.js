@@ -648,14 +648,13 @@ function* getWorksitePlansWorker(action :SequenceAction) :Generator<*, *, *> {
 
   try {
     yield put(getWorksitePlans.request(id));
-    const { diversionPlan } = value;
+    const { diversionPlanEKID } = value;
     if (value === null || value === undefined) {
       throw ERR_ACTION_VALUE_NOT_DEFINED;
     }
     const app = yield select(getAppFromState);
     const diversionPlanESID :UUID = getEntitySetIdFromApp(app, DIVERSION_PLAN);
     const worksitePlanESID :UUID = getEntitySetIdFromApp(app, WORKSITE_PLAN);
-    const diversionPlanEKID :UUID = getEntityKeyId(diversionPlan);
 
     if (diversionPlanEKID) {
       const searchFilter :Object = {
