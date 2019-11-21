@@ -2,6 +2,7 @@
 import React, { Component } from 'react';
 import styled from 'styled-components';
 import toString from 'lodash/toString';
+import { Badge } from 'lattice-ui-kit';
 import { List, Map } from 'immutable';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
@@ -20,6 +21,7 @@ import {
   CustomTable,
   TableCard,
   TableHeader,
+  TableName,
 } from '../../components/table/styled/index';
 import { ToolBar } from '../../components/controls/index';
 import { getDiversionPlans } from './ParticipantsActions';
@@ -72,19 +74,19 @@ const defaultFilterOption :Map = statusFilterDropdown.get('enums')
 
 const ParticipantSearchOuterWrapper = styled.div`
   display: flex;
-  justify-content: center;
   flex-direction: column;
+  justify-content: center;
 `;
 
 const ParticipantSearchInnerWrapper = styled.div`
-  display: flex;
-  justify-content: center;
   align-items: center;
-  flex-direction: column;
-  margin-top: 30px;
-  width: ${SEARCH_CONTAINER_WIDTH}px;
-  position: relative;
   align-self: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  margin-top: 30px;
+  position: relative;
+  width: ${SEARCH_CONTAINER_WIDTH}px;
 `;
 
 type Props = {
@@ -234,9 +236,8 @@ class ParticipantsSearchContainer extends Component<Props, State> {
         const { [STATUS]: status } = getEntityProperties(enrollmentStatus, [STATUS]);
         const warningsCount :number = infractionCountsByParticipant.getIn([personEKID, WARNING], 0);
         const violationsCount :number = infractionCountsByParticipant.getIn([personEKID, VIOLATION], 0);
-        const personHours :Map = hoursWorked.get(personEKID);
-        const worked :number = personHours.get(WORKED);
-        const required :number = personHours.get(REQUIRED);
+        const worked :Map = hoursWorked.getIn([personEKID, WORKED], 0);
+        const required :number = hoursWorked.getIn([personEKID, REQUIRED], 0);
         const hoursServed :string = getHoursServed(worked, required);
 
         const personRow :Object = {
@@ -305,7 +306,10 @@ class ParticipantsSearchContainer extends Component<Props, State> {
         <ParticipantSearchInnerWrapper>
           <TableCard>
             <TableHeader padding="40px">
+              <TableName>
               All Participants
+              </TableName>
+              <Badge mode="primary" count={tableData.length} />
             </TableHeader>
             {
               tableData.length > 0

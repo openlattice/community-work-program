@@ -2,7 +2,7 @@
 import React, { Component } from 'react';
 import styled from 'styled-components';
 import toString from 'lodash/toString';
-import { CardStack, Tag } from 'lattice-ui-kit';
+import { Badge, CardStack, Tag } from 'lattice-ui-kit';
 import { List, Map } from 'immutable';
 import { DateTime } from 'luxon';
 import { bindActionCreators } from 'redux';
@@ -22,6 +22,7 @@ import {
   CustomTable,
   TableCard,
   TableHeader,
+  TableName,
 } from '../../components/table/styled/index';
 import { ErrorMessage } from '../../components/Layout';
 import { getDiversionPlans } from '../participants/ParticipantsActions';
@@ -403,7 +404,10 @@ class DashboardContainer extends Component<Props, State> {
           <div>
             <TableCard>
               <TableHeader padding="40px">
-                New Participants
+                <TableName>
+                  New Participants
+                </TableName>
+                <Badge mode="primary" count={newParticipantsTableData.length} />
               </TableHeader>
               {
                 newParticipantsTableData.length > 0
@@ -423,7 +427,10 @@ class DashboardContainer extends Component<Props, State> {
           <CardStack>
             <TableCard>
               <TableHeader padding="40px">
-                Pending Completion Review
+                <TableName>
+                  Pending Completion Review
+                </TableName>
+                <Badge mode="primary" count={pendingCompletionTableData.length} />
               </TableHeader>
               {
                 pendingCompletionTableData.length > 0
@@ -441,7 +448,10 @@ class DashboardContainer extends Component<Props, State> {
             </TableCard>
             <TableCard>
               <TableHeader padding="40px">
-                Violations Watch
+                <TableName>
+                  Violations Watch
+                </TableName>
+                <Badge mode="primary" count={violationsWatchTableData.length} />
               </TableHeader>
               {
                 violationsWatchTableData.length > 0

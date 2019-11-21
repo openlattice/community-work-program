@@ -2,7 +2,12 @@
 import React, { Component } from 'react';
 import styled from 'styled-components';
 import { List, Map } from 'immutable';
-import { Button, Card, CardSegment } from 'lattice-ui-kit';
+import {
+  Badge,
+  Button,
+  Card,
+  CardSegment
+} from 'lattice-ui-kit';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import type { RequestSequence } from 'redux-reqseq';
@@ -59,9 +64,9 @@ const OrgCard = styled(Card)`
 `;
 
 const TitleRowWrapper = styled.div`
+  align-items: center;
   display: flex;
   justify-content: space-between;
-  align-items: center;
 `;
 
 const OrganizationName = styled.h1`
