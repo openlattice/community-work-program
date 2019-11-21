@@ -7,6 +7,10 @@ import { StyledTableRow } from './styled/index';
 
 const StyledHeaderRow = styled(StyledTableRow)`
   border-bottom: 1px solid black;
+
+  :last-of-type {
+    border-bottom: 1px solid black;
+  }
 `;
 
 type Props = {

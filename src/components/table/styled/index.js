@@ -101,6 +101,10 @@ const StyledTableRow = styled.tr`
   color: ${statusColorVariation};
   padding: 7px 30px;
 
+  :last-of-type {
+    border-bottom: none;
+  }
+
   td,
   th {
     ${getStickyPosition}
