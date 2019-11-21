@@ -89,6 +89,10 @@ const StyledButton = styled(Button)`
   padding: 6px 12px;
 `;
 
+const WorksitesCell = styled(TableCell)`
+  font-size: 14px;
+`;
+
 type Props = {
   actions:{
     goToRoute :RequestSequence;
@@ -196,7 +200,7 @@ class WorksitesByOrgCard extends Component<Props, State> {
             worksitesTableData.length > 0 && (
               <CustomTable
                   components={{
-                    Cell: TableCell,
+                    Cell: WorksitesCell,
                     HeadCell: TableHeadCell,
                     Header: TableHeaderRow,
                     Row: WorksitesTableRow

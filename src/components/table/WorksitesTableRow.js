@@ -8,17 +8,14 @@ import type { RequestSequence } from 'redux-reqseq';
 
 import { goToRoute } from '../../core/router/RoutingActions';
 import * as Routes from '../../core/router/Routes';
-import { StyledTableRow, TableCell } from './styled/index';
+import { WorksitesRow } from './WorksitesHeaderRow';
+import { OL } from '../../core/style/Colors';
 
-export const WorksitesRow = styled(StyledTableRow)`
-  ${TableCell}:first-child {
-    padding-left: 50px;
-    width: 300px;
-    white-space: normal;
-  }
+export const TableRow = styled(WorksitesRow)`
+  border-bottom: 1px solid ${OL.GREY05};
 
-  ${TableCell}:last-child {
-    padding-right: 50px;
+  :last-of-type {
+    border-bottom: none;
   }
 `;
 
@@ -64,9 +61,9 @@ class WorksitesTableRow extends Component<Props> {
       ));
 
     return (
-      <WorksitesRow className={className} onClick={this.goToWorksiteProfile}>
+      <TableRow className={className} onClick={this.goToWorksiteProfile}>
         {cells}
-      </WorksitesRow>
+      </TableRow>
     );
   }
 }

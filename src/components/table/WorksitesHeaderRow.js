@@ -3,10 +3,20 @@ import React from 'react';
 import styled from 'styled-components';
 import isFunction from 'lodash/isFunction';
 
-import { WorksitesRow } from './WorksitesTableRow';
+import { StyledTableRow, TableCell } from './styled/index';
 
-const StyledHeaderRow = styled(WorksitesRow)`
+export const WorksitesRow = styled(StyledTableRow)`
   border-bottom: 1px solid black;
+
+  ${TableCell}:first-child {
+    padding-left: 50px;
+    width: 300px;
+    white-space: normal;
+  }
+
+  ${TableCell}:last-child {
+    padding-right: 50px;
+  }
 `;
 
 type Props = {
@@ -38,7 +48,7 @@ const TableHeader = (props :Props) => {
 
   return (
     <thead className={className}>
-      <StyledHeaderRow sticky={sticky}>
+      <WorksitesRow sticky={sticky}>
         {
           headers && headers.map((header) => {
             const {
@@ -62,7 +72,7 @@ const TableHeader = (props :Props) => {
             );
           })
         }
-      </StyledHeaderRow>
+      </WorksitesRow>
     </thead>
   );
 };
