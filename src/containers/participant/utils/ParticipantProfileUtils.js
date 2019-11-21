@@ -17,17 +17,17 @@ const generateDiversionPlanOptions = (entities :List) :Object[] => {
       [ORIENTATION_DATETIME]: orientationDateTime,
     } = getEntityProperties(entity, [DATETIME_RECEIVED, CHECK_IN_DATETIME, ORIENTATION_DATETIME]);
 
-    let date :string = '';
+    let label :string = 'Enrollment ';
     const sentenceDateObj = DateTime.fromISO(sentenceDateTime);
     const checkInDateObj = DateTime.fromISO(checkInDateTime);
     const orientationDateObj = DateTime.fromISO(orientationDateTime);
 
-    if (sentenceDateObj.isValid) date = sentenceDateObj.toLocaleString(DateTime.DATE_SHORT);
-    else if (checkInDateObj.isValid) date = checkInDateObj.toLocaleString(DateTime.DATE_SHORT);
-    else if (orientationDateObj.isValid) date = orientationDateObj.toLocaleString(DateTime.DATE_SHORT);
-    else date = EMPTY_FIELD;
+    if (sentenceDateObj.isValid) label += sentenceDateObj.toLocaleString(DateTime.DATE_SHORT);
+    else if (checkInDateObj.isValid) label += checkInDateObj.toLocaleString(DateTime.DATE_SHORT);
+    else if (orientationDateObj.isValid) label += orientationDateObj.toLocaleString(DateTime.DATE_SHORT);
+    else label = EMPTY_FIELD;
 
-    options.push({ label: `Enrollment ${date}`, value: entity });
+    options.push({ label, value: entity });
   });
   return options;
 };
