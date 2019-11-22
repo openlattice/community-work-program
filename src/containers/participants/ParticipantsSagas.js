@@ -73,7 +73,6 @@ const {
   HOURS_WORKED,
   REQUIRED_HOURS,
   TYPE,
-  ENTITY_KEY_ID,
 } = PROPERTY_TYPE_FQNS;
 
 const getAppFromState = (state) => state.get(STATE.APP, Map());
