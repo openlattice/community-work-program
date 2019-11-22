@@ -73,6 +73,7 @@ const {
   HOURS_WORKED,
   REQUIRED_HOURS,
   TYPE,
+  ENTITY_KEY_ID,
 } = PROPERTY_TYPE_FQNS;
 
 const getAppFromState = (state) => state.get(STATE.APP, Map());
@@ -333,21 +334,20 @@ function* getEnrollmentStatusesWorker(action :SequenceAction) :Generator<*, *, *
     if (!allDiversionPlansByParticipant.isEmpty()) {
 
       /*
-       * 3. Create map of { participant : active diversion plan }.
-       *    If participant doesn't have an active diversion plan: { participant: all diversion plans }.
+       * 2. Create map of { participant : [active diversion plan(s)] }.
+       *    If participant doesn't have an active diversion plan: { participant: [all diversion plans] }.
        *    Also create map of all { diversionPlanEKID: participantEKID } for easy lookup later.
        */
       const activeDiversionPlansByParticipantIfAny = allDiversionPlansByParticipant
         .map((planList :List) => {
-          const newPlanList :List = List();
-          const activePlan :Map = planList.find((plan :Map) => {
+          const activePlans :List = planList.filter((plan :Map) => {
             const { [COMPLETED]: completed } = getEntityProperties(plan, [COMPLETED]);
             return !completed;
           });
-          if (!isDefined(activePlan)) {
+          if (activePlans.isEmpty()) {
             return planList;
           }
-          return newPlanList.push(activePlan);
+          return activePlans;
         });
 
       const diversionPlanEKIDs = [];
@@ -398,31 +398,49 @@ function* getEnrollmentStatusesWorker(action :SequenceAction) :Generator<*, *, *
 
       enrollmentSearchResults.forEach((enrollmentList :List, diversionPlanEKID :UUID) => {
         const participantEKID :UUID = diversionPlanEKIDMap.get(diversionPlanEKID);
-        let personEnrollment :Map = enrollmentMap.get(participantEKID, Map());
+        let personEnrollmentStatus :Map = enrollmentMap.get(participantEKID, Map());
 
-        let personDiversionPlan :Map = currentDiversionPlansByParticipant.get(participantEKID, Map());
+        let personCurrentDiversionPlan :Map = currentDiversionPlansByParticipant.get(participantEKID, Map());
         const associatedDiversionPlan :Map = allDiversionPlansByParticipant.get(participantEKID)
           .filter((plan :Map) => getEntityKeyId(plan) === diversionPlanEKID)
           .get(0);
 
-        const sortedEnrollmentStatuses :List = sortEntitiesByDateProperty(enrollmentList, [EFFECTIVE_DATE]);
-
+        /* filter out enrollment statuses that have blank effective date values before sorting */
+        const statusesWithEffectiveDates :List = enrollmentList
+          .filter((status :Map) => isDefined(status.get(EFFECTIVE_DATE)));
+        const sortedEnrollmentStatuses :List = sortEntitiesByDateProperty(statusesWithEffectiveDates, [EFFECTIVE_DATE]);
         const mostRecentStatus = sortedEnrollmentStatuses.last();
-        const mostRecentStatusDate = DateTime.fromISO(mostRecentStatus.getIn([EFFECTIVE_DATE, 0]));
 
-        let { [EFFECTIVE_DATE]: storedStatusDate } = getEntityProperties(personEnrollment, [EFFECTIVE_DATE]);
+        let { [EFFECTIVE_DATE]: storedStatusDate } = getEntityProperties(personEnrollmentStatus, [EFFECTIVE_DATE]);
         storedStatusDate = DateTime.fromISO(storedStatusDate);
+        if (isDefined(mostRecentStatus)) {
+          const mostRecentStatusDate = DateTime.fromISO(mostRecentStatus.getIn([EFFECTIVE_DATE, 0]));
 
-        // $FlowFixMe
-        if (storedStatusDate < mostRecentStatusDate || personEnrollment.count() === 0) {
-          personEnrollment = mostRecentStatus;
+          // $FlowFixMe
+          if (storedStatusDate < mostRecentStatusDate || personEnrollmentStatus.count() === 0) {
+            personEnrollmentStatus = mostRecentStatus;
 
-          personDiversionPlan = associatedDiversionPlan;
-          currentDiversionPlansByParticipant = currentDiversionPlansByParticipant
-            .set(participantEKID, personDiversionPlan);
+            personCurrentDiversionPlan = associatedDiversionPlan;
+            currentDiversionPlansByParticipant = currentDiversionPlansByParticipant
+              .set(participantEKID, personCurrentDiversionPlan);
+          }
+        }
+        else {
+          const statusesWithNoEffectiveDates :List = enrollmentList
+            .filter((status :Map) => !isDefined(status.get(EFFECTIVE_DATE)));
+          const status :Map = statusesWithNoEffectiveDates.get(0);
+
+          // $FlowFixMe
+          if (personEnrollmentStatus.count() === 0) {
+            personEnrollmentStatus = status;
+
+            personCurrentDiversionPlan = associatedDiversionPlan;
+            currentDiversionPlansByParticipant = currentDiversionPlansByParticipant
+              .set(participantEKID, personCurrentDiversionPlan);
+          }
         }
 
-        enrollmentMap = enrollmentMap.set(participantEKID, personEnrollment);
+        enrollmentMap = enrollmentMap.set(participantEKID, personEnrollmentStatus);
       });
     }
 
