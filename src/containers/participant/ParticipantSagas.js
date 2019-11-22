@@ -138,7 +138,7 @@ import { enrollmentHeaderNames } from './utils/ParticipantProfileUtils';
 import { EMPTY_FIELD } from '../participants/ParticipantsConstants';
 import { PERSON, STATE } from '../../utils/constants/ReduxStateConsts';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
-import { ASSOCIATION_DETAILS } from '../../core/edm/constants/DataModelConsts';
+import { ASSOCIATION_DETAILS, CONTACT_METHODS } from '../../core/edm/constants/DataModelConsts';
 
 const { getEntityData, getEntitySetData } = DataApiActions;
 const { getEntityDataWorker, getEntitySetDataWorker } = DataApiSagas;
@@ -1493,7 +1493,7 @@ function* getContactInfoWorker(action :SequenceAction) :Generator<*, *, *> {
   const { id, value } = action;
   const workerResponse = {};
   let response :Object = {};
-  const contactInfo :Object = {};
+  let contactInfo :Map = Map();
 
   try {
     yield put(getContactInfo.request(id));
@@ -1519,25 +1519,24 @@ function* getContactInfoWorker(action :SequenceAction) :Generator<*, *, *> {
     if (response.error) {
       throw response.error;
     }
-    let email = Map();
-    let phone = Map();
     if (response.data[personEKID]) {
       fromJS(response.data[personEKID])
         .map((contactInfoNeighbor :Map) => getNeighborDetails(contactInfoNeighbor))
         .forEach((contact :Map) => {
-          const { [EMAIL]: emailFound, [PHONE_NUMBER]: phoneFound, [PREFERRED]: preferred } = getEntityProperties(
-            contact, [EMAIL, PHONE_NUMBER, PREFERRED]
-          );
-          if (phoneFound && preferred) {
+          const { [PREFERRED]: preferred } = getEntityProperties(contact, [PREFERRED]);
+          let email :Map = contactInfo.get(CONTACT_METHODS.EMAIL, Map());
+          let phone :Map = contactInfo.get(CONTACT_METHODS.PHONE, Map());
+
+          if (contact.get(PHONE_NUMBER) && preferred) {
             phone = contact;
           }
-          if (emailFound && preferred) {
+          if (contact.get(EMAIL) && preferred) {
             email = contact;
           }
+          contactInfo = contactInfo.set(CONTACT_METHODS.EMAIL, email);
+          contactInfo = contactInfo.set(CONTACT_METHODS.PHONE, phone);
         });
     }
-    contactInfo.email = email;
-    contactInfo.phone = phone;
     yield put(getContactInfo.success(id, contactInfo));
   }
   catch (error) {

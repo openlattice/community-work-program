@@ -82,3 +82,8 @@ export const INFRACTIONS_CONSTS = {
   VIOLATION: 'Violation',
   WARNING: 'Warning'
 };
+
+export const CONTACT_METHODS = {
+  EMAIL: 'Email',
+  PHONE: 'Phone'
+};
