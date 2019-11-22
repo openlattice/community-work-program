@@ -138,7 +138,7 @@ import { enrollmentHeaderNames } from './utils/ParticipantProfileUtils';
 import { EMPTY_FIELD } from '../participants/ParticipantsConstants';
 import { PERSON, STATE } from '../../utils/constants/ReduxStateConsts';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
-import { ASSOCIATION_DETAILS } from '../../core/edm/constants/DataModelConsts';
+import { ASSOCIATION_DETAILS, CONTACT_METHODS } from '../../core/edm/constants/DataModelConsts';
 
 const { getEntityData, getEntitySetData } = DataApiActions;
 const { getEntityDataWorker, getEntitySetDataWorker } = DataApiSagas;
@@ -1524,8 +1524,8 @@ function* getContactInfoWorker(action :SequenceAction) :Generator<*, *, *> {
         .map((contactInfoNeighbor :Map) => getNeighborDetails(contactInfoNeighbor))
         .forEach((contact :Map) => {
           const { [PREFERRED]: preferred } = getEntityProperties(contact, [PREFERRED]);
-          let email :Map = contactInfo.get('email', Map());
-          let phone :Map = contactInfo.get('phone', Map());
+          let email :Map = contactInfo.get(CONTACT_METHODS.EMAIL, Map());
+          let phone :Map = contactInfo.get(CONTACT_METHODS.PHONE, Map());
 
           if (contact.get(PHONE_NUMBER) && preferred) {
             phone = contact;
@@ -1533,8 +1533,8 @@ function* getContactInfoWorker(action :SequenceAction) :Generator<*, *, *> {
           if (contact.get(EMAIL) && preferred) {
             email = contact;
           }
-          contactInfo = contactInfo.set('email', email);
-          contactInfo = contactInfo.set('phone', phone);
+          contactInfo = contactInfo.set(CONTACT_METHODS.EMAIL, email);
+          contactInfo = contactInfo.set(CONTACT_METHODS.PHONE, phone);
         });
     }
     yield put(getContactInfo.success(id, contactInfo));

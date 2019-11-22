@@ -54,6 +54,7 @@ import {
 import { isDefined } from '../../utils/LangUtils';
 import { PERSON } from '../../utils/constants/ReduxStateConsts';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { CONTACT_METHODS } from '../../core/edm/constants/DataModelConsts';
 
 const { COURT_CHARGE_LIST } = APP_TYPE_FQNS;
 const {
@@ -845,8 +846,8 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
           const contactInfo :Map = value;
 
           return state
-            .set(EMAIL, contactInfo.get('email'))
-            .set(PHONE, contactInfo.get('phone'))
+            .set(EMAIL, contactInfo.get(CONTACT_METHODS.EMAIL))
+            .set(PHONE, contactInfo.get(CONTACT_METHODS.PHONE))
             .setIn([ACTIONS, GET_CONTACT_INFO, REQUEST_STATE], RequestStates.SUCCESS);
         },
         FAILURE: () => state
