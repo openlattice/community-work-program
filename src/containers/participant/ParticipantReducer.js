@@ -54,6 +54,7 @@ import {
 import { isDefined } from '../../utils/LangUtils';
 import { PERSON } from '../../utils/constants/ReduxStateConsts';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { CONTACT_METHODS } from '../../core/edm/constants/DataModelConsts';
 
 const { COURT_CHARGE_LIST } = APP_TYPE_FQNS;
 const {
@@ -842,9 +843,11 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
             return state;
           }
 
+          const contactInfo :Map = value;
+
           return state
-            .set(EMAIL, value.email)
-            .set(PHONE, value.phone)
+            .set(EMAIL, contactInfo.get(CONTACT_METHODS.EMAIL))
+            .set(PHONE, contactInfo.get(CONTACT_METHODS.PHONE))
             .setIn([ACTIONS, GET_CONTACT_INFO, REQUEST_STATE], RequestStates.SUCCESS);
         },
         FAILURE: () => state
@@ -969,17 +972,11 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
         REQUEST: () => state
           .setIn([ACTIONS, GET_INFO_FOR_EDIT_PERSON, action.id], fromJS(action))
           .setIn([ACTIONS, GET_INFO_FOR_EDIT_PERSON, REQUEST_STATE], RequestStates.PENDING),
-        SUCCESS: () => {
-
-          if (!state.hasIn([ACTIONS, GET_INFO_FOR_EDIT_PERSON, action.id])) {
-            return state;
-          }
-          return state
-            .setIn([ACTIONS, GET_INFO_FOR_EDIT_CASE, REQUEST_STATE], RequestStates.SUCCESS);
-        },
+        SUCCESS: () => state
+          .setIn([ACTIONS, GET_INFO_FOR_EDIT_PERSON, REQUEST_STATE], RequestStates.SUCCESS),
         FAILURE: () => state
           .setIn([ACTIONS, GET_INFO_FOR_EDIT_PERSON, REQUEST_STATE], RequestStates.FAILURE),
-        FINALLY: () => state.deleteIn([ACTIONS, GET_INFO_FOR_EDIT_PERSON, action.id])
+        FINALLY: () => state.deleteIn([ACTIONS, GET_INFO_FOR_EDIT_PERSON, action.id]),
       });
     }
 
