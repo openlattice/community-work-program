@@ -1493,7 +1493,7 @@ function* getContactInfoWorker(action :SequenceAction) :Generator<*, *, *> {
   const { id, value } = action;
   const workerResponse = {};
   let response :Object = {};
-  const contactInfo :Object = {};
+  let contactInfo :Map = Map();
 
   try {
     yield put(getContactInfo.request(id));
@@ -1519,25 +1519,24 @@ function* getContactInfoWorker(action :SequenceAction) :Generator<*, *, *> {
     if (response.error) {
       throw response.error;
     }
-    let email = Map();
-    let phone = Map();
     if (response.data[personEKID]) {
       fromJS(response.data[personEKID])
         .map((contactInfoNeighbor :Map) => getNeighborDetails(contactInfoNeighbor))
         .forEach((contact :Map) => {
-          const { [EMAIL]: emailFound, [PHONE_NUMBER]: phoneFound, [PREFERRED]: preferred } = getEntityProperties(
-            contact, [EMAIL, PHONE_NUMBER, PREFERRED]
-          );
-          if (phoneFound && preferred) {
+          const { [PREFERRED]: preferred } = getEntityProperties(contact, [PREFERRED]);
+          let email :Map = contactInfo.get('email', Map());
+          let phone :Map = contactInfo.get('phone', Map());
+
+          if (contact.get(PHONE_NUMBER) && preferred) {
             phone = contact;
           }
-          if (emailFound && preferred) {
+          if (contact.get(EMAIL) && preferred) {
             email = contact;
           }
+          contactInfo = contactInfo.set('email', email);
+          contactInfo = contactInfo.set('phone', phone);
         });
     }
-    contactInfo.email = email;
-    contactInfo.phone = phone;
     yield put(getContactInfo.success(id, contactInfo));
   }
   catch (error) {
