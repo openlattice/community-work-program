@@ -368,7 +368,7 @@ function* getEnrollmentStatusesWorker(action :SequenceAction) :Generator<*, *, *
       });
 
       /*
-       * 4. Find enrollment statuses for all diversion plans in map above.
+       * 3. Search for enrollment statuses associated with all diversion plans in map above.
        */
 
       const app = yield select(getAppFromState);
@@ -391,7 +391,7 @@ function* getEnrollmentStatusesWorker(action :SequenceAction) :Generator<*, *, *
           .map((enrollment :Map) => getNeighborDetails(enrollment)));
 
       /*
-       * 5. Create new map of { participantEKID: most recent enrollment status }.
+       * 4. Create new map of { participantEKID: most recent enrollment status }.
        *    Create new map of { participantEKID: most recent diversionPlan }.
        */
 
@@ -424,27 +424,12 @@ function* getEnrollmentStatusesWorker(action :SequenceAction) :Generator<*, *, *
               .set(participantEKID, personCurrentDiversionPlan);
           }
         }
-        else {
-          const statusesWithNoEffectiveDates :List = enrollmentList
-            .filter((status :Map) => !isDefined(status.get(EFFECTIVE_DATE)));
-          const status :Map = statusesWithNoEffectiveDates.get(0);
-
-          // $FlowFixMe
-          if (personEnrollmentStatus.count() === 0) {
-            personEnrollmentStatus = status;
-
-            personCurrentDiversionPlan = associatedDiversionPlan;
-            currentDiversionPlansByParticipant = currentDiversionPlansByParticipant
-              .set(participantEKID, personCurrentDiversionPlan);
-          }
-        }
-
         enrollmentMap = enrollmentMap.set(participantEKID, personEnrollmentStatus);
       });
     }
 
     /*
-     * 6. If no enrollment status for a person exists, set enrollment to empty Map().
+     * 5. If no enrollment status for a person exists, set enrollment to empty Map().
      */
     const participantsWithoutEnrollmentStatus :UUID[] = participantEKIDs
       .filter((ekid) => !isDefined(enrollmentMap.get(ekid)));
