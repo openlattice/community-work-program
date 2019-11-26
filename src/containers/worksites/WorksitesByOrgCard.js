@@ -13,12 +13,12 @@ import { connect } from 'react-redux';
 import type { RequestSequence } from 'redux-reqseq';
 
 import AddWorksiteModal from './AddWorksiteModal';
-import TableHeaderRow from '../../components/table/WorksitesHeaderRow';
+import WorksitesHeaderRow from '../../components/table/WorksitesHeaderRow';
 import TableHeadCell from '../../components/table/TableHeadCell';
 import WorksitesTableRow from '../../components/table/WorksitesTableRow';
 
 import { goToRoute } from '../../core/router/RoutingActions';
-import { CustomTable, TableCell, TableName } from '../../components/table/styled/index';
+import { CustomTable, TableCell } from '../../components/table/styled/index';
 import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
 import { formatAsDate } from '../../utils/DateTimeUtils';
 import { generateTableHeaders } from '../../utils/FormattingUtils';
@@ -207,7 +207,7 @@ class WorksitesByOrgCard extends Component<Props, State> {
                   components={{
                     Cell: WorksitesCell,
                     HeadCell: TableHeadCell,
-                    Header: TableHeaderRow,
+                    Header: WorksitesHeaderRow,
                     Row: WorksitesTableRow
                   }}
                   data={worksitesTableData}
