@@ -60,8 +60,10 @@ class AssignJudgeForm extends Component<Props, State> {
   }
 
   componentDidUpdate(prevProps :Props) {
-    const { judge, judges } = this.props;
-    if (!prevProps.judge.equals(judge) || !prevProps.judges.equals(judges)) {
+    const { judge, judges, personCase } = this.props;
+    if (!prevProps.judge.equals(judge)
+      || !prevProps.judges.equals(judges)
+      || !prevProps.personCase.equals(personCase)) {
       this.prepopulateFormData();
     }
   }
