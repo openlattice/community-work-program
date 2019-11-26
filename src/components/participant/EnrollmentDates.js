@@ -1,7 +1,6 @@
 // @flow
 import React from 'react';
 import { fromJS, Map, OrderedMap } from 'immutable';
-import { DateTime } from 'luxon';
 import { Card, CardSegment, DataGrid } from 'lattice-ui-kit';
 
 import {
