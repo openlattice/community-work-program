@@ -6,7 +6,9 @@ import isFunction from 'lodash/isFunction';
 import { StyledTableRow, TableCell } from './styled/index';
 
 export const WorksitesRow = styled(StyledTableRow)`
-  border-bottom: 1px solid black;
+  :last-of-type {
+    border-bottom: 1px solid black;
+  }
 
   ${TableCell}:first-child {
     padding-left: 50px;
@@ -29,7 +31,7 @@ type Props = {
   sticky ? :boolean;
 };
 
-const TableHeader = (props :Props) => {
+const WorksitesHeaderRow = (props :Props) => {
   const {
     components,
     className,
@@ -77,9 +79,9 @@ const TableHeader = (props :Props) => {
   );
 };
 
-export default TableHeader;
+export default WorksitesHeaderRow;
 
-TableHeader.defaultProps = {
+WorksitesHeaderRow.defaultProps = {
   className: undefined,
   headers: [],
   onSort: undefined,
