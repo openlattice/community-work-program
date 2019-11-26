@@ -7,6 +7,7 @@ import { DateTime } from 'luxon';
 
 import { getEntityProperties } from '../../../utils/DataUtils';
 import { PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
+import { EMPTY_FIELD } from '../../participants/ParticipantsConstants';
 
 const {
   CHECKED_IN,
@@ -49,8 +50,8 @@ const CheckInDetailsModal = ({
 
   const checkedIn :string = checkedInBoolean ? 'Yes' : 'No';
   const date :string = DateTime.fromISO(dateTimeStart).toLocaleString(DateTime.DATE_SHORT);
-  const timeIn :string = DateTime.fromISO(dateTimeStart).toLocaleString(DateTime.TIME_SIMPLE);
-  const timeOut :string = DateTime.fromISO(dateTimeEnd).toLocaleString(DateTime.TIME_SIMPLE);
+  const timeIn :string = DateTime.fromISO(dateTimeStart).toLocaleString(DateTime.TIME_SIMPLE) || EMPTY_FIELD;
+  const timeOut :string = DateTime.fromISO(dateTimeEnd).toLocaleString(DateTime.TIME_SIMPLE) || EMPTY_FIELD;
 
   const data :Map = fromJS({
     checkedIn,
