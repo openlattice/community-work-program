@@ -276,9 +276,9 @@ class ParticipantProfile extends Component<Props, State> {
     }
     if ((prevProps.getAllParticipantInfoRequestState === RequestStates.PENDING
         && getAllParticipantInfoRequestState === RequestStates.SUCCESS)
-      || !prevProps.worksitesList.equals(worksitesList)
-      || !prevProps.worksitesByWorksitePlan.equals(worksitesByWorksitePlan)
-      || !prevProps.checkInsByAppointment.equals(checkInsByAppointment)) {
+        || !prevProps.worksitesList.equals(worksitesList)
+        || !prevProps.worksitesByWorksitePlan.equals(worksitesByWorksitePlan)
+        || !prevProps.checkInsByAppointment.equals(checkInsByAppointment)) {
       this.setWorkAndWorksiteInfo();
     }
     if (prevProps.createNewEnrollmentRequestState === RequestStates.PENDING
