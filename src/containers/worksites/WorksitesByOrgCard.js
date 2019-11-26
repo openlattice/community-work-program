@@ -18,7 +18,7 @@ import TableHeadCell from '../../components/table/TableHeadCell';
 import WorksitesTableRow from '../../components/table/WorksitesTableRow';
 
 import { goToRoute } from '../../core/router/RoutingActions';
-import { CustomTable, TableCell } from '../../components/table/styled/index';
+import { CustomTable, TableCell, TableName } from '../../components/table/styled/index';
 import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
 import { formatAsDate } from '../../utils/DateTimeUtils';
 import { generateTableHeaders } from '../../utils/FormattingUtils';
@@ -69,19 +69,16 @@ const TitleRowWrapper = styled.div`
   justify-content: space-between;
 `;
 
+const OrgHeaderWrapper = styled.div`
+  display: flex;
+  align-items: center;
+`;
+
 const OrganizationName = styled.h1`
   color: ${OL.GREY15};
   font-weight: 600;
   font-size: 20px;
-
-  &:hover {
-    cursor: pointer;
-    color: ${OL.PURPLE02};
-  }
-
-  &:active {
-    color: ${OL.PURPLE01};
-  }
+  margin-right: 10px;
 `;
 
 const Description = styled.div`
@@ -176,7 +173,7 @@ class WorksitesByOrgCard extends Component<Props, State> {
   }
 
   render() {
-    const { organization } = this.props;
+    const { organization, worksiteCount } = this.props;
     const { showAddWorksite } = this.state;
 
     const {
@@ -191,9 +188,12 @@ class WorksitesByOrgCard extends Component<Props, State> {
       <OrgCard>
         <CardSegment vertical padding="md">
           <TitleRowWrapper>
-            <OrganizationName>
-              { orgName }
-            </OrganizationName>
+            <OrgHeaderWrapper>
+              <OrganizationName>
+                { orgName }
+              </OrganizationName>
+              <Badge mode="primary" count={worksiteCount} />
+            </OrgHeaderWrapper>
             <StyledButton onClick={this.handleShowAddWorksite}>Add Work Site</StyledButton>
           </TitleRowWrapper>
         </CardSegment>
