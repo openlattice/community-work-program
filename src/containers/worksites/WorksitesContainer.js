@@ -261,12 +261,7 @@ class WorksitesContainer extends Component<Props, State> {
               organizationsToRender.map((org :Map) => {
                 const orgEKID :UUID = getEntityKeyId(org);
                 const orgWorksites = worksitesByOrg.get(orgEKID);
-                let orgWorksiteCount :string = '0 Work Sites';
-                if (orgWorksites) {
-                  const count = orgWorksites.count();
-                  if (count === 1) orgWorksiteCount = '1 Work Site';
-                  if (count > 1) orgWorksiteCount = `${orgWorksites.count()} Work Sites`;
-                }
+                const orgWorksiteCount :number = orgWorksites.count();
                 return (
                   <WorksitesByOrgCard
                       key={orgEKID}
