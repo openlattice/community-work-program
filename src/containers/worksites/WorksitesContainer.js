@@ -1,5 +1,6 @@
 // @flow
 import React, { Component } from 'react';
+import styled from 'styled-components';
 import { List, Map } from 'immutable';
 import { CardStack } from 'lattice-ui-kit';
 import { withRouter } from 'react-router-dom';
@@ -12,15 +13,9 @@ import WorksitesByOrgCard from './WorksitesByOrgCard';
 import AddOrganizationModal from '../organizations/AddOrganizationModal';
 import LogoLoader from '../../components/LogoLoader';
 
+import { getOrganizations, getWorksitesByOrg, getWorksitePlans } from './WorksitesActions';
 import { goToRoute } from '../../core/router/RoutingActions';
-import {
-  ContainerOuterWrapper,
-  ContainerInnerWrapper,
-  HeaderWrapper,
-  ContainerHeader,
-  ContainerSubHeader,
-  Separator,
-} from '../../components/Layout';
+import { ContainerHeader, ContainerInnerWrapper, ContainerOuterWrapper } from '../../components/Layout';
 import { ToolBar } from '../../components/controls/index';
 import { isDefined } from '../../utils/LangUtils';
 import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
@@ -30,17 +25,9 @@ import {
   statusFilterDropdown,
   WORKSITE_STATUSES
 } from './WorksitesConstants';
-import {
-  APP,
-  STATE,
-  WORKSITES
-} from '../../utils/constants/ReduxStateConsts';
+import { APP, STATE, WORKSITES } from '../../utils/constants/ReduxStateConsts';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
-import {
-  getOrganizations,
-  getWorksitesByOrg,
-  getWorksitePlans,
-} from './WorksitesActions';
+import { OL } from '../../core/style/Colors';
 
 const { ORGANIZATION } = APP_TYPE_FQNS;
 const { ORGANIZATION_NAME } = PROPERTY_TYPE_FQNS;
@@ -59,6 +46,34 @@ const dropdowns :List = List().withMutations((list :List) => {
 });
 const defaultFilterOption :Map = statusFilterDropdown.get('enums')
   .find((obj :Object) => obj.value.toUpperCase() === ALL);
+
+
+const HeaderWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  margin-bottom: 20px;
+`;
+
+const SubHeaderWrapper = styled.div`
+  align-items: center;
+  display: flex;
+  margin-top: 10px;
+`;
+
+const ContainerSubHeader = styled(ContainerHeader)`
+  color: ${OL.GREY02};
+  font-size: 14px;
+`;
+
+const Separator = styled.div`
+  align-items: center;
+  color: ${OL.GREY02};
+  display: flex;
+  font-weight: 600;
+  justify-content: center;
+  margin: 0 10px;
+`;
 
 type Props = {
   actions:{
@@ -252,9 +267,11 @@ class WorksitesContainer extends Component<Props, State> {
         <ContainerInnerWrapper>
           <HeaderWrapper>
             <ContainerHeader>Work Sites</ContainerHeader>
-            <ContainerSubHeader>{ orgSubHeader }</ContainerSubHeader>
-            <Separator>•</Separator>
-            <ContainerSubHeader>{ worksiteSubHeader }</ContainerSubHeader>
+            <SubHeaderWrapper>
+              <ContainerSubHeader>{ orgSubHeader }</ContainerSubHeader>
+              <Separator>•</Separator>
+              <ContainerSubHeader>{ worksiteSubHeader }</ContainerSubHeader>
+            </SubHeaderWrapper>
           </HeaderWrapper>
           <CardStack>
             {
