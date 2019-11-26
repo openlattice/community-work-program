@@ -1,6 +1,11 @@
 // @flow
 import React, { Component } from 'react';
-import { fromJS, List, Map } from 'immutable';
+import {
+  List,
+  Map,
+  fromJS,
+  hasIn,
+} from 'immutable';
 import { DateTime } from 'luxon';
 import { DataProcessingUtils } from 'lattice-fabricate';
 import {
@@ -115,9 +120,9 @@ class AddNewPlanStatusForm extends Component<Props, State> {
     };
   }
 
-  setDate = (name :FQN) => (date :string) => {
+  setDate = (name :FQN, sectionNumber :number) => (date :string) => {
     const { newEnrollmentData } = this.state;
-    this.setState({ newEnrollmentData: newEnrollmentData.setIn([getPageSectionKey(1, 2), name], date) });
+    this.setState({ newEnrollmentData: newEnrollmentData.setIn([getPageSectionKey(1, sectionNumber), name], date) });
   }
 
   handleSelectChange = (option :Object, event :Object) => {
@@ -147,8 +152,21 @@ class AddNewPlanStatusForm extends Component<Props, State> {
     const diversionPlanEKID :UUID = getEntityKeyId(diversionPlan);
     const now = DateTime.local();
 
-    newEnrollmentData = newEnrollmentData
-      .setIn([getPageSectionKey(1, 1), getEntityAddressKey(0, ENROLLMENT_STATUS, EFFECTIVE_DATE)], now.toISO());
+    const effectiveDateKeyPath :string[] = [
+      getPageSectionKey(1, 1),
+      getEntityAddressKey(0, ENROLLMENT_STATUS, EFFECTIVE_DATE)
+    ];
+    if (!hasIn(newEnrollmentData, effectiveDateKeyPath)) {
+      newEnrollmentData = newEnrollmentData.setIn(effectiveDateKeyPath, now.toISO());
+    }
+    else {
+      const dateAsDateTime :string = getCombinedDateTime(
+        newEnrollmentData.getIn(effectiveDateKeyPath, now.toISODate()),
+        now.toLocaleString(DateTime.TIME_24_SIMPLE)
+      );
+      newEnrollmentData = newEnrollmentData.setIn(effectiveDateKeyPath, dateAsDateTime);
+    }
+
 
     associations.push([RELATED_TO, 0, ENROLLMENT_STATUS, diversionPlanEKID, DIVERSION_PLAN, {}]);
 
@@ -272,7 +290,7 @@ class AddNewPlanStatusForm extends Component<Props, State> {
                     <Label>Work program end date</Label>
                     <DatePicker
                         name={getEntityAddressKey(0, PROGRAM_OUTCOME, DATETIME_COMPLETED)}
-                        onChange={this.setDate(getEntityAddressKey(0, PROGRAM_OUTCOME, DATETIME_COMPLETED))} />
+                        onChange={this.setDate(getEntityAddressKey(0, PROGRAM_OUTCOME, DATETIME_COMPLETED), 2)} />
                   </RowContent>
                 </FormRow>
                 <FormRow>
@@ -294,7 +312,17 @@ class AddNewPlanStatusForm extends Component<Props, State> {
                 </FormRow>
               </>
             )
-            : null
+            : (
+              <FormRow>
+                <RowContent>
+                  <Label>Effective date</Label>
+                  <DatePicker
+                      name={getEntityAddressKey(0, ENROLLMENT_STATUS, EFFECTIVE_DATE)}
+                      onChange={this.setDate(getEntityAddressKey(0, ENROLLMENT_STATUS, EFFECTIVE_DATE), 1)}
+                      placeholder={DateTime.local().toLocaleString(DateTime.DATE_SHORT)} />
+                </RowContent>
+              </FormRow>
+            )
         }
         <ButtonsRow>
           <Button onClick={onDiscard}>Discard</Button>
