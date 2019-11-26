@@ -1,12 +1,7 @@
 // @flow
 import React, { Component } from 'react';
 import styled from 'styled-components';
-import {
-  List,
-  Map,
-  OrderedMap,
-  fromJS,
-} from 'immutable';
+import { Map, OrderedMap } from 'immutable';
 import {
   Card,
   CardSegment,
