@@ -99,9 +99,10 @@ class EditChargesForm extends Component<Props, State> {
   }
 
   componentDidUpdate(prevProps :Props) {
-    const { charges, chargesForCase } = this.props;
+    const { charges, chargesForCase, personCase } = this.props;
     if (!prevProps.chargesForCase.equals(chargesForCase)
-      || !prevProps.charges.equals(charges)) {
+      || !prevProps.charges.equals(charges)
+      || !prevProps.personCase.equals(personCase)) {
       this.prepopulateFormData();
     }
   }
