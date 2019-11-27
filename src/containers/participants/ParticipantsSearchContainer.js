@@ -16,7 +16,7 @@ import { ToolBar } from '../../components/controls/index';
 import { getDiversionPlans } from './ParticipantsActions';
 import { goToRoute } from '../../core/router/RoutingActions';
 import { clearAppointmentsAndPlans } from '../participant/assignedworksites/WorksitePlanActions';
-import { PARTICIPANT_PROFILE } from '../../core/router/Routes';
+import { ADD_PARTICIPANT, PARTICIPANT_PROFILE } from '../../core/router/Routes';
 import { SEARCH_CONTAINER_WIDTH } from '../../core/style/Sizes';
 import { isDefined } from '../../utils/LangUtils';
 import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
@@ -292,6 +292,11 @@ class ParticipantsSearchContainer extends Component<Props, State> {
     return sortedByCourtType;
   }
 
+  goToAddParticipantForm = () => {
+    const { actions } = this.props;
+    actions.goToRoute(ADD_PARTICIPANT);
+  }
+
   render() {
     const {
       courtTypeByParticipant,
@@ -324,7 +329,7 @@ class ParticipantsSearchContainer extends Component<Props, State> {
         <ToolBar
             dropdowns={dropdowns}
             onSelectFunctions={onSelectFunctions}
-            primaryButtonAction={this.handleShowAddParticipant}
+            primaryButtonAction={this.goToAddParticipantForm}
             primaryButtonText="Add Participant"
             search={this.searchParticipantList} />
         <ParticipantSearchInnerWrapper>

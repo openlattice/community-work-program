@@ -27,6 +27,7 @@ import PrintWorkScheduleContainer from '../workschedule/PrintWorkScheduleContain
 import WorksiteProfile from '../worksites/WorksiteProfile';
 import WorksitesContainer from '../worksites/WorksitesContainer';
 import WorkScheduleContainer from '../workschedule/WorkScheduleContainer';
+import AddParticipantForm from '../participants/AddParticipantForm_NEW';
 
 import * as AppActions from './AppActions';
 import * as ParticipantsActions from '../participants/ParticipantsActions';
@@ -104,6 +105,7 @@ class AppContainer extends Component<Props> {
       <Route path={Routes.PRINT_WORK_SCHEDULE} component={PrintWorkScheduleContainer} />
       <Route path={Routes.WORK_SCHEDULE} component={WorkScheduleContainer} />
       <Route path={Routes.WORKSITES} component={WorksitesContainer} />
+      <Route exact strict path={Routes.ADD_PARTICIPANT} component={AddParticipantForm} />
       <Route path={Routes.PARTICIPANT_PROFILE} component={ParticipantProfileContainer} />
       <Route path={Routes.PARTICIPANTS} component={ParticipantsSearchContainer} />
       <Route path={Routes.DASHBOARD} component={DashboardContainer} />
