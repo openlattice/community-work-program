@@ -22,7 +22,7 @@ export const hydrateSchema = (schema :Object, judges :List, charges :List) => {
     schema,
     [
       'properties',
-      getPageSectionKey(1, 1),
+      getPageSectionKey(1, 3),
       'properties',
       getEntityAddressKey(0, JUDGES, ENTITY_KEY_ID),
       'enum'
@@ -33,7 +33,7 @@ export const hydrateSchema = (schema :Object, judges :List, charges :List) => {
     newSchema,
     [
       'properties',
-      getPageSectionKey(1, 1),
+      getPageSectionKey(1, 3),
       'properties',
       getEntityAddressKey(0, JUDGES, ENTITY_KEY_ID),
       'enumNames'
@@ -41,10 +41,10 @@ export const hydrateSchema = (schema :Object, judges :List, charges :List) => {
     judgesLabels
   );
   newSchema = setIn(
-    schema,
+    newSchema,
     [
       'properties',
-      getPageSectionKey(1, 1),
+      getPageSectionKey(1, 4),
       'items',
       'properties',
       getEntityAddressKey(-1, COURT_CHARGE_LIST, ENTITY_KEY_ID),
@@ -56,7 +56,7 @@ export const hydrateSchema = (schema :Object, judges :List, charges :List) => {
     newSchema,
     [
       'properties',
-      getPageSectionKey(1, 1),
+      getPageSectionKey(1, 4),
       'items',
       'properties',
       getEntityAddressKey(-1, COURT_CHARGE_LIST, ENTITY_KEY_ID),
