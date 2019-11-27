@@ -1,8 +1,8 @@
 // @flow
 import { DataProcessingUtils } from 'lattice-fabricate';
 
-import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
-import { COURT_TYPES, RACE_VALUES, SEX_VALUES } from '../../core/edm/constants/DataModelConsts';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
+import { COURT_TYPES, RACE_VALUES, SEX_VALUES } from '../../../core/edm/constants/DataModelConsts';
 
 const { getEntityAddressKey, getPageSectionKey } = DataProcessingUtils;
 

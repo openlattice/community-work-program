@@ -22,8 +22,7 @@ import ViolationHeader from '../../../assets/images/violation-header.png';
 
 import { getInfoForPrintInfraction } from './PrintParticipantActions';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
-import { getEntityProperties } from '../../../utils/DataUtils';
-import { getValuesFromEntityList } from '../utils/EditCaseInfoUtils';
+import { getEntityProperties, getValuesFromEntityList } from '../../../utils/DataUtils';
 import {
   APP,
   PERSON,
