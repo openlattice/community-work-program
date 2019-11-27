@@ -176,7 +176,8 @@ class DashboardContainer extends Component<Props, State> {
       if (status !== ENROLLMENT_STATUSES.COMPLETED
         && status !== ENROLLMENT_STATUSES.CLOSED
         && status !== ENROLLMENT_STATUSES.REMOVED_NONCOMPLIANT
-        && status !== ENROLLMENT_STATUSES.SUCCESSFUL) {
+        && status !== ENROLLMENT_STATUSES.SUCCESSFUL
+        && status !== ENROLLMENT_STATUSES.UNSUCCESSFUL) {
         pendingCompletionReview = pendingCompletionReview.push(participant);
       }
     });

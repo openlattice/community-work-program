@@ -265,21 +265,21 @@ class ParticipantProfile extends Component<Props, State> {
   componentDidUpdate(prevProps :Props) {
     const {
       app,
+      checkInsByAppointment,
       createNewEnrollmentRequestState,
-      workAppointmentsByWorksitePlan,
-      worksitesByWorksitePlan
+      getAllParticipantInfoRequestState,
+      worksitesByWorksitePlan,
+      worksitesList,
     } = this.props;
     if (!prevProps.app.get(APP_TYPE_FQNS.PEOPLE) && app.get(APP_TYPE_FQNS.PEOPLE)) {
       this.loadProfile();
     }
-    if (prevProps.worksitesByWorksitePlan.count() !== worksitesByWorksitePlan.count()) {
-      this.createWorksiteNameMap();
-    }
-    if (prevProps.workAppointmentsByWorksitePlan.count() !== workAppointmentsByWorksitePlan.count()) {
-      this.setWorkStartDate();
-    }
-    if (prevProps.workAppointmentsByWorksitePlan.count() !== workAppointmentsByWorksitePlan.count()) {
-      this.setWorkStartDate();
+    if ((prevProps.getAllParticipantInfoRequestState === RequestStates.PENDING
+        && getAllParticipantInfoRequestState === RequestStates.SUCCESS)
+        || !prevProps.worksitesList.equals(worksitesList)
+        || !prevProps.worksitesByWorksitePlan.equals(worksitesByWorksitePlan)
+        || !prevProps.checkInsByAppointment.equals(checkInsByAppointment)) {
+      this.setWorkAndWorksiteInfo();
     }
     if (prevProps.createNewEnrollmentRequestState === RequestStates.PENDING
       && createNewEnrollmentRequestState !== RequestStates.PENDING) {
@@ -293,7 +293,7 @@ class ParticipantProfile extends Component<Props, State> {
     actions.getAllParticipantInfo({ personEKID });
   }
 
-  createWorksiteNameMap = () => {
+  setWorkAndWorksiteInfo = () => {
     const { worksitesByWorksitePlan } = this.props;
     const worksiteNamesByWorksitePlan = Map().withMutations((map :Map) => {
       worksitesByWorksitePlan.forEach((worksite :Map, worksitePlanEKID :UUID) => {
@@ -301,11 +301,14 @@ class ParticipantProfile extends Component<Props, State> {
         map.set(worksitePlanEKID, worksiteName);
       });
     });
-    this.setState({ worksiteNamesByWorksitePlan });
+
+    const workStartDateTime :string = this.getWorkStartDate();
+    this.setState({ worksiteNamesByWorksitePlan, workStartDateTime });
   }
 
-  setWorkStartDate = () => {
+  getWorkStartDate = () => {
     const { checkInsByAppointment, workAppointmentsByWorksitePlan } = this.props;
+    let workStartDateTime :string = '';
     if (!checkInsByAppointment.isEmpty()) {
       const appointments :List = workAppointmentsByWorksitePlan
         .valueSeq()
@@ -316,11 +319,14 @@ class ParticipantProfile extends Component<Props, State> {
         const appointmentEKID :UUID = getEntityKeyId(appointment);
         const checkIn :Map = checkInsByAppointment.get(appointmentEKID, Map());
         if (!checkIn.isEmpty()) {
-          const { [DATETIME_START]: workStartDateTime } = getEntityProperties(checkIn, [DATETIME_START]);
-          if (workStartDateTime) this.setState({ workStartDateTime });
+          const { [DATETIME_START]: datetimeStart } = getEntityProperties(checkIn, [DATETIME_START]);
+          if (datetimeStart) workStartDateTime = datetimeStart;
+          return false;
         }
+        return true;
       });
     }
+    return workStartDateTime;
   }
 
   handleShowModal = (modalName :string) => {

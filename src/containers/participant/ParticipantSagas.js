@@ -1777,8 +1777,11 @@ function* getEnrollmentStatusWorker(action :SequenceAction) :Generator<*, *, *> 
 
         mostRecentEnrollmentStatusesByDiversionPlan = enrollmentStatusesByDiversionPlan
           .map((statusList :List) => {
-            const sortedStatusList :List = sortEntitiesByDateProperty(statusList, [EFFECTIVE_DATE]);
-            return sortedStatusList.last();
+            /* filter out enrollment statuses that have blank effective date values before sorting */
+            const statusesWithEffectiveDates :List = statusList
+              .filter((status :Map) => isDefined(status.get(EFFECTIVE_DATE)));
+            const sortedStatusList :List = sortEntitiesByDateProperty(statusesWithEffectiveDates, [EFFECTIVE_DATE]);
+            return sortedStatusList.last() || Map();
           });
         enrollmentStatus = sortEntitiesByDateProperty(
           mostRecentEnrollmentStatusesByDiversionPlan, [EFFECTIVE_DATE]
