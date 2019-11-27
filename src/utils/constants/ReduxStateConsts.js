@@ -106,6 +106,7 @@ export const PERSON = {
   GET_ENROLLMENT_HISTORY: 'getEnrollmentHistory',
   GET_ENROLLMENT_FROM_DIVERSION_PLAN: 'getEnrollmentFromDiversionPlan',
   GET_ENROLLMENT_STATUS: 'getEnrollmentStatus',
+  GET_INFO_FOR_ADD_PARTICIPANT: 'getInfoForAddParticipant',
   GET_INFO_FOR_EDIT_CASE: 'getInfoForEditCase',
   GET_INFO_FOR_EDIT_PERSON: 'getInfoForEditPerson',
   GET_JUDGES: 'getJudges',

@@ -54,6 +54,7 @@ import {
   GET_ENROLLMENT_HISTORY,
   GET_ENROLLMENT_FROM_DIVERSION_PLAN,
   GET_ENROLLMENT_STATUS,
+  GET_INFO_FOR_ADD_PARTICIPANT,
   GET_INFO_FOR_EDIT_CASE,
   GET_INFO_FOR_EDIT_PERSON,
   GET_JUDGES,
@@ -89,6 +90,7 @@ import {
   getEnrollmentHistory,
   getEnrollmentFromDiversionPlan,
   getEnrollmentStatus,
+  getInfoForAddParticipant,
   getInfoForEditCase,
   getInfoForEditPerson,
   getJudgeForCase,
@@ -2167,6 +2169,47 @@ function* getInfoForEditCaseWatcher() :Generator<*, *, *> {
 
 /*
  *
+ * ParticipantActions.getInfoForAddParticipant()
+ *
+ */
+
+function* getInfoForAddParticipantWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id } = action;
+
+  try {
+    yield put(getInfoForAddParticipant.request(id));
+
+    const workerResponses = yield all([
+      call(getJudgesWorker, getJudges()),
+      call(getChargesWorker, getCharges()),
+    ]);
+    const responseError = workerResponses.reduce(
+      (error, workerResponse) => error || workerResponse.error,
+      undefined,
+    );
+    if (responseError) {
+      throw responseError;
+    }
+
+    yield put(getInfoForAddParticipant.success(id));
+  }
+  catch (error) {
+    LOG.error('caught exception in getInfoForAddParticipantWorker()', error);
+    yield put(getInfoForAddParticipant.failure(id, error));
+  }
+  finally {
+    yield put(getInfoForAddParticipant.finally(id));
+  }
+}
+
+function* getInfoForAddParticipantWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(GET_INFO_FOR_ADD_PARTICIPANT, getInfoForAddParticipantWorker);
+}
+
+/*
+ *
  * ParticipantActions.getInfoForEditPerson()
  *
  */
@@ -2308,6 +2351,8 @@ export {
   getEnrollmentFromDiversionPlanWorker,
   getEnrollmentStatusWatcher,
   getEnrollmentStatusWorker,
+  getInfoForAddParticipantWatcher,
+  getInfoForAddParticipantWorker,
   getInfoForEditCaseWatcher,
   getInfoForEditCaseWorker,
   getInfoForEditPersonWatcher,

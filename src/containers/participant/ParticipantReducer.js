@@ -32,6 +32,7 @@ import {
   getEnrollmentHistory,
   getEnrollmentFromDiversionPlan,
   getEnrollmentStatus,
+  getInfoForAddParticipant,
   getInfoForEditCase,
   getInfoForEditPerson,
   getJudgeForCase,
@@ -104,6 +105,7 @@ const {
   GET_ENROLLMENT_HISTORY,
   GET_ENROLLMENT_FROM_DIVERSION_PLAN,
   GET_ENROLLMENT_STATUS,
+  GET_INFO_FOR_ADD_PARTICIPANT,
   GET_INFO_FOR_EDIT_CASE,
   GET_INFO_FOR_EDIT_PERSON,
   GET_JUDGE_FOR_CASE,
@@ -188,6 +190,9 @@ const INITIAL_STATE :Map<*, *> = fromJS({
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [GET_ENROLLMENT_STATUS]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [GET_INFO_FOR_ADD_PARTICIPANT]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [GET_INFO_FOR_EDIT_CASE]: {
@@ -940,6 +945,28 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
         FAILURE: () => state
           .setIn([ACTIONS, GET_ENROLLMENT_STATUS, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, GET_ENROLLMENT_STATUS, action.id])
+      });
+    }
+
+    case getInfoForAddParticipant.case(action.type): {
+
+      return getInfoForAddParticipant.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, GET_INFO_FOR_ADD_PARTICIPANT, action.id], fromJS(action))
+          .setIn([ACTIONS, GET_INFO_FOR_ADD_PARTICIPANT, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+
+          if (!state.hasIn([ACTIONS, GET_INFO_FOR_ADD_PARTICIPANT, action.id])) {
+            return state;
+          }
+
+          return state
+            .setIn([ACTIONS, GET_INFO_FOR_ADD_PARTICIPANT, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, GET_INFO_FOR_ADD_PARTICIPANT, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, GET_INFO_FOR_ADD_PARTICIPANT, action.id])
       });
     }
 

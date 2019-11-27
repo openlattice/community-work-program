@@ -68,6 +68,9 @@ const getEnrollmentFromDiversionPlan :RequestSequence = newRequestSequence(GET_E
 const GET_ENROLLMENT_STATUS :'GET_ENROLLMENT_STATUS' = 'GET_ENROLLMENT_STATUS';
 const getEnrollmentStatus :RequestSequence = newRequestSequence(GET_ENROLLMENT_STATUS);
 
+const GET_INFO_FOR_ADD_PARTICIPANT :'GET_INFO_FOR_ADD_PARTICIPANT' = 'GET_INFO_FOR_ADD_PARTICIPANT';
+const getInfoForAddParticipant :RequestSequence = newRequestSequence(GET_INFO_FOR_ADD_PARTICIPANT);
+
 const GET_INFO_FOR_EDIT_CASE :'GET_INFO_FOR_EDIT_CASE' = 'GET_INFO_FOR_EDIT_CASE';
 const getInfoForEditCase :RequestSequence = newRequestSequence(GET_INFO_FOR_EDIT_CASE);
 
@@ -130,6 +133,7 @@ export {
   GET_ENROLLMENT_HISTORY,
   GET_ENROLLMENT_FROM_DIVERSION_PLAN,
   GET_ENROLLMENT_STATUS,
+  GET_INFO_FOR_ADD_PARTICIPANT,
   GET_INFO_FOR_EDIT_CASE,
   GET_INFO_FOR_EDIT_PERSON,
   GET_JUDGES,
@@ -165,6 +169,7 @@ export {
   getEnrollmentHistory,
   getEnrollmentFromDiversionPlan,
   getEnrollmentStatus,
+  getInfoForAddParticipant,
   getInfoForEditCase,
   getInfoForEditPerson,
   getJudgeForCase,
