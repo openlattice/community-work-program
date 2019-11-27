@@ -341,22 +341,22 @@ class ParticipantProfile extends Component<Props, State> {
 
   goToPrintSchedule = () => {
     const { actions, personEKID } = this.props;
-    actions.goToRoute(Routes.PRINT_PARTICIPANT_SCHEDULE.replace(':subjectId', personEKID));
+    actions.goToRoute(Routes.PRINT_PARTICIPANT_SCHEDULE.replace(':participantId', personEKID));
   }
 
   editParticipant = () => {
     const { actions, personEKID } = this.props;
-    actions.goToRoute(Routes.EDIT_PARTICIPANT.replace(':subjectId', personEKID));
+    actions.goToRoute(Routes.EDIT_PARTICIPANT.replace(':participantId', personEKID));
   }
 
   editCaseInfo = () => {
     const { actions, personEKID } = this.props;
-    actions.goToRoute(Routes.EDIT_CASE_INFO.replace(':subjectId', personEKID));
+    actions.goToRoute(Routes.EDIT_CASE_INFO.replace(':participantId', personEKID));
   }
 
   editEnrollmentDates = () => {
     const { actions, personEKID } = this.props;
-    actions.goToRoute(Routes.EDIT_DATES.replace(':subjectId', personEKID));
+    actions.goToRoute(Routes.EDIT_DATES.replace(':participantId', personEKID));
   }
 
   selectDiversionPlan = (option :Object) => {

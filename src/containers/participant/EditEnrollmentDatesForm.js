@@ -94,7 +94,7 @@ class EditCaseInfoForm extends Component<Props, State> {
       actions,
       app,
       match: {
-        params: { subjectId: personEKID }
+        params: { participantId: personEKID }
       },
     } = this.props;
     if (app.get(DIVERSION_PLAN) && personEKID) {
@@ -109,7 +109,7 @@ class EditCaseInfoForm extends Component<Props, State> {
       diversionPlan,
       getEnrollmentStatusRequestState,
       match: {
-        params: { subjectId: personEKID }
+        params: { participantId: personEKID }
       },
     } = this.props;
     if (!prevProps.app.get(DIVERSION_PLAN) && app.get(DIVERSION_PLAN) && personEKID) {
@@ -199,11 +199,11 @@ class EditCaseInfoForm extends Component<Props, State> {
     const {
       actions,
       match: {
-        params: { subjectId: personEKID }
+        params: { participantId: personEKID }
       },
     } = this.props;
     if (personEKID) {
-      actions.goToRoute(Routes.PARTICIPANT_PROFILE.replace(':subjectId', personEKID));
+      actions.goToRoute(Routes.PARTICIPANT_PROFILE.replace(':participantId', personEKID));
     }
   }
 

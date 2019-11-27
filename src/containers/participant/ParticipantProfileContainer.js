@@ -33,7 +33,7 @@ type Props = {
 const ParticipantProfileContainer = (props :Props) => {
   const {
     match: {
-      params: { subjectId: personEKID }
+      params: { participantId: personEKID }
     },
     participant,
     workAppointmentsByWorksitePlan,

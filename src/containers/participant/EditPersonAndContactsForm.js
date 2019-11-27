@@ -187,7 +187,7 @@ class EditPersonAndContactsForm extends Component<Props, State> {
       email,
       getInfoForEditPersonRequestState,
       match: {
-        params: { subjectId: personEKID }
+        params: { participantId: personEKID }
       },
       participant,
       phone,
@@ -411,7 +411,7 @@ class EditPersonAndContactsForm extends Component<Props, State> {
       participant,
     } = this.props;
     const participantEKID :UUID = getEntityKeyId(participant);
-    actions.goToRoute(Routes.PARTICIPANT_PROFILE.replace(':subjectId', participantEKID));
+    actions.goToRoute(Routes.PARTICIPANT_PROFILE.replace(':participantId', participantEKID));
   }
 
   render() {

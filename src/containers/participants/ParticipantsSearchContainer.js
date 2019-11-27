@@ -262,7 +262,7 @@ class ParticipantsSearchContainer extends Component<Props, State> {
 
   handleOnSelectPerson = (personEKID :string) => {
     const { actions } = this.props;
-    actions.goToRoute(PARTICIPANT_PROFILE.replace(':subjectId', personEKID));
+    actions.goToRoute(PARTICIPANT_PROFILE.replace(':participantId', personEKID));
   }
 
   handleShowAddParticipant = () => {

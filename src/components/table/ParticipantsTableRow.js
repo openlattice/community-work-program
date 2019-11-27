@@ -27,7 +27,7 @@ class ParticipantsTableRow extends Component<Props> {
   goToPersonProfile = () => {
     const { actions, data } = this.props;
     const { id: personEKID } = data;
-    actions.goToRoute(Routes.PARTICIPANT_PROFILE.replace(':subjectId', personEKID));
+    actions.goToRoute(Routes.PARTICIPANT_PROFILE.replace(':participantId', personEKID));
   }
 
   render() {

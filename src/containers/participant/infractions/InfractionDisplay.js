@@ -105,7 +105,7 @@ class InfractionDisplay extends Component<Props, State> {
     const personEKID :UUID = getEntityKeyId(participant);
     const infractionEventEKID :UUID = getEntityKeyId(infraction);
     actions.goToRoute(Routes.PRINT_INFRACTION
-      .replace(':subjectId', personEKID)
+      .replace(':participantId', personEKID)
       .replace(':infractionId', infractionEventEKID));
   }
 

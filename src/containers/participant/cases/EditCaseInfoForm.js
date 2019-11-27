@@ -100,7 +100,7 @@ class EditCaseInfoForm extends Component<Props> {
       actions,
       app,
       match: {
-        params: { subjectId: personEKID }
+        params: { participantId: personEKID }
       },
     } = this.props;
     if (app.get(PEOPLE) && personEKID) {
@@ -113,7 +113,7 @@ class EditCaseInfoForm extends Component<Props> {
       actions,
       app,
       match: {
-        params: { subjectId: personEKID }
+        params: { participantId: personEKID }
       },
     } = this.props;
     if (!prevProps.app.get(PEOPLE) && app.get(PEOPLE) && personEKID) {
@@ -171,11 +171,11 @@ class EditCaseInfoForm extends Component<Props> {
     const {
       actions,
       match: {
-        params: { subjectId: personEKID }
+        params: { participantId: personEKID }
       },
     } = this.props;
     if (personEKID) {
-      actions.goToRoute(Routes.PARTICIPANT_PROFILE.replace(':subjectId', personEKID));
+      actions.goToRoute(Routes.PARTICIPANT_PROFILE.replace(':participantId', personEKID));
     }
   }
 

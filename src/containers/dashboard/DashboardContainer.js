@@ -158,7 +158,7 @@ class DashboardContainer extends Component<Props, State> {
   handleOnSelectPerson = (personEKID :string) => {
     const { actions } = this.props;
     actions.clearAppointmentsAndPlans();
-    actions.goToRoute(PARTICIPANT_PROFILE.replace(':subjectId', personEKID));
+    actions.goToRoute(PARTICIPANT_PROFILE.replace(':participantId', personEKID));
   }
 
   setNewParticipants = (noShows :List) => {
@@ -349,8 +349,8 @@ class DashboardContainer extends Component<Props, State> {
         const personEKID :UUID = getEntityKeyId(person);
         const violationsCount = violationMap.get(personEKID, 0);
         const personHours :Map = hoursWorked.get(personEKID);
-        const workedHours :number = personHours.get(WORKED, undefined);
-        const requiredHours :number = personHours.get(REQUIRED, undefined);
+        const workedHours :number = personHours ? personHours.get(WORKED, undefined) : 0;
+        const requiredHours :number = personHours ? personHours.get(REQUIRED, undefined) : 0;
         const hoursServed :string = getHoursServed(workedHours, requiredHours);
 
         let reportTag :Element<any> | string = '';
