@@ -1,10 +1,9 @@
 // @flow
-import { List, Map, setIn } from 'immutable';
+import { List, setIn } from 'immutable';
 import { DataProcessingUtils } from 'lattice-fabricate';
-import type { FQN } from 'lattice';
 
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
-import { getEntityKeyId, getFirstNeighborValue } from '../../../utils/DataUtils';
+import { getValuesFromEntityList } from '../../../utils/DataUtils';
 
 const { getEntityAddressKey, getPageSectionKey } = DataProcessingUtils;
 const { COURT_CHARGE_LIST, JUDGES } = APP_TYPE_FQNS;
@@ -14,27 +13,6 @@ const {
   LAST_NAME,
   NAME,
 } = PROPERTY_TYPE_FQNS;
-
-const getValuesFromEntityList = (entities :List, propertyList :FQN[]) => {
-
-  const values = [];
-  const labels = [];
-  entities.forEach((entity :Map) => {
-
-    let label :string = '';
-    propertyList.forEach((propertyType) => {
-      const backUpValue = entity.get(propertyType, '');
-      const property = getFirstNeighborValue(entity, propertyType, backUpValue);
-      label = label.concat(' ', property);
-    });
-    const entityEKID :UUID = getEntityKeyId(entity);
-
-    labels.push(label);
-    values.push(entityEKID);
-  });
-
-  return [values, labels];
-};
 
 const hydrateJudgeSchema = (schema :Object, judges :List) => {
   const [values, labels] = getValuesFromEntityList(judges, [FIRST_NAME, LAST_NAME]);
@@ -123,7 +101,6 @@ const disableChargesForm = (uiSchema :Object) :Object => {
 export {
   disableChargesForm,
   disableJudgeForm,
-  getValuesFromEntityList,
   hydrateChargeSchema,
   hydrateJudgeSchema,
 };

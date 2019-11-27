@@ -112,6 +112,27 @@ const findEntityPathInMap = (entityMap :Map, entityEKID :UUID) :any[] => {
   return [keyEKID, index];
 };
 
+const getValuesFromEntityList = (entities :List, propertyList :FQN[]) => {
+
+  const values = [];
+  const labels = [];
+  entities.forEach((entity :Map) => {
+
+    let label :string = '';
+    propertyList.forEach((propertyType) => {
+      const backUpValue = entity.get(propertyType, '');
+      const property = getFirstNeighborValue(entity, propertyType, backUpValue);
+      label = label.concat(' ', property);
+    });
+    const entityEKID :UUID = getEntityKeyId(entity);
+
+    labels.push(label);
+    values.push(entityEKID);
+  });
+
+  return [values, labels];
+};
+
 /* search queries */
 const getSearchTerm = (
   propertyTypeId :UUID,
@@ -151,5 +172,6 @@ export {
   getSearchTerm,
   getSearchTermNotExact,
   getUTCDateRangeSearchString,
+  getValuesFromEntityList,
   sortEntitiesByDateProperty,
 };
