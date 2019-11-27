@@ -2,7 +2,6 @@
 import React, { Component } from 'react';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
-import type { RowData } from 'lattice-ui-kit';
 import type { RequestSequence } from 'redux-reqseq';
 
 import { goToRoute } from '../../core/router/RoutingActions';
@@ -15,7 +14,7 @@ type Props = {
   };
   className ? :string;
   components :Object;
-  data :RowData;
+  data :Object;
   headers :Object[];
 };
 
