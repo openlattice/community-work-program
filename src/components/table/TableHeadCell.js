@@ -7,14 +7,14 @@ import type { Node } from 'react';
 import { TableCell } from './styled/index';
 
 type Props = {
-  cellStyle ? :Object;
+  cellStyle ?:Object;
   children :Node;
-  className ? :string;
-  onClick ? :(e :SyntheticEvent<HTMLElement>) => void;
-  order ? :any;
-  sortable ? :boolean;
-  width ? :string;
-  whiteSpace ? :string;
+  className ?:string;
+  onClick ?:(e :SyntheticEvent<HTMLElement>) => void;
+  order ?:any;
+  sortable ?:boolean;
+  width ?:string;
+  whiteSpace ?:string;
 };
 
 const HeadCell = (props :Props) => {

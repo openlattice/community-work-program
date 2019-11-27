@@ -22,13 +22,13 @@ export const WorksitesRow = styled(StyledTableRow)`
 `;
 
 type Props = {
-  className ? :string;
+  className ?:string;
   components :Object;
-  headers ? :Object[];
-  onSort ? :(event :SyntheticEvent<HTMLElement>, property :string) => void;
-  order ? :any;
-  orderBy ? :string;
-  sticky ? :boolean;
+  headers ?:Object[];
+  onSort ?:(event :SyntheticEvent<HTMLElement>, property :string) => void;
+  order ?:any;
+  orderBy ?:string;
+  sticky ?:boolean;
 };
 
 const WorksitesHeaderRow = (props :Props) => {

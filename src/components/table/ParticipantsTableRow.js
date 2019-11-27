@@ -12,7 +12,7 @@ type Props = {
   actions:{
     goToRoute :GoToRoute;
   };
-  className ? :string;
+  className ?:string;
   components :Object;
   data :Object;
   headers :Object[];
