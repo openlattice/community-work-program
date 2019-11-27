@@ -16,8 +16,9 @@ import LogoLoader from '../../components/LogoLoader';
 import * as Routes from '../../core/router/Routes';
 import { getInfoForAddParticipant } from '../participant/ParticipantActions';
 import { goToRoute } from '../../core/router/RoutingActions';
+import { hydrateSchema } from './utils/AddParticipantFormUtils';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
-import { schema, uiSchema } from './AddParticipantFormSchemas';
+import { schema, uiSchema } from './schemas/AddParticipantFormSchemas';
 import {
   getEntityKeyId,
   getEntityProperties,
@@ -55,6 +56,7 @@ type Props = {
     getInfoForAddParticipant :RequestSequence;
     goToRoute :RequestSequence;
   };
+  app :Map;
   charges :List;
   getInfoRequestState :RequestState;
   initializeAppRequestState :RequestState;
@@ -63,6 +65,7 @@ type Props = {
 
 type State = {
   formData :Object;
+  formSchema :Object;
 };
 
 class AddParticipantForm extends Component<Props, State> {
@@ -71,13 +74,27 @@ class AddParticipantForm extends Component<Props, State> {
     super(props);
 
     this.state = {
-      formData: {}
+      formData: {},
+      formSchema: schema,
     };
   }
 
   componentDidMount() {
-    const { actions } = this.props;
-    actions.getInfoForAddParticipant();
+    const { actions, app } = this.props;
+    if (app.get(APP_TYPE_FQNS.JUDGES)) {
+      actions.getInfoForAddParticipant();
+    }
+  }
+
+  componentDidUpdate(prevProps :Props) {
+    const { actions, app } = this.props;
+    if (!prevProps.app.get(APP_TYPE_FQNS.JUDGES) && app.get(APP_TYPE_FQNS.JUDGES)) {
+      actions.getInfoForAddParticipant();
+    }
+  }
+
+  prepopulateFormData = () => {
+    
   }
 
   handleOnClickBackButton = () => {
