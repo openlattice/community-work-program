@@ -56,6 +56,7 @@ import {
   WORKSITES,
   WORKSITE_PLANS,
 } from '../../utils/constants/ReduxStateConsts';
+import type { GoToRoute } from '../../core/router/RoutingActions';
 
 const {
   CHECK_IN_DATETIME,
@@ -205,7 +206,7 @@ type Props = {
   actions:{
     getAllParticipantInfo :RequestSequence;
     getEnrollmentFromDiversionPlan :RequestSequence;
-    goToRoute :RequestSequence;
+    goToRoute :GoToRoute;
   };
   address :Map;
   allDiversionPlans :List;

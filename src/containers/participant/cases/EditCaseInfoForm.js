@@ -15,6 +15,7 @@ import EditChargesForm from './EditChargesForm';
 import EditRequiredHoursForm from './EditRequiredHoursForm';
 import LogoLoader from '../../../components/LogoLoader';
 
+import * as Routes from '../../../core/router/Routes';
 import { getInfoForEditCase } from '../ParticipantActions';
 import { goToRoute } from '../../../core/router/RoutingActions';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
@@ -26,7 +27,7 @@ import {
 import { BackNavButton } from '../../../components/controls/index';
 import { PARTICIPANT_PROFILE_WIDTH } from '../../../core/style/Sizes';
 import { APP, PERSON, STATE } from '../../../utils/constants/ReduxStateConsts';
-import * as Routes from '../../../core/router/Routes';
+import type { GoToRoute } from '../../../core/router/RoutingActions';
 
 const {
   APPEARS_IN,
@@ -76,7 +77,7 @@ const ButtonWrapper = styled.div`
 type Props = {
   actions:{
     getInfoForEditCase :RequestSequence;
-    goToRoute :RequestSequence;
+    goToRoute :GoToRoute;
   },
   app :Map;
   charges :List;

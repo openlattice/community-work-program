@@ -13,6 +13,7 @@ import type { Match } from 'react-router';
 
 import LogoLoader from '../../components/LogoLoader';
 
+import * as Routes from '../../core/router/Routes';
 import {
   editEnrollmentDates,
   getEnrollmentStatus,
@@ -32,7 +33,7 @@ import {
 import { BackNavButton } from '../../components/controls/index';
 import { PARTICIPANT_PROFILE_WIDTH } from '../../core/style/Sizes';
 import { APP, PERSON, STATE } from '../../utils/constants/ReduxStateConsts';
-import * as Routes from '../../core/router/Routes';
+import type { GoToRoute } from '../../core/router/RoutingActions';
 
 const { getEntityAddressKey, getPageSectionKey } = DataProcessingUtils;
 
@@ -68,7 +69,7 @@ type Props = {
   actions:{
     editEnrollmentDates :RequestSequence;
     getEnrollmentStatus :RequestSequence;
-    goToRoute :RequestSequence;
+    goToRoute :GoToRoute;
   },
   app :Map;
   diversionPlan :Map;

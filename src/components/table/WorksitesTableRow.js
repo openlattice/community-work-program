@@ -4,12 +4,12 @@ import styled from 'styled-components';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import type { RowData } from 'lattice-ui-kit';
-import type { RequestSequence } from 'redux-reqseq';
 
 import { goToRoute } from '../../core/router/RoutingActions';
 import * as Routes from '../../core/router/Routes';
 import { WorksitesRow } from './WorksitesHeaderRow';
 import { OL } from '../../core/style/Colors';
+import type { GoToRoute } from '../../core/router/RoutingActions';
 
 export const TableRow = styled(WorksitesRow)`
   border-bottom: 1px solid ${OL.GREY05};
@@ -21,7 +21,7 @@ export const TableRow = styled(WorksitesRow)`
 
 type Props = {
   actions:{
-    goToRoute :RequestSequence;
+    goToRoute :GoToRoute;
   };
   className ? :string;
   components :Object;

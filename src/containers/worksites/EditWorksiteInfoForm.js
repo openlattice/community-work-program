@@ -14,6 +14,7 @@ import EditContactsForm from './EditContactsForm';
 import EditWorksiteAddressForm from './EditWorksiteAddressForm';
 import LogoLoader from '../../components/LogoLoader';
 
+import * as Routes from '../../core/router/Routes';
 import { getWorksite } from './WorksitesActions';
 import { goToRoute } from '../../core/router/RoutingActions';
 import { BackNavButton } from '../../components/controls/index';
@@ -24,7 +25,7 @@ import {
 } from '../../utils/DataUtils';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { APP, STATE, WORKSITES } from '../../utils/constants/ReduxStateConsts';
-import * as Routes from '../../core/router/Routes';
+import type { GoToRoute } from '../../core/router/RoutingActions';
 
 const {
   ADDRESS,
@@ -73,7 +74,7 @@ const ButtonWrapper = styled.div`
 type Props = {
   actions:{
     getWorksite :RequestSequence;
-    goToRoute :RequestSequence;
+    goToRoute :GoToRoute;
   },
   app :Map;
   edm :Map;

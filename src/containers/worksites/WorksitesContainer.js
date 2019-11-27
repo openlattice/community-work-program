@@ -14,7 +14,6 @@ import AddOrganizationModal from '../organizations/AddOrganizationModal';
 import LogoLoader from '../../components/LogoLoader';
 
 import { getOrganizations, getWorksitesByOrg, getWorksitePlans } from './WorksitesActions';
-import { goToRoute } from '../../core/router/RoutingActions';
 import { ContainerHeader, ContainerInnerWrapper, ContainerOuterWrapper } from '../../components/Layout';
 import { ToolBar } from '../../components/controls/index';
 import { isDefined } from '../../utils/LangUtils';
@@ -80,7 +79,6 @@ type Props = {
     getOrganizations :RequestSequence;
     getWorksitesByOrg :RequestSequence;
     getWorksitePlans :RequestSequence;
-    goToRoute :RequestSequence;
   },
   app :Map;
   getOrganizationsRequestState :RequestState;
@@ -318,7 +316,6 @@ const mapDispatchToProps = (dispatch) => ({
     getOrganizations,
     getWorksitesByOrg,
     getWorksitePlans,
-    goToRoute,
   }, dispatch)
 });
 

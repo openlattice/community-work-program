@@ -45,6 +45,7 @@ import {
 import { APP, PEOPLE, STATE } from '../../utils/constants/ReduxStateConsts';
 import { ENROLLMENT_STATUSES, HOURS_CONSTS, INFRACTIONS_CONSTS } from '../../core/edm/constants/DataModelConsts';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import type { GoToRoute } from '../../core/router/RoutingActions';
 
 const {
   COURT_TYPE_BY_PARTICIPANT,
@@ -93,7 +94,7 @@ type Props = {
   actions:{
     clearAppointmentsAndPlans :RequestSequence;
     getDiversionPlans :RequestSequence;
-    goToRoute :RequestSequence;
+    goToRoute :GoToRoute;
   };
   app :Map;
   courtTypeByParticipant :Map;

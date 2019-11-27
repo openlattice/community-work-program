@@ -2,15 +2,15 @@
 import React, { Component } from 'react';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
-import type { RequestSequence } from 'redux-reqseq';
 
-import { goToRoute } from '../../core/router/RoutingActions';
 import * as Routes from '../../core/router/Routes';
+import { goToRoute } from '../../core/router/RoutingActions';
 import { StyledTableRow } from './styled/index';
+import type { GoToRoute } from '../../core/router/RoutingActions';
 
 type Props = {
   actions:{
-    goToRoute :RequestSequence;
+    goToRoute :GoToRoute;
   };
   className ? :string;
   components :Object;

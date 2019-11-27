@@ -10,13 +10,13 @@ import {
 } from 'lattice-ui-kit';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
-import type { RequestSequence } from 'redux-reqseq';
 
 import AddWorksiteModal from './AddWorksiteModal';
 import WorksitesHeaderRow from '../../components/table/WorksitesHeaderRow';
 import TableHeadCell from '../../components/table/TableHeadCell';
 import WorksitesTableRow from '../../components/table/WorksitesTableRow';
 
+import * as Routes from '../../core/router/Routes';
 import { goToRoute } from '../../core/router/RoutingActions';
 import { CustomTable, TableCell } from '../../components/table/styled/index';
 import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
@@ -26,7 +26,7 @@ import { isDefined } from '../../utils/LangUtils';
 import { WORKSITE_INFO_CONSTS } from './WorksitesConstants';
 import { PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { OL } from '../../core/style/Colors';
-import * as Routes from '../../core/router/Routes';
+import type { GoToRoute } from '../../core/router/RoutingActions';
 
 const {
   DATETIME_END,
@@ -97,7 +97,7 @@ const WorksitesCell = styled(TableCell)`
 
 type Props = {
   actions:{
-    goToRoute :RequestSequence;
+    goToRoute :GoToRoute;
   };
   organization :Map;
   worksiteCount :string;

@@ -45,6 +45,7 @@ import {
 } from './DashboardConstants';
 import { EMPTY_FIELD } from '../participants/ParticipantsConstants';
 import { OL } from '../../core/style/Colors';
+import type { GoToRoute } from '../../core/router/RoutingActions';
 
 /* constants */
 const { DATETIME_RECEIVED, STATUS } = PROPERTY_TYPE_FQNS;
@@ -96,7 +97,7 @@ type Props = {
   actions:{
     clearAppointmentsAndPlans :RequestSequence;
     getDiversionPlans :RequestSequence;
-    goToRoute :RequestSequence;
+    goToRoute :GoToRoute;
   };
   app :Map;
   currentDiversionPlansByParticipant :Map;
