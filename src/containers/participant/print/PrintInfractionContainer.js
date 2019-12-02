@@ -30,6 +30,7 @@ import {
   PERSON_INFRACTIONS,
   STATE
 } from '../../../utils/constants/ReduxStateConsts';
+import { APP_CONTENT_WIDTH } from '../../../core/style/Sizes';
 
 const { PEOPLE } = APP_TYPE_FQNS;
 const {
@@ -68,7 +69,8 @@ const PenningtonSherrifsHeader = styled.img.attrs({
 const TextWrapper = styled.div`
   display: flex;
   margin-bottom: 20px;
-  width: 100%;
+  max-width: ${APP_CONTENT_WIDTH}px;
+  overflow-wrap: break-word;
 `;
 
 const RowWrapper = styled.div`
