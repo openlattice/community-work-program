@@ -42,9 +42,10 @@ import { OL } from '../../core/style/Colors';
 import { PARTICIPANT_PROFILE_WIDTH } from '../../core/style/Sizes';
 import * as Routes from '../../core/router/Routes';
 import { BackNavButton } from '../../components/controls/index';
-import { generateDiversionPlanOptions, generateEnrollmentHeaders } from './utils/ParticipantProfileUtils';
+import { generateDiversionPlanOptions } from './utils/ParticipantProfileUtils';
 import { getEntityKeyId, getEntityProperties, sortEntitiesByDateProperty } from '../../utils/DataUtils';
 import { isDefined } from '../../utils/LangUtils';
+import { generateTableHeaders } from '../../utils/FormattingUtils';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { ENROLLMENT_STATUSES } from '../../core/edm/constants/DataModelConsts';
 import {
@@ -55,6 +56,7 @@ import {
   WORKSITES,
   WORKSITE_PLANS,
 } from '../../utils/constants/ReduxStateConsts';
+import type { GoToRoute } from '../../core/router/RoutingActions';
 
 const {
   CHECK_IN_DATETIME,
@@ -104,6 +106,8 @@ const {
 const ENROLLMENT_STATUSES_EXCLUDING_PREENROLLMENT = Object.values(ENROLLMENT_STATUSES)
   .filter((status) => status !== ENROLLMENT_STATUSES.AWAITING_CHECKIN
     && status !== ENROLLMENT_STATUSES.AWAITING_ORIENTATION);
+
+export const enrollmentHeaderNames = ['STATUS', 'SENTENCE', 'ORIENTATION', 'COMPLETION', 'HOURS'];
 
 /* Constants for Modals */
 const NEW_ENROLLMENT = 'showNewEnrollmentModal';
@@ -202,7 +206,7 @@ type Props = {
   actions:{
     getAllParticipantInfo :RequestSequence;
     getEnrollmentFromDiversionPlan :RequestSequence;
-    goToRoute :RequestSequence;
+    goToRoute :GoToRoute;
   };
   address :Map;
   allDiversionPlans :List;
@@ -343,22 +347,22 @@ class ParticipantProfile extends Component<Props, State> {
 
   goToPrintSchedule = () => {
     const { actions, personEKID } = this.props;
-    actions.goToRoute(Routes.PRINT_PARTICIPANT_SCHEDULE.replace(':subjectId', personEKID));
+    actions.goToRoute(Routes.PRINT_PARTICIPANT_SCHEDULE.replace(':participantId', personEKID));
   }
 
   editParticipant = () => {
     const { actions, personEKID } = this.props;
-    actions.goToRoute(Routes.EDIT_PARTICIPANT.replace(':subjectId', personEKID));
+    actions.goToRoute(Routes.EDIT_PARTICIPANT.replace(':participantId', personEKID));
   }
 
   editCaseInfo = () => {
     const { actions, personEKID } = this.props;
-    actions.goToRoute(Routes.EDIT_CASE_INFO.replace(':subjectId', personEKID));
+    actions.goToRoute(Routes.EDIT_CASE_INFO.replace(':participantId', personEKID));
   }
 
   editEnrollmentDates = () => {
     const { actions, personEKID } = this.props;
-    actions.goToRoute(Routes.EDIT_DATES.replace(':subjectId', personEKID));
+    actions.goToRoute(Routes.EDIT_DATES.replace(':participantId', personEKID));
   }
 
   selectDiversionPlan = (option :Object) => {
@@ -437,7 +441,7 @@ class ParticipantProfile extends Component<Props, State> {
       REQUIRED_HOURS,
     ]);
     const diversionPlanOptions :Object[] = generateDiversionPlanOptions(allDiversionPlans);
-    const enrollmentHeaders :Object[] = generateEnrollmentHeaders();
+    const enrollmentHeaders :Object[] = generateTableHeaders(enrollmentHeaderNames);
     const enrollmentData :Object[] = enrollmentHistoryData.toJS();
 
     return (

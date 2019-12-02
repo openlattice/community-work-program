@@ -1,72 +1,78 @@
-/*
- * @flow
- */
-
-import React from 'react';
+// @flow
+import React, { Component } from 'react';
 import styled from 'styled-components';
-import { Map } from 'immutable';
+import { bindActionCreators } from 'redux';
+import { connect } from 'react-redux';
+import type { RowData } from 'lattice-ui-kit';
 
-import { Cell, Row } from './TableStyledComponents';
-import { formatImmutableValue } from '../../utils/FormattingUtils';
-import { formatAsDate } from '../../utils/DateTimeUtils';
-import { getEntityProperties } from '../../utils/DataUtils';
-import { PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
-import { WORKSITE_INFO_CONSTS } from '../../containers/worksites/WorksitesConstants';
+import { goToRoute } from '../../core/router/RoutingActions';
+import * as Routes from '../../core/router/Routes';
+import { WorksitesRow } from './WorksitesHeaderRow';
+import { OL } from '../../core/style/Colors';
+import type { GoToRoute } from '../../core/router/RoutingActions';
 
-const { DATETIME_END, DATETIME_START, NAME } = PROPERTY_TYPE_FQNS;
-const { PAST, SCHEDULED, TOTAL_HOURS } = WORKSITE_INFO_CONSTS;
+export const TableRow = styled(WorksitesRow)`
+  border-bottom: 1px solid ${OL.GREY05};
 
-type Props = {
-  worksite :Map,
-  worksiteInfo :Map;
-  selectWorksite ? :(selectedWorksite :Map) => void;
-  small ? :boolean,
-};
-
-const WorksitesCell = styled(Cell)`
-  padding: 12px 30px 12px 0;
+  :last-of-type {
+    border-bottom: none;
+  }
 `;
 
-const TableRow = ({
-  worksite,
-  worksiteInfo,
-  selectWorksite,
-  small
-} :Props) => {
-
-  const {
-    [DATETIME_END]: endDateTime,
-    [DATETIME_START]: startDateTime,
-    [NAME]: worksiteName
-  } = getEntityProperties(worksite, [DATETIME_END, DATETIME_START, NAME]);
-
-  const startDate = formatAsDate(startDateTime);
-  const status = (startDateTime && !endDateTime) ? 'Active' : 'Inactive';
-  const scheduledParticipantCount = formatImmutableValue(worksiteInfo, SCHEDULED, 0);
-  const pastParticipantCount = formatImmutableValue(worksiteInfo, PAST, 0);
-  const totalHours = formatImmutableValue(worksiteInfo, TOTAL_HOURS, 0);
-
-  return (
-    <Row
-        onClick={() => {
-          if (selectWorksite) {
-            selectWorksite(worksite);
-          }
-        }}>
-      <WorksitesCell small={small} />
-      <WorksitesCell small={small}>{ worksiteName }</WorksitesCell>
-      <WorksitesCell small={small} status={status}>{ status }</WorksitesCell>
-      <WorksitesCell small={small}>{ startDate }</WorksitesCell>
-      <WorksitesCell small={small}>{ scheduledParticipantCount }</WorksitesCell>
-      <WorksitesCell small={small}>{ pastParticipantCount }</WorksitesCell>
-      <WorksitesCell small={small}>{ totalHours }</WorksitesCell>
-    </Row>
-  );
+type Props = {
+  actions:{
+    goToRoute :GoToRoute;
+  };
+  className ?:string;
+  components :Object;
+  data :RowData;
+  headers :Object[];
 };
 
-TableRow.defaultProps = {
-  selectWorksite: () => {},
-  small: false,
-};
+class WorksitesTableRow extends Component<Props> {
 
-export default TableRow;
+  static defaultProps = {
+    className: undefined
+  }
+
+  goToWorksiteProfile = () => {
+    const { actions, data } = this.props;
+    const { id: worksiteEKID } = data;
+    actions.goToRoute(Routes.WORKSITE_PROFILE.replace(':worksiteId', worksiteEKID));
+  }
+
+  render() {
+    const {
+      className,
+      components,
+      data,
+      headers,
+    } = this.props;
+
+    const { id } = data;
+
+    const cells = headers
+      .map((header) => (
+        <components.Cell
+            key={`${id}_cell_${header.key}`}
+            status={data[header.key]}>
+          {data[header.key]}
+        </components.Cell>
+      ));
+
+    return (
+      <TableRow className={className} onClick={this.goToWorksiteProfile}>
+        {cells}
+      </TableRow>
+    );
+  }
+}
+
+const mapDispatchToProps = (dispatch) => ({
+  actions: bindActionCreators({
+    goToRoute,
+  }, dispatch)
+});
+
+// $FlowFixMe
+export default connect(null, mapDispatchToProps)(WorksitesTableRow);

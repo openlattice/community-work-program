@@ -134,7 +134,7 @@ import {
 import { isDefined } from '../../utils/LangUtils';
 import { formatAsDate } from '../../utils/DateTimeUtils';
 import { getCombinedDateTime } from '../../utils/ScheduleUtils';
-import { enrollmentHeaderNames } from './utils/ParticipantProfileUtils';
+import { enrollmentHeaderNames } from './ParticipantProfile';
 import { EMPTY_FIELD } from '../participants/ParticipantsConstants';
 import { PERSON, STATE } from '../../utils/constants/ReduxStateConsts';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';

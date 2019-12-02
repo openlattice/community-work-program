@@ -10,6 +10,9 @@ declare type RoutingAction = {
   state ? :Object;
 };
 
+declare type GoToRoot = () => RoutingAction;
+declare type GoToRoute = (route :string, state ?:Object) => RoutingAction;
+
 const GO_TO_ROOT :'GO_TO_ROOT' = 'GO_TO_ROOT';
 function goToRoot() :RoutingAction {
   return {
@@ -47,5 +50,7 @@ export {
 };
 
 export type {
+  GoToRoot,
+  GoToRoute,
   RoutingAction,
 };

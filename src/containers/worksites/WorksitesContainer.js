@@ -1,5 +1,6 @@
 // @flow
 import React, { Component } from 'react';
+import styled from 'styled-components';
 import { List, Map } from 'immutable';
 import { CardStack } from 'lattice-ui-kit';
 import { withRouter } from 'react-router-dom';
@@ -12,15 +13,8 @@ import WorksitesByOrgCard from './WorksitesByOrgCard';
 import AddOrganizationModal from '../organizations/AddOrganizationModal';
 import LogoLoader from '../../components/LogoLoader';
 
-import { goToRoute } from '../../core/router/RoutingActions';
-import {
-  ContainerOuterWrapper,
-  ContainerInnerWrapper,
-  HeaderWrapper,
-  ContainerHeader,
-  ContainerSubHeader,
-  Separator,
-} from '../../components/Layout';
+import { getOrganizations, getWorksitesByOrg, getWorksitePlans } from './WorksitesActions';
+import { ContainerHeader, ContainerInnerWrapper, ContainerOuterWrapper } from '../../components/Layout';
 import { ToolBar } from '../../components/controls/index';
 import { isDefined } from '../../utils/LangUtils';
 import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
@@ -30,17 +24,9 @@ import {
   statusFilterDropdown,
   WORKSITE_STATUSES
 } from './WorksitesConstants';
-import {
-  APP,
-  STATE,
-  WORKSITES
-} from '../../utils/constants/ReduxStateConsts';
+import { APP, STATE, WORKSITES } from '../../utils/constants/ReduxStateConsts';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
-import {
-  getOrganizations,
-  getWorksitesByOrg,
-  getWorksitePlans,
-} from './WorksitesActions';
+import { OL } from '../../core/style/Colors';
 
 const { ORGANIZATION } = APP_TYPE_FQNS;
 const { ORGANIZATION_NAME } = PROPERTY_TYPE_FQNS;
@@ -58,15 +44,41 @@ const dropdowns :List = List().withMutations((list :List) => {
   list.set(0, statusFilterDropdown);
 });
 const defaultFilterOption :Map = statusFilterDropdown.get('enums')
-  .find(obj => obj.value.toUpperCase() === ALL);
+  .find((obj :Object) => obj.value.toUpperCase() === ALL);
 
+
+const HeaderWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  margin-bottom: 20px;
+`;
+
+const SubHeaderWrapper = styled.div`
+  align-items: center;
+  display: flex;
+  margin-top: 10px;
+`;
+
+const ContainerSubHeader = styled(ContainerHeader)`
+  color: ${OL.GREY02};
+  font-size: 14px;
+`;
+
+const Separator = styled.div`
+  align-items: center;
+  color: ${OL.GREY02};
+  display: flex;
+  font-weight: 600;
+  justify-content: center;
+  margin: 0 10px;
+`;
 
 type Props = {
   actions:{
     getOrganizations :RequestSequence;
     getWorksitesByOrg :RequestSequence;
     getWorksitePlans :RequestSequence;
-    goToRoute :RequestSequence;
   },
   app :Map;
   getOrganizationsRequestState :RequestState;
@@ -216,7 +228,6 @@ class WorksitesContainer extends Component<Props, State> {
     const {
       getOrganizationsRequestState,
       initializeAppRequestState,
-      organizationStatuses,
       worksitesByOrg,
       worksitesInfo,
     } = this.props;
@@ -254,26 +265,22 @@ class WorksitesContainer extends Component<Props, State> {
         <ContainerInnerWrapper>
           <HeaderWrapper>
             <ContainerHeader>Work Sites</ContainerHeader>
-            <ContainerSubHeader>{ orgSubHeader }</ContainerSubHeader>
-            <Separator>•</Separator>
-            <ContainerSubHeader>{ worksiteSubHeader }</ContainerSubHeader>
+            <SubHeaderWrapper>
+              <ContainerSubHeader>{ orgSubHeader }</ContainerSubHeader>
+              <Separator>•</Separator>
+              <ContainerSubHeader>{ worksiteSubHeader }</ContainerSubHeader>
+            </SubHeaderWrapper>
           </HeaderWrapper>
           <CardStack>
             {
               organizationsToRender.map((org :Map) => {
                 const orgEKID :UUID = getEntityKeyId(org);
                 const orgWorksites = worksitesByOrg.get(orgEKID);
-                let orgWorksiteCount :string = '0 Work Sites';
-                if (orgWorksites) {
-                  const count = orgWorksites.count();
-                  if (count === 1) orgWorksiteCount = '1 Work Site';
-                  if (count > 1) orgWorksiteCount = `${orgWorksites.count()} Work Sites`;
-                }
+                const orgWorksiteCount :number = orgWorksites.count();
                 return (
                   <WorksitesByOrgCard
                       key={orgEKID}
                       organization={org}
-                      orgStatus={organizationStatuses.get(orgEKID)}
                       worksiteCount={orgWorksiteCount}
                       worksites={orgWorksites}
                       worksitesInfo={worksitesInfo} />
@@ -304,12 +311,11 @@ const mapStateToProps = (state :Map<*, *>) => {
   };
 };
 
-const mapDispatchToProps = dispatch => ({
+const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
     getOrganizations,
     getWorksitesByOrg,
     getWorksitePlans,
-    goToRoute,
   }, dispatch)
 });
 

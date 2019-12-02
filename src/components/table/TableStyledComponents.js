@@ -2,9 +2,9 @@
 import styled from 'styled-components';
 import { StyleUtils } from 'lattice-ui-kit';
 
+import { ENROLLMENT_STATUSES } from '../../core/edm/constants/DataModelConsts';
 import { ENROLLMENT_STATUS_COLORS, OL } from '../../core/style/Colors';
 import { PersonPhoto } from '../picture/PersonPicture';
-import { ENROLLMENT_STATUSES } from '../../core/edm/constants/DataModelConsts';
 
 const { getStyleVariation } = StyleUtils;
 

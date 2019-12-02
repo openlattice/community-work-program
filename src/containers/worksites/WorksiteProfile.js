@@ -1,12 +1,7 @@
 // @flow
 import React, { Component } from 'react';
 import styled from 'styled-components';
-import {
-  List,
-  Map,
-  OrderedMap,
-  fromJS,
-} from 'immutable';
+import { Map, OrderedMap } from 'immutable';
 import {
   Card,
   CardSegment,
@@ -23,6 +18,7 @@ import type { Match } from 'react-router';
 
 import LogoLoader from '../../components/LogoLoader';
 
+import * as Routes from '../../core/router/Routes';
 import { getWorksite } from './WorksitesActions';
 import { goToRoute } from '../../core/router/RoutingActions';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
@@ -38,7 +34,7 @@ import {
 } from '../../components/Layout';
 import { BackNavButton } from '../../components/controls/index';
 import { EMPTY_FIELD } from '../participants/ParticipantsConstants';
-import * as Routes from '../../core/router/Routes';
+import type { GoToRoute } from '../../core/router/RoutingActions';
 
 const { STAFF } = APP_TYPE_FQNS;
 const {
@@ -101,7 +97,7 @@ const ContactLabelsRow = styled.div`
 type Props = {
   actions:{
     getWorksite :RequestSequence;
-    goToRoute :RequestSequence;
+    goToRoute :GoToRoute;
   },
   app :Map;
   getWorksiteRequestState :RequestState;
