@@ -16,6 +16,7 @@ const generateOptions = (list :string[]) :Object[] => list.map(value => ({
 export const EMPTY_FIELD = '----';
 
 export const ALL_PARTICIPANTS_COLUMNS = [
+  '',
   'NAME',
   'AGE',
   'SENT. DATE',

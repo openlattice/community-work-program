@@ -46,41 +46,13 @@ export const ButtonsWrapper = styled.div`
   display: flex;
 `;
 
-/* Component Headers */
-
-export const HeaderWrapper = styled.div`
-  display: flex;
-  justify-content: flex-start;
-  margin-bottom: 15px;
-`;
-
-export const HeaderWrapperWithButtons = styled(HeaderWrapper)`
-  margin-top: 15px;
-  justify-content: space-between;
-  align-items: center;
-`;
-
 export const ContainerHeader = styled.span`
-  margin: 0 25px 0 0;
+  color: ${OL.BLACK};
   font-size: 26px;
   font-weight: 600;
-  color: ${OL.BLACK};
 `;
 
-export const ContainerSubHeader = styled(ContainerHeader)`
-  color: ${OL.GREY02};
-  font-size: 24px;
-  margin: 0;
-`;
-
-export const Separator = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  color: ${OL.GREY02};
-  font-weight: 600;
-  margin: 0 10px 0 10px;
-`;
+/* Component Headers */
 
 export const SubtitleWrapper = styled.span`
   display: flex;
@@ -90,11 +62,6 @@ export const Subtitle = styled.span`
   font-size: 14px;
   font-weight: 600;
   color: ${OL.GREY02};
-`;
-
-export const SmallSeparator = styled(Separator)`
-  margin: 0 5px;
-  font-weight: 300;
 `;
 
 export const Status = styled(Subtitle)`
