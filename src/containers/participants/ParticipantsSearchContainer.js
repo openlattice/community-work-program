@@ -1,17 +1,28 @@
 // @flow
 import React, { Component } from 'react';
 import styled from 'styled-components';
+import toString from 'lodash/toString';
+import { Badge } from 'lattice-ui-kit';
 import { List, Map } from 'immutable';
-import { DateTime } from 'luxon';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { RequestStates } from 'redux-reqseq';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
-import ParticipantsTable from '../../components/table/ParticipantsTable';
 import AddParticipantModal from './AddParticipantModal';
 import LogoLoader from '../../components/LogoLoader';
+import NoParticipantsFound from '../dashboard/NoParticipantsFound';
+import ParticipantsTableRow from '../../components/table/ParticipantsTableRow';
+import TableHeaderRow from '../../components/table/TableHeaderRow';
+import TableHeadCell from '../../components/table/TableHeadCell';
 
+import {
+  TableCell,
+  CustomTable,
+  TableCard,
+  TableHeader,
+  TableName,
+} from '../../components/table/styled/index';
 import { ToolBar } from '../../components/controls/index';
 import { getDiversionPlans } from './ParticipantsActions';
 import { goToRoute } from '../../core/router/RoutingActions';
@@ -20,20 +31,22 @@ import { ADD_PARTICIPANT, PARTICIPANT_PROFILE } from '../../core/router/Routes';
 import { SEARCH_CONTAINER_WIDTH } from '../../core/style/Sizes';
 import { isDefined } from '../../utils/LangUtils';
 import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
+import { calculateAge, formatAsDate } from '../../utils/DateTimeUtils';
+import { getHoursServed, getPersonFullName, getPersonPictureForTable } from '../../utils/PeopleUtils';
+import { getSentenceEndDate } from '../../utils/ScheduleUtils';
+import { generateTableHeaders } from '../../utils/FormattingUtils';
 import {
   ALL,
   ALL_PARTICIPANTS_COLUMNS,
+  EMPTY_FIELD,
   FILTERS,
-  SORTABLE_PARTICIPANT_COLUMNS,
   statusFilterDropdown,
 } from './ParticipantsConstants';
 import { APP, PEOPLE, STATE } from '../../utils/constants/ReduxStateConsts';
-import { ENROLLMENT_STATUSES, INFRACTIONS_CONSTS } from '../../core/edm/constants/DataModelConsts';
+import { ENROLLMENT_STATUSES, HOURS_CONSTS, INFRACTIONS_CONSTS } from '../../core/edm/constants/DataModelConsts';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import type { GoToRoute } from '../../core/router/RoutingActions';
 
-/*
- * constants
- */
 const {
   COURT_TYPE_BY_PARTICIPANT,
   CURRENT_DIVERSION_PLANS_BY_PARTICIPANT,
@@ -43,12 +56,15 @@ const {
   PARTICIPANTS,
 } = PEOPLE;
 const {
+  DATETIME_END,
   DATETIME_RECEIVED,
+  DOB,
   FIRST_NAME,
   LAST_NAME,
   STATUS,
 } = PROPERTY_TYPE_FQNS;
 const { VIOLATION, WARNING } = INFRACTIONS_CONSTS;
+const { REQUIRED, WORKED } = HOURS_CONSTS;
 
 const dropdowns :List = List().withMutations((list :List) => {
   list.set(0, statusFilterDropdown);
@@ -56,36 +72,29 @@ const dropdowns :List = List().withMutations((list :List) => {
 const defaultFilterOption :Map = statusFilterDropdown.get('enums')
   .find((obj) => obj.value.toUpperCase() === ALL);
 
-/*
- * styled components
- */
 
 const ParticipantSearchOuterWrapper = styled.div`
   display: flex;
-  justify-content: center;
   flex-direction: column;
+  justify-content: center;
 `;
 
 const ParticipantSearchInnerWrapper = styled.div`
-  display: flex;
-  justify-content: center;
   align-items: center;
-  flex-direction: column;
-  margin-top: 30px;
-  min-width: ${SEARCH_CONTAINER_WIDTH}px;
-  position: relative;
   align-self: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  margin-top: 30px;
+  position: relative;
+  width: ${SEARCH_CONTAINER_WIDTH}px;
 `;
-
-/*
- * Props
- */
 
 type Props = {
   actions:{
     clearAppointmentsAndPlans :RequestSequence;
     getDiversionPlans :RequestSequence;
-    goToRoute :RequestSequence;
+    goToRoute :GoToRoute;
   };
   app :Map;
   courtTypeByParticipant :Map;
@@ -102,12 +111,7 @@ type State = {
   showAddParticipant :boolean;
   peopleToRender :List;
   selectedFilterOption :Map;
-  selectedSortOption :Map;
 };
-
-/*
- * React component
- */
 
 class ParticipantsSearchContainer extends Component<Props, State> {
 
@@ -118,13 +122,12 @@ class ParticipantsSearchContainer extends Component<Props, State> {
       showAddParticipant: false,
       peopleToRender: props.participants,
       selectedFilterOption: defaultFilterOption,
-      selectedSortOption: SORTABLE_PARTICIPANT_COLUMNS.STATUS,
     };
   }
 
   componentDidMount() {
     const { actions, app } = this.props;
-    this.handleOnSort(SORTABLE_PARTICIPANT_COLUMNS.STATUS.toUpperCase());
+    this.sortParticipantsByStatus();
     if (app.get(APP_TYPE_FQNS.PEOPLE)) {
       actions.getDiversionPlans();
     }
@@ -136,7 +139,7 @@ class ParticipantsSearchContainer extends Component<Props, State> {
       actions.getDiversionPlans();
     }
     if (prevProps.participants.count() !== participants.count()) {
-      this.handleOnSort(SORTABLE_PARTICIPANT_COLUMNS.STATUS.toUpperCase());
+      this.sortParticipantsByStatus();
     }
   }
 
@@ -168,36 +171,98 @@ class ParticipantsSearchContainer extends Component<Props, State> {
     return filteredPeople;
   }
 
-  handleOnSelectPerson = (personEKID :string) => {
-    const { actions } = this.props;
-    actions.clearAppointmentsAndPlans();
-    actions.goToRoute(PARTICIPANT_PROFILE.replace(':subjectId', personEKID));
+  sortParticipantsByStatus = () => {
+    const { enrollmentByParticipant, participants } = this.props;
+
+    const sortedByStatus :List = participants.sort((personA, personB) => {
+      const personAEKID :UUID = getEntityKeyId(personA);
+      const personBEKID :UUID = getEntityKeyId(personB);
+      let { [STATUS]: personAStatus } = getEntityProperties(
+        enrollmentByParticipant.get(personAEKID), [STATUS]
+      );
+      let { [STATUS]: personBStatus } = getEntityProperties(
+        enrollmentByParticipant.get(personBEKID), [STATUS]
+      );
+      personAStatus = !isDefined(personAStatus) ? ENROLLMENT_STATUSES.AWAITING_CHECKIN : personAStatus;
+      personBStatus = !isDefined(personBStatus) ? ENROLLMENT_STATUSES.AWAITING_CHECKIN : personBStatus;
+      return personAStatus.localeCompare(personBStatus, undefined, { sensitivity: 'base' });
+    });
+
+    this.setState({ peopleToRender: sortedByStatus });
   }
 
-  handleOnSort = (clickedColumnHeader :Map, selectEvent :Object, peopleToSort :List) => {
+  searchParticipantList = (input :string) => {
     const { participants } = this.props;
-    const column = clickedColumnHeader.toLowerCase();
-    const peopleList :List = isDefined(peopleToSort) ? peopleToSort : participants;
-    let sortedPeople :List = List();
+    const { selectedFilterOption } = this.state;
 
-    if (column === SORTABLE_PARTICIPANT_COLUMNS.NAME) {
-      sortedPeople = this.sortByName(peopleList);
-    }
-    if (column === SORTABLE_PARTICIPANT_COLUMNS.SENT_END_DATE) {
-      sortedPeople = this.sortBySentenceEndDate(peopleList);
-    }
-    if (column === SORTABLE_PARTICIPANT_COLUMNS.STATUS) {
-      sortedPeople = this.sortByStatus(peopleList);
-    }
-    if (column === SORTABLE_PARTICIPANT_COLUMNS.COURT_TYPE) {
-      sortedPeople = this.sortByCourtType(peopleList);
-    }
-    if (Object.values(SORTABLE_PARTICIPANT_COLUMNS).indexOf(column) === -1) {
-      return;
-    }
+    const matches = participants.filter((p) => {
+      const { [FIRST_NAME]: firstName, [LAST_NAME]: lastName } = getEntityProperties(p, [FIRST_NAME, LAST_NAME]);
+      const fullName = (`${firstName} ${lastName}`).trim().toLowerCase();
 
-    this.setState({ peopleToRender: sortedPeople, selectedSortOption: clickedColumnHeader });
-    return sortedPeople;
+      const trimmedInput = input.trim().toLowerCase();
+      const match = firstName.toLowerCase().includes(trimmedInput) || lastName.toLowerCase().includes(trimmedInput)
+        || fullName.includes(trimmedInput);
+
+      return match;
+    });
+
+    // preserve any filters selected before search
+    const fullyProcessedPeople = this.handleOnFilter(selectedFilterOption, null, matches);
+    this.setState({ peopleToRender: fullyProcessedPeople });
+
+  }
+
+  aggregateTableData = () => {
+    const {
+      courtTypeByParticipant,
+      currentDiversionPlansByParticipant,
+      enrollmentByParticipant,
+      hoursWorked,
+      infractionCountsByParticipant,
+    } = this.props;
+    const { peopleToRender } = this.state;
+
+    const data :Object[] = [];
+    if (!peopleToRender.isEmpty()) {
+      peopleToRender.forEach((person :Map) => {
+
+        const { [DOB]: dateOfBirth } = getEntityProperties(person, [DOB]);
+        const personEKID :UUID = getEntityKeyId(person);
+        const diversionPlan :Map = currentDiversionPlansByParticipant.get(personEKID);
+        const {
+          [DATETIME_END]: sentenceEndDateTime,
+          [DATETIME_RECEIVED]: sentenceDateTime
+        } = getEntityProperties(diversionPlan, [DATETIME_END, DATETIME_RECEIVED]);
+        const enrollmentStatus :Map = enrollmentByParticipant.get(personEKID);
+        const { [STATUS]: status } = getEntityProperties(enrollmentStatus, [STATUS]);
+        const warningsCount :number = infractionCountsByParticipant.getIn([personEKID, WARNING], 0);
+        const violationsCount :number = infractionCountsByParticipant.getIn([personEKID, VIOLATION], 0);
+        const worked :Map = hoursWorked.getIn([personEKID, WORKED], 0);
+        const required :number = hoursWorked.getIn([personEKID, REQUIRED], 0);
+        const hoursServed :string = getHoursServed(worked, required);
+
+        const personRow :Object = {
+          [ALL_PARTICIPANTS_COLUMNS[0]]: getPersonPictureForTable(person, true),
+          [ALL_PARTICIPANTS_COLUMNS[1]]: getPersonFullName(person),
+          [ALL_PARTICIPANTS_COLUMNS[2]]: toString(calculateAge(dateOfBirth)),
+          [ALL_PARTICIPANTS_COLUMNS[3]]: formatAsDate(sentenceDateTime),
+          [ALL_PARTICIPANTS_COLUMNS[4]]: getSentenceEndDate(sentenceEndDateTime, sentenceDateTime),
+          [ALL_PARTICIPANTS_COLUMNS[5]]: status,
+          [ALL_PARTICIPANTS_COLUMNS[6]]: toString(warningsCount),
+          [ALL_PARTICIPANTS_COLUMNS[7]]: toString(violationsCount),
+          [ALL_PARTICIPANTS_COLUMNS[8]]: hoursServed,
+          [ALL_PARTICIPANTS_COLUMNS[9]]: courtTypeByParticipant.get(personEKID) || EMPTY_FIELD,
+          id: personEKID,
+        };
+        data.push(personRow);
+      });
+    }
+    return data;
+  }
+
+  handleOnSelectPerson = (personEKID :string) => {
+    const { actions } = this.props;
+    actions.goToRoute(PARTICIPANT_PROFILE.replace(':participantId', personEKID));
   }
 
   handleShowAddParticipant = () => {
@@ -212,102 +277,14 @@ class ParticipantsSearchContainer extends Component<Props, State> {
     });
   }
 
-  searchParticipantList = (input :string) => {
-    const { participants } = this.props;
-    const { selectedFilterOption, selectedSortOption } = this.state;
-
-    const matches = participants.filter((p) => {
-      const { [FIRST_NAME]: firstName, [LAST_NAME]: lastName } = getEntityProperties(p, [FIRST_NAME, LAST_NAME]);
-      const fullName = (`${firstName} ${lastName}`).trim().toLowerCase();
-
-      const trimmedInput = input.trim().toLowerCase();
-      const match = firstName.toLowerCase().includes(trimmedInput) || lastName.toLowerCase().includes(trimmedInput)
-        || fullName.includes(trimmedInput);
-
-      return match;
-    });
-
-    // preserve any filters or sorting that was selected before search
-    const sortedSearchedPeople = this.handleOnSort(selectedSortOption, null, matches);
-    const fullyProcessedPeople = this.handleOnFilter(selectedFilterOption, null, sortedSearchedPeople);
-    this.setState({ peopleToRender: fullyProcessedPeople });
-
-  }
-
-  sortByName = (people :List) => {
-    const sortedByName :List = people.sort((personA, personB) => {
-      const { [FIRST_NAME]: firstNameA, [LAST_NAME]: lastNameA } = getEntityProperties(
-        personA, [FIRST_NAME, LAST_NAME]
-      );
-      const { [FIRST_NAME]: firstNameB, [LAST_NAME]: lastNameB } = getEntityProperties(
-        personB, [FIRST_NAME, LAST_NAME]
-      );
-      if (lastNameA === lastNameB) {
-        return firstNameA.localeCompare(firstNameB, undefined, { sensitivity: 'base' });
-      }
-      return lastNameA.localeCompare(lastNameB, undefined, { sensitivity: 'base' });
-    });
-    return sortedByName;
-  }
-
-  sortBySentenceEndDate = (people :List) => {
-    const { currentDiversionPlansByParticipant } = this.props;
-
-    const sortedBySentEndDate = people.sortBy((person :Map) => {
-      const personEKID :UUID = getEntityKeyId(person);
-      const time = DateTime.fromISO(currentDiversionPlansByParticipant.getIn([personEKID, DATETIME_RECEIVED, 0]));
-      return time.valueOf();
-    });
-    return sortedBySentEndDate;
-  }
-
-  sortByStatus = (people :List) => {
-    const { enrollmentByParticipant } = this.props;
-    const sortedByStatus :List = people.sort((personA, personB) => {
-      const personAEKID :UUID = getEntityKeyId(personA);
-      const personBEKID :UUID = getEntityKeyId(personB);
-      let { [STATUS]: personAStatus } = getEntityProperties(
-        enrollmentByParticipant.get(personAEKID), [STATUS]
-      );
-      let { [STATUS]: personBStatus } = getEntityProperties(
-        enrollmentByParticipant.get(personBEKID), [STATUS]
-      );
-      personAStatus = !isDefined(personAStatus) ? ENROLLMENT_STATUSES.AWAITING_CHECKIN : personAStatus;
-      personBStatus = !isDefined(personBStatus) ? ENROLLMENT_STATUSES.AWAITING_CHECKIN : personBStatus;
-      return personAStatus.localeCompare(personBStatus, undefined, { sensitivity: 'base' });
-    });
-    return sortedByStatus;
-  }
-
-  sortByCourtType = (people :List) => {
-    const { courtTypeByParticipant } = this.props;
-
-    const sortedByCourtType :List = people.sort((personA, personB) => {
-      const personAEKID :UUID = getEntityKeyId(personA);
-      const personBEKID :UUID = getEntityKeyId(personB);
-      const courtTypeA :string = courtTypeByParticipant.get(personAEKID) || '';
-      const courtTypeB :string = courtTypeByParticipant.get(personBEKID) || '';
-      return courtTypeA.localeCompare(courtTypeB, undefined, { sensitivity: 'base' });
-    });
-    return sortedByCourtType;
-  }
-
   goToAddParticipantForm = () => {
     const { actions } = this.props;
     actions.goToRoute(ADD_PARTICIPANT);
   }
 
   render() {
-    const {
-      courtTypeByParticipant,
-      currentDiversionPlansByParticipant,
-      enrollmentByParticipant,
-      getInitializeAppRequestState,
-      getDiversionPlansRequestState,
-      hoursWorked,
-      infractionCountsByParticipant,
-    } = this.props;
-    const { showAddParticipant, peopleToRender, selectedSortOption } = this.state;
+    const { getInitializeAppRequestState, getDiversionPlansRequestState } = this.props;
+    const { showAddParticipant } = this.state;
 
     if (getDiversionPlansRequestState === RequestStates.PENDING
         || getInitializeAppRequestState === RequestStates.PENDING) {
@@ -321,8 +298,8 @@ class ParticipantsSearchContainer extends Component<Props, State> {
     const onSelectFunctions = Map().withMutations((map :Map) => {
       map.set(FILTERS.STATUS, this.handleOnFilter);
     });
-    const warningMap :Map = infractionCountsByParticipant.map((count :Map) => count.get(WARNING));
-    const violationMap :Map = infractionCountsByParticipant.map((count :Map) => count.get(VIOLATION));
+    const tableData :Object[] = this.aggregateTableData();
+    const tableHeaders :Object[] = generateTableHeaders(ALL_PARTICIPANTS_COLUMNS);
 
     return (
       <ParticipantSearchOuterWrapper>
@@ -333,32 +310,32 @@ class ParticipantsSearchContainer extends Component<Props, State> {
             primaryButtonText="Add Participant"
             search={this.searchParticipantList} />
         <ParticipantSearchInnerWrapper>
-          <ParticipantsTable
-              ageRequired
-              alignCenter
-              bannerText="All Participants"
-              columnHeaders={ALL_PARTICIPANTS_COLUMNS}
-              config={{
-                includeDeadline: false,
-                includeRequiredHours: true,
-                includeSentenceDate: true,
-                includeSentenceEndDate: true,
-                includeStartDate: false,
-                includeWorkedHours: true
-              }}
-              courtTypeByParticipant={courtTypeByParticipant}
-              currentDiversionPlansMap={currentDiversionPlansByParticipant}
-              enrollment={enrollmentByParticipant}
-              handleSelect={this.handleOnSelectPerson}
-              hours={hoursWorked}
-              people={peopleToRender}
-              selectedSortOption={selectedSortOption}
-              small
-              sortByColumn={this.handleOnSort}
-              totalTableItems={peopleToRender.count()}
-              violations={violationMap}
-              warnings={warningMap}
-              width="100%" />
+          <TableCard>
+            <TableHeader padding="40px">
+              <TableName>
+              All Participants
+              </TableName>
+              <Badge mode="primary" count={tableData.length} />
+            </TableHeader>
+            {
+              tableData.length > 0
+                ? (
+                  <CustomTable
+                      components={{
+                        Cell: TableCell,
+                        HeadCell: TableHeadCell,
+                        Header: TableHeaderRow,
+                        Row: ParticipantsTableRow
+                      }}
+                      data={tableData}
+                      headers={tableHeaders}
+                      isLoading={false} />
+                )
+                : (
+                  <NoParticipantsFound text="No participants found. Add a new participant and check here again!" />
+                )
+            }
+          </TableCard>
         </ParticipantSearchInnerWrapper>
         <AddParticipantModal
             isOpen={showAddParticipant}

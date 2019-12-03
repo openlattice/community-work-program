@@ -31,31 +31,6 @@ const generateDiversionPlanOptions = (entities :List) :Object[] => {
   return options;
 };
 
-
-const enrollmentHeaderNames = ['STATUS', 'SENTENCE', 'ORIENTATION', 'COMPLETION', 'HOURS'];
-const generateEnrollmentHeaders = () :Object[] => {
-
-  const headers = [];
-  enrollmentHeaderNames.forEach((header :string) => {
-    headers.push({
-      cellStyle: {
-        backgroundColor: 'white',
-        color: 'black',
-        fontSize: '11px',
-        fontWeight: '600',
-        padding: '15px 10px',
-        textAlign: 'left',
-      },
-      key: header,
-      label: header,
-      sortable: true,
-    });
-  });
-  return headers;
-};
-
 export {
-  enrollmentHeaderNames,
   generateDiversionPlanOptions,
-  generateEnrollmentHeaders,
 };

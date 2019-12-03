@@ -21,7 +21,6 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPrint, faTrash } from '@fortawesome/pro-solid-svg-icons';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
-import type { RequestSequence } from 'redux-reqseq';
 
 import EditInfractionModal from './EditInfractionModal';
 import DeleteInfractionModal from './DeleteInfractionModal';
@@ -33,6 +32,7 @@ import { formatAsDate, formatAsTime } from '../../../utils/DateTimeUtils';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { EMPTY_FIELD } from '../../participants/ParticipantsConstants';
 import { OL } from '../../../core/style/Colors';
+import type { GoToRoute } from '../../../core/router/RoutingActions';
 
 const { WORKSITE_PLAN } = APP_TYPE_FQNS;
 const {
@@ -79,7 +79,7 @@ const ButtonsWrapper = styled.div`
 
 type Props = {
   actions:{
-    goToRoute :RequestSequence;
+    goToRoute :GoToRoute;
   };
   controls :Element<*>;
   infraction :Map;
@@ -105,7 +105,7 @@ class InfractionDisplay extends Component<Props, State> {
     const personEKID :UUID = getEntityKeyId(participant);
     const infractionEventEKID :UUID = getEntityKeyId(infraction);
     actions.goToRoute(Routes.PRINT_INFRACTION
-      .replace(':subjectId', personEKID)
+      .replace(':participantId', personEKID)
       .replace(':infractionId', infractionEventEKID));
   }
 

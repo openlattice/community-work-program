@@ -122,7 +122,7 @@ class PrintInfractionContainer extends Component<Props, State> {
       actions,
       app,
       match: {
-        params: { subjectId: personEKID, infractionId: infractionEventEKID }
+        params: { participantId: personEKID, infractionId: infractionEventEKID }
       },
     } = this.props;
     if (app.get(PEOPLE)) {
@@ -135,7 +135,7 @@ class PrintInfractionContainer extends Component<Props, State> {
       actions,
       app,
       match: {
-        params: { subjectId: personEKID, infractionId: infractionEventEKID }
+        params: { participantId: personEKID, infractionId: infractionEventEKID }
       },
     } = this.props;
     if (!prevProps.app.get(PEOPLE) && app.get(PEOPLE)) {

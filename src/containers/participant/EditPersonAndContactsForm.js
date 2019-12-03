@@ -12,6 +12,7 @@ import type { Match } from 'react-router';
 
 import LogoLoader from '../../components/LogoLoader';
 
+import * as Routes from '../../core/router/Routes';
 import {
   addNewParticipantContacts,
   addPersonPhoto,
@@ -43,7 +44,7 @@ import { PARTICIPANT_PROFILE_WIDTH } from '../../core/style/Sizes';
 import { OL } from '../../core/style/Colors';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { APP, PERSON, STATE } from '../../utils/constants/ReduxStateConsts';
-import * as Routes from '../../core/router/Routes';
+import type { GoToRoute } from '../../core/router/RoutingActions';
 
 const {
   VALUE_MAPPERS,
@@ -135,7 +136,7 @@ type Props = {
     editParticipantContacts :RequestSequence;
     editPersonDetails :RequestSequence;
     getInfoForEditPerson :RequestSequence;
-    goToRoute :RequestSequence;
+    goToRoute :GoToRoute;
     updatePersonPhoto :RequestSequence;
   },
   address :Map;
@@ -186,7 +187,7 @@ class EditPersonAndContactsForm extends Component<Props, State> {
       email,
       getInfoForEditPersonRequestState,
       match: {
-        params: { subjectId: personEKID }
+        params: { participantId: personEKID }
       },
       participant,
       phone,
@@ -410,7 +411,7 @@ class EditPersonAndContactsForm extends Component<Props, State> {
       participant,
     } = this.props;
     const participantEKID :UUID = getEntityKeyId(participant);
-    actions.goToRoute(Routes.PARTICIPANT_PROFILE.replace(':subjectId', participantEKID));
+    actions.goToRoute(Routes.PARTICIPANT_PROFILE.replace(':participantId', participantEKID));
   }
 
   render() {

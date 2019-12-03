@@ -3,7 +3,6 @@ import React, { Component } from 'react';
 import styled from 'styled-components';
 import { List, Map } from 'immutable';
 import startCase from 'lodash/startCase';
-import toString from 'lodash/toString';
 import { DateTime } from 'luxon';
 import {
   Button,
@@ -29,6 +28,7 @@ import { SEARCH_CONTAINER_WIDTH } from '../../core/style/Sizes';
 import { STATE, WORKSITES, WORK_SCHEDULE } from '../../utils/constants/ReduxStateConsts';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { timePeriods, TIME_PERIOD_OPTIONS } from './WorkScheduleConstants';
+import type { GoToRoute } from '../../core/router/RoutingActions';
 
 const { WORKSITES_LIST } = WORKSITES;
 const {
@@ -89,7 +89,7 @@ type Props = {
   actions:{
     findAppointments :RequestSequence;
     getWorksites :RequestSequence;
-    goToRoute :RequestSequence;
+    goToRoute :GoToRoute;
   };
   app :Map;
   appointments :List;
