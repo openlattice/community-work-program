@@ -67,6 +67,7 @@ const {
   PEOPLE
 } = APP_TYPE_FQNS;
 const {
+  CITY,
   DOB,
   EMAIL,
   ETHNICITY,
@@ -79,6 +80,7 @@ const {
   PREFERRED,
   RACE,
   SEX,
+  ZIP,
 } = PROPERTY_TYPE_FQNS;
 
 const {
@@ -249,7 +251,12 @@ class EditPersonAndContactsForm extends Component<Props, State> {
 
     const { [PHONE_NUMBER]: phoneNumber } = getEntityProperties(phone, [PHONE_NUMBER]);
     const { [EMAIL]: emailAddress } = getEntityProperties(email, [EMAIL]);
-    const { [FULL_ADDRESS]: personAddress } = getEntityProperties(address, [FULL_ADDRESS]);
+    const {
+      [CITY]: city,
+      [FULL_ADDRESS]: streetAddress,
+      [PROPERTY_TYPE_FQNS.STATE]: state,
+      [ZIP]: zipCode,
+    } = getEntityProperties(address, [CITY, FULL_ADDRESS, PROPERTY_TYPE_FQNS.STATE, ZIP]);
 
     const contactsFormData :Map = Map().withMutations((map :Map) => {
       if (!phone.isEmpty()) {
@@ -259,7 +266,10 @@ class EditPersonAndContactsForm extends Component<Props, State> {
         map.setIn([getPageSectionKey(1, 2), getEntityAddressKey(1, CONTACT_INFORMATION, EMAIL)], emailAddress);
       }
       if (!address.isEmpty()) {
-        map.setIn([getPageSectionKey(1, 3), getEntityAddressKey(0, ADDRESS, FULL_ADDRESS)], personAddress);
+        map.setIn([getPageSectionKey(1, 3), getEntityAddressKey(0, ADDRESS, FULL_ADDRESS)], streetAddress);
+        map.setIn([getPageSectionKey(1, 3), getEntityAddressKey(0, ADDRESS, CITY)], city || '');
+        map.setIn([getPageSectionKey(1, 3), getEntityAddressKey(0, ADDRESS, PROPERTY_TYPE_FQNS.STATE)], state || '');
+        map.setIn([getPageSectionKey(1, 3), getEntityAddressKey(0, ADDRESS, ZIP)], zipCode || '');
       }
     });
 

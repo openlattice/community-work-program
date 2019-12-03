@@ -2,7 +2,7 @@
 import { DataProcessingUtils } from 'lattice-fabricate';
 
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
-import { RACE_VALUES, SEX_VALUES } from '../../../core/edm/constants/DataModelConsts';
+import { RACE_VALUES, SEX_VALUES, USA_STATES } from '../../../core/edm/constants/DataModelConsts';
 
 const { getEntityAddressKey, getPageSectionKey } = DataProcessingUtils;
 
@@ -13,6 +13,7 @@ const {
   PEOPLE,
 } = APP_TYPE_FQNS;
 const {
+  CITY,
   DOB,
   EMAIL,
   ETHNICITY,
@@ -23,6 +24,8 @@ const {
   PHONE_NUMBER,
   RACE,
   SEX,
+  STATE,
+  ZIP,
 } = PROPERTY_TYPE_FQNS;
 
 export const personSchema = {
@@ -120,7 +123,20 @@ export const contactsSchema = {
       properties: {
         [getEntityAddressKey(0, ADDRESS, FULL_ADDRESS)]: {
           type: 'string',
-          title: 'Address',
+          title: 'Street Address',
+        },
+        [getEntityAddressKey(0, ADDRESS, CITY)]: {
+          type: 'string',
+          title: 'City',
+        },
+        [getEntityAddressKey(0, ADDRESS, STATE)]: {
+          type: 'string',
+          title: 'State',
+          enum: USA_STATES,
+        },
+        [getEntityAddressKey(0, ADDRESS, ZIP)]: {
+          type: 'string',
+          title: 'Zip Code',
         },
       }
     }
@@ -145,7 +161,16 @@ export const contactsUiSchema = {
   [getPageSectionKey(1, 3)]: {
     classNames: 'column-span-12 grid-container',
     [getEntityAddressKey(0, ADDRESS, FULL_ADDRESS)]: {
-      classNames: 'column-span-6',
+      classNames: 'column-span-4',
+    },
+    [getEntityAddressKey(0, ADDRESS, CITY)]: {
+      classNames: 'column-span-3',
+    },
+    [getEntityAddressKey(0, ADDRESS, STATE)]: {
+      classNames: 'column-span-2',
+    },
+    [getEntityAddressKey(0, ADDRESS, ZIP)]: {
+      classNames: 'column-span-3',
     },
     'ui:options': { editable: true },
   },
