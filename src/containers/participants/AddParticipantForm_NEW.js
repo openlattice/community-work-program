@@ -183,8 +183,8 @@ class AddParticipantForm extends Component<Props, State> {
     if (!prevProps.app.get(JUDGES) && app.get(JUDGES)) {
       actions.getInfoForAddParticipant();
     }
-    if (prevProps.addParticipantRequestState === RequestStates.PENDING &&
-      addParticipantRequestState === RequestStates.SUCCESS) {
+    if (prevProps.addParticipantRequestState === RequestStates.PENDING
+      && addParticipantRequestState === RequestStates.SUCCESS) {
       this.hideForm();
     }
   }
