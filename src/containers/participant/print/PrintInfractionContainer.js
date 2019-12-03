@@ -10,6 +10,7 @@ import {
   MinusButton,
   PlusButton,
   Select,
+  Sizes,
 } from 'lattice-ui-kit';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
@@ -54,6 +55,7 @@ const {
   INFRACTION_EVENT,
   INFRACTION_TYPE,
 } = PERSON_INFRACTIONS;
+const { APP_CONTENT_WIDTH } = Sizes;
 
 // $FlowFixMe
 const PenningtonSherrifsHeader = styled.img.attrs({
@@ -68,7 +70,8 @@ const PenningtonSherrifsHeader = styled.img.attrs({
 const TextWrapper = styled.div`
   display: flex;
   margin-bottom: 20px;
-  width: 100%;
+  max-width: ${APP_CONTENT_WIDTH}px;
+  overflow-wrap: break-word;
 `;
 
 const RowWrapper = styled.div`
