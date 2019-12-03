@@ -1,7 +1,7 @@
 // @flow
 import React from 'react';
 import toString from 'lodash/toString';
-import { Map } from 'immutable';
+import { Map, isImmutable } from 'immutable';
 import { faUser, faUserCircle } from '@fortawesome/pro-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import type { Element } from 'react';
@@ -14,10 +14,14 @@ import { getEntityProperties } from './DataUtils';
 import { getImageDataFromEntity } from './BinaryUtils';
 
 const {
+  CITY,
   FIRST_NAME,
+  FULL_ADDRESS,
   LAST_NAME,
   MUGSHOT,
   PICTURE,
+  STATE,
+  ZIP,
 } = PROPERTY_TYPE_FQNS;
 
 const getPersonFullName = (personEntity :Map) :string => {
@@ -79,8 +83,25 @@ const getHoursServed = (hoursWorked :number, hoursRequired :number) :string => {
   return `${toString(hoursWorked)} / ${toString(hoursRequired)}`;
 };
 
+const getPersonAddress = (address :Map) :string => {
+
+  if (!isImmutable(address)) return EMPTY_FIELD;
+
+  const {
+    [CITY]: city,
+    [FULL_ADDRESS]: streetAddress,
+    [STATE]: state,
+    [ZIP]: zipCode,
+  } = getEntityProperties(address, [CITY, FULL_ADDRESS, STATE, ZIP]);
+
+  if (!streetAddress) return EMPTY_FIELD;
+  if (!city || !state || !zipCode) return streetAddress;
+  return `${streetAddress} ${city}, ${state} ${zipCode}`;
+};
+
 export {
   getHoursServed,
+  getPersonAddress,
   getPersonFullName,
   getPersonPictureForTable,
   getPersonProfilePicture,
