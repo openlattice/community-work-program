@@ -23,13 +23,18 @@ export const SEARCH_PREFIX = 'entity';
 
 /* Demographics */
 export const RACE_VALUES = [
-  'American Indian',
-  'Asian / Pacific Islander',
-  'Black / African American',
-  'Hispanic / Latino (Non-White)',
   'White',
-  'Unknown',
+  'Black or African American',
+  'American Indian or Alaska Native',
+  'Asian',
+  'Native Hawaiian or Other Pacific Islander',
   'Other Not Specified',
+  'Unknown',
+];
+
+export const ETHNICITY_VALUES = [
+  'Hispanic or Latino',
+  'Not Hispanic or Latino'
 ];
 
 export const SEX_VALUES = [

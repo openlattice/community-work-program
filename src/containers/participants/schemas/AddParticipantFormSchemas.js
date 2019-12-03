@@ -2,7 +2,12 @@
 import { DataProcessingUtils } from 'lattice-fabricate';
 
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
-import { COURT_TYPES, RACE_VALUES, SEX_VALUES } from '../../../core/edm/constants/DataModelConsts';
+import {
+  COURT_TYPES,
+  ETHNICITY_VALUES,
+  RACE_VALUES,
+  SEX_VALUES,
+} from '../../../core/edm/constants/DataModelConsts';
 
 const { getEntityAddressKey, getPageSectionKey } = DataProcessingUtils;
 
@@ -64,6 +69,7 @@ export const schema = {
         [getEntityAddressKey(0, PEOPLE, ETHNICITY)]: {
           type: 'string',
           title: 'Ethnicity',
+          enum: ETHNICITY_VALUES,
         },
         [getEntityAddressKey(0, PEOPLE, SEX)]: {
           type: 'string',
