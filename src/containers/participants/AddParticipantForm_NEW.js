@@ -32,7 +32,7 @@ import { getCombinedDateTime } from '../../utils/ScheduleUtils';
 import { BackNavButton } from '../../components/controls/index';
 import { PARTICIPANT_PROFILE_WIDTH } from '../../core/style/Sizes';
 import { APP, PERSON, STATE } from '../../utils/constants/ReduxStateConsts';
-// import type { GoToRoute } from '../../core/router/RoutingActions';
+import type { GoToRoute } from '../../core/router/RoutingActions';
 
 const {
   getEntityAddressKey,
@@ -103,7 +103,7 @@ const ButtonWrapper = styled.div`
 type Props = {
   actions:{
     getInfoForAddParticipant :RequestSequence;
-    goToRoute :RequestSequence;
+    goToRoute :GoToRoute;
   };
   app :Map;
   charges :List;
