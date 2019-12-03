@@ -7,6 +7,7 @@ import {
   ETHNICITY_VALUES,
   RACE_VALUES,
   SEX_VALUES,
+  USA_STATES,
 } from '../../../core/edm/constants/DataModelConsts';
 
 const { getEntityAddressKey, getPageSectionKey } = DataProcessingUtils;
@@ -23,6 +24,7 @@ const {
 } = APP_TYPE_FQNS;
 const {
   CASE_NUMBER_TEXT,
+  CITY,
   COURT_CASE_TYPE,
   DATETIME_COMPLETED,
   DATETIME_RECEIVED,
@@ -38,6 +40,8 @@ const {
   RACE,
   REQUIRED_HOURS,
   SEX,
+  STATE,
+  ZIP,
 } = PROPERTY_TYPE_FQNS;
 
 export const schema = {
@@ -97,7 +101,20 @@ export const schema = {
         },
         [getEntityAddressKey(0, ADDRESS, FULL_ADDRESS)]: {
           type: 'string',
-          title: 'Address',
+          title: 'Street Address',
+        },
+        [getEntityAddressKey(0, ADDRESS, CITY)]: {
+          type: 'string',
+          title: 'City',
+        },
+        [getEntityAddressKey(0, ADDRESS, STATE)]: {
+          type: 'string',
+          title: 'State',
+          enum: USA_STATES,
+        },
+        [getEntityAddressKey(0, ADDRESS, ZIP)]: {
+          type: 'string',
+          title: 'Zip Code',
         },
       }
     },
@@ -189,6 +206,15 @@ export const uiSchema = {
       classNames: 'column-span-4',
     },
     [getEntityAddressKey(0, ADDRESS, FULL_ADDRESS)]: {
+      classNames: 'column-span-4',
+    },
+    [getEntityAddressKey(0, ADDRESS, CITY)]: {
+      classNames: 'column-span-4',
+    },
+    [getEntityAddressKey(0, ADDRESS, STATE)]: {
+      classNames: 'column-span-4',
+    },
+    [getEntityAddressKey(0, ADDRESS, ZIP)]: {
       classNames: 'column-span-4',
     },
   },

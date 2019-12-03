@@ -76,6 +76,7 @@ const {
 } = APP_TYPE_FQNS;
 const {
   CASE_NUMBER_TEXT,
+  CITY,
   COMPLETED,
   COURT_CASE_TYPE,
   DATETIME_COMPLETED,
@@ -97,6 +98,7 @@ const {
   REQUIRED_HOURS,
   SEX,
   STATUS,
+  ZIP,
 } = PROPERTY_TYPE_FQNS;
 const {
   ACTIONS,
@@ -243,14 +245,15 @@ class AddParticipantForm extends Component<Props, State> {
     const { edm } = this.props;
 
     const caseNumberTextPTID :UUID = getPropertyTypeIdFromEdm(edm, CASE_NUMBER_TEXT);
+    const cityPTID :UUID = getPropertyTypeIdFromEdm(edm, CITY);
     const completedPTID :UUID = getPropertyTypeIdFromEdm(edm, COMPLETED);
     const courtCaseTypePTID :UUID = getPropertyTypeIdFromEdm(edm, COURT_CASE_TYPE);
     const datetimeCompletedPTID :UUID = getPropertyTypeIdFromEdm(edm, DATETIME_COMPLETED);
-    const datetimeReceivedPTID :UUID = getPropertyTypeIdFromEdm(edm, DATETIME_RECEIVED);
     const datetimeEndPTID :UUID = getPropertyTypeIdFromEdm(edm, DATETIME_END);
+    const datetimeReceivedPTID :UUID = getPropertyTypeIdFromEdm(edm, DATETIME_RECEIVED);
     const dobPTID :UUID = getPropertyTypeIdFromEdm(edm, DOB);
-    const emailPTID :UUID = getPropertyTypeIdFromEdm(edm, EMAIL);
     const effectiveDatePTID :UUID = getPropertyTypeIdFromEdm(edm, EFFECTIVE_DATE);
+    const emailPTID :UUID = getPropertyTypeIdFromEdm(edm, EMAIL);
     const ethnicityPTID :UUID = getPropertyTypeIdFromEdm(edm, ETHNICITY);
     const firstNamePTID :UUID = getPropertyTypeIdFromEdm(edm, FIRST_NAME);
     const fullAddressPTID :UUID = getPropertyTypeIdFromEdm(edm, FULL_ADDRESS);
@@ -262,18 +265,21 @@ class AddParticipantForm extends Component<Props, State> {
     const racePTID :UUID = getPropertyTypeIdFromEdm(edm, RACE);
     const requiredHoursPTID :UUID = getPropertyTypeIdFromEdm(edm, REQUIRED_HOURS);
     const sexPTID :UUID = getPropertyTypeIdFromEdm(edm, SEX);
+    const statePTID :UUID = getPropertyTypeIdFromEdm(edm, PROPERTY_TYPE_FQNS.STATE);
     const statusPTID :UUID = getPropertyTypeIdFromEdm(edm, STATUS);
+    const zipPTID :UUID = getPropertyTypeIdFromEdm(edm, ZIP);
 
     return {
       [CASE_NUMBER_TEXT]: caseNumberTextPTID,
+      [CITY]: cityPTID,
       [COMPLETED]: completedPTID,
       [COURT_CASE_TYPE]: courtCaseTypePTID,
       [DATETIME_COMPLETED]: datetimeCompletedPTID,
-      [DATETIME_RECEIVED]: datetimeReceivedPTID,
       [DATETIME_END]: datetimeEndPTID,
+      [DATETIME_RECEIVED]: datetimeReceivedPTID,
       [DOB]: dobPTID,
-      [EMAIL]: emailPTID,
       [EFFECTIVE_DATE]: effectiveDatePTID,
+      [EMAIL]: emailPTID,
       [ETHNICITY]: ethnicityPTID,
       [FIRST_NAME]: firstNamePTID,
       [FULL_ADDRESS]: fullAddressPTID,
@@ -282,10 +288,12 @@ class AddParticipantForm extends Component<Props, State> {
       [PERSON_NOTES]: personNotesPTID,
       [PHONE_NUMBER]: phonePTID,
       [PREFERRED]: preferredPTID,
+      [PROPERTY_TYPE_FQNS.STATE]: statePTID,
       [RACE]: racePTID,
       [REQUIRED_HOURS]: requiredHoursPTID,
       [SEX]: sexPTID,
       [STATUS]: statusPTID,
+      [ZIP]: zipPTID,
     };
   }
 
@@ -345,7 +353,7 @@ class AddParticipantForm extends Component<Props, State> {
     associations.push([RELATED_TO, 0, DIVERSION_PLAN, 0, MANUAL_PRETRIAL_COURT_CASES, {}]);
     associations.push([APPEARS_IN, 0, APP_TYPE_FQNS.PEOPLE, 0, MANUAL_PRETRIAL_COURT_CASES, {}]);
 
-    /* should only submit contacts/address if there's at least one in the form */
+    /* should only submit contacts/address if there's at least one of those in the form */
     const sectionTwo :string = getPageSectionKey(1, 2);
     const phoneKey = getEntityAddressKey(0, CONTACT_INFORMATION, PHONE_NUMBER);
     const emailKey = getEntityAddressKey(1, CONTACT_INFORMATION, EMAIL);
