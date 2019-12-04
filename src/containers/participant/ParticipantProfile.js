@@ -365,6 +365,11 @@ class ParticipantProfile extends Component<Props, State> {
     actions.goToRoute(Routes.EDIT_DATES.replace(':participantId', personEKID));
   }
 
+  goToNewEnrollmentForm = () => {
+    const { actions, personEKID } = this.props;
+    actions.goToRoute(Routes.CREATE_NEW_ENROLLMENT.replace(':participantId', personEKID));
+  }
+
   selectDiversionPlan = (option :Object) => {
     const { actions } = this.props;
     const { value } = option;
@@ -482,7 +487,7 @@ class ParticipantProfile extends Component<Props, State> {
                     onChange={this.selectDiversionPlan}
                     options={diversionPlanOptions}
                     value={diversionPlanOptions.find((option) => (option.value).equals(diversionPlan))} />
-                <Button onClick={() => this.handleShowModal(NEW_ENROLLMENT)}>Create New Enrollment</Button>
+                <Button onClick={this.goToNewEnrollmentForm}>Create New Enrollment</Button>
               </EnrollmentControlsWrapper>
               <EnrollmentStatusSection
                   enrollmentStatus={enrollmentStatus}
