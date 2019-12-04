@@ -139,7 +139,6 @@ type Props = {
 
 type State = {
   formData :Object;
-  formIsVisible :boolean;
 };
 
 class CreateNewEnrollmentForm extends Component<Props, State> {
@@ -149,7 +148,6 @@ class CreateNewEnrollmentForm extends Component<Props, State> {
 
     this.state = {
       formData: {},
-      formIsVisible: true,
     };
   }
 
@@ -186,14 +184,6 @@ class CreateNewEnrollmentForm extends Component<Props, State> {
       && createNewEnrollmentRequestState === RequestStates.SUCCESS) {
       this.hideForm();
     }
-  }
-
-  hideForm = () => {
-    this.setState({ formIsVisible: false });
-  }
-
-  showForm = () => {
-    this.setState({ formIsVisible: true });
   }
 
   createEntitySetIdsMap = () => {
