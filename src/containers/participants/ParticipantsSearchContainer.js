@@ -9,7 +9,6 @@ import { connect } from 'react-redux';
 import { RequestStates } from 'redux-reqseq';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
-import AddParticipantModal from './AddParticipantModal';
 import LogoLoader from '../../components/LogoLoader';
 import NoParticipantsFound from '../dashboard/NoParticipantsFound';
 import ParticipantsTableRow from '../../components/table/ParticipantsTableRow';
@@ -108,7 +107,6 @@ type Props = {
 };
 
 type State = {
-  showAddParticipant :boolean;
   peopleToRender :List;
   selectedFilterOption :Map;
 };
@@ -119,7 +117,6 @@ class ParticipantsSearchContainer extends Component<Props, State> {
     super(props);
 
     this.state = {
-      showAddParticipant: false,
       peopleToRender: props.participants,
       selectedFilterOption: defaultFilterOption,
     };
@@ -265,18 +262,6 @@ class ParticipantsSearchContainer extends Component<Props, State> {
     actions.goToRoute(PARTICIPANT_PROFILE.replace(':participantId', personEKID));
   }
 
-  handleShowAddParticipant = () => {
-    this.setState({
-      showAddParticipant: true
-    });
-  }
-
-  handleHideAddParticipant = () => {
-    this.setState({
-      showAddParticipant: false
-    });
-  }
-
   goToAddParticipantForm = () => {
     const { actions } = this.props;
     actions.goToRoute(ADD_PARTICIPANT);
@@ -284,7 +269,6 @@ class ParticipantsSearchContainer extends Component<Props, State> {
 
   render() {
     const { getInitializeAppRequestState, getDiversionPlansRequestState } = this.props;
-    const { showAddParticipant } = this.state;
 
     if (getDiversionPlansRequestState === RequestStates.PENDING
         || getInitializeAppRequestState === RequestStates.PENDING) {
@@ -337,9 +321,6 @@ class ParticipantsSearchContainer extends Component<Props, State> {
             }
           </TableCard>
         </ParticipantSearchInnerWrapper>
-        <AddParticipantModal
-            isOpen={showAddParticipant}
-            onClose={this.handleHideAddParticipant} />
       </ParticipantSearchOuterWrapper>
     );
   }

@@ -29,7 +29,6 @@ import EnrollmentTableRow from './enrollment/EnrollmentTableRow';
 import ParticipantWorkScheduleContainer from './schedule/ParticipantWorkScheduleContainer';
 import ProgramCompletionBanner from './ProgramCompletionBanner';
 
-import CreateNewEnrollmentModal from './CreateNewEnrollmentModal';
 import AssignedWorksite from './assignedworksites/AssignedWorksite';
 import AssignWorksiteModal from './assignedworksites/AssignWorksiteModal';
 import InfractionsContainer from './infractions/InfractionsContainer';
@@ -78,7 +77,6 @@ const {
   ADDRESS,
   ALL_DIVERSION_PLANS,
   CHARGES_FOR_CASE,
-  CREATE_NEW_ENROLLMENT,
   DIVERSION_PLAN,
   EMAIL,
   ENROLLMENT_STATUS,
@@ -110,7 +108,6 @@ const ENROLLMENT_STATUSES_EXCLUDING_PREENROLLMENT = Object.values(ENROLLMENT_STA
 export const enrollmentHeaderNames = ['STATUS', 'SENTENCE', 'ORIENTATION', 'COMPLETION', 'HOURS'];
 
 /* Constants for Modals */
-const NEW_ENROLLMENT = 'showNewEnrollmentModal';
 const ASSIGN_WORKSITE = 'showAssignWorksiteModal';
 const WORK_APPOINTMENT = 'showWorkAppointmentModal';
 
@@ -213,7 +210,6 @@ type Props = {
   app :Map;
   chargesForCase :List;
   checkInsByAppointment :Map;
-  createNewEnrollmentRequestState :RequestState;
   diversionPlan :Map;
   email :Map;
   enrollmentHistoryData :List;
@@ -240,7 +236,6 @@ type Props = {
 type State = {
   workStartDateTime :string;
   showAssignWorksiteModal :boolean;
-  showNewEnrollmentModal :boolean;
   showWorkAppointmentModal :boolean;
   worksiteNamesByWorksitePlan :Map;
 };
@@ -253,7 +248,6 @@ class ParticipantProfile extends Component<Props, State> {
     this.state = {
       workStartDateTime: '',
       [ASSIGN_WORKSITE]: false,
-      [NEW_ENROLLMENT]: false,
       [WORK_APPOINTMENT]: false,
       worksiteNamesByWorksitePlan: Map(),
     };
@@ -270,7 +264,6 @@ class ParticipantProfile extends Component<Props, State> {
     const {
       app,
       checkInsByAppointment,
-      createNewEnrollmentRequestState,
       getAllParticipantInfoRequestState,
       worksitesByWorksitePlan,
       worksitesList,
@@ -284,11 +277,6 @@ class ParticipantProfile extends Component<Props, State> {
         || !prevProps.worksitesByWorksitePlan.equals(worksitesByWorksitePlan)
         || !prevProps.checkInsByAppointment.equals(checkInsByAppointment)) {
       this.setWorkAndWorksiteInfo();
-    }
-    if (prevProps.createNewEnrollmentRequestState === RequestStates.PENDING
-      && createNewEnrollmentRequestState !== RequestStates.PENDING) {
-      this.loadProfile();
-      this.handleHideModal(NEW_ENROLLMENT);
     }
   }
 
@@ -405,7 +393,6 @@ class ParticipantProfile extends Component<Props, State> {
     } = this.props;
     const {
       showAssignWorksiteModal,
-      showNewEnrollmentModal,
       showWorkAppointmentModal,
       workStartDateTime,
       worksiteNamesByWorksitePlan
@@ -605,9 +592,6 @@ class ParticipantProfile extends Component<Props, State> {
               isOpen={showWorkAppointmentModal}
               onClose={() => this.handleHideModal(WORK_APPOINTMENT)}
               personEKID={personEKID} />
-          <CreateNewEnrollmentModal
-              isOpen={showNewEnrollmentModal}
-              onClose={() => this.handleHideModal(NEW_ENROLLMENT)} />
         </ProfileWrapper>
       </>
     );
@@ -626,7 +610,6 @@ const mapStateToProps = (state :Map<*, *>) => {
     app,
     [CHARGES_FOR_CASE]: person.get(CHARGES_FOR_CASE),
     [CHECK_INS_BY_APPOINTMENT]: worksitePlans.get(CHECK_INS_BY_APPOINTMENT),
-    createNewEnrollmentRequestState: person.getIn([ACTIONS, CREATE_NEW_ENROLLMENT, REQUEST_STATE]),
     [DIVERSION_PLAN]: person.get(DIVERSION_PLAN),
     [EMAIL]: person.get(EMAIL),
     [ENROLLMENT_HISTORY_DATA]: person.get(ENROLLMENT_HISTORY_DATA),

@@ -17,6 +17,7 @@ import {
 import { RequestStates } from 'redux-reqseq';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
+import AddParticipantForm from '../participants/AddParticipantForm';
 import AppHeaderContainer from './AppHeaderContainer';
 import DashboardContainer from '../dashboard/DashboardContainer';
 import EditWorksiteHoursForm from '../worksites/EditWorksiteHoursForm';
@@ -24,10 +25,9 @@ import EditWorksiteInfoForm from '../worksites/EditWorksiteInfoForm';
 import ParticipantProfileContainer from '../participant/ParticipantProfileContainer';
 import ParticipantsSearchContainer from '../participants/ParticipantsSearchContainer';
 import PrintWorkScheduleContainer from '../workschedule/PrintWorkScheduleContainer';
+import WorkScheduleContainer from '../workschedule/WorkScheduleContainer';
 import WorksiteProfile from '../worksites/WorksiteProfile';
 import WorksitesContainer from '../worksites/WorksitesContainer';
-import WorkScheduleContainer from '../workschedule/WorkScheduleContainer';
-import AddParticipantForm from '../participants/AddParticipantForm_NEW';
 
 import * as AppActions from './AppActions';
 import * as ParticipantsActions from '../participants/ParticipantsActions';
