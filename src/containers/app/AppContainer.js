@@ -134,9 +134,13 @@ class AppContainer extends Component<Props> {
     const isPrintView :boolean = pathname.substring(pathname.lastIndexOf('/')) === '/print';
 
     const selectedOrg = app.get(APP.SELECTED_ORG_ID, '');
-    const orgList = app.get(APP.ORGS).entrySeq().map(([value, organization]) => {
-      const label = organization.get('title', '');
-      return { label, value };
+    // const orgList = app.get(APP.ORGS).entrySeq().map(([value, organization]) => {
+    //   const label = organization.get('title', '');
+    //   return { label, value };
+    // });
+    const organizations :Map = app.get(APP.ORGS).map((orgMap :Map, orgId :UUID) => {
+      const orgName :string = orgMap.get('title', '');
+      return { id: orgId, title: orgName };
     });
     const loading = initializeAppRequestState === RequestStates.PENDING;
 
@@ -159,7 +163,7 @@ class AppContainer extends Component<Props> {
                 logout={this.logout}
                 organizationsSelect={{
                   onChange: this.switchOrganization,
-                  organizations: orgList,
+                  organizations,
                 }}
                 user={user}>
               <AppNavigationWrapper>
