@@ -4,7 +4,6 @@
 
 import React, { Component } from 'react';
 
-import styled from 'styled-components';
 import { Map } from 'immutable';
 import {
   AppContainerWrapper,
@@ -22,10 +21,8 @@ import {
   Route,
   Switch,
 } from 'react-router-dom';
-import { RequestStates } from 'redux-reqseq';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
-import AppHeaderContainer from './AppHeaderContainer';
 import DashboardContainer from '../dashboard/DashboardContainer';
 import EditWorksiteHoursForm from '../worksites/EditWorksiteHoursForm';
 import EditWorksiteInfoForm from '../worksites/EditWorksiteInfoForm';
@@ -41,39 +38,11 @@ import * as AppActions from './AppActions';
 import * as ParticipantsActions from '../participants/ParticipantsActions';
 import * as Routes from '../../core/router/Routes';
 
-import { ContactSupport } from '../../components/controls/index';
-import { APP_CONTAINER_WIDTH } from '../../core/style/Sizes';
-import { OL } from '../../core/style/Colors';
 import { APP, STATE } from '../../utils/constants/ReduxStateConsts';
 import { isNonEmptyString } from '../../utils/LangUtils';
 
 const { APP_CONTENT_WIDTH } = Sizes;
 const { logout } = AuthActions;
-
-// const AppContainerWrapper = styled.div`
-//   display: flex;
-//   flex-direction: column;
-//   height: 100%;
-//   margin: 0;
-//   min-width: ${APP_CONTAINER_WIDTH}px;
-//   padding: 0;
-// `;
-
-// const AppContentOuterWrapper = styled.main`
-//   background-color: ${OL.GREY38};
-//   display: flex;
-//   flex: 1 0 auto;
-//   justify-content: center;
-//   position: relative;
-// `;
-//
-// const AppContentInnerWrapper = styled.div`
-//   display: flex;
-//   flex: 1 0 auto;
-//   flex-direction: column;
-//   justify-content: flex-start;
-//   position: relative;
-// `;
 
 type Props = {
   actions:{
@@ -133,16 +102,10 @@ class AppContainer extends Component<Props> {
     const { pathname } = location;
     const isPrintView :boolean = pathname.substring(pathname.lastIndexOf('/')) === '/print';
 
-    const selectedOrg = app.get(APP.SELECTED_ORG_ID, '');
-    // const orgList = app.get(APP.ORGS).entrySeq().map(([value, organization]) => {
-    //   const label = organization.get('title', '');
-    //   return { label, value };
-    // });
     const organizations :Map = app.get(APP.ORGS).map((orgMap :Map, orgId :UUID) => {
       const orgName :string = orgMap.get('title', '');
       return { id: orgId, title: orgName };
     });
-    const loading = initializeAppRequestState === RequestStates.PENDING;
 
     const userInfo :Object = AuthUtils.getUserInfo() || {};
     let user = null;
