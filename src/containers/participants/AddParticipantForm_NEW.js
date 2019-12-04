@@ -98,6 +98,7 @@ const {
   REQUIRED_HOURS,
   SEX,
   STATUS,
+  US_STATE,
   ZIP,
 } = PROPERTY_TYPE_FQNS;
 const {
@@ -265,7 +266,7 @@ class AddParticipantForm extends Component<Props, State> {
     const racePTID :UUID = getPropertyTypeIdFromEdm(edm, RACE);
     const requiredHoursPTID :UUID = getPropertyTypeIdFromEdm(edm, REQUIRED_HOURS);
     const sexPTID :UUID = getPropertyTypeIdFromEdm(edm, SEX);
-    const statePTID :UUID = getPropertyTypeIdFromEdm(edm, PROPERTY_TYPE_FQNS.STATE);
+    const statePTID :UUID = getPropertyTypeIdFromEdm(edm, US_STATE);
     const statusPTID :UUID = getPropertyTypeIdFromEdm(edm, STATUS);
     const zipPTID :UUID = getPropertyTypeIdFromEdm(edm, ZIP);
 
@@ -288,11 +289,11 @@ class AddParticipantForm extends Component<Props, State> {
       [PERSON_NOTES]: personNotesPTID,
       [PHONE_NUMBER]: phonePTID,
       [PREFERRED]: preferredPTID,
-      [PROPERTY_TYPE_FQNS.STATE]: statePTID,
       [RACE]: racePTID,
       [REQUIRED_HOURS]: requiredHoursPTID,
       [SEX]: sexPTID,
       [STATUS]: statusPTID,
+      [US_STATE]: statePTID,
       [ZIP]: zipPTID,
     };
   }

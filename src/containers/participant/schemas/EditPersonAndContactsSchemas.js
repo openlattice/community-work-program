@@ -24,7 +24,7 @@ const {
   PHONE_NUMBER,
   RACE,
   SEX,
-  STATE,
+  US_STATE,
   ZIP,
 } = PROPERTY_TYPE_FQNS;
 
@@ -129,7 +129,7 @@ export const contactsSchema = {
           type: 'string',
           title: 'City',
         },
-        [getEntityAddressKey(0, ADDRESS, STATE)]: {
+        [getEntityAddressKey(0, ADDRESS, US_STATE)]: {
           type: 'string',
           title: 'State',
           enum: USA_STATES,
@@ -166,7 +166,7 @@ export const contactsUiSchema = {
     [getEntityAddressKey(0, ADDRESS, CITY)]: {
       classNames: 'column-span-3',
     },
-    [getEntityAddressKey(0, ADDRESS, STATE)]: {
+    [getEntityAddressKey(0, ADDRESS, US_STATE)]: {
       classNames: 'column-span-2',
     },
     [getEntityAddressKey(0, ADDRESS, ZIP)]: {

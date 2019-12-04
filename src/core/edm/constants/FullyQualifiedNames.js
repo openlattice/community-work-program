@@ -111,10 +111,10 @@ export const PROPERTY_TYPE_FQNS :Object = {
   REQUIRED_HOURS_TEXT: new FullyQualifiedName('ol.requiredhourstext'),
   SEX: new FullyQualifiedName('nc.PersonSex'),
   SSN: new FullyQualifiedName('nc.SSN'),
-  STATE: new FullyQualifiedName('location.state'),
   STATUS: new FullyQualifiedName('ol.status'),
   TITLE: new FullyQualifiedName('person.title'),
   TYPE: new FullyQualifiedName('ol.type'),
+  US_STATE: new FullyQualifiedName('location.state'),
   VIOLENT: new FullyQualifiedName('ol.violent'),
   ZIP: new FullyQualifiedName('location.zip'),
 };

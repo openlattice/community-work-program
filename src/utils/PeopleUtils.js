@@ -20,7 +20,7 @@ const {
   LAST_NAME,
   MUGSHOT,
   PICTURE,
-  STATE,
+  US_STATE,
   ZIP,
 } = PROPERTY_TYPE_FQNS;
 
@@ -90,9 +90,9 @@ const getPersonAddress = (address :Map) :string => {
   const {
     [CITY]: city,
     [FULL_ADDRESS]: streetAddress,
-    [STATE]: state,
+    [US_STATE]: state,
     [ZIP]: zipCode,
-  } = getEntityProperties(address, [CITY, FULL_ADDRESS, STATE, ZIP]);
+  } = getEntityProperties(address, [CITY, FULL_ADDRESS, US_STATE, ZIP]);
 
   if (!streetAddress) return EMPTY_FIELD;
   if (!city || !state || !zipCode) return streetAddress;

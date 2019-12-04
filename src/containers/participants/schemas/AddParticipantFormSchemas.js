@@ -40,7 +40,7 @@ const {
   RACE,
   REQUIRED_HOURS,
   SEX,
-  STATE,
+  US_STATE,
   ZIP,
 } = PROPERTY_TYPE_FQNS;
 
@@ -107,7 +107,7 @@ export const schema = {
           type: 'string',
           title: 'City',
         },
-        [getEntityAddressKey(0, ADDRESS, STATE)]: {
+        [getEntityAddressKey(0, ADDRESS, US_STATE)]: {
           type: 'string',
           title: 'State',
           enum: USA_STATES,
@@ -211,7 +211,7 @@ export const uiSchema = {
     [getEntityAddressKey(0, ADDRESS, CITY)]: {
       classNames: 'column-span-4',
     },
-    [getEntityAddressKey(0, ADDRESS, STATE)]: {
+    [getEntityAddressKey(0, ADDRESS, US_STATE)]: {
       classNames: 'column-span-4',
     },
     [getEntityAddressKey(0, ADDRESS, ZIP)]: {
