@@ -2175,15 +2175,21 @@ function* getInfoForEditCaseWatcher() :Generator<*, *, *> {
 
 function* getInfoForAddParticipantWorker(action :SequenceAction) :Generator<*, *, *> {
 
-  const { id } = action;
+  const { id, value } = action;
 
   try {
     yield put(getInfoForAddParticipant.request(id));
 
-    const workerResponses = yield all([
+    const workerCalls = [
       call(getJudgesWorker, getJudges()),
       call(getChargesWorker, getCharges()),
-    ]);
+    ];
+    if (Object.keys(value).length) {
+      const { personEKID } = value;
+      workerCalls.push(call(getParticipantWorker, getParticipant({ personEKID })));
+    }
+
+    const workerResponses = yield all(workerCalls);
     const responseError = workerResponses.reduce(
       (error, workerResponse) => error || workerResponse.error,
       undefined,
