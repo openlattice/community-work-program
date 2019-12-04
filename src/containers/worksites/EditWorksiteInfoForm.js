@@ -39,6 +39,7 @@ const {
   WORKSITE,
 } = APP_TYPE_FQNS;
 const {
+  CITY,
   DATETIME_END,
   DATETIME_START,
   DESCRIPTION,
@@ -49,6 +50,8 @@ const {
   NAME,
   PHONE_NUMBER,
   TITLE,
+  US_STATE,
+  ZIP,
 } = PROPERTY_TYPE_FQNS;
 const {
   ACTIONS,
@@ -160,6 +163,7 @@ class EditWorksiteInfoForm extends Component<Props> {
   createPropertyTypeIdsMap = () => {
     const { edm } = this.props;
     return {
+      [CITY]: getPropertyTypeIdFromEdm(edm, CITY),
       [DATETIME_END]: getPropertyTypeIdFromEdm(edm, DATETIME_END),
       [DATETIME_START]: getPropertyTypeIdFromEdm(edm, DATETIME_START),
       [DESCRIPTION]: getPropertyTypeIdFromEdm(edm, DESCRIPTION),
@@ -170,6 +174,8 @@ class EditWorksiteInfoForm extends Component<Props> {
       [NAME]: getPropertyTypeIdFromEdm(edm, NAME),
       [PHONE_NUMBER]: getPropertyTypeIdFromEdm(edm, PHONE_NUMBER),
       [TITLE]: getPropertyTypeIdFromEdm(edm, TITLE),
+      [US_STATE]: getPropertyTypeIdFromEdm(edm, US_STATE),
+      [ZIP]: getPropertyTypeIdFromEdm(edm, ZIP),
     };
   }
 

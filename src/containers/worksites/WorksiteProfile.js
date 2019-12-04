@@ -24,7 +24,7 @@ import { goToRoute } from '../../core/router/RoutingActions';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { APP, STATE, WORKSITES } from '../../utils/constants/ReduxStateConsts';
 import { getEntityProperties } from '../../utils/DataUtils';
-import { getPersonFullName } from '../../utils/PeopleUtils';
+import { getPersonAddress, getPersonFullName } from '../../utils/PeopleUtils';
 import { formatAsDate } from '../../utils/DateTimeUtils';
 import { getWeekdayTableData, getWeekdayTableHeaders, getWorksiteStatus } from './WorksitesUtils';
 import {
@@ -42,7 +42,6 @@ const {
   DATETIME_START,
   DESCRIPTION,
   EMAIL,
-  FULL_ADDRESS,
   NAME,
   PHONE_NUMBER,
 } = PROPERTY_TYPE_FQNS;
@@ -220,7 +219,7 @@ class WorksiteProfile extends Component<Props> {
       [NAME]: worksiteName
     } = getEntityProperties(worksite, [DATETIME_END, DATETIME_START, DESCRIPTION, NAME]);
 
-    const { [FULL_ADDRESS]: address } = getEntityProperties(worksiteAddress, [FULL_ADDRESS]);
+    const address :string = getPersonAddress(worksiteAddress);
     const datesAndAddress :Map = Map({
       dateFirstActive: formatAsDate(dateActive),
       dateInactive: formatAsDate(dateInactive),
