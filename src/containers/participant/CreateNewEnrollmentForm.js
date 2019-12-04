@@ -170,7 +170,6 @@ class CreateNewEnrollmentForm extends Component<Props, State> {
     const {
       actions,
       app,
-      createNewEnrollmentRequestState,
       match: {
         params: {
           participantId: personEKID
@@ -179,10 +178,6 @@ class CreateNewEnrollmentForm extends Component<Props, State> {
     } = this.props;
     if (!prevProps.app.get(JUDGES) && app.get(JUDGES)) {
       actions.getInfoForAddParticipant({ personEKID });
-    }
-    if (prevProps.createNewEnrollmentRequestState === RequestStates.PENDING
-      && createNewEnrollmentRequestState === RequestStates.SUCCESS) {
-      this.hideForm();
     }
   }
 
