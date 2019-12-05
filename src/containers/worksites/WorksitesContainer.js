@@ -123,7 +123,7 @@ class WorksitesContainer extends Component<Props, State> {
     const prevOrganizationESID = prevProps.app.get(ORGANIZATION);
     const organizationESID = app.get(ORGANIZATION);
     // if app types have loaded successfully:
-    if (prevOrganizationESID !== organizationESID) {
+    if (!prevOrganizationESID && organizationESID) {
       actions.getOrganizations();
     }
     // if getOrganizations was successful and organizations exist:
