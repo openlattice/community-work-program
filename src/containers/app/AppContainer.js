@@ -4,7 +4,8 @@
 
 import React, { Component } from 'react';
 
-import { Map } from 'immutable';
+import styled from 'styled-components';
+import { List, Map } from 'immutable';
 import {
   AppContainerWrapper,
   AppContentWrapper,
@@ -38,11 +39,23 @@ import * as AppActions from './AppActions';
 import * as ParticipantsActions from '../participants/ParticipantsActions';
 import * as Routes from '../../core/router/Routes';
 
+import { ToolBar } from '../../components/controls/index';
+import { OL } from '../../core/style/Colors';
 import { APP, STATE } from '../../utils/constants/ReduxStateConsts';
 import { isNonEmptyString } from '../../utils/LangUtils';
 
 const { APP_CONTENT_WIDTH } = Sizes;
 const { logout } = AuthActions;
+
+const FancySearchAndFilterHeader = styled(AppContentWrapper)`
+  border-bottom: 1px solid ${OL.GREY11};
+  justify-content: center;
+  position: sticky;
+
+  > div {
+    padding: 10px 30px;
+  }
+`;
 
 type Props = {
   actions:{
@@ -52,7 +65,6 @@ type Props = {
     switchOrganization :RequestSequence;
   },
   app :Map;
-  initializeAppRequestState :RequestState;
   location :Object;
 };
 
@@ -97,7 +109,7 @@ class AppContainer extends Component<Props> {
   );
 
   render() {
-    const { app, initializeAppRequestState, location } = this.props;
+    const { app, location } = this.props;
 
     const { pathname } = location;
     const isPrintView :boolean = pathname.substring(pathname.lastIndexOf('/')) === '/print';
@@ -130,12 +142,25 @@ class AppContainer extends Component<Props> {
                 }}
                 user={user}>
               <AppNavigationWrapper>
+                <NavLink to={Routes.DASHBOARD}>Community Work Program</NavLink>
                 <NavLink to={Routes.DASHBOARD}>Dashboard</NavLink>
                 <NavLink to={Routes.PARTICIPANTS}>Participants</NavLink>
                 <NavLink to={Routes.WORKSITES}>Work Sites</NavLink>
                 <NavLink to={Routes.WORK_SCHEDULE}>Work Schedule</NavLink>
               </AppNavigationWrapper>
             </AppHeaderWrapper>
+          )
+        }
+        {
+          location.pathname === Routes.PARTICIPANTS && (
+            <FancySearchAndFilterHeader bgColor="white">
+              <ToolBar
+                  dropdowns={List()}
+                  onSelectFunctions={Map()}
+                  primaryButtonAction={() => {}}
+                  primaryButtonText="Add Participant"
+                  search={() => {}} />
+            </FancySearchAndFilterHeader>
           )
         }
         <AppContentWrapper contentWidth={APP_CONTENT_WIDTH}>
@@ -150,7 +175,6 @@ const mapStateToProps = (state :Map<*, *>) => {
   const app = state.get(STATE.APP);
   return {
     app,
-    initializeAppRequestState: app.getIn([APP.ACTIONS, APP.INITIALIZE_APPLICATION, APP.REQUEST_STATE]),
   };
 };
 
