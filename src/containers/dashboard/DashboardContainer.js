@@ -71,7 +71,7 @@ const DashboardWrapper = styled.div`
   display: flex;
   flex-direction: column;
   margin-top: 30px;
-  width: ${DASHBOARD_WIDTH}px;
+  /* width: ${DASHBOARD_WIDTH}px; */
 `;
 
 const DashboardBody = styled.div`

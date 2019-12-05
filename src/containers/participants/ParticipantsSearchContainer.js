@@ -87,7 +87,7 @@ const ParticipantSearchInnerWrapper = styled.div`
   justify-content: center;
   margin-top: 30px;
   position: relative;
-  width: ${SEARCH_CONTAINER_WIDTH}px;
+  /* width: ${SEARCH_CONTAINER_WIDTH}px; */
 `;
 
 type Props = {
@@ -298,12 +298,6 @@ class ParticipantsSearchContainer extends Component<Props, State> {
 
     return (
       <ParticipantSearchOuterWrapper>
-        <ToolBar
-            dropdowns={dropdowns}
-            onSelectFunctions={onSelectFunctions}
-            primaryButtonAction={this.handleShowAddParticipant}
-            primaryButtonText="Add Participant"
-            search={this.searchParticipantList} />
         <ParticipantSearchInnerWrapper>
           <TableCard>
             <TableHeader padding="40px">

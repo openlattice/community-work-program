@@ -27,7 +27,7 @@ export const ContainerInnerWrapper = styled.div`
   flex-direction: column;
   padding: ${APP_CONTENT_PADDING}px;
   margin-top: 30px;
-  width: ${SEARCH_CONTAINER_WIDTH}px;
+  /* width: ${SEARCH_CONTAINER_WIDTH}px; */
   align-self: center;
 `;
 
