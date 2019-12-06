@@ -16,6 +16,7 @@ export const STATE = {
 export const APP = {
   ACTIONS: 'actions',
   APP: 'app',
+  ENTITY_SET_IDS_BY_ORG: 'entitySetIdsByOrg',
   ENTITY_SETS_BY_ORG: 'entitySetsByOrganization',
   FQN_TO_ID: 'fqnsToEntitySetIds',
   INITIALIZE_APPLICATION: 'initializeApplication',
@@ -25,6 +26,17 @@ export const APP = {
   SELECTED_ORG_ID: 'selectedOrganizationId',
   SELECTED_ORG_TITLE: 'selectedOrganizationTitle',
   SWITCH_ORGANIZATION: 'switchOrganization',
+};
+
+/* EDM */
+export const EDM = {
+  ASSOCIATION_TYPES: 'associationTypes',
+  ENTITY_TYPES: 'entityTypes',
+  IS_FETCHING_ALL_ENTITY_SET_IDS: 'isFetchingAllEntitySetIds',
+  IS_FETCHING_ALL_TYPES: 'isFetchingAllTypes',
+  PROPERTY_TYPES: 'propertyTypes',
+  TYPES_BY_ID: 'typesById',
+  TYPE_IDS_BY_FQNS: 'typeIdsByFqn',
 };
 
 /* Infractions */
