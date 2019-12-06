@@ -20,6 +20,7 @@ import {
 const {
   ACTIONS,
   ENTITY_SETS_BY_ORG,
+  ENTITY_SET_IDS_BY_ORG,
   ERRORS,
   FQN_TO_ID,
   INITIALIZE_APPLICATION,
@@ -38,6 +39,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   },
   [APP.APP]: Map(),
   [ENTITY_SETS_BY_ORG]: Map(),
+  [ENTITY_SET_IDS_BY_ORG]: Map(),
   [ERRORS]: {
     [APP.INITIALIZE_APPLICATION]: Map(),
   },
@@ -88,6 +90,8 @@ export default function appReducer(state :Map<*, *> = INITIAL_STATE, action :Obj
           const { app, appConfigs } = value;
           const organizations :Object = {};
 
+          let entitySetIdsByOrg :Map = state.get(ENTITY_SET_IDS_BY_ORG);
+
           appConfigs.forEach((appConfig :Object) => {
 
             const { organization } :Object = appConfig;
@@ -97,6 +101,12 @@ export default function appReducer(state :Map<*, *> = INITIAL_STATE, action :Obj
               if (fromJS(appConfig.config).size) {
                 organizations[orgId] = organization;
                 Object.values(APP_TYPE_FQNS).forEach((fqn) => {
+                  // console.log('fqn: ', fqn);
+                  // console.log('appConfig.config[fqn].entitySetId: ', appConfig.config[fqn].entitySetId);
+                  entitySetIdsByOrg = entitySetIdsByOrg.setIn(
+                    [orgId, fqn],
+                    appConfig.config[fqn].entitySetId
+                  );
                   newState = newState.setIn(
                     [fqn, ENTITY_SETS_BY_ORG, orgId],
                     appConfig.config[fqn].entitySetId
@@ -113,6 +123,7 @@ export default function appReducer(state :Map<*, *> = INITIAL_STATE, action :Obj
               }
             }
           });
+          console.log('entitySetIdsByOrg: ', entitySetIdsByOrg.toJS());
           let selectedOrganizationId :string = '';
           let selectedOrganizationTitle :string = '';
           if (fromJS(organizations).size && !selectedOrganizationId.length) {
@@ -128,6 +139,7 @@ export default function appReducer(state :Map<*, *> = INITIAL_STATE, action :Obj
           return newState
             .set(APP.APP, app)
             .set(ENTITY_SETS_BY_ORG, entitySetsByOrgId)
+            .set(ENTITY_SET_IDS_BY_ORG, entitySetIdsByOrg)
             .set(FQN_TO_ID, fqnToIdMap)
             .set(ORGS, fromJS(organizations))
             .set(SELECTED_ORG_ID, selectedOrganizationId)
