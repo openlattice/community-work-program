@@ -18,41 +18,26 @@ import * as Routes from '../../core/router/Routes';
 import { getWorksite } from './WorksitesActions';
 import { goToRoute } from '../../core/router/RoutingActions';
 import { BackNavButton } from '../../components/controls/index';
-import {
-  getEntityKeyId,
-  getEntitySetIdFromApp,
-  getPropertyTypeIdFromEdm
-} from '../../utils/DataUtils';
+import { getEntityKeyId } from '../../utils/DataUtils';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
-import { APP, STATE, WORKSITES } from '../../utils/constants/ReduxStateConsts';
+import {
+  APP,
+  EDM,
+  STATE,
+  WORKSITES
+} from '../../utils/constants/ReduxStateConsts';
 import type { GoToRoute } from '../../core/router/RoutingActions';
 
 const {
   ADDRESS,
   CONTACT_INFORMATION,
-  CONTACT_INFO_GIVEN,
-  EMPLOYEE,
-  IS,
-  LOCATED_AT,
   STAFF,
-  WORKS_AT,
   WORKSITE,
 } = APP_TYPE_FQNS;
-const {
-  CITY,
-  DATETIME_END,
-  DATETIME_START,
-  DESCRIPTION,
-  EMAIL,
-  FIRST_NAME,
-  FULL_ADDRESS,
-  LAST_NAME,
-  NAME,
-  PHONE_NUMBER,
-  TITLE,
-  US_STATE,
-  ZIP,
-} = PROPERTY_TYPE_FQNS;
+const { EMAIL, PHONE_NUMBER } = PROPERTY_TYPE_FQNS;
+
+const { ENTITY_SET_IDS_BY_ORG, SELECTED_ORG_ID } = APP;
+const { PROPERTY_TYPES, TYPE_IDS_BY_FQNS } = EDM;
 const {
   ACTIONS,
   GET_WORKSITE,
@@ -79,11 +64,11 @@ type Props = {
     getWorksite :RequestSequence;
     goToRoute :GoToRoute;
   },
-  app :Map;
-  edm :Map;
+  entitySetIds :Map;
   getWorksiteRequestState :RequestState;
   initializeAppRequestState :RequestState;
   match :Match;
+  propertyTypeIds :Map;
   worksite :Map;
   worksiteAddress :Map;
   worksiteContacts :List;
@@ -94,12 +79,12 @@ class EditWorksiteInfoForm extends Component<Props> {
   componentDidMount() {
     const {
       actions,
-      app,
+      entitySetIds,
       match: {
         params: { worksiteId: worksiteEKID }
       },
     } = this.props;
-    if (app.get(WORKSITE) && worksiteEKID) {
+    if (entitySetIds.has(WORKSITE) && worksiteEKID) {
       actions.getWorksite({ worksiteEKID });
     }
   }
@@ -107,12 +92,12 @@ class EditWorksiteInfoForm extends Component<Props> {
   componentDidUpdate(prevProps :Props) {
     const {
       actions,
-      app,
+      entitySetIds,
       match: {
         params: { worksiteId: worksiteEKID }
       },
     } = this.props;
-    if (!prevProps.app.get(WORKSITE) && app.get(WORKSITE) && worksiteEKID) {
+    if ((!prevProps.entitySetIds.has(WORKSITE) && entitySetIds.has(WORKSITE)) && worksiteEKID) {
       actions.getWorksite({ worksiteEKID });
     }
   }
@@ -145,40 +130,6 @@ class EditWorksiteInfoForm extends Component<Props> {
     return entityIndexToIdMap;
   }
 
-  createEntitySetIdsMap = () => {
-    const { app } = this.props;
-    return {
-      [ADDRESS]: getEntitySetIdFromApp(app, ADDRESS),
-      [CONTACT_INFORMATION]: getEntitySetIdFromApp(app, CONTACT_INFORMATION),
-      [CONTACT_INFO_GIVEN]: getEntitySetIdFromApp(app, CONTACT_INFO_GIVEN),
-      [EMPLOYEE]: getEntitySetIdFromApp(app, EMPLOYEE),
-      [IS]: getEntitySetIdFromApp(app, IS),
-      [LOCATED_AT]: getEntitySetIdFromApp(app, LOCATED_AT),
-      [STAFF]: getEntitySetIdFromApp(app, STAFF),
-      [WORKS_AT]: getEntitySetIdFromApp(app, WORKS_AT),
-      [WORKSITE]: getEntitySetIdFromApp(app, WORKSITE),
-    };
-  }
-
-  createPropertyTypeIdsMap = () => {
-    const { edm } = this.props;
-    return {
-      [CITY]: getPropertyTypeIdFromEdm(edm, CITY),
-      [DATETIME_END]: getPropertyTypeIdFromEdm(edm, DATETIME_END),
-      [DATETIME_START]: getPropertyTypeIdFromEdm(edm, DATETIME_START),
-      [DESCRIPTION]: getPropertyTypeIdFromEdm(edm, DESCRIPTION),
-      [EMAIL]: getPropertyTypeIdFromEdm(edm, EMAIL),
-      [FIRST_NAME]: getPropertyTypeIdFromEdm(edm, FIRST_NAME),
-      [FULL_ADDRESS]: getPropertyTypeIdFromEdm(edm, FULL_ADDRESS),
-      [LAST_NAME]: getPropertyTypeIdFromEdm(edm, LAST_NAME),
-      [NAME]: getPropertyTypeIdFromEdm(edm, NAME),
-      [PHONE_NUMBER]: getPropertyTypeIdFromEdm(edm, PHONE_NUMBER),
-      [TITLE]: getPropertyTypeIdFromEdm(edm, TITLE),
-      [US_STATE]: getPropertyTypeIdFromEdm(edm, US_STATE),
-      [ZIP]: getPropertyTypeIdFromEdm(edm, ZIP),
-    };
-  }
-
   handleOnClickBackButton = () => {
     const {
       actions,
@@ -193,8 +144,10 @@ class EditWorksiteInfoForm extends Component<Props> {
 
   render() {
     const {
+      entitySetIds,
       getWorksiteRequestState,
       initializeAppRequestState,
+      propertyTypeIds,
       worksite,
       worksiteAddress,
       worksiteContacts,
@@ -210,8 +163,6 @@ class EditWorksiteInfoForm extends Component<Props> {
     }
 
     const entityIndexToIdMap :Object = this.createEntityIndexToIdMap();
-    const entitySetIds :Object = this.createEntitySetIdsMap();
-    const propertyTypeIds :Object = this.createPropertyTypeIdsMap();
 
     return (
       <FormWrapper>
@@ -248,15 +199,17 @@ class EditWorksiteInfoForm extends Component<Props> {
 
 const mapStateToProps = (state :Map) => {
   const app = state.get(STATE.APP);
+  const edm = state.get(STATE.EDM);
   const worksites = state.get(STATE.WORKSITES);
+  const selectedOrgId :string = app.get(SELECTED_ORG_ID);
   return ({
-    app,
-    edm: state.get(STATE.EDM),
-    getWorksiteRequestState: worksites.getIn([ACTIONS, GET_WORKSITE, REQUEST_STATE]),
-    initializeAppRequestState: app.getIn([APP.ACTIONS, APP.INITIALIZE_APPLICATION, APP.REQUEST_STATE]),
     [WORKSITES.WORKSITE]: worksites.get(WORKSITES.WORKSITE),
     [WORKSITE_ADDRESS]: worksites.get(WORKSITE_ADDRESS),
     [WORKSITE_CONTACTS]: worksites.get(WORKSITE_CONTACTS),
+    entitySetIds: app.getIn([ENTITY_SET_IDS_BY_ORG, selectedOrgId], Map()),
+    getWorksiteRequestState: worksites.getIn([ACTIONS, GET_WORKSITE, REQUEST_STATE]),
+    initializeAppRequestState: app.getIn([APP.ACTIONS, APP.INITIALIZE_APPLICATION, APP.REQUEST_STATE]),
+    propertyTypeIds: edm.getIn([TYPE_IDS_BY_FQNS, PROPERTY_TYPES], Map()),
   });
 };
 

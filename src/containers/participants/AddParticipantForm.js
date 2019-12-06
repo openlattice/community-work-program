@@ -37,12 +37,12 @@ import { hydrateSchema } from './utils/AddParticipantFormUtils';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { CWP, ENROLLMENT_STATUSES } from '../../core/edm/constants/DataModelConsts';
 import { schema, uiSchema } from './schemas/AddParticipantFormSchemas';
-import { getEntitySetIdFromApp, getPropertyTypeIdFromEdm } from '../../utils/DataUtils';
 import { getCombinedDateTime } from '../../utils/ScheduleUtils';
 import { BackNavButton } from '../../components/controls/index';
 import { PARTICIPANT_PROFILE_WIDTH } from '../../core/style/Sizes';
 import {
   APP,
+  EDM,
   PEOPLE,
   PERSON,
   STATE
@@ -76,30 +76,19 @@ const {
 } = APP_TYPE_FQNS;
 const {
   CASE_NUMBER_TEXT,
-  CITY,
   COMPLETED,
   COURT_CASE_TYPE,
   DATETIME_COMPLETED,
-  DATETIME_END,
   DATETIME_RECEIVED,
-  DOB,
   EFFECTIVE_DATE,
   EMAIL,
   ENTITY_KEY_ID,
-  ETHNICITY,
-  FIRST_NAME,
   FULL_ADDRESS,
   LAST_NAME,
   NAME,
-  PERSON_NOTES,
   PHONE_NUMBER,
   PREFERRED,
-  RACE,
-  REQUIRED_HOURS,
-  SEX,
   STATUS,
-  US_STATE,
-  ZIP,
 } = PROPERTY_TYPE_FQNS;
 const {
   ACTIONS,
@@ -108,6 +97,8 @@ const {
   REQUEST_STATE,
 } = PERSON;
 const { ADD_PARTICIPANT } = PEOPLE;
+const { ENTITY_SET_IDS_BY_ORG, SELECTED_ORG_ID } = APP;
+const { PROPERTY_TYPES, TYPE_IDS_BY_FQNS } = EDM;
 
 const FormWrapper = styled.div`
   display: flex;
@@ -150,12 +141,12 @@ type Props = {
     goToRoute :GoToRoute;
   };
   addParticipantRequestState :RequestState;
-  app :Map;
   charges :List;
-  edm :Map;
+  entitySetIds :Map;
   getInfoRequestState :RequestState;
   initializeAppRequestState :RequestState;
   judges :List;
+  propertyTypeIds :Map;
 };
 
 type State = {
@@ -175,15 +166,15 @@ class AddParticipantForm extends Component<Props, State> {
   }
 
   componentDidMount() {
-    const { actions, app } = this.props;
-    if (app.get(JUDGES)) {
+    const { actions, entitySetIds } = this.props;
+    if (entitySetIds.has(JUDGES)) {
       actions.getInfoForAddParticipant();
     }
   }
 
   componentDidUpdate(prevProps :Props) {
-    const { actions, addParticipantRequestState, app } = this.props;
-    if (!prevProps.app.get(JUDGES) && app.get(JUDGES)) {
+    const { actions, addParticipantRequestState, entitySetIds } = this.props;
+    if (!prevProps.entitySetIds.has(JUDGES) && entitySetIds.has(JUDGES)) {
       actions.getInfoForAddParticipant();
     }
     if (prevProps.addParticipantRequestState === RequestStates.PENDING
@@ -200,106 +191,8 @@ class AddParticipantForm extends Component<Props, State> {
     this.setState({ formIsVisible: true });
   }
 
-  createEntitySetIdsMap = () => {
-    const { app } = this.props;
-
-    const addressESID :UUID = getEntitySetIdFromApp(app, ADDRESS);
-    const appearsInESID :UUID = getEntitySetIdFromApp(app, APPEARS_IN);
-    const chargeEventESID :UUID = getEntitySetIdFromApp(app, CHARGE_EVENT);
-    const contactInfoESID :UUID = getEntitySetIdFromApp(app, CONTACT_INFORMATION);
-    const contactInfoGivenESID :UUID = getEntitySetIdFromApp(app, CONTACT_INFO_GIVEN);
-    const courtChargeListESID :UUID = getEntitySetIdFromApp(app, COURT_CHARGE_LIST);
-    const diversionPlanESID :UUID = getEntitySetIdFromApp(app, DIVERSION_PLAN);
-    const enrollmentStatusESID :UUID = getEntitySetIdFromApp(app, ENROLLMENT_STATUS);
-    const judgesESID :UUID = getEntitySetIdFromApp(app, JUDGES);
-    const locatedAtESID :UUID = getEntitySetIdFromApp(app, LOCATED_AT);
-    const manualCasesESID :UUID = getEntitySetIdFromApp(app, MANUAL_PRETRIAL_COURT_CASES);
-    const manualChargedWithESID :UUID = getEntitySetIdFromApp(app, MANUAL_CHARGED_WITH);
-    const manualSentencedWithESID :UUID = getEntitySetIdFromApp(app, MANUAL_SENTENCED_WITH);
-    const peopleESID :UUID = getEntitySetIdFromApp(app, APP_TYPE_FQNS.PEOPLE);
-    const presidesOverESID :UUID = getEntitySetIdFromApp(app, PRESIDES_OVER);
-    const registeredForESID :UUID = getEntitySetIdFromApp(app, REGISTERED_FOR);
-    const relatedToESID :UUID = getEntitySetIdFromApp(app, RELATED_TO);
-
-    return {
-      [ADDRESS]: addressESID,
-      [APPEARS_IN]: appearsInESID,
-      [CHARGE_EVENT]: chargeEventESID,
-      [CONTACT_INFORMATION]: contactInfoESID,
-      [CONTACT_INFO_GIVEN]: contactInfoGivenESID,
-      [COURT_CHARGE_LIST]: courtChargeListESID,
-      [DIVERSION_PLAN]: diversionPlanESID,
-      [ENROLLMENT_STATUS]: enrollmentStatusESID,
-      [JUDGES]: judgesESID,
-      [LOCATED_AT]: locatedAtESID,
-      [MANUAL_CHARGED_WITH]: manualChargedWithESID,
-      [MANUAL_PRETRIAL_COURT_CASES]: manualCasesESID,
-      [MANUAL_SENTENCED_WITH]: manualSentencedWithESID,
-      [APP_TYPE_FQNS.PEOPLE]: peopleESID,
-      [PRESIDES_OVER]: presidesOverESID,
-      [REGISTERED_FOR]: registeredForESID,
-      [RELATED_TO]: relatedToESID,
-    };
-  }
-
-  createPropertyTypeIdsMap = () => {
-    const { edm } = this.props;
-
-    const caseNumberTextPTID :UUID = getPropertyTypeIdFromEdm(edm, CASE_NUMBER_TEXT);
-    const cityPTID :UUID = getPropertyTypeIdFromEdm(edm, CITY);
-    const completedPTID :UUID = getPropertyTypeIdFromEdm(edm, COMPLETED);
-    const courtCaseTypePTID :UUID = getPropertyTypeIdFromEdm(edm, COURT_CASE_TYPE);
-    const datetimeCompletedPTID :UUID = getPropertyTypeIdFromEdm(edm, DATETIME_COMPLETED);
-    const datetimeEndPTID :UUID = getPropertyTypeIdFromEdm(edm, DATETIME_END);
-    const datetimeReceivedPTID :UUID = getPropertyTypeIdFromEdm(edm, DATETIME_RECEIVED);
-    const dobPTID :UUID = getPropertyTypeIdFromEdm(edm, DOB);
-    const effectiveDatePTID :UUID = getPropertyTypeIdFromEdm(edm, EFFECTIVE_DATE);
-    const emailPTID :UUID = getPropertyTypeIdFromEdm(edm, EMAIL);
-    const ethnicityPTID :UUID = getPropertyTypeIdFromEdm(edm, ETHNICITY);
-    const firstNamePTID :UUID = getPropertyTypeIdFromEdm(edm, FIRST_NAME);
-    const fullAddressPTID :UUID = getPropertyTypeIdFromEdm(edm, FULL_ADDRESS);
-    const lastNamePTID :UUID = getPropertyTypeIdFromEdm(edm, LAST_NAME);
-    const namePTID :UUID = getPropertyTypeIdFromEdm(edm, NAME);
-    const personNotesPTID :UUID = getPropertyTypeIdFromEdm(edm, PERSON_NOTES);
-    const phonePTID :UUID = getPropertyTypeIdFromEdm(edm, PHONE_NUMBER);
-    const preferredPTID :UUID = getPropertyTypeIdFromEdm(edm, PREFERRED);
-    const racePTID :UUID = getPropertyTypeIdFromEdm(edm, RACE);
-    const requiredHoursPTID :UUID = getPropertyTypeIdFromEdm(edm, REQUIRED_HOURS);
-    const sexPTID :UUID = getPropertyTypeIdFromEdm(edm, SEX);
-    const statePTID :UUID = getPropertyTypeIdFromEdm(edm, US_STATE);
-    const statusPTID :UUID = getPropertyTypeIdFromEdm(edm, STATUS);
-    const zipPTID :UUID = getPropertyTypeIdFromEdm(edm, ZIP);
-
-    return {
-      [CASE_NUMBER_TEXT]: caseNumberTextPTID,
-      [CITY]: cityPTID,
-      [COMPLETED]: completedPTID,
-      [COURT_CASE_TYPE]: courtCaseTypePTID,
-      [DATETIME_COMPLETED]: datetimeCompletedPTID,
-      [DATETIME_END]: datetimeEndPTID,
-      [DATETIME_RECEIVED]: datetimeReceivedPTID,
-      [DOB]: dobPTID,
-      [EFFECTIVE_DATE]: effectiveDatePTID,
-      [EMAIL]: emailPTID,
-      [ETHNICITY]: ethnicityPTID,
-      [FIRST_NAME]: firstNamePTID,
-      [FULL_ADDRESS]: fullAddressPTID,
-      [LAST_NAME]: lastNamePTID,
-      [NAME]: namePTID,
-      [PERSON_NOTES]: personNotesPTID,
-      [PHONE_NUMBER]: phonePTID,
-      [PREFERRED]: preferredPTID,
-      [RACE]: racePTID,
-      [REQUIRED_HOURS]: requiredHoursPTID,
-      [SEX]: sexPTID,
-      [STATUS]: statusPTID,
-      [US_STATE]: statePTID,
-      [ZIP]: zipPTID,
-    };
-  }
-
   handleOnSubmit = ({ formData } :Object) => {
-    const { actions } = this.props;
+    const { actions, entitySetIds, propertyTypeIds } = this.props;
 
     let dataToSubmit :Object = formData;
 
@@ -408,8 +301,7 @@ class AddParticipantForm extends Component<Props, State> {
         associations.push([MANUAL_CHARGED_WITH, 0, APP_TYPE_FQNS.PEOPLE, index, CHARGE_EVENT]);
       });
     }
-    const entitySetIds :Object = this.createEntitySetIdsMap();
-    const propertyTypeIds :Object = this.createPropertyTypeIdsMap();
+
     const entityData :Object = processEntityData(dataToSubmit, entitySetIds, propertyTypeIds);
     const associationEntityData :Object = processAssociationEntityData(
       fromJS(associations),
@@ -503,16 +395,18 @@ class AddParticipantForm extends Component<Props, State> {
 
 const mapStateToProps = (state :Map) => {
   const app = state.get(STATE.APP);
+  const edm = state.get(STATE.EDM);
   const person = state.get(STATE.PERSON);
   const people = state.get(STATE.PEOPLE);
+  const selectedOrgId :string = app.get(SELECTED_ORG_ID);
   return ({
     addParticipantRequestState: people.getIn([ACTIONS, ADD_PARTICIPANT, REQUEST_STATE]),
-    app,
     [CHARGES]: person.get(CHARGES),
-    edm: state.get(STATE.EDM),
+    entitySetIds: app.getIn([ENTITY_SET_IDS_BY_ORG, selectedOrgId], Map()),
     getInfoRequestState: person.getIn([ACTIONS, GET_INFO_FOR_ADD_PARTICIPANT, REQUEST_STATE]),
     initializeAppRequestState: app.getIn([APP.ACTIONS, APP.INITIALIZE_APPLICATION, APP.REQUEST_STATE]),
     [PERSON.JUDGES]: person.get(PERSON.JUDGES),
+    propertyTypeIds: edm.getIn([TYPE_IDS_BY_FQNS, PROPERTY_TYPES], Map()),
   });
 };
 

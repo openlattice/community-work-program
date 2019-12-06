@@ -18,38 +18,28 @@ import LogoLoader from '../../../components/LogoLoader';
 import * as Routes from '../../../core/router/Routes';
 import { getInfoForEditCase } from '../ParticipantActions';
 import { goToRoute } from '../../../core/router/RoutingActions';
-import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
-import {
-  getEntityKeyId,
-  getEntitySetIdFromApp,
-  getPropertyTypeIdFromEdm
-} from '../../../utils/DataUtils';
+import { APP_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
+import { getEntityKeyId } from '../../../utils/DataUtils';
 import { BackNavButton } from '../../../components/controls/index';
 import { PARTICIPANT_PROFILE_WIDTH } from '../../../core/style/Sizes';
-import { APP, PERSON, STATE } from '../../../utils/constants/ReduxStateConsts';
+import {
+  APP,
+  EDM,
+  PERSON,
+  STATE
+} from '../../../utils/constants/ReduxStateConsts';
 import type { GoToRoute } from '../../../core/router/RoutingActions';
 
 const {
-  APPEARS_IN,
   CHARGE_EVENT,
   COURT_CHARGE_LIST,
   DIVERSION_PLAN,
-  JUDGES,
-  MANUAL_CHARGED_WITH,
   MANUAL_PRETRIAL_COURT_CASES,
   PEOPLE,
-  PRESIDES_OVER,
-  REGISTERED_FOR,
-  RELATED_TO,
 } = APP_TYPE_FQNS;
-const {
-  CASE_NUMBER_TEXT,
-  COURT_CASE_TYPE,
-  DATETIME_COMPLETED,
-  ENTITY_KEY_ID,
-  REQUIRED_HOURS,
-} = PROPERTY_TYPE_FQNS;
 
+const { ENTITY_SET_IDS_BY_ORG, SELECTED_ORG_ID } = APP;
+const { PROPERTY_TYPES, TYPE_IDS_BY_FQNS } = EDM;
 const {
   ACTIONS,
   CHARGES,
@@ -79,11 +69,10 @@ type Props = {
     getInfoForEditCase :RequestSequence;
     goToRoute :GoToRoute;
   },
-  app :Map;
   charges :List;
   chargesForCase :List;
   diversionPlan :Map;
-  edm :Map;
+  entitySetIds :Map;
   getInfoForEditCaseRequestState :RequestState;
   initializeAppRequestState :RequestState;
   judge :Map;
@@ -91,6 +80,7 @@ type Props = {
   match :Match;
   participant :Map;
   personCase :Map;
+  propertyTypeIds :Map;
 };
 
 class EditCaseInfoForm extends Component<Props> {
@@ -98,12 +88,12 @@ class EditCaseInfoForm extends Component<Props> {
   componentDidMount() {
     const {
       actions,
-      app,
+      entitySetIds,
       match: {
         params: { participantId: personEKID }
       },
     } = this.props;
-    if (app.get(PEOPLE) && personEKID) {
+    if (entitySetIds.has(PEOPLE) && personEKID) {
       actions.getInfoForEditCase({ personEKID });
     }
   }
@@ -111,12 +101,12 @@ class EditCaseInfoForm extends Component<Props> {
   componentDidUpdate(prevProps :Props) {
     const {
       actions,
-      app,
+      entitySetIds,
       match: {
         params: { participantId: personEKID }
       },
     } = this.props;
-    if (!prevProps.app.get(PEOPLE) && app.get(PEOPLE) && personEKID) {
+    if ((!prevProps.entitySetIds.has(PEOPLE) && entitySetIds.has(PEOPLE)) && personEKID) {
       actions.getInfoForEditCase({ personEKID });
     }
   }
@@ -139,34 +129,6 @@ class EditCaseInfoForm extends Component<Props> {
     return entityIndexToIdMap;
   }
 
-  createEntitySetIdsMap = () => {
-    const { app } = this.props;
-    return {
-      [APPEARS_IN]: getEntitySetIdFromApp(app, APPEARS_IN),
-      [CHARGE_EVENT]: getEntitySetIdFromApp(app, CHARGE_EVENT),
-      [COURT_CHARGE_LIST]: getEntitySetIdFromApp(app, COURT_CHARGE_LIST),
-      [DIVERSION_PLAN]: getEntitySetIdFromApp(app, DIVERSION_PLAN),
-      [JUDGES]: getEntitySetIdFromApp(app, JUDGES),
-      [MANUAL_CHARGED_WITH]: getEntitySetIdFromApp(app, MANUAL_CHARGED_WITH),
-      [MANUAL_PRETRIAL_COURT_CASES]: getEntitySetIdFromApp(app, MANUAL_PRETRIAL_COURT_CASES),
-      [PRESIDES_OVER]: getEntitySetIdFromApp(app, PRESIDES_OVER),
-      [PEOPLE]: getEntitySetIdFromApp(app, PEOPLE),
-      [REGISTERED_FOR]: getEntitySetIdFromApp(app, REGISTERED_FOR),
-      [RELATED_TO]: getEntitySetIdFromApp(app, RELATED_TO),
-    };
-  }
-
-  createPropertyTypeIdsMap = () => {
-    const { edm } = this.props;
-    return {
-      [CASE_NUMBER_TEXT]: getPropertyTypeIdFromEdm(edm, CASE_NUMBER_TEXT),
-      [COURT_CASE_TYPE]: getPropertyTypeIdFromEdm(edm, COURT_CASE_TYPE),
-      [DATETIME_COMPLETED]: getPropertyTypeIdFromEdm(edm, DATETIME_COMPLETED),
-      [ENTITY_KEY_ID]: getPropertyTypeIdFromEdm(edm, ENTITY_KEY_ID),
-      [REQUIRED_HOURS]: getPropertyTypeIdFromEdm(edm, REQUIRED_HOURS),
-    };
-  }
-
   handleOnClickBackButton = () => {
     const {
       actions,
@@ -184,12 +146,14 @@ class EditCaseInfoForm extends Component<Props> {
       charges,
       chargesForCase,
       diversionPlan,
+      entitySetIds,
       getInfoForEditCaseRequestState,
       initializeAppRequestState,
       judge,
       judges,
       participant,
       personCase,
+      propertyTypeIds,
     } = this.props;
 
     if (initializeAppRequestState === RequestStates.PENDING
@@ -201,9 +165,6 @@ class EditCaseInfoForm extends Component<Props> {
       );
     }
     const entityIndexToIdMap = this.createEntityIndexToIdMap();
-    const entitySetIds = this.createEntitySetIdsMap();
-    const propertyTypeIds = this.createPropertyTypeIdsMap();
-
     const personEKID :UUID = getEntityKeyId(participant);
     const diversionPlanEKID :UUID = getEntityKeyId(diversionPlan);
 
@@ -252,19 +213,21 @@ class EditCaseInfoForm extends Component<Props> {
 
 const mapStateToProps = (state :Map) => {
   const app = state.get(STATE.APP);
+  const edm = state.get(STATE.EDM);
   const person = state.get(STATE.PERSON);
+  const selectedOrgId :string = app.get(SELECTED_ORG_ID);
   return ({
-    app,
     [CHARGES]: person.get(CHARGES),
     [CHARGES_FOR_CASE]: person.get(CHARGES_FOR_CASE),
     [PERSON.DIVERSION_PLAN]: person.get(PERSON.DIVERSION_PLAN),
-    edm: state.get(STATE.EDM),
+    entitySetIds: app.getIn([ENTITY_SET_IDS_BY_ORG, selectedOrgId], Map()),
     getInfoForEditCaseRequestState: person.getIn([ACTIONS, GET_INFO_FOR_EDIT_CASE, REQUEST_STATE]),
     initializeAppRequestState: app.getIn([APP.ACTIONS, APP.INITIALIZE_APPLICATION, APP.REQUEST_STATE]),
     [JUDGE]: person.get(JUDGE),
     [PERSON.JUDGES]: person.get(PERSON.JUDGES),
     [PARTICIPANT]: person.get(PARTICIPANT),
     [PERSON_CASE]: person.get(PERSON_CASE),
+    propertyTypeIds: edm.getIn([TYPE_IDS_BY_FQNS, PROPERTY_TYPES], Map()),
   });
 };
 

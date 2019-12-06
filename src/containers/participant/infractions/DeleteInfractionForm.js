@@ -85,7 +85,7 @@ const mapStateToProps = (state :Map) => ({
   app: state.get(STATE.APP),
 });
 
-const mapDispatchToProps = dispatch => ({
+const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
     deleteInfractionEvent,
   }, dispatch)
