@@ -72,6 +72,7 @@ const {
   STATUS,
 } = PROPERTY_TYPE_FQNS;
 
+const { ENTITY_SET_IDS_BY_ORG, SELECTED_ORG_ID } = APP;
 const {
   ACTIONS,
   ADDRESS,
@@ -207,13 +208,13 @@ type Props = {
   };
   address :Map;
   allDiversionPlans :List;
-  app :Map;
   chargesForCase :List;
   checkInsByAppointment :Map;
   diversionPlan :Map;
   email :Map;
   enrollmentHistoryData :List;
   enrollmentStatus :Map;
+  entitySetIds :Map;
   getAllParticipantInfoRequestState :RequestState;
   getEnrollmentFromDiversionPlanRequestState :RequestState;
   initializeAppRequestState :RequestState;
@@ -254,21 +255,21 @@ class ParticipantProfile extends Component<Props, State> {
   }
 
   componentDidMount() {
-    const { app } = this.props;
-    if (app.get(APP_TYPE_FQNS.PEOPLE)) {
+    const { entitySetIds } = this.props;
+    if (entitySetIds.has(APP_TYPE_FQNS.PEOPLE)) {
       this.loadProfile();
     }
   }
 
   componentDidUpdate(prevProps :Props) {
     const {
-      app,
       checkInsByAppointment,
+      entitySetIds,
       getAllParticipantInfoRequestState,
       worksitesByWorksitePlan,
       worksitesList,
     } = this.props;
-    if (!prevProps.app.get(APP_TYPE_FQNS.PEOPLE) && app.get(APP_TYPE_FQNS.PEOPLE)) {
+    if (!prevProps.entitySetIds.has(APP_TYPE_FQNS.PEOPLE) && entitySetIds.has(APP_TYPE_FQNS.PEOPLE)) {
       this.loadProfile();
     }
     if ((prevProps.getAllParticipantInfoRequestState === RequestStates.PENDING
@@ -604,16 +605,17 @@ const mapStateToProps = (state :Map<*, *>) => {
   const person = state.get(STATE.PERSON);
   const worksitePlans = state.get(STATE.WORKSITE_PLANS);
   const worksites = state.get(STATE.WORKSITES);
+  const selectedOrgId :string = app.get(SELECTED_ORG_ID);
   return {
     [ADDRESS]: person.get(ADDRESS),
     [ALL_DIVERSION_PLANS]: person.get(ALL_DIVERSION_PLANS),
-    app,
     [CHARGES_FOR_CASE]: person.get(CHARGES_FOR_CASE),
     [CHECK_INS_BY_APPOINTMENT]: worksitePlans.get(CHECK_INS_BY_APPOINTMENT),
     [DIVERSION_PLAN]: person.get(DIVERSION_PLAN),
     [EMAIL]: person.get(EMAIL),
     [ENROLLMENT_HISTORY_DATA]: person.get(ENROLLMENT_HISTORY_DATA),
     [ENROLLMENT_STATUS]: person.get(ENROLLMENT_STATUS),
+    entitySetIds: app.getIn([ENTITY_SET_IDS_BY_ORG, selectedOrgId], Map()),
     getAllParticipantInfoRequestState: person.getIn([ACTIONS, GET_ALL_PARTICIPANT_INFO, REQUEST_STATE]),
     getEnrollmentFromDiversionPlanRequestState: person
       .getIn([ACTIONS, GET_ENROLLMENT_FROM_DIVERSION_PLAN, REQUEST_STATE]),

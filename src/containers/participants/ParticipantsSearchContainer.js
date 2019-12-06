@@ -46,6 +46,7 @@ import { ENROLLMENT_STATUSES, HOURS_CONSTS, INFRACTIONS_CONSTS } from '../../cor
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import type { GoToRoute } from '../../core/router/RoutingActions';
 
+const { ENTITY_SET_IDS_BY_ORG, SELECTED_ORG_ID } = APP;
 const {
   COURT_TYPE_BY_PARTICIPANT,
   CURRENT_DIVERSION_PLANS_BY_PARTICIPANT,
@@ -95,10 +96,10 @@ type Props = {
     getDiversionPlans :RequestSequence;
     goToRoute :GoToRoute;
   };
-  app :Map;
   courtTypeByParticipant :Map;
   currentDiversionPlansByParticipant :Map;
   enrollmentByParticipant :Map;
+  entitySetIds :Map;
   getInitializeAppRequestState :RequestState;
   getDiversionPlansRequestState :RequestState;
   hoursWorked :Map;
@@ -123,19 +124,19 @@ class ParticipantsSearchContainer extends Component<Props, State> {
   }
 
   componentDidMount() {
-    const { actions, app } = this.props;
+    const { actions, entitySetIds } = this.props;
     this.sortParticipantsByStatus();
-    if (app.get(APP_TYPE_FQNS.PEOPLE)) {
+    if (entitySetIds.has(APP_TYPE_FQNS.PEOPLE)) {
       actions.getDiversionPlans();
     }
   }
 
   componentDidUpdate(prevProps :Props) {
-    const { app, actions, participants } = this.props;
-    if (prevProps.app.count() !== app.count()) {
+    const { entitySetIds, actions, participants } = this.props;
+    if (!prevProps.entitySetIds.equals(entitySetIds)) {
       actions.getDiversionPlans();
     }
-    if (prevProps.participants.count() !== participants.count()) {
+    if (!prevProps.participants.equals(participants)) {
       this.sortParticipantsByStatus();
     }
   }
@@ -329,11 +330,12 @@ class ParticipantsSearchContainer extends Component<Props, State> {
 const mapStateToProps = (state :Map<*, *>) => {
   const app = state.get(STATE.APP);
   const people = state.get(STATE.PEOPLE);
+  const selectedOrgId :string = app.get(SELECTED_ORG_ID);
   return {
-    app,
     [COURT_TYPE_BY_PARTICIPANT]: people.get(COURT_TYPE_BY_PARTICIPANT),
     [CURRENT_DIVERSION_PLANS_BY_PARTICIPANT]: people.get(CURRENT_DIVERSION_PLANS_BY_PARTICIPANT),
     [ENROLLMENT_BY_PARTICIPANT]: people.get(ENROLLMENT_BY_PARTICIPANT),
+    entitySetIds: app.getIn([ENTITY_SET_IDS_BY_ORG, selectedOrgId], Map()),
     getInitializeAppRequestState: app.getIn([APP.ACTIONS, APP.INITIALIZE_APPLICATION, APP.REQUEST_STATE]),
     getDiversionPlansRequestState: people.getIn([PEOPLE.ACTIONS, PEOPLE.GET_DIVERSION_PLANS, PEOPLE.REQUEST_STATE]),
     [HOURS_WORKED]: people.get(HOURS_WORKED),

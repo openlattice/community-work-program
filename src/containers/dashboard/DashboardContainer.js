@@ -57,6 +57,7 @@ const {
   INFRACTION_COUNTS_BY_PARTICIPANT,
   PARTICIPANTS,
 } = PEOPLE;
+const { ENTITY_SET_IDS_BY_ORG } = APP;
 
 const tableComponents :Object = {
   Cell: TableCell,
@@ -99,9 +100,9 @@ type Props = {
     getDiversionPlans :RequestSequence;
     goToRoute :GoToRoute;
   };
-  app :Map;
   currentDiversionPlansByParticipant :Map;
   enrollmentByParticipant :Map;
+  entitySetIds :Map;
   initializeAppRequestState :RequestState;
   getDiversionPlansRequestState :RequestState;
   hoursWorked :Map;
@@ -133,8 +134,8 @@ class DashboardContainer extends Component<Props, State> {
   }
 
   componentDidMount() {
-    const { actions, app, participants } = this.props;
-    if (app.get(APP.SELECTED_ORG_ID)) {
+    const { actions, entitySetIds, participants } = this.props;
+    if (entitySetIds.count() > 0) {
       actions.getDiversionPlans();
     }
     if (participants.count() > 0) {
@@ -144,12 +145,11 @@ class DashboardContainer extends Component<Props, State> {
   }
 
   componentDidUpdate(prevProps :Props) {
-    const { actions, app, participants } = this.props;
-    if (prevProps.app.count() !== app.count()
-      || prevProps.app.get(APP.SELECTED_ORG_ID) !== app.get(APP.SELECTED_ORG_ID)) {
+    const { actions, entitySetIds, participants } = this.props;
+    if (!prevProps.entitySetIds.count() > 0 && entitySetIds.count() > 0) {
       actions.getDiversionPlans();
     }
-    if (prevProps.participants.count() !== participants.count()) {
+    if (!prevProps.participants.equals(participants)) {
       this.setParticipantsWithHoursComplete();
       this.setParticipantsWithViolations();
     }
@@ -480,9 +480,9 @@ const mapStateToProps = (state :Map<*, *>) => {
   const app = state.get(STATE.APP);
   const people = state.get(STATE.PEOPLE);
   return {
-    app,
     [CURRENT_DIVERSION_PLANS_BY_PARTICIPANT]: people.get(CURRENT_DIVERSION_PLANS_BY_PARTICIPANT),
     [ENROLLMENT_BY_PARTICIPANT]: people.get(ENROLLMENT_BY_PARTICIPANT),
+    entitySetIds: app.get(ENTITY_SET_IDS_BY_ORG, Map()),
     getDiversionPlansRequestState: people.getIn([PEOPLE.ACTIONS, PEOPLE.GET_DIVERSION_PLANS, PEOPLE.REQUEST_STATE]),
     [HOURS_WORKED]: people.get(HOURS_WORKED),
     [INFRACTION_COUNTS_BY_PARTICIPANT]: people.get(INFRACTION_COUNTS_BY_PARTICIPANT),

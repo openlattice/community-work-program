@@ -22,6 +22,7 @@ import { getPersonFullName } from '../../utils/PeopleUtils';
 import { APP, STATE, WORK_SCHEDULE } from '../../utils/constants/ReduxStateConsts';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 
+const { ENTITY_SET_IDS_BY_ORG, SELECTED_ORG_ID } = APP;
 const {
   ACTIONS,
   APPOINTMENTS,
@@ -63,8 +64,8 @@ type Props = {
   actions:{
     findAppointments :RequestSequence;
   };
-  app :Map;
   appointments :List;
+  entitySetIds :Map;
   findAppointmentsRequestState :RequestState;
   initializeApplicationRequestState :RequestState;
   match :Match;
@@ -77,12 +78,12 @@ class PrintWorkScheduleContainer extends Component<Props> {
   componentDidMount() {
     const {
       actions,
-      app,
+      entitySetIds,
       match: {
         params: { date: selectedDate, timeframe: timePeriod }
       },
     } = this.props;
-    if (app.get(APPOINTMENT)) {
+    if (entitySetIds.has(APPOINTMENT)) {
       actions.findAppointments({ selectedDate, timePeriod });
     }
   }
@@ -90,12 +91,12 @@ class PrintWorkScheduleContainer extends Component<Props> {
   componentDidUpdate(prevProps :Props) {
     const {
       actions,
-      app,
+      entitySetIds,
       match: {
         params: { date: selectedDate, timeframe: timePeriod }
       },
     } = this.props;
-    if (!prevProps.app.get(APPOINTMENT) && app.get(APPOINTMENT)) {
+    if (!prevProps.entitySetIds.has(APPOINTMENT) && entitySetIds.has(APPOINTMENT)) {
       actions.findAppointments({ selectedDate, timePeriod });
     }
   }
@@ -192,13 +193,14 @@ class PrintWorkScheduleContainer extends Component<Props> {
 const mapStateToProps = (state) => {
   const app = state.get(STATE.APP);
   const workSchedule = state.get(STATE.WORK_SCHEDULE);
+  const selectedOrgId :string = app.get(SELECTED_ORG_ID);
   return {
-    app,
     [APPOINTMENTS]: workSchedule.get(APPOINTMENTS),
-    findAppointmentsRequestState: workSchedule.getIn([ACTIONS, FIND_APPOINTMENTS, REQUEST_STATE]),
-    initializeApplicationRequestState: app.getIn([APP.ACTIONS, APP.INITIALIZE_APPLICATION, APP.REQUEST_STATE]),
     [PERSON_BY_APPOINTMENT_EKID]: workSchedule.get(PERSON_BY_APPOINTMENT_EKID),
     [WORKSITE_NAMES_BY_APPOINTMENT_EKID]: workSchedule.get(WORKSITE_NAMES_BY_APPOINTMENT_EKID),
+    entitySetIds: app.getIn([ENTITY_SET_IDS_BY_ORG, selectedOrgId], Map()),
+    findAppointmentsRequestState: workSchedule.getIn([ACTIONS, FIND_APPOINTMENTS, REQUEST_STATE]),
+    initializeApplicationRequestState: app.getIn([APP.ACTIONS, APP.INITIALIZE_APPLICATION, APP.REQUEST_STATE]),
   };
 };
 

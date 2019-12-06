@@ -40,7 +40,7 @@ const {
   LAST_NAME,
   NOTES,
 } = PROPERTY_TYPE_FQNS;
-const { INITIALIZE_APPLICATION } = APP;
+const { ENTITY_SET_IDS_BY_ORG, INITIALIZE_APPLICATION, SELECTED_ORG_ID } = APP;
 const {
   ACTIONS,
   ALL_PARTICIPANT_CASES,
@@ -93,7 +93,7 @@ type Props = {
     getInfoForPrintInfraction :RequestSequence;
   };
   allParticipantCases :List;
-  app :Map;
+  entitySetIds :Map;
   getInfoForPrintInfractionRequestState :RequestState;
   initializeApplicationRequestState :RequestState;
   infractionEvent :Map;
@@ -120,12 +120,12 @@ class PrintInfractionContainer extends Component<Props, State> {
   componentDidMount() {
     const {
       actions,
-      app,
+      entitySetIds,
       match: {
         params: { participantId: personEKID, infractionId: infractionEventEKID }
       },
     } = this.props;
-    if (app.get(PEOPLE)) {
+    if (entitySetIds.has(PEOPLE)) {
       actions.getInfoForPrintInfraction({ infractionEventEKID, personEKID });
     }
   }
@@ -133,12 +133,12 @@ class PrintInfractionContainer extends Component<Props, State> {
   componentDidUpdate(prevProps :Props) {
     const {
       actions,
-      app,
+      entitySetIds,
       match: {
         params: { participantId: personEKID, infractionId: infractionEventEKID }
       },
     } = this.props;
-    if (!prevProps.app.get(PEOPLE) && app.get(PEOPLE)) {
+    if (!prevProps.entitySetIds.has(PEOPLE) && entitySetIds.has(PEOPLE)) {
       actions.getInfoForPrintInfraction({ infractionEventEKID, personEKID });
     }
   }
@@ -279,9 +279,10 @@ const mapStateToProps = (state) => {
   const app = state.get(STATE.APP);
   const person = state.get(STATE.PERSON);
   const infractions = state.get(STATE.INFRACTIONS);
+  const selectedOrgId :string = app.get(SELECTED_ORG_ID);
   return {
-    app,
     [ALL_PARTICIPANT_CASES]: person.get(ALL_PARTICIPANT_CASES),
+    entitySetIds: app.getIn([ENTITY_SET_IDS_BY_ORG, selectedOrgId], Map()),
     getInfoForPrintInfractionRequestState: infractions.getIn([ACTIONS, GET_INFO_FOR_PRINT_INFRACTION, REQUEST_STATE]),
     initializeApplicationRequestState: app.getIn([ACTIONS, INITIALIZE_APPLICATION, REQUEST_STATE]),
     [INFRACTION_EVENT]: infractions.get(INFRACTION_EVENT),

@@ -45,6 +45,8 @@ const {
   NAME,
   PHONE_NUMBER,
 } = PROPERTY_TYPE_FQNS;
+
+const { ENTITY_SET_IDS_BY_ORG, SELECTED_ORG_ID } = APP;
 const {
   ACTIONS,
   GET_WORKSITE,
@@ -98,7 +100,7 @@ type Props = {
     getWorksite :RequestSequence;
     goToRoute :GoToRoute;
   },
-  app :Map;
+  entitySetIds :Map;
   getWorksiteRequestState :RequestState;
   initializeAppRequestState :RequestState;
   match :Match;
@@ -111,15 +113,15 @@ type Props = {
 class WorksiteProfile extends Component<Props> {
 
   componentDidMount() {
-    const { app } = this.props;
-    if (app.get(APP_TYPE_FQNS.WORKSITE)) {
+    const { entitySetIds } = this.props;
+    if (entitySetIds.has(APP_TYPE_FQNS.WORKSITE)) {
       this.loadProfile();
     }
   }
 
   componentDidUpdate(prevProps :Props) {
-    const { app } = this.props;
-    if (!prevProps.app.get(APP_TYPE_FQNS.WORKSITE) && app.get(APP_TYPE_FQNS.WORKSITE)) {
+    const { entitySetIds } = this.props;
+    if (!prevProps.entitySetIds.has(APP_TYPE_FQNS.WORKSITE) && entitySetIds.has(APP_TYPE_FQNS.WORKSITE)) {
       this.loadProfile();
     }
   }
@@ -308,8 +310,9 @@ class WorksiteProfile extends Component<Props> {
 const mapStateToProps = (state) => {
   const app = state.get(STATE.APP);
   const worksites = state.get(STATE.WORKSITES);
+  const selectedOrgId :string = app.get(SELECTED_ORG_ID);
   return ({
-    app,
+    entitySetIds: app.getIn([ENTITY_SET_IDS_BY_ORG, selectedOrgId], Map()),
     getWorksiteRequestState: worksites.getIn([ACTIONS, GET_WORKSITE, REQUEST_STATE]),
     initializeAppRequestState: app.getIn([APP.ACTIONS, APP.INITIALIZE_APPLICATION, APP.REQUEST_STATE]),
     [SCHEDULE_BY_WEEKDAY]: worksites.get(SCHEDULE_BY_WEEKDAY),
