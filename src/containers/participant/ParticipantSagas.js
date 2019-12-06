@@ -2037,7 +2037,7 @@ function* getParticipantCasesWorker(action :SequenceAction) :Generator<*, *, *> 
       throw response.error;
     }
     const caseResults :List = fromJS(response.data[personEKID]);
-    if (!caseResults.isEmpty()) {
+    if (caseResults && !caseResults.isEmpty()) {
       allParticipantCases = caseResults.map((caseResult :Map) => getNeighborDetails(caseResult));
 
       const caseEKIDs :UUID[] = allParticipantCases.map((caseEntity :Map) => getEntityKeyId(caseEntity)).toJS();
