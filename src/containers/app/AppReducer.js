@@ -3,7 +3,6 @@
  */
 
 import { AccountUtils } from 'lattice-auth';
-import isNumber from 'lodash/isNumber';
 import { Map, fromJS } from 'immutable';
 import { RequestStates } from 'redux-reqseq';
 import type { SequenceAction } from 'redux-reqseq';
@@ -19,10 +18,7 @@ import {
 
 const {
   ACTIONS,
-  ENTITY_SETS_BY_ORG,
   ENTITY_SET_IDS_BY_ORG,
-  ERRORS,
-  FQN_TO_ID,
   INITIALIZE_APPLICATION,
   ORGS,
   REQUEST_STATE,
@@ -31,19 +27,13 @@ const {
 } = APP;
 
 const INITIAL_STATE :Map<*, *> = fromJS({
-
   [ACTIONS]: {
     [APP.INITIALIZE_APPLICATION]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     }
   },
   [APP.APP]: Map(),
-  [ENTITY_SETS_BY_ORG]: Map(),
   [ENTITY_SET_IDS_BY_ORG]: Map(),
-  [ERRORS]: {
-    [APP.INITIALIZE_APPLICATION]: Map(),
-  },
-  [FQN_TO_ID]: Map(),
   [ORGS]: Map(),
   [SELECTED_ORG_ID]: '',
   [SELECTED_ORG_TITLE]: '',
@@ -75,8 +65,6 @@ export default function appReducer(state :Map<*, *> = INITIAL_STATE, action :Obj
           .setIn([ACTIONS, INITIALIZE_APPLICATION, REQUEST_STATE], RequestStates.PENDING)
           .set(SELECTED_ORG_ID, ''),
         SUCCESS: () => {
-          let entitySetsByOrgId = Map();
-          let fqnToIdMap = Map();
           if (!state.hasIn([ACTIONS, INITIALIZE_APPLICATION, action.id])) {
             return state;
           }
@@ -86,7 +74,6 @@ export default function appReducer(state :Map<*, *> = INITIAL_STATE, action :Obj
             return state;
           }
 
-          let newState :Map<*, *> = state;
           const { app, appConfigs } = value;
           const organizations :Object = {};
 
@@ -101,29 +88,14 @@ export default function appReducer(state :Map<*, *> = INITIAL_STATE, action :Obj
               if (fromJS(appConfig.config).size) {
                 organizations[orgId] = organization;
                 Object.values(APP_TYPE_FQNS).forEach((fqn) => {
-                  // console.log('fqn: ', fqn);
-                  // console.log('appConfig.config[fqn].entitySetId: ', appConfig.config[fqn].entitySetId);
                   entitySetIdsByOrg = entitySetIdsByOrg.setIn(
                     [orgId, fqn],
                     appConfig.config[fqn].entitySetId
-                  );
-                  newState = newState.setIn(
-                    [fqn, ENTITY_SETS_BY_ORG, orgId],
-                    appConfig.config[fqn].entitySetId
-                  );
-                  fqnToIdMap = fqnToIdMap.set(
-                    orgId,
-                    fqnToIdMap.get(orgId, Map()).set(fqn, appConfig.config[fqn].entitySetId)
-                  );
-                  entitySetsByOrgId = entitySetsByOrgId.set(
-                    orgId,
-                    entitySetsByOrgId.get(orgId, Map()).set(appConfig.config[fqn].entitySetId, fqn)
                   );
                 });
               }
             }
           });
-          console.log('entitySetIdsByOrg: ', entitySetIdsByOrg.toJS());
           let selectedOrganizationId :string = '';
           let selectedOrganizationTitle :string = '';
           if (fromJS(organizations).size && !selectedOrganizationId.length) {
@@ -136,26 +108,16 @@ export default function appReducer(state :Map<*, *> = INITIAL_STATE, action :Obj
             selectedOrganizationTitle = organizations[selectedOrganizationId].title;
           }
 
-          return newState
+          return state
             .set(APP.APP, app)
-            .set(ENTITY_SETS_BY_ORG, entitySetsByOrgId)
             .set(ENTITY_SET_IDS_BY_ORG, entitySetIdsByOrg)
-            .set(FQN_TO_ID, fqnToIdMap)
             .set(ORGS, fromJS(organizations))
             .set(SELECTED_ORG_ID, selectedOrganizationId)
             .set(SELECTED_ORG_TITLE, selectedOrganizationTitle)
             .setIn([ACTIONS, INITIALIZE_APPLICATION, REQUEST_STATE], RequestStates.SUCCESS);
         },
-        FAILURE: () => {
-
-          const error = {};
-          const { value: axiosError } = seqAction;
-          if (axiosError && axiosError.response && isNumber(axiosError.response.status)) {
-            error.status = axiosError.response.status;
-          }
-
-          return state.setIn([ERRORS, INITIALIZE_APPLICATION], fromJS(error));
-        },
+        FAILURE: () => state
+          .setIn([ACTIONS, INITIALIZE_APPLICATION, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state
           .deleteIn([ACTIONS, INITIALIZE_APPLICATION, seqAction.id])
       });
