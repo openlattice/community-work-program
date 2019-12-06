@@ -49,11 +49,16 @@ function* getEntityDataModelTypesWorker(action :SequenceAction) :Generator<*, *,
     ]);
     yield put(getEntityDataModelTypes.success(
       action.id,
-      [
-        ...response[0].data,
-        ...response[1].data,
-        ...response[2].data,
-      ]
+      // [
+      //   ...response[0].data,
+      //   ...response[1].data,
+      //   ...response[2].data,
+      // ]
+      {
+        associationTypes: response[0].data,
+        entityTypes: response[1].data,
+        propertyTypes: response[2].data,
+      }
     ));
   }
   catch (error) {
