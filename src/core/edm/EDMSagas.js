@@ -47,19 +47,11 @@ function* getEntityDataModelTypesWorker(action :SequenceAction) :Generator<*, *,
       call(getAllEntityTypesWorker, getAllEntityTypes()),
       call(getAllPropertyTypesWorker, getAllPropertyTypes()),
     ]);
-    yield put(getEntityDataModelTypes.success(
-      action.id,
-      // [
-      //   ...response[0].data,
-      //   ...response[1].data,
-      //   ...response[2].data,
-      // ]
-      {
-        associationTypes: response[0].data,
-        entityTypes: response[1].data,
-        propertyTypes: response[2].data,
-      }
-    ));
+    yield put(getEntityDataModelTypes.success(action.id, {
+      associationTypes: response[0].data,
+      entityTypes: response[1].data,
+      propertyTypes: response[2].data,
+    }));
   }
   catch (error) {
     LOG.error(ERR_WORKER_SAGA, error);

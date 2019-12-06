@@ -41,7 +41,6 @@ export default function edmReducer(state :Map<*, *> = INITIAL_STATE, action :Obj
           const entityTypes :List = fromJS(seqAction.value.entityTypes);
           const propertyTypes :List = fromJS(seqAction.value.propertyTypes);
 
-          // const types :Map<*, *> = fromJS(seqAction.value);
           const typeIdsByFqn :Map<FullyQualifiedName, string> = Map().asMutable();
           const typesById :Map = Map().asMutable();
 
@@ -72,25 +71,6 @@ export default function edmReducer(state :Map<*, *> = INITIAL_STATE, action :Obj
             }
           });
 
-          console.log('typeIdsByFqn: ', typeIdsByFqn.toJS());
-          console.log('typesByIds: ', typesById.toJS());
-
-          // types.forEach((type :Map<*, *>) => {
-          //   // EntityType or PropertyType
-          //   if (type.has('id')) {
-          //     const typeFqn :FullyQualifiedName = new FullyQualifiedName(type.get('type'));
-          //     const typeId :string = type.get('id');
-          //     typeIdsByFqn.set(typeFqn, typeId);
-          //     typesById.set(typeId, type);
-          //   }
-          //   // AssociationType
-          //   else if (type.has('entityType')) {
-          //     const typeFqn :FullyQualifiedName = new FullyQualifiedName(type.getIn(['entityType', 'type']));
-          //     const typeId :string = type.getIn(['entityType', 'id']);
-          //     typeIdsByFqn.set(typeFqn, typeId);
-          //     typesById.set(typeId, type);
-          //   }
-          // });
           return state
             .set('typeIdsByFqn', typeIdsByFqn.asImmutable())
             .set('typesById', typesById.asImmutable());
