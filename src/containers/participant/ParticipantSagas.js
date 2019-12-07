@@ -134,6 +134,7 @@ import {
   sortEntitiesByDateProperty,
 } from '../../utils/DataUtils';
 import { isDefined } from '../../utils/LangUtils';
+import { isValidUUID } from '../../utils/ValidationUtils';
 import { formatAsDate } from '../../utils/DateTimeUtils';
 import { getCombinedDateTime } from '../../utils/ScheduleUtils';
 import { enrollmentHeaderNames } from './ParticipantProfile';
@@ -2184,8 +2185,8 @@ function* getInfoForAddParticipantWorker(action :SequenceAction) :Generator<*, *
       call(getJudgesWorker, getJudges()),
       call(getChargesWorker, getCharges()),
     ];
-    if (Object.keys(value).length) {
-      const { personEKID } = value;
+    const { personEKID } = value;
+    if (isValidUUID(personEKID)) {
       workerCalls.push(call(getParticipantWorker, getParticipant({ personEKID })));
     }
 

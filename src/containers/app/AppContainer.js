@@ -22,6 +22,7 @@ import AppHeaderContainer from './AppHeaderContainer';
 import DashboardContainer from '../dashboard/DashboardContainer';
 import EditWorksiteHoursForm from '../worksites/EditWorksiteHoursForm';
 import EditWorksiteInfoForm from '../worksites/EditWorksiteInfoForm';
+import LogoLoader from '../../components/LogoLoader';
 import ParticipantProfileContainer from '../participant/ParticipantProfileContainer';
 import ParticipantsSearchContainer from '../participants/ParticipantsSearchContainer';
 import PrintWorkScheduleContainer from '../workschedule/PrintWorkScheduleContainer';
@@ -138,7 +139,15 @@ class AppContainer extends Component<Props> {
         }
         <AppContentOuterWrapper>
           <AppContentInnerWrapper>
-            { this.renderAppContent() }
+            {
+              loading ? (
+                <LogoLoader
+                    loadingText="Please wait..."
+                    size={60} />
+              ) : (
+                this.renderAppContent()
+              )
+            }
             <ContactSupport />
           </AppContentInnerWrapper>
         </AppContentOuterWrapper>

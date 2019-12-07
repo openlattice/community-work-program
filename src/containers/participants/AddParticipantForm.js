@@ -144,13 +144,11 @@ type Props = {
   charges :List;
   entitySetIds :Map;
   getInfoRequestState :RequestState;
-  initializeAppRequestState :RequestState;
   judges :List;
   propertyTypeIds :Map;
 };
 
 type State = {
-  formData :Object;
   formIsVisible :boolean;
 };
 
@@ -160,7 +158,6 @@ class AddParticipantForm extends Component<Props, State> {
     super(props);
 
     this.state = {
-      formData: {},
       formIsVisible: true,
     };
   }
@@ -196,7 +193,8 @@ class AddParticipantForm extends Component<Props, State> {
 
     let dataToSubmit :Object = formData;
 
-    const currentTime = DateTime.local().toLocaleString(DateTime.TIME_24_SIMPLE);
+    const now = DateTime.local();
+    const currentTime = now.toLocaleString(DateTime.TIME_24_SIMPLE);
     dataToSubmit = setIn(dataToSubmit, [getPageSectionKey(1, 3), getEntityAddressKey(0, DIVERSION_PLAN, NAME)], CWP);
     dataToSubmit = setIn(
       dataToSubmit,
@@ -213,9 +211,8 @@ class AddParticipantForm extends Component<Props, State> {
       dataToSubmit = setIn(dataToSubmit, sentenceDateKey, sentenceDateTime);
     }
 
-    const now = DateTime.local().toISO();
     dataToSubmit = setIn(dataToSubmit, [getPageSectionKey(1, 5)], {
-      [getEntityAddressKey(0, ENROLLMENT_STATUS, EFFECTIVE_DATE)]: now,
+      [getEntityAddressKey(0, ENROLLMENT_STATUS, EFFECTIVE_DATE)]: now.toISO(),
       [getEntityAddressKey(0, ENROLLMENT_STATUS, STATUS)]: ENROLLMENT_STATUSES.AWAITING_CHECKIN,
     });
 
@@ -321,13 +318,11 @@ class AddParticipantForm extends Component<Props, State> {
       addParticipantRequestState,
       charges,
       getInfoRequestState,
-      initializeAppRequestState,
       judges,
     } = this.props;
-    const { formData, formIsVisible } = this.state;
+    const { formIsVisible } = this.state;
 
-    if (initializeAppRequestState === RequestStates.PENDING
-        || getInfoRequestState === RequestStates.PENDING) {
+    if (getInfoRequestState === RequestStates.PENDING) {
       return (
         <LogoLoader
             loadingText="Please wait..."
@@ -347,20 +342,17 @@ class AddParticipantForm extends Component<Props, State> {
         </ButtonWrapper>
         <CardStack>
           <Card>
-            <CardHeader mode="primary" padding="sm">Add New Participant</CardHeader>
+            <CardHeader mode="primary" padding="md">Add New Participant</CardHeader>
             {
-              (formIsVisible && addParticipantRequestState !== RequestStates.PENDING)
-                && (
-                  <Form
-                      formData={formData}
-                      onSubmit={this.handleOnSubmit}
-                      schema={formSchema}
-                      uiSchema={uiSchema} />
-                )
+              (formIsVisible && addParticipantRequestState !== RequestStates.PENDING) && (
+                <Form
+                    onSubmit={this.handleOnSubmit}
+                    schema={formSchema}
+                    uiSchema={uiSchema} />
+              )
             }
             {
-              addParticipantRequestState === RequestStates.PENDING
-              && (
+              addParticipantRequestState === RequestStates.PENDING && (
                 <CardSegment padding="md">
                   <SpinnerWrapper>
                     <Spinner size="2x" />
@@ -369,8 +361,7 @@ class AddParticipantForm extends Component<Props, State> {
               )
             }
             {
-              !formIsVisible
-              && (
+              !formIsVisible && (
                 <CardSegment padding="md">
                   <SubmissionActionsWrapper>
                     <SubmittedWrapper>
@@ -400,12 +391,11 @@ const mapStateToProps = (state :Map) => {
   const people = state.get(STATE.PEOPLE);
   const selectedOrgId :string = app.get(SELECTED_ORG_ID);
   return ({
-    addParticipantRequestState: people.getIn([ACTIONS, ADD_PARTICIPANT, REQUEST_STATE]),
     [CHARGES]: person.get(CHARGES),
+    [PERSON.JUDGES]: person.get(PERSON.JUDGES),
+    addParticipantRequestState: people.getIn([ACTIONS, ADD_PARTICIPANT, REQUEST_STATE]),
     entitySetIds: app.getIn([ENTITY_SET_IDS_BY_ORG, selectedOrgId], Map()),
     getInfoRequestState: person.getIn([ACTIONS, GET_INFO_FOR_ADD_PARTICIPANT, REQUEST_STATE]),
-    initializeAppRequestState: app.getIn([APP.ACTIONS, APP.INITIALIZE_APPLICATION, APP.REQUEST_STATE]),
-    [PERSON.JUDGES]: person.get(PERSON.JUDGES),
     propertyTypeIds: edm.getIn([TYPE_IDS_BY_FQNS, PROPERTY_TYPES], Map()),
   });
 };

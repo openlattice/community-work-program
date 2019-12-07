@@ -135,26 +135,13 @@ type Props = {
   charges :List;
   entitySetIds :Map;
   getInfoRequestState :RequestState;
-  initializeAppRequestState :RequestState;
   judges :List;
   match :Match;
   participant :Map;
   propertyTypeIds :Map;
 };
 
-type State = {
-  formData :Object;
-};
-
-class CreateNewEnrollmentForm extends Component<Props, State> {
-
-  constructor(props :Props) {
-    super(props);
-
-    this.state = {
-      formData: {},
-    };
-  }
+class CreateNewEnrollmentForm extends Component<Props> {
 
   componentDidMount() {
     const {
@@ -197,7 +184,8 @@ class CreateNewEnrollmentForm extends Component<Props, State> {
     const personEKID :UUID = getEntityKeyId(participant);
     let dataToSubmit :Object = formData;
 
-    const currentTime = DateTime.local().toLocaleString(DateTime.TIME_24_SIMPLE);
+    const now = DateTime.local();
+    const currentTime = now.toLocaleString(DateTime.TIME_24_SIMPLE);
     dataToSubmit = setIn(dataToSubmit, [getPageSectionKey(1, 1), getEntityAddressKey(0, DIVERSION_PLAN, NAME)], CWP);
     dataToSubmit = setIn(
       dataToSubmit,
@@ -215,9 +203,8 @@ class CreateNewEnrollmentForm extends Component<Props, State> {
     }
 
     /* add in enrollment status */
-    const now = DateTime.local().toISO();
     dataToSubmit = setIn(dataToSubmit, [getPageSectionKey(1, 3)], {
-      [getEntityAddressKey(0, ENROLLMENT_STATUS, EFFECTIVE_DATE)]: now,
+      [getEntityAddressKey(0, ENROLLMENT_STATUS, EFFECTIVE_DATE)]: now.toISO(),
       [getEntityAddressKey(0, ENROLLMENT_STATUS, STATUS)]: ENROLLMENT_STATUSES.AWAITING_CHECKIN,
     });
 
@@ -226,11 +213,12 @@ class CreateNewEnrollmentForm extends Component<Props, State> {
       getPageSectionKey(1, 1),
       getEntityAddressKey(0, MANUAL_PRETRIAL_COURT_CASES, CASE_NUMBER_TEXT)
     ];
-    if (!hasIn(dataToSubmit, [
+    const hasCourtType :boolean = hasIn(dataToSubmit, [
       getPageSectionKey(1, 1),
       getEntityAddressKey(0, MANUAL_PRETRIAL_COURT_CASES, COURT_CASE_TYPE)
-    ])
-      || !hasIn(dataToSubmit, docketNumberKey)) {
+    ]);
+    const hasDocketNumber :boolean = hasIn(dataToSubmit, docketNumberKey);
+    if (!hasCourtType || !hasDocketNumber) {
       dataToSubmit = setIn(dataToSubmit, docketNumberKey, getIn(dataToSubmit, docketNumberKey) || '');
     }
 
@@ -291,13 +279,10 @@ class CreateNewEnrollmentForm extends Component<Props, State> {
       createNewEnrollmentRequestState,
       charges,
       getInfoRequestState,
-      initializeAppRequestState,
       judges,
     } = this.props;
-    const { formData } = this.state;
 
-    if (initializeAppRequestState === RequestStates.PENDING
-        || getInfoRequestState === RequestStates.PENDING) {
+    if (getInfoRequestState === RequestStates.PENDING) {
       return (
         <LogoLoader
             loadingText="Please wait..."
@@ -317,13 +302,12 @@ class CreateNewEnrollmentForm extends Component<Props, State> {
         </ButtonWrapper>
         <CardStack>
           <Card>
-            <CardHeader mode="primary" padding="sm">Create New Enrollment</CardHeader>
+            <CardHeader mode="primary" padding="md">Create New Enrollment</CardHeader>
             {
               (createNewEnrollmentRequestState !== RequestStates.PENDING
                   && createNewEnrollmentRequestState !== RequestStates.SUCCESS)
                 && (
                   <Form
-                      formData={formData}
                       onSubmit={this.handleOnSubmit}
                       schema={formSchema}
                       uiSchema={uiSchema} />
@@ -369,13 +353,12 @@ const mapStateToProps = (state :Map) => {
   const person = state.get(STATE.PERSON);
   const selectedOrgId :string = app.get(SELECTED_ORG_ID);
   return ({
-    createNewEnrollmentRequestState: person.getIn([ACTIONS, CREATE_NEW_ENROLLMENT, REQUEST_STATE]),
     [CHARGES]: person.get(CHARGES),
-    entitySetIds: app.getIn([ENTITY_SET_IDS_BY_ORG, selectedOrgId], Map()),
-    getInfoRequestState: person.getIn([ACTIONS, GET_INFO_FOR_ADD_PARTICIPANT, REQUEST_STATE]),
-    initializeAppRequestState: app.getIn([APP.ACTIONS, APP.INITIALIZE_APPLICATION, APP.REQUEST_STATE]),
     [PARTICIPANT]: person.get(PARTICIPANT),
     [PERSON.JUDGES]: person.get(PERSON.JUDGES),
+    createNewEnrollmentRequestState: person.getIn([ACTIONS, CREATE_NEW_ENROLLMENT, REQUEST_STATE]),
+    entitySetIds: app.getIn([ENTITY_SET_IDS_BY_ORG, selectedOrgId], Map()),
+    getInfoRequestState: person.getIn([ACTIONS, GET_INFO_FOR_ADD_PARTICIPANT, REQUEST_STATE]),
     propertyTypeIds: edm.getIn([TYPE_IDS_BY_FQNS, PROPERTY_TYPES], Map()),
   });
 };

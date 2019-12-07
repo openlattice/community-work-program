@@ -1,7 +1,7 @@
 // @flow
 import React from 'react';
 import toString from 'lodash/toString';
-import { Map, isImmutable } from 'immutable';
+import { Map } from 'immutable';
 import { faUser, faUserCircle } from '@fortawesome/pro-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import type { Element } from 'react';
@@ -85,7 +85,7 @@ const getHoursServed = (hoursWorked :number, hoursRequired :number) :string => {
 
 const getPersonAddress = (address :Map) :string => {
 
-  if (!isImmutable(address)) return EMPTY_FIELD;
+  if (!Map.isMap(address)) return EMPTY_FIELD;
 
   const {
     [CITY]: city,
