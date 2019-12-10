@@ -43,10 +43,12 @@ const worksiteSchema = {
         [getEntityAddressKey(0, WORKSITE, DATETIME_START)]: {
           type: 'string',
           title: 'Date first active',
+          format: 'date'
         },
         [getEntityAddressKey(0, WORKSITE, DATETIME_END)]: {
           type: 'string',
           title: 'Date marked inactive',
+          format: 'date'
         },
         [getEntityAddressKey(0, WORKSITE, DESCRIPTION)]: {
           type: 'string',
