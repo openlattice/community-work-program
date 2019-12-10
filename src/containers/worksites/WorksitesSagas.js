@@ -2,7 +2,13 @@
  * @flow
  */
 
-import { List, Map, fromJS } from 'immutable';
+import {
+  List,
+  Map,
+  fromJS,
+  getIn,
+  has,
+} from 'immutable';
 import {
   all,
   call,
@@ -10,6 +16,7 @@ import {
   select,
   takeEvery,
 } from '@redux-saga/core/effects';
+import { DateTime } from 'luxon';
 import {
   DataApiActions,
   DataApiSagas,
@@ -29,9 +36,14 @@ import {
   getNeighborDetails,
   getNeighborESID,
   getPropertyFqnFromEdm,
+  getPropertyTypeIdFromEdm,
   sortEntitiesByDateProperty,
 } from '../../utils/DataUtils';
-import { getWorksiteScheduleFromFormData, getWorksiteScheduleFromEntities } from '../../utils/ScheduleUtils';
+import {
+  getCombinedDateTime,
+  getWorksiteScheduleFromFormData,
+  getWorksiteScheduleFromEntities
+} from '../../utils/ScheduleUtils';
 import { isDefined } from '../../utils/LangUtils';
 import { STATE } from '../../utils/constants/ReduxStateConsts';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
@@ -90,6 +102,8 @@ const {
   WORKSITE_PLAN,
 } = APP_TYPE_FQNS;
 const {
+  DATETIME_END,
+  DATETIME_START,
   EMAIL,
   ENTITY_KEY_ID,
   HOURS_WORKED,
@@ -422,20 +436,32 @@ function* editWorksiteWorker(action :SequenceAction) :Generator<*, *, *> {
   try {
     yield put(editWorksite.request(id, value));
 
-    response = yield call(submitPartialReplaceWorker, submitPartialReplace(value));
-    if (response.error) {
-      throw response.error;
-    }
     const { entityData } = value;
     const app = yield select(getAppFromState);
     const worksiteESID :UUID = getEntitySetIdFromApp(app, WORKSITE);
     const edm = yield select(getEdmFromState);
+    const dateTimeStartPTID :UUID = getPropertyTypeIdFromEdm(edm, DATETIME_START);
+    const dateTimeEndPTID :UUID = getPropertyTypeIdFromEdm(edm, DATETIME_END);
 
     const personEKID :UUID = Object.keys(entityData[worksiteESID])[0];
-    const storedWorksiteData :Map = fromJS(entityData[worksiteESID][personEKID]);
+    const storedWorksiteData :Object = entityData[worksiteESID][personEKID];
+    const timeNow :string = DateTime.local().toLocaleString(DateTime.TIME_24_SIMPLE);
+    if (has(storedWorksiteData, dateTimeStartPTID)) {
+      const dateTimeStartValue = getIn(storedWorksiteData, [dateTimeStartPTID, 0]);
+      entityData[worksiteESID][personEKID][dateTimeStartPTID] = [getCombinedDateTime(dateTimeStartValue, timeNow)];
+    }
+    if (has(storedWorksiteData, dateTimeEndPTID)) {
+      const dateTimeEndValue = getIn(storedWorksiteData, [dateTimeEndPTID, 0]);
+      entityData[worksiteESID][personEKID][dateTimeEndPTID] = [getCombinedDateTime(dateTimeEndValue, timeNow)];
+    }
+
+    response = yield call(submitPartialReplaceWorker, submitPartialReplace({ entityData }));
+    if (response.error) {
+      throw response.error;
+    }
 
     let newWorksiteData :Map = Map();
-    storedWorksiteData.forEach((worksiteValue, propertyTypeId) => {
+    fromJS(storedWorksiteData).forEach((worksiteValue, propertyTypeId) => {
       const propertyTypeFqn = getPropertyFqnFromEdm(edm, propertyTypeId);
       newWorksiteData = newWorksiteData.set(propertyTypeFqn, worksiteValue);
     });
