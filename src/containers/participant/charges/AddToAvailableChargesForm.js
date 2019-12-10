@@ -8,22 +8,18 @@ import type { RequestSequence } from 'redux-reqseq';
 
 import { addToAvailableCharges } from '../ParticipantActions';
 import { schema, uiSchema } from './AddToAvailableChargesSchemas';
-import { getEntitySetIdFromApp, getPropertyTypeIdFromEdm } from '../../../utils/DataUtils';
-import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
-import { STATE } from '../../../utils/constants/ReduxStateConsts';
+import { APP, EDM, STATE } from '../../../utils/constants/ReduxStateConsts';
 
-const {
-  processEntityData,
-} = DataProcessingUtils;
-const { COURT_CHARGE_LIST } = APP_TYPE_FQNS;
-const { NAME, OL_ID } = PROPERTY_TYPE_FQNS;
+const { processEntityData } = DataProcessingUtils;
+const { ENTITY_SET_IDS_BY_ORG, SELECTED_ORG_ID } = APP;
+const { PROPERTY_TYPES, TYPE_IDS_BY_FQNS } = EDM;
 
 type Props = {
   actions:{
     addToAvailableCharges :RequestSequence;
   };
-  app :Map;
-  edm :Map;
+  entitySetIds :Map;
+  propertyTypeIds :Map;
 };
 
 type State = {
@@ -32,20 +28,16 @@ type State = {
 
 class AddToAvailableChargesForm extends Component<Props, State> {
 
-  state = {
-    formData: {},
-  };
+  constructor(props :Props) {
+    super(props);
+
+    this.state = {
+      formData: {},
+    };
+  }
 
   handleOnSubmit = ({ formData } :Object) => {
-    const { actions, app, edm } = this.props;
-
-    const entitySetIds :{} = {
-      [COURT_CHARGE_LIST]: getEntitySetIdFromApp(app, COURT_CHARGE_LIST),
-    };
-    const propertyTypeIds :{} = {
-      [NAME]: getPropertyTypeIdFromEdm(edm, NAME),
-      [OL_ID]: getPropertyTypeIdFromEdm(edm, OL_ID),
-    };
+    const { actions, entitySetIds, propertyTypeIds } = this.props;
     const entityData = processEntityData(formData, entitySetIds, propertyTypeIds);
     actions.addToAvailableCharges({ associationEntityData: {}, entityData });
   }
@@ -65,9 +57,10 @@ class AddToAvailableChargesForm extends Component<Props, State> {
 const mapStateToProps = (state :Map) => {
   const app = state.get(STATE.APP);
   const edm = state.get(STATE.EDM);
+  const selectedOrgId :string = app.get(SELECTED_ORG_ID);
   return ({
-    app,
-    edm,
+    entitySetIds: app.getIn([ENTITY_SET_IDS_BY_ORG, selectedOrgId], Map()),
+    propertyTypeIds: edm.getIn([TYPE_IDS_BY_FQNS, PROPERTY_TYPES], Map()),
   });
 };
 

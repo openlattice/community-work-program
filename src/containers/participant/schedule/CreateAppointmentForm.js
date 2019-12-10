@@ -17,18 +17,19 @@ import { bindActionCreators } from 'redux';
 import type { RequestSequence } from 'redux-reqseq';
 
 import { createWorkAppointments } from '../assignedworksites/WorksitePlanActions';
-import {
-  getEntityProperties,
-  getEntitySetIdFromApp,
-  getPropertyTypeIdFromEdm
-} from '../../../utils/DataUtils';
+import { getEntityProperties } from '../../../utils/DataUtils';
 import {
   getCombinedDateTime,
   getCustomSchedule,
   getRegularlyRepeatingAppointments
 } from '../../../utils/ScheduleUtils';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
-import { STATE, WORKSITE_PLANS } from '../../../utils/constants/ReduxStateConsts';
+import {
+  APP,
+  EDM,
+  STATE,
+  WORKSITE_PLANS
+} from '../../../utils/constants/ReduxStateConsts';
 import {
   ButtonsRow,
   FormRow,
@@ -51,6 +52,8 @@ const {
 } = APP_TYPE_FQNS;
 const { DATETIME_END, INCIDENT_START_DATETIME, NAME } = PROPERTY_TYPE_FQNS;
 
+const { ENTITY_SET_IDS_BY_ORG, SELECTED_ORG_ID } = APP;
+const { PROPERTY_TYPES, TYPE_IDS_BY_FQNS } = EDM;
 const { WORKSITES_BY_WORKSITE_PLAN } = WORKSITE_PLANS;
 
 const START = 'start';
@@ -86,11 +89,11 @@ type Props = {
   actions:{
     createWorkAppointments :RequestSequence;
   };
-  app :Map;
-  edm :Map;
+  entitySetIds :Map;
   isLoading :boolean;
   onDiscard :() => void;
   personEKID :UUID;
+  propertyTypeIds :Map;
   worksitesByWorksitePlan :Map;
 };
 
@@ -123,25 +126,6 @@ class CreateWorkAppointmentForm extends Component<Props, State> {
       rawStartTime: '',
       weeklyIntervalToRepeat: 0,
       worksitePlanEKID: '',
-    };
-  }
-
-  createEntitySetIdsMap = () => {
-    const { app } = this.props;
-    return {
-      [ADDRESSES]: getEntitySetIdFromApp(app, ADDRESSES),
-      [APPOINTMENT]: getEntitySetIdFromApp(app, APPOINTMENT),
-      [HAS]: getEntitySetIdFromApp(app, HAS),
-      [PEOPLE]: getEntitySetIdFromApp(app, PEOPLE),
-      [WORKSITE_PLAN]: getEntitySetIdFromApp(app, WORKSITE_PLAN),
-    };
-  }
-
-  createPropertyTypeIdsMap = () => {
-    const { edm } = this.props;
-    return {
-      [INCIDENT_START_DATETIME]: getPropertyTypeIdFromEdm(edm, INCIDENT_START_DATETIME),
-      [DATETIME_END]: getPropertyTypeIdFromEdm(edm, DATETIME_END),
     };
   }
 
@@ -182,7 +166,12 @@ class CreateWorkAppointmentForm extends Component<Props, State> {
   }
 
   handleOnSubmit = () => {
-    const { actions, personEKID } = this.props;
+    const {
+      actions,
+      entitySetIds,
+      personEKID,
+      propertyTypeIds
+    } = this.props;
     const {
       appointmentDays,
       endsOnDate,
@@ -249,9 +238,6 @@ class CreateWorkAppointmentForm extends Component<Props, State> {
       associations.push([ADDRESSES, i, APPOINTMENT, worksitePlanEKID, WORKSITE_PLAN, {}]);
       associations.push([HAS, personEKID, PEOPLE, i, APPOINTMENT, {}]);
     });
-
-    const entitySetIds :Object = this.createEntitySetIdsMap();
-    const propertyTypeIds :Object = this.createPropertyTypeIdsMap();
 
     const entityData :{} = processEntityData(newAppointmentData, entitySetIds, propertyTypeIds);
     const associationEntityData :{} = processAssociationEntityData(fromJS(associations), entitySetIds, propertyTypeIds);
@@ -360,11 +346,16 @@ class CreateWorkAppointmentForm extends Component<Props, State> {
   }
 }
 
-const mapStateToProps = (state :Map) => ({
-  app: state.get(STATE.APP),
-  edm: state.get(STATE.EDM),
-  [WORKSITES_BY_WORKSITE_PLAN]: state.getIn([STATE.WORKSITE_PLANS, WORKSITES_BY_WORKSITE_PLAN]),
-});
+const mapStateToProps = (state :Map) => {
+  const app = state.get(STATE.APP);
+  const edm = state.get(STATE.EDM);
+  const selectedOrgId :string = app.get(SELECTED_ORG_ID);
+  return ({
+    entitySetIds: app.getIn([ENTITY_SET_IDS_BY_ORG, selectedOrgId], Map()),
+    propertyTypeIds: edm.getIn([TYPE_IDS_BY_FQNS, PROPERTY_TYPES], Map()),
+    [WORKSITES_BY_WORKSITE_PLAN]: state.getIn([STATE.WORKSITE_PLANS, WORKSITES_BY_WORKSITE_PLAN]),
+  });
+};
 
 const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({

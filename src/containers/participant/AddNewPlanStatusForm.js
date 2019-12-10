@@ -26,7 +26,13 @@ import { getEntityKeyId, getEntitySetIdFromApp, getPropertyTypeIdFromEdm } from 
 import { getCombinedDateTime } from '../../utils/ScheduleUtils';
 import { STATUS_FILTER_OPTIONS } from '../participants/ParticipantsConstants';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
-import { PERSON, STATE, WORKSITE_PLANS } from '../../utils/constants/ReduxStateConsts';
+import {
+  APP,
+  EDM,
+  PERSON,
+  STATE,
+  WORKSITE_PLANS
+} from '../../utils/constants/ReduxStateConsts';
 import { ENROLLMENT_STATUSES, WORKSITE_ENROLLMENT_STATUSES } from '../../core/edm/constants/DataModelConsts';
 import {
   ButtonsRow,
@@ -58,6 +64,9 @@ const {
   STATUS,
 } = PROPERTY_TYPE_FQNS;
 
+const { ENTITY_SET_IDS_BY_ORG, SELECTED_ORG_ID } = APP;
+const { PROPERTY_TYPES, TYPE_IDS_BY_FQNS } = EDM;
+
 const ENROLLMENT_STATUS_OPTIONS :Object[] = STATUS_FILTER_OPTIONS
   .slice(1)
   .map((status :Object) => {
@@ -73,9 +82,11 @@ type Props = {
   currentStatus :string;
   diversionPlan :Map;
   edm :Map;
+  entitySetIds :Map;
   isLoading :boolean;
   onDiscard :() => void;
   personName :string;
+  propertyTypeIds :Map;
   worksitePlans :List;
 };
 
@@ -93,30 +104,6 @@ class AddNewPlanStatusForm extends Component<Props, State> {
         [getPageSectionKey(1, 2)]: {},
         [getPageSectionKey(1, 3)]: {},
       }),
-    };
-  }
-
-  createEntitySetIdsMap = () => {
-    const { app } = this.props;
-    return {
-      [DIVERSION_PLAN]: getEntitySetIdFromApp(app, DIVERSION_PLAN),
-      [ENROLLMENT_STATUS]: getEntitySetIdFromApp(app, ENROLLMENT_STATUS),
-      [PROGRAM_OUTCOME]: getEntitySetIdFromApp(app, PROGRAM_OUTCOME),
-      [RELATED_TO]: getEntitySetIdFromApp(app, RELATED_TO),
-      [RESULTS_IN]: getEntitySetIdFromApp(app, RESULTS_IN),
-      [WORKSITE_PLAN]: getEntitySetIdFromApp(app, WORKSITE_PLAN),
-    };
-  }
-
-  createPropertyTypeIdsMap = () => {
-    const { edm } = this.props;
-    return {
-      [COMPLETED]: getPropertyTypeIdFromEdm(edm, COMPLETED),
-      [DATETIME_COMPLETED]: getPropertyTypeIdFromEdm(edm, DATETIME_COMPLETED),
-      [DESCRIPTION]: getPropertyTypeIdFromEdm(edm, DESCRIPTION),
-      [EFFECTIVE_DATE]: getPropertyTypeIdFromEdm(edm, EFFECTIVE_DATE),
-      [HOURS_WORKED]: getPropertyTypeIdFromEdm(edm, HOURS_WORKED),
-      [STATUS]: getPropertyTypeIdFromEdm(edm, STATUS),
     };
   }
 
@@ -144,6 +131,8 @@ class AddNewPlanStatusForm extends Component<Props, State> {
       app,
       diversionPlan,
       edm,
+      entitySetIds,
+      propertyTypeIds,
       worksitePlans,
     } = this.props;
     let { newEnrollmentData } = this.state;
@@ -240,9 +229,6 @@ class AddNewPlanStatusForm extends Component<Props, State> {
       actions.markDiversionPlanAsComplete({ entityData: diversionPlanDataToUpdate });
     }
 
-    const entitySetIds :Object = this.createEntitySetIdsMap();
-    const propertyTypeIds :Object = this.createPropertyTypeIdsMap();
-
     const entityData :{} = processEntityData(newEnrollmentData, entitySetIds, propertyTypeIds);
     const associationEntityData :{} = processAssociationEntityData(fromJS(associations), entitySetIds, propertyTypeIds);
 
@@ -338,12 +324,18 @@ class AddNewPlanStatusForm extends Component<Props, State> {
   }
 }
 
-const mapStateToProps = (state :Map) => ({
-  app: state.get(STATE.APP),
-  diversionPlan: state.getIn([STATE.PERSON, PERSON.DIVERSION_PLAN]),
-  edm: state.get(STATE.EDM),
-  worksitePlans: state.getIn([STATE.WORKSITE_PLANS, WORKSITE_PLANS.WORKSITE_PLANS_LIST]),
-});
+const mapStateToProps = (state :Map) => {
+  const app = state.get(STATE.APP);
+  const selectedOrgId :string = app.get(SELECTED_ORG_ID);
+  return {
+    app: state.get(STATE.APP),
+    diversionPlan: state.getIn([STATE.PERSON, PERSON.DIVERSION_PLAN]),
+    edm: state.get(STATE.EDM),
+    entitySetIds: app.getIn([ENTITY_SET_IDS_BY_ORG, selectedOrgId], Map()),
+    propertyTypeIds: state.getIn([STATE.EDM, TYPE_IDS_BY_FQNS, PROPERTY_TYPES], Map()),
+    worksitePlans: state.getIn([STATE.WORKSITE_PLANS, WORKSITE_PLANS.WORKSITE_PLANS_LIST]),
+  };
+};
 
 const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({

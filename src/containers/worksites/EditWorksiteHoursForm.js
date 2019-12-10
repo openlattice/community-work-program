@@ -17,14 +17,15 @@ import { createWorksiteSchedule, getWorksite } from './WorksitesActions';
 import { schema, uiSchema } from './schemas/EditWorksiteHoursSchemas';
 import { goToRoute } from '../../core/router/RoutingActions';
 import { BackNavButton } from '../../components/controls/index';
-import {
-  getEntityKeyId,
-  getEntitySetIdFromApp,
-  getPropertyTypeIdFromEdm
-} from '../../utils/DataUtils';
+import { getEntityKeyId } from '../../utils/DataUtils';
 import { getEntitiesForWorksiteSchedule } from '../../utils/ScheduleUtils';
-import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
-import { APP, STATE, WORKSITES } from '../../utils/constants/ReduxStateConsts';
+import { APP_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import {
+  APP,
+  EDM,
+  STATE,
+  WORKSITES
+} from '../../utils/constants/ReduxStateConsts';
 import type { GoToRoute } from '../../core/router/RoutingActions';
 
 const {
@@ -38,8 +39,9 @@ const {
   RELATED_TO,
   WORKSITE,
 } = APP_TYPE_FQNS;
-const { DATETIME_END, INCIDENT_START_DATETIME } = PROPERTY_TYPE_FQNS;
 
+const { ENTITY_SET_IDS_BY_ORG, SELECTED_ORG_ID } = APP;
+const { PROPERTY_TYPES, TYPE_IDS_BY_FQNS } = EDM;
 const {
   ACTIONS,
   CONTACT_EMAIL,
@@ -70,11 +72,11 @@ type Props = {
     getWorksite :RequestSequence;
     goToRoute :GoToRoute;
   },
-  app :Map;
-  edm :Map;
+  entitySetIds :Map;
   getWorksiteRequestState :RequestState;
   initializeAppRequestState :RequestState;
   match :Match;
+  propertyTypeIds :Map;
   scheduleForForm :Map;
   worksite :Map;
 };
@@ -99,12 +101,12 @@ class EditWorksiteHoursForm extends Component<Props, State> {
   componentDidMount() {
     const {
       actions,
-      app,
+      entitySetIds,
       match: {
         params: { worksiteId: worksiteEKID }
       },
     } = this.props;
-    if (app.get(WORKSITE) && worksiteEKID) {
+    if (entitySetIds.has(WORKSITE) && worksiteEKID) {
       actions.getWorksite({ worksiteEKID });
     }
   }
@@ -112,13 +114,13 @@ class EditWorksiteHoursForm extends Component<Props, State> {
   componentDidUpdate(prevProps :Props) {
     const {
       actions,
-      app,
+      entitySetIds,
       match: {
         params: { worksiteId: worksiteEKID }
       },
       scheduleForForm,
     } = this.props;
-    if (!prevProps.app.get(WORKSITE) && app.get(WORKSITE) && worksiteEKID) {
+    if ((!prevProps.entitySetIds.has(WORKSITE) && entitySetIds.has(WORKSITE)) && worksiteEKID) {
       actions.getWorksite({ worksiteEKID });
     }
     if (!prevProps.scheduleForForm.equals(scheduleForForm)) {
@@ -144,36 +146,23 @@ class EditWorksiteHoursForm extends Component<Props, State> {
     return entityIndexToIdMap;
   }
 
-  createEntitySetIdsMap = () => {
-    const { app } = this.props;
-    return {
-      [APPOINTMENT]: getEntitySetIdFromApp(app, APPOINTMENT),
-      [RELATED_TO]: getEntitySetIdFromApp(app, RELATED_TO),
-      [WORKSITE]: getEntitySetIdFromApp(app, WORKSITE),
-    };
-  }
-
-  createPropertyTypeIdsMap = () => {
-    const { edm } = this.props;
-    return {
-      [DATETIME_END]: getPropertyTypeIdFromEdm(edm, DATETIME_END),
-      [INCIDENT_START_DATETIME]: getPropertyTypeIdFromEdm(edm, INCIDENT_START_DATETIME),
-    };
-  }
-
   handleOnSubmit = ({ formData } :Object) => {
-    const { actions, worksite } = this.props;
+    const {
+      actions,
+      entitySetIds,
+      propertyTypeIds,
+      worksite
+    } = this.props;
 
     const worksiteEKID :UUID = getEntityKeyId(worksite);
     const appointmentEntities = getEntitiesForWorksiteSchedule(formData);
     const associations = [];
+
     const entityCount :number = fromJS(appointmentEntities[getPageSectionKey(1, 1)]).count() / 2;
     for (let i = 0; i < entityCount; i += 1) {
       associations.push([RELATED_TO, worksiteEKID, WORKSITE, i, APPOINTMENT]);
     }
 
-    const entitySetIds :Object = this.createEntitySetIdsMap();
-    const propertyTypeIds :Object = this.createPropertyTypeIdsMap();
     const entityData :Object = processEntityData(appointmentEntities, entitySetIds, propertyTypeIds);
     const associationEntityData :Object = processAssociationEntityData(
       associations,
@@ -237,22 +226,24 @@ class EditWorksiteHoursForm extends Component<Props, State> {
 
 const mapStateToProps = (state :Map) => {
   const app = state.get(STATE.APP);
+  const edm = state.get(STATE.EDM);
   const worksites = state.get(STATE.WORKSITES);
+  const selectedOrgId :string = app.get(SELECTED_ORG_ID);
   return ({
-    app,
     [CONTACT_EMAIL]: worksites.get(CONTACT_EMAIL),
     [CONTACT_PERSON]: worksites.get(CONTACT_PERSON),
     [CONTACT_PHONE]: worksites.get(CONTACT_PHONE),
-    edm: state.get(STATE.EDM),
-    getWorksiteRequestState: worksites.getIn([ACTIONS, GET_WORKSITE, REQUEST_STATE]),
-    initializeAppRequestState: app.getIn([APP.ACTIONS, APP.INITIALIZE_APPLICATION, APP.REQUEST_STATE]),
     [SCHEDULE_FOR_FORM]: worksites.get(SCHEDULE_FOR_FORM),
     [WORKSITES.WORKSITE]: worksites.get(WORKSITES.WORKSITE),
     [WORKSITE_ADDRESS]: worksites.get(WORKSITE_ADDRESS),
+    entitySetIds: app.getIn([ENTITY_SET_IDS_BY_ORG, selectedOrgId], Map()),
+    getWorksiteRequestState: worksites.getIn([ACTIONS, GET_WORKSITE, REQUEST_STATE]),
+    initializeAppRequestState: app.getIn([APP.ACTIONS, APP.INITIALIZE_APPLICATION, APP.REQUEST_STATE]),
+    propertyTypeIds: edm.getIn([TYPE_IDS_BY_FQNS, PROPERTY_TYPES], Map()),
   });
 };
 
-const mapDispatchToProps = dispatch => ({
+const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
     createWorksiteSchedule,
     getWorksite,

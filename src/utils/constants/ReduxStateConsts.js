@@ -16,15 +16,24 @@ export const STATE = {
 export const APP = {
   ACTIONS: 'actions',
   APP: 'app',
-  ENTITY_SETS_BY_ORG: 'entitySetsByOrganization',
-  FQN_TO_ID: 'fqnsToEntitySetIds',
+  ENTITY_SET_IDS_BY_ORG: 'entitySetIdsByOrg',
   INITIALIZE_APPLICATION: 'initializeApplication',
-  ERRORS: 'errors',
   ORGS: 'organizations',
   REQUEST_STATE: 'requestState',
   SELECTED_ORG_ID: 'selectedOrganizationId',
   SELECTED_ORG_TITLE: 'selectedOrganizationTitle',
   SWITCH_ORGANIZATION: 'switchOrganization',
+};
+
+/* EDM */
+export const EDM = {
+  ASSOCIATION_TYPES: 'associationTypes',
+  ENTITY_TYPES: 'entityTypes',
+  IS_FETCHING_ALL_ENTITY_SET_IDS: 'isFetchingAllEntitySetIds',
+  IS_FETCHING_ALL_TYPES: 'isFetchingAllTypes',
+  PROPERTY_TYPES: 'propertyTypes',
+  TYPES_BY_ID: 'typesById',
+  TYPE_IDS_BY_FQNS: 'typeIdsByFqn',
 };
 
 /* Infractions */
@@ -106,6 +115,7 @@ export const PERSON = {
   GET_ENROLLMENT_HISTORY: 'getEnrollmentHistory',
   GET_ENROLLMENT_FROM_DIVERSION_PLAN: 'getEnrollmentFromDiversionPlan',
   GET_ENROLLMENT_STATUS: 'getEnrollmentStatus',
+  GET_INFO_FOR_ADD_PARTICIPANT: 'getInfoForAddParticipant',
   GET_INFO_FOR_EDIT_CASE: 'getInfoForEditCase',
   GET_INFO_FOR_EDIT_PERSON: 'getInfoForEditPerson',
   GET_JUDGES: 'getJudges',

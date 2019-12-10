@@ -101,58 +101,8 @@ export default function participantsReducer(state :Map<*, *> = INITIAL_STATE, ac
         REQUEST: () => state
           .setIn([ACTIONS, ADD_PARTICIPANT, action.id], action)
           .setIn([ACTIONS, ADD_PARTICIPANT, REQUEST_STATE], RequestStates.PENDING),
-        SUCCESS: () => {
-
-          const seqAction :SequenceAction = action;
-          const storedSeqAction :SequenceAction = state.getIn([ACTIONS, ADD_PARTICIPANT, seqAction.id]);
-
-          if (storedSeqAction) {
-
-            const { value } :Object = seqAction; // success value
-            const {
-              diversionPlanESID,
-              edm,
-              personEKID,
-              peopleESID,
-            } = value;
-
-            const storedValue :Object = storedSeqAction.value; // request value
-            const { entityData } :Object = storedValue;
-            const storedEntities :Map = Map().withMutations((map :Map) => {
-              map.set(PERSON, fromJS(entityData[peopleESID][0]));
-              map.set(DIVERSION_PLAN, fromJS(entityData[diversionPlanESID][0]));
-            });
-            let newEntities :Map = Map();
-            storedEntities.forEach((entity :Map, key :string) => {
-              let newEntity = Map();
-              entity.forEach((entityValue, id) => {
-                const propertyTypeFqn :FQN = getPropertyFqnFromEdm(edm, id);
-                newEntity = newEntity.set(propertyTypeFqn, entityValue);
-              });
-              newEntities = newEntities.set(key, newEntity);
-            });
-
-            let person = newEntities.get(PERSON);
-            person = person.set(ENTITY_KEY_ID, personEKID);
-            newEntities = newEntities.set(PERSON, person);
-
-            const participants :List = state.get(PARTICIPANTS)
-              .push(newEntities.get(PERSON));
-            const enrollmentByParticipant = state.get(ENROLLMENT_BY_PARTICIPANT)
-              .set(personEKID, Map());
-            const required = newEntities.getIn([DIVERSION_PLAN, REQUIRED_HOURS, 0], 0);
-            const hoursWorked = state.get(HOURS_WORKED)
-              .set(personEKID, Map({ worked: 0, required }));
-
-            return state
-              .set(PARTICIPANTS, participants)
-              .set(ENROLLMENT_BY_PARTICIPANT, enrollmentByParticipant)
-              .set(HOURS_WORKED, hoursWorked)
-              .setIn([ACTIONS, ADD_PARTICIPANT, REQUEST_STATE], RequestStates.SUCCESS);
-          }
-
-          return state;
-        },
+        SUCCESS: () => state
+          .setIn([ACTIONS, ADD_PARTICIPANT, REQUEST_STATE], RequestStates.SUCCESS),
         FAILURE: () => state
           .setIn([ACTIONS, ADD_PARTICIPANT, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, ADD_PARTICIPANT, action.id]),

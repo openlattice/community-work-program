@@ -30,6 +30,7 @@ import { OL } from '../../core/style/Colors';
 
 const { ORGANIZATION } = APP_TYPE_FQNS;
 const { ORGANIZATION_NAME } = PROPERTY_TYPE_FQNS;
+const { ENTITY_SET_IDS_BY_ORG, SELECTED_ORG_ID } = APP;
 const {
   ACTIONS,
   GET_ORGANIZATIONS,
@@ -80,7 +81,7 @@ type Props = {
     getWorksitesByOrg :RequestSequence;
     getWorksitePlans :RequestSequence;
   },
-  app :Map;
+  entitySetIds :Map;
   getOrganizationsRequestState :RequestState;
   initializeAppRequestState :RequestState;
   organizationsList :List;
@@ -108,20 +109,20 @@ class WorksitesContainer extends Component<Props, State> {
   }
 
   componentDidMount() {
-    const { actions, app } = this.props;
-    if (app.get(ORGANIZATION)) {
+    const { actions, entitySetIds } = this.props;
+    if (entitySetIds.has(ORGANIZATION)) {
       actions.getOrganizations();
     }
   }
 
   componentDidUpdate(prevProps :Props) {
     const {
-      app,
+      entitySetIds,
       actions,
       organizationsList,
     } = this.props;
-    const prevOrganizationESID = prevProps.app.get(ORGANIZATION);
-    const organizationESID = app.get(ORGANIZATION);
+    const prevOrganizationESID = prevProps.entitySetIds.get(ORGANIZATION);
+    const organizationESID = entitySetIds.get(ORGANIZATION);
     // if app types have loaded successfully:
     if (prevOrganizationESID !== organizationESID) {
       actions.getOrganizations();
@@ -300,14 +301,15 @@ class WorksitesContainer extends Component<Props, State> {
 const mapStateToProps = (state :Map<*, *>) => {
   const app = state.get(STATE.APP);
   const worksites = state.get(STATE.WORKSITES);
+  const selectedOrgId :string = app.get(SELECTED_ORG_ID);
   return {
-    app,
-    getOrganizationsRequestState: worksites.getIn([ACTIONS, GET_ORGANIZATIONS, REQUEST_STATE]),
-    initializeAppRequestState: app.getIn([APP.ACTIONS, APP.INITIALIZE_APPLICATION, APP.REQUEST_STATE]),
     [ORGANIZATIONS_LIST]: worksites.get(ORGANIZATIONS_LIST),
     [ORGANIZATION_STATUSES]: worksites.get(ORGANIZATION_STATUSES),
     [WORKSITES_BY_ORG]: worksites.get(WORKSITES_BY_ORG),
     [WORKSITES_INFO]: worksites.get(WORKSITES_INFO),
+    entitySetIds: app.getIn([ENTITY_SET_IDS_BY_ORG, selectedOrgId], Map()),
+    getOrganizationsRequestState: worksites.getIn([ACTIONS, GET_ORGANIZATIONS, REQUEST_STATE]),
+    initializeAppRequestState: app.getIn([APP.ACTIONS, APP.INITIALIZE_APPLICATION, APP.REQUEST_STATE]),
   };
 };
 

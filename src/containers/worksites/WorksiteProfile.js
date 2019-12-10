@@ -24,7 +24,7 @@ import { goToRoute } from '../../core/router/RoutingActions';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { APP, STATE, WORKSITES } from '../../utils/constants/ReduxStateConsts';
 import { getEntityProperties } from '../../utils/DataUtils';
-import { getPersonFullName } from '../../utils/PeopleUtils';
+import { getPersonAddress, getPersonFullName } from '../../utils/PeopleUtils';
 import { formatAsDate } from '../../utils/DateTimeUtils';
 import { getWeekdayTableData, getWeekdayTableHeaders, getWorksiteStatus } from './WorksitesUtils';
 import {
@@ -42,10 +42,11 @@ const {
   DATETIME_START,
   DESCRIPTION,
   EMAIL,
-  FULL_ADDRESS,
   NAME,
   PHONE_NUMBER,
 } = PROPERTY_TYPE_FQNS;
+
+const { ENTITY_SET_IDS_BY_ORG, SELECTED_ORG_ID } = APP;
 const {
   ACTIONS,
   GET_WORKSITE,
@@ -99,7 +100,7 @@ type Props = {
     getWorksite :RequestSequence;
     goToRoute :GoToRoute;
   },
-  app :Map;
+  entitySetIds :Map;
   getWorksiteRequestState :RequestState;
   initializeAppRequestState :RequestState;
   match :Match;
@@ -112,15 +113,15 @@ type Props = {
 class WorksiteProfile extends Component<Props> {
 
   componentDidMount() {
-    const { app } = this.props;
-    if (app.get(APP_TYPE_FQNS.WORKSITE)) {
+    const { entitySetIds } = this.props;
+    if (entitySetIds.has(APP_TYPE_FQNS.WORKSITE)) {
       this.loadProfile();
     }
   }
 
   componentDidUpdate(prevProps :Props) {
-    const { app } = this.props;
-    if (!prevProps.app.get(APP_TYPE_FQNS.WORKSITE) && app.get(APP_TYPE_FQNS.WORKSITE)) {
+    const { entitySetIds } = this.props;
+    if (!prevProps.entitySetIds.has(APP_TYPE_FQNS.WORKSITE) && entitySetIds.has(APP_TYPE_FQNS.WORKSITE)) {
       this.loadProfile();
     }
   }
@@ -220,7 +221,7 @@ class WorksiteProfile extends Component<Props> {
       [NAME]: worksiteName
     } = getEntityProperties(worksite, [DATETIME_END, DATETIME_START, DESCRIPTION, NAME]);
 
-    const { [FULL_ADDRESS]: address } = getEntityProperties(worksiteAddress, [FULL_ADDRESS]);
+    const address :string = getPersonAddress(worksiteAddress);
     const datesAndAddress :Map = Map({
       dateFirstActive: formatAsDate(dateActive),
       dateInactive: formatAsDate(dateInactive),
@@ -309,8 +310,9 @@ class WorksiteProfile extends Component<Props> {
 const mapStateToProps = (state) => {
   const app = state.get(STATE.APP);
   const worksites = state.get(STATE.WORKSITES);
+  const selectedOrgId :string = app.get(SELECTED_ORG_ID);
   return ({
-    app,
+    entitySetIds: app.getIn([ENTITY_SET_IDS_BY_ORG, selectedOrgId], Map()),
     getWorksiteRequestState: worksites.getIn([ACTIONS, GET_WORKSITE, REQUEST_STATE]),
     initializeAppRequestState: app.getIn([APP.ACTIONS, APP.INITIALIZE_APPLICATION, APP.REQUEST_STATE]),
     [SCHEDULE_BY_WEEKDAY]: worksites.get(SCHEDULE_BY_WEEKDAY),

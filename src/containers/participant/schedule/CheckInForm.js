@@ -18,17 +18,18 @@ import type { RequestSequence } from 'redux-reqseq';
 import { checkInForAppointment } from '../assignedworksites/WorksitePlanActions';
 import { getCombinedDateTime } from '../../../utils/ScheduleUtils';
 import {
-  getEntitySetIdFromApp,
-  getPropertyTypeIdFromEdm
-} from '../../../utils/DataUtils';
-import {
   ButtonsRow,
   FormRow,
   FormWrapper,
   RowContent
 } from '../../../components/Layout';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
-import { PERSON, STATE } from '../../../utils/constants/ReduxStateConsts';
+import {
+  APP,
+  EDM,
+  PERSON,
+  STATE
+} from '../../../utils/constants/ReduxStateConsts';
 
 const {
   APPOINTMENT,
@@ -46,6 +47,8 @@ const {
   HOURS_WORKED,
 } = PROPERTY_TYPE_FQNS;
 
+const { ENTITY_SET_IDS_BY_ORG, SELECTED_ORG_ID } = APP;
+const { PROPERTY_TYPES, TYPE_IDS_BY_FQNS } = EDM;
 const { PARTICIPANT } = PERSON;
 
 const {
@@ -65,13 +68,13 @@ type Props = {
   actions:{
     checkInForAppointment :RequestSequence;
   };
-  app :Map;
   appointment :Map;
-  edm :Map;
+  entitySetIds :Map;
   isLoading :boolean;
   onDiscard :() => void;
   personEKID :UUID;
   personName :string;
+  propertyTypeIds :Map;
 };
 
 type State = {
@@ -83,34 +86,16 @@ type State = {
 
 class CheckInForm extends Component<Props, State> {
 
-  state = {
-    checkedIn: '',
-    newCheckInData: fromJS({
-      [getPageSectionKey(1, 1)]: {},
-    }),
-    timeIn: '',
-    timeOut: '',
-  };
+  constructor(props :Props) {
+    super(props);
 
-  createEntitySetIdsMap = () => {
-    const { app } = this.props;
-    return {
-      [APPOINTMENT]: getEntitySetIdFromApp(app, APPOINTMENT),
-      [CHECK_INS]: getEntitySetIdFromApp(app, CHECK_INS),
-      [CHECK_IN_DETAILS]: getEntitySetIdFromApp(app, CHECK_IN_DETAILS),
-      [FULFILLS]: getEntitySetIdFromApp(app, FULFILLS),
-      [HAS]: getEntitySetIdFromApp(app, HAS),
-      [PEOPLE]: getEntitySetIdFromApp(app, PEOPLE),
-    };
-  }
-
-  createPropertyTypeIdsMap = () => {
-    const { edm } = this.props;
-    return {
-      [DATETIME_START]: getPropertyTypeIdFromEdm(edm, DATETIME_START),
-      [DATETIME_END]: getPropertyTypeIdFromEdm(edm, DATETIME_END),
-      [CHECKED_IN]: getPropertyTypeIdFromEdm(edm, CHECKED_IN),
-      [HOURS_WORKED]: getPropertyTypeIdFromEdm(edm, HOURS_WORKED),
+    this.state = {
+      checkedIn: '',
+      newCheckInData: fromJS({
+        [getPageSectionKey(1, 1)]: {},
+      }),
+      timeIn: '',
+      timeOut: '',
     };
   }
 
@@ -134,7 +119,13 @@ class CheckInForm extends Component<Props, State> {
   }
 
   handleOnSubmit = () => {
-    const { actions, appointment, personEKID } = this.props;
+    const {
+      actions,
+      appointment,
+      entitySetIds,
+      personEKID,
+      propertyTypeIds,
+    } = this.props;
     const { checkedIn, timeIn, timeOut } = this.state;
     let { newCheckInData } = this.state;
 
@@ -158,9 +149,6 @@ class CheckInForm extends Component<Props, State> {
     associations.push([HAS, personEKID, PEOPLE, 0, CHECK_INS, {}]);
     associations.push([FULFILLS, 0, CHECK_INS, appointmentEKID, APPOINTMENT, {}]);
     associations.push([HAS, 0, CHECK_INS, 0, CHECK_IN_DETAILS, {}]);
-
-    const entitySetIds :Object = this.createEntitySetIdsMap();
-    const propertyTypeIds :Object = this.createPropertyTypeIdsMap();
 
     const entityData :{} = processEntityData(newCheckInData, entitySetIds, propertyTypeIds);
     const associationEntityData :{} = processAssociationEntityData(fromJS(associations), entitySetIds, propertyTypeIds);
@@ -238,10 +226,13 @@ class CheckInForm extends Component<Props, State> {
 }
 
 const mapStateToProps = (state :Map) => {
+  const app = state.get(STATE.APP);
+  const edm = state.get(STATE.EDM);
+  const selectedOrgId :string = app.get(SELECTED_ORG_ID);
   const person = state.get(STATE.PERSON);
   return ({
-    app: state.get(STATE.APP),
-    edm: state.get(STATE.EDM),
+    entitySetIds: app.getIn([ENTITY_SET_IDS_BY_ORG, selectedOrgId], Map()),
+    propertyTypeIds: edm.getIn([TYPE_IDS_BY_FQNS, PROPERTY_TYPES], Map()),
     [PARTICIPANT]: person.get(PARTICIPANT),
   });
 };
