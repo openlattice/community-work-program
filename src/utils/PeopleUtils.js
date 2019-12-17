@@ -14,10 +14,14 @@ import { getEntityProperties } from './DataUtils';
 import { getImageDataFromEntity } from './BinaryUtils';
 
 const {
+  CITY,
   FIRST_NAME,
+  FULL_ADDRESS,
   LAST_NAME,
   MUGSHOT,
   PICTURE,
+  US_STATE,
+  ZIP,
 } = PROPERTY_TYPE_FQNS;
 
 const getPersonFullName = (personEntity :Map) :string => {
@@ -79,8 +83,25 @@ const getHoursServed = (hoursWorked :number, hoursRequired :number) :string => {
   return `${toString(hoursWorked)} / ${toString(hoursRequired)}`;
 };
 
+const getPersonAddress = (address :Map) :string => {
+
+  if (!Map.isMap(address)) return EMPTY_FIELD;
+
+  const {
+    [CITY]: city,
+    [FULL_ADDRESS]: streetAddress,
+    [US_STATE]: state,
+    [ZIP]: zipCode,
+  } = getEntityProperties(address, [CITY, FULL_ADDRESS, US_STATE, ZIP]);
+
+  if (!streetAddress) return EMPTY_FIELD;
+  if (!city || !state || !zipCode) return streetAddress;
+  return `${streetAddress} ${city}, ${state} ${zipCode}`;
+};
+
 export {
   getHoursServed,
+  getPersonAddress,
   getPersonFullName,
   getPersonPictureForTable,
   getPersonProfilePicture,

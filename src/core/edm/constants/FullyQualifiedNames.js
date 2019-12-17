@@ -72,6 +72,7 @@ export const PROPERTY_TYPE_FQNS :Object = {
   CELL_PHONE: new FullyQualifiedName('contact.cellphone'),
   CHECKED_IN: new FullyQualifiedName('ol.checkedin'),
   CHECK_IN_DATETIME: new FullyQualifiedName('ol.checkindatetime'),
+  CITY: new FullyQualifiedName('location.city'),
   COMPLETED: new FullyQualifiedName('ol.completed'),
   CONCURRENT: new FullyQualifiedName('ol.concurrent'),
   CONSECUTIVE: new FullyQualifiedName('ol.consecutive'),
@@ -113,5 +114,7 @@ export const PROPERTY_TYPE_FQNS :Object = {
   STATUS: new FullyQualifiedName('ol.status'),
   TITLE: new FullyQualifiedName('person.title'),
   TYPE: new FullyQualifiedName('ol.type'),
+  US_STATE: new FullyQualifiedName('location.state'),
   VIOLENT: new FullyQualifiedName('ol.violent'),
+  ZIP: new FullyQualifiedName('location.zip'),
 };

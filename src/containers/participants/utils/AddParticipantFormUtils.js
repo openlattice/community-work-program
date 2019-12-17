@@ -14,93 +14,56 @@ const {
   NAME,
 } = PROPERTY_TYPE_FQNS;
 
-const hydrateJudgeSchema = (schema :Object, judges :List) => {
-  const [values, labels] = getValuesFromEntityList(judges, [FIRST_NAME, LAST_NAME]);
+/* eslint-disable import/prefer-default-export */
+export const hydrateSchema = (schema :Object, judges :List, charges :List) => {
+  const [judgesValues, judgesLabels] = getValuesFromEntityList(judges, [FIRST_NAME, LAST_NAME]);
+  const [chargesValues, chargesLabels] = getValuesFromEntityList(charges, [NAME]);
   let newSchema = setIn(
     schema,
     [
       'properties',
-      getPageSectionKey(1, 1),
+      getPageSectionKey(1, 3),
       'properties',
       getEntityAddressKey(0, JUDGES, ENTITY_KEY_ID),
       'enum'
     ],
-    values
+    judgesValues
   );
   newSchema = setIn(
     newSchema,
     [
       'properties',
-      getPageSectionKey(1, 1),
+      getPageSectionKey(1, 3),
       'properties',
       getEntityAddressKey(0, JUDGES, ENTITY_KEY_ID),
       'enumNames'
     ],
-    labels
-  );
-
-  return newSchema;
-};
-
-const disableJudgeForm = (uiSchema :Object) :Object => {
-  const newUiSchema = setIn(
-    uiSchema,
-    [
-      getPageSectionKey(1, 1),
-      'ui:options',
-      'editable'
-    ],
-    false
-  );
-  return newUiSchema;
-};
-
-const hydrateChargeSchema = (schema :Object, charges :List) => {
-  const [values, labels] = getValuesFromEntityList(charges, [NAME]);
-  let newSchema = setIn(
-    schema,
-    [
-      'properties',
-      getPageSectionKey(1, 1),
-      'items',
-      'properties',
-      getEntityAddressKey(-1, COURT_CHARGE_LIST, ENTITY_KEY_ID),
-      'enum'
-    ],
-    values
+    judgesLabels
   );
   newSchema = setIn(
     newSchema,
     [
       'properties',
-      getPageSectionKey(1, 1),
+      getPageSectionKey(1, 4),
+      'items',
+      'properties',
+      getEntityAddressKey(-1, COURT_CHARGE_LIST, ENTITY_KEY_ID),
+      'enum'
+    ],
+    chargesValues
+  );
+  newSchema = setIn(
+    newSchema,
+    [
+      'properties',
+      getPageSectionKey(1, 4),
       'items',
       'properties',
       getEntityAddressKey(-1, COURT_CHARGE_LIST, ENTITY_KEY_ID),
       'enumNames'
     ],
-    labels
+    chargesLabels
   );
 
   return newSchema;
-};
-
-const disableChargesForm = (uiSchema :Object) :Object => {
-  const newUiSchema = setIn(
-    uiSchema,
-    [
-      getPageSectionKey(1, 1),
-      'ui:options',
-      'addable'
-    ],
-    false
-  );
-  return newUiSchema;
-};
-
-export {
-  disableChargesForm,
-  disableJudgeForm,
-  hydrateChargeSchema,
-  hydrateJudgeSchema,
 };

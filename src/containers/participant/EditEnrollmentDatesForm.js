@@ -32,7 +32,12 @@ import {
 } from '../../utils/DataUtils';
 import { BackNavButton } from '../../components/controls/index';
 import { PARTICIPANT_PROFILE_WIDTH } from '../../core/style/Sizes';
-import { APP, PERSON, STATE } from '../../utils/constants/ReduxStateConsts';
+import {
+  APP,
+  EDM,
+  PERSON,
+  STATE
+} from '../../utils/constants/ReduxStateConsts';
 import type { GoToRoute } from '../../core/router/RoutingActions';
 
 const { getEntityAddressKey, getPageSectionKey } = DataProcessingUtils;
@@ -46,6 +51,8 @@ const {
   ORIENTATION_DATETIME,
 } = PROPERTY_TYPE_FQNS;
 
+const { ENTITY_SET_IDS_BY_ORG, SELECTED_ORG_ID } = APP;
+const { PROPERTY_TYPES, TYPE_IDS_BY_FQNS } = EDM;
 const {
   ACTIONS,
   GET_ENROLLMENT_STATUS,
@@ -74,9 +81,11 @@ type Props = {
   app :Map;
   diversionPlan :Map;
   edm :Map;
+  entitySetIds :Map;
   getEnrollmentStatusRequestState :RequestState;
   initializeAppRequestState :RequestState;
   match :Match;
+  propertyTypeIds :Map;
 };
 
 type State = {
@@ -85,19 +94,23 @@ type State = {
 
 class EditCaseInfoForm extends Component<Props, State> {
 
-  state = {
-    formData: {},
-  };
+  constructor(props :Props) {
+    super(props);
+
+    this.state = {
+      formData: {},
+    };
+  }
 
   componentDidMount() {
     const {
       actions,
-      app,
+      entitySetIds,
       match: {
         params: { participantId: personEKID }
       },
     } = this.props;
-    if (app.get(DIVERSION_PLAN) && personEKID) {
+    if (entitySetIds.has(DIVERSION_PLAN) && personEKID) {
       actions.getEnrollmentStatus({ personEKID });
     }
   }
@@ -105,14 +118,14 @@ class EditCaseInfoForm extends Component<Props, State> {
   componentDidUpdate(prevProps :Props) {
     const {
       actions,
-      app,
+      entitySetIds,
       diversionPlan,
       getEnrollmentStatusRequestState,
       match: {
         params: { participantId: personEKID }
       },
     } = this.props;
-    if (!prevProps.app.get(DIVERSION_PLAN) && app.get(DIVERSION_PLAN) && personEKID) {
+    if ((!prevProps.entitySetIds.has(DIVERSION_PLAN) && entitySetIds.has(DIVERSION_PLAN)) && personEKID) {
       actions.getEnrollmentStatus({ personEKID, populateProfile: false });
     }
     if ((prevProps.getEnrollmentStatusRequestState === RequestStates.PENDING
@@ -210,8 +223,10 @@ class EditCaseInfoForm extends Component<Props, State> {
   render() {
     const {
       actions,
+      entitySetIds,
       getEnrollmentStatusRequestState,
       initializeAppRequestState,
+      propertyTypeIds,
     } = this.props;
     const { formData } = this.state;
 
@@ -225,8 +240,8 @@ class EditCaseInfoForm extends Component<Props, State> {
     }
 
     const entityIndexToIdMap = this.createEntityIndexToIdMap();
-    const entitySetIds = this.createEntitySetIdsMap();
-    const propertyTypeIds = this.createPropertyTypeIdsMap();
+    // const entitySetIds = this.createEntitySetIdsMap();
+    // const propertyTypeIds = this.createPropertyTypeIdsMap();
 
     const formContext = {
       editAction: actions.editEnrollmentDates,
@@ -261,13 +276,17 @@ class EditCaseInfoForm extends Component<Props, State> {
 
 const mapStateToProps = (state :Map) => {
   const app = state.get(STATE.APP);
+  const edm = state.get(STATE.EDM);
   const person = state.get(STATE.PERSON);
+  const selectedOrgId :string = app.get(SELECTED_ORG_ID);
   return ({
     app,
     [PERSON.DIVERSION_PLAN]: person.get(PERSON.DIVERSION_PLAN),
     edm: state.get(STATE.EDM),
+    entitySetIds: app.getIn([ENTITY_SET_IDS_BY_ORG, selectedOrgId], Map()),
     getEnrollmentStatusRequestState: person.getIn([ACTIONS, GET_ENROLLMENT_STATUS, REQUEST_STATE]),
     initializeAppRequestState: app.getIn([APP.ACTIONS, APP.INITIALIZE_APPLICATION, APP.REQUEST_STATE]),
+    propertyTypeIds: edm.getIn([TYPE_IDS_BY_FQNS, PROPERTY_TYPES], Map()),
   });
 };
 

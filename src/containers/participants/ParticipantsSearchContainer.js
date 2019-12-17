@@ -9,7 +9,6 @@ import { connect } from 'react-redux';
 import { RequestStates } from 'redux-reqseq';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
-import AddParticipantModal from './AddParticipantModal';
 import LogoLoader from '../../components/LogoLoader';
 import NoParticipantsFound from '../dashboard/NoParticipantsFound';
 import ParticipantsTableRow from '../../components/table/ParticipantsTableRow';
@@ -27,7 +26,7 @@ import { ToolBar } from '../../components/controls/index';
 import { getDiversionPlans } from './ParticipantsActions';
 import { goToRoute } from '../../core/router/RoutingActions';
 import { clearAppointmentsAndPlans } from '../participant/assignedworksites/WorksitePlanActions';
-import { PARTICIPANT_PROFILE } from '../../core/router/Routes';
+import { ADD_PARTICIPANT, PARTICIPANT_PROFILE } from '../../core/router/Routes';
 import { SEARCH_CONTAINER_WIDTH } from '../../core/style/Sizes';
 import { isDefined } from '../../utils/LangUtils';
 import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
@@ -47,6 +46,7 @@ import { ENROLLMENT_STATUSES, HOURS_CONSTS, INFRACTIONS_CONSTS } from '../../cor
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import type { GoToRoute } from '../../core/router/RoutingActions';
 
+const { ENTITY_SET_IDS_BY_ORG, SELECTED_ORG_ID } = APP;
 const {
   COURT_TYPE_BY_PARTICIPANT,
   CURRENT_DIVERSION_PLANS_BY_PARTICIPANT,
@@ -96,10 +96,10 @@ type Props = {
     getDiversionPlans :RequestSequence;
     goToRoute :GoToRoute;
   };
-  app :Map;
   courtTypeByParticipant :Map;
   currentDiversionPlansByParticipant :Map;
   enrollmentByParticipant :Map;
+  entitySetIds :Map;
   getInitializeAppRequestState :RequestState;
   getDiversionPlansRequestState :RequestState;
   hoursWorked :Map;
@@ -108,7 +108,6 @@ type Props = {
 };
 
 type State = {
-  showAddParticipant :boolean;
   peopleToRender :List;
   selectedFilterOption :Map;
 };
@@ -119,26 +118,25 @@ class ParticipantsSearchContainer extends Component<Props, State> {
     super(props);
 
     this.state = {
-      showAddParticipant: false,
       peopleToRender: props.participants,
       selectedFilterOption: defaultFilterOption,
     };
   }
 
   componentDidMount() {
-    const { actions, app } = this.props;
+    const { actions, entitySetIds } = this.props;
     this.sortParticipantsByStatus();
-    if (app.get(APP_TYPE_FQNS.PEOPLE)) {
+    if (entitySetIds.has(APP_TYPE_FQNS.PEOPLE)) {
       actions.getDiversionPlans();
     }
   }
 
   componentDidUpdate(prevProps :Props) {
-    const { app, actions, participants } = this.props;
-    if (prevProps.app.count() !== app.count()) {
+    const { entitySetIds, actions, participants } = this.props;
+    if (!prevProps.entitySetIds.equals(entitySetIds)) {
       actions.getDiversionPlans();
     }
-    if (prevProps.participants.count() !== participants.count()) {
+    if (!prevProps.participants.equals(participants)) {
       this.sortParticipantsByStatus();
     }
   }
@@ -265,21 +263,13 @@ class ParticipantsSearchContainer extends Component<Props, State> {
     actions.goToRoute(PARTICIPANT_PROFILE.replace(':participantId', personEKID));
   }
 
-  handleShowAddParticipant = () => {
-    this.setState({
-      showAddParticipant: true
-    });
-  }
-
-  handleHideAddParticipant = () => {
-    this.setState({
-      showAddParticipant: false
-    });
+  goToAddParticipantForm = () => {
+    const { actions } = this.props;
+    actions.goToRoute(ADD_PARTICIPANT);
   }
 
   render() {
     const { getInitializeAppRequestState, getDiversionPlansRequestState } = this.props;
-    const { showAddParticipant } = this.state;
 
     if (getDiversionPlansRequestState === RequestStates.PENDING
         || getInitializeAppRequestState === RequestStates.PENDING) {
@@ -301,7 +291,7 @@ class ParticipantsSearchContainer extends Component<Props, State> {
         <ToolBar
             dropdowns={dropdowns}
             onSelectFunctions={onSelectFunctions}
-            primaryButtonAction={this.handleShowAddParticipant}
+            primaryButtonAction={this.goToAddParticipantForm}
             primaryButtonText="Add Participant"
             search={this.searchParticipantList} />
         <ParticipantSearchInnerWrapper>
@@ -332,9 +322,6 @@ class ParticipantsSearchContainer extends Component<Props, State> {
             }
           </TableCard>
         </ParticipantSearchInnerWrapper>
-        <AddParticipantModal
-            isOpen={showAddParticipant}
-            onClose={this.handleHideAddParticipant} />
       </ParticipantSearchOuterWrapper>
     );
   }
@@ -343,11 +330,12 @@ class ParticipantsSearchContainer extends Component<Props, State> {
 const mapStateToProps = (state :Map<*, *>) => {
   const app = state.get(STATE.APP);
   const people = state.get(STATE.PEOPLE);
+  const selectedOrgId :string = app.get(SELECTED_ORG_ID);
   return {
-    app,
     [COURT_TYPE_BY_PARTICIPANT]: people.get(COURT_TYPE_BY_PARTICIPANT),
     [CURRENT_DIVERSION_PLANS_BY_PARTICIPANT]: people.get(CURRENT_DIVERSION_PLANS_BY_PARTICIPANT),
     [ENROLLMENT_BY_PARTICIPANT]: people.get(ENROLLMENT_BY_PARTICIPANT),
+    entitySetIds: app.getIn([ENTITY_SET_IDS_BY_ORG, selectedOrgId], Map()),
     getInitializeAppRequestState: app.getIn([APP.ACTIONS, APP.INITIALIZE_APPLICATION, APP.REQUEST_STATE]),
     getDiversionPlansRequestState: people.getIn([PEOPLE.ACTIONS, PEOPLE.GET_DIVERSION_PLANS, PEOPLE.REQUEST_STATE]),
     [HOURS_WORKED]: people.get(HOURS_WORKED),

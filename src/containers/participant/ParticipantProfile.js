@@ -29,7 +29,6 @@ import EnrollmentTableRow from './enrollment/EnrollmentTableRow';
 import ParticipantWorkScheduleContainer from './schedule/ParticipantWorkScheduleContainer';
 import ProgramCompletionBanner from './ProgramCompletionBanner';
 
-import CreateNewEnrollmentModal from './CreateNewEnrollmentModal';
 import AssignedWorksite from './assignedworksites/AssignedWorksite';
 import AssignWorksiteModal from './assignedworksites/AssignWorksiteModal';
 import InfractionsContainer from './infractions/InfractionsContainer';
@@ -73,12 +72,12 @@ const {
   STATUS,
 } = PROPERTY_TYPE_FQNS;
 
+const { ENTITY_SET_IDS_BY_ORG, SELECTED_ORG_ID } = APP;
 const {
   ACTIONS,
   ADDRESS,
   ALL_DIVERSION_PLANS,
   CHARGES_FOR_CASE,
-  CREATE_NEW_ENROLLMENT,
   DIVERSION_PLAN,
   EMAIL,
   ENROLLMENT_STATUS,
@@ -110,7 +109,6 @@ const ENROLLMENT_STATUSES_EXCLUDING_PREENROLLMENT = Object.values(ENROLLMENT_STA
 export const enrollmentHeaderNames = ['STATUS', 'SENTENCE', 'ORIENTATION', 'COMPLETION', 'HOURS'];
 
 /* Constants for Modals */
-const NEW_ENROLLMENT = 'showNewEnrollmentModal';
 const ASSIGN_WORKSITE = 'showAssignWorksiteModal';
 const WORK_APPOINTMENT = 'showWorkAppointmentModal';
 
@@ -210,14 +208,13 @@ type Props = {
   };
   address :Map;
   allDiversionPlans :List;
-  app :Map;
   chargesForCase :List;
   checkInsByAppointment :Map;
-  createNewEnrollmentRequestState :RequestState;
   diversionPlan :Map;
   email :Map;
   enrollmentHistoryData :List;
   enrollmentStatus :Map;
+  entitySetIds :Map;
   getAllParticipantInfoRequestState :RequestState;
   getEnrollmentFromDiversionPlanRequestState :RequestState;
   initializeAppRequestState :RequestState;
@@ -240,7 +237,6 @@ type Props = {
 type State = {
   workStartDateTime :string;
   showAssignWorksiteModal :boolean;
-  showNewEnrollmentModal :boolean;
   showWorkAppointmentModal :boolean;
   worksiteNamesByWorksitePlan :Map;
 };
@@ -253,29 +249,27 @@ class ParticipantProfile extends Component<Props, State> {
     this.state = {
       workStartDateTime: '',
       [ASSIGN_WORKSITE]: false,
-      [NEW_ENROLLMENT]: false,
       [WORK_APPOINTMENT]: false,
       worksiteNamesByWorksitePlan: Map(),
     };
   }
 
   componentDidMount() {
-    const { app } = this.props;
-    if (app.get(APP_TYPE_FQNS.PEOPLE)) {
+    const { entitySetIds } = this.props;
+    if (entitySetIds.has(APP_TYPE_FQNS.PEOPLE)) {
       this.loadProfile();
     }
   }
 
   componentDidUpdate(prevProps :Props) {
     const {
-      app,
       checkInsByAppointment,
-      createNewEnrollmentRequestState,
+      entitySetIds,
       getAllParticipantInfoRequestState,
       worksitesByWorksitePlan,
       worksitesList,
     } = this.props;
-    if (!prevProps.app.get(APP_TYPE_FQNS.PEOPLE) && app.get(APP_TYPE_FQNS.PEOPLE)) {
+    if (!prevProps.entitySetIds.has(APP_TYPE_FQNS.PEOPLE) && entitySetIds.has(APP_TYPE_FQNS.PEOPLE)) {
       this.loadProfile();
     }
     if ((prevProps.getAllParticipantInfoRequestState === RequestStates.PENDING
@@ -284,11 +278,6 @@ class ParticipantProfile extends Component<Props, State> {
         || !prevProps.worksitesByWorksitePlan.equals(worksitesByWorksitePlan)
         || !prevProps.checkInsByAppointment.equals(checkInsByAppointment)) {
       this.setWorkAndWorksiteInfo();
-    }
-    if (prevProps.createNewEnrollmentRequestState === RequestStates.PENDING
-      && createNewEnrollmentRequestState !== RequestStates.PENDING) {
-      this.loadProfile();
-      this.handleHideModal(NEW_ENROLLMENT);
     }
   }
 
@@ -365,6 +354,11 @@ class ParticipantProfile extends Component<Props, State> {
     actions.goToRoute(Routes.EDIT_DATES.replace(':participantId', personEKID));
   }
 
+  goToNewEnrollmentForm = () => {
+    const { actions, personEKID } = this.props;
+    actions.goToRoute(Routes.CREATE_NEW_ENROLLMENT.replace(':participantId', personEKID));
+  }
+
   selectDiversionPlan = (option :Object) => {
     const { actions } = this.props;
     const { value } = option;
@@ -400,7 +394,6 @@ class ParticipantProfile extends Component<Props, State> {
     } = this.props;
     const {
       showAssignWorksiteModal,
-      showNewEnrollmentModal,
       showWorkAppointmentModal,
       workStartDateTime,
       worksiteNamesByWorksitePlan
@@ -482,7 +475,7 @@ class ParticipantProfile extends Component<Props, State> {
                     onChange={this.selectDiversionPlan}
                     options={diversionPlanOptions}
                     value={diversionPlanOptions.find((option) => (option.value).equals(diversionPlan))} />
-                <Button onClick={() => this.handleShowModal(NEW_ENROLLMENT)}>Create New Enrollment</Button>
+                <Button onClick={this.goToNewEnrollmentForm}>Create New Enrollment</Button>
               </EnrollmentControlsWrapper>
               <EnrollmentStatusSection
                   enrollmentStatus={enrollmentStatus}
@@ -600,9 +593,6 @@ class ParticipantProfile extends Component<Props, State> {
               isOpen={showWorkAppointmentModal}
               onClose={() => this.handleHideModal(WORK_APPOINTMENT)}
               personEKID={personEKID} />
-          <CreateNewEnrollmentModal
-              isOpen={showNewEnrollmentModal}
-              onClose={() => this.handleHideModal(NEW_ENROLLMENT)} />
         </ProfileWrapper>
       </>
     );
@@ -615,17 +605,17 @@ const mapStateToProps = (state :Map<*, *>) => {
   const person = state.get(STATE.PERSON);
   const worksitePlans = state.get(STATE.WORKSITE_PLANS);
   const worksites = state.get(STATE.WORKSITES);
+  const selectedOrgId :string = app.get(SELECTED_ORG_ID);
   return {
     [ADDRESS]: person.get(ADDRESS),
     [ALL_DIVERSION_PLANS]: person.get(ALL_DIVERSION_PLANS),
-    app,
     [CHARGES_FOR_CASE]: person.get(CHARGES_FOR_CASE),
     [CHECK_INS_BY_APPOINTMENT]: worksitePlans.get(CHECK_INS_BY_APPOINTMENT),
-    createNewEnrollmentRequestState: person.getIn([ACTIONS, CREATE_NEW_ENROLLMENT, REQUEST_STATE]),
     [DIVERSION_PLAN]: person.get(DIVERSION_PLAN),
     [EMAIL]: person.get(EMAIL),
     [ENROLLMENT_HISTORY_DATA]: person.get(ENROLLMENT_HISTORY_DATA),
     [ENROLLMENT_STATUS]: person.get(ENROLLMENT_STATUS),
+    entitySetIds: app.getIn([ENTITY_SET_IDS_BY_ORG, selectedOrgId], Map()),
     getAllParticipantInfoRequestState: person.getIn([ACTIONS, GET_ALL_PARTICIPANT_INFO, REQUEST_STATE]),
     getEnrollmentFromDiversionPlanRequestState: person
       .getIn([ACTIONS, GET_ENROLLMENT_FROM_DIVERSION_PLAN, REQUEST_STATE]),
