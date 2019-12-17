@@ -1,6 +1,6 @@
 // @flow
 import React, { Component } from 'react';
-import { Map } from 'immutable';
+import { Map, has } from 'immutable';
 import { Card, CardHeader } from 'lattice-ui-kit';
 import { Form, DataProcessingUtils } from 'lattice-fabricate';
 import { connect } from 'react-redux';
@@ -62,8 +62,8 @@ class EditRequiredHoursForm extends Component<Props, State> {
     const { diversionPlan } = this.props;
 
     const sectionOneKey = getPageSectionKey(1, 1);
+    const requiredHoursPrepopulated = has(diversionPlan, REQUIRED_HOURS);
     const { [REQUIRED_HOURS]: requiredHours } = getEntityProperties(diversionPlan, [REQUIRED_HOURS]);
-    const requiredHoursPrepopulated = !!requiredHours;
     const requiredHoursFormData :{} = requiredHoursPrepopulated
       ? {
         [sectionOneKey]: {
