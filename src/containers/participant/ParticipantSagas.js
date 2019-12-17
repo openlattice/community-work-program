@@ -54,6 +54,7 @@ import {
   GET_ENROLLMENT_HISTORY,
   GET_ENROLLMENT_FROM_DIVERSION_PLAN,
   GET_ENROLLMENT_STATUS,
+  GET_INFO_FOR_ADD_PARTICIPANT,
   GET_INFO_FOR_EDIT_CASE,
   GET_INFO_FOR_EDIT_PERSON,
   GET_JUDGES,
@@ -89,6 +90,7 @@ import {
   getEnrollmentHistory,
   getEnrollmentFromDiversionPlan,
   getEnrollmentStatus,
+  getInfoForAddParticipant,
   getInfoForEditCase,
   getInfoForEditPerson,
   getJudgeForCase,
@@ -132,6 +134,7 @@ import {
   sortEntitiesByDateProperty,
 } from '../../utils/DataUtils';
 import { isDefined } from '../../utils/LangUtils';
+import { isValidUUID } from '../../utils/ValidationUtils';
 import { formatAsDate } from '../../utils/DateTimeUtils';
 import { getCombinedDateTime } from '../../utils/ScheduleUtils';
 import { enrollmentHeaderNames } from './ParticipantProfile';
@@ -2035,7 +2038,7 @@ function* getParticipantCasesWorker(action :SequenceAction) :Generator<*, *, *> 
       throw response.error;
     }
     const caseResults :List = fromJS(response.data[personEKID]);
-    if (!caseResults.isEmpty()) {
+    if (caseResults && !caseResults.isEmpty()) {
       allParticipantCases = caseResults.map((caseResult :Map) => getNeighborDetails(caseResult));
 
       const caseEKIDs :UUID[] = allParticipantCases.map((caseEntity :Map) => getEntityKeyId(caseEntity)).toJS();
@@ -2163,6 +2166,53 @@ function* getInfoForEditCaseWorker(action :SequenceAction) :Generator<*, *, *> {
 function* getInfoForEditCaseWatcher() :Generator<*, *, *> {
 
   yield takeEvery(GET_INFO_FOR_EDIT_CASE, getInfoForEditCaseWorker);
+}
+
+/*
+ *
+ * ParticipantActions.getInfoForAddParticipant()
+ *
+ */
+
+function* getInfoForAddParticipantWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+
+  try {
+    yield put(getInfoForAddParticipant.request(id));
+
+    const workerCalls = [
+      call(getJudgesWorker, getJudges()),
+      call(getChargesWorker, getCharges()),
+    ];
+    const { personEKID } = value;
+    if (isValidUUID(personEKID)) {
+      workerCalls.push(call(getParticipantWorker, getParticipant({ personEKID })));
+    }
+
+    const workerResponses = yield all(workerCalls);
+    const responseError = workerResponses.reduce(
+      (error, workerResponse) => error || workerResponse.error,
+      undefined,
+    );
+    if (responseError) {
+      throw responseError;
+    }
+
+    yield put(getInfoForAddParticipant.success(id));
+  }
+  catch (error) {
+    LOG.error('caught exception in getInfoForAddParticipantWorker()', error);
+    yield put(getInfoForAddParticipant.failure(id, error));
+  }
+  finally {
+    yield put(getInfoForAddParticipant.finally(id));
+  }
+}
+
+function* getInfoForAddParticipantWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(GET_INFO_FOR_ADD_PARTICIPANT, getInfoForAddParticipantWorker);
 }
 
 /*
@@ -2308,6 +2358,8 @@ export {
   getEnrollmentFromDiversionPlanWorker,
   getEnrollmentStatusWatcher,
   getEnrollmentStatusWorker,
+  getInfoForAddParticipantWatcher,
+  getInfoForAddParticipantWorker,
   getInfoForEditCaseWatcher,
   getInfoForEditCaseWorker,
   getInfoForEditPersonWatcher,

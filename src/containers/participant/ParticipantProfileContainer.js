@@ -5,12 +5,13 @@ import { Switch, Route } from 'react-router-dom';
 import { connect } from 'react-redux';
 import type { Match } from 'react-router';
 
-import ParticipantProfile from './ParticipantProfile';
-import PrintWorkScheduleContainer from './print/PrintWorkScheduleContainer';
-import PrintInfractionContainer from './print/PrintInfractionContainer';
-import EditPersonAndContactsForm from './EditPersonAndContactsForm';
-import EditEnrollmentDatesForm from './EditEnrollmentDatesForm';
+import CreateNewEnrollmentForm from './CreateNewEnrollmentForm';
 import EditCaseInfoForm from './cases/EditCaseInfoForm';
+import EditEnrollmentDatesForm from './EditEnrollmentDatesForm';
+import EditPersonAndContactsForm from './EditPersonAndContactsForm';
+import ParticipantProfile from './ParticipantProfile';
+import PrintInfractionContainer from './print/PrintInfractionContainer';
+import PrintWorkScheduleContainer from './print/PrintWorkScheduleContainer';
 import * as Routes from '../../core/router/Routes';
 
 import {
@@ -41,6 +42,9 @@ const ParticipantProfileContainer = (props :Props) => {
   } = props;
   return (
     <Switch>
+      <Route
+          path={Routes.CREATE_NEW_ENROLLMENT}
+          component={CreateNewEnrollmentForm} />
       <Route
           path={Routes.PRINT_INFRACTION}
           component={PrintInfractionContainer} />

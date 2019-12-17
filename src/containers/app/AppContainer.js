@@ -17,16 +17,18 @@ import {
 import { RequestStates } from 'redux-reqseq';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
+import AddParticipantForm from '../participants/AddParticipantForm';
 import AppHeaderContainer from './AppHeaderContainer';
 import DashboardContainer from '../dashboard/DashboardContainer';
 import EditWorksiteHoursForm from '../worksites/EditWorksiteHoursForm';
 import EditWorksiteInfoForm from '../worksites/EditWorksiteInfoForm';
+import LogoLoader from '../../components/LogoLoader';
 import ParticipantProfileContainer from '../participant/ParticipantProfileContainer';
 import ParticipantsSearchContainer from '../participants/ParticipantsSearchContainer';
 import PrintWorkScheduleContainer from '../workschedule/PrintWorkScheduleContainer';
+import WorkScheduleContainer from '../workschedule/WorkScheduleContainer';
 import WorksiteProfile from '../worksites/WorksiteProfile';
 import WorksitesContainer from '../worksites/WorksitesContainer';
-import WorkScheduleContainer from '../workschedule/WorkScheduleContainer';
 
 import * as AppActions from './AppActions';
 import * as ParticipantsActions from '../participants/ParticipantsActions';
@@ -104,6 +106,7 @@ class AppContainer extends Component<Props> {
       <Route path={Routes.PRINT_WORK_SCHEDULE} component={PrintWorkScheduleContainer} />
       <Route path={Routes.WORK_SCHEDULE} component={WorkScheduleContainer} />
       <Route path={Routes.WORKSITES} component={WorksitesContainer} />
+      <Route exact strict path={Routes.ADD_PARTICIPANT} component={AddParticipantForm} />
       <Route path={Routes.PARTICIPANT_PROFILE} component={ParticipantProfileContainer} />
       <Route path={Routes.PARTICIPANTS} component={ParticipantsSearchContainer} />
       <Route path={Routes.DASHBOARD} component={DashboardContainer} />
@@ -136,7 +139,15 @@ class AppContainer extends Component<Props> {
         }
         <AppContentOuterWrapper>
           <AppContentInnerWrapper>
-            { this.renderAppContent() }
+            {
+              loading ? (
+                <LogoLoader
+                    loadingText="Please wait..."
+                    size={60} />
+              ) : (
+                this.renderAppContent()
+              )
+            }
             <ContactSupport />
           </AppContentInnerWrapper>
         </AppContentOuterWrapper>

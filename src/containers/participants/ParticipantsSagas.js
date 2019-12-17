@@ -76,7 +76,6 @@ const {
 } = PROPERTY_TYPE_FQNS;
 
 const getAppFromState = (state) => state.get(STATE.APP, Map());
-const getEdmFromState = (state) => state.get(STATE.EDM, Map());
 
 const LOG = new Logger('ParticipantsSagas');
 
@@ -99,21 +98,8 @@ function* addParticipantWorker(action :SequenceAction) :Generator<*, *, *> {
     if (response.error) {
       throw response.error;
     }
-    const { data } :Object = response;
-    const { entityKeyIds } :Object = data;
 
-    const edm = yield select(getEdmFromState);
-    const app = yield select(getAppFromState);
-    const peopleESID :UUID = getEntitySetIdFromApp(app, PEOPLE);
-    const personEKID :UUID = entityKeyIds[peopleESID][0];
-    const diversionPlanESID :UUID = getEntitySetIdFromApp(app, DIVERSION_PLAN);
-
-    yield put(addParticipant.success(id, {
-      diversionPlanESID,
-      edm,
-      personEKID,
-      peopleESID,
-    }));
+    yield put(addParticipant.success(id));
   }
   catch (error) {
     workerResponse.error = error;

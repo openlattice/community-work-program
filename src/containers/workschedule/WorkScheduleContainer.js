@@ -25,11 +25,17 @@ import { goToRoute } from '../../core/router/RoutingActions';
 import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
 import { ContainerHeader } from '../../components/Layout';
 import { SEARCH_CONTAINER_WIDTH } from '../../core/style/Sizes';
-import { STATE, WORKSITES, WORK_SCHEDULE } from '../../utils/constants/ReduxStateConsts';
+import {
+  APP,
+  STATE,
+  WORKSITES,
+  WORK_SCHEDULE
+} from '../../utils/constants/ReduxStateConsts';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { timePeriods, TIME_PERIOD_OPTIONS } from './WorkScheduleConstants';
 import type { GoToRoute } from '../../core/router/RoutingActions';
 
+const { ENTITY_SET_IDS_BY_ORG, SELECTED_ORG_ID } = APP;
 const { WORKSITES_LIST } = WORKSITES;
 const {
   ACTIONS,
@@ -91,8 +97,8 @@ type Props = {
     getWorksites :RequestSequence;
     goToRoute :GoToRoute;
   };
-  app :Map;
   appointments :List;
+  entitySetIds :Map;
   findAppointmentsRequestState :RequestState;
   personByAppointmentEKID :Map;
   worksiteNamesByAppointmentEKID :Map;
@@ -119,15 +125,15 @@ class WorkScheduleContainer extends Component<Props, State> {
   }
 
   componentDidMount() {
-    const { app } = this.props;
-    if (app.get(APP_TYPE_FQNS.APPOINTMENT)) {
+    const { entitySetIds } = this.props;
+    if (entitySetIds.has(APP_TYPE_FQNS.APPOINTMENT)) {
       this.loadDefaultSchedule();
     }
   }
 
   componentDidUpdate(prevProps :Props) {
-    const { app } = this.props;
-    if (!prevProps.app.get(APP_TYPE_FQNS.APPOINTMENT) && app.get(APP_TYPE_FQNS.APPOINTMENT)) {
+    const { entitySetIds } = this.props;
+    if (!prevProps.entitySetIds.has(APP_TYPE_FQNS.APPOINTMENT) && entitySetIds.has(APP_TYPE_FQNS.APPOINTMENT)) {
       this.loadDefaultSchedule();
     }
   }
@@ -262,12 +268,13 @@ class WorkScheduleContainer extends Component<Props, State> {
 const mapStateToProps = (state :Map) => {
   const app = state.get(STATE.APP);
   const workSchedule = state.get(STATE.WORK_SCHEDULE);
+  const selectedOrgId :string = app.get(SELECTED_ORG_ID);
   return ({
-    app,
     [APPOINTMENTS]: workSchedule.get(APPOINTMENTS),
     [PERSON_BY_APPOINTMENT_EKID]: workSchedule.get(PERSON_BY_APPOINTMENT_EKID),
     [WORKSITES_LIST]: state.getIn([STATE.WORKSITES, WORKSITES_LIST]),
     [WORKSITE_NAMES_BY_APPOINTMENT_EKID]: workSchedule.get(WORKSITE_NAMES_BY_APPOINTMENT_EKID),
+    entitySetIds: app.getIn([ENTITY_SET_IDS_BY_ORG, selectedOrgId], Map()),
     findAppointmentsRequestState: workSchedule.getIn([ACTIONS, FIND_APPOINTMENTS, REQUEST_STATE]),
   });
 };

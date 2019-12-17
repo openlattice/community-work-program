@@ -8,7 +8,7 @@ import type { RequestSequence } from 'redux-reqseq';
 
 import { editAppointment } from '../assignedworksites/WorksitePlanActions';
 import { schema, uiSchema } from './schemas/EditAppointmentSchemas';
-import { getEntitySetIdFromApp, getPropertyTypeIdFromEdm } from '../../../utils/DataUtils';
+import { getEntitySetIdFromApp } from '../../../utils/DataUtils';
 import {
   get24HourTimeFromString,
   getCombinedDateTime,
@@ -16,7 +16,7 @@ import {
   getInfoFromTimeRange,
 } from '../../../utils/ScheduleUtils';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
-import { STATE } from '../../../utils/constants/ReduxStateConsts';
+import { APP, EDM, STATE } from '../../../utils/constants/ReduxStateConsts';
 
 const {
   getPageSectionKey,
@@ -27,15 +27,19 @@ const {
 const { APPOINTMENT } = APP_TYPE_FQNS;
 const { DATETIME_END, INCIDENT_START_DATETIME } = PROPERTY_TYPE_FQNS;
 
+const { ENTITY_SET_IDS_BY_ORG, SELECTED_ORG_ID } = APP;
+const { PROPERTY_TYPES, TYPE_IDS_BY_FQNS } = EDM;
+
 type Props = {
   actions:{
     editAppointment :RequestSequence;
   },
   app :Map;
+  entitySetIds :Map;
   appointment :Object;
   appointmentEKID :UUID;
-  edm :Map;
   personName :string;
+  propertyTypeIds :Map;
 };
 
 type State = {
@@ -74,27 +78,18 @@ class EditAppointmentForm extends Component<Props, State> {
     this.setState({ formData });
   }
 
-  createEntitySetIdsMap = () => {
-    const { app } = this.props;
-    return {
-      [APPOINTMENT]: getEntitySetIdFromApp(app, APPOINTMENT),
-    };
-  };
-
-  createPropertyTypeIdsMap = () => {
-    const { edm } = this.props;
-    return {
-      [INCIDENT_START_DATETIME]: getPropertyTypeIdFromEdm(edm, INCIDENT_START_DATETIME),
-      [DATETIME_END]: getPropertyTypeIdFromEdm(edm, DATETIME_END),
-    };
-  };
-
   handleOnChange = ({ formData } :Object) => {
     this.setState({ formData });
   }
 
   handleOnSubmit = ({ formData } :Object) => {
-    const { actions, app, appointmentEKID } = this.props;
+    const {
+      actions,
+      app,
+      entitySetIds,
+      appointmentEKID,
+      propertyTypeIds,
+    } = this.props;
 
     let formDataToProcess :Map = fromJS({
       [getPageSectionKey(1, 1)]: {}
@@ -118,8 +113,6 @@ class EditAppointmentForm extends Component<Props, State> {
       getEntityAddressKey(0, APPOINTMENT, DATETIME_END)
     ], endDateTime);
 
-    const entitySetIds :{} = this.createEntitySetIdsMap();
-    const propertyTypeIds :{} = this.createPropertyTypeIdsMap();
     const processedData = processEntityData(formDataToProcess, entitySetIds, propertyTypeIds);
 
     const appointmentESID :UUID = getEntitySetIdFromApp(app, APPOINTMENT);
@@ -147,9 +140,11 @@ class EditAppointmentForm extends Component<Props, State> {
 const mapStateToProps = (state :Map) => {
   const app = state.get(STATE.APP);
   const edm = state.get(STATE.EDM);
+  const selectedOrgId :string = app.get(SELECTED_ORG_ID);
   return ({
     app,
-    edm,
+    entitySetIds: app.getIn([ENTITY_SET_IDS_BY_ORG, selectedOrgId], Map()),
+    propertyTypeIds: edm.getIn([TYPE_IDS_BY_FQNS, PROPERTY_TYPES], Map()),
   });
 };
 

@@ -18,7 +18,10 @@ const {
   WORKSITE,
 } = APP_TYPE_FQNS;
 const {
+  CITY,
   FULL_ADDRESS,
+  US_STATE,
+  ZIP,
 } = PROPERTY_TYPE_FQNS;
 
 const {
@@ -75,10 +78,18 @@ class EditWorksiteAddressForm extends Component<Props, State> {
     const prepopulated = !worksiteAddress.isEmpty();
     const formData = {};
     if (prepopulated) {
-      const { [FULL_ADDRESS]: address } = getEntityProperties(worksiteAddress, [FULL_ADDRESS]);
+      const {
+        [CITY]: city,
+        [FULL_ADDRESS]: streetAddress,
+        [US_STATE]: state,
+        [ZIP]: zipCode,
+      } = getEntityProperties(worksiteAddress, [CITY, FULL_ADDRESS, US_STATE, ZIP]);
       const sectionOneKey = getPageSectionKey(1, 1);
       formData[sectionOneKey] = {};
-      formData[sectionOneKey][getEntityAddressKey(0, ADDRESS, FULL_ADDRESS)] = address;
+      formData[sectionOneKey][getEntityAddressKey(0, ADDRESS, FULL_ADDRESS)] = streetAddress;
+      formData[sectionOneKey][getEntityAddressKey(0, ADDRESS, CITY)] = city || '';
+      formData[sectionOneKey][getEntityAddressKey(0, ADDRESS, US_STATE)] = state || '';
+      formData[sectionOneKey][getEntityAddressKey(0, ADDRESS, ZIP)] = zipCode || '';
     }
 
     this.setState({

@@ -19,7 +19,7 @@ import { OL } from '../../core/style/Colors';
 import { formatAsDate } from '../../utils/DateTimeUtils';
 import { formatPairOfStrings } from '../../utils/FormattingUtils';
 import { getEntityProperties } from '../../utils/DataUtils';
-import { getPersonFullName, getPersonProfilePicture } from '../../utils/PeopleUtils';
+import { getPersonAddress, getPersonFullName, getPersonProfilePicture } from '../../utils/PeopleUtils';
 import { PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { EMPTY_FIELD } from '../../containers/participants/ParticipantsConstants';
 
@@ -27,7 +27,6 @@ const {
   DOB,
   EMAIL,
   ETHNICITY,
-  FULL_ADDRESS,
   PHONE_NUMBER,
   RACE,
   SEX,
@@ -98,7 +97,7 @@ const ParticipantProfileSection = ({
 
   const { [PHONE_NUMBER]: phoneNumber } = getEntityProperties(phone, [PHONE_NUMBER]);
   const { [EMAIL]: emailAddress } = getEntityProperties(email, [EMAIL]);
-  const { [FULL_ADDRESS]: personAddress } = getEntityProperties(address, [FULL_ADDRESS]);
+  const streetAddress :string = getPersonAddress(address);
 
   return (
     <SectionWrapper>
@@ -144,7 +143,7 @@ const ParticipantProfileSection = ({
         <CardSegment noBleed padding="0">
           <PersonInfoRow>
             <Label subtle>Address</Label>
-            <PersonValue>{ personAddress || EMPTY_FIELD }</PersonValue>
+            <PersonValue>{ streetAddress || EMPTY_FIELD }</PersonValue>
           </PersonInfoRow>
         </CardSegment>
       </Card>
