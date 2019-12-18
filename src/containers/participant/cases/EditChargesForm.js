@@ -137,8 +137,8 @@ class EditChargesForm extends Component<Props, State> {
         chargesFormData[sectionOneKey][index][getEntityAddressKey(-1, COURT_CHARGE_LIST, ENTITY_KEY_ID)] = chargeEKID;
         chargesFormData[sectionOneKey][index][getEntityAddressKey(-1, CHARGE_EVENT, DATETIME_COMPLETED)] = dateCharged;
       });
-      newChargeSchema = hydrateChargeSchema(chargeSchema, charges);
     }
+    newChargeSchema = hydrateChargeSchema(chargeSchema, charges);
 
 
     this.setState({
