@@ -179,8 +179,8 @@ class EditChargesForm extends Component<Props, State> {
 
     const personEKID = getEntityKeyId(participant);
     const caseEKID = getEntityKeyId(personCase);
-    const courtChargeListESID :UUID = entitySetIds[COURT_CHARGE_LIST];
-    const olEKID :UUID = propertyTypeIds[ENTITY_KEY_ID];
+    const courtChargeListESID :UUID = entitySetIds.get(COURT_CHARGE_LIST);
+    const olEKID :UUID = propertyTypeIds.get(ENTITY_KEY_ID);
 
     fromJS(entityData).get(courtChargeListESID).forEach((courtCharge :Map, index :number) => {
       const courtChargeEKID :UUID = courtCharge.getIn([olEKID, 0]);
