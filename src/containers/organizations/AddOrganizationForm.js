@@ -14,9 +14,8 @@ import { bindActionCreators } from 'redux';
 import type { RequestSequence } from 'redux-reqseq';
 
 import { addOrganization } from '../worksites/WorksitesActions';
-import { getEntitySetIdFromApp, getPropertyTypeIdFromEdm } from '../../utils/DataUtils';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
-import { STATE } from '../../utils/constants/ReduxStateConsts';
+import { APP, EDM, STATE } from '../../utils/constants/ReduxStateConsts';
 import {
   ButtonsRow,
   ButtonsWrapper,
@@ -31,15 +30,17 @@ const {
 } = DataProcessingUtils;
 const { ORGANIZATION } = APP_TYPE_FQNS;
 const { DESCRIPTION, ORGANIZATION_NAME } = PROPERTY_TYPE_FQNS;
+const { ENTITY_SET_IDS_BY_ORG, SELECTED_ORG_ID } = APP;
+const { PROPERTY_TYPES, TYPE_IDS_BY_FQNS } = EDM;
 
 type Props = {
   actions:{
     addOrganization :RequestSequence;
   };
-  app :Map;
-  edm :Map;
+  entitySetIds :Map;
   isLoading :boolean;
   onDiscard :() => void;
+  propertyTypeIds :Map;
 };
 
 type State = {
@@ -67,20 +68,12 @@ class AddOrganizationForm extends Component<Props, State> {
   handleOnSubmit = () => {
     const {
       actions,
-      app,
-      edm,
+      entitySetIds,
+      propertyTypeIds,
     } = this.props;
     const { newOrganizationData } = this.state;
 
-    const entitySetIds :{} = {
-      [ORGANIZATION]: getEntitySetIdFromApp(app, ORGANIZATION),
-    };
-    const propertyTypeIds :{} = {
-      [DESCRIPTION]: getPropertyTypeIdFromEdm(edm, DESCRIPTION),
-      [ORGANIZATION_NAME]: getPropertyTypeIdFromEdm(edm, ORGANIZATION_NAME),
-    };
     const entityData :{} = processEntityData(newOrganizationData, entitySetIds, propertyTypeIds);
-
     actions.addOrganization({ associationEntityData: {}, entityData });
   }
 
@@ -127,12 +120,17 @@ class AddOrganizationForm extends Component<Props, State> {
   }
 }
 
-const mapStateToProps = (state :Map) => ({
-  app: state.get(STATE.APP),
-  edm: state.get(STATE.EDM),
-});
+const mapStateToProps = (state :Map) => {
+  const app = state.get(STATE.APP);
+  const edm = state.get(STATE.EDM);
+  const selectedOrgId :string = app.get(SELECTED_ORG_ID);
+  return ({
+    entitySetIds: app.getIn([ENTITY_SET_IDS_BY_ORG, selectedOrgId], Map()),
+    propertyTypeIds: edm.getIn([TYPE_IDS_BY_FQNS, PROPERTY_TYPES], Map()),
+  });
+};
 
-const mapDispatchToProps = dispatch => ({
+const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
     addOrganization,
   }, dispatch)
