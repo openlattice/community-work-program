@@ -116,26 +116,26 @@ class AssignJudgeForm extends Component<Props, State> {
     const diversionPlanEKID = getEntityKeyId(diversionPlan);
 
     const associationEntityData :{} = {
-      [entitySetIds[PRESIDES_OVER]]: [
+      [entitySetIds.get(PRESIDES_OVER)]: [
         {
           data: {},
           dst: {
-            entitySetId: entitySetIds[MANUAL_PRETRIAL_COURT_CASES],
+            entitySetId: entitySetIds.get(MANUAL_PRETRIAL_COURT_CASES),
             entityKeyId: caseEKID
           },
           src: {
-            entitySetId: entitySetIds[JUDGES],
+            entitySetId: entitySetIds.get(JUDGES),
             entityKeyId: judgeEKID
           }
         },
         {
           data: {},
           dst: {
-            entitySetId: entitySetIds[DIVERSION_PLAN],
+            entitySetId: entitySetIds.get(DIVERSION_PLAN),
             entityKeyId: diversionPlanEKID
           },
           src: {
-            entitySetId: entitySetIds[JUDGES],
+            entitySetId: entitySetIds.get(JUDGES),
             entityKeyId: judgeEKID
           }
         }

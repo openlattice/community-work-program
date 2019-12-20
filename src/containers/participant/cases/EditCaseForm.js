@@ -75,7 +75,7 @@ class EditCaseForm extends Component<Props, State> {
     const { [CASE_NUMBER_TEXT]: caseNumbers, [COURT_CASE_TYPE]: courtCaseType } = getEntityProperties(
       personCase, [CASE_NUMBER_TEXT, COURT_CASE_TYPE]
     );
-    const casePrepopulated = !!caseNumbers || !!courtCaseType;
+    const casePrepopulated = !personCase.isEmpty();
     const caseFormData :{} = casePrepopulated
       ? {
         [sectionOneKey]: {

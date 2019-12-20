@@ -24,12 +24,7 @@ import {
   schema,
   uiSchema,
 } from './schemas/EditEnrollmentDatesSchemas';
-import {
-  getEntityKeyId,
-  getEntityProperties,
-  getEntitySetIdFromApp,
-  getPropertyTypeIdFromEdm
-} from '../../utils/DataUtils';
+import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
 import { BackNavButton } from '../../components/controls/index';
 import { PARTICIPANT_PROFILE_WIDTH } from '../../core/style/Sizes';
 import {
@@ -47,7 +42,6 @@ const {
   CHECK_IN_DATETIME,
   DATETIME_END,
   DATETIME_RECEIVED,
-  DATETIME_START,
   ORIENTATION_DATETIME,
 } = PROPERTY_TYPE_FQNS;
 
@@ -78,9 +72,7 @@ type Props = {
     getEnrollmentStatus :RequestSequence;
     goToRoute :GoToRoute;
   },
-  app :Map;
   diversionPlan :Map;
-  edm :Map;
   entitySetIds :Map;
   getEnrollmentStatusRequestState :RequestState;
   initializeAppRequestState :RequestState;
@@ -190,24 +182,6 @@ class EditCaseInfoForm extends Component<Props, State> {
     return entityIndexToIdMap;
   }
 
-  createEntitySetIdsMap = () => {
-    const { app } = this.props;
-    return {
-      [DIVERSION_PLAN]: getEntitySetIdFromApp(app, DIVERSION_PLAN)
-    };
-  }
-
-  createPropertyTypeIdsMap = () => {
-    const { edm } = this.props;
-    return {
-      [CHECK_IN_DATETIME]: getPropertyTypeIdFromEdm(edm, CHECK_IN_DATETIME),
-      [DATETIME_END]: getPropertyTypeIdFromEdm(edm, DATETIME_END),
-      [DATETIME_RECEIVED]: getPropertyTypeIdFromEdm(edm, DATETIME_RECEIVED),
-      [DATETIME_START]: getPropertyTypeIdFromEdm(edm, DATETIME_START),
-      [ORIENTATION_DATETIME]: getPropertyTypeIdFromEdm(edm, ORIENTATION_DATETIME),
-    };
-  }
-
   handleOnClickBackButton = () => {
     const {
       actions,
@@ -240,8 +214,6 @@ class EditCaseInfoForm extends Component<Props, State> {
     }
 
     const entityIndexToIdMap = this.createEntityIndexToIdMap();
-    // const entitySetIds = this.createEntitySetIdsMap();
-    // const propertyTypeIds = this.createPropertyTypeIdsMap();
 
     const formContext = {
       editAction: actions.editEnrollmentDates,
@@ -280,9 +252,7 @@ const mapStateToProps = (state :Map) => {
   const person = state.get(STATE.PERSON);
   const selectedOrgId :string = app.get(SELECTED_ORG_ID);
   return ({
-    app,
     [PERSON.DIVERSION_PLAN]: person.get(PERSON.DIVERSION_PLAN),
-    edm: state.get(STATE.EDM),
     entitySetIds: app.getIn([ENTITY_SET_IDS_BY_ORG, selectedOrgId], Map()),
     getEnrollmentStatusRequestState: person.getIn([ACTIONS, GET_ENROLLMENT_STATUS, REQUEST_STATE]),
     initializeAppRequestState: app.getIn([APP.ACTIONS, APP.INITIALIZE_APPLICATION, APP.REQUEST_STATE]),
