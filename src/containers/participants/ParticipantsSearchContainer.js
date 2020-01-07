@@ -62,6 +62,7 @@ const {
   PARTICIPANTS,
 } = PEOPLE;
 const {
+  COURT_CASE_TYPE,
   DATETIME_END,
   DATETIME_RECEIVED,
   DOB,
@@ -149,7 +150,7 @@ class ParticipantsSearchContainer extends Component<Props, State> {
   }
 
   handleOnFilter = (clickedProperty :Map, selectEvent :Object, peopleToFilter :List) => {
-    const { enrollmentByParticipant, participants } = this.props;
+    const { courtTypeByParticipant, enrollmentByParticipant, participants } = this.props;
     const peopleList :List = isDefined(peopleToFilter) ? peopleToFilter : participants;
     const { filter } = clickedProperty;
     let property :string = clickedProperty.label.toUpperCase();
@@ -169,6 +170,14 @@ class ParticipantsSearchContainer extends Component<Props, State> {
         let { [STATUS]: status } = getEntityProperties(personEnrollment, [STATUS]);
         status = !isDefined(status) ? ENROLLMENT_STATUSES.AWAITING_CHECKIN : status;
         return status === statusTypeToInclude;
+      });
+    }
+    if (filter === FILTERS.COURT_TYPE) {
+      filteredPeople = peopleList.filter((person :Map) => {
+        const courtTypeToInclude = COURT_TYPES_MAP[property];
+        const personEKID :UUID = getEntityKeyId(person);
+        const personCourtType :string = courtTypeByParticipant.get(personEKID, '');
+        return personCourtType === courtTypeToInclude;
       });
     }
 
