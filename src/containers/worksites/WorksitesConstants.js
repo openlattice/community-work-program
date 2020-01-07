@@ -11,7 +11,7 @@ export const WORKSITE_STATUSES = {
 /* Filters */
 
 export const FILTERS = {
-  STATUS: 'Filter by: Status'
+  STATUS: 'Status'
 };
 export const ALL = 'ALL';
 
