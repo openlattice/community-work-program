@@ -1,5 +1,5 @@
 // @flow
-import React, { useState } from 'react';
+import React, { Fragment, useState } from 'react';
 import styled from 'styled-components';
 import { List, Map } from 'immutable';
 import { Button, IconButton, Select } from 'lattice-ui-kit';
@@ -113,19 +113,19 @@ const ToolBar = ({
             <ActionsWrapper>
               {
                 dropdowns.map((dropdownMap :Map) => (
-                  <>
+                  <Fragment key={`${dropdownMap.get('title')}-fragment`}>
                     <FiltersHeader>
                       { dropdownMap.get('title') }
                       :
                     </FiltersHeader>
-                    <SelectWrapper key={`${dropdownMap.get('title')}-wrapper`}>
+                    <SelectWrapper>
                       <Select
                           key={dropdownMap.get('title')}
                           onChange={onSelectFunctions.get(dropdownMap.get('title'))}
                           options={dropdownMap.get('enums')}
                           placeholder="All" />
                     </SelectWrapper>
-                  </>
+                  </Fragment>
                 ))
               }
             </ActionsWrapper>
