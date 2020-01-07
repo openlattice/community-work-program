@@ -77,7 +77,9 @@ const dropdowns :List = List().withMutations((list :List) => {
   list.set(0, statusFilterDropdown);
   list.set(1, courtTypeFilterDropdown);
 });
-const defaultFilterOption :Map = statusFilterDropdown.get('enums')
+const defaultStatusFilterOption :Map = statusFilterDropdown.get('enums')
+  .find((obj) => obj.value.toUpperCase() === ALL);
+const defaultCourtTypeFilterOption :Map = courtTypeFilterDropdown.get('enums')
   .find((obj) => obj.value.toUpperCase() === ALL);
 
 
@@ -116,8 +118,10 @@ type Props = {
 };
 
 type State = {
+  courtTypeFilterValue :Object;
   peopleToRender :List;
   selectedFilterOption :Map;
+  statusFilterValue :Object;
 };
 
 class ParticipantsSearchContainer extends Component<Props, State> {
@@ -126,8 +130,10 @@ class ParticipantsSearchContainer extends Component<Props, State> {
     super(props);
 
     this.state = {
+      courtTypeFilterValue: defaultCourtTypeFilterOption,
       peopleToRender: props.participants,
-      selectedFilterOption: defaultFilterOption,
+      selectedFilterOption: defaultStatusFilterOption,
+      statusFilterValue: defaultStatusFilterOption,
     };
   }
 
@@ -149,9 +155,11 @@ class ParticipantsSearchContainer extends Component<Props, State> {
     }
   }
 
-  handleOnFilter = (clickedProperty :Map, selectEvent :Object, peopleToFilter :List) => {
-    const { courtTypeByParticipant, enrollmentByParticipant, participants } = this.props;
-    const peopleList :List = isDefined(peopleToFilter) ? peopleToFilter : participants;
+  handleOnFilterByStatus = (clickedProperty :Map, selectEvent :Object, peopleToFilter :List) => {
+    const { enrollmentByParticipant } = this.props;
+    const { peopleToRender } = this.state;
+
+    const peopleList :List = isDefined(peopleToFilter) ? peopleToFilter : peopleToRender;
     const { filter } = clickedProperty;
     let property :string = clickedProperty.label.toUpperCase();
     property = property.split(' ').join('_');
@@ -159,7 +167,7 @@ class ParticipantsSearchContainer extends Component<Props, State> {
     let filteredPeople :List = List();
 
     if (property === ALL) {
-      this.setState({ peopleToRender: participants, selectedFilterOption: clickedProperty });
+      this.setState({ peopleToRender, statusFilterValue: clickedProperty });
       return peopleList;
     }
     if (filter === FILTERS.STATUS) {
@@ -172,6 +180,25 @@ class ParticipantsSearchContainer extends Component<Props, State> {
         return status === statusTypeToInclude;
       });
     }
+    this.setState({ peopleToRender: filteredPeople, statusFilterValue: clickedProperty });
+    return filteredPeople;
+  }
+
+  handleOnFilterByCourtType = (clickedProperty :Map, selectEvent :Object, peopleToFilter :List) => {
+    const { courtTypeByParticipant } = this.props;
+    const { peopleToRender } = this.state;
+
+    const peopleList :List = isDefined(peopleToFilter) ? peopleToFilter : peopleToRender;
+    const { filter } = clickedProperty;
+    let property :string = clickedProperty.label.toUpperCase();
+    property = property.split(' ').join('_');
+    property = property.split('-').join('');
+    let filteredPeople :List = List();
+
+    if (property === ALL) {
+      this.setState({ peopleToRender, courtTypeFilterValue: clickedProperty });
+      return peopleList;
+    }
     if (filter === FILTERS.COURT_TYPE) {
       filteredPeople = peopleList.filter((person :Map) => {
         const courtTypeToInclude = COURT_TYPES_MAP[property];
@@ -181,7 +208,7 @@ class ParticipantsSearchContainer extends Component<Props, State> {
       });
     }
 
-    this.setState({ peopleToRender: filteredPeople, selectedFilterOption: clickedProperty });
+    this.setState({ peopleToRender: filteredPeople, courtTypeFilterValue: clickedProperty });
     return filteredPeople;
   }
 
@@ -207,7 +234,7 @@ class ParticipantsSearchContainer extends Component<Props, State> {
 
   searchParticipantList = (input :string) => {
     const { participants } = this.props;
-    const { selectedFilterOption } = this.state;
+    const { courtTypeFilterValue, statusFilterValue } = this.state;
 
     const matches = participants.filter((p) => {
       const { [FIRST_NAME]: firstName, [LAST_NAME]: lastName } = getEntityProperties(p, [FIRST_NAME, LAST_NAME]);
@@ -221,7 +248,8 @@ class ParticipantsSearchContainer extends Component<Props, State> {
     });
 
     // preserve any filters selected before search
-    const fullyProcessedPeople = this.handleOnFilter(selectedFilterOption, null, matches);
+    let fullyProcessedPeople = this.handleOnFilterByStatus(statusFilterValue, null, matches);
+    fullyProcessedPeople = this.handleOnFilterByCourtType(courtTypeFilterValue, null, matches);
     this.setState({ peopleToRender: fullyProcessedPeople });
 
   }
@@ -297,8 +325,8 @@ class ParticipantsSearchContainer extends Component<Props, State> {
     }
 
     const onSelectFunctions = Map().withMutations((map :Map) => {
-      map.set(FILTERS.STATUS, this.handleOnFilter);
-      map.set(FILTERS.COURT_TYPE, this.handleOnFilter);
+      map.set(FILTERS.STATUS, this.handleOnFilterByStatus);
+      map.set(FILTERS.COURT_TYPE, this.handleOnFilterByCourtType);
     });
     const tableData :Object[] = this.aggregateTableData();
     const tableHeaders :Object[] = generateTableHeaders(ALL_PARTICIPANTS_COLUMNS);
