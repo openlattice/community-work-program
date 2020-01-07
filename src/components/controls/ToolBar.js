@@ -9,7 +9,6 @@ import { faFilter } from '@fortawesome/pro-light-svg-icons';
 import SearchContainer from '../../containers/search/SearchContainer';
 import { ButtonWrapper, ButtonsWrapper } from '../Layout';
 import { OL } from '../../core/style/Colors';
-import { APP_CONTAINER_MAX_WIDTH } from '../../core/style/Sizes';
 
 const ToolBarWrapper = styled.div`
   align-items: center;
@@ -26,8 +25,8 @@ const ToolBarRowWrapper = styled.div`
   align-items: center;
   display: flex;
   justify-content: space-between;
-  max-width: ${APP_CONTAINER_MAX_WIDTH}px;
-  min-width: 1078px;
+  width: 100%;
+  padding: 0 30px;
 `;
 
 const ActionsWrapper = styled.span`
