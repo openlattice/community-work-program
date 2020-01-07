@@ -72,12 +72,9 @@ const {
 const { VIOLATION, WARNING } = INFRACTIONS_CONSTS;
 const { REQUIRED, WORKED } = HOURS_CONSTS;
 
-const formatClickedProperty = (clickedProperty :Object) :string => {
-  let property :string = clickedProperty.label.toUpperCase();
-  property = property.split(' ').join('_');
-  property = property.split('-').join('');
-  return property;
-};
+const formatClickedProperty = (clickedProperty :Object) :string => (
+  clickedProperty.label.toUpperCase().replace(' ', '_').replace('-', '')
+);
 
 const filterPeopleByProperty = (
   people :List,
