@@ -84,9 +84,13 @@ const filterPeopleByProperty = (
   property :string,
   propertyMap :Map,
   filterMap :Object
-) :List => (
+) :List => {
 
-  people.filter((person :Map) => {
+  if (property === ALL) {
+    return people;
+  }
+
+  return people.filter((person :Map) => {
     const filterTypeToInclude = filterMap[property];
     const personEKID :UUID = getEntityKeyId(person);
     const entityOrValueFound :Map | string = propertyMap.get(personEKID, Map());
@@ -98,7 +102,8 @@ const filterPeopleByProperty = (
       value = status;
     }
     return value === filterTypeToInclude;
-  }));
+  });
+};
 
 const dropdowns :List = List().withMutations((list :List) => {
   list.set(0, statusFilterDropdown);
@@ -179,52 +184,71 @@ class ParticipantsSearchContainer extends Component<Props, State> {
     }
   }
 
-  handleOnFilterByStatus = (clickedProperty :Map, selectEvent :Object, peopleToFilter :List) => {
-    const { enrollmentByParticipant, participants } = this.props;
-    const { courtTypeFilterValue, peopleToRender } = this.state;
+  handleOnFilter = (clickedProperty :Map, selectEvent :Object, peopleToFilter :List) => {
+    const { courtTypeByParticipant, enrollmentByParticipant, participants } = this.props;
+    const { courtTypeFilterValue, statusFilterValue } = this.state;
 
-    const peopleList :List = isDefined(peopleToFilter) ? peopleToFilter : peopleToRender;
+    const { filter } = clickedProperty;
     const property :string = formatClickedProperty(clickedProperty);
-    let filteredPeople :List = List();
+    const peopleList :List = isDefined(peopleToFilter) ? peopleToFilter : participants;
 
-    if (property === ALL) {
-      /* If both filters are set to 'All', then table should include all participants */
-      if (formatClickedProperty(courtTypeFilterValue) === ALL) {
-        this.setState({ peopleToRender: participants, statusFilterValue: clickedProperty });
+    let filteredPeople :List = List();
+    const newState :Object = {};
+
+    if (filter === FILTERS.STATUS) {
+      newState.statusFilterValue = clickedProperty;
+      const currentCourtTypeProperty :string = formatClickedProperty(courtTypeFilterValue);
+      const peopleListFilteredByCourtType :List = filterPeopleByProperty(
+        peopleList,
+        currentCourtTypeProperty,
+        courtTypeByParticipant,
+        COURT_TYPES_MAP
+      );
+
+      if (property === ALL) {
+        if (currentCourtTypeProperty === ALL) {
+          this.setState({ peopleToRender: peopleList, statusFilterValue: clickedProperty });
+          return peopleList;
+        }
+        // if status === ALL && court type !== ALL, just filter participants list by court type:
+        filteredPeople = peopleListFilteredByCourtType;
+        newState.peopleToRender = filteredPeople;
+        this.setState(newState);
         return filteredPeople;
       }
-      /* Preserve court type filter if not set to 'All' */
-      filteredPeople = this.handleOnFilterByCourtType(courtTypeFilterValue, selectEvent, participants);
-      this.setState({ peopleToRender: filteredPeople, statusFilterValue: clickedProperty });
-      return filteredPeople;
+      // if status !== ALL, we need to filter by 1) currently selected court type filter and 2) new status filter:
+      filteredPeople = peopleListFilteredByCourtType;
+      filteredPeople = filterPeopleByProperty(filteredPeople, property, enrollmentByParticipant, ENROLLMENT_STATUSES);
     }
-    filteredPeople = filterPeopleByProperty(peopleList, property, enrollmentByParticipant, ENROLLMENT_STATUSES);
-    this.setState({ peopleToRender: filteredPeople, statusFilterValue: clickedProperty });
-    return filteredPeople;
-  }
 
-  handleOnFilterByCourtType = (clickedProperty :Map, selectEvent :Object, peopleToFilter :List) => {
-    const { courtTypeByParticipant, participants } = this.props;
-    const { peopleToRender, statusFilterValue } = this.state;
+    if (filter === FILTERS.COURT_TYPE) {
+      newState.courtTypeFilterValue = clickedProperty;
+      const currentStatusProperty :string = formatClickedProperty(statusFilterValue);
+      const peopleListFilteredByStatus :List = filterPeopleByProperty(
+        peopleList,
+        currentStatusProperty,
+        enrollmentByParticipant,
+        ENROLLMENT_STATUSES
+      );
 
-    const peopleList :List = isDefined(peopleToFilter) ? peopleToFilter : peopleToRender;
-    const property :string = formatClickedProperty(clickedProperty);
-    let filteredPeople :List = List();
-
-    if (property === ALL) {
-      /* If both filters are set to 'All', then table should include all participants */
-      if (formatClickedProperty(statusFilterValue) === ALL) {
-        this.setState({ peopleToRender: participants, courtTypeFilterValue: clickedProperty });
+      if (property === ALL) {
+        if (currentStatusProperty === ALL) {
+          this.setState({ peopleToRender: peopleList, courtTypeFilterValue: clickedProperty });
+          return peopleList;
+        }
+        // if court type === ALL && status !== ALL, just filter participants list by status:
+        filteredPeople = peopleListFilteredByStatus;
+        newState.peopleToRender = filteredPeople;
+        this.setState(newState);
         return filteredPeople;
       }
-      /* Preserve status filter if not set to 'All' */
-      filteredPeople = this.handleOnFilterByStatus(statusFilterValue, selectEvent, participants);
-      this.setState({ peopleToRender: filteredPeople, courtTypeFilterValue: clickedProperty });
-      return filteredPeople;
+      // if court type !== ALL, we need to filter by 1) currently selected status filter and 2) new court type filter:
+      filteredPeople = peopleListFilteredByStatus;
+      filteredPeople = filterPeopleByProperty(filteredPeople, property, courtTypeByParticipant, COURT_TYPES_MAP);
     }
 
-    filteredPeople = filterPeopleByProperty(peopleList, property, courtTypeByParticipant, COURT_TYPES_MAP);
-    this.setState({ peopleToRender: filteredPeople, courtTypeFilterValue: clickedProperty });
+    newState.peopleToRender = filteredPeople;
+    this.setState(newState);
     return filteredPeople;
   }
 
@@ -256,8 +280,8 @@ class ParticipantsSearchContainer extends Component<Props, State> {
     let peopleToFilter :List = peopleToRender;
     if (input === '') {
       if (formatClickedProperty(courtTypeFilterValue) !== ALL || formatClickedProperty(statusFilterValue) !== ALL) {
-        peopleToFilter = this.handleOnFilterByStatus(statusFilterValue, null, participants);
-        peopleToFilter = this.handleOnFilterByCourtType(courtTypeFilterValue, null, peopleToFilter);
+        peopleToFilter = this.handleOnFilter(statusFilterValue, null, participants);
+        peopleToFilter = this.handleOnFilter(courtTypeFilterValue, null, peopleToFilter);
       }
       else {
         peopleToFilter = participants;
@@ -350,8 +374,8 @@ class ParticipantsSearchContainer extends Component<Props, State> {
     }
 
     const onSelectFunctions = Map().withMutations((map :Map) => {
-      map.set(FILTERS.STATUS, this.handleOnFilterByStatus);
-      map.set(FILTERS.COURT_TYPE, this.handleOnFilterByCourtType);
+      map.set(FILTERS.STATUS, this.handleOnFilter);
+      map.set(FILTERS.COURT_TYPE, this.handleOnFilter);
     });
     const tableData :Object[] = this.aggregateTableData();
     const tableHeaders :Object[] = generateTableHeaders(ALL_PARTICIPANTS_COLUMNS);
