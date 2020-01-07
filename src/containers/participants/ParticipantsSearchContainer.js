@@ -188,10 +188,12 @@ class ParticipantsSearchContainer extends Component<Props, State> {
     let filteredPeople :List = List();
 
     if (property === ALL) {
+      /* If both filters are set to 'All', then table should include all participants */
       if (formatClickedProperty(courtTypeFilterValue) === ALL) {
         this.setState({ peopleToRender: participants, statusFilterValue: clickedProperty });
         return filteredPeople;
       }
+      /* Preserve court type filter if not set to 'All' */
       filteredPeople = this.handleOnFilterByCourtType(courtTypeFilterValue, selectEvent, participants);
       this.setState({ peopleToRender: filteredPeople, statusFilterValue: clickedProperty });
       return filteredPeople;
@@ -210,16 +212,18 @@ class ParticipantsSearchContainer extends Component<Props, State> {
     let filteredPeople :List = List();
 
     if (property === ALL) {
+      /* If both filters are set to 'All', then table should include all participants */
       if (formatClickedProperty(statusFilterValue) === ALL) {
         this.setState({ peopleToRender: participants, courtTypeFilterValue: clickedProperty });
         return filteredPeople;
       }
+      /* Preserve status filter if not set to 'All' */
       filteredPeople = this.handleOnFilterByStatus(statusFilterValue, selectEvent, participants);
       this.setState({ peopleToRender: filteredPeople, courtTypeFilterValue: clickedProperty });
       return filteredPeople;
     }
-    filteredPeople = filterPeopleByProperty(peopleList, property, courtTypeByParticipant, COURT_TYPES_MAP);
 
+    filteredPeople = filterPeopleByProperty(peopleList, property, courtTypeByParticipant, COURT_TYPES_MAP);
     this.setState({ peopleToRender: filteredPeople, courtTypeFilterValue: clickedProperty });
     return filteredPeople;
   }
@@ -246,9 +250,21 @@ class ParticipantsSearchContainer extends Component<Props, State> {
 
   searchParticipantList = (input :string) => {
     const { participants } = this.props;
-    const { courtTypeFilterValue, statusFilterValue } = this.state;
+    const { courtTypeFilterValue, peopleToRender, statusFilterValue } = this.state;
 
-    const matches = participants.filter((p) => {
+    /* Be sure to search correct participant list — based on filters and whether search input is empty */
+    let peopleToFilter :List = peopleToRender;
+    if (input === '') {
+      if (formatClickedProperty(courtTypeFilterValue) !== ALL || formatClickedProperty(statusFilterValue) !== ALL) {
+        peopleToFilter = this.handleOnFilterByStatus(statusFilterValue, null, participants);
+        peopleToFilter = this.handleOnFilterByCourtType(courtTypeFilterValue, null, peopleToFilter);
+      }
+      else {
+        peopleToFilter = participants;
+      }
+    }
+
+    const matches = peopleToFilter.filter((p) => {
       const { [FIRST_NAME]: firstName, [LAST_NAME]: lastName } = getEntityProperties(p, [FIRST_NAME, LAST_NAME]);
       const fullName = (`${firstName} ${lastName}`).trim().toLowerCase();
 
@@ -259,10 +275,7 @@ class ParticipantsSearchContainer extends Component<Props, State> {
       return match;
     });
 
-    // preserve any filters selected before search
-    let fullyProcessedPeople = this.handleOnFilterByStatus(statusFilterValue, null, matches);
-    fullyProcessedPeople = this.handleOnFilterByCourtType(courtTypeFilterValue, null, matches);
-    this.setState({ peopleToRender: fullyProcessedPeople });
+    this.setState({ peopleToRender: matches });
 
   }
 
