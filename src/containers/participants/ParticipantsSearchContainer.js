@@ -39,10 +39,16 @@ import {
   ALL_PARTICIPANTS_COLUMNS,
   EMPTY_FIELD,
   FILTERS,
+  courtTypeFilterDropdown,
   statusFilterDropdown,
 } from './ParticipantsConstants';
 import { APP, PEOPLE, STATE } from '../../utils/constants/ReduxStateConsts';
-import { ENROLLMENT_STATUSES, HOURS_CONSTS, INFRACTIONS_CONSTS } from '../../core/edm/constants/DataModelConsts';
+import {
+  COURT_TYPES_MAP,
+  ENROLLMENT_STATUSES,
+  HOURS_CONSTS,
+  INFRACTIONS_CONSTS
+} from '../../core/edm/constants/DataModelConsts';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import type { GoToRoute } from '../../core/router/RoutingActions';
 
@@ -68,6 +74,7 @@ const { REQUIRED, WORKED } = HOURS_CONSTS;
 
 const dropdowns :List = List().withMutations((list :List) => {
   list.set(0, statusFilterDropdown);
+  list.set(1, courtTypeFilterDropdown);
 });
 const defaultFilterOption :Map = statusFilterDropdown.get('enums')
   .find((obj) => obj.value.toUpperCase() === ALL);
@@ -282,6 +289,7 @@ class ParticipantsSearchContainer extends Component<Props, State> {
 
     const onSelectFunctions = Map().withMutations((map :Map) => {
       map.set(FILTERS.STATUS, this.handleOnFilter);
+      map.set(FILTERS.COURT_TYPE, this.handleOnFilter);
     });
     const tableData :Object[] = this.aggregateTableData();
     const tableHeaders :Object[] = generateTableHeaders(ALL_PARTICIPANTS_COLUMNS);
