@@ -16,25 +16,6 @@ import TableHeaderRow from '../../components/table/TableHeaderRow';
 import TableHeadCell from '../../components/table/TableHeadCell';
 
 import {
-  TableCell,
-  CustomTable,
-  TableCard,
-  TableHeader,
-  TableName,
-} from '../../components/table/styled/index';
-import { ToolBar } from '../../components/controls/index';
-import { getDiversionPlans } from './ParticipantsActions';
-import { goToRoute } from '../../core/router/RoutingActions';
-import { clearAppointmentsAndPlans } from '../participant/assignedworksites/WorksitePlanActions';
-import { ADD_PARTICIPANT, PARTICIPANT_PROFILE } from '../../core/router/Routes';
-import { SEARCH_CONTAINER_WIDTH } from '../../core/style/Sizes';
-import { isDefined } from '../../utils/LangUtils';
-import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
-import { calculateAge, formatAsDate } from '../../utils/DateTimeUtils';
-import { getHoursServed, getPersonFullName, getPersonPictureForTable } from '../../utils/PeopleUtils';
-import { getSentenceEndDate } from '../../utils/ScheduleUtils';
-import { generateTableHeaders } from '../../utils/FormattingUtils';
-import {
   ALL,
   ALL_PARTICIPANTS_COLUMNS,
   EMPTY_FIELD,
@@ -44,12 +25,31 @@ import {
 } from './ParticipantsConstants';
 import { APP, PEOPLE, STATE } from '../../utils/constants/ReduxStateConsts';
 import {
-  COURT_TYPES_MAP,
   ENROLLMENT_STATUSES,
   HOURS_CONSTS,
   INFRACTIONS_CONSTS
 } from '../../core/edm/constants/DataModelConsts';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { ADD_PARTICIPANT, PARTICIPANT_PROFILE } from '../../core/router/Routes';
+import { SEARCH_CONTAINER_WIDTH } from '../../core/style/Sizes';
+import {
+  TableCell,
+  CustomTable,
+  TableCard,
+  TableHeader,
+  TableName,
+} from '../../components/table/styled/index';
+import { ToolBar } from '../../components/controls/index';
+import { formatClickedProperty, getFilteredPeople } from './utils/SearchContainerUtils';
+import { calculateAge, formatAsDate } from '../../utils/DateTimeUtils';
+import { clearAppointmentsAndPlans } from '../participant/assignedworksites/WorksitePlanActions';
+import { generateTableHeaders } from '../../utils/FormattingUtils';
+import { getDiversionPlans } from './ParticipantsActions';
+import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
+import { getHoursServed, getPersonFullName, getPersonPictureForTable } from '../../utils/PeopleUtils';
+import { getSentenceEndDate } from '../../utils/ScheduleUtils';
+import { goToRoute } from '../../core/router/RoutingActions';
+import { isDefined } from '../../utils/LangUtils';
 import type { GoToRoute } from '../../core/router/RoutingActions';
 
 const { ENTITY_SET_IDS_BY_ORG, SELECTED_ORG_ID } = APP;
@@ -71,36 +71,6 @@ const {
 } = PROPERTY_TYPE_FQNS;
 const { VIOLATION, WARNING } = INFRACTIONS_CONSTS;
 const { REQUIRED, WORKED } = HOURS_CONSTS;
-
-const formatClickedProperty = (clickedProperty :Object) :string => (
-  clickedProperty.label.toUpperCase().replace(' ', '_').replace('-', '')
-);
-
-const filterPeopleByProperty = (
-  people :List,
-  property :string,
-  propertyMap :Map,
-  filterMap :Object
-) :List => {
-
-  if (property === ALL) {
-    return people;
-  }
-
-  return people.filter((person :Map) => {
-    const filterTypeToInclude = filterMap[property];
-    const personEKID :UUID = getEntityKeyId(person);
-    const entityOrValueFound :Map | string = propertyMap.get(personEKID, Map());
-    let value = entityOrValueFound;
-
-    if (Map.isMap(entityOrValueFound)) {
-      let { [STATUS]: status } = getEntityProperties(entityOrValueFound, [STATUS]);
-      status = !isDefined(status) ? ENROLLMENT_STATUSES.AWAITING_CHECKIN : status;
-      value = status;
-    }
-    return value === filterTypeToInclude;
-  });
-};
 
 const dropdowns :List = List().withMutations((list :List) => {
   list.set(0, statusFilterDropdown);
@@ -186,65 +156,18 @@ class ParticipantsSearchContainer extends Component<Props, State> {
     const { courtTypeFilterValue, statusFilterValue } = this.state;
 
     const { filter } = clickedProperty;
-    const property :string = formatClickedProperty(clickedProperty);
     const peopleList :List = isDefined(peopleToFilter) ? peopleToFilter : participants;
 
-    let filteredPeople :List = List();
-    const newState :Object = {};
+    const { filteredPeople, newState } = getFilteredPeople(
+      filter,
+      clickedProperty,
+      peopleList,
+      courtTypeFilterValue,
+      statusFilterValue,
+      courtTypeByParticipant,
+      enrollmentByParticipant
+    );
 
-    if (filter === FILTERS.STATUS) {
-      newState.statusFilterValue = clickedProperty;
-      const currentCourtTypeProperty :string = formatClickedProperty(courtTypeFilterValue);
-      const peopleListFilteredByCourtType :List = filterPeopleByProperty(
-        peopleList,
-        currentCourtTypeProperty,
-        courtTypeByParticipant,
-        COURT_TYPES_MAP
-      );
-
-      if (property === ALL) {
-        if (currentCourtTypeProperty === ALL) {
-          this.setState({ peopleToRender: peopleList, statusFilterValue: clickedProperty });
-          return peopleList;
-        }
-        // if status === ALL && court type !== ALL, just filter participants list by court type:
-        filteredPeople = peopleListFilteredByCourtType;
-        newState.peopleToRender = filteredPeople;
-        this.setState(newState);
-        return filteredPeople;
-      }
-      // if status !== ALL, we need to filter by 1) currently selected court type filter and 2) new status filter:
-      filteredPeople = peopleListFilteredByCourtType;
-      filteredPeople = filterPeopleByProperty(filteredPeople, property, enrollmentByParticipant, ENROLLMENT_STATUSES);
-    }
-
-    if (filter === FILTERS.COURT_TYPE) {
-      newState.courtTypeFilterValue = clickedProperty;
-      const currentStatusProperty :string = formatClickedProperty(statusFilterValue);
-      const peopleListFilteredByStatus :List = filterPeopleByProperty(
-        peopleList,
-        currentStatusProperty,
-        enrollmentByParticipant,
-        ENROLLMENT_STATUSES
-      );
-
-      if (property === ALL) {
-        if (currentStatusProperty === ALL) {
-          this.setState({ peopleToRender: peopleList, courtTypeFilterValue: clickedProperty });
-          return peopleList;
-        }
-        // if court type === ALL && status !== ALL, just filter participants list by status:
-        filteredPeople = peopleListFilteredByStatus;
-        newState.peopleToRender = filteredPeople;
-        this.setState(newState);
-        return filteredPeople;
-      }
-      // if court type !== ALL, we need to filter by 1) currently selected status filter and 2) new court type filter:
-      filteredPeople = peopleListFilteredByStatus;
-      filteredPeople = filterPeopleByProperty(filteredPeople, property, courtTypeByParticipant, COURT_TYPES_MAP);
-    }
-
-    newState.peopleToRender = filteredPeople;
     this.setState(newState);
     return filteredPeople;
   }
