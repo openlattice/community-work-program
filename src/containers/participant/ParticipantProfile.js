@@ -36,6 +36,7 @@ import CreateWorkAppointmentModal from './schedule/CreateAppointmentModal';
 import LogoLoader from '../../components/LogoLoader';
 
 import { getAllParticipantInfo, getEnrollmentFromDiversionPlan } from './ParticipantActions';
+import { clearAppointmentsAndPlans } from './assignedworksites/WorksitePlanActions';
 import { goToRoute } from '../../core/router/RoutingActions';
 import { OL } from '../../core/style/Colors';
 import { PARTICIPANT_PROFILE_WIDTH } from '../../core/style/Sizes';
@@ -202,6 +203,7 @@ const EnrollmentControlsWrapper = styled.div`
 
 type Props = {
   actions:{
+    clearAppointmentsAndPlans :() => { type :string };
     getAllParticipantInfo :RequestSequence;
     getEnrollmentFromDiversionPlan :RequestSequence;
     goToRoute :GoToRoute;
@@ -359,6 +361,12 @@ class ParticipantProfile extends Component<Props, State> {
     actions.goToRoute(Routes.CREATE_NEW_ENROLLMENT.replace(':participantId', personEKID));
   }
 
+  goBackToParticipants = () => {
+    const { actions } = this.props;
+    actions.clearAppointmentsAndPlans();
+    actions.goToRoute(Routes.PARTICIPANTS);
+  }
+
   selectDiversionPlan = (option :Object) => {
     const { actions } = this.props;
     const { value } = option;
@@ -452,10 +460,7 @@ class ParticipantProfile extends Component<Props, State> {
           <GeneralInfoSection>
             <ProfileInfoColumnWrapper>
               <TopRowWrapper>
-                <BackNavButton
-                    onClick={() => {
-                      actions.goToRoute(Routes.PARTICIPANTS);
-                    }}>
+                <BackNavButton onClick={this.goBackToParticipants}>
                   Back to Participants
                 </BackNavButton>
               </TopRowWrapper>
@@ -638,6 +643,7 @@ const mapStateToProps = (state :Map<*, *>) => {
 
 const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
+    clearAppointmentsAndPlans,
     getAllParticipantInfo,
     getEnrollmentFromDiversionPlan,
     goToRoute,
