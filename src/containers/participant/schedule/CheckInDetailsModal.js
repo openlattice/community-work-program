@@ -65,7 +65,6 @@ const CheckInDetailsModal = ({
 
   const dispatch = useDispatch();
   const checkInEKID :UUID = getEntityKeyId(checkIn);
-  // const checkInESID :UUID = entitySetIds.get(CHECK_INS);
   const orgId :UUID = useSelector((store :Map) => store.getIn([STATE.APP, SELECTED_ORG_ID], ''));
   const checkInESID :UUID = useSelector((store :Map) => store.getIn([
     STATE.APP,
