@@ -2,7 +2,7 @@
 import React, { useCallback, useEffect } from 'react';
 import styled from 'styled-components';
 import { fromJS, OrderedMap, Map } from 'immutable';
-import { DataGrid, Modal } from 'lattice-ui-kit';
+import { DataGrid, Modal, Spinner } from 'lattice-ui-kit';
 import { DateTime } from 'luxon';
 import { useDispatch, useSelector } from 'react-redux';
 import { RequestStates } from 'redux-reqseq';
@@ -13,6 +13,7 @@ import { getEntityKeyId, getEntityProperties } from '../../../utils/DataUtils';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { EMPTY_FIELD } from '../../participants/ParticipantsConstants';
 import { APP, STATE, WORKSITE_PLANS } from '../../../utils/constants/ReduxStateConsts';
+import { OL } from '../../../core/style/Colors';
 
 const { CHECK_INS } = APP_TYPE_FQNS;
 const {
@@ -34,7 +35,19 @@ const labelMap :OrderedMap = OrderedMap({
 
 const ModalWrapper = styled.div`
   width: 100%;
-  padding-bottom: 30px;
+`;
+
+const SpinnerWrapper = styled.div`
+  align-items: center;
+  display: flex;
+  height: 100%;
+  justify-content: center;
+  width: 100%;
+`;
+
+const FailureMessage = styled.div`
+  color: ${OL.RED01};
+  margin-top: 10px;
 `;
 
 type Props = {
@@ -109,10 +122,27 @@ const CheckInDetailsModal = ({
         textSecondary="Remove Check-In"
         viewportScrolling>
       <ModalWrapper>
-        <DataGrid
-            columns={2}
-            data={data}
-            labelMap={labelMap} />
+        {
+          (deleteCheckInRequestState === RequestStates.PENDING)
+            && (
+              <SpinnerWrapper>
+                <Spinner />
+              </SpinnerWrapper>
+            )
+        }
+        {
+          (deleteCheckInRequestState === RequestStates.STANDBY || deleteCheckInRequestState === RequestStates.FAILURE)
+            && (
+              <DataGrid
+                  columns={2}
+                  data={data}
+                  labelMap={labelMap} />
+            )
+        }
+        {
+          (deleteCheckInRequestState === RequestStates.FAILURE)
+            && (<FailureMessage>Delete failed. Please try again.</FailureMessage>)
+        }
       </ModalWrapper>
     </Modal>
   );
