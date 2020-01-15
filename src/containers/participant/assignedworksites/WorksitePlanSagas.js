@@ -22,6 +22,7 @@ import {
   CHECK_IN_FOR_APPOINTMENT,
   CREATE_WORK_APPOINTMENTS,
   DELETE_APPOINTMENT,
+  DELETE_CHECK_IN,
   EDIT_APPOINTMENT,
   EDIT_WORKSITE_PLAN,
   GET_APPOINTMENT_CHECK_INS,
@@ -34,6 +35,7 @@ import {
   checkInForAppointment,
   createWorkAppointments,
   deleteAppointment,
+  deleteCheckIn,
   editAppointment,
   editWorksitePlan,
   getAppointmentCheckIns,
@@ -219,6 +221,42 @@ function* deleteAppointmentWorker(action :SequenceAction) :Generator<*, *, *> {
 function* deleteAppointmentWatcher() :Generator<*, *, *> {
 
   yield takeEvery(DELETE_APPOINTMENT, deleteAppointmentWorker);
+}
+
+/*
+ *
+ * WorksitePlanActions.deleteCheckIn()
+ *
+ */
+
+function* deleteCheckInWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+
+  try {
+    yield put(deleteCheckIn.request(id, value));
+
+    const { checkInToDelete } = value;
+
+    const response :Object = yield call(deleteEntitiesWorker, deleteEntities(checkInToDelete));
+    if (response.error) {
+      throw response.error;
+    }
+
+    yield put(deleteCheckIn.success(id));
+  }
+  catch (error) {
+    LOG.error('caught exception in deleteCheckInWorker()', error);
+    yield put(deleteCheckIn.failure(id, error));
+  }
+  finally {
+    yield put(deleteCheckIn.finally(id));
+  }
+}
+
+function* deleteCheckInWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(DELETE_CHECK_IN, deleteCheckInWorker);
 }
 
 /*
@@ -853,6 +891,8 @@ export {
   createWorkAppointmentsWorker,
   deleteAppointmentWatcher,
   deleteAppointmentWorker,
+  deleteCheckInWatcher,
+  deleteCheckInWorker,
   editAppointmentWatcher,
   editAppointmentWorker,
   editWorksitePlanWatcher,
