@@ -42,9 +42,13 @@ type State = {
 
 class EditWorksiteForm extends Component<Props, State> {
 
-  state = {
-    formData: {},
-  };
+  constructor(props :Props) {
+    super(props);
+
+    this.state = {
+      formData: {},
+    };
+  }
 
   componentDidMount() {
     this.prepopulateFormData();

@@ -51,9 +51,13 @@ type State = {
 
 class AppointmentListContainer extends Component<Props, State> {
 
-  state = {
-    fullWorkAppointments: List(),
-  };
+  constructor(props :Props) {
+    super(props);
+
+    this.state = {
+      fullWorkAppointments: List(),
+    };
+  }
 
   static defaultProps = {
     personByAppointmentEKID: undefined,

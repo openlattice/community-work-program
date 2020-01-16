@@ -31,6 +31,4 @@ const generateDiversionPlanOptions = (entities :List) :Object[] => {
   return options;
 };
 
-export {
-  generateDiversionPlanOptions,
-};
+export default generateDiversionPlanOptions;
