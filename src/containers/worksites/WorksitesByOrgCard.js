@@ -186,7 +186,7 @@ class WorksitesByOrgCard extends Component<Props, State> {
 
     return (
       <Card>
-        <CardSegment vertical padding="0" noBleed={false}>
+        <CardSegment vertical padding="0">
           <TextWrapper>
             <TitleRowWrapper>
               <OrgHeaderWrapper>
