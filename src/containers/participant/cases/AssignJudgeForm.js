@@ -48,12 +48,16 @@ type State = {
 
 class AssignJudgeForm extends Component<Props, State> {
 
-  state = {
-    judgeFormData: {},
-    judgeFormSchema: judgeSchema,
-    judgePrepopulated: false,
-    judgeFormUiSchema: {},
-  };
+  constructor(props :Props) {
+    super(props);
+
+    this.state = {
+      judgeFormData: {},
+      judgeFormSchema: judgeSchema,
+      judgePrepopulated: false,
+      judgeFormUiSchema: {},
+    };
+  }
 
   componentDidMount() {
     this.prepopulateFormData();

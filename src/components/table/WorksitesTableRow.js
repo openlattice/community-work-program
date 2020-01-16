@@ -7,11 +7,11 @@ import type { RowData } from 'lattice-ui-kit';
 
 import { goToRoute } from '../../core/router/RoutingActions';
 import * as Routes from '../../core/router/Routes';
-import { WorksitesRow } from './WorksitesHeaderRow';
+import { StyledTableRow } from './styled/index';
 import { OL } from '../../core/style/Colors';
 import type { GoToRoute } from '../../core/router/RoutingActions';
 
-export const TableRow = styled(WorksitesRow)`
+export const TableRow = styled(StyledTableRow)`
   border-bottom: 1px solid ${OL.GREY05};
 
   :last-of-type {

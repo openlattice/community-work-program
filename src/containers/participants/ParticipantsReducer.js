@@ -5,7 +5,6 @@
 import { List, Map, fromJS } from 'immutable';
 import { RequestStates } from 'redux-reqseq';
 import type { SequenceAction } from 'redux-reqseq';
-import type { FQN } from 'lattice';
 
 import {
   addParticipant,
@@ -18,8 +17,6 @@ import {
   RESET_REQUEST_STATE,
 } from './ParticipantsActions';
 import { PEOPLE } from '../../utils/constants/ReduxStateConsts';
-import { getPropertyFqnFromEdm } from '../../utils/DataUtils';
-import { PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 
 const {
   ACTIONS,
@@ -40,10 +37,6 @@ const {
   PARTICIPANTS,
   REQUEST_STATE,
 } = PEOPLE;
-const { ENTITY_KEY_ID, REQUIRED_HOURS } = PROPERTY_TYPE_FQNS;
-
-const DIVERSION_PLAN = 'diversionPlan';
-const PERSON = 'person';
 
 const INITIAL_STATE :Map<*, *> = fromJS({
   [ACTIONS]: {

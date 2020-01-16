@@ -141,7 +141,7 @@ class AppHeaderContainer extends Component<Props> {
 
     return (
       <Select
-          value={organizations.find(option => option.value === selectedOrg)}
+          value={organizations.find((option) => option.value === selectedOrg)}
           isClearable={false}
           isLoading={loading}
           isMulti={false}
