@@ -1260,9 +1260,7 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
             }
 
             const judges = state.get(JUDGES);
-            const judge :Map = judges.find((storedJudge :Map) => {
-              return getEntityKeyId(storedJudge) === judgeEKID;
-            });
+            const judge :Map = judges.find((storedJudge :Map) => getEntityKeyId(storedJudge) === judgeEKID);
 
             return state
               .set(JUDGE, judge)

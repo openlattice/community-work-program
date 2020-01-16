@@ -41,9 +41,13 @@ type State = {
 
 class EditRequiredHoursForm extends Component<Props, State> {
 
-  state = {
-    requiredHoursFormData: {},
-  };
+  constructor(props :Props) {
+    super(props);
+
+    this.state = {
+      requiredHoursFormData: {},
+    };
+  }
 
   componentDidMount() {
     this.prepopulateFormData();

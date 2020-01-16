@@ -68,9 +68,13 @@ type State = {
 
 class ProgramCompletionBanner extends Component<Props, State> {
 
-  state = {
-    isOutcomeReportModalVisible: false,
-  };
+  constructor(props :Props) {
+    super(props);
+
+    this.state = {
+      isOutcomeReportModalVisible: false,
+    };
+  }
 
   showOutcomeReportModal = () => {
     this.setState({ isOutcomeReportModalVisible: true });

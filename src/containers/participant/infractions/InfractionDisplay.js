@@ -95,10 +95,14 @@ type State = {
 
 class InfractionDisplay extends Component<Props, State> {
 
-  state = {
-    isEditInfractionModalVisible: false,
-    isDeleteInfractionModalVisible: false,
-  };
+  constructor(props :Props) {
+    super(props);
+
+    this.state = {
+      isEditInfractionModalVisible: false,
+      isDeleteInfractionModalVisible: false,
+    };
+  }
 
   goToPrintInfraction = () => {
     const { actions, infraction, participant } = this.props;
@@ -189,7 +193,7 @@ class InfractionDisplay extends Component<Props, State> {
   }
 }
 
-const mapDispatchToProps = dispatch => ({
+const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
     goToRoute,
   }, dispatch)

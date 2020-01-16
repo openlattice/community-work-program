@@ -69,9 +69,9 @@ const { PROPERTY_TYPES, TYPE_IDS_BY_FQNS } = EDM;
 
 const ENROLLMENT_STATUS_OPTIONS :Object[] = STATUS_FILTER_OPTIONS
   .slice(1)
-  .map((status :Object) => {
-    return { label: status.label, value: status.value };
-  });
+  .map((status :Object) => (
+    ({ label: status.label, value: status.value })
+  ));
 
 type Props = {
   actions:{

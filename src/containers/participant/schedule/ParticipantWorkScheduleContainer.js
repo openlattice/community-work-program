@@ -30,9 +30,13 @@ type State = {
 
 class ParticipantWorkScheduleContainer extends Component<Props, State> {
 
-  state = {
-    isLoading: true,
-  };
+  constructor(props :Props) {
+    super(props);
+
+    this.state = {
+      isLoading: true,
+    };
+  }
 
   componentDidMount() {
     this.setState({ isLoading: false }); /* HACK ALERT */

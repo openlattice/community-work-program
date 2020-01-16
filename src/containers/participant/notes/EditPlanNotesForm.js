@@ -50,9 +50,13 @@ type State = {
 
 class EditPlanNotesForm extends Component<Props, State> {
 
-  state = {
-    newNotes: '',
-  };
+  constructor(props :Props) {
+    super(props);
+
+    this.state = {
+      newNotes: '',
+    };
+  }
 
   handleInputChange = (event :SyntheticEvent<HTMLInputElement>) => {
     const { value } = event.currentTarget;
@@ -125,7 +129,7 @@ const mapStateToProps = (state :Map) => ({
   edm: state.get(STATE.EDM),
 });
 
-const mapDispatchToProps = dispatch => ({
+const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
     editPlanNotes,
   }, dispatch)
