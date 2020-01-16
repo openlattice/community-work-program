@@ -37,14 +37,12 @@ type Props = {
 
 type State = {
   requiredHoursFormData :Object;
-  requiredHoursPrepopulated :boolean;
 };
 
 class EditRequiredHoursForm extends Component<Props, State> {
 
   state = {
     requiredHoursFormData: {},
-    requiredHoursPrepopulated: false,
   };
 
   componentDidMount() {
@@ -63,19 +61,13 @@ class EditRequiredHoursForm extends Component<Props, State> {
 
     const sectionOneKey = getPageSectionKey(1, 1);
     const { [REQUIRED_HOURS]: requiredHours } = getEntityProperties(diversionPlan, [REQUIRED_HOURS]);
-    const requiredHoursPrepopulated = !!requiredHours;
-    const requiredHoursFormData :{} = requiredHoursPrepopulated
-      ? {
-        [sectionOneKey]: {
-          [getEntityAddressKey(0, DIVERSION_PLAN, REQUIRED_HOURS)]: requiredHours
-        }
+    const requiredHoursFormData :{} = {
+      [sectionOneKey]: {
+        [getEntityAddressKey(0, DIVERSION_PLAN, REQUIRED_HOURS)]: requiredHours
       }
-      : {};
+    };
 
-    this.setState({
-      requiredHoursFormData,
-      requiredHoursPrepopulated,
-    });
+    this.setState({ requiredHoursFormData });
   }
 
   render() {
@@ -87,7 +79,6 @@ class EditRequiredHoursForm extends Component<Props, State> {
     } = this.props;
     const {
       requiredHoursFormData,
-      requiredHoursPrepopulated,
     } = this.state;
 
     const requiredHoursFormContext = {
@@ -102,7 +93,7 @@ class EditRequiredHoursForm extends Component<Props, State> {
       <Card>
         <CardHeader padding="sm">Edit Required Hours</CardHeader>
         <Form
-            disabled={requiredHoursPrepopulated}
+            disabled
             formContext={requiredHoursFormContext}
             formData={requiredHoursFormData}
             schema={requiredHoursSchema}
@@ -112,7 +103,7 @@ class EditRequiredHoursForm extends Component<Props, State> {
   }
 }
 
-const mapDispatchToProps = dispatch => ({
+const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
     editRequiredHours,
   }, dispatch)

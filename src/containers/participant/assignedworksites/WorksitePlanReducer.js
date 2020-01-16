@@ -9,6 +9,7 @@ import type { SequenceAction } from 'redux-reqseq';
 import type { FQN } from 'lattice';
 
 import {
+  CLEAR_APPOINTMENTS_AND_PLANS,
   addWorksitePlan,
   checkInForAppointment,
   createWorkAppointments,
@@ -36,7 +37,6 @@ const {
   ADD_WORKSITE_PLAN,
   CHECK_INS_BY_APPOINTMENT,
   CHECK_IN_FOR_APPOINTMENT,
-  CLEAR_APPOINTMENTS_AND_PLANS,
   CREATE_WORK_APPOINTMENTS,
   DELETE_APPOINTMENT,
   EDIT_APPOINTMENT,
@@ -111,8 +111,14 @@ export default function worksitePlanReducer(state :Map<*, *> = INITIAL_STATE, ac
 
   switch (action.type) {
 
-    case CLEAR_APPOINTMENTS_AND_PLANS:
-      return INITIAL_STATE;
+    case CLEAR_APPOINTMENTS_AND_PLANS: {
+      return state
+        .set(CHECK_INS_BY_APPOINTMENT, Map())
+        .set(WORKSITES_BY_WORKSITE_PLAN, Map())
+        .set(WORKSITE_PLANS_LIST, List())
+        .set(WORKSITE_PLAN_STATUSES, Map())
+        .set(WORK_APPOINTMENTS_BY_WORKSITE_PLAN, Map());
+    }
 
     case checkInForAppointment.case(action.type): {
 

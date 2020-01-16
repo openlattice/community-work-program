@@ -57,6 +57,17 @@ export const COURT_TYPES = [
   'HOPE Probation',
 ];
 
+export const COURT_TYPES_MAP = {
+  CHILD_SUPPORT: 'Child Support',
+  DRUG_COURT: 'Drug Court',
+  DUI_COURT: 'DUI Court',
+  HOPE_PROBATION: 'HOPE Probation',
+  MENTAL_HEALTH_COURT: 'Mental Health Court',
+  PROBATION: 'Probation',
+  SENTENCED: 'Sentenced',
+  VETERANS_COURT: 'Veterans Court',
+};
+
 export const ENROLLMENT_STATUSES = {
   ACTIVE: 'Active',
   ACTIVE_REOPENED: 'Active Reopened',

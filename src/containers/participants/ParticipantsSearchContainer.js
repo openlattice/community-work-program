@@ -16,6 +16,23 @@ import TableHeaderRow from '../../components/table/TableHeaderRow';
 import TableHeadCell from '../../components/table/TableHeadCell';
 
 import {
+  ALL,
+  ALL_PARTICIPANTS_COLUMNS,
+  EMPTY_FIELD,
+  FILTERS,
+  courtTypeFilterDropdown,
+  statusFilterDropdown,
+} from './ParticipantsConstants';
+import { APP, PEOPLE, STATE } from '../../utils/constants/ReduxStateConsts';
+import {
+  ENROLLMENT_STATUSES,
+  HOURS_CONSTS,
+  INFRACTIONS_CONSTS
+} from '../../core/edm/constants/DataModelConsts';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { ADD_PARTICIPANT, PARTICIPANT_PROFILE } from '../../core/router/Routes';
+import { SEARCH_CONTAINER_WIDTH } from '../../core/style/Sizes';
+import {
   TableCell,
   CustomTable,
   TableCard,
@@ -23,27 +40,16 @@ import {
   TableName,
 } from '../../components/table/styled/index';
 import { ToolBar } from '../../components/controls/index';
-import { getDiversionPlans } from './ParticipantsActions';
-import { goToRoute } from '../../core/router/RoutingActions';
-import { clearAppointmentsAndPlans } from '../participant/assignedworksites/WorksitePlanActions';
-import { ADD_PARTICIPANT, PARTICIPANT_PROFILE } from '../../core/router/Routes';
-import { SEARCH_CONTAINER_WIDTH } from '../../core/style/Sizes';
-import { isDefined } from '../../utils/LangUtils';
-import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
+import { formatClickedProperty, getFilteredPeople } from './utils/SearchContainerUtils';
 import { calculateAge, formatAsDate } from '../../utils/DateTimeUtils';
+import { clearAppointmentsAndPlans } from '../participant/assignedworksites/WorksitePlanActions';
+import { generateTableHeaders } from '../../utils/FormattingUtils';
+import { getDiversionPlans } from './ParticipantsActions';
+import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
 import { getHoursServed, getPersonFullName, getPersonPictureForTable } from '../../utils/PeopleUtils';
 import { getSentenceEndDate } from '../../utils/ScheduleUtils';
-import { generateTableHeaders } from '../../utils/FormattingUtils';
-import {
-  ALL,
-  ALL_PARTICIPANTS_COLUMNS,
-  EMPTY_FIELD,
-  FILTERS,
-  statusFilterDropdown,
-} from './ParticipantsConstants';
-import { APP, PEOPLE, STATE } from '../../utils/constants/ReduxStateConsts';
-import { ENROLLMENT_STATUSES, HOURS_CONSTS, INFRACTIONS_CONSTS } from '../../core/edm/constants/DataModelConsts';
-import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { goToRoute } from '../../core/router/RoutingActions';
+import { isDefined } from '../../utils/LangUtils';
 import type { GoToRoute } from '../../core/router/RoutingActions';
 
 const { ENTITY_SET_IDS_BY_ORG, SELECTED_ORG_ID } = APP;
@@ -68,10 +74,12 @@ const { REQUIRED, WORKED } = HOURS_CONSTS;
 
 const dropdowns :List = List().withMutations((list :List) => {
   list.set(0, statusFilterDropdown);
+  list.set(1, courtTypeFilterDropdown);
 });
-const defaultFilterOption :Map = statusFilterDropdown.get('enums')
+const defaultStatusFilterOption :Map = statusFilterDropdown.get('enums')
   .find((obj) => obj.value.toUpperCase() === ALL);
-
+const defaultCourtTypeFilterOption :Map = courtTypeFilterDropdown.get('enums')
+  .find((obj) => obj.value.toUpperCase() === ALL);
 
 const ParticipantSearchOuterWrapper = styled.div`
   display: flex;
@@ -108,8 +116,9 @@ type Props = {
 };
 
 type State = {
+  courtTypeFilterValue :Object;
   peopleToRender :List;
-  selectedFilterOption :Map;
+  statusFilterValue :Object;
 };
 
 class ParticipantsSearchContainer extends Component<Props, State> {
@@ -118,8 +127,9 @@ class ParticipantsSearchContainer extends Component<Props, State> {
     super(props);
 
     this.state = {
+      courtTypeFilterValue: defaultCourtTypeFilterOption,
       peopleToRender: props.participants,
-      selectedFilterOption: defaultFilterOption,
+      statusFilterValue: defaultStatusFilterOption,
     };
   }
 
@@ -142,30 +152,23 @@ class ParticipantsSearchContainer extends Component<Props, State> {
   }
 
   handleOnFilter = (clickedProperty :Map, selectEvent :Object, peopleToFilter :List) => {
-    const { enrollmentByParticipant, participants } = this.props;
-    const peopleList :List = isDefined(peopleToFilter) ? peopleToFilter : participants;
+    const { courtTypeByParticipant, enrollmentByParticipant, participants } = this.props;
+    const { courtTypeFilterValue, statusFilterValue } = this.state;
+
     const { filter } = clickedProperty;
-    let property :string = clickedProperty.label.toUpperCase();
-    property = property.split(' ').join('_');
-    property = property.split('-').join('');
-    let filteredPeople :List = List();
+    const peopleList :List = isDefined(peopleToFilter) ? peopleToFilter : participants;
 
-    if (property === ALL) {
-      this.setState({ peopleToRender: participants, selectedFilterOption: clickedProperty });
-      return peopleList;
-    }
-    if (filter === FILTERS.STATUS) {
-      filteredPeople = peopleList.filter((person :Map) => {
-        const statusTypeToInclude = ENROLLMENT_STATUSES[property];
-        const personEKID :UUID = getEntityKeyId(person);
-        const personEnrollment :Map = enrollmentByParticipant.get(personEKID, Map());
-        let { [STATUS]: status } = getEntityProperties(personEnrollment, [STATUS]);
-        status = !isDefined(status) ? ENROLLMENT_STATUSES.AWAITING_CHECKIN : status;
-        return status === statusTypeToInclude;
-      });
-    }
+    const { filteredPeople, newState } = getFilteredPeople(
+      filter,
+      clickedProperty,
+      peopleList,
+      courtTypeFilterValue,
+      statusFilterValue,
+      courtTypeByParticipant,
+      enrollmentByParticipant
+    );
 
-    this.setState({ peopleToRender: filteredPeople, selectedFilterOption: clickedProperty });
+    this.setState(newState);
     return filteredPeople;
   }
 
@@ -191,9 +194,21 @@ class ParticipantsSearchContainer extends Component<Props, State> {
 
   searchParticipantList = (input :string) => {
     const { participants } = this.props;
-    const { selectedFilterOption } = this.state;
+    const { courtTypeFilterValue, peopleToRender, statusFilterValue } = this.state;
 
-    const matches = participants.filter((p) => {
+    /* Be sure to search correct participant list — based on filters and whether search input is empty */
+    let peopleToFilter :List = peopleToRender;
+    if (input === '') {
+      if (formatClickedProperty(courtTypeFilterValue) !== ALL || formatClickedProperty(statusFilterValue) !== ALL) {
+        peopleToFilter = this.handleOnFilter(statusFilterValue, null, participants);
+        peopleToFilter = this.handleOnFilter(courtTypeFilterValue, null, peopleToFilter);
+      }
+      else {
+        peopleToFilter = participants;
+      }
+    }
+
+    const matches = peopleToFilter.filter((p) => {
       const { [FIRST_NAME]: firstName, [LAST_NAME]: lastName } = getEntityProperties(p, [FIRST_NAME, LAST_NAME]);
       const fullName = (`${firstName} ${lastName}`).trim().toLowerCase();
 
@@ -204,9 +219,7 @@ class ParticipantsSearchContainer extends Component<Props, State> {
       return match;
     });
 
-    // preserve any filters selected before search
-    const fullyProcessedPeople = this.handleOnFilter(selectedFilterOption, null, matches);
-    this.setState({ peopleToRender: fullyProcessedPeople });
+    this.setState({ peopleToRender: matches });
 
   }
 
@@ -282,6 +295,7 @@ class ParticipantsSearchContainer extends Component<Props, State> {
 
     const onSelectFunctions = Map().withMutations((map :Map) => {
       map.set(FILTERS.STATUS, this.handleOnFilter);
+      map.set(FILTERS.COURT_TYPE, this.handleOnFilter);
     });
     const tableData :Object[] = this.aggregateTableData();
     const tableHeaders :Object[] = generateTableHeaders(ALL_PARTICIPANTS_COLUMNS);
