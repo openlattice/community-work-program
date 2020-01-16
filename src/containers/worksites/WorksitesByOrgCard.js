@@ -13,7 +13,6 @@ import { connect } from 'react-redux';
 
 import AddWorksiteModal from './AddWorksiteModal';
 import WorksitesHeaderRow from '../../components/table/WorksitesHeaderRow';
-import TableHeadCell from '../../components/table/TableHeadCell';
 import WorksitesTableRow from '../../components/table/WorksitesTableRow';
 
 import * as Routes from '../../core/router/Routes';
@@ -46,21 +45,10 @@ const WORKSITES_COLUMNS = [
   'TOTAL HOURS'
 ];
 
-const OrgCard = styled(Card)`
-  padding: 10px 20px;
-
-  & > ${CardSegment} {
-    border: none;
-  }
-
-  & > ${CardSegment}:first-child {
-    justify-content: center;
-  }
-
-  & > ${CardSegment}:last-child {
-    margin: 0 -20px 0 -20px;
-    padding: 0;
-  }
+const TextWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  padding: 30px;
 `;
 
 const TitleRowWrapper = styled.div`
@@ -91,7 +79,19 @@ const StyledButton = styled(Button)`
   padding: 6px 12px;
 `;
 
-const WorksitesCell = styled(TableCell)`
+const WorksitesHeadCell = styled(TableCell)`
+  :first-child {
+    padding-left: 50px;
+    width: 300px;
+    white-space: normal;
+  }
+
+  :last-child {
+    padding-right: 50px;
+  }
+`;
+
+const WorksitesCell = styled(WorksitesHeadCell)`
   font-size: 14px;
 `;
 
@@ -185,28 +185,26 @@ class WorksitesByOrgCard extends Component<Props, State> {
     const worksitesTableHeaders :Object[] = generateTableHeaders(WORKSITES_COLUMNS);
 
     return (
-      <OrgCard>
-        <CardSegment vertical padding="md">
-          <TitleRowWrapper>
-            <OrgHeaderWrapper>
-              <OrganizationName>
-                { orgName }
-              </OrganizationName>
-              <Badge mode="primary" count={worksiteCount} />
-            </OrgHeaderWrapper>
-            <StyledButton onClick={this.handleShowAddWorksite}>Add Work Site</StyledButton>
-          </TitleRowWrapper>
-        </CardSegment>
-        <CardSegment padding="md">
-          <Description>{ orgDescription }</Description>
-        </CardSegment>
-        <CardSegment>
+      <Card>
+        <CardSegment vertical padding="0" noBleed={false}>
+          <TextWrapper>
+            <TitleRowWrapper>
+              <OrgHeaderWrapper>
+                <OrganizationName>
+                  { orgName }
+                </OrganizationName>
+                <Badge mode="primary" count={worksiteCount} />
+              </OrgHeaderWrapper>
+              <StyledButton onClick={this.handleShowAddWorksite}>Add Work Site</StyledButton>
+            </TitleRowWrapper>
+            <Description>{ orgDescription }</Description>
+          </TextWrapper>
           {
             worksitesTableData.length > 0 && (
               <CustomTable
                   components={{
                     Cell: WorksitesCell,
-                    HeadCell: TableHeadCell,
+                    HeadCell: WorksitesHeadCell,
                     Header: WorksitesHeaderRow,
                     Row: WorksitesTableRow
                   }}
@@ -220,7 +218,7 @@ class WorksitesByOrgCard extends Component<Props, State> {
             isOpen={showAddWorksite}
             onClose={this.handleHideAddWorksite}
             organization={organization} />
-      </OrgCard>
+      </Card>
     );
   }
 }

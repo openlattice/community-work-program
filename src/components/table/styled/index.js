@@ -97,6 +97,16 @@ const TableCell = styled.td`
   width: ${widthVariation};
   white-space: ${whiteSpaceVariation};
   ${(props) => props.cellStyle};
+
+  :first-child {
+    padding-left: 30px;
+    width: 84px;
+    white-space: nowrap;
+  }
+
+  :last-child {
+    padding-right: 30px;
+  }
 `;
 
 const StyledTableRow = styled.tr`
@@ -113,16 +123,6 @@ const StyledTableRow = styled.tr`
   td,
   th {
     ${getStickyPosition}
-  }
-
-  ${TableCell}:first-child {
-    padding-left: 30px;
-    width: 84px;
-    white-space: nowrap;
-  }
-
-  ${TableCell}:last-child {
-    padding-right: 30px;
   }
 
   &:hover {
