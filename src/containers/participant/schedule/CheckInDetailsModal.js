@@ -115,11 +115,11 @@ const CheckInDetailsModal = ({
   return (
     <Modal
         isVisible={isOpen}
-        onClose={onClose}
         onClickSecondary={removeCheckIn}
+        onClose={onClose}
         shouldStretchButtons
-        textTitle="Check-In"
         textSecondary="Remove Check-In"
+        textTitle="Check-In"
         viewportScrolling>
       <ModalWrapper>
         {

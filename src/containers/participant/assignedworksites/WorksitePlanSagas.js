@@ -230,10 +230,10 @@ function* deleteAppointmentWatcher() :Generator<*, *, *> {
  */
 
 function* deleteCheckInWorker(action :SequenceAction) :Generator<*, *, *> {
-
-  const { id, value } = action;
+  const { id } = action;
 
   try {
+    const { value } = action;
     yield put(deleteCheckIn.request(id, value));
 
     const { checkInToDelete } = value;
