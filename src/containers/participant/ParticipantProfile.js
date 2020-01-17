@@ -34,6 +34,7 @@ import AssignWorksiteModal from './assignedworksites/AssignWorksiteModal';
 import InfractionsContainer from './infractions/InfractionsContainer';
 import CreateWorkAppointmentModal from './schedule/CreateAppointmentModal';
 import LogoLoader from '../../components/LogoLoader';
+import generateDiversionPlanOptions from './utils/ParticipantProfileUtils';
 
 import { getAllParticipantInfo, getEnrollmentFromDiversionPlan } from './ParticipantActions';
 import { clearAppointmentsAndPlans } from './assignedworksites/WorksitePlanActions';
@@ -42,7 +43,6 @@ import { OL } from '../../core/style/Colors';
 import { PARTICIPANT_PROFILE_WIDTH } from '../../core/style/Sizes';
 import * as Routes from '../../core/router/Routes';
 import { BackNavButton } from '../../components/controls/index';
-import { generateDiversionPlanOptions } from './utils/ParticipantProfileUtils';
 import { getEntityKeyId, getEntityProperties, sortEntitiesByDateProperty } from '../../utils/DataUtils';
 import { isDefined } from '../../utils/LangUtils';
 import { generateTableHeaders } from '../../utils/FormattingUtils';
@@ -375,7 +375,6 @@ class ParticipantProfile extends Component<Props, State> {
 
   render() {
     const {
-      actions,
       address,
       allDiversionPlans,
       chargesForCase,

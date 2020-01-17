@@ -48,9 +48,13 @@ type State = {
 
 class EditAppointmentForm extends Component<Props, State> {
 
-  state = {
-    formData: {},
-  };
+  constructor(props :Props) {
+    super(props);
+
+    this.state = {
+      formData: {},
+    };
+  }
 
   componentDidMount() {
     this.prepopulateFormData();

@@ -147,6 +147,6 @@ const GeneralInfo = ({
       </InfoRow>
     </InfoWrapper>
   );
-}
+};
 
 export default withRouter(GeneralInfo);

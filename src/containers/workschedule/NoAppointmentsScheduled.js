@@ -1,6 +1,5 @@
 // @flow
 import React from 'react';
-import styled from 'styled-components';
 import { Card, CardSegment, IconSplash } from 'lattice-ui-kit';
 import { faCalendarTimes } from '@fortawesome/pro-light-svg-icons';
 

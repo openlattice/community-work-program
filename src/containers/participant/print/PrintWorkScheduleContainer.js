@@ -109,12 +109,13 @@ class PrintWorkScheduleContainer extends Component<Props, State> {
       [FIRST_NAME]: firstName,
       [LAST_NAME]: lastName
     } = getEntityProperties(participant, [FIRST_NAME, LAST_NAME]);
-    const personFullName = `${firstName} ${lastName}`;
+    const personFullName = `${firstName} ${lastName} `;
 
     return (
       <Card>
         <CardSegment padding="sm" vertical>
-          { personFullName } Schedule
+          { personFullName }
+          Schedule
         </CardSegment>
         <CardSegment padding="sm">
           <DataGrid

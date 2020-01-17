@@ -3,21 +3,11 @@ import React from 'react';
 import styled from 'styled-components';
 import isFunction from 'lodash/isFunction';
 
-import { StyledTableRow, TableCell } from './styled/index';
+import { StyledTableRow } from './styled/index';
 
 export const WorksitesRow = styled(StyledTableRow)`
   :last-of-type {
     border-bottom: 1px solid black;
-  }
-
-  ${TableCell}:first-child {
-    padding-left: 50px;
-    width: 300px;
-    white-space: normal;
-  }
-
-  ${TableCell}:last-child {
-    padding-right: 50px;
   }
 `;
 

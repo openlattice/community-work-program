@@ -131,6 +131,7 @@ export default function* sagas() :Generator<*, *, *> {
     fork(WorksitePlanSagas.checkInForAppointmentWatcher),
     fork(WorksitePlanSagas.createWorkAppointmentsWatcher),
     fork(WorksitePlanSagas.deleteAppointmentWatcher),
+    fork(WorksitePlanSagas.deleteCheckInWatcher),
     fork(WorksitePlanSagas.editAppointmentWatcher),
     fork(WorksitePlanSagas.editWorksitePlanWatcher),
     fork(WorksitePlanSagas.getAppointmentCheckInsWatcher),

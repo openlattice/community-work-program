@@ -80,9 +80,9 @@ const {
 
 const ENROLLMENT_STATUS_OPTIONS :Object[] = STATUS_FILTER_OPTIONS
   .slice(1)
-  .map((status :Object) => {
-    return { label: status.label, value: status.value };
-  });
+  .map((status :Object) => (
+    ({ label: status.label, value: status.value })
+  ));
 const RADIO_OPTIONS :string[] = ['Yes', 'No'];
 const INFRACTION_TYPE_OPTIONS :Object[] = [
   { label: INFRACTIONS_CONSTS.VIOLATION, value: INFRACTIONS_CONSTS.VIOLATION },

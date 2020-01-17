@@ -14,6 +14,7 @@ import {
   checkInForAppointment,
   createWorkAppointments,
   deleteAppointment,
+  deleteCheckIn,
   editAppointment,
   editWorksitePlan,
   getAppointmentCheckIns,
@@ -39,6 +40,7 @@ const {
   CHECK_IN_FOR_APPOINTMENT,
   CREATE_WORK_APPOINTMENTS,
   DELETE_APPOINTMENT,
+  DELETE_CHECK_IN,
   EDIT_APPOINTMENT,
   EDIT_WORKSITE_PLAN,
   GET_APPOINTMENT_CHECK_INS,
@@ -73,6 +75,9 @@ const INITIAL_STATE :Map<*, *> = fromJS({
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [DELETE_APPOINTMENT]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [DELETE_CHECK_IN]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [EDIT_APPOINTMENT]: {
@@ -270,6 +275,40 @@ export default function worksitePlanReducer(state :Map<*, *> = INITIAL_STATE, ac
         FAILURE: () => state
           .setIn([ACTIONS, DELETE_APPOINTMENT, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, DELETE_APPOINTMENT, action.id]),
+      });
+    }
+
+    case deleteCheckIn.case(action.type): {
+
+      return deleteCheckIn.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, DELETE_CHECK_IN, action.id], action)
+          .setIn([ACTIONS, DELETE_CHECK_IN, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+
+          const seqAction :SequenceAction = action;
+          const storedSeqAction :SequenceAction = state.getIn([ACTIONS, DELETE_CHECK_IN, seqAction.id]);
+
+          if (storedSeqAction) {
+
+            const requestValue :Object = storedSeqAction.value;
+            const { appointmentEKID } :Object = requestValue;
+
+            let checkInsByAppointment :Map = state.get(CHECK_INS_BY_APPOINTMENT, Map());
+            checkInsByAppointment = checkInsByAppointment.delete(appointmentEKID);
+
+            return state
+              .set(CHECK_INS_BY_APPOINTMENT, checkInsByAppointment)
+              .setIn([ACTIONS, DELETE_CHECK_IN, REQUEST_STATE], RequestStates.SUCCESS);
+          }
+
+          return state
+            .setIn([ACTIONS, DELETE_CHECK_IN, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, DELETE_CHECK_IN, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, DELETE_CHECK_IN, action.id]),
       });
     }
 
