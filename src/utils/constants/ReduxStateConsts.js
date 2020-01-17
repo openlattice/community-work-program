@@ -171,6 +171,7 @@ export const WORKSITE_PLANS = {
   CHECK_IN_FOR_APPOINTMENT: 'checkInForAppointment',
   CREATE_WORK_APPOINTMENTS: 'createWorkAppointments',
   DELETE_APPOINTMENT: 'deleteAppointment',
+  DELETE_CHECK_IN: 'deleteCheckIn',
   EDIT_APPOINTMENT: 'editAppointment',
   EDIT_WORKSITE_PLAN: 'editWorksitePlan',
   GET_APPOINTMENT_CHECK_INS: 'getAppointmentCheckIns',
