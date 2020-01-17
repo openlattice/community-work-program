@@ -19,6 +19,9 @@ const createWorkAppointments :RequestSequence = newRequestSequence(CREATE_WORK_A
 const DELETE_APPOINTMENT :'DELETE_APPOINTMENT' = 'DELETE_APPOINTMENT';
 const deleteAppointment :RequestSequence = newRequestSequence(DELETE_APPOINTMENT);
 
+const DELETE_CHECK_IN :'DELETE_CHECK_IN' = 'DELETE_CHECK_IN';
+const deleteCheckIn :RequestSequence = newRequestSequence(DELETE_CHECK_IN);
+
 const EDIT_APPOINTMENT :'EDIT_APPOINTMENT' = 'EDIT_APPOINTMENT';
 const editAppointment :RequestSequence = newRequestSequence(EDIT_APPOINTMENT);
 
@@ -49,6 +52,7 @@ export {
   CLEAR_APPOINTMENTS_AND_PLANS,
   CREATE_WORK_APPOINTMENTS,
   DELETE_APPOINTMENT,
+  DELETE_CHECK_IN,
   EDIT_APPOINTMENT,
   EDIT_WORKSITE_PLAN,
   GET_APPOINTMENT_CHECK_INS,
@@ -62,6 +66,7 @@ export {
   clearAppointmentsAndPlans,
   createWorkAppointments,
   deleteAppointment,
+  deleteCheckIn,
   editAppointment,
   editWorksitePlan,
   getAppointmentCheckIns,
