@@ -216,7 +216,6 @@ class EditChargesForm extends Component<Props, State> {
       propertyTypeIds,
     } = this.props;
     const {
-
       chargesFormData,
       chargesFormSchema,
       chargesFormUiSchema,
@@ -239,7 +238,7 @@ class EditChargesForm extends Component<Props, State> {
         <Card>
           <CardHeader padding="sm">
             <InnerCardHeader>
-              <div>Edit Charges in Case</div>
+              <div>Edit Arrest Charges</div>
               <Button onClick={this.handleShowModal}>Add to Available Charges</Button>
             </InnerCardHeader>
           </CardHeader>
