@@ -10,6 +10,7 @@ import type { RequestSequence, RequestState } from 'redux-reqseq';
 import type { Match } from 'react-router';
 
 import AssignJudgeForm from './AssignJudgeForm';
+import EditArrestChargesForm from './EditArrestChargesForm';
 import EditCaseForm from './EditCaseForm';
 import EditCourtChargesForm from './EditCourtChargesForm';
 import EditRequiredHoursForm from './EditRequiredHoursForm';
@@ -191,6 +192,14 @@ class EditCaseInfoForm extends Component<Props> {
               entitySetIds={entitySetIds}
               personCase={personCase}
               personEKID={personEKID}
+              propertyTypeIds={propertyTypeIds} />
+          <EditArrestChargesForm
+              charges={charges}
+              chargesForCase={chargesForCase}
+              entityIndexToIdMap={entityIndexToIdMap}
+              entitySetIds={entitySetIds}
+              participant={participant}
+              personCase={personCase}
               propertyTypeIds={propertyTypeIds} />
           <EditCourtChargesForm
               charges={charges}
