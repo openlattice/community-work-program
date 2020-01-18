@@ -80,7 +80,7 @@ type State = {
   isAvailableChargesModalVisible :boolean;
 };
 
-class EditChargesForm extends Component<Props, State> {
+class EditCourtChargesForm extends Component<Props, State> {
 
   constructor(props :Props) {
     super(props);
@@ -267,4 +267,4 @@ const mapDispatchToProps = (dispatch) => ({
 });
 
 // $FlowFixMe
-export default connect(null, mapDispatchToProps)(EditChargesForm);
+export default connect(null, mapDispatchToProps)(EditCourtChargesForm);

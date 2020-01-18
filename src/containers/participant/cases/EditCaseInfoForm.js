@@ -11,7 +11,7 @@ import type { Match } from 'react-router';
 
 import AssignJudgeForm from './AssignJudgeForm';
 import EditCaseForm from './EditCaseForm';
-import EditChargesForm from './EditChargesForm';
+import EditCourtChargesForm from './EditCourtChargesForm';
 import EditRequiredHoursForm from './EditRequiredHoursForm';
 import LogoLoader from '../../../components/LogoLoader';
 
@@ -192,7 +192,7 @@ class EditCaseInfoForm extends Component<Props> {
               personCase={personCase}
               personEKID={personEKID}
               propertyTypeIds={propertyTypeIds} />
-          <EditChargesForm
+          <EditCourtChargesForm
               charges={charges}
               chargesForCase={chargesForCase}
               entityIndexToIdMap={entityIndexToIdMap}
