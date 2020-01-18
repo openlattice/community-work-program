@@ -28,8 +28,8 @@ import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/F
 import {
   courtChargeSchema,
   courtChargeUiSchema,
-} from '../schemas/EditCaseInfoSchemas';
-import { disableChargesForm, hydrateChargeSchema } from '../utils/EditCaseInfoUtils';
+} from './schemas/EditCaseInfoSchemas';
+import { disableChargesForm, hydrateCourtChargeSchema } from './utils/EditCaseInfoUtils';
 import { getEntityKeyId } from '../../../utils/DataUtils';
 import { getCombinedDateTime } from '../../../utils/ScheduleUtils';
 
@@ -138,7 +138,7 @@ class EditCourtChargesForm extends Component<Props, State> {
         chargesFormData[sectionOneKey][index][getEntityAddressKey(-1, CHARGE_EVENT, DATETIME_COMPLETED)] = dateCharged;
       });
     }
-    newChargeSchema = hydrateChargeSchema(courtChargeSchema, charges);
+    newChargeSchema = hydrateCourtChargeSchema(courtChargeSchema, charges);
 
 
     this.setState({
@@ -236,7 +236,7 @@ class EditCourtChargesForm extends Component<Props, State> {
     return (
       <>
         <Card>
-          <CardHeader padding="sm">
+          <CardHeader mode="primary" padding="sm">
             <InnerCardHeader>
               <div>Edit Court Charges</div>
               <Button onClick={this.handleShowModal}>Add to Available Charges</Button>

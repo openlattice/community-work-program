@@ -9,8 +9,8 @@ import type { RequestSequence } from 'redux-reqseq';
 
 import { reassignJudge } from '../ParticipantActions';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
-import { judgeSchema, judgeUiSchema } from '../schemas/EditCaseInfoSchemas';
-import { disableJudgeForm, hydrateJudgeSchema } from '../utils/EditCaseInfoUtils';
+import { judgeSchema, judgeUiSchema } from './schemas/EditCaseInfoSchemas';
+import { disableJudgeForm, hydrateJudgeSchema } from './utils/EditCaseInfoUtils';
 import { getEntityKeyId } from '../../../utils/DataUtils';
 
 const {
@@ -174,7 +174,7 @@ class AssignJudgeForm extends Component<Props, State> {
     };
     return (
       <Card>
-        <CardHeader padding="sm">Assign Judge</CardHeader>
+        <CardHeader mode="primary" padding="sm">Assign Judge</CardHeader>
         <Form
             disabled={judgePrepopulated}
             formContext={judgeFormContext}

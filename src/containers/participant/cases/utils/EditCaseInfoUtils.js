@@ -2,16 +2,22 @@
 import { List, setIn } from 'immutable';
 import { DataProcessingUtils } from 'lattice-fabricate';
 
-import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
-import { getValuesFromEntityList } from '../../../utils/DataUtils';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../../core/edm/constants/FullyQualifiedNames';
+import { getValuesFromEntityList } from '../../../../utils/DataUtils';
 
 const { getEntityAddressKey, getPageSectionKey } = DataProcessingUtils;
-const { COURT_CHARGE_LIST, JUDGES } = APP_TYPE_FQNS;
+const {
+  ARREST_CHARGE_LIST,
+  MANUAL_ARREST_CHARGES,
+  COURT_CHARGE_LIST,
+  JUDGES,
+} = APP_TYPE_FQNS;
 const {
   ENTITY_KEY_ID,
   FIRST_NAME,
   LAST_NAME,
   NAME,
+  OFFENSE_LOCAL_DESCRIPTION,
 } = PROPERTY_TYPE_FQNS;
 
 const hydrateJudgeSchema = (schema :Object, judges :List) => {
@@ -55,7 +61,7 @@ const disableJudgeForm = (uiSchema :Object) :Object => {
   return newUiSchema;
 };
 
-const hydrateChargeSchema = (schema :Object, charges :List) => {
+const hydrateCourtChargeSchema = (schema :Object, charges :List) => {
   const [values, labels] = getValuesFromEntityList(charges, [NAME]);
   let newSchema = setIn(
     schema,
@@ -85,7 +91,7 @@ const hydrateChargeSchema = (schema :Object, charges :List) => {
   return newSchema;
 };
 
-const disableChargesForm = (uiSchema :Object) :Object => {
+const disableChargesForm = (uiSchema :Object) :Object => { // change to handle two page sections for arrest
   const newUiSchema = setIn(
     uiSchema,
     [
@@ -98,9 +104,66 @@ const disableChargesForm = (uiSchema :Object) :Object => {
   return newUiSchema;
 };
 
+const hydrateArrestChargeSchema = (schema :Object, existingCharges :List, arrestCharges :List) => {
+  const [values, labels] = getValuesFromEntityList(existingCharges, [OFFENSE_LOCAL_DESCRIPTION]);
+  let newSchema = setIn(
+    schema,
+    [
+      'properties',
+      getPageSectionKey(1, 1),
+      'items',
+      'properties',
+      getEntityAddressKey(-1, MANUAL_ARREST_CHARGES, ENTITY_KEY_ID),
+      'enum'
+    ],
+    values
+  );
+  newSchema = setIn(
+    newSchema,
+    [
+      'properties',
+      getPageSectionKey(1, 1),
+      'items',
+      'properties',
+      getEntityAddressKey(-1, MANUAL_ARREST_CHARGES, ENTITY_KEY_ID),
+      'enumNames'
+    ],
+    labels
+  );
+
+  const [arrestValues, arrestLabels] = getValuesFromEntityList(arrestCharges, [NAME]);
+  newSchema = setIn(
+    schema,
+    [
+      'properties',
+      getPageSectionKey(1, 2),
+      'items',
+      'properties',
+      getEntityAddressKey(-1, ARREST_CHARGE_LIST, ENTITY_KEY_ID),
+      'enum'
+    ],
+    arrestValues
+  );
+  newSchema = setIn(
+    newSchema,
+    [
+      'properties',
+      getPageSectionKey(1, 2),
+      'items',
+      'properties',
+      getEntityAddressKey(-1, ARREST_CHARGE_LIST, ENTITY_KEY_ID),
+      'enumNames'
+    ],
+    arrestLabels
+  );
+
+  return newSchema;
+};
+
 export {
   disableChargesForm,
   disableJudgeForm,
-  hydrateChargeSchema,
+  hydrateArrestChargeSchema,
+  hydrateCourtChargeSchema,
   hydrateJudgeSchema,
 };
