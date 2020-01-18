@@ -26,8 +26,8 @@ import {
 } from '../ParticipantActions';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import {
-  chargeSchema,
-  chargeUiSchema,
+  courtChargeSchema,
+  courtChargeUiSchema,
 } from '../schemas/EditCaseInfoSchemas';
 import { disableChargesForm, hydrateChargeSchema } from '../utils/EditCaseInfoUtils';
 import { getEntityKeyId } from '../../../utils/DataUtils';
@@ -87,8 +87,8 @@ class EditCourtChargesForm extends Component<Props, State> {
 
     this.state = {
       chargesFormData: {},
-      chargesFormSchema: chargeSchema,
-      chargesFormUiSchema: chargeUiSchema,
+      chargesFormSchema: courtChargeSchema,
+      chargesFormUiSchema: courtChargeUiSchema,
       chargesPrepopulated: false,
       isAvailableChargesModalVisible: false,
     };
@@ -116,15 +116,15 @@ class EditCourtChargesForm extends Component<Props, State> {
 
     const sectionOneKey = getPageSectionKey(1, 1);
     let chargesPrepopulated :boolean = !chargesForCase.isEmpty();
-    let newChargeUiSchema :Object = chargeUiSchema;
+    let newChargeUiSchema :Object = courtChargeUiSchema;
 
     if (personCase.isEmpty()) {
       chargesPrepopulated = true;
-      newChargeUiSchema = disableChargesForm(chargeUiSchema);
+      newChargeUiSchema = disableChargesForm(courtChargeUiSchema);
     }
 
     let chargesFormData :{} = {};
-    let newChargeSchema :Object = chargeSchema;
+    let newChargeSchema :Object = courtChargeSchema;
     if (!chargesForCase.isEmpty()) {
       chargesFormData = {
         [sectionOneKey]: []
@@ -138,7 +138,7 @@ class EditCourtChargesForm extends Component<Props, State> {
         chargesFormData[sectionOneKey][index][getEntityAddressKey(-1, CHARGE_EVENT, DATETIME_COMPLETED)] = dateCharged;
       });
     }
-    newChargeSchema = hydrateChargeSchema(chargeSchema, charges);
+    newChargeSchema = hydrateChargeSchema(courtChargeSchema, charges);
 
 
     this.setState({

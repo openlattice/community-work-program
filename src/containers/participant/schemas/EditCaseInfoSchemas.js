@@ -85,7 +85,7 @@ export const caseUiSchema = {
   },
 };
 
-export const chargeSchema = {
+export const courtChargeSchema = {
   type: 'object',
   title: '',
   properties: {
@@ -113,7 +113,7 @@ export const chargeSchema = {
   }
 };
 
-export const chargeUiSchema = {
+export const courtChargeUiSchema = {
   [getPageSectionKey(1, 1)]: {
     classNames: 'column-span-12',
     'ui:options': {
