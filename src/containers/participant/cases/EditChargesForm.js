@@ -238,7 +238,7 @@ class EditChargesForm extends Component<Props, State> {
         <Card>
           <CardHeader padding="sm">
             <InnerCardHeader>
-              <div>Edit Arrest Charges</div>
+              <div>Edit Court Charges</div>
               <Button onClick={this.handleShowModal}>Add to Available Charges</Button>
             </InnerCardHeader>
           </CardHeader>
