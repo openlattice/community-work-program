@@ -6,8 +6,8 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import type { RequestSequence } from 'redux-reqseq';
 
-import { addToAvailableCourtCharges } from './ChargesActions';
-import { schema, uiSchema } from './schemas/AddToAvailableCourtChargesSchemas';
+import { addToAvailableArrestCharges } from './ChargesActions';
+import { schema, uiSchema } from './schemas/AddToAvailableArrestChargesSchemas';
 import { APP, EDM, STATE } from '../../../utils/constants/ReduxStateConsts';
 
 const { processEntityData } = DataProcessingUtils;
@@ -16,7 +16,7 @@ const { PROPERTY_TYPES, TYPE_IDS_BY_FQNS } = EDM;
 
 type Props = {
   actions:{
-    addToAvailableCourtCharges :RequestSequence;
+    addToAvailableArrestCharges :RequestSequence;
   };
   entitySetIds :Map;
   propertyTypeIds :Map;
@@ -26,7 +26,7 @@ type State = {
   formData :Object;
 };
 
-class AddToAvailableCourtChargesForm extends Component<Props, State> {
+class AddToAvailableArrestChargesForm extends Component<Props, State> {
 
   constructor(props :Props) {
     super(props);
@@ -39,7 +39,7 @@ class AddToAvailableCourtChargesForm extends Component<Props, State> {
   handleOnSubmit = ({ formData } :Object) => {
     const { actions, entitySetIds, propertyTypeIds } = this.props;
     const entityData = processEntityData(formData, entitySetIds, propertyTypeIds);
-    actions.addToAvailableCourtCharges({ associationEntityData: {}, entityData });
+    actions.addToAvailableArrestCharges({ associationEntityData: {}, entityData });
   }
 
   render() {
@@ -66,9 +66,9 @@ const mapStateToProps = (state :Map) => {
 
 const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
-    addToAvailableCourtCharges,
+    addToAvailableArrestCharges,
   }, dispatch)
 });
 
 // $FlowFixMe
-export default connect(mapStateToProps, mapDispatchToProps)(AddToAvailableCourtChargesForm);
+export default connect(mapStateToProps, mapDispatchToProps)(AddToAvailableArrestChargesForm);

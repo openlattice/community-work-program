@@ -5,6 +5,7 @@ import type { SequenceAction } from 'redux-reqseq';
 
 import {
   addCourtChargesToCase,
+  addToAvailableArrestCharges,
   addToAvailableCourtCharges,
   getArrestCharges,
   getCourtCharges,
@@ -18,6 +19,7 @@ import { APP_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 const { ACTIONS, REQUEST_STATE } = SHARED;
 const {
   ADD_COURT_CHARGES_TO_CASE,
+  ADD_TO_AVAILABLE_ARREST_CHARGES,
   ADD_TO_AVAILABLE_COURT_CHARGES,
   ARREST_CHARGES,
   COURT_CHARGES,
@@ -38,6 +40,9 @@ const INITIAL_STATE :Map = fromJS({
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [GET_COURT_CHARGES_FOR_CASE]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [ADD_TO_AVAILABLE_ARREST_CHARGES]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
   },
@@ -83,6 +88,32 @@ export default function chargesReducer(state :Map = INITIAL_STATE, action :Seque
         FAILURE: () => state
           .setIn([ACTIONS, ADD_COURT_CHARGES_TO_CASE, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, ADD_COURT_CHARGES_TO_CASE, action.id]),
+      });
+    }
+
+    case addToAvailableArrestCharges.case(action.type): {
+
+      return addToAvailableArrestCharges.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, ADD_TO_AVAILABLE_ARREST_CHARGES, action.id], action)
+          .setIn([ACTIONS, ADD_TO_AVAILABLE_ARREST_CHARGES, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+
+          const seqAction :SequenceAction = action;
+          const successValue :Object = seqAction.value;
+          const { newCharge } = successValue;
+
+          let arrestCharges = state.get(ARREST_CHARGES, List());
+          arrestCharges = arrestCharges.push(newCharge);
+
+          return state
+            .set(ARREST_CHARGES, arrestCharges)
+            .setIn([ACTIONS, ADD_TO_AVAILABLE_ARREST_CHARGES, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, ADD_TO_AVAILABLE_ARREST_CHARGES, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, ADD_TO_AVAILABLE_ARREST_CHARGES, action.id]),
       });
     }
 

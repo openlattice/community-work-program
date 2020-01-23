@@ -37,12 +37,14 @@ import { deleteEntities, submitDataGraph } from '../../../core/sagas/data/DataAc
 import { deleteEntitiesWorker, submitDataGraphWorker } from '../../../core/sagas/data/DataSagas';
 import {
   ADD_COURT_CHARGES_TO_CASE,
+  ADD_TO_AVAILABLE_ARREST_CHARGES,
   ADD_TO_AVAILABLE_COURT_CHARGES,
-  GET_COURT_CHARGES_FOR_CASE,
   GET_ARREST_CHARGES,
   GET_COURT_CHARGES,
+  GET_COURT_CHARGES_FOR_CASE,
   REMOVE_COURT_CHARGE_FROM_CASE,
   addCourtChargesToCase,
+  addToAvailableArrestCharges,
   addToAvailableCourtCharges,
   getArrestCharges,
   getCourtCharges,
@@ -182,6 +184,58 @@ function* addCourtChargesToCaseWorker(action :SequenceAction) :Generator<*, *, *
 function* addCourtChargesToCaseWatcher() :Generator<*, *, *> {
 
   yield takeEvery(ADD_COURT_CHARGES_TO_CASE, addCourtChargesToCaseWorker);
+}
+
+/*
+ *
+ * ChargesActions.addToAvailableArrestCharges()
+ *
+ */
+
+function* addToAvailableArrestChargesWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+  let response :Object = {};
+
+  try {
+    yield put(addToAvailableArrestCharges.request(id, value));
+
+    response = yield call(submitDataGraphWorker, submitDataGraph(value));
+    if (response.error) {
+      throw response.error;
+    }
+    const { data } :Object = response;
+    const { entityKeyIds } :Object = data;
+
+    const app = yield select(getAppFromState);
+    const edm = yield select(getEdmFromState);
+    const arrestChargeListESID = getEntitySetIdFromApp(app, ARREST_CHARGE_LIST);
+    const arrestChargeEKID = entityKeyIds[arrestChargeListESID][0];
+
+    const { entityData } = value;
+    const newChargeData = fromJS(entityData[arrestChargeListESID][0]);
+
+    let newCharge :Map = Map();
+    newCharge = newCharge.set(ENTITY_KEY_ID, arrestChargeEKID);
+    newChargeData.forEach((chargeValue, ptid) => {
+      const propertyTypeFqn :FullyQualifiedName = getPropertyFqnFromEdm(edm, ptid);
+      newCharge = newCharge.set(propertyTypeFqn, chargeValue);
+    });
+
+    yield put(addToAvailableArrestCharges.success(id, { newCharge }));
+  }
+  catch (error) {
+    LOG.error('caught exception in addToAvailableArrestChargesWorker()', error);
+    yield put(addToAvailableArrestCharges.failure(id, error));
+  }
+  finally {
+    yield put(addToAvailableArrestCharges.finally(id));
+  }
+}
+
+function* addToAvailableArrestChargesWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(ADD_TO_AVAILABLE_ARREST_CHARGES, addToAvailableArrestChargesWorker);
 }
 
 /*
@@ -502,6 +556,8 @@ function* removeCourtChargeFromCaseWatcher() :Generator<*, *, *> {
 export {
   addCourtChargesToCaseWatcher,
   addCourtChargesToCaseWorker,
+  addToAvailableArrestChargesWatcher,
+  addToAvailableArrestChargesWorker,
   addToAvailableCourtChargesWatcher,
   addToAvailableCourtChargesWorker,
   getArrestChargesWatcher,
