@@ -11,12 +11,14 @@ import {
   takeEvery,
 } from '@redux-saga/core/effects';
 import { Models } from 'lattice';
+import { DateTime } from 'luxon';
 import {
   DataApiActions,
   DataApiSagas,
   SearchApiActions,
   SearchApiSagas,
 } from 'lattice-sagas';
+import { DataProcessingUtils } from 'lattice-fabricate';
 import type { SequenceAction } from 'redux-reqseq';
 
 import Logger from '../../../utils/Logger';
@@ -27,39 +29,156 @@ import {
   getEntitySetIdFromApp,
   getNeighborDetails,
   getPropertyFqnFromEdm,
+  getPropertyTypeIdFromEdm,
 } from '../../../utils/DataUtils';
+import { getCombinedDateTime } from '../../../utils/ScheduleUtils';
 import { submitDataGraph } from '../../../core/sagas/data/DataActions';
 import { submitDataGraphWorker } from '../../../core/sagas/data/DataSagas';
 import {
+  ADD_COURT_CHARGES_TO_CASE,
   ADD_TO_AVAILABLE_COURT_CHARGES,
   GET_COURT_CHARGES_FOR_CASE,
   GET_ARREST_CHARGES,
   GET_COURT_CHARGES,
+  addCourtChargesToCase,
   addToAvailableCourtCharges,
   getArrestCharges,
   getCourtCharges,
   getCourtChargesForCase,
 } from './ChargesActions';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
-import { STATE } from '../../../utils/constants/ReduxStateConsts';
+import { PERSON, STATE } from '../../../utils/constants/ReduxStateConsts';
 import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../../utils/Errors';
 
+const { processAssociationEntityData } = DataProcessingUtils;
 const { FullyQualifiedName } = Models;
 const { getEntitySetData } = DataApiActions;
 const { getEntitySetDataWorker } = DataApiSagas;
 const { searchEntityNeighborsWithFilter } = SearchApiActions;
 const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
 const {
+  APPEARS_IN,
   ARREST_CHARGE_LIST,
   CHARGE_EVENT,
   COURT_CHARGE_LIST,
+  MANUAL_CHARGED_WITH,
   MANUAL_PRETRIAL_COURT_CASES,
+  PEOPLE,
+  REGISTERED_FOR,
 } = APP_TYPE_FQNS;
-const { ENTITY_KEY_ID } = PROPERTY_TYPE_FQNS;
+const { DATETIME_COMPLETED, ENTITY_KEY_ID } = PROPERTY_TYPE_FQNS;
 
 const getAppFromState = (state) => state.get(STATE.APP, Map());
 const getEdmFromState = (state) => state.get(STATE.EDM, Map());
+const getPersonFromState = (state) => state.get(STATE.PERSON, Map());
 const LOG = new Logger('ChargesSagas');
+
+/*
+ *
+ * ChargesActions.addCourtChargesToCase()
+ *
+ */
+
+function* addCourtChargesToCaseWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+  if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
+  const workerResponse = {};
+  let response :Object = {};
+  let newChargeMaps :List = List();
+  let chargeEKIDs :List = List();
+
+  try {
+    yield put(addCourtChargesToCase.request(id, value));
+    let { associationEntityData } = value;
+    const { entityData } :Object = value;
+
+    const app = yield select(getAppFromState);
+    const edm = yield select(getEdmFromState);
+    const chargeEventESID :UUID = getEntitySetIdFromApp(app, CHARGE_EVENT);
+    const appearsInESID :UUID = getEntitySetIdFromApp(app, APPEARS_IN);
+
+    // if data is coming from addAction in form rather than first-time submission:
+    if (!associationEntityData) {
+
+      /* Construct associationEntityData */
+      const associations = [];
+      const courtChargeListESID :UUID = getEntitySetIdFromApp(app, COURT_CHARGE_LIST);
+      const olEKID :UUID = getPropertyTypeIdFromEdm(edm, ENTITY_KEY_ID);
+
+      const person = yield select(getPersonFromState);
+      const personEKID :UUID = getEntityKeyId(person.get(PERSON.PARTICIPANT));
+      const caseEKID :UUID = getEntityKeyId(person.get(PERSON.PERSON_CASE));
+
+      fromJS(entityData).get(courtChargeListESID).forEach((courtCharge :Map, index :number) => {
+
+        const courtChargeEKID :UUID = courtCharge.getIn([olEKID, 0]);
+        associations.push([APPEARS_IN, courtChargeEKID, COURT_CHARGE_LIST, caseEKID, MANUAL_PRETRIAL_COURT_CASES]);
+        associations.push([REGISTERED_FOR, index, CHARGE_EVENT, courtChargeEKID, COURT_CHARGE_LIST]);
+        associations.push([MANUAL_CHARGED_WITH, personEKID, PEOPLE, courtChargeEKID, COURT_CHARGE_LIST]);
+        associations.push([MANUAL_CHARGED_WITH, personEKID, PEOPLE, index, CHARGE_EVENT]);
+      });
+
+      const entitySetIds :{} = {
+        [APPEARS_IN]: appearsInESID,
+        [CHARGE_EVENT]: chargeEventESID,
+        [COURT_CHARGE_LIST]: courtChargeListESID,
+        [MANUAL_CHARGED_WITH]: getEntitySetIdFromApp(app, MANUAL_CHARGED_WITH),
+        [MANUAL_PRETRIAL_COURT_CASES]: getEntitySetIdFromApp(app, MANUAL_PRETRIAL_COURT_CASES),
+        [PEOPLE]: getEntitySetIdFromApp(app, PEOPLE),
+        [REGISTERED_FOR]: getEntitySetIdFromApp(app, REGISTERED_FOR),
+      };
+      associationEntityData = processAssociationEntityData(associations, entitySetIds, {});
+
+      /* Edit entityData to use datetimes instead of dates */
+      delete entityData[courtChargeListESID];
+
+      entityData[chargeEventESID] = entityData[chargeEventESID].map((charge :{}) => {
+        const datetimeCompletedPTID :UUID = getPropertyTypeIdFromEdm(edm, DATETIME_COMPLETED);
+        const date :string = charge[datetimeCompletedPTID][0];
+        const currentTime = DateTime.local().toLocaleString(DateTime.TIME_24_SIMPLE);
+        const datetime = getCombinedDateTime(date, currentTime);
+        return {
+          [datetimeCompletedPTID]: [datetime]
+        };
+      });
+
+    }
+
+    response = yield call(submitDataGraphWorker, submitDataGraph({ associationEntityData, entityData }));
+    if (response.error) {
+      throw response.error;
+    }
+
+    fromJS(entityData[chargeEventESID]).forEach((storedChargeEvent :Map, index :number) => {
+      let chargeMap :Map = Map();
+      let chargeEvent :Map = Map();
+      storedChargeEvent.forEach((chargeEventValue, ptid) => {
+        const propertyTypeFqn :FullyQualifiedName = getPropertyFqnFromEdm(edm, ptid);
+        chargeEvent = chargeEvent.set(propertyTypeFqn, chargeEventValue);
+      });
+      chargeMap = chargeMap.set(CHARGE_EVENT, chargeEvent);
+      const chargeEKID :UUID = associationEntityData[appearsInESID][index].srcEntityKeyId;
+      chargeEKIDs = chargeEKIDs.push(chargeEKID);
+      newChargeMaps = newChargeMaps.push(chargeMap);
+    });
+
+    yield put(addCourtChargesToCase.success(id, { chargeEKIDs, newChargeMaps }));
+  }
+  catch (error) {
+    workerResponse.error = error;
+    LOG.error('caught exception in addCourtChargesToCaseWorker()', error);
+    yield put(addCourtChargesToCase.failure(id, error));
+  }
+  finally {
+    yield put(addCourtChargesToCase.finally(id));
+  }
+}
+
+function* addCourtChargesToCaseWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(ADD_COURT_CHARGES_TO_CASE, addCourtChargesToCaseWorker);
+}
 
 /*
  *
@@ -299,12 +418,14 @@ function* getCourtChargesForCaseWatcher() :Generator<*, *, *> {
 }
 
 export {
+  addCourtChargesToCaseWatcher,
+  addCourtChargesToCaseWorker,
   addToAvailableCourtChargesWatcher,
   addToAvailableCourtChargesWorker,
   getArrestChargesWatcher,
   getArrestChargesWorker,
-  getCourtChargesWatcher,
-  getCourtChargesWorker,
   getCourtChargesForCaseWatcher,
   getCourtChargesForCaseWorker,
+  getCourtChargesWatcher,
+  getCourtChargesWorker,
 };

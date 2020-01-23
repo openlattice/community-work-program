@@ -20,10 +20,8 @@ import type { RequestSequence } from 'redux-reqseq';
 
 import AddToAvailableCourtChargesModal from '../charges/AddToAvailableCourtChargesModal';
 
-import {
-  addChargesToCase,
-  removeChargeFromCase,
-} from '../ParticipantActions';
+import { addCourtChargesToCase } from '../charges/ChargesActions';
+import { removeChargeFromCase } from '../ParticipantActions';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import {
   courtChargeSchema,
@@ -60,7 +58,7 @@ const InnerCardHeader = styled.div`
 
 type Props = {
   actions:{
-    addChargesToCase :RequestSequence;
+    addCourtChargesToCase :RequestSequence;
     removeChargeFromCase :RequestSequence;
   },
   charges :List;
@@ -193,7 +191,7 @@ class EditCourtChargesForm extends Component<Props, State> {
     const associationEntityData :{} = processAssociationEntityData(associations, entitySetIds, propertyTypeIds);
     delete entityData[courtChargeListESID];
 
-    actions.addChargesToCase({ associationEntityData, entityData });
+    actions.addCourtChargesToCase({ associationEntityData, entityData });
   }
 
   handleOnChangeCharges = ({ formData } :Object) => {
@@ -225,7 +223,7 @@ class EditCourtChargesForm extends Component<Props, State> {
 
     const chargesFormContext = {
       addActions: {
-        addCharge: actions.addChargesToCase
+        addCharge: actions.addCourtChargesToCase
       },
       deleteAction: actions.removeChargeFromCase,
       entityIndexToIdMap,
@@ -261,7 +259,7 @@ class EditCourtChargesForm extends Component<Props, State> {
 
 const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
-    addChargesToCase,
+    addCourtChargesToCase,
     removeChargeFromCase,
   }, dispatch)
 });

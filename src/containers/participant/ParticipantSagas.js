@@ -25,14 +25,12 @@ import {
   SearchApiActions,
   SearchApiSagas,
 } from 'lattice-sagas';
-import { DataProcessingUtils } from 'lattice-fabricate';
 import type { SequenceAction } from 'redux-reqseq';
 import type { FQN } from 'lattice';
 
 import Logger from '../../utils/Logger';
 import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../utils/Errors';
 import {
-  ADD_CHARGES_TO_CASE,
   ADD_NEW_DIVERSION_PLAN_STATUS,
   ADD_NEW_PARTICIPANT_CONTACTS,
   ADD_PERSON_PHOTO,
@@ -65,7 +63,6 @@ import {
   REASSIGN_JUDGE,
   REMOVE_CHARGE_FROM_CASE,
   UPDATE_PERSON_PHOTO,
-  addChargesToCase,
   addNewDiversionPlanStatus,
   addNewParticipantContacts,
   addPersonPhoto,
@@ -143,10 +140,8 @@ const { getEntityData, getEntitySetData } = DataApiActions;
 const { getEntityDataWorker, getEntitySetDataWorker } = DataApiSagas;
 const { searchEntityNeighborsWithFilter } = SearchApiActions;
 const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
-const { processAssociationEntityData } = DataProcessingUtils;
 const {
   ADDRESS,
-  APPEARS_IN,
   CHARGE_EVENT,
   CONTACT_INFORMATION,
   COURT_CHARGE_LIST,
@@ -154,12 +149,10 @@ const {
   ENROLLMENT_STATUS,
   IMAGE,
   JUDGES,
-  MANUAL_CHARGED_WITH,
   MANUAL_PRETRIAL_COURT_CASES,
   PEOPLE,
   PRESIDES_OVER,
   PROGRAM_OUTCOME,
-  REGISTERED_FOR,
 } = APP_TYPE_FQNS;
 const {
   DATETIME_COMPLETED,
@@ -181,113 +174,6 @@ const getEdmFromState = (state) => state.get(STATE.EDM, Map());
 const getPersonFromState = (state) => state.get(STATE.PERSON, Map());
 
 const LOG = new Logger('ParticipantSagas');
-
-/*
- *
- * ParticipantActions.addChargesToCase()
- *
- */
-
-function* addChargesToCaseWorker(action :SequenceAction) :Generator<*, *, *> {
-
-  const { id, value } = action;
-  if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
-  const workerResponse = {};
-  let response :Object = {};
-  let newChargeMaps :List = List();
-  let chargeEKIDs :List = List();
-
-  try {
-    yield put(addChargesToCase.request(id, value));
-    let { associationEntityData } = value;
-    const { entityData } :Object = value;
-
-    const app = yield select(getAppFromState);
-    const edm = yield select(getEdmFromState);
-    const chargeEventESID :UUID = getEntitySetIdFromApp(app, CHARGE_EVENT);
-    const appearsInESID :UUID = getEntitySetIdFromApp(app, APPEARS_IN);
-
-    // if data is coming from addAction in form rather than first-time submission:
-    if (!associationEntityData) {
-
-      /* Construct associationEntityData */
-      const associations = [];
-      const courtChargeListESID :UUID = getEntitySetIdFromApp(app, COURT_CHARGE_LIST);
-      const olEKID :UUID = getPropertyTypeIdFromEdm(edm, ENTITY_KEY_ID);
-
-      const person = yield select(getPersonFromState);
-      const personEKID :UUID = getEntityKeyId(person.get(PERSON.PARTICIPANT));
-      const caseEKID :UUID = getEntityKeyId(person.get(PERSON.PERSON_CASE));
-
-      fromJS(entityData).get(courtChargeListESID).forEach((courtCharge :Map, index :number) => {
-
-        const courtChargeEKID :UUID = courtCharge.getIn([olEKID, 0]);
-        associations.push([APPEARS_IN, courtChargeEKID, COURT_CHARGE_LIST, caseEKID, MANUAL_PRETRIAL_COURT_CASES]);
-        associations.push([REGISTERED_FOR, index, CHARGE_EVENT, courtChargeEKID, COURT_CHARGE_LIST]);
-        associations.push([MANUAL_CHARGED_WITH, personEKID, PEOPLE, courtChargeEKID, COURT_CHARGE_LIST]);
-        associations.push([MANUAL_CHARGED_WITH, personEKID, PEOPLE, index, CHARGE_EVENT]);
-      });
-
-      const entitySetIds :{} = {
-        [APPEARS_IN]: appearsInESID,
-        [CHARGE_EVENT]: chargeEventESID,
-        [COURT_CHARGE_LIST]: courtChargeListESID,
-        [MANUAL_CHARGED_WITH]: getEntitySetIdFromApp(app, MANUAL_CHARGED_WITH),
-        [MANUAL_PRETRIAL_COURT_CASES]: getEntitySetIdFromApp(app, MANUAL_PRETRIAL_COURT_CASES),
-        [PEOPLE]: getEntitySetIdFromApp(app, PEOPLE),
-        [REGISTERED_FOR]: getEntitySetIdFromApp(app, REGISTERED_FOR),
-      };
-      associationEntityData = processAssociationEntityData(associations, entitySetIds, {});
-
-      /* Edit entityData to use datetimes instead of dates */
-      delete entityData[courtChargeListESID];
-
-      entityData[chargeEventESID] = entityData[chargeEventESID].map((charge :{}) => {
-        const datetimeCompletedPTID :UUID = getPropertyTypeIdFromEdm(edm, DATETIME_COMPLETED);
-        const date :string = charge[datetimeCompletedPTID][0];
-        const currentTime = DateTime.local().toLocaleString(DateTime.TIME_24_SIMPLE);
-        const datetime = getCombinedDateTime(date, currentTime);
-        return {
-          [datetimeCompletedPTID]: [datetime]
-        };
-      });
-
-    }
-
-    response = yield call(submitDataGraphWorker, submitDataGraph({ associationEntityData, entityData }));
-    if (response.error) {
-      throw response.error;
-    }
-
-    fromJS(entityData[chargeEventESID]).forEach((storedChargeEvent :Map, index :number) => {
-      let chargeMap :Map = Map();
-      let chargeEvent :Map = Map();
-      storedChargeEvent.forEach((chargeEventValue, ptid) => {
-        const propertyTypeFqn :FQN = getPropertyFqnFromEdm(edm, ptid);
-        chargeEvent = chargeEvent.set(propertyTypeFqn, chargeEventValue);
-      });
-      chargeMap = chargeMap.set(CHARGE_EVENT, chargeEvent);
-      const chargeEKID :UUID = associationEntityData[appearsInESID][index].srcEntityKeyId;
-      chargeEKIDs = chargeEKIDs.push(chargeEKID);
-      newChargeMaps = newChargeMaps.push(chargeMap);
-    });
-
-    yield put(addChargesToCase.success(id, { chargeEKIDs, newChargeMaps }));
-  }
-  catch (error) {
-    workerResponse.error = error;
-    LOG.error('caught exception in addChargesToCaseWorker()', error);
-    yield put(addChargesToCase.failure(id, error));
-  }
-  finally {
-    yield put(addChargesToCase.finally(id));
-  }
-}
-
-function* addChargesToCaseWatcher() :Generator<*, *, *> {
-
-  yield takeEvery(ADD_CHARGES_TO_CASE, addChargesToCaseWorker);
-}
 
 /*
  *
@@ -2117,8 +2003,6 @@ function* getAllParticipantInfoWatcher() :Generator<*, *, *> {
 }
 
 export {
-  addChargesToCaseWatcher,
-  addChargesToCaseWorker,
   addNewDiversionPlanStatusWatcher,
   addNewDiversionPlanStatusWorker,
   addNewParticipantContactsWatcher,

@@ -2,9 +2,6 @@
 import { newRequestSequence } from 'redux-reqseq';
 import type { RequestSequence } from 'redux-reqseq';
 
-const ADD_CHARGES_TO_CASE :'ADD_CHARGES_TO_CASE' = 'ADD_CHARGES_TO_CASE';
-const addChargesToCase :RequestSequence = newRequestSequence(ADD_CHARGES_TO_CASE);
-
 const ADD_NEW_DIVERSION_PLAN_STATUS :'ADD_NEW_DIVERSION_PLAN_STATUS' = 'ADD_NEW_DIVERSION_PLAN_STATUS';
 const addNewDiversionPlanStatus :RequestSequence = newRequestSequence(ADD_NEW_DIVERSION_PLAN_STATUS);
 
@@ -102,7 +99,6 @@ const UPDATE_PERSON_PHOTO :'UPDATE_PERSON_PHOTO' = 'UPDATE_PERSON_PHOTO';
 const updatePersonPhoto :RequestSequence = newRequestSequence(UPDATE_PERSON_PHOTO);
 
 export {
-  ADD_CHARGES_TO_CASE,
   ADD_NEW_DIVERSION_PLAN_STATUS,
   ADD_NEW_PARTICIPANT_CONTACTS,
   ADD_PERSON_PHOTO,
@@ -135,7 +131,6 @@ export {
   REASSIGN_JUDGE,
   REMOVE_CHARGE_FROM_CASE,
   UPDATE_PERSON_PHOTO,
-  addChargesToCase,
   addNewDiversionPlanStatus,
   addNewParticipantContacts,
   addPersonPhoto,

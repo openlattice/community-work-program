@@ -10,7 +10,6 @@ import type { SequenceAction } from 'redux-reqseq';
 import type { FQN } from 'lattice';
 
 import {
-  addChargesToCase,
   addNewDiversionPlanStatus,
   addNewParticipantContacts,
   addPersonPhoto,
@@ -51,10 +50,9 @@ import {
 } from '../../utils/DataUtils';
 import { isDefined } from '../../utils/LangUtils';
 import { PERSON } from '../../utils/constants/ReduxStateConsts';
-import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { CONTACT_METHODS } from '../../core/edm/constants/DataModelConsts';
 
-const { COURT_CHARGE_LIST } = APP_TYPE_FQNS;
 const {
   CASE_NUMBER_TEXT,
   CHECK_IN_DATETIME,
@@ -78,7 +76,6 @@ const {
   ADDRESS,
   ALL_DIVERSION_PLANS,
   ALL_PARTICIPANT_CASES,
-  CHARGES,
   CHARGES_FOR_CASE,
   CREATE_CASE,
   CREATE_NEW_ENROLLMENT,
@@ -237,43 +234,6 @@ const INITIAL_STATE :Map<*, *> = fromJS({
 export default function participantReducer(state :Map<*, *> = INITIAL_STATE, action :SequenceAction) :Map<*, *> {
 
   switch (action.type) {
-
-    case addChargesToCase.case(action.type): {
-
-      return addChargesToCase.reducer(state, action, {
-
-        REQUEST: () => state
-          .setIn([ACTIONS, ADD_CHARGES_TO_CASE, action.id], action)
-          .setIn([ACTIONS, ADD_CHARGES_TO_CASE, REQUEST_STATE], RequestStates.PENDING),
-        SUCCESS: () => {
-
-          const seqAction :SequenceAction = action;
-
-          const successValue :Object = seqAction.value;
-          const { chargeEKIDs } = successValue;
-          let { newChargeMaps } = successValue;
-
-          const charges :List = state.get(CHARGES);
-          chargeEKIDs.forEach((chargeEKID :UUID, index :number) => {
-            const chargeEntity :Map = charges.find((charge :Map) => getEntityKeyId(charge) === chargeEKID);
-            let chargeMap :Map = newChargeMaps.get(index);
-            chargeMap = chargeMap.set(COURT_CHARGE_LIST, chargeEntity);
-            newChargeMaps = newChargeMaps.set(index, chargeMap);
-          });
-
-          let existingChargesForCase :List = state.get(CHARGES_FOR_CASE);
-          existingChargesForCase = existingChargesForCase.concat(newChargeMaps);
-
-          return state
-            .set(CHARGES_FOR_CASE, existingChargesForCase)
-            .setIn([ACTIONS, ADD_CHARGES_TO_CASE, REQUEST_STATE], RequestStates.SUCCESS);
-        },
-        FAILURE: () => state
-          .set(CHARGES_FOR_CASE, List())
-          .setIn([ACTIONS, ADD_CHARGES_TO_CASE, REQUEST_STATE], RequestStates.FAILURE),
-        FINALLY: () => state.deleteIn([ACTIONS, ADD_CHARGES_TO_CASE, action.id]),
-      });
-    }
 
     case addNewDiversionPlanStatus.case(action.type): {
 
