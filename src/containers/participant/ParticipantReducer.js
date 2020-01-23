@@ -25,7 +25,6 @@ import {
   editRequiredHours,
   getAllParticipantInfo,
   getCaseInfo,
-  getChargesForCase,
   getContactInfo,
   getEnrollmentHistory,
   getEnrollmentFromDiversionPlan,
@@ -96,7 +95,6 @@ const {
   ENROLLMENT_STATUS,
   GET_ALL_PARTICIPANT_INFO,
   GET_CASE_INFO,
-  GET_CHARGES_FOR_CASE,
   GET_CONTACT_INFO,
   GET_ENROLLMENT_HISTORY,
   GET_ENROLLMENT_FROM_DIVERSION_PLAN,
@@ -165,9 +163,6 @@ const INITIAL_STATE :Map<*, *> = fromJS({
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [GET_CASE_INFO]: {
-      [REQUEST_STATE]: RequestStates.STANDBY
-    },
-    [GET_CHARGES_FOR_CASE]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [GET_CONTACT_INFO]: {
@@ -732,35 +727,6 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
         FAILURE: () => state
           .setIn([ACTIONS, GET_CASE_INFO, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, GET_CASE_INFO, action.id])
-      });
-    }
-
-    case getChargesForCase.case(action.type): {
-
-      return getChargesForCase.reducer(state, action, {
-
-        REQUEST: () => state
-          .setIn([ACTIONS, GET_CHARGES_FOR_CASE, action.id], fromJS(action))
-          .setIn([ACTIONS, GET_CHARGES_FOR_CASE, REQUEST_STATE], RequestStates.PENDING),
-        SUCCESS: () => {
-
-          if (!state.hasIn([ACTIONS, GET_CHARGES_FOR_CASE, action.id])) {
-            return state;
-          }
-
-          const { value } = action;
-          if (value === null || value === undefined) {
-            return state;
-          }
-
-          return state
-            .set(CHARGES_FOR_CASE, value)
-            .setIn([ACTIONS, GET_CHARGES_FOR_CASE, REQUEST_STATE], RequestStates.SUCCESS);
-        },
-        FAILURE: () => state
-          .set(CHARGES_FOR_CASE, List())
-          .setIn([ACTIONS, GET_CHARGES_FOR_CASE, REQUEST_STATE], RequestStates.FAILURE),
-        FINALLY: () => state.deleteIn([ACTIONS, GET_CHARGES_FOR_CASE, action.id])
       });
     }
 

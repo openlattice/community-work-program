@@ -18,7 +18,6 @@ export const SHARED = {
 };
 
 /* App */
-
 export const APP = {
   ACTIONS: 'actions',
   APP: 'app',
@@ -36,8 +35,10 @@ export const CHARGES = {
   ADD_TO_AVAILABLE_COURT_CHARGES: 'addToAvailableCourtCharges',
   ARREST_CHARGES: 'arrestCharges',
   COURT_CHARGES: 'courtCharges',
+  COURT_CHARGES_FOR_CASE: 'courtChargesForCase',
   GET_ARREST_CHARGES: 'getArrestCharges',
   GET_COURT_CHARGES: 'getCourtCharges',
+  GET_COURT_CHARGES_FOR_CASE: 'getCourtChargesForCase',
 };
 
 /* EDM */
@@ -104,7 +105,6 @@ export const PERSON = {
   ALL_DIVERSION_PLANS: 'allDiversionPlans',
   ALL_PARTICIPANT_CASES: 'allParticipantCases',
   CHARGES: 'charges',
-  CHARGES_FOR_CASE: 'chargesForCase',
   CREATE_CASE: 'createCase',
   CREATE_NEW_ENROLLMENT: 'createNewEnrollment',
   DIVERSION_PLAN: 'diversionPlan',
@@ -123,7 +123,6 @@ export const PERSON = {
   ERRORS: 'errors',
   GET_ALL_PARTICIPANT_INFO: 'getAllParticipantInfo',
   GET_CASE_INFO: 'getCaseInfo',
-  GET_CHARGES_FOR_CASE: 'getChargesForCase',
   GET_CONTACT_INFO: 'getContactInfo',
   GET_ENROLLMENT_HISTORY: 'getEnrollmentHistory',
   GET_ENROLLMENT_FROM_DIVERSION_PLAN: 'getEnrollmentFromDiversionPlan',

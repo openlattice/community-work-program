@@ -11,11 +11,16 @@ const getArrestCharges :RequestSequence = newRequestSequence(GET_ARREST_CHARGES)
 const GET_COURT_CHARGES :'GET_COURT_CHARGES' = 'GET_COURT_CHARGES';
 const getCourtCharges :RequestSequence = newRequestSequence(GET_COURT_CHARGES);
 
+const GET_COURT_CHARGES_FOR_CASE :'GET_COURT_CHARGES_FOR_CASE' = 'GET_COURT_CHARGES_FOR_CASE';
+const getCourtChargesForCase :RequestSequence = newRequestSequence(GET_COURT_CHARGES_FOR_CASE);
+
 export {
   ADD_TO_AVAILABLE_COURT_CHARGES,
+  GET_COURT_CHARGES_FOR_CASE,
   GET_ARREST_CHARGES,
   GET_COURT_CHARGES,
   addToAvailableCourtCharges,
   getArrestCharges,
   getCourtCharges,
+  getCourtChargesForCase,
 };

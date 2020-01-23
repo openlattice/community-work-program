@@ -14,29 +14,47 @@ import { Models } from 'lattice';
 import {
   DataApiActions,
   DataApiSagas,
+  SearchApiActions,
+  SearchApiSagas,
 } from 'lattice-sagas';
 import type { SequenceAction } from 'redux-reqseq';
 
 import Logger from '../../../utils/Logger';
 
-import { getEntitySetIdFromApp, getPropertyFqnFromEdm } from '../../../utils/DataUtils';
+import { isDefined } from '../../../utils/LangUtils';
+import {
+  getEntityKeyId,
+  getEntitySetIdFromApp,
+  getNeighborDetails,
+  getPropertyFqnFromEdm,
+} from '../../../utils/DataUtils';
 import { submitDataGraph } from '../../../core/sagas/data/DataActions';
 import { submitDataGraphWorker } from '../../../core/sagas/data/DataSagas';
 import {
   ADD_TO_AVAILABLE_COURT_CHARGES,
+  GET_COURT_CHARGES_FOR_CASE,
   GET_ARREST_CHARGES,
   GET_COURT_CHARGES,
   addToAvailableCourtCharges,
   getArrestCharges,
   getCourtCharges,
+  getCourtChargesForCase,
 } from './ChargesActions';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { STATE } from '../../../utils/constants/ReduxStateConsts';
+import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../../utils/Errors';
 
 const { FullyQualifiedName } = Models;
 const { getEntitySetData } = DataApiActions;
 const { getEntitySetDataWorker } = DataApiSagas;
-const { ARREST_CHARGE_LIST, COURT_CHARGE_LIST } = APP_TYPE_FQNS;
+const { searchEntityNeighborsWithFilter } = SearchApiActions;
+const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
+const {
+  ARREST_CHARGE_LIST,
+  CHARGE_EVENT,
+  COURT_CHARGE_LIST,
+  MANUAL_PRETRIAL_COURT_CASES,
+} = APP_TYPE_FQNS;
 const { ENTITY_KEY_ID } = PROPERTY_TYPE_FQNS;
 
 const getAppFromState = (state) => state.get(STATE.APP, Map());
@@ -179,6 +197,107 @@ function* getCourtChargesWatcher() :Generator<*, *, *> {
   yield takeEvery(GET_COURT_CHARGES, getCourtChargesWorker);
 }
 
+/*
+ *
+ * ChargesActions.getCourtChargesForCase()
+ *
+ */
+
+
+function* getCourtChargesForCaseWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  /*
+    person -> charged with -> charge (datetime stored on charged with)
+    charge -> appears in -> case
+  */
+  const { id, value } = action;
+  const workerResponse = {};
+  let response :Object = {};
+  let chargesInCase :List = List();
+
+  try {
+    yield put(getCourtChargesForCase.request(id));
+    if (value === null || value === undefined) {
+      throw ERR_ACTION_VALUE_NOT_DEFINED;
+    }
+    const { caseEKID } = value;
+    const app = yield select(getAppFromState);
+    const courtCasesESID :UUID = getEntitySetIdFromApp(app, MANUAL_PRETRIAL_COURT_CASES);
+    const courtChargeListESID :UUID = getEntitySetIdFromApp(app, COURT_CHARGE_LIST);
+
+    let searchFilter :Object = {
+      entityKeyIds: [caseEKID],
+      destinationEntitySetIds: [],
+      sourceEntitySetIds: [courtChargeListESID],
+    };
+    response = yield call(
+      searchEntityNeighborsWithFilterWorker,
+      searchEntityNeighborsWithFilter({ entitySetId: courtCasesESID, filter: searchFilter })
+    );
+    if (response.error) {
+      throw response.error;
+    }
+    if (response.data[caseEKID]) {
+      const chargesNeighborsResults :List = fromJS(response.data[caseEKID]);
+      const chargesEKIDs = [];
+      chargesNeighborsResults.forEach((neighbor :Map) => {
+        const chargeEntity :Map = getNeighborDetails(neighbor);
+        const chargeEKID :UUID = getEntityKeyId(chargeEntity);
+        chargesEKIDs.push(chargeEKID);
+        chargesInCase = chargesInCase.push(fromJS({
+          [COURT_CHARGE_LIST]: chargeEntity
+        }));
+      });
+
+      const chargeEventESID :UUID = getEntitySetIdFromApp(app, CHARGE_EVENT);
+      searchFilter = {
+        entityKeyIds: chargesEKIDs,
+        destinationEntitySetIds: [],
+        sourceEntitySetIds: [chargeEventESID],
+      };
+      response = yield call(
+        searchEntityNeighborsWithFilterWorker,
+        searchEntityNeighborsWithFilter({ entitySetId: courtChargeListESID, filter: searchFilter })
+      );
+      if (response.error) {
+        throw response.error;
+      }
+      const chargeEventResults :Map = fromJS(response.data);
+      if (!chargeEventResults.isEmpty()) {
+        chargeEventResults.forEach((chargeEventObj :List, chargeEKID :UUID) => {
+          const chargeEvent :Map = getNeighborDetails(chargeEventObj.get(0));
+          let chargeMap :Map = chargesInCase.find((map :Map) => getEntityKeyId(
+            map.get(COURT_CHARGE_LIST)
+          ) === chargeEKID);
+          if (isDefined(chargeMap)) {
+            const chargeMapIndex :number = chargesInCase.findIndex((map :Map) => getEntityKeyId(
+              map.get(COURT_CHARGE_LIST)
+            ) === chargeEKID);
+            chargeMap = chargeMap.set(CHARGE_EVENT, chargeEvent);
+            chargesInCase = chargesInCase.set(chargeMapIndex, chargeMap);
+          }
+        });
+      }
+    }
+
+    yield put(getCourtChargesForCase.success(id, chargesInCase));
+  }
+  catch (error) {
+    workerResponse.error = error;
+    LOG.error('caught exception in getCourtChargesForCaseWorker()', error);
+    yield put(getCourtChargesForCase.failure(id, error));
+  }
+  finally {
+    yield put(getCourtChargesForCase.finally(id));
+  }
+  return workerResponse;
+}
+
+function* getCourtChargesForCaseWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(GET_COURT_CHARGES_FOR_CASE, getCourtChargesForCaseWorker);
+}
+
 export {
   addToAvailableCourtChargesWatcher,
   addToAvailableCourtChargesWorker,
@@ -186,4 +305,6 @@ export {
   getArrestChargesWorker,
   getCourtChargesWatcher,
   getCourtChargesWorker,
+  getCourtChargesForCaseWatcher,
+  getCourtChargesForCaseWorker,
 };

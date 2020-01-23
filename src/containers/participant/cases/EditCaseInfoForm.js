@@ -44,14 +44,13 @@ const { ENTITY_SET_IDS_BY_ORG, SELECTED_ORG_ID } = APP;
 const { PROPERTY_TYPES, TYPE_IDS_BY_FQNS } = EDM;
 const {
   ACTIONS,
-  CHARGES_FOR_CASE,
   GET_INFO_FOR_EDIT_CASE,
   JUDGE,
   PARTICIPANT,
   PERSON_CASE,
   REQUEST_STATE,
 } = PERSON;
-const { COURT_CHARGES } = CHARGES;
+const { COURT_CHARGES, COURT_CHARGES_FOR_CASE } = CHARGES;
 
 const FormWrapper = styled.div`
   display: flex;
@@ -71,7 +70,7 @@ type Props = {
     getInfoForEditCase :RequestSequence;
     goToRoute :GoToRoute;
   },
-  chargesForCase :List;
+  courtChargesForCase :List;
   courtCharges :List;
   diversionPlan :Map;
   entitySetIds :Map;
@@ -114,11 +113,11 @@ class EditCaseInfoForm extends Component<Props> {
   }
 
   createEntityIndexToIdMap = () => {
-    const { chargesForCase, diversionPlan, personCase } = this.props;
+    const { courtChargesForCase, diversionPlan, personCase } = this.props;
 
     const chargeEKIDs :UUID[] = [];
     const chargeEventEKIDs :UUID[] = [];
-    chargesForCase.forEach((chargeMap :Map) => {
+    courtChargesForCase.forEach((chargeMap :Map) => {
       chargeEKIDs.push(getEntityKeyId(chargeMap.get(COURT_CHARGE_LIST)));
       chargeEventEKIDs.push(getEntityKeyId(chargeMap.get(CHARGE_EVENT)));
     });
@@ -146,7 +145,7 @@ class EditCaseInfoForm extends Component<Props> {
   render() {
     const {
       courtCharges,
-      chargesForCase,
+      courtChargesForCase,
       diversionPlan,
       entitySetIds,
       getInfoForEditCaseRequestState,
@@ -196,7 +195,7 @@ class EditCaseInfoForm extends Component<Props> {
               propertyTypeIds={propertyTypeIds} />
           <EditArrestChargesForm
               charges={courtCharges}
-              chargesForCase={chargesForCase}
+              chargesForCase={courtChargesForCase}
               entityIndexToIdMap={entityIndexToIdMap}
               entitySetIds={entitySetIds}
               participant={participant}
@@ -204,7 +203,7 @@ class EditCaseInfoForm extends Component<Props> {
               propertyTypeIds={propertyTypeIds} />
           <EditCourtChargesForm
               charges={courtCharges}
-              chargesForCase={chargesForCase}
+              chargesForCase={courtChargesForCase}
               entityIndexToIdMap={entityIndexToIdMap}
               entitySetIds={entitySetIds}
               participant={participant}
@@ -228,7 +227,7 @@ const mapStateToProps = (state :Map) => {
   const person = state.get(STATE.PERSON);
   const selectedOrgId :string = app.get(SELECTED_ORG_ID);
   return ({
-    [CHARGES_FOR_CASE]: person.get(CHARGES_FOR_CASE),
+    [COURT_CHARGES_FOR_CASE]: charges.get(COURT_CHARGES_FOR_CASE),
     [COURT_CHARGES]: charges.get(COURT_CHARGES),
     [JUDGE]: person.get(JUDGE),
     [PARTICIPANT]: person.get(PARTICIPANT),

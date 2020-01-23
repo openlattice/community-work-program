@@ -3,7 +3,12 @@ import { List, Map, fromJS } from 'immutable';
 import { RequestStates } from 'redux-reqseq';
 import type { SequenceAction } from 'redux-reqseq';
 
-import { addToAvailableCourtCharges, getArrestCharges, getCourtCharges } from './ChargesActions';
+import {
+  addToAvailableCourtCharges,
+  getArrestCharges,
+  getCourtCharges,
+  getCourtChargesForCase,
+} from './ChargesActions';
 import { CHARGES, SHARED } from '../../../utils/constants/ReduxStateConsts';
 
 const { ACTIONS, REQUEST_STATE } = SHARED;
@@ -11,8 +16,10 @@ const {
   ADD_TO_AVAILABLE_COURT_CHARGES,
   ARREST_CHARGES,
   COURT_CHARGES,
+  COURT_CHARGES_FOR_CASE,
   GET_ARREST_CHARGES,
   GET_COURT_CHARGES,
+  GET_COURT_CHARGES_FOR_CASE,
 } = CHARGES;
 
 const INITIAL_STATE :Map = fromJS({
@@ -22,9 +29,13 @@ const INITIAL_STATE :Map = fromJS({
     },
     [GET_COURT_CHARGES]: {
       [REQUEST_STATE]: RequestStates.STANDBY
-    }
+    },
+    [GET_COURT_CHARGES_FOR_CASE]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
   },
   [ARREST_CHARGES]: List(),
+  [COURT_CHARGES_FOR_CASE]: List(),
   [COURT_CHARGES]: List(),
 });
 
@@ -111,6 +122,34 @@ export default function chargesReducer(state :Map = INITIAL_STATE, action :Seque
         FAILURE: () => state
           .setIn([ACTIONS, GET_COURT_CHARGES, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, GET_COURT_CHARGES, action.id])
+      });
+    }
+
+    case getCourtChargesForCase.case(action.type): {
+
+      return getCourtChargesForCase.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, GET_COURT_CHARGES_FOR_CASE, action.id], fromJS(action))
+          .setIn([ACTIONS, GET_COURT_CHARGES_FOR_CASE, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+
+          if (!state.hasIn([ACTIONS, GET_COURT_CHARGES_FOR_CASE, action.id])) {
+            return state;
+          }
+
+          const { value } = action;
+          if (value === null || value === undefined) {
+            return state;
+          }
+
+          return state
+            .set(COURT_CHARGES_FOR_CASE, value)
+            .setIn([ACTIONS, GET_COURT_CHARGES_FOR_CASE, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, GET_COURT_CHARGES_FOR_CASE, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, GET_COURT_CHARGES_FOR_CASE, action.id])
       });
     }
 
