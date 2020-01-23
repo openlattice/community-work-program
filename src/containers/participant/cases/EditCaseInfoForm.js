@@ -25,6 +25,7 @@ import { BackNavButton } from '../../../components/controls/index';
 import { PARTICIPANT_PROFILE_WIDTH } from '../../../core/style/Sizes';
 import {
   APP,
+  CHARGES,
   EDM,
   PERSON,
   STATE
@@ -43,7 +44,6 @@ const { ENTITY_SET_IDS_BY_ORG, SELECTED_ORG_ID } = APP;
 const { PROPERTY_TYPES, TYPE_IDS_BY_FQNS } = EDM;
 const {
   ACTIONS,
-  CHARGES,
   CHARGES_FOR_CASE,
   GET_INFO_FOR_EDIT_CASE,
   JUDGE,
@@ -51,6 +51,7 @@ const {
   PERSON_CASE,
   REQUEST_STATE,
 } = PERSON;
+const { COURT_CHARGES } = CHARGES;
 
 const FormWrapper = styled.div`
   display: flex;
@@ -70,8 +71,8 @@ type Props = {
     getInfoForEditCase :RequestSequence;
     goToRoute :GoToRoute;
   },
-  charges :List;
   chargesForCase :List;
+  courtCharges :List;
   diversionPlan :Map;
   entitySetIds :Map;
   getInfoForEditCaseRequestState :RequestState;
@@ -144,7 +145,7 @@ class EditCaseInfoForm extends Component<Props> {
 
   render() {
     const {
-      charges,
+      courtCharges,
       chargesForCase,
       diversionPlan,
       entitySetIds,
@@ -194,7 +195,7 @@ class EditCaseInfoForm extends Component<Props> {
               personEKID={personEKID}
               propertyTypeIds={propertyTypeIds} />
           <EditArrestChargesForm
-              charges={charges}
+              charges={courtCharges}
               chargesForCase={chargesForCase}
               entityIndexToIdMap={entityIndexToIdMap}
               entitySetIds={entitySetIds}
@@ -202,7 +203,7 @@ class EditCaseInfoForm extends Component<Props> {
               personCase={personCase}
               propertyTypeIds={propertyTypeIds} />
           <EditCourtChargesForm
-              charges={charges}
+              charges={courtCharges}
               chargesForCase={chargesForCase}
               entityIndexToIdMap={entityIndexToIdMap}
               entitySetIds={entitySetIds}
@@ -222,20 +223,21 @@ class EditCaseInfoForm extends Component<Props> {
 
 const mapStateToProps = (state :Map) => {
   const app = state.get(STATE.APP);
+  const charges = state.get(STATE.CHARGES);
   const edm = state.get(STATE.EDM);
   const person = state.get(STATE.PERSON);
   const selectedOrgId :string = app.get(SELECTED_ORG_ID);
   return ({
-    [CHARGES]: person.get(CHARGES),
     [CHARGES_FOR_CASE]: person.get(CHARGES_FOR_CASE),
+    [COURT_CHARGES]: charges.get(COURT_CHARGES),
+    [JUDGE]: person.get(JUDGE),
+    [PARTICIPANT]: person.get(PARTICIPANT),
     [PERSON.DIVERSION_PLAN]: person.get(PERSON.DIVERSION_PLAN),
+    [PERSON.JUDGES]: person.get(PERSON.JUDGES),
+    [PERSON_CASE]: person.get(PERSON_CASE),
     entitySetIds: app.getIn([ENTITY_SET_IDS_BY_ORG, selectedOrgId], Map()),
     getInfoForEditCaseRequestState: person.getIn([ACTIONS, GET_INFO_FOR_EDIT_CASE, REQUEST_STATE]),
     initializeAppRequestState: app.getIn([APP.ACTIONS, APP.INITIALIZE_APPLICATION, APP.REQUEST_STATE]),
-    [JUDGE]: person.get(JUDGE),
-    [PERSON.JUDGES]: person.get(PERSON.JUDGES),
-    [PARTICIPANT]: person.get(PARTICIPANT),
-    [PERSON_CASE]: person.get(PERSON_CASE),
     propertyTypeIds: edm.getIn([TYPE_IDS_BY_FQNS, PROPERTY_TYPES], Map()),
   });
 };

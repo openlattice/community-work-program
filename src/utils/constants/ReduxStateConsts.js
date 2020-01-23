@@ -123,7 +123,6 @@ export const PERSON = {
   ERRORS: 'errors',
   GET_ALL_PARTICIPANT_INFO: 'getAllParticipantInfo',
   GET_CASE_INFO: 'getCaseInfo',
-  GET_CHARGES: 'getCharges',
   GET_CHARGES_FOR_CASE: 'getChargesForCase',
   GET_CONTACT_INFO: 'getContactInfo',
   GET_ENROLLMENT_HISTORY: 'getEnrollmentHistory',

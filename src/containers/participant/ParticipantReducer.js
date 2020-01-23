@@ -26,7 +26,6 @@ import {
   editRequiredHours,
   getAllParticipantInfo,
   getCaseInfo,
-  getCharges,
   getChargesForCase,
   getContactInfo,
   getEnrollmentHistory,
@@ -99,7 +98,6 @@ const {
   ENROLLMENT_STATUS,
   GET_ALL_PARTICIPANT_INFO,
   GET_CASE_INFO,
-  GET_CHARGES,
   GET_CHARGES_FOR_CASE,
   GET_CONTACT_INFO,
   GET_ENROLLMENT_HISTORY,
@@ -174,9 +172,6 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     [GET_CASE_INFO]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
-    [GET_CHARGES]: {
-      [REQUEST_STATE]: RequestStates.STANDBY
-    },
     [GET_CHARGES_FOR_CASE]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
@@ -235,7 +230,6 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [ADDRESS]: Map(),
   [ALL_DIVERSION_PLANS]: List(),
   [ALL_PARTICIPANT_CASES]: List(),
-  [CHARGES]: List(),
   [CHARGES_FOR_CASE]: List(),
   [DIVERSION_PLAN]: Map(),
   [EMAIL]: Map(),
@@ -769,35 +763,6 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
         FAILURE: () => state
           .setIn([ACTIONS, GET_CASE_INFO, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, GET_CASE_INFO, action.id])
-      });
-    }
-
-    case getCharges.case(action.type): {
-
-      return getCharges.reducer(state, action, {
-
-        REQUEST: () => state
-          .setIn([ACTIONS, GET_CHARGES, action.id], fromJS(action))
-          .setIn([ACTIONS, GET_CHARGES, REQUEST_STATE], RequestStates.PENDING),
-        SUCCESS: () => {
-
-          if (!state.hasIn([ACTIONS, GET_CHARGES, action.id])) {
-            return state;
-          }
-
-          const { value } = action;
-          if (value === null || value === undefined) {
-            return state;
-          }
-
-          return state
-            .set(CHARGES, value)
-            .setIn([ACTIONS, GET_CHARGES, REQUEST_STATE], RequestStates.SUCCESS);
-        },
-        FAILURE: () => state
-          .set(CHARGES, List())
-          .setIn([ACTIONS, GET_CHARGES, REQUEST_STATE], RequestStates.FAILURE),
-        FINALLY: () => state.deleteIn([ACTIONS, GET_CHARGES, action.id])
       });
     }
 

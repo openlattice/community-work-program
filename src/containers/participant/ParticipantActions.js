@@ -50,9 +50,6 @@ const getAllParticipantInfo :RequestSequence = newRequestSequence(GET_ALL_PARTIC
 const GET_CASE_INFO :'GET_CASE_INFO' = 'GET_CASE_INFO';
 const getCaseInfo :RequestSequence = newRequestSequence(GET_CASE_INFO);
 
-const GET_CHARGES :'GET_CHARGES' = 'GET_CHARGES';
-const getCharges :RequestSequence = newRequestSequence(GET_CHARGES);
-
 const GET_CHARGES_FOR_CASE :'GET_CHARGES_FOR_CASE' = 'GET_CHARGES_FOR_CASE';
 const getChargesForCase :RequestSequence = newRequestSequence(GET_CHARGES_FOR_CASE);
 
@@ -127,7 +124,6 @@ export {
   EDIT_REQUIRED_HOURS,
   GET_ALL_PARTICIPANT_INFO,
   GET_CASE_INFO,
-  GET_CHARGES,
   GET_CHARGES_FOR_CASE,
   GET_CONTACT_INFO,
   GET_ENROLLMENT_HISTORY,
@@ -163,7 +159,6 @@ export {
   editRequiredHours,
   getAllParticipantInfo,
   getCaseInfo,
-  getCharges,
   getChargesForCase,
   getContactInfo,
   getEnrollmentHistory,

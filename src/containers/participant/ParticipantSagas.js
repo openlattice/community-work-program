@@ -48,7 +48,6 @@ import {
   EDIT_REQUIRED_HOURS,
   GET_ALL_PARTICIPANT_INFO,
   GET_CASE_INFO,
-  GET_CHARGES,
   GET_CHARGES_FOR_CASE,
   GET_CONTACT_INFO,
   GET_ENROLLMENT_HISTORY,
@@ -84,7 +83,6 @@ import {
   editRequiredHours,
   getAllParticipantInfo,
   getCaseInfo,
-  getCharges,
   getChargesForCase,
   getContactInfo,
   getEnrollmentHistory,
@@ -123,6 +121,8 @@ import { getInfractionTypes, getParticipantInfractions } from './infractions/Inf
 import { getInfractionTypesWorker, getParticipantInfractionsWorker } from './infractions/InfractionsSagas';
 import { getWorksitePlans } from './assignedworksites/WorksitePlanActions';
 import { getWorksitePlansWorker } from './assignedworksites/WorksitePlanSagas';
+import { getArrestCharges, getCourtCharges } from './charges/ChargesActions';
+import { getArrestChargesWorker, getCourtChargesWorker } from './charges/ChargesSagas';
 import {
   getAssociationNeighborESID,
   getEntityKeyId,
@@ -1222,48 +1222,6 @@ function* getParticipantWatcher() :Generator<*, *, *> {
 
 /*
  *
- * ParticipantsActions.getCharges()
- *
- */
-
-function* getChargesWorker(action :SequenceAction) :Generator<*, *, *> {
-
-  const { id } = action;
-  const workerResponse = {};
-  let response :Object = {};
-  let charges :List = List();
-
-  try {
-    yield put(getCharges.request(id));
-    const app = yield select(getAppFromState);
-    const courtChargeListESID = getEntitySetIdFromApp(app, COURT_CHARGE_LIST);
-
-    response = yield call(getEntitySetDataWorker, getEntitySetData({ entitySetId: courtChargeListESID }));
-    if (response.error) {
-      throw response.error;
-    }
-    charges = fromJS(response.data);
-
-    yield put(getCharges.success(id, charges));
-  }
-  catch (error) {
-    workerResponse.error = error;
-    LOG.error('caught exception in getChargesWorker()', error);
-    yield put(getCharges.failure(id, error));
-  }
-  finally {
-    yield put(getCharges.finally(id));
-  }
-  return workerResponse;
-}
-
-function* getChargesWatcher() :Generator<*, *, *> {
-
-  yield takeEvery(GET_CHARGES, getChargesWorker);
-}
-
-/*
- *
  * ParticipantsActions.getJudgeForCase()
  *
  */
@@ -2142,7 +2100,8 @@ function* getInfoForEditCaseWorker(action :SequenceAction) :Generator<*, *, *> {
       call(getParticipantWorker, getParticipant({ personEKID })),
       call(getEnrollmentStatusWorker, getEnrollmentStatus({ personEKID, populateProfile: false })),
       call(getJudgesWorker, getJudges()),
-      call(getChargesWorker, getCharges()),
+      call(getCourtChargesWorker, getCourtCharges()),
+      call(getArrestChargesWorker, getArrestCharges()),
     ]);
     const responseError = workerResponses.reduce(
       (error, workerResponse) => error || workerResponse.error,
@@ -2183,7 +2142,7 @@ function* getInfoForAddParticipantWorker(action :SequenceAction) :Generator<*, *
 
     const workerCalls = [
       call(getJudgesWorker, getJudges()),
-      call(getChargesWorker, getCharges()),
+      call(getCourtChargesWorker, getCourtCharges()),
     ];
     const { personEKID } = value;
     if (isValidUUID(personEKID)) {
@@ -2348,8 +2307,6 @@ export {
   getCaseInfoWorker,
   getChargesForCaseWatcher,
   getChargesForCaseWorker,
-  getChargesWatcher,
-  getChargesWorker,
   getContactInfoWatcher,
   getContactInfoWorker,
   getEnrollmentHistoryWatcher,
