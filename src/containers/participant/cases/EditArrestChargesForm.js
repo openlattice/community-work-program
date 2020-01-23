@@ -18,7 +18,7 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import type { RequestSequence } from 'redux-reqseq';
 
-import AddToAvailableChargesModal from '../charges/AddToAvailableChargesModal';
+// import AddToAvailableChargesModal from '../charges/AddToAvailableChargesModal';
 
 import { addChargesToCase, removeChargeFromCase } from '../ParticipantActions';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
@@ -244,9 +244,9 @@ class EditCourtChargesForm extends Component<Props, State> {
               schema={chargesFormSchema}
               uiSchema={chargesFormUiSchema} />
         </Card>
-        <AddToAvailableChargesModal
+        {/* <AddToAvailableChargesModal
             isOpen={isAvailableChargesModalVisible}
-            onClose={this.handleHideModal} />
+          onClose={this.handleHideModal} /> */}
       </>
     );
   }

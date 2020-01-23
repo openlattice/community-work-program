@@ -18,7 +18,7 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import type { RequestSequence } from 'redux-reqseq';
 
-import AddToAvailableChargesModal from '../charges/AddToAvailableChargesModal';
+import AddToAvailableCourtChargesModal from '../charges/AddToAvailableCourtChargesModal';
 
 import {
   addChargesToCase,
@@ -251,7 +251,7 @@ class EditCourtChargesForm extends Component<Props, State> {
               schema={chargesFormSchema}
               uiSchema={chargesFormUiSchema} />
         </Card>
-        <AddToAvailableChargesModal
+        <AddToAvailableCourtChargesModal
             isOpen={isAvailableChargesModalVisible}
             onClose={this.handleHideModal} />
       </>
