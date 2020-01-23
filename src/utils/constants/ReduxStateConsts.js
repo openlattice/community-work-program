@@ -33,6 +33,7 @@ export const APP = {
 
 /* Charges */
 export const CHARGES = {
+  ADD_TO_AVAILABLE_COURT_CHARGES: 'addToAvailableCourtCharges',
   ARREST_CHARGES: 'arrestCharges',
   COURT_CHARGES: 'courtCharges',
   GET_ARREST_CHARGES: 'getArrestCharges',

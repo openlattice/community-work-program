@@ -10,6 +10,7 @@ import {
   select,
   takeEvery,
 } from '@redux-saga/core/effects';
+import { Models } from 'lattice';
 import {
   DataApiActions,
   DataApiSagas,
@@ -18,22 +19,81 @@ import type { SequenceAction } from 'redux-reqseq';
 
 import Logger from '../../../utils/Logger';
 
-import { getEntitySetIdFromApp } from '../../../utils/DataUtils';
+import { getEntitySetIdFromApp, getPropertyFqnFromEdm } from '../../../utils/DataUtils';
+import { submitDataGraph } from '../../../core/sagas/data/DataActions';
+import { submitDataGraphWorker } from '../../../core/sagas/data/DataSagas';
 import {
+  ADD_TO_AVAILABLE_COURT_CHARGES,
   GET_ARREST_CHARGES,
   GET_COURT_CHARGES,
+  addToAvailableCourtCharges,
   getArrestCharges,
   getCourtCharges,
 } from './ChargesActions';
-import { APP_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { STATE } from '../../../utils/constants/ReduxStateConsts';
 
+const { FullyQualifiedName } = Models;
 const { getEntitySetData } = DataApiActions;
 const { getEntitySetDataWorker } = DataApiSagas;
 const { ARREST_CHARGE_LIST, COURT_CHARGE_LIST } = APP_TYPE_FQNS;
+const { ENTITY_KEY_ID } = PROPERTY_TYPE_FQNS;
 
 const getAppFromState = (state) => state.get(STATE.APP, Map());
+const getEdmFromState = (state) => state.get(STATE.EDM, Map());
 const LOG = new Logger('ChargesSagas');
+
+/*
+ *
+ * ChargesActions.addToAvailableCourtCharges()
+ *
+ */
+
+function* addToAvailableCourtChargesWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+  let response :Object = {};
+
+  try {
+    yield put(addToAvailableCourtCharges.request(id, value));
+
+    response = yield call(submitDataGraphWorker, submitDataGraph(value));
+    if (response.error) {
+      throw response.error;
+    }
+    const { data } :Object = response;
+    const { entityKeyIds } :Object = data;
+
+    const app = yield select(getAppFromState);
+    const edm = yield select(getEdmFromState);
+    const courtChargeListESID = getEntitySetIdFromApp(app, COURT_CHARGE_LIST);
+    const courtChargeEKID = entityKeyIds[courtChargeListESID][0];
+
+    const { entityData } = value;
+    const newChargeData = fromJS(entityData[courtChargeListESID][0]);
+
+    let newCharge :Map = Map();
+    newCharge = newCharge.set(ENTITY_KEY_ID, courtChargeEKID);
+    newChargeData.forEach((chargeValue, ptid) => {
+      const propertyTypeFqn :FullyQualifiedName = getPropertyFqnFromEdm(edm, ptid);
+      newCharge = newCharge.set(propertyTypeFqn, chargeValue);
+    });
+
+    yield put(addToAvailableCourtCharges.success(id, { newCharge }));
+  }
+  catch (error) {
+    LOG.error('caught exception in addToAvailableCourtChargesWorker()', error);
+    yield put(addToAvailableCourtCharges.failure(id, error));
+  }
+  finally {
+    yield put(addToAvailableCourtCharges.finally(id));
+  }
+}
+
+function* addToAvailableCourtChargesWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(ADD_TO_AVAILABLE_COURT_CHARGES, addToAvailableCourtChargesWorker);
+}
 
 /*
  *
@@ -120,6 +180,8 @@ function* getCourtChargesWatcher() :Generator<*, *, *> {
 }
 
 export {
+  addToAvailableCourtChargesWatcher,
+  addToAvailableCourtChargesWorker,
   getArrestChargesWatcher,
   getArrestChargesWorker,
   getCourtChargesWatcher,

@@ -40,6 +40,7 @@ export default function* sagas() :Generator<*, *, *> {
     fork(AppSagas.switchOrganizationWatcher),
 
     // ChargesSagas
+    fork(ChargesSagas.addToAvailableCourtChargesWatcher),
     fork(ChargesSagas.getArrestChargesWatcher),
     fork(ChargesSagas.getCourtChargesWatcher),
 
