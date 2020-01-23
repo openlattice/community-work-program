@@ -20,7 +20,6 @@ import type { RequestSequence } from 'redux-reqseq';
 
 // import AddToAvailableChargesModal from '../charges/AddToAvailableChargesModal';
 
-import { addChargesToCase, removeChargeFromCase } from '../ParticipantActions';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { arrestChargeSchema, arrestChargeUiSchema } from './schemas/EditCaseInfoSchemas';
 import { disableChargesForm, hydrateArrestChargeSchema } from './utils/EditCaseInfoUtils';
@@ -88,16 +87,16 @@ class EditCourtChargesForm extends Component<Props, State> {
   }
 
   componentDidMount() {
-    // this.prepopulateFormData();
+    this.prepopulateFormData();
   }
 
   componentDidUpdate(prevProps :Props) {
-    // const { charges, chargesForCase, personCase } = this.props;
-    // if (!prevProps.chargesForCase.equals(chargesForCase)
-    //   || !prevProps.charges.equals(charges)
-    //   || !prevProps.personCase.equals(personCase)) {
-    //   this.prepopulateFormData();
-    // }
+    const { charges, chargesForCase, personCase } = this.props;
+    if (!prevProps.chargesForCase.equals(chargesForCase)
+      || !prevProps.charges.equals(charges)
+      || !prevProps.personCase.equals(personCase)) {
+      this.prepopulateFormData();
+    }
   }
 
   prepopulateFormData = () => {
@@ -107,38 +106,38 @@ class EditCourtChargesForm extends Component<Props, State> {
       personCase,
     } = this.props;
 
-    const sectionOneKey = getPageSectionKey(1, 1);
-    let chargesPrepopulated :boolean = !chargesForCase.isEmpty();
+    // const sectionOneKey = getPageSectionKey(1, 1);
+    // let chargesPrepopulated :boolean = !chargesForCase.isEmpty();
     let newChargeUiSchema :Object = arrestChargeUiSchema;
-
-    if (personCase.isEmpty()) {
-      chargesPrepopulated = true;
-      newChargeUiSchema = disableChargesForm(arrestChargeUiSchema);
-    }
-
-    let chargesFormData :{} = {};
+    //
+    // if (personCase.isEmpty()) {
+    //   chargesPrepopulated = true;
+    //   newChargeUiSchema = disableChargesForm(arrestChargeUiSchema);
+    // }
+    //
+    // let chargesFormData :{} = {};
     let newChargeSchema :Object = arrestChargeSchema;
-    if (!chargesForCase.isEmpty()) {
-      chargesFormData = {
-        [sectionOneKey]: []
-      };
-      chargesForCase.forEach((chargeMap :Map, index :number) => {
-        const chargeEKID :UUID = chargeMap.getIn([COURT_CHARGE_LIST, ENTITY_KEY_ID, 0]);
-        const datetimeCharged :string = chargeMap.getIn([CHARGE_EVENT, DATETIME_COMPLETED, 0]);
-        const dateCharged :string = DateTime.fromISO(datetimeCharged).toISODate();
-        chargesFormData[sectionOneKey][index] = {};
-        chargesFormData[sectionOneKey][index][getEntityAddressKey(-1, COURT_CHARGE_LIST, ENTITY_KEY_ID)] = chargeEKID;
-        chargesFormData[sectionOneKey][index][getEntityAddressKey(-1, CHARGE_EVENT, DATETIME_COMPLETED)] = dateCharged;
-      });
-    }
-    newChargeSchema = hydrateArrestChargeSchema(arrestChargeSchema, charges);
+    // if (!chargesForCase.isEmpty()) {
+    //   chargesFormData = {
+    //     [sectionOneKey]: []
+    //   };
+    //   chargesForCase.forEach((chargeMap :Map, index :number) => {
+    //     const chargeEKID :UUID = chargeMap.getIn([COURT_CHARGE_LIST, ENTITY_KEY_ID, 0]);
+    //     const datetimeCharged :string = chargeMap.getIn([CHARGE_EVENT, DATETIME_COMPLETED, 0]);
+    //     const dateCharged :string = DateTime.fromISO(datetimeCharged).toISODate();
+    //     chargesFormData[sectionOneKey][index] = {};
+    //     chargesFormData[sectionOneKey][index][getEntityAddressKey(-1, COURT_CHARGE_LIST, ENTITY_KEY_ID)] = chargeEKID;
+    //     chargesFormData[sectionOneKey][index][getEntityAddressKey(-1, CHARGE_EVENT, DATETIME_COMPLETED)] = dateCharged;
+    //   });
+    // }
+    newChargeSchema = hydrateArrestChargeSchema(arrestChargeSchema, List(), charges);
 
 
     this.setState({
-      chargesFormData,
+      chargesFormData: {},
       chargesFormSchema: newChargeSchema,
       chargesFormUiSchema: newChargeUiSchema,
-      chargesPrepopulated,
+      chargesPrepopulated: false,
     });
   }
 
@@ -254,8 +253,8 @@ class EditCourtChargesForm extends Component<Props, State> {
 
 const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
-    addChargesToCase,
-    removeChargeFromCase,
+    // addChargesToCase,
+    // removeChargeFromCase,
   }, dispatch)
 });
 

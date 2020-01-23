@@ -50,7 +50,7 @@ const {
   PERSON_CASE,
   REQUEST_STATE,
 } = PERSON;
-const { COURT_CHARGES, COURT_CHARGES_FOR_CASE } = CHARGES;
+const { ARREST_CHARGES, COURT_CHARGES, COURT_CHARGES_FOR_CASE } = CHARGES;
 
 const FormWrapper = styled.div`
   display: flex;
@@ -69,7 +69,8 @@ type Props = {
   actions:{
     getInfoForEditCase :RequestSequence;
     goToRoute :GoToRoute;
-  },
+  };
+  arrestCharges :List;
   courtChargesForCase :List;
   courtCharges :List;
   diversionPlan :Map;
@@ -144,6 +145,7 @@ class EditCaseInfoForm extends Component<Props> {
 
   render() {
     const {
+      arrestCharges,
       courtCharges,
       courtChargesForCase,
       diversionPlan,
@@ -194,7 +196,7 @@ class EditCaseInfoForm extends Component<Props> {
               personEKID={personEKID}
               propertyTypeIds={propertyTypeIds} />
           <EditArrestChargesForm
-              charges={courtCharges}
+              charges={arrestCharges}
               chargesForCase={courtChargesForCase}
               entityIndexToIdMap={entityIndexToIdMap}
               entitySetIds={entitySetIds}
@@ -227,6 +229,7 @@ const mapStateToProps = (state :Map) => {
   const person = state.get(STATE.PERSON);
   const selectedOrgId :string = app.get(SELECTED_ORG_ID);
   return ({
+    [ARREST_CHARGES]: charges.get(ARREST_CHARGES),
     [COURT_CHARGES_FOR_CASE]: charges.get(COURT_CHARGES_FOR_CASE),
     [COURT_CHARGES]: charges.get(COURT_CHARGES),
     [JUDGE]: person.get(JUDGE),
