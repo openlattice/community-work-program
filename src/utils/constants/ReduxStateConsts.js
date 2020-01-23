@@ -1,5 +1,6 @@
 export const STATE = {
   APP: 'app',
+  CHARGES: 'charges',
   DATA: 'data',
   EDM: 'edm',
   INFRACTIONS: 'infractions',
@@ -9,6 +10,11 @@ export const STATE = {
   WORKSITES: 'worksites',
   WORKSITE_PLANS: 'worksitePlans',
   WORK_SCHEDULE: 'workSchedule',
+};
+
+export const SHARED = {
+  ACTIONS: 'actions',
+  REQUEST_STATE: 'requestState',
 };
 
 /* App */
@@ -23,6 +29,14 @@ export const APP = {
   SELECTED_ORG_ID: 'selectedOrganizationId',
   SELECTED_ORG_TITLE: 'selectedOrganizationTitle',
   SWITCH_ORGANIZATION: 'switchOrganization',
+};
+
+/* Charges */
+export const CHARGES = {
+  ARREST_CHARGES: 'arrestCharges',
+  COURT_CHARGES: 'courtCharges',
+  GET_ARREST_CHARGES: 'getArrestCharges',
+  GET_COURT_CHARGES: 'getCourtCharges',
 };
 
 /* EDM */
