@@ -141,7 +141,7 @@ export const arrestChargeSchema = {
   properties: {
     [getPageSectionKey(1, 1)]: {
       type: 'array',
-      title: 'Add an Existing Arrest Charge',
+      title: 'Add an Existing Arrest Charge from Case History',
       items: {
         type: 'object',
         properties: {
