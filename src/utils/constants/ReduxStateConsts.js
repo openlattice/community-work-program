@@ -101,7 +101,6 @@ export const PERSON = {
   ADD_NEW_PARTICIPANT_CONTACTS: 'addNewParticipantContacts',
   ADD_ORIENTATION_DATE: 'addOrientationDate',
   ADD_PERSON_PHOTO: 'addPersonPhoto',
-  ADD_TO_AVAILABLE_CHARGES: 'addToAvailableCharges',
   ALL_DIVERSION_PLANS: 'allDiversionPlans',
   ALL_PARTICIPANT_CASES: 'allParticipantCases',
   CHARGES: 'charges',

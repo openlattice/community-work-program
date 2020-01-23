@@ -14,7 +14,6 @@ import {
   addNewDiversionPlanStatus,
   addNewParticipantContacts,
   addPersonPhoto,
-  addToAvailableCharges,
   createCase,
   createNewEnrollment,
   editEnrollmentDates,
@@ -77,7 +76,6 @@ const {
   ADD_NEW_DIVERSION_PLAN_STATUS,
   ADD_NEW_PARTICIPANT_CONTACTS,
   ADD_PERSON_PHOTO,
-  ADD_TO_AVAILABLE_CHARGES,
   ADDRESS,
   ALL_DIVERSION_PLANS,
   ALL_PARTICIPANT_CASES,
@@ -137,9 +135,6 @@ const INITIAL_STATE :Map<*, *> = fromJS({
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [ADD_PERSON_PHOTO]: {
-      [REQUEST_STATE]: RequestStates.STANDBY
-    },
-    [ADD_TO_AVAILABLE_CHARGES]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [CREATE_CASE]: {
@@ -386,32 +381,6 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
         FAILURE: () => state
           .setIn([ACTIONS, ADD_PERSON_PHOTO, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, ADD_PERSON_PHOTO, action.id]),
-      });
-    }
-
-    case addToAvailableCharges.case(action.type): {
-
-      return addToAvailableCharges.reducer(state, action, {
-
-        REQUEST: () => state
-          .setIn([ACTIONS, ADD_TO_AVAILABLE_CHARGES, action.id], action)
-          .setIn([ACTIONS, ADD_TO_AVAILABLE_CHARGES, REQUEST_STATE], RequestStates.PENDING),
-        SUCCESS: () => {
-
-          const seqAction :SequenceAction = action;
-          const successValue :Object = seqAction.value;
-          const { newCharge } = successValue;
-
-          let charges = state.get(CHARGES);
-          charges = charges.push(newCharge);
-
-          return state
-            .set(CHARGES, charges)
-            .setIn([ACTIONS, ADD_TO_AVAILABLE_CHARGES, REQUEST_STATE], RequestStates.SUCCESS);
-        },
-        FAILURE: () => state
-          .setIn([ACTIONS, ADD_TO_AVAILABLE_CHARGES, REQUEST_STATE], RequestStates.FAILURE),
-        FINALLY: () => state.deleteIn([ACTIONS, ADD_TO_AVAILABLE_CHARGES, action.id]),
       });
     }
 

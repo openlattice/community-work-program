@@ -36,7 +36,6 @@ import {
   ADD_NEW_DIVERSION_PLAN_STATUS,
   ADD_NEW_PARTICIPANT_CONTACTS,
   ADD_PERSON_PHOTO,
-  ADD_TO_AVAILABLE_CHARGES,
   CREATE_CASE,
   CREATE_NEW_ENROLLMENT,
   EDIT_ENROLLMENT_DATES,
@@ -71,7 +70,6 @@ import {
   addNewDiversionPlanStatus,
   addNewParticipantContacts,
   addPersonPhoto,
-  addToAvailableCharges,
   createCase,
   createNewEnrollment,
   editEnrollmentDates,
@@ -487,58 +485,6 @@ function* updatePersonPhotoWorker(action :SequenceAction) :Generator<any, any, a
 function* updatePersonPhotoWatcher() :Generator<any, any, any> {
 
   yield takeEvery(UPDATE_PERSON_PHOTO, updatePersonPhotoWorker);
-}
-
-/*
- *
- * ParticipantActions.addToAvailableCharges()
- *
- */
-
-function* addToAvailableChargesWorker(action :SequenceAction) :Generator<*, *, *> {
-
-  const { id, value } = action;
-  let response :Object = {};
-
-  try {
-    yield put(addToAvailableCharges.request(id, value));
-
-    response = yield call(submitDataGraphWorker, submitDataGraph(value));
-    if (response.error) {
-      throw response.error;
-    }
-    const { data } :Object = response;
-    const { entityKeyIds } :Object = data;
-
-    const app = yield select(getAppFromState);
-    const edm = yield select(getEdmFromState);
-    const courtChargeListESID = getEntitySetIdFromApp(app, COURT_CHARGE_LIST);
-    const courtChargeEKID = entityKeyIds[courtChargeListESID][0];
-
-    const { entityData } = value;
-    const newChargeData = fromJS(entityData[courtChargeListESID][0]);
-
-    let newCharge :Map = Map();
-    newCharge = newCharge.set(ENTITY_KEY_ID, courtChargeEKID);
-    newChargeData.forEach((chargeValue, ptid) => {
-      const propertyTypeFqn :FQN = getPropertyFqnFromEdm(edm, ptid);
-      newCharge = newCharge.set(propertyTypeFqn, chargeValue);
-    });
-
-    yield put(addToAvailableCharges.success(id, { newCharge }));
-  }
-  catch (error) {
-    LOG.error('caught exception in addToAvailableChargesWorker()', error);
-    yield put(addToAvailableCharges.failure(id, error));
-  }
-  finally {
-    yield put(addToAvailableCharges.finally(id));
-  }
-}
-
-function* addToAvailableChargesWatcher() :Generator<*, *, *> {
-
-  yield takeEvery(ADD_TO_AVAILABLE_CHARGES, addToAvailableChargesWorker);
 }
 
 /*
@@ -2281,8 +2227,6 @@ export {
   addNewParticipantContactsWorker,
   addPersonPhotoWatcher,
   addPersonPhotoWorker,
-  addToAvailableChargesWatcher,
-  addToAvailableChargesWorker,
   createCaseWatcher,
   createCaseWorker,
   createNewEnrollmentWatcher,
