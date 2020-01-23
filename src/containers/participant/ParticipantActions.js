@@ -92,9 +92,6 @@ const markDiversionPlanAsComplete :RequestSequence = newRequestSequence(MARK_DIV
 const REASSIGN_JUDGE :'REASSIGN_JUDGE' = 'REASSIGN_JUDGE';
 const reassignJudge :RequestSequence = newRequestSequence(REASSIGN_JUDGE);
 
-const REMOVE_CHARGE_FROM_CASE :'REMOVE_CHARGE_FROM_CASE' = 'REMOVE_CHARGE_FROM_CASE';
-const removeChargeFromCase :RequestSequence = newRequestSequence(REMOVE_CHARGE_FROM_CASE);
-
 const UPDATE_PERSON_PHOTO :'UPDATE_PERSON_PHOTO' = 'UPDATE_PERSON_PHOTO';
 const updatePersonPhoto :RequestSequence = newRequestSequence(UPDATE_PERSON_PHOTO);
 
@@ -129,7 +126,6 @@ export {
   GET_PROGRAM_OUTCOME,
   MARK_DIVERSION_PLAN_AS_COMPLETE,
   REASSIGN_JUDGE,
-  REMOVE_CHARGE_FROM_CASE,
   UPDATE_PERSON_PHOTO,
   addNewDiversionPlanStatus,
   addNewParticipantContacts,
@@ -161,6 +157,5 @@ export {
   getProgramOutcome,
   markDiversionPlanAsComplete,
   reassignJudge,
-  removeChargeFromCase,
   updatePersonPhoto,
 };

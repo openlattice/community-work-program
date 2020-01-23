@@ -25,6 +25,7 @@ import Logger from '../../../utils/Logger';
 
 import { isDefined } from '../../../utils/LangUtils';
 import {
+  getAssociationNeighborESID,
   getEntityKeyId,
   getEntitySetIdFromApp,
   getNeighborDetails,
@@ -32,23 +33,26 @@ import {
   getPropertyTypeIdFromEdm,
 } from '../../../utils/DataUtils';
 import { getCombinedDateTime } from '../../../utils/ScheduleUtils';
-import { submitDataGraph } from '../../../core/sagas/data/DataActions';
-import { submitDataGraphWorker } from '../../../core/sagas/data/DataSagas';
+import { deleteEntities, submitDataGraph } from '../../../core/sagas/data/DataActions';
+import { deleteEntitiesWorker, submitDataGraphWorker } from '../../../core/sagas/data/DataSagas';
 import {
   ADD_COURT_CHARGES_TO_CASE,
   ADD_TO_AVAILABLE_COURT_CHARGES,
   GET_COURT_CHARGES_FOR_CASE,
   GET_ARREST_CHARGES,
   GET_COURT_CHARGES,
+  REMOVE_COURT_CHARGE_FROM_CASE,
   addCourtChargesToCase,
   addToAvailableCourtCharges,
   getArrestCharges,
   getCourtCharges,
   getCourtChargesForCase,
+  removeCourtChargeFromCase,
 } from './ChargesActions';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { PERSON, STATE } from '../../../utils/constants/ReduxStateConsts';
 import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../../utils/Errors';
+import { ASSOCIATION_DETAILS } from '../../../core/edm/constants/DataModelConsts';
 
 const { processAssociationEntityData } = DataProcessingUtils;
 const { FullyQualifiedName } = Models;
@@ -417,6 +421,84 @@ function* getCourtChargesForCaseWatcher() :Generator<*, *, *> {
   yield takeEvery(GET_COURT_CHARGES_FOR_CASE, getCourtChargesForCaseWorker);
 }
 
+/*
+ *
+ * ChargesActions.removeCourtChargeFromCase()
+ *
+ */
+
+function* removeCourtChargeFromCaseWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+  if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
+  let response :{} = {};
+
+  try {
+    yield put(removeCourtChargeFromCase.request(id, value));
+
+    const { entityData } = value;
+
+    const app = yield select(getAppFromState);
+    const courtChargeListESID :UUID = getEntitySetIdFromApp(app, COURT_CHARGE_LIST);
+    const chargeEventESID :UUID = getEntitySetIdFromApp(app, CHARGE_EVENT);
+    const caseESID :UUID = getEntitySetIdFromApp(app, MANUAL_PRETRIAL_COURT_CASES);
+    const peopleESID :UUID = getEntitySetIdFromApp(app, PEOPLE);
+
+    const courtChargeListIterator = entityData[courtChargeListESID].values();
+    const courtChargeListEKID :UUID = courtChargeListIterator.next().value;
+    const chargeEventIterator = entityData[chargeEventESID].values();
+    const chargeEventEKID :UUID = chargeEventIterator.next().value;
+
+    const entitiesToDelete :Object[] = [{
+      entitySetId: chargeEventESID,
+      entityKeyId: chargeEventEKID
+    }];
+
+    const searchFilter = {
+      entityKeyIds: [courtChargeListEKID],
+      destinationEntitySetIds: [caseESID],
+      sourceEntitySetIds: [peopleESID],
+    };
+    response = yield call(
+      searchEntityNeighborsWithFilterWorker,
+      searchEntityNeighborsWithFilter({ entitySetId: courtChargeListESID, filter: searchFilter })
+    );
+    if (response.error) {
+      throw response.error;
+    }
+    if (response.data[courtChargeListEKID]) {
+      fromJS(response.data[courtChargeListEKID]).forEach((neighbor :Map) => {
+        const associationEntity :Map = neighbor.get(ASSOCIATION_DETAILS);
+        const associationEKID :UUID = getEntityKeyId(associationEntity);
+        const associationESID :UUID = getAssociationNeighborESID(neighbor);
+        entitiesToDelete.push({
+          entitySetId: associationESID,
+          entityKeyId: associationEKID
+        });
+      });
+    }
+
+    response = yield call(deleteEntitiesWorker, deleteEntities(entitiesToDelete));
+    if (response.error) {
+      throw response.error;
+    }
+
+    yield put(removeCourtChargeFromCase.success(id, {}));
+  }
+  catch (error) {
+    LOG.error('caught exception in removeCourtChargeFromCaseWorker()', error);
+    yield put(removeCourtChargeFromCase.failure(id, error));
+  }
+  finally {
+    yield put(removeCourtChargeFromCase.finally(id));
+  }
+}
+
+function* removeCourtChargeFromCaseWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(REMOVE_COURT_CHARGE_FROM_CASE, removeCourtChargeFromCaseWorker);
+}
+
 export {
   addCourtChargesToCaseWatcher,
   addCourtChargesToCaseWorker,
@@ -428,4 +510,6 @@ export {
   getCourtChargesForCaseWorker,
   getCourtChargesWatcher,
   getCourtChargesWorker,
+  removeCourtChargeFromCaseWatcher,
+  removeCourtChargeFromCaseWorker,
 };

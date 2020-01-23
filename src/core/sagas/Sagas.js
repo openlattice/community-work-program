@@ -45,6 +45,7 @@ export default function* sagas() :Generator<*, *, *> {
     fork(ChargesSagas.getArrestChargesWatcher),
     fork(ChargesSagas.getCourtChargesWatcher),
     fork(ChargesSagas.getCourtChargesForCaseWatcher),
+    fork(ChargesSagas.removeCourtChargeFromCaseWatcher),
 
     // DataSagas
     fork(DataSagas.createOrReplaceAssociationWatcher),
@@ -92,7 +93,6 @@ export default function* sagas() :Generator<*, *, *> {
     fork(ParticipantSagas.getProgramOutcomeWatcher),
     fork(ParticipantSagas.markDiversionPlanAsCompleteWatcher),
     fork(ParticipantSagas.reassignJudgeWatcher),
-    fork(ParticipantSagas.removeChargeFromCaseWatcher),
     fork(ParticipantSagas.updatePersonPhotoWatcher),
 
     // ParticipantsSagas

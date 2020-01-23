@@ -9,6 +9,7 @@ import {
   getArrestCharges,
   getCourtCharges,
   getCourtChargesForCase,
+  removeCourtChargeFromCase,
 } from './ChargesActions';
 import { getEntityKeyId } from '../../../utils/DataUtils';
 import { CHARGES, SHARED } from '../../../utils/constants/ReduxStateConsts';
@@ -24,6 +25,7 @@ const {
   GET_ARREST_CHARGES,
   GET_COURT_CHARGES,
   GET_COURT_CHARGES_FOR_CASE,
+  REMOVE_COURT_CHARGE_FROM_CASE,
 } = CHARGES;
 const { COURT_CHARGE_LIST } = APP_TYPE_FQNS;
 
@@ -191,6 +193,21 @@ export default function chargesReducer(state :Map = INITIAL_STATE, action :Seque
         FAILURE: () => state
           .setIn([ACTIONS, GET_COURT_CHARGES_FOR_CASE, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, GET_COURT_CHARGES_FOR_CASE, action.id])
+      });
+    }
+
+    case removeCourtChargeFromCase.case(action.type): {
+
+      return removeCourtChargeFromCase.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, REMOVE_COURT_CHARGE_FROM_CASE, action.id], action)
+          .setIn([ACTIONS, REMOVE_COURT_CHARGE_FROM_CASE, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => state
+          .setIn([ACTIONS, REMOVE_COURT_CHARGE_FROM_CASE, REQUEST_STATE], RequestStates.SUCCESS),
+        FAILURE: () => state
+          .setIn([ACTIONS, REMOVE_COURT_CHARGE_FROM_CASE, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, REMOVE_COURT_CHARGE_FROM_CASE, action.id])
       });
     }
 

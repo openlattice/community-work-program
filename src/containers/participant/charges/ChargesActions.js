@@ -17,15 +17,20 @@ const getCourtCharges :RequestSequence = newRequestSequence(GET_COURT_CHARGES);
 const GET_COURT_CHARGES_FOR_CASE :'GET_COURT_CHARGES_FOR_CASE' = 'GET_COURT_CHARGES_FOR_CASE';
 const getCourtChargesForCase :RequestSequence = newRequestSequence(GET_COURT_CHARGES_FOR_CASE);
 
+const REMOVE_COURT_CHARGE_FROM_CASE :'REMOVE_COURT_CHARGE_FROM_CASE' = 'REMOVE_COURT_CHARGE_FROM_CASE';
+const removeCourtChargeFromCase :RequestSequence = newRequestSequence(REMOVE_COURT_CHARGE_FROM_CASE);
+
 export {
   ADD_COURT_CHARGES_TO_CASE,
   ADD_TO_AVAILABLE_COURT_CHARGES,
   GET_COURT_CHARGES_FOR_CASE,
   GET_ARREST_CHARGES,
   GET_COURT_CHARGES,
+  REMOVE_COURT_CHARGE_FROM_CASE,
   addCourtChargesToCase,
   addToAvailableCourtCharges,
   getArrestCharges,
   getCourtCharges,
   getCourtChargesForCase,
+  removeCourtChargeFromCase,
 };

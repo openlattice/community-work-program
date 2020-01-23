@@ -61,7 +61,6 @@ import {
   GET_PROGRAM_OUTCOME,
   MARK_DIVERSION_PLAN_AS_COMPLETE,
   REASSIGN_JUDGE,
-  REMOVE_CHARGE_FROM_CASE,
   UPDATE_PERSON_PHOTO,
   addNewDiversionPlanStatus,
   addNewParticipantContacts,
@@ -93,18 +92,15 @@ import {
   getProgramOutcome,
   markDiversionPlanAsComplete,
   reassignJudge,
-  removeChargeFromCase,
   updatePersonPhoto,
 } from './ParticipantActions';
 import {
   createOrReplaceAssociation,
-  deleteEntities,
   submitDataGraph,
   submitPartialReplace
 } from '../../core/sagas/data/DataActions';
 import {
   createOrReplaceAssociationWorker,
-  deleteEntitiesWorker,
   submitDataGraphWorker,
   submitPartialReplaceWorker
 } from '../../core/sagas/data/DataSagas';
@@ -117,7 +113,6 @@ import { getWorksitePlansWorker } from './assignedworksites/WorksitePlanSagas';
 import { getArrestCharges, getCourtCharges, getCourtChargesForCase } from './charges/ChargesActions';
 import { getArrestChargesWorker, getCourtChargesWorker, getCourtChargesForCaseWorker } from './charges/ChargesSagas';
 import {
-  getAssociationNeighborESID,
   getEntityKeyId,
   getEntityProperties,
   getEntitySetIdFromApp,
@@ -134,7 +129,7 @@ import { enrollmentHeaderNames } from './ParticipantProfile';
 import { EMPTY_FIELD } from '../participants/ParticipantsConstants';
 import { PERSON, STATE } from '../../utils/constants/ReduxStateConsts';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
-import { ASSOCIATION_DETAILS, CONTACT_METHODS } from '../../core/edm/constants/DataModelConsts';
+import { CONTACT_METHODS } from '../../core/edm/constants/DataModelConsts';
 
 const { getEntityData, getEntitySetData } = DataApiActions;
 const { getEntityDataWorker, getEntitySetDataWorker } = DataApiSagas;
@@ -142,9 +137,7 @@ const { searchEntityNeighborsWithFilter } = SearchApiActions;
 const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
 const {
   ADDRESS,
-  CHARGE_EVENT,
   CONTACT_INFORMATION,
-  COURT_CHARGE_LIST,
   DIVERSION_PLAN,
   ENROLLMENT_STATUS,
   IMAGE,
@@ -172,86 +165,7 @@ const {
 const getAppFromState = (state) => state.get(STATE.APP, Map());
 const getEdmFromState = (state) => state.get(STATE.EDM, Map());
 const getPersonFromState = (state) => state.get(STATE.PERSON, Map());
-
 const LOG = new Logger('ParticipantSagas');
-
-/*
- *
- * ParticipantActions.removeChargeFromCase()
- *
- */
-
-function* removeChargeFromCaseWorker(action :SequenceAction) :Generator<*, *, *> {
-
-  const { id, value } = action;
-  if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
-  let response :{} = {};
-
-  try {
-    yield put(removeChargeFromCase.request(id, value));
-
-    const { entityData } = value;
-
-    const app = yield select(getAppFromState);
-    const courtChargeListESID :UUID = getEntitySetIdFromApp(app, COURT_CHARGE_LIST);
-    const chargeEventESID :UUID = getEntitySetIdFromApp(app, CHARGE_EVENT);
-    const caseESID :UUID = getEntitySetIdFromApp(app, MANUAL_PRETRIAL_COURT_CASES);
-    const peopleESID :UUID = getEntitySetIdFromApp(app, PEOPLE);
-
-    const courtChargeListIterator = entityData[courtChargeListESID].values();
-    const courtChargeListEKID :UUID = courtChargeListIterator.next().value;
-    const chargeEventIterator = entityData[chargeEventESID].values();
-    const chargeEventEKID :UUID = chargeEventIterator.next().value;
-
-    const entitiesToDelete :Object[] = [{
-      entitySetId: chargeEventESID,
-      entityKeyId: chargeEventEKID
-    }];
-
-    const searchFilter = {
-      entityKeyIds: [courtChargeListEKID],
-      destinationEntitySetIds: [caseESID],
-      sourceEntitySetIds: [peopleESID],
-    };
-    response = yield call(
-      searchEntityNeighborsWithFilterWorker,
-      searchEntityNeighborsWithFilter({ entitySetId: courtChargeListESID, filter: searchFilter })
-    );
-    if (response.error) {
-      throw response.error;
-    }
-    if (response.data[courtChargeListEKID]) {
-      fromJS(response.data[courtChargeListEKID]).forEach((neighbor :Map) => {
-        const associationEntity :Map = neighbor.get(ASSOCIATION_DETAILS);
-        const associationEKID :UUID = getEntityKeyId(associationEntity);
-        const associationESID :UUID = getAssociationNeighborESID(neighbor);
-        entitiesToDelete.push({
-          entitySetId: associationESID,
-          entityKeyId: associationEKID
-        });
-      });
-    }
-
-    response = yield call(deleteEntitiesWorker, deleteEntities(entitiesToDelete));
-    if (response.error) {
-      throw response.error;
-    }
-
-    yield put(removeChargeFromCase.success(id, {}));
-  }
-  catch (error) {
-    LOG.error('caught exception in removeChargeFromCaseWorker()', error);
-    yield put(removeChargeFromCase.failure(id, error));
-  }
-  finally {
-    yield put(removeChargeFromCase.finally(id));
-  }
-}
-
-function* removeChargeFromCaseWatcher() :Generator<*, *, *> {
-
-  yield takeEvery(REMOVE_CHARGE_FROM_CASE, removeChargeFromCaseWorker);
-}
 
 /*
  *
@@ -2063,8 +1977,6 @@ export {
   markDiversionPlanAsCompleteWorker,
   reassignJudgeWatcher,
   reassignJudgeWorker,
-  removeChargeFromCaseWatcher,
-  removeChargeFromCaseWorker,
   updatePersonPhotoWatcher,
   updatePersonPhotoWorker,
 };

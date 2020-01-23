@@ -40,6 +40,7 @@ export const CHARGES = {
   GET_ARREST_CHARGES: 'getArrestCharges',
   GET_COURT_CHARGES: 'getCourtCharges',
   GET_COURT_CHARGES_FOR_CASE: 'getCourtChargesForCase',
+  REMOVE_COURT_CHARGE_FROM_CASE: 'removeCourtChargeFromCase',
 };
 
 /* EDM */
@@ -149,7 +150,6 @@ export const PERSON = {
   PHONE: 'phone',
   PROGRAM_OUTCOME: 'programOutcome',
   REASSIGN_JUDGE: 'reassignJudge',
-  REMOVE_CHARGE_FROM_CASE: 'removeChargeFromCase',
   REQUEST_STATE: 'requestState',
   REQUIRED_HOURS: 'requiredHours',
   UPDATE_PERSON_PHOTO: 'updatePersonPhoto',
