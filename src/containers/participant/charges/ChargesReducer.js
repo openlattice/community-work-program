@@ -8,6 +8,7 @@ import {
   addToAvailableArrestCharges,
   addToAvailableCourtCharges,
   getArrestCharges,
+  getArrestCasesAndChargesFromPSA,
   getCourtCharges,
   getCourtChargesForCase,
   removeCourtChargeFromCase,
@@ -21,9 +22,12 @@ const {
   ADD_COURT_CHARGES_TO_CASE,
   ADD_TO_AVAILABLE_ARREST_CHARGES,
   ADD_TO_AVAILABLE_COURT_CHARGES,
+  ARREST_CASE_EKID_BY_ARREST_CHARGE_EKID_FROM_PSA,
   ARREST_CHARGES,
+  ARREST_CHARGES_FROM_PSA,
   COURT_CHARGES,
   COURT_CHARGES_FOR_CASE,
+  GET_ARREST_CASES_AND_CHARGES_FROM_PSA,
   GET_ARREST_CHARGES,
   GET_COURT_CHARGES,
   GET_COURT_CHARGES_FOR_CASE,
@@ -33,7 +37,19 @@ const { COURT_CHARGE_LIST } = APP_TYPE_FQNS;
 
 const INITIAL_STATE :Map = fromJS({
   [ACTIONS]: {
+    [ADD_COURT_CHARGES_TO_CASE]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [ADD_TO_AVAILABLE_ARREST_CHARGES]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [ADD_TO_AVAILABLE_COURT_CHARGES]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
     [GET_ARREST_CHARGES]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [GET_ARREST_CASES_AND_CHARGES_FROM_PSA]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [GET_COURT_CHARGES]: {
@@ -42,13 +58,12 @@ const INITIAL_STATE :Map = fromJS({
     [GET_COURT_CHARGES_FOR_CASE]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
-    [ADD_TO_AVAILABLE_ARREST_CHARGES]: {
-      [REQUEST_STATE]: RequestStates.STANDBY
-    },
   },
+  [ARREST_CASE_EKID_BY_ARREST_CHARGE_EKID_FROM_PSA]: Map(),
   [ARREST_CHARGES]: List(),
-  [COURT_CHARGES_FOR_CASE]: List(),
+  [ARREST_CHARGES_FROM_PSA]: List(),
   [COURT_CHARGES]: List(),
+  [COURT_CHARGES_FOR_CASE]: List(),
 });
 
 export default function chargesReducer(state :Map = INITIAL_STATE, action :SequenceAction) :Map {
@@ -168,6 +183,33 @@ export default function chargesReducer(state :Map = INITIAL_STATE, action :Seque
         FAILURE: () => state
           .setIn([ACTIONS, GET_ARREST_CHARGES, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, GET_ARREST_CHARGES, action.id])
+      });
+    }
+
+    case getArrestCasesAndChargesFromPSA.case(action.type): {
+
+      return getArrestCasesAndChargesFromPSA.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, GET_ARREST_CASES_AND_CHARGES_FROM_PSA, action.id], fromJS(action))
+          .setIn([ACTIONS, GET_ARREST_CASES_AND_CHARGES_FROM_PSA, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+
+          if (!state.hasIn([ACTIONS, GET_ARREST_CASES_AND_CHARGES_FROM_PSA, action.id])) {
+            return state;
+          }
+
+          const { value } = action;
+          const { arrestCaseEKIDByArrestChargeEKIDFromPSA, arrestChargesFromPSA } = value;
+
+          return state
+            .set(ARREST_CHARGES_FROM_PSA, arrestChargesFromPSA)
+            .set(ARREST_CASE_EKID_BY_ARREST_CHARGE_EKID_FROM_PSA, arrestCaseEKIDByArrestChargeEKIDFromPSA)
+            .setIn([ACTIONS, GET_ARREST_CASES_AND_CHARGES_FROM_PSA, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, GET_ARREST_CASES_AND_CHARGES_FROM_PSA, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, GET_ARREST_CASES_AND_CHARGES_FROM_PSA, action.id])
       });
     }
 

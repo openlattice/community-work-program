@@ -14,6 +14,10 @@ const addToAvailableCourtCharges :RequestSequence = newRequestSequence(ADD_TO_AV
 const GET_ARREST_CHARGES :'GET_ARREST_CHARGES' = 'GET_ARREST_CHARGES';
 const getArrestCharges :RequestSequence = newRequestSequence(GET_ARREST_CHARGES);
 
+const GET_ARREST_CASES_AND_CHARGES_FROM_PSA
+  :'GET_ARREST_CASES_AND_CHARGES_FROM_PSA' = 'GET_ARREST_CASES_AND_CHARGES_FROM_PSA';
+const getArrestCasesAndChargesFromPSA :RequestSequence = newRequestSequence(GET_ARREST_CASES_AND_CHARGES_FROM_PSA);
+
 const GET_COURT_CHARGES :'GET_COURT_CHARGES' = 'GET_COURT_CHARGES';
 const getCourtCharges :RequestSequence = newRequestSequence(GET_COURT_CHARGES);
 
@@ -30,6 +34,7 @@ export {
   GET_ARREST_CHARGES,
   GET_COURT_CHARGES,
   GET_COURT_CHARGES_FOR_CASE,
+  GET_ARREST_CASES_AND_CHARGES_FROM_PSA,
   REMOVE_COURT_CHARGE_FROM_CASE,
   addCourtChargesToCase,
   addToAvailableArrestCharges,
@@ -37,5 +42,6 @@ export {
   getArrestCharges,
   getCourtCharges,
   getCourtChargesForCase,
+  getArrestCasesAndChargesFromPSA,
   removeCourtChargeFromCase,
 };

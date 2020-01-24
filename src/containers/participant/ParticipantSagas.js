@@ -110,8 +110,18 @@ import { getInfractionTypes, getParticipantInfractions } from './infractions/Inf
 import { getInfractionTypesWorker, getParticipantInfractionsWorker } from './infractions/InfractionsSagas';
 import { getWorksitePlans } from './assignedworksites/WorksitePlanActions';
 import { getWorksitePlansWorker } from './assignedworksites/WorksitePlanSagas';
-import { getArrestCharges, getCourtCharges, getCourtChargesForCase } from './charges/ChargesActions';
-import { getArrestChargesWorker, getCourtChargesWorker, getCourtChargesForCaseWorker } from './charges/ChargesSagas';
+import {
+  getArrestCharges,
+  getArrestCasesAndChargesFromPSA,
+  getCourtCharges,
+  getCourtChargesForCase,
+} from './charges/ChargesActions';
+import {
+  getArrestChargesWorker,
+  getArrestCasesAndChargesFromPSAWorker,
+  getCourtChargesWorker,
+  getCourtChargesForCaseWorker,
+} from './charges/ChargesSagas';
 import {
   getEntityKeyId,
   getEntityProperties,
@@ -1746,6 +1756,7 @@ function* getInfoForEditCaseWorker(action :SequenceAction) :Generator<*, *, *> {
       call(getJudgesWorker, getJudges()),
       call(getCourtChargesWorker, getCourtCharges()),
       call(getArrestChargesWorker, getArrestCharges()),
+      call(getArrestCasesAndChargesFromPSAWorker, getArrestCasesAndChargesFromPSA({ personEKID }))
     ]);
     const responseError = workerResponses.reduce(
       (error, workerResponse) => error || workerResponse.error,

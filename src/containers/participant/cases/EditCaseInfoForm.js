@@ -50,7 +50,13 @@ const {
   PERSON_CASE,
   REQUEST_STATE,
 } = PERSON;
-const { ARREST_CHARGES, COURT_CHARGES, COURT_CHARGES_FOR_CASE } = CHARGES;
+const {
+  ARREST_CASE_EKID_BY_ARREST_CHARGE_EKID_FROM_PSA,
+  ARREST_CHARGES,
+  ARREST_CHARGES_FROM_PSA,
+  COURT_CHARGES,
+  COURT_CHARGES_FOR_CASE
+} = CHARGES;
 
 const FormWrapper = styled.div`
   display: flex;
@@ -70,7 +76,9 @@ type Props = {
     getInfoForEditCase :RequestSequence;
     goToRoute :GoToRoute;
   };
+  arrestCaseEKIDByArrestChargeEKIDFromPSA :Map;
   arrestCharges :List;
+  arrestChargesFromPSA :List;
   courtChargesForCase :List;
   courtCharges :List;
   diversionPlan :Map;
@@ -145,7 +153,9 @@ class EditCaseInfoForm extends Component<Props> {
 
   render() {
     const {
+      arrestCaseEKIDByArrestChargeEKIDFromPSA,
       arrestCharges,
+      arrestChargesFromPSA,
       courtCharges,
       courtChargesForCase,
       diversionPlan,
@@ -196,7 +206,9 @@ class EditCaseInfoForm extends Component<Props> {
               personEKID={personEKID}
               propertyTypeIds={propertyTypeIds} />
           <EditArrestChargesForm
-              charges={arrestCharges}
+              arrestCaseEKIDByArrestChargeEKIDFromPSA={arrestCaseEKIDByArrestChargeEKIDFromPSA}
+              arrestChargesFromPSA={arrestChargesFromPSA}
+              arrestCharges={arrestCharges}
               chargesForCase={courtChargesForCase}
               entityIndexToIdMap={entityIndexToIdMap}
               entitySetIds={entitySetIds}
@@ -229,9 +241,11 @@ const mapStateToProps = (state :Map) => {
   const person = state.get(STATE.PERSON);
   const selectedOrgId :string = app.get(SELECTED_ORG_ID);
   return ({
+    [ARREST_CASE_EKID_BY_ARREST_CHARGE_EKID_FROM_PSA]: charges.get(ARREST_CASE_EKID_BY_ARREST_CHARGE_EKID_FROM_PSA),
     [ARREST_CHARGES]: charges.get(ARREST_CHARGES),
-    [COURT_CHARGES_FOR_CASE]: charges.get(COURT_CHARGES_FOR_CASE),
+    [ARREST_CHARGES_FROM_PSA]: charges.get(ARREST_CHARGES_FROM_PSA),
     [COURT_CHARGES]: charges.get(COURT_CHARGES),
+    [COURT_CHARGES_FOR_CASE]: charges.get(COURT_CHARGES_FOR_CASE),
     [JUDGE]: person.get(JUDGE),
     [PARTICIPANT]: person.get(PARTICIPANT),
     [PERSON.DIVERSION_PLAN]: person.get(PERSON.DIVERSION_PLAN),

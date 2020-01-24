@@ -55,7 +55,9 @@ type Props = {
     addChargesToCase :RequestSequence;
     removeChargeFromCase :RequestSequence;
   },
-  charges :List;
+  arrestCaseEKIDByArrestChargeEKIDFromPSA :Map;
+  arrestCharges :List;
+  arrestChargesFromPSA :List;
   chargesForCase :List;
   entityIndexToIdMap :Map;
   entitySetIds :Object;
@@ -91,9 +93,9 @@ class EditCourtChargesForm extends Component<Props, State> {
   }
 
   componentDidUpdate(prevProps :Props) {
-    const { charges, chargesForCase, personCase } = this.props;
+    const { arrestCharges, chargesForCase, personCase } = this.props;
     if (!prevProps.chargesForCase.equals(chargesForCase)
-      || !prevProps.charges.equals(charges)
+      || !prevProps.arrestCharges.equals(arrestCharges)
       || !prevProps.personCase.equals(personCase)) {
       this.prepopulateFormData();
     }
@@ -101,7 +103,8 @@ class EditCourtChargesForm extends Component<Props, State> {
 
   prepopulateFormData = () => {
     const {
-      charges,
+      arrestCharges,
+      arrestChargesFromPSA,
       chargesForCase,
       personCase,
     } = this.props;
@@ -130,7 +133,7 @@ class EditCourtChargesForm extends Component<Props, State> {
     //     chargesFormData[sectionOneKey][index][getEntityAddressKey(-1, CHARGE_EVENT, DATETIME_COMPLETED)] = dateCharged;
     //   });
     // }
-    newChargeSchema = hydrateArrestChargeSchema(arrestChargeSchema, List(), charges);
+    newChargeSchema = hydrateArrestChargeSchema(arrestChargeSchema, arrestChargesFromPSA, arrestCharges);
 
 
     this.setState({

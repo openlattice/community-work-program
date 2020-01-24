@@ -39,6 +39,7 @@ import {
   ADD_COURT_CHARGES_TO_CASE,
   ADD_TO_AVAILABLE_ARREST_CHARGES,
   ADD_TO_AVAILABLE_COURT_CHARGES,
+  GET_ARREST_CASES_AND_CHARGES_FROM_PSA,
   GET_ARREST_CHARGES,
   GET_COURT_CHARGES,
   GET_COURT_CHARGES_FOR_CASE,
@@ -46,6 +47,7 @@ import {
   addCourtChargesToCase,
   addToAvailableArrestCharges,
   addToAvailableCourtCharges,
+  getArrestCasesAndChargesFromPSA,
   getArrestCharges,
   getCourtCharges,
   getCourtChargesForCase,
@@ -67,6 +69,8 @@ const {
   ARREST_CHARGE_LIST,
   CHARGE_EVENT,
   COURT_CHARGE_LIST,
+  MANUAL_ARREST_CASES,
+  MANUAL_ARREST_CHARGES,
   MANUAL_CHARGED_WITH,
   MANUAL_PRETRIAL_COURT_CASES,
   PEOPLE,
@@ -477,6 +481,114 @@ function* getCourtChargesForCaseWatcher() :Generator<*, *, *> {
 
 /*
  *
+ * ChargesActions.getArrestCasesAndChargesFromPSA()
+ *
+ */
+
+function* getArrestCasesAndChargesFromPSAWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  /*
+    person -> charged with -> charge (datetime stored on charged with)
+    charge -> appears in -> case
+  */
+  const { id, value } = action;
+  const workerResponse = {};
+  let response :Object = {};
+  let arrestCaseEKIDByArrestChargeEKIDFromPSA :Map = Map();
+  let arrestChargesFromPSA :List = List();
+
+  try {
+    yield put(getArrestCasesAndChargesFromPSA.request(id));
+    if (value === null || value === undefined) {
+      throw ERR_ACTION_VALUE_NOT_DEFINED;
+    }
+    const { personEKID } = value;
+    const app = yield select(getAppFromState);
+    const peopleESID :UUID = getEntitySetIdFromApp(app, PEOPLE);
+    const arrestCasesESID :UUID = getEntitySetIdFromApp(app, MANUAL_ARREST_CASES);
+
+    // person -> appears in -> case
+    let searchFilter :Object = {
+      entityKeyIds: [personEKID],
+      destinationEntitySetIds: [arrestCasesESID],
+      sourceEntitySetIds: [],
+    };
+    response = yield call(
+      searchEntityNeighborsWithFilterWorker,
+      searchEntityNeighborsWithFilter({ entitySetId: peopleESID, filter: searchFilter })
+    );
+    if (response.error) {
+      throw response.error;
+    }
+
+    if (response.data[personEKID]) {
+      const arrestCaseNeighbors :List = fromJS(response.data[personEKID]);
+      const arrestCaseEKIDs :string[] = [];
+      arrestCaseNeighbors.forEach((neighbor :Map) => {
+        const entity :Map = getNeighborDetails(neighbor);
+        const ekid :UUID = getEntityKeyId(entity);
+        arrestCaseEKIDs.push(ekid);
+      });
+      const arrestChargesESID :UUID = getEntitySetIdFromApp(app, MANUAL_ARREST_CHARGES);
+      // charge -> appears in -> case
+      searchFilter = {
+        entityKeyIds: arrestCaseEKIDs,
+        destinationEntitySetIds: [],
+        sourceEntitySetIds: [arrestChargesESID],
+      };
+      response = yield call(
+        searchEntityNeighborsWithFilterWorker,
+        searchEntityNeighborsWithFilter({ entitySetId: arrestCasesESID, filter: searchFilter })
+      );
+      if (response.error) {
+        throw response.error;
+      }
+      const arrestChargesNeighbors :Map = fromJS(response.data);
+      if (!arrestChargesNeighbors.isEmpty()) {
+
+        const listOfChargeEKIDsByArrestCaseEKID :Map = arrestChargesNeighbors
+          .map((neighborList :Map) => neighborList
+            .map((neighbor :Map) => getNeighborDetails(neighbor))
+            .map((entity :Map) => getEntityKeyId(entity)));
+        listOfChargeEKIDsByArrestCaseEKID.forEach((listOfChargeEKIDs :List, arrestCaseEKID :UUID) => {
+          listOfChargeEKIDs.forEach((chargeEKID :UUID) => {
+            arrestCaseEKIDByArrestChargeEKIDFromPSA = arrestCaseEKIDByArrestChargeEKIDFromPSA
+              .set(chargeEKID, arrestCaseEKID);
+          });
+        });
+
+        arrestChargesFromPSA = arrestChargesNeighbors
+          .map((neighborList :Map) => neighborList
+            .map((neighbor :Map) => getNeighborDetails(neighbor)))
+          .valueSeq()
+          .toList()
+          .flatten(true);
+      }
+    }
+
+    yield put(getArrestCasesAndChargesFromPSA.success(id, {
+      arrestCaseEKIDByArrestChargeEKIDFromPSA,
+      arrestChargesFromPSA,
+    }));
+  }
+  catch (error) {
+    workerResponse.error = error;
+    LOG.error('caught exception in getArrestCasesAndChargesFromPSAWorker()', error);
+    yield put(getArrestCasesAndChargesFromPSA.failure(id, error));
+  }
+  finally {
+    yield put(getArrestCasesAndChargesFromPSA.finally(id));
+  }
+  return workerResponse;
+}
+
+function* getArrestCasesAndChargesFromPSAWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(GET_ARREST_CASES_AND_CHARGES_FROM_PSA, getArrestCasesAndChargesFromPSAWorker);
+}
+
+/*
+ *
  * ChargesActions.removeCourtChargeFromCase()
  *
  */
@@ -560,6 +672,8 @@ export {
   addToAvailableArrestChargesWorker,
   addToAvailableCourtChargesWatcher,
   addToAvailableCourtChargesWorker,
+  getArrestCasesAndChargesFromPSAWatcher,
+  getArrestCasesAndChargesFromPSAWorker,
   getArrestChargesWatcher,
   getArrestChargesWorker,
   getCourtChargesForCaseWatcher,

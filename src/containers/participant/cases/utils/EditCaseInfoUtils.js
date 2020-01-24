@@ -18,6 +18,7 @@ const {
   LAST_NAME,
   LEVEL_STATE,
   NAME,
+  OFFENSE_LOCAL_CODE,
   OFFENSE_LOCAL_DESCRIPTION,
   OL_ID,
 } = PROPERTY_TYPE_FQNS;
@@ -106,35 +107,38 @@ const disableChargesForm = (uiSchema :Object) :Object => { // change to handle t
   return newUiSchema;
 };
 
-const hydrateArrestChargeSchema = (schema :Object, existingCharges :List, arrestCharges :List) => {
-  // const [values, labels] = getValuesFromEntityList(existingCharges, [OFFENSE_LOCAL_DESCRIPTION]);
-  // let newSchema = setIn(
-  //   schema,
-  //   [
-  //     'properties',
-  //     getPageSectionKey(1, 1),
-  //     'items',
-  //     'properties',
-  //     getEntityAddressKey(-1, MANUAL_ARREST_CHARGES, ENTITY_KEY_ID),
-  //     'enum'
-  //   ],
-  //   values
-  // );
-  // newSchema = setIn(
-  //   newSchema,
-  //   [
-  //     'properties',
-  //     getPageSectionKey(1, 1),
-  //     'items',
-  //     'properties',
-  //     getEntityAddressKey(-1, MANUAL_ARREST_CHARGES, ENTITY_KEY_ID),
-  //     'enumNames'
-  //   ],
-  //   labels
-  // );
-  const [arrestValues, arrestLabels] = getValuesFromEntityList(arrestCharges, [OL_ID, NAME, LEVEL_STATE]);
+const hydrateArrestChargeSchema = (schema :Object, existingArrestChargesFromPSA :List, arrestCharges :List) => {
+  const [values, labels] = getValuesFromEntityList(
+    existingArrestChargesFromPSA,
+    [OFFENSE_LOCAL_CODE, OFFENSE_LOCAL_DESCRIPTION]
+  );
   let newSchema = setIn(
     schema,
+    [
+      'properties',
+      getPageSectionKey(1, 1),
+      'items',
+      'properties',
+      getEntityAddressKey(-1, MANUAL_ARREST_CHARGES, ENTITY_KEY_ID),
+      'enum'
+    ],
+    values
+  );
+  newSchema = setIn(
+    newSchema,
+    [
+      'properties',
+      getPageSectionKey(1, 1),
+      'items',
+      'properties',
+      getEntityAddressKey(-1, MANUAL_ARREST_CHARGES, ENTITY_KEY_ID),
+      'enumNames'
+    ],
+    labels
+  );
+  const [arrestValues, arrestLabels] = getValuesFromEntityList(arrestCharges, [OL_ID, NAME, LEVEL_STATE]);
+  newSchema = setIn(
+    newSchema,
     [
       'properties',
       getPageSectionKey(1, 2),
