@@ -29,6 +29,7 @@ import {
   getEntityKeyId,
   getEntitySetIdFromApp,
   getNeighborDetails,
+  getNeighborESID,
   getPropertyFqnFromEdm,
   getPropertyTypeIdFromEdm,
 } from '../../../utils/DataUtils';
@@ -42,6 +43,7 @@ import {
   ADD_TO_AVAILABLE_COURT_CHARGES,
   GET_ARREST_CASES_AND_CHARGES_FROM_PSA,
   GET_ARREST_CHARGES,
+  GET_ARREST_CHARGES_LINKED_TO_CWP,
   GET_COURT_CHARGES,
   GET_COURT_CHARGES_FOR_CASE,
   REMOVE_COURT_CHARGE_FROM_CASE,
@@ -51,6 +53,7 @@ import {
   addToAvailableCourtCharges,
   getArrestCasesAndChargesFromPSA,
   getArrestCharges,
+  getArrestChargesLinkedToCWP,
   getCourtCharges,
   getCourtChargesForCase,
   removeCourtChargeFromCase,
@@ -60,7 +63,7 @@ import { CHARGES, PERSON, STATE } from '../../../utils/constants/ReduxStateConst
 import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../../utils/Errors';
 import { ASSOCIATION_DETAILS } from '../../../core/edm/constants/DataModelConsts';
 
-const { processAssociationEntityData } = DataProcessingUtils;
+const { getPageSectionKey, getEntityAddressKey, processAssociationEntityData } = DataProcessingUtils;
 const { FullyQualifiedName } = Models;
 const { getEntitySetData } = DataApiActions;
 const { getEntitySetDataWorker } = DataApiSagas;
@@ -68,9 +71,11 @@ const { searchEntityNeighborsWithFilter } = SearchApiActions;
 const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
 const {
   APPEARS_IN,
+  APPEARS_IN_ARREST,
   ARREST_CHARGE_LIST,
   CHARGE_EVENT,
   COURT_CHARGE_LIST,
+  DIVERSION_PLAN,
   MANUAL_ARREST_CASES,
   MANUAL_ARREST_CHARGES,
   MANUAL_CHARGED_WITH,
@@ -414,6 +419,7 @@ function* getArrestChargesWorker(action :SequenceAction) :Generator<*, *, *> {
   const workerResponse = {};
   let response :Object = {};
   let arrestCharges :List = List();
+  let arrestChargesByEKID :Map = Map();
 
   try {
     yield put(getArrestCharges.request(id));
@@ -425,8 +431,15 @@ function* getArrestChargesWorker(action :SequenceAction) :Generator<*, *, *> {
       throw response.error;
     }
     arrestCharges = fromJS(response.data);
+    if (!arrestCharges.isEmpty()) {
+      arrestChargesByEKID = Map().withMutations((map :Map) => {
+        arrestCharges.forEach((charge :Map) => {
+          map.set(getEntityKeyId(charge), charge);
+        });
+      });
+    }
 
-    yield put(getArrestCharges.success(id, arrestCharges));
+    yield put(getArrestCharges.success(id, { arrestCharges, arrestChargesByEKID }));
   }
   catch (error) {
     workerResponse.error = error;
@@ -442,6 +455,194 @@ function* getArrestChargesWorker(action :SequenceAction) :Generator<*, *, *> {
 function* getArrestChargesWatcher() :Generator<*, *, *> {
 
   yield takeEvery(GET_ARREST_CHARGES, getArrestChargesWorker);
+}
+
+/*
+ *
+ * ChargesActions.getArrestChargesLinkedToCWP()
+ *
+ */
+
+function* getArrestChargesLinkedToCWPWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  /*
+    charge event -> registered for -> arrest charge
+        for charges from PSA: arrest charge is in MANUAL_ARREST_CHARGES
+        for newly created charges in CWP: arrest charge is in ARREST_CHARGE_LIST
+    person -> charged with -> arrest charge
+        for charges from PSA: ARREST_CHARGED_WITH
+        for newly created charges in CWP: MANUAL_CHARGED_WITH
+    person -> charged with -> charge event
+        for both: MANUAL_CHARGED_WITH
+    arrest charge -> appears in -> arrest case
+        for charges from PSA: APPEARS_IN_ARREST
+        for newly created charges in CWP: APPEARS_IN
+    person -> appears in -> arrest case
+        for both: APPEARS_IN_ARREST, MANUAL_ARREST_CASES
+    diversion plan -> related to -> arrest case
+  */
+  const { id, value } = action;
+  const workerResponse = {};
+  let response :Object = {};
+  let arrestChargeMapsCreatedInCWP :List = List();
+  let arrestChargeMapsCreatedInPSA :List = List();
+  let psaArrestCaseByArrestCharge :Map = Map();
+  let cwpArrestCaseByArrestCharge :Map = Map();
+
+  try {
+    yield put(getArrestChargesLinkedToCWP.request(id));
+    if (value === null || value === undefined) {
+      throw ERR_ACTION_VALUE_NOT_DEFINED;
+    }
+    const { diversionPlanEKID } = value;
+    const app = yield select(getAppFromState);
+    const diversionPlanESID :UUID = getEntitySetIdFromApp(app, DIVERSION_PLAN);
+    const arrestCaseESID :UUID = getEntitySetIdFromApp(app, MANUAL_ARREST_CASES);
+
+    const arrestCaseSearchFilter :Object = {
+      entityKeyIds: [diversionPlanEKID],
+      destinationEntitySetIds: [arrestCaseESID],
+      sourceEntitySetIds: [],
+    };
+
+    response = yield call(
+      searchEntityNeighborsWithFilterWorker,
+      searchEntityNeighborsWithFilter({ entitySetId: diversionPlanESID, filter: arrestCaseSearchFilter })
+    );
+    if (response.error) {
+      throw response.error;
+    }
+
+    if (response.data[diversionPlanEKID]) {
+      const arrestCaseNeighbors :List = fromJS(response.data[diversionPlanEKID]);
+      const arrestCaseEKIDs :UUID[] = [];
+      arrestCaseNeighbors.forEach((neighbor :Map) => {
+        const arrestCase = getNeighborDetails(neighbor);
+        arrestCaseEKIDs.push(getEntityKeyId(arrestCase));
+      });
+
+      const psaArrestChargeESID :UUID = getEntitySetIdFromApp(app, MANUAL_ARREST_CHARGES);
+      const cwpArrestChargeESID :UUID = getEntitySetIdFromApp(app, ARREST_CHARGE_LIST);
+
+      const arrestChargeSearchFilter = {
+        entityKeyIds: arrestCaseEKIDs,
+        destinationEntitySetIds: [],
+        sourceEntitySetIds: [psaArrestChargeESID, cwpArrestChargeESID],
+      };
+      response = yield call(
+        searchEntityNeighborsWithFilterWorker,
+        searchEntityNeighborsWithFilter({ entitySetId: arrestCaseESID, filter: arrestChargeSearchFilter })
+      );
+      if (response.error) {
+        throw response.error;
+      }
+      const arrestChargeNeighbors :Map = fromJS(response.data);
+      if (!arrestChargeNeighbors.isEmpty()) {
+        let psaArrestChargesByEKID :Map = Map();
+        let cwpArrestChargesByEKID :Map = Map();
+        const psaArrestChargeEKIDs :UUID[] = [];
+        const cwpArrestChargeEKIDs :UUID[] = [];
+
+        arrestChargeNeighbors.forEach((neighborList :List, arrestCaseEKID :UUID) => neighborList
+          .forEach((neighbor :Map) => {
+            const neighborESID :UUID = getNeighborESID(neighbor);
+            const entity :Map = getNeighborDetails(neighbor);
+            const chargeEKID :UUID = getEntityKeyId(entity);
+            if (neighborESID === psaArrestChargeESID) {
+              psaArrestChargesByEKID = psaArrestChargesByEKID.set(chargeEKID, entity);
+              psaArrestChargeEKIDs.push(chargeEKID);
+              psaArrestCaseByArrestCharge = psaArrestCaseByArrestCharge.set(chargeEKID, arrestCaseEKID);
+            }
+            if (neighborESID === cwpArrestChargeESID) {
+              cwpArrestChargesByEKID = cwpArrestChargesByEKID.set(chargeEKID, entity);
+              cwpArrestChargeEKIDs.push(chargeEKID);
+              cwpArrestCaseByArrestCharge = cwpArrestCaseByArrestCharge.set(chargeEKID, arrestCaseEKID);
+            }
+          }));
+
+        const chargeEventESID :UUID = getEntitySetIdFromApp(app, CHARGE_EVENT);
+        const psaChargeEventSearchFilter = {
+          entityKeyIds: psaArrestChargeEKIDs,
+          destinationEntitySetIds: [],
+          sourceEntitySetIds: [chargeEventESID],
+        };
+        const cwpChargeEventSearchFilter = {
+          entityKeyIds: cwpArrestChargeEKIDs,
+          destinationEntitySetIds: [],
+          sourceEntitySetIds: [chargeEventESID],
+        };
+        let psaChargeEvents :Object = { data: {} };
+        if (psaArrestChargeEKIDs.length) {
+          psaChargeEvents = yield call(
+            searchEntityNeighborsWithFilterWorker,
+            searchEntityNeighborsWithFilter({ entitySetId: psaArrestChargeESID, filter: psaChargeEventSearchFilter })
+          );
+        }
+        let cwpChargeEvents :Object = { data: {} };
+        if (cwpArrestChargeEKIDs.length) {
+          cwpChargeEvents = yield call(
+            searchEntityNeighborsWithFilterWorker,
+            searchEntityNeighborsWithFilter({ entitySetId: cwpArrestChargeESID, filter: cwpChargeEventSearchFilter })
+          );
+        }
+        if (psaChargeEvents.error) {
+          throw psaChargeEvents.error;
+        }
+        if (cwpChargeEvents.error) {
+          throw cwpChargeEvents.error;
+        }
+        const psaChargeEventNeighbors :Map = fromJS(psaChargeEvents.data);
+        console.log('psaChargeEventNeighbors: ', psaChargeEvents.data);
+        const cwpChargeEventNeighbors :Map = fromJS(cwpChargeEvents.data);
+        if (!psaChargeEventNeighbors.isEmpty()) {
+          psaChargeEventNeighbors.forEach((neighborList :List, chargeEKID :UUID) => neighborList
+            .forEach((neighbor :Map) => {
+              const chargeEvent :Map = getNeighborDetails(neighbor);
+              let chargeMap :Map = Map();
+              chargeMap = chargeMap.set(MANUAL_ARREST_CHARGES, psaArrestChargesByEKID.get(chargeEKID, Map()));
+              chargeMap = chargeMap.set(CHARGE_EVENT, chargeEvent);
+              arrestChargeMapsCreatedInPSA = arrestChargeMapsCreatedInPSA.push(chargeMap);
+            }));
+        }
+        if (!cwpChargeEventNeighbors.isEmpty()) {
+          cwpChargeEventNeighbors.forEach((neighborList :List, chargeEKID :UUID) => neighborList
+            .forEach((neighbor :Map) => {
+              const chargeEvent :Map = getNeighborDetails(neighbor);
+              let chargeMap :Map = Map();
+              chargeMap = chargeMap.set(ARREST_CHARGE_LIST, cwpArrestChargesByEKID.get(chargeEKID, Map()));
+              chargeMap = chargeMap.set(CHARGE_EVENT, chargeEvent);
+              arrestChargeMapsCreatedInCWP = arrestChargeMapsCreatedInCWP.push(chargeMap);
+            }));
+        }
+      }
+    }
+
+    console.log('arrestChargeMapsCreatedInCWP: ', arrestChargeMapsCreatedInCWP.toJS());
+    console.log('arrestChargeMapsCreatedInPSA: ', arrestChargeMapsCreatedInPSA.toJS());
+    console.log('cwpArrestCaseByArrestCharge: ', cwpArrestCaseByArrestCharge.toJS());
+    console.log('psaArrestCaseByArrestCharge: ', psaArrestCaseByArrestCharge.toJS());
+
+    yield put(getArrestChargesLinkedToCWP.success(id, {
+      arrestChargeMapsCreatedInCWP,
+      arrestChargeMapsCreatedInPSA,
+      cwpArrestCaseByArrestCharge,
+      psaArrestCaseByArrestCharge,
+    }));
+  }
+  catch (error) {
+    workerResponse.error = error;
+    LOG.error('caught exception in getArrestChargesLinkedToCWPWorker()', error);
+    yield put(getArrestChargesLinkedToCWP.failure(id, error));
+  }
+  finally {
+    yield put(getArrestChargesLinkedToCWP.finally(id));
+  }
+  return workerResponse;
+}
+
+function* getArrestChargesLinkedToCWPWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(GET_ARREST_CHARGES_LINKED_TO_CWP, getArrestChargesLinkedToCWPWorker);
 }
 
 /*
@@ -784,6 +985,8 @@ export {
   addToAvailableCourtChargesWorker,
   getArrestCasesAndChargesFromPSAWatcher,
   getArrestCasesAndChargesFromPSAWorker,
+  getArrestChargesLinkedToCWPWatcher,
+  getArrestChargesLinkedToCWPWorker,
   getArrestChargesWatcher,
   getArrestChargesWorker,
   getCourtChargesForCaseWatcher,

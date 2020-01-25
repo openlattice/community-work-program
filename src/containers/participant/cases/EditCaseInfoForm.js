@@ -54,8 +54,12 @@ const {
   ARREST_CASE_EKID_BY_ARREST_CHARGE_EKID_FROM_PSA,
   ARREST_CHARGES,
   ARREST_CHARGES_FROM_PSA,
+  ARREST_CHARGE_MAPS_CREATED_IN_CWP,
+  ARREST_CHARGE_MAPS_CREATED_IN_PSA,
   COURT_CHARGES,
-  COURT_CHARGES_FOR_CASE
+  COURT_CHARGES_FOR_CASE,
+  CWP_ARREST_CASE_BY_ARREST_CHARGE,
+  PSA_ARREST_CASE_BY_ARREST_CHARGE,
 } = CHARGES;
 
 const FormWrapper = styled.div`
@@ -77,10 +81,13 @@ type Props = {
     goToRoute :GoToRoute;
   };
   arrestCaseEKIDByArrestChargeEKIDFromPSA :Map;
+  arrestChargeMapsCreatedInCWP :List;
+  arrestChargeMapsCreatedInPSA :List;
   arrestCharges :List;
   arrestChargesFromPSA :List;
-  courtChargesForCase :List;
   courtCharges :List;
+  courtChargesForCase :List;
+  cwpArrestCaseByArrestCharge :Map;
   diversionPlan :Map;
   entitySetIds :Map;
   getInfoForEditCaseRequestState :RequestState;
@@ -91,6 +98,7 @@ type Props = {
   participant :Map;
   personCase :Map;
   propertyTypeIds :Map;
+  psaArrestCaseByArrestCharge :Map;
 };
 
 class EditCaseInfoForm extends Component<Props> {
@@ -167,6 +175,10 @@ class EditCaseInfoForm extends Component<Props> {
       participant,
       personCase,
       propertyTypeIds,
+      arrestChargeMapsCreatedInCWP,
+      arrestChargeMapsCreatedInPSA,
+      cwpArrestCaseByArrestCharge,
+      psaArrestCaseByArrestCharge,
     } = this.props;
 
     if (initializeAppRequestState === RequestStates.PENDING
@@ -207,14 +219,17 @@ class EditCaseInfoForm extends Component<Props> {
               propertyTypeIds={propertyTypeIds} />
           <EditArrestChargesForm
               arrestCaseEKIDByArrestChargeEKIDFromPSA={arrestCaseEKIDByArrestChargeEKIDFromPSA}
-              arrestChargesFromPSA={arrestChargesFromPSA}
+              arrestChargeMapsCreatedInCWP={arrestChargeMapsCreatedInCWP}
+              arrestChargeMapsCreatedInPSA={arrestChargeMapsCreatedInPSA}
               arrestCharges={arrestCharges}
-              chargesForCase={courtChargesForCase}
+              arrestChargesFromPSA={arrestChargesFromPSA}
+              cwpArrestCaseByArrestCharge={cwpArrestCaseByArrestCharge}
+              diversionPlanEKID={diversionPlanEKID}
               entityIndexToIdMap={entityIndexToIdMap}
               entitySetIds={entitySetIds}
               participant={participant}
-              personCase={personCase}
-              propertyTypeIds={propertyTypeIds} />
+              propertyTypeIds={propertyTypeIds}
+              psaArrestCaseByArrestCharge={psaArrestCaseByArrestCharge} />
           <EditCourtChargesForm
               charges={courtCharges}
               chargesForCase={courtChargesForCase}
@@ -244,13 +259,17 @@ const mapStateToProps = (state :Map) => {
     [ARREST_CASE_EKID_BY_ARREST_CHARGE_EKID_FROM_PSA]: charges.get(ARREST_CASE_EKID_BY_ARREST_CHARGE_EKID_FROM_PSA),
     [ARREST_CHARGES]: charges.get(ARREST_CHARGES),
     [ARREST_CHARGES_FROM_PSA]: charges.get(ARREST_CHARGES_FROM_PSA),
+    [ARREST_CHARGE_MAPS_CREATED_IN_CWP]: charges.get(ARREST_CHARGE_MAPS_CREATED_IN_CWP),
+    [ARREST_CHARGE_MAPS_CREATED_IN_PSA]: charges.get(ARREST_CHARGE_MAPS_CREATED_IN_PSA),
     [COURT_CHARGES]: charges.get(COURT_CHARGES),
     [COURT_CHARGES_FOR_CASE]: charges.get(COURT_CHARGES_FOR_CASE),
+    [CWP_ARREST_CASE_BY_ARREST_CHARGE]: charges.get(CWP_ARREST_CASE_BY_ARREST_CHARGE),
     [JUDGE]: person.get(JUDGE),
     [PARTICIPANT]: person.get(PARTICIPANT),
     [PERSON.DIVERSION_PLAN]: person.get(PERSON.DIVERSION_PLAN),
     [PERSON.JUDGES]: person.get(PERSON.JUDGES),
     [PERSON_CASE]: person.get(PERSON_CASE),
+    [PSA_ARREST_CASE_BY_ARREST_CHARGE]: charges.get(PSA_ARREST_CASE_BY_ARREST_CHARGE),
     entitySetIds: app.getIn([ENTITY_SET_IDS_BY_ORG, selectedOrgId], Map()),
     getInfoForEditCaseRequestState: person.getIn([ACTIONS, GET_INFO_FOR_EDIT_CASE, REQUEST_STATE]),
     initializeAppRequestState: app.getIn([APP.ACTIONS, APP.INITIALIZE_APPLICATION, APP.REQUEST_STATE]),

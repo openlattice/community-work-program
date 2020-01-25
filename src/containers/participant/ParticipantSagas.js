@@ -111,16 +111,18 @@ import { getInfractionTypesWorker, getParticipantInfractionsWorker } from './inf
 import { getWorksitePlans } from './assignedworksites/WorksitePlanActions';
 import { getWorksitePlansWorker } from './assignedworksites/WorksitePlanSagas';
 import {
-  getArrestCharges,
   getArrestCasesAndChargesFromPSA,
+  getArrestCharges,
+  getArrestChargesLinkedToCWP,
   getCourtCharges,
   getCourtChargesForCase,
 } from './charges/ChargesActions';
 import {
-  getArrestChargesWorker,
   getArrestCasesAndChargesFromPSAWorker,
-  getCourtChargesWorker,
+  getArrestChargesLinkedToCWPWorker,
+  getArrestChargesWorker,
   getCourtChargesForCaseWorker,
+  getCourtChargesWorker,
 } from './charges/ChargesSagas';
 import {
   getEntityKeyId,
@@ -1414,6 +1416,7 @@ function* getEnrollmentStatusWorker(action :SequenceAction) :Generator<*, *, *> 
       const diversionPlanEKID :UUID = getEntityKeyId(diversionPlan);
 
       yield call(getCaseInfoWorker, getCaseInfo({ diversionPlanEKID }));
+      yield call(getArrestChargesLinkedToCWPWorker, getArrestChargesLinkedToCWP({ diversionPlanEKID }));
       /* If populating profile, call getWorksitePlans() to find all worksite plans for current diversion plan */
       const { populateProfile } = value;
       if (populateProfile) {
@@ -1756,7 +1759,7 @@ function* getInfoForEditCaseWorker(action :SequenceAction) :Generator<*, *, *> {
       call(getJudgesWorker, getJudges()),
       call(getCourtChargesWorker, getCourtCharges()),
       call(getArrestChargesWorker, getArrestCharges()),
-      call(getArrestCasesAndChargesFromPSAWorker, getArrestCasesAndChargesFromPSA({ personEKID }))
+      call(getArrestCasesAndChargesFromPSAWorker, getArrestCasesAndChargesFromPSA({ personEKID })),
     ]);
     const responseError = workerResponses.reduce(
       (error, workerResponse) => error || workerResponse.error,
