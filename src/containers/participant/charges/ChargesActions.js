@@ -2,6 +2,9 @@
 import { newRequestSequence } from 'redux-reqseq';
 import type { RequestSequence } from 'redux-reqseq';
 
+const ADD_ARREST_CHARGES :'ADD_ARREST_CHARGES' = 'ADD_ARREST_CHARGES';
+const addArrestCharges :RequestSequence = newRequestSequence(ADD_ARREST_CHARGES);
+
 const ADD_COURT_CHARGES_TO_CASE :'ADD_COURT_CHARGES_TO_CASE' = 'ADD_COURT_CHARGES_TO_CASE';
 const addCourtChargesToCase :RequestSequence = newRequestSequence(ADD_COURT_CHARGES_TO_CASE);
 
@@ -28,6 +31,7 @@ const REMOVE_COURT_CHARGE_FROM_CASE :'REMOVE_COURT_CHARGE_FROM_CASE' = 'REMOVE_C
 const removeCourtChargeFromCase :RequestSequence = newRequestSequence(REMOVE_COURT_CHARGE_FROM_CASE);
 
 export {
+  ADD_ARREST_CHARGES,
   ADD_COURT_CHARGES_TO_CASE,
   ADD_TO_AVAILABLE_ARREST_CHARGES,
   ADD_TO_AVAILABLE_COURT_CHARGES,
@@ -36,6 +40,7 @@ export {
   GET_COURT_CHARGES_FOR_CASE,
   GET_ARREST_CASES_AND_CHARGES_FROM_PSA,
   REMOVE_COURT_CHARGE_FROM_CASE,
+  addArrestCharges,
   addCourtChargesToCase,
   addToAvailableArrestCharges,
   addToAvailableCourtCharges,

@@ -36,6 +36,7 @@ import { getCombinedDateTime } from '../../../utils/ScheduleUtils';
 import { deleteEntities, submitDataGraph } from '../../../core/sagas/data/DataActions';
 import { deleteEntitiesWorker, submitDataGraphWorker } from '../../../core/sagas/data/DataSagas';
 import {
+  ADD_ARREST_CHARGES,
   ADD_COURT_CHARGES_TO_CASE,
   ADD_TO_AVAILABLE_ARREST_CHARGES,
   ADD_TO_AVAILABLE_COURT_CHARGES,
@@ -44,6 +45,7 @@ import {
   GET_COURT_CHARGES,
   GET_COURT_CHARGES_FOR_CASE,
   REMOVE_COURT_CHARGE_FROM_CASE,
+  addArrestCharges,
   addCourtChargesToCase,
   addToAvailableArrestCharges,
   addToAvailableCourtCharges,
@@ -54,7 +56,7 @@ import {
   removeCourtChargeFromCase,
 } from './ChargesActions';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
-import { PERSON, STATE } from '../../../utils/constants/ReduxStateConsts';
+import { CHARGES, PERSON, STATE } from '../../../utils/constants/ReduxStateConsts';
 import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../../utils/Errors';
 import { ASSOCIATION_DETAILS } from '../../../core/edm/constants/DataModelConsts';
 
@@ -77,11 +79,117 @@ const {
   REGISTERED_FOR,
 } = APP_TYPE_FQNS;
 const { DATETIME_COMPLETED, ENTITY_KEY_ID } = PROPERTY_TYPE_FQNS;
+const { ARREST_CASE_EKID_BY_ARREST_CHARGE_EKID_FROM_PSA, ARREST_CHARGES_BY_EKID, ARREST_CHARGES_FROM_PSA } = CHARGES;
 
 const getAppFromState = (state) => state.get(STATE.APP, Map());
+const getChargesFromState = (state) => state.get(STATE.CHARGES, Map());
 const getEdmFromState = (state) => state.get(STATE.EDM, Map());
 const getPersonFromState = (state) => state.get(STATE.PERSON, Map());
 const LOG = new Logger('ChargesSagas');
+
+/*
+ *
+ * ChargesActions.addArrestCharges()
+ *
+ */
+
+function* addArrestChargesWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+  if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
+  const workerResponse = {};
+  let response :Object = {};
+  let arrestChargeMapsCreatedInCWP :List = List();
+  let arrestChargeMapsCreatedInPSA :List = List();
+  let psaArrestCaseByArrestCharge :Map = Map();
+  let cwpArrestCaseByArrestCharge :Map = Map();
+
+  try {
+    yield put(addArrestCharges.request(id, value));
+    console.log('value: ', value);
+    const { associationEntityData, entityData } = value;
+
+    response = yield call(submitDataGraphWorker, submitDataGraph({ associationEntityData, entityData }));
+    if (response.error) {
+      throw response.error;
+    }
+
+    const { entityKeyIds } = response.data;
+    const { entitySetIds } = response.data;
+    console.log('entityKeyIds: ', entityKeyIds);
+    console.log('entitySetIds: ', entitySetIds);
+    const app = yield select(getAppFromState);
+    const edm = yield select(getEdmFromState);
+    const chargesState = yield select(getChargesFromState);
+    const chargeEventESID :UUID = getEntitySetIdFromApp(app, CHARGE_EVENT);
+    const chargeEventEKIDs :UUID[] = entityKeyIds[chargeEventESID];
+    console.log('chargeEventEKIDs: ', chargeEventEKIDs);
+    chargeEventEKIDs.forEach((ekid :UUID, index :number) => {
+      let newChargeMap :Map = Map();
+      // construct charge event entity:
+      let newChargeEvent :Map = Map();
+      newChargeEvent = newChargeEvent.set(ENTITY_KEY_ID, ekid);
+      const datetimeCompletedPTID :string = getPropertyTypeIdFromEdm(edm, DATETIME_COMPLETED);
+      const datetimeCompleted :string[] = entityData[chargeEventESID][index][datetimeCompletedPTID];
+      newChargeEvent = newChargeEvent.set(DATETIME_COMPLETED, datetimeCompleted);
+      newChargeMap = newChargeMap.set(CHARGE_EVENT, newChargeEvent);
+      // find associated charge:
+      const registeredForESID :UUID = getEntitySetIdFromApp(app, REGISTERED_FOR);
+      const arrestChargeListESID :UUID = getEntitySetIdFromApp(app, ARREST_CHARGE_LIST);
+      const manualArrestChargeESID :UUID = getEntitySetIdFromApp(app, MANUAL_ARREST_CHARGES);
+      const appearsInArrestESID :UUID = getEntitySetIdFromApp(app, APPEARS_IN_ARREST);
+      const chargeEventToChargeAssociation :Object = associationEntityData[registeredForESID][index];
+      const arrestChargesByEKID :Map = chargesState.get(ARREST_CHARGES_BY_EKID, Map());
+      const arrestChargesFromPSA :List = chargesState.get(ARREST_CHARGES_FROM_PSA, List());
+      const arrestCaseEKIDByArrestChargeEKIDFromPSA :Map = chargesState
+        .get(ARREST_CASE_EKID_BY_ARREST_CHARGE_EKID_FROM_PSA, Map());
+      let charge :Map = Map();
+      if (chargeEventToChargeAssociation.dstEntitySetId === arrestChargeListESID) {
+        const chargeEKID :UUID = chargeEventToChargeAssociation.dstEntityKeyId;
+        charge = arrestChargesByEKID.get(chargeEKID, Map());
+        newChargeMap = newChargeMap.set(ARREST_CHARGE_LIST, charge);
+        arrestChargeMapsCreatedInCWP = arrestChargeMapsCreatedInCWP.push(newChargeMap);
+
+        const newCaseUUID :UUID = entitySetIds[appearsInArrestESID][index];
+        cwpArrestCaseByArrestCharge = cwpArrestCaseByArrestCharge.set(chargeEKID, newCaseUUID);
+      }
+      if (chargeEventToChargeAssociation.dstEntitySetId === manualArrestChargeESID) {
+        charge = arrestChargesFromPSA
+          .find((arrestCharge :Map) => getEntityKeyId(arrestCharge) === chargeEventToChargeAssociation.dstEntityKeyId);
+        newChargeMap = newChargeMap.set(MANUAL_ARREST_CASES, charge);
+        arrestChargeMapsCreatedInPSA = arrestChargeMapsCreatedInPSA.push(newChargeMap);
+
+        const chargeEKID :UUID = getEntityKeyId(charge);
+        const caseEKID :UUID = arrestCaseEKIDByArrestChargeEKIDFromPSA.get(chargeEKID, '');
+        psaArrestCaseByArrestCharge = psaArrestCaseByArrestCharge.set(chargeEKID, caseEKID);
+      }
+    });
+    console.log('arrestChargeMapsCreatedInCWP: ', arrestChargeMapsCreatedInCWP.toJS());
+    console.log('arrestChargeMapsCreatedInPSA: ', arrestChargeMapsCreatedInPSA.toJS());
+    console.log('cwpArrestCaseByArrestCharge: ', cwpArrestCaseByArrestCharge.toJS());
+    console.log('psaArrestCaseByArrestCharge: ', psaArrestCaseByArrestCharge.toJS());
+
+    yield put(addArrestCharges.success(id, {
+      arrestChargeMapsCreatedInCWP,
+      arrestChargeMapsCreatedInPSA,
+      cwpArrestCaseByArrestCharge,
+      psaArrestCaseByArrestCharge,
+    }));
+  }
+  catch (error) {
+    workerResponse.error = error;
+    LOG.error('caught exception in addArrestChargesWorker()', error);
+    yield put(addArrestCharges.failure(id, error));
+  }
+  finally {
+    yield put(addArrestCharges.finally(id));
+  }
+}
+
+function* addArrestChargesWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(ADD_ARREST_CHARGES, addArrestChargesWorker);
+}
 
 /*
  *
@@ -666,6 +774,8 @@ function* removeCourtChargeFromCaseWatcher() :Generator<*, *, *> {
 }
 
 export {
+  addArrestChargesWatcher,
+  addArrestChargesWorker,
   addCourtChargesToCaseWatcher,
   addCourtChargesToCaseWorker,
   addToAvailableArrestChargesWatcher,
