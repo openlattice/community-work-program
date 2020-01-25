@@ -5,7 +5,9 @@ import {
   List,
   Map,
   fromJS,
+  get,
   getIn,
+  setIn,
 } from 'immutable';
 import { DateTime } from 'luxon';
 import {
@@ -20,13 +22,15 @@ import type { RequestSequence } from 'redux-reqseq';
 
 import AddToAvailableArrestChargesModal from '../charges/AddToAvailableArrestChargesModal';
 
-import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
+import { addArrestCharges } from '../charges/ChargesActions';
 import { arrestChargeSchema, arrestChargeUiSchema } from './schemas/EditCaseInfoSchemas';
 import { disableChargesForm, hydrateArrestChargeSchema } from './utils/EditCaseInfoUtils';
-import { getEntityKeyId } from '../../../utils/DataUtils';
 import { getCombinedDateTime } from '../../../utils/ScheduleUtils';
+import { getEntityKeyId, getEntityProperties } from '../../../utils/DataUtils';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 
 const {
+  INDEX_MAPPERS,
   getEntityAddressKey,
   getPageSectionKey,
   processAssociationEntityData,
@@ -34,14 +38,24 @@ const {
 } = DataProcessingUtils;
 const {
   APPEARS_IN,
+  APPEARS_IN_ARREST,
   CHARGE_EVENT,
-  COURT_CHARGE_LIST,
+  ARREST_CHARGE_LIST,
+  MANUAL_ARREST_CASES,
+  MANUAL_ARREST_CHARGES,
   MANUAL_CHARGED_WITH,
-  MANUAL_PRETRIAL_COURT_CASES,
   PEOPLE,
   REGISTERED_FOR,
+  RELATED_TO,
+  DIVERSION_PLAN,
 } = APP_TYPE_FQNS;
-const { DATETIME_COMPLETED, ENTITY_KEY_ID } = PROPERTY_TYPE_FQNS;
+const { DATETIME, DATETIME_COMPLETED, ENTITY_KEY_ID } = PROPERTY_TYPE_FQNS;
+
+const getDateChargedFromChargeEvent = (chargeEvent :Map) :string => {
+  const { [DATETIME_COMPLETED]: dateTimeCharged } = getEntityProperties(chargeEvent, [DATETIME_COMPLETED]);
+  const dateCharged :string = DateTime.fromISO(dateTimeCharged).toISODate();
+  return dateCharged;
+};
 
 const InnerCardHeader = styled.div`
   align-items: center;
@@ -52,24 +66,25 @@ const InnerCardHeader = styled.div`
 
 type Props = {
   actions:{
-    addChargesToCase :RequestSequence;
-    removeChargeFromCase :RequestSequence;
+    addArrestCharges :RequestSequence;
   },
   arrestCaseEKIDByArrestChargeEKIDFromPSA :Map;
+  arrestChargeMapsCreatedInCWP :List;
+  arrestChargeMapsCreatedInPSA :List;
   arrestCharges :List;
   arrestChargesFromPSA :List;
-  chargesForCase :List;
+  cwpArrestCaseByArrestCharge :Map;
+  diversionPlanEKID :UUID;
   entityIndexToIdMap :Map;
   entitySetIds :Object;
   participant :Map;
-  personCase :Map;
   propertyTypeIds :Object;
+  psaArrestCaseByArrestCharge :Map;
 };
 
 type State = {
   chargesFormData :Object;
   chargesFormSchema :Object;
-  chargesFormUiSchema :Object;
   chargesPrepopulated :boolean;
   isAvailableChargesModalVisible :boolean;
 };
@@ -82,7 +97,6 @@ class EditCourtChargesForm extends Component<Props, State> {
     this.state = {
       chargesFormData: {},
       chargesFormSchema: arrestChargeSchema,
-      chargesFormUiSchema: arrestChargeUiSchema,
       chargesPrepopulated: false,
       isAvailableChargesModalVisible: false,
     };
@@ -93,10 +107,16 @@ class EditCourtChargesForm extends Component<Props, State> {
   }
 
   componentDidUpdate(prevProps :Props) {
-    const { arrestCharges, chargesForCase, personCase } = this.props;
-    if (!prevProps.chargesForCase.equals(chargesForCase)
-      || !prevProps.arrestCharges.equals(arrestCharges)
-      || !prevProps.personCase.equals(personCase)) {
+    const {
+      arrestCharges,
+      arrestChargesFromPSA,
+      arrestChargeMapsCreatedInCWP,
+      arrestChargeMapsCreatedInPSA,
+    } = this.props;
+    if (!prevProps.arrestCharges.equals(arrestCharges)
+      || !prevProps.arrestChargesFromPSA.equals(arrestChargesFromPSA)
+      || !prevProps.arrestChargeMapsCreatedInCWP.equals(arrestChargeMapsCreatedInCWP)
+      || !prevProps.arrestChargeMapsCreatedInPSA.equals(arrestChargeMapsCreatedInPSA)) {
       this.prepopulateFormData();
     }
   }
@@ -105,93 +125,157 @@ class EditCourtChargesForm extends Component<Props, State> {
     const {
       arrestCharges,
       arrestChargesFromPSA,
-      chargesForCase,
-      personCase,
+      arrestChargeMapsCreatedInCWP,
+      arrestChargeMapsCreatedInPSA,
     } = this.props;
 
-    // const sectionOneKey = getPageSectionKey(1, 1);
-    // let chargesPrepopulated :boolean = !chargesForCase.isEmpty();
-    let newChargeUiSchema :Object = arrestChargeUiSchema;
-    //
-    // if (personCase.isEmpty()) {
-    //   chargesPrepopulated = true;
-    //   newChargeUiSchema = disableChargesForm(arrestChargeUiSchema);
-    // }
-    //
-    // let chargesFormData :{} = {};
+    let chargesPrepopulated = false;
+    const sectionOneKey :string = getPageSectionKey(1, 1);
+    let chargesFormData :Object = {};
     let newChargeSchema :Object = arrestChargeSchema;
-    // if (!chargesForCase.isEmpty()) {
-    //   chargesFormData = {
-    //     [sectionOneKey]: []
-    //   };
-    //   chargesForCase.forEach((chargeMap :Map, index :number) => {
-    //     const chargeEKID :UUID = chargeMap.getIn([COURT_CHARGE_LIST, ENTITY_KEY_ID, 0]);
-    //     const datetimeCharged :string = chargeMap.getIn([CHARGE_EVENT, DATETIME_COMPLETED, 0]);
-    //     const dateCharged :string = DateTime.fromISO(datetimeCharged).toISODate();
-    //     chargesFormData[sectionOneKey][index] = {};
-    //     chargesFormData[sectionOneKey][index][getEntityAddressKey(-1, COURT_CHARGE_LIST, ENTITY_KEY_ID)] = chargeEKID;
-    //     chargesFormData[sectionOneKey][index][getEntityAddressKey(-1, CHARGE_EVENT, DATETIME_COMPLETED)] = dateCharged;
-    //   });
-    // }
+
+    if (!arrestChargeMapsCreatedInPSA.isEmpty()) {
+      chargesPrepopulated = true;
+      chargesFormData = {
+        [sectionOneKey]: []
+      };
+      arrestChargeMapsCreatedInPSA.forEach((chargeMap :Map, index :number) => {
+        const chargeEvent :Map = chargeMap.get(CHARGE_EVENT, Map());
+        const dateCharged :string = getDateChargedFromChargeEvent(chargeEvent);
+        const chargeEKID :UUID = getEntityKeyId(chargeMap.get(MANUAL_ARREST_CHARGES, Map()));
+        chargesFormData[sectionOneKey][index] = {};
+        chargesFormData[sectionOneKey][index][
+          getEntityAddressKey(-1, MANUAL_ARREST_CHARGES, ENTITY_KEY_ID)
+        ] = chargeEKID;
+        chargesFormData[sectionOneKey][index][getEntityAddressKey(-1, CHARGE_EVENT, DATETIME_COMPLETED)] = dateCharged;
+      });
+    }
+
+    const sectionTwoKey :string = getPageSectionKey(1, 2);
+    if (!arrestChargeMapsCreatedInCWP.isEmpty()) {
+      chargesPrepopulated = true;
+      chargesFormData = {
+        [sectionTwoKey]: []
+      };
+      arrestChargeMapsCreatedInCWP.forEach((chargeMap :Map, index :number) => {
+        const chargeEvent :Map = chargeMap.get(CHARGE_EVENT, Map());
+        const dateCharged :string = getDateChargedFromChargeEvent(chargeEvent);
+        const chargeEKID :UUID = getEntityKeyId(chargeMap.get(ARREST_CHARGE_LIST, Map()));
+        chargesFormData[sectionTwoKey][index] = {};
+        chargesFormData[sectionTwoKey][index][getEntityAddressKey(-1, ARREST_CHARGE_LIST, ENTITY_KEY_ID)] = chargeEKID;
+        chargesFormData[sectionTwoKey][index][getEntityAddressKey(-1, CHARGE_EVENT, DATETIME_COMPLETED)] = dateCharged;
+      });
+    }
+
     newChargeSchema = hydrateArrestChargeSchema(arrestChargeSchema, arrestChargesFromPSA, arrestCharges);
 
 
     this.setState({
-      chargesFormData: {},
+      chargesFormData,
       chargesFormSchema: newChargeSchema,
-      chargesFormUiSchema: newChargeUiSchema,
-      chargesPrepopulated: false,
+      chargesPrepopulated,
     });
   }
 
-  handleOnChargesSubmit = () => {
+  onSubmit = () => {
     const {
+      arrestCaseEKIDByArrestChargeEKIDFromPSA,
       actions,
+      diversionPlanEKID,
       entitySetIds,
       participant,
-      personCase,
       propertyTypeIds,
     } = this.props;
     const { chargesFormData } = this.state;
 
-    const storedChargeData :[] = getIn(chargesFormData, [getPageSectionKey(1, 1)]);
-    const chargeKey = getEntityAddressKey(-1, COURT_CHARGE_LIST, ENTITY_KEY_ID);
-    const chargeEventKey = getEntityAddressKey(-1, CHARGE_EVENT, DATETIME_COMPLETED);
-    const newChargesList :Object[] = storedChargeData.map((charge :{}) => {
-      const chargeName = charge[chargeKey];
-      const date :UUID = charge[chargeEventKey];
-      const currentTime = DateTime.local().toLocaleString(DateTime.TIME_24_SIMPLE);
-      const datetime = getCombinedDateTime(date, currentTime);
-      return {
-        [chargeKey]: chargeName,
-        [chargeEventKey]: datetime
-      };
+    const currentTime = DateTime.local().toLocaleString(DateTime.TIME_24_SIMPLE);
+    const personEKID :UUID = getEntityKeyId(participant);
+
+    const entities :Object = {
+      [getPageSectionKey(1, 1)]: [],
+      [getPageSectionKey(1, 2)]: [],
+      [getPageSectionKey(1, 3)]: {},
+    };
+    const associations :Array<Array<*>> = [];
+
+    const existingChargesFromPSA :Object[] = get(chargesFormData, getPageSectionKey(1, 1));
+    if (existingChargesFromPSA.length && Object.values(existingChargesFromPSA[0]).length) {
+      existingChargesFromPSA.forEach((charge :Object, index :number) => {
+        const chargeEventToSubmit :Object = {};
+        const existingArrestChargeEKID :UUID = charge[
+          getEntityAddressKey(-1, MANUAL_ARREST_CHARGES, ENTITY_KEY_ID)
+        ];
+        associations.push([REGISTERED_FOR, index, CHARGE_EVENT, existingArrestChargeEKID, MANUAL_ARREST_CHARGES]);
+        associations.push([MANUAL_CHARGED_WITH, personEKID, PEOPLE, index, CHARGE_EVENT]);
+
+        const arrestCaseEKID :UUID = arrestCaseEKIDByArrestChargeEKIDFromPSA.get(existingArrestChargeEKID, '');
+        associations.push([RELATED_TO, diversionPlanEKID, DIVERSION_PLAN, arrestCaseEKID, MANUAL_ARREST_CASES]);
+
+        const dateTimeCharged :string = getCombinedDateTime(
+          charge[getEntityAddressKey(-1, CHARGE_EVENT, DATETIME_COMPLETED)],
+          currentTime
+        );
+        chargeEventToSubmit[getEntityAddressKey(index, CHARGE_EVENT, DATETIME_COMPLETED)] = dateTimeCharged;
+        entities[getPageSectionKey(1, 1)].push(chargeEventToSubmit);
+      });
+    }
+
+    const newArrestCharges :Object[] = get(chargesFormData, getPageSectionKey(1, 2));
+    if (newArrestCharges.length && Object.values(newArrestCharges[0]).length) {
+      newArrestCharges.forEach((charge :Object, index :number) => {
+        const chargeEventToSubmit :Object = charge;
+        const arrestChargeEKID :UUID = chargeEventToSubmit[
+          getEntityAddressKey(-1, ARREST_CHARGE_LIST, ENTITY_KEY_ID)
+        ];
+        const dateTimeCharged :string = getCombinedDateTime(
+          charge[getEntityAddressKey(-1, CHARGE_EVENT, DATETIME_COMPLETED)],
+          currentTime
+        );
+        entities[getPageSectionKey(1, 3)][getEntityAddressKey(index, MANUAL_ARREST_CASES, DATETIME)] = dateTimeCharged;
+
+        associations.push([
+          REGISTERED_FOR,
+          index + existingChargesFromPSA.length,
+          CHARGE_EVENT,
+          arrestChargeEKID,
+          ARREST_CHARGE_LIST
+        ]);
+        associations.push([APPEARS_IN, arrestChargeEKID, ARREST_CHARGE_LIST, index, MANUAL_ARREST_CASES]);
+        associations.push([APPEARS_IN_ARREST, personEKID, PEOPLE, index, MANUAL_ARREST_CASES]);
+        associations.push([MANUAL_CHARGED_WITH, personEKID, PEOPLE, arrestChargeEKID, ARREST_CHARGE_LIST]);
+        associations.push([
+          MANUAL_CHARGED_WITH,
+          personEKID, PEOPLE,
+          index + existingChargesFromPSA.length,
+          CHARGE_EVENT
+        ]);
+        associations.push([RELATED_TO, diversionPlanEKID, DIVERSION_PLAN, index, MANUAL_ARREST_CASES]);
+
+        delete chargeEventToSubmit[getEntityAddressKey(-1, ARREST_CHARGE_LIST, ENTITY_KEY_ID)];
+        chargeEventToSubmit[getEntityAddressKey(-1, CHARGE_EVENT, DATETIME_COMPLETED)] = dateTimeCharged;
+        entities[getPageSectionKey(1, 2)].push(chargeEventToSubmit);
+      });
+    }
+
+    const entityMappers :Map = Map().withMutations((mappers :Map) => {
+      const indexMappers = Map().withMutations((map :Map) => {
+        map.set(
+          getEntityAddressKey(-1, CHARGE_EVENT, DATETIME_COMPLETED),
+          (i) => i + entities[getPageSectionKey(1, 1)].length
+        );
+      });
+      mappers.set(INDEX_MAPPERS, indexMappers);
     });
-    chargesFormData[getPageSectionKey(1, 1)] = newChargesList;
 
-    const entityData :{} = processEntityData(chargesFormData, entitySetIds, propertyTypeIds);
-    const associations = [];
+    const entityData :{} = processEntityData(entities, entitySetIds, propertyTypeIds, entityMappers);
+    const associationEntityData :{} = processAssociationEntityData(fromJS(associations), entitySetIds, propertyTypeIds);
+    console.log('entityData: ', entityData);
+    console.log('associationEntityData: ', associationEntityData);
 
-    const personEKID = getEntityKeyId(participant);
-    const caseEKID = getEntityKeyId(personCase);
-    const courtChargeListESID :UUID = entitySetIds.get(COURT_CHARGE_LIST);
-    const olEKID :UUID = propertyTypeIds.get(ENTITY_KEY_ID);
-
-    fromJS(entityData).get(courtChargeListESID).forEach((courtCharge :Map, index :number) => {
-      const courtChargeEKID :UUID = courtCharge.getIn([olEKID, 0]);
-      associations.push([APPEARS_IN, courtChargeEKID, COURT_CHARGE_LIST, caseEKID, MANUAL_PRETRIAL_COURT_CASES]);
-      associations.push([REGISTERED_FOR, index, CHARGE_EVENT, courtChargeEKID, COURT_CHARGE_LIST]);
-      associations.push([MANUAL_CHARGED_WITH, personEKID, PEOPLE, courtChargeEKID, COURT_CHARGE_LIST]);
-      associations.push([MANUAL_CHARGED_WITH, personEKID, PEOPLE, index, CHARGE_EVENT]);
-    });
-
-    const associationEntityData :{} = processAssociationEntityData(associations, entitySetIds, propertyTypeIds);
-    delete entityData[courtChargeListESID];
-
-    actions.addChargesToCase({ associationEntityData, entityData });
+    actions.addArrestCharges({ associationEntityData, entityData });
   }
 
-  handleOnChangeCharges = ({ formData } :Object) => {
+  onChange = ({ formData } :Object) => {
     this.setState({ chargesFormData: formData });
   }
 
@@ -213,16 +297,15 @@ class EditCourtChargesForm extends Component<Props, State> {
     const {
       chargesFormData,
       chargesFormSchema,
-      chargesFormUiSchema,
       chargesPrepopulated,
       isAvailableChargesModalVisible,
     } = this.state;
 
     const chargesFormContext = {
       addActions: {
-        addCharge: actions.addChargesToCase
+        addCharge: () => {}
       },
-      deleteAction: actions.removeChargeFromCase,
+      deleteAction: () => {},
       entityIndexToIdMap,
       entitySetIds,
       propertyTypeIds,
@@ -241,10 +324,10 @@ class EditCourtChargesForm extends Component<Props, State> {
               disabled={chargesPrepopulated}
               formContext={chargesFormContext}
               formData={chargesFormData}
-              onChange={this.handleOnChangeCharges}
-              onSubmit={this.handleOnChargesSubmit}
+              onChange={this.onChange}
+              onSubmit={this.onSubmit}
               schema={chargesFormSchema}
-              uiSchema={chargesFormUiSchema} />
+              uiSchema={arrestChargeUiSchema} />
         </Card>
         <AddToAvailableArrestChargesModal
             isOpen={isAvailableChargesModalVisible}
@@ -256,8 +339,7 @@ class EditCourtChargesForm extends Component<Props, State> {
 
 const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
-    // addChargesToCase,
-    // removeChargeFromCase,
+    addArrestCharges,
   }, dispatch)
 });
 
