@@ -27,6 +27,7 @@ import { arrestChargeSchema, arrestChargeUiSchema } from './schemas/EditCaseInfo
 import { disableChargesForm, hydrateArrestChargeSchema } from './utils/EditCaseInfoUtils';
 import { getCombinedDateTime } from '../../../utils/ScheduleUtils';
 import { getEntityKeyId, getEntityProperties } from '../../../utils/DataUtils';
+import { isDefined } from '../../../utils/LangUtils';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 
 const {
@@ -185,6 +186,8 @@ class EditCourtChargesForm extends Component<Props, State> {
       entitySetIds,
       participant,
       propertyTypeIds,
+      cwpArrestCaseByArrestCharge,
+      psaArrestCaseByArrestCharge,
     } = this.props;
     const { chargesFormData } = this.state;
 
@@ -198,7 +201,14 @@ class EditCourtChargesForm extends Component<Props, State> {
     };
     const associations :Array<Array<*>> = [];
 
-    const existingChargesFromPSA :Object[] = get(chargesFormData, getPageSectionKey(1, 1));
+    let existingChargesFromPSA :Object[] = get(chargesFormData, getPageSectionKey(1, 1), []);
+    existingChargesFromPSA = existingChargesFromPSA.filter((chargeObject :Object) => {
+      const existingChargeEKID :UUID = chargeObject[getEntityAddressKey(-1, MANUAL_ARREST_CHARGES, ENTITY_KEY_ID)];
+      const existing :any = psaArrestCaseByArrestCharge
+        .findKey((caseEKID, chargeEKID) => chargeEKID === existingChargeEKID);
+      return !isDefined(existing);
+    });
+    console.log('existingChargesFromPSA: ', existingChargesFromPSA);
     if (existingChargesFromPSA.length && Object.values(existingChargesFromPSA[0]).length) {
       existingChargesFromPSA.forEach((charge :Object, index :number) => {
         const chargeEventToSubmit :Object = {};
@@ -220,7 +230,15 @@ class EditCourtChargesForm extends Component<Props, State> {
       });
     }
 
-    const newArrestCharges :Object[] = get(chargesFormData, getPageSectionKey(1, 2));
+    let newArrestCharges :Object[] = get(chargesFormData, getPageSectionKey(1, 2), []);
+    console.log('newArrestCharges: ', newArrestCharges);
+    newArrestCharges = newArrestCharges.filter((chargeObject :Object) => {
+      const existingChargeEKID :UUID = chargeObject[getEntityAddressKey(-1, ARREST_CHARGE_LIST, ENTITY_KEY_ID)];
+      const existing :any = cwpArrestCaseByArrestCharge
+        .findKey((caseEKID, chargeEKID) => chargeEKID === existingChargeEKID);
+      return !isDefined(existing);
+    });
+    console.log('newArrestCharges: ', newArrestCharges);
     if (newArrestCharges.length && Object.values(newArrestCharges[0]).length) {
       newArrestCharges.forEach((charge :Object, index :number) => {
         const chargeEventToSubmit :Object = charge;
@@ -245,7 +263,8 @@ class EditCourtChargesForm extends Component<Props, State> {
         associations.push([MANUAL_CHARGED_WITH, personEKID, PEOPLE, arrestChargeEKID, ARREST_CHARGE_LIST]);
         associations.push([
           MANUAL_CHARGED_WITH,
-          personEKID, PEOPLE,
+          personEKID,
+          PEOPLE,
           index + existingChargesFromPSA.length,
           CHARGE_EVENT
         ]);
@@ -303,7 +322,7 @@ class EditCourtChargesForm extends Component<Props, State> {
 
     const chargesFormContext = {
       addActions: {
-        addCharge: () => {}
+        addCharge: this.onSubmit
       },
       deleteAction: () => {},
       entityIndexToIdMap,

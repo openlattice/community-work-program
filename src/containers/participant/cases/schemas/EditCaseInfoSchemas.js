@@ -158,7 +158,6 @@ export const arrestChargeSchema = {
           },
         },
       },
-      default: [{}]
     },
     [getPageSectionKey(1, 2)]: {
       type: 'array',
@@ -179,7 +178,6 @@ export const arrestChargeSchema = {
           },
         },
       },
-      default: [{}]
     },
   }
 };

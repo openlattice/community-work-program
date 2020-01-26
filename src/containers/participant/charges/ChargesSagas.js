@@ -537,6 +537,7 @@ function* getArrestChargesLinkedToCWPWorker(action :SequenceAction) :Generator<*
         throw response.error;
       }
       const arrestChargeNeighbors :Map = fromJS(response.data);
+      console.log('arrestChargeNeighbors: ', response.data);
       if (!arrestChargeNeighbors.isEmpty()) {
         let psaArrestChargesByEKID :Map = Map();
         let cwpArrestChargesByEKID :Map = Map();
@@ -594,6 +595,7 @@ function* getArrestChargesLinkedToCWPWorker(action :SequenceAction) :Generator<*
         const psaChargeEventNeighbors :Map = fromJS(psaChargeEvents.data);
         console.log('psaChargeEventNeighbors: ', psaChargeEvents.data);
         const cwpChargeEventNeighbors :Map = fromJS(cwpChargeEvents.data);
+        console.log('cwpChargeEventNeighbors: ', cwpChargeEvents.data);
         if (!psaChargeEventNeighbors.isEmpty()) {
           psaChargeEventNeighbors.forEach((neighborList :List, chargeEKID :UUID) => neighborList
             .forEach((neighbor :Map) => {
