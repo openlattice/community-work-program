@@ -301,7 +301,6 @@ class EditCourtChargesForm extends Component<Props, State> {
       entitySetIds,
       participant,
     } = this.props;
-    console.log('dataToDelete: ', dataToDelete);
     const { formData } = dataToDelete;
     const arrestCaseESID :UUID = entitySetIds.get(MANUAL_ARREST_CASES, '');
     const chargeEventESID :UUID = entitySetIds.get(CHARGE_EVENT, '');
@@ -312,43 +311,45 @@ class EditCourtChargesForm extends Component<Props, State> {
     let associationToDelete :Object = {};
 
     const cwpArrestChargeKey :string = getEntityAddressKey(-1, ARREST_CHARGE_LIST, ENTITY_KEY_ID);
-    const cwpArrestChargeEKID :UUID = get(formData, cwpArrestChargeKey);
+    const cwpArrestChargeEKID :UUID = get(formData, cwpArrestChargeKey, '');
     const psaArrestChargeKey :string = getEntityAddressKey(-1, MANUAL_ARREST_CHARGES, ENTITY_KEY_ID);
-    const psaArrestChargeEKID :UUID = get(formData, psaArrestChargeKey);
+    const psaArrestChargeEKID :UUID = get(formData, psaArrestChargeKey, '');
 
-    if (has(formData, cwpArrestChargeKey)) {
-      // delete the charge event (which will delete the link to the arrest charge and person)
-      const relevantChargeMap :Map = arrestChargeMapsCreatedInCWP
-        .find((chargeMap :Map) => getEntityKeyId(chargeMap.get(ARREST_CHARGE_LIST)) === cwpArrestChargeEKID);
-      const chargeEventEKID :UUID = getEntityKeyId(relevantChargeMap.get(CHARGE_EVENT));
-      entitiesToDelete.push({ entitySetId: chargeEventESID, entityKeyId: chargeEventEKID });
-      // delete the arrest case (which will delete the link to the person, diversion plan, and arrest charge)
-      const arrestCaseEKID :UUID = cwpArrestCaseByArrestCharge.get(cwpArrestChargeEKID, '');
-      entitiesToDelete.push({ entitySetId: arrestCaseESID, entityKeyId: arrestCaseEKID });
-      // delete the association between person and arrest charge
-      const personEKID :UUID = getEntityKeyId(participant);
-      associationToDelete = {
-        dstESID: cwpArrestChargeESID,
-        srcEKID: personEKID,
-        srcESID: peopleESID,
-      };
-    }
-    if (has(formData, psaArrestChargeKey)) {
-      // delete the charge event (which will delete the link to arrest charge and person)
-      const relevantChargeMap :Map = arrestChargeMapsCreatedInPSA
-        .find((chargeMap :Map) => getEntityKeyId(chargeMap.get(MANUAL_ARREST_CHARGES)) === psaArrestChargeEKID);
-      const chargeEventEKID :UUID = getEntityKeyId(relevantChargeMap.get(CHARGE_EVENT));
-      entitiesToDelete.push({ entitySetId: chargeEventESID, entityKeyId: chargeEventEKID });
-      // delete the association between diversion plan and arrest case
-      associationToDelete = {
-        dstESID: arrestCaseESID,
-        srcEKID: diversionPlanEKID,
-        srcESID: diversionPlanESID,
-      };
-    }
+    if (cwpArrestChargeEKID.length || psaArrestChargeEKID.length) {
+      if (has(formData, cwpArrestChargeKey)) {
+        // delete the charge event (which will delete the link to the arrest charge and person)
+        const relevantChargeMap :Map = arrestChargeMapsCreatedInCWP
+          .find((chargeMap :Map) => getEntityKeyId(chargeMap.get(ARREST_CHARGE_LIST)) === cwpArrestChargeEKID);
+        const chargeEventEKID :UUID = getEntityKeyId(relevantChargeMap.get(CHARGE_EVENT));
+        entitiesToDelete.push({ entitySetId: chargeEventESID, entityKeyId: chargeEventEKID });
+        // delete the arrest case (which will delete the link to the person, diversion plan, and arrest charge)
+        const arrestCaseEKID :UUID = cwpArrestCaseByArrestCharge.get(cwpArrestChargeEKID, '');
+        entitiesToDelete.push({ entitySetId: arrestCaseESID, entityKeyId: arrestCaseEKID });
+        // delete the association between person and arrest charge
+        const personEKID :UUID = getEntityKeyId(participant);
+        associationToDelete = {
+          dstESID: cwpArrestChargeESID,
+          srcEKID: personEKID,
+          srcESID: peopleESID,
+        };
+      }
+      if (has(formData, psaArrestChargeKey)) {
+        // delete the charge event (which will delete the link to arrest charge and person)
+        const relevantChargeMap :Map = arrestChargeMapsCreatedInPSA
+          .find((chargeMap :Map) => getEntityKeyId(chargeMap.get(MANUAL_ARREST_CHARGES)) === psaArrestChargeEKID);
+        const chargeEventEKID :UUID = getEntityKeyId(relevantChargeMap.get(CHARGE_EVENT));
+        entitiesToDelete.push({ entitySetId: chargeEventESID, entityKeyId: chargeEventEKID });
+        // delete the association between diversion plan and arrest case
+        associationToDelete = {
+          dstESID: arrestCaseESID,
+          srcEKID: diversionPlanEKID,
+          srcESID: diversionPlanESID,
+        };
+      }
 
-    const { path } = dataToDelete;
-    actions.removeArrestCharge({ associationToDelete, entitiesToDelete, path });
+      const { path } = dataToDelete;
+      actions.removeArrestCharge({ associationToDelete, entitiesToDelete, path });
+    }
   }
 
   onChange = ({ formData } :Object) => {

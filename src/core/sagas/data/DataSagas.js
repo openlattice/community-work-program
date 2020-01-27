@@ -66,7 +66,7 @@ function* submitDataGraphWorker(action :SequenceAction) :Generator<*, *, *> {
       .setAssociations(value.associationEntityData)
       .setEntities(value.entityData)
       .build();
-    console.log(JSON.stringify(dataGraph));
+
     const response = yield call(createEntityAndAssociationDataWorker, createEntityAndAssociationData(dataGraph));
     if (response.error) throw response.error;
 

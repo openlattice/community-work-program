@@ -349,8 +349,6 @@ export default function chargesReducer(state :Map = INITIAL_STATE, action :Seque
           if (path[0] === getPageSectionKey(1, 2)) {
             arrestChargeMapsCreatedInCWP = arrestChargeMapsCreatedInCWP.delete(path[1]);
           }
-          console.log('arrestChargeMapsCreatedInCWP: ', arrestChargeMapsCreatedInCWP.toJS());
-          console.log('arrestChargeMapsCreatedInPSA: ', arrestChargeMapsCreatedInPSA.toJS());
 
           return state
             .set(ARREST_CHARGE_MAPS_CREATED_IN_CWP, arrestChargeMapsCreatedInCWP)
