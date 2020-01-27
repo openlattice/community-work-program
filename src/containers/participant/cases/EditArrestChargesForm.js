@@ -50,7 +50,7 @@ const {
   RELATED_TO,
   DIVERSION_PLAN,
 } = APP_TYPE_FQNS;
-const { DATETIME, DATETIME_COMPLETED, ENTITY_KEY_ID } = PROPERTY_TYPE_FQNS;
+const { ARREST_DATETIME, DATETIME_COMPLETED, ENTITY_KEY_ID } = PROPERTY_TYPE_FQNS;
 
 const getDateChargedFromChargeEvent = (chargeEvent :Map) :string => {
   const { [DATETIME_COMPLETED]: dateTimeCharged } = getEntityProperties(chargeEvent, [DATETIME_COMPLETED]);
@@ -249,7 +249,11 @@ class EditCourtChargesForm extends Component<Props, State> {
           charge[getEntityAddressKey(-1, CHARGE_EVENT, DATETIME_COMPLETED)],
           currentTime
         );
-        entities[getPageSectionKey(1, 3)][getEntityAddressKey(index, MANUAL_ARREST_CASES, DATETIME)] = dateTimeCharged;
+        entities[getPageSectionKey(1, 3)][getEntityAddressKey(
+          index,
+          MANUAL_ARREST_CASES,
+          ARREST_DATETIME
+        )] = dateTimeCharged;
 
         associations.push([
           REGISTERED_FOR,

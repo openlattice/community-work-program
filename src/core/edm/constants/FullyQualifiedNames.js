@@ -72,6 +72,7 @@ export const APP_TYPE_FQNS :Object = {
 };
 
 export const PROPERTY_TYPE_FQNS :Object = {
+  ARREST_DATETIME: new FullyQualifiedName('ol.arrestdatetime'),
   CASE_NUMBER_TEXT: new FullyQualifiedName('j.CaseNumberText'),
   CATEGORY: new FullyQualifiedName('ol.category'),
   CELL_PHONE: new FullyQualifiedName('contact.cellphone'),
