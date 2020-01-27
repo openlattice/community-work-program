@@ -1,5 +1,6 @@
 // @flow
 import { List, Map, fromJS } from 'immutable';
+import { DataProcessingUtils } from 'lattice-fabricate';
 import { RequestStates } from 'redux-reqseq';
 import type { SequenceAction } from 'redux-reqseq';
 
@@ -12,12 +13,14 @@ import {
   getArrestChargesLinkedToCWP,
   getCourtCharges,
   getCourtChargesForCase,
+  removeArrestCharge,
   removeCourtChargeFromCase,
 } from './ChargesActions';
 import { getEntityKeyId } from '../../../utils/DataUtils';
 import { CHARGES, SHARED } from '../../../utils/constants/ReduxStateConsts';
 import { APP_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 
+const { getPageSectionKey } = DataProcessingUtils;
 const { ACTIONS, REQUEST_STATE } = SHARED;
 const {
   ADD_COURT_CHARGES_TO_CASE,
@@ -38,6 +41,7 @@ const {
   GET_COURT_CHARGES,
   GET_COURT_CHARGES_FOR_CASE,
   PSA_ARREST_CASE_BY_ARREST_CHARGE,
+  REMOVE_ARREST_CHARGE,
   REMOVE_COURT_CHARGE_FROM_CASE,
 } = CHARGES;
 const { COURT_CHARGE_LIST } = APP_TYPE_FQNS;
@@ -66,6 +70,12 @@ const INITIAL_STATE :Map = fromJS({
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [GET_COURT_CHARGES_FOR_CASE]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [REMOVE_ARREST_CHARGE]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [REMOVE_COURT_CHARGE_FROM_CASE]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
   },
@@ -314,6 +324,42 @@ export default function chargesReducer(state :Map = INITIAL_STATE, action :Seque
         FAILURE: () => state
           .setIn([ACTIONS, GET_COURT_CHARGES_FOR_CASE, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, GET_COURT_CHARGES_FOR_CASE, action.id])
+      });
+    }
+
+    case removeArrestCharge.case(action.type): {
+
+      return removeArrestCharge.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, REMOVE_ARREST_CHARGE, action.id], action)
+          .setIn([ACTIONS, REMOVE_ARREST_CHARGE, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+          if (!state.hasIn([ACTIONS, REMOVE_ARREST_CHARGE, action.id])) {
+            return state;
+          }
+          const path = action.value;
+
+          let arrestChargeMapsCreatedInCWP :List = state.get(ARREST_CHARGE_MAPS_CREATED_IN_CWP, List());
+          let arrestChargeMapsCreatedInPSA :List = state.get(ARREST_CHARGE_MAPS_CREATED_IN_PSA, List());
+
+          if (path[0] === getPageSectionKey(1, 1)) {
+            arrestChargeMapsCreatedInPSA = arrestChargeMapsCreatedInPSA.delete(path[1]);
+          }
+          if (path[0] === getPageSectionKey(1, 2)) {
+            arrestChargeMapsCreatedInCWP = arrestChargeMapsCreatedInCWP.delete(path[1]);
+          }
+          console.log('arrestChargeMapsCreatedInCWP: ', arrestChargeMapsCreatedInCWP.toJS());
+          console.log('arrestChargeMapsCreatedInPSA: ', arrestChargeMapsCreatedInPSA.toJS());
+
+          return state
+            .set(ARREST_CHARGE_MAPS_CREATED_IN_CWP, arrestChargeMapsCreatedInCWP)
+            .set(ARREST_CHARGE_MAPS_CREATED_IN_PSA, arrestChargeMapsCreatedInPSA)
+            .setIn([ACTIONS, REMOVE_ARREST_CHARGE, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, REMOVE_ARREST_CHARGE, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, REMOVE_ARREST_CHARGE, action.id])
       });
     }
 

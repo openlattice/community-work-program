@@ -46,6 +46,7 @@ import {
   GET_ARREST_CHARGES_LINKED_TO_CWP,
   GET_COURT_CHARGES,
   GET_COURT_CHARGES_FOR_CASE,
+  REMOVE_ARREST_CHARGE,
   REMOVE_COURT_CHARGE_FROM_CASE,
   addArrestCharges,
   addCourtChargesToCase,
@@ -56,6 +57,7 @@ import {
   getArrestChargesLinkedToCWP,
   getCourtCharges,
   getCourtChargesForCase,
+  removeArrestCharge,
   removeCourtChargeFromCase,
 } from './ChargesActions';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
@@ -111,7 +113,6 @@ function* addArrestChargesWorker(action :SequenceAction) :Generator<*, *, *> {
 
   try {
     yield put(addArrestCharges.request(id, value));
-    console.log('value: ', value);
     const { associationEntityData, entityData } = value;
 
     response = yield call(submitDataGraphWorker, submitDataGraph({ associationEntityData, entityData }));
@@ -121,14 +122,13 @@ function* addArrestChargesWorker(action :SequenceAction) :Generator<*, *, *> {
 
     const { entityKeyIds } = response.data;
     const { entitySetIds } = response.data;
-    console.log('entityKeyIds: ', entityKeyIds);
-    console.log('entitySetIds: ', entitySetIds);
+
     const app = yield select(getAppFromState);
     const edm = yield select(getEdmFromState);
     const chargesState = yield select(getChargesFromState);
     const chargeEventESID :UUID = getEntitySetIdFromApp(app, CHARGE_EVENT);
     const chargeEventEKIDs :UUID[] = entityKeyIds[chargeEventESID];
-    console.log('chargeEventEKIDs: ', chargeEventEKIDs);
+
     chargeEventEKIDs.forEach((ekid :UUID, index :number) => {
       let newChargeMap :Map = Map();
       // construct charge event entity:
@@ -169,10 +169,6 @@ function* addArrestChargesWorker(action :SequenceAction) :Generator<*, *, *> {
         psaArrestCaseByArrestCharge = psaArrestCaseByArrestCharge.set(chargeEKID, caseEKID);
       }
     });
-    console.log('arrestChargeMapsCreatedInCWP: ', arrestChargeMapsCreatedInCWP.toJS());
-    console.log('arrestChargeMapsCreatedInPSA: ', arrestChargeMapsCreatedInPSA.toJS());
-    console.log('cwpArrestCaseByArrestCharge: ', cwpArrestCaseByArrestCharge.toJS());
-    console.log('psaArrestCaseByArrestCharge: ', psaArrestCaseByArrestCharge.toJS());
 
     yield put(addArrestCharges.success(id, {
       arrestChargeMapsCreatedInCWP,
@@ -537,7 +533,6 @@ function* getArrestChargesLinkedToCWPWorker(action :SequenceAction) :Generator<*
         throw response.error;
       }
       const arrestChargeNeighbors :Map = fromJS(response.data);
-      console.log('arrestChargeNeighbors: ', response.data);
       if (!arrestChargeNeighbors.isEmpty()) {
         let psaArrestChargesByEKID :Map = Map();
         let cwpArrestChargesByEKID :Map = Map();
@@ -593,9 +588,8 @@ function* getArrestChargesLinkedToCWPWorker(action :SequenceAction) :Generator<*
           throw cwpChargeEvents.error;
         }
         const psaChargeEventNeighbors :Map = fromJS(psaChargeEvents.data);
-        console.log('psaChargeEventNeighbors: ', psaChargeEvents.data);
         const cwpChargeEventNeighbors :Map = fromJS(cwpChargeEvents.data);
-        console.log('cwpChargeEventNeighbors: ', cwpChargeEvents.data);
+
         if (!psaChargeEventNeighbors.isEmpty()) {
           psaChargeEventNeighbors.forEach((neighborList :List, chargeEKID :UUID) => neighborList
             .forEach((neighbor :Map) => {
@@ -618,11 +612,6 @@ function* getArrestChargesLinkedToCWPWorker(action :SequenceAction) :Generator<*
         }
       }
     }
-
-    console.log('arrestChargeMapsCreatedInCWP: ', arrestChargeMapsCreatedInCWP.toJS());
-    console.log('arrestChargeMapsCreatedInPSA: ', arrestChargeMapsCreatedInPSA.toJS());
-    console.log('cwpArrestCaseByArrestCharge: ', cwpArrestCaseByArrestCharge.toJS());
-    console.log('psaArrestCaseByArrestCharge: ', psaArrestCaseByArrestCharge.toJS());
 
     yield put(getArrestChargesLinkedToCWP.success(id, {
       arrestChargeMapsCreatedInCWP,
@@ -900,6 +889,69 @@ function* getArrestCasesAndChargesFromPSAWatcher() :Generator<*, *, *> {
 
 /*
  *
+ * ChargesActions.removeArrestCharge()
+ *
+ */
+
+function* removeArrestChargeWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+  if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
+  let response :{} = {};
+
+  try {
+    yield put(removeArrestCharge.request(id, value));
+
+    const { associationToDelete, entitiesToDelete, path } = value;
+    const completeListOfEntitiesToDelete :Object[] = entitiesToDelete;
+    const { dstESID, srcEKID, srcESID } = associationToDelete;
+
+    const searchFilter = {
+      entityKeyIds: [srcEKID],
+      destinationEntitySetIds: [dstESID],
+      sourceEntitySetIds: [],
+    };
+    response = yield call(
+      searchEntityNeighborsWithFilterWorker,
+      searchEntityNeighborsWithFilter({ entitySetId: srcESID, filter: searchFilter })
+    );
+    if (response.error) {
+      throw response.error;
+    }
+    if (response.data[srcEKID]) {
+      const neighbor :Map = fromJS(response.data[srcEKID][0]);
+      const associationEntity :Map = neighbor.get(ASSOCIATION_DETAILS);
+      const associationEKID :UUID = getEntityKeyId(associationEntity);
+      const associationESID :UUID = getAssociationNeighborESID(neighbor);
+      completeListOfEntitiesToDelete.push({
+        entitySetId: associationESID,
+        entityKeyId: associationEKID
+      });
+    }
+
+    response = yield call(deleteEntitiesWorker, deleteEntities(entitiesToDelete));
+    if (response.error) {
+      throw response.error;
+    }
+
+    yield put(removeArrestCharge.success(id, path));
+  }
+  catch (error) {
+    LOG.error('caught exception in removeArrestChargeWorker()', error);
+    yield put(removeArrestCharge.failure(id, error));
+  }
+  finally {
+    yield put(removeArrestCharge.finally(id));
+  }
+}
+
+function* removeArrestChargeWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(REMOVE_ARREST_CHARGE, removeArrestChargeWorker);
+}
+
+/*
+ *
  * ChargesActions.removeCourtChargeFromCase()
  *
  */
@@ -995,6 +1047,8 @@ export {
   getCourtChargesForCaseWorker,
   getCourtChargesWatcher,
   getCourtChargesWorker,
+  removeArrestChargeWatcher,
+  removeArrestChargeWorker,
   removeCourtChargeFromCaseWatcher,
   removeCourtChargeFromCaseWorker,
 };

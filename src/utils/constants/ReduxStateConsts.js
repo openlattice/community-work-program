@@ -50,6 +50,7 @@ export const CHARGES = {
   GET_COURT_CHARGES: 'getCourtCharges',
   GET_COURT_CHARGES_FOR_CASE: 'getCourtChargesForCase',
   PSA_ARREST_CASE_BY_ARREST_CHARGE: 'psaArrestCaseByArrestCharge',
+  REMOVE_ARREST_CHARGE: 'removeArrestCharge',
   REMOVE_COURT_CHARGE_FROM_CASE: 'removeCourtChargeFromCase',
 };
 

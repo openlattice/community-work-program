@@ -6,6 +6,7 @@ import {
   Map,
   fromJS,
   get,
+  has,
   getIn,
   setIn,
 } from 'immutable';
@@ -22,7 +23,7 @@ import type { RequestSequence } from 'redux-reqseq';
 
 import AddToAvailableArrestChargesModal from '../charges/AddToAvailableArrestChargesModal';
 
-import { addArrestCharges } from '../charges/ChargesActions';
+import { addArrestCharges, removeArrestCharge } from '../charges/ChargesActions';
 import { arrestChargeSchema, arrestChargeUiSchema } from './schemas/EditCaseInfoSchemas';
 import { disableChargesForm, hydrateArrestChargeSchema } from './utils/EditCaseInfoUtils';
 import { getCombinedDateTime } from '../../../utils/ScheduleUtils';
@@ -68,6 +69,7 @@ const InnerCardHeader = styled.div`
 type Props = {
   actions:{
     addArrestCharges :RequestSequence;
+    removeArrestCharge :RequestSequence;
   },
   arrestCaseEKIDByArrestChargeEKIDFromPSA :Map;
   arrestChargeMapsCreatedInCWP :List;
@@ -77,7 +79,7 @@ type Props = {
   cwpArrestCaseByArrestCharge :Map;
   diversionPlanEKID :UUID;
   entityIndexToIdMap :Map;
-  entitySetIds :Object;
+  entitySetIds :Map;
   participant :Map;
   propertyTypeIds :Object;
   psaArrestCaseByArrestCharge :Map;
@@ -132,14 +134,12 @@ class EditCourtChargesForm extends Component<Props, State> {
 
     let chargesPrepopulated = false;
     const sectionOneKey :string = getPageSectionKey(1, 1);
-    let chargesFormData :Object = {};
+    const chargesFormData :Object = {};
     let newChargeSchema :Object = arrestChargeSchema;
 
     if (!arrestChargeMapsCreatedInPSA.isEmpty()) {
       chargesPrepopulated = true;
-      chargesFormData = {
-        [sectionOneKey]: []
-      };
+      chargesFormData[sectionOneKey] = [];
       arrestChargeMapsCreatedInPSA.forEach((chargeMap :Map, index :number) => {
         const chargeEvent :Map = chargeMap.get(CHARGE_EVENT, Map());
         const dateCharged :string = getDateChargedFromChargeEvent(chargeEvent);
@@ -155,9 +155,7 @@ class EditCourtChargesForm extends Component<Props, State> {
     const sectionTwoKey :string = getPageSectionKey(1, 2);
     if (!arrestChargeMapsCreatedInCWP.isEmpty()) {
       chargesPrepopulated = true;
-      chargesFormData = {
-        [sectionTwoKey]: []
-      };
+      chargesFormData[sectionTwoKey] = [];
       arrestChargeMapsCreatedInCWP.forEach((chargeMap :Map, index :number) => {
         const chargeEvent :Map = chargeMap.get(CHARGE_EVENT, Map());
         const dateCharged :string = getDateChargedFromChargeEvent(chargeEvent);
@@ -208,7 +206,6 @@ class EditCourtChargesForm extends Component<Props, State> {
         .findKey((caseEKID, chargeEKID) => chargeEKID === existingChargeEKID);
       return !isDefined(existing);
     });
-    console.log('existingChargesFromPSA: ', existingChargesFromPSA);
     if (existingChargesFromPSA.length && Object.values(existingChargesFromPSA[0]).length) {
       existingChargesFromPSA.forEach((charge :Object, index :number) => {
         const chargeEventToSubmit :Object = {};
@@ -231,14 +228,12 @@ class EditCourtChargesForm extends Component<Props, State> {
     }
 
     let newArrestCharges :Object[] = get(chargesFormData, getPageSectionKey(1, 2), []);
-    console.log('newArrestCharges: ', newArrestCharges);
     newArrestCharges = newArrestCharges.filter((chargeObject :Object) => {
       const existingChargeEKID :UUID = chargeObject[getEntityAddressKey(-1, ARREST_CHARGE_LIST, ENTITY_KEY_ID)];
       const existing :any = cwpArrestCaseByArrestCharge
         .findKey((caseEKID, chargeEKID) => chargeEKID === existingChargeEKID);
       return !isDefined(existing);
     });
-    console.log('newArrestCharges: ', newArrestCharges);
     if (newArrestCharges.length && Object.values(newArrestCharges[0]).length) {
       newArrestCharges.forEach((charge :Object, index :number) => {
         const chargeEventToSubmit :Object = charge;
@@ -292,10 +287,68 @@ class EditCourtChargesForm extends Component<Props, State> {
 
     const entityData :{} = processEntityData(entities, entitySetIds, propertyTypeIds, entityMappers);
     const associationEntityData :{} = processAssociationEntityData(fromJS(associations), entitySetIds, propertyTypeIds);
-    console.log('entityData: ', entityData);
-    console.log('associationEntityData: ', associationEntityData);
 
     actions.addArrestCharges({ associationEntityData, entityData });
+  }
+
+  onDelete = (dataToDelete :Object) => {
+    const {
+      actions,
+      arrestChargeMapsCreatedInCWP,
+      arrestChargeMapsCreatedInPSA,
+      cwpArrestCaseByArrestCharge,
+      diversionPlanEKID,
+      entitySetIds,
+      participant,
+    } = this.props;
+    console.log('dataToDelete: ', dataToDelete);
+    const { formData } = dataToDelete;
+    const arrestCaseESID :UUID = entitySetIds.get(MANUAL_ARREST_CASES, '');
+    const chargeEventESID :UUID = entitySetIds.get(CHARGE_EVENT, '');
+    const peopleESID :UUID = entitySetIds.get(PEOPLE, '');
+    const cwpArrestChargeESID :UUID = entitySetIds.get(ARREST_CHARGE_LIST, '');
+    const diversionPlanESID :UUID = entitySetIds.get(DIVERSION_PLAN, '');
+    const entitiesToDelete :Object[] = [];
+    let associationToDelete :Object = {};
+
+    const cwpArrestChargeKey :string = getEntityAddressKey(-1, ARREST_CHARGE_LIST, ENTITY_KEY_ID);
+    const cwpArrestChargeEKID :UUID = get(formData, cwpArrestChargeKey);
+    const psaArrestChargeKey :string = getEntityAddressKey(-1, MANUAL_ARREST_CHARGES, ENTITY_KEY_ID);
+    const psaArrestChargeEKID :UUID = get(formData, psaArrestChargeKey);
+
+    if (has(formData, cwpArrestChargeKey)) {
+      // delete the charge event (which will delete the link to the arrest charge and person)
+      const relevantChargeMap :Map = arrestChargeMapsCreatedInCWP
+        .find((chargeMap :Map) => getEntityKeyId(chargeMap.get(ARREST_CHARGE_LIST)) === cwpArrestChargeEKID);
+      const chargeEventEKID :UUID = getEntityKeyId(relevantChargeMap.get(CHARGE_EVENT));
+      entitiesToDelete.push({ entitySetId: chargeEventESID, entityKeyId: chargeEventEKID });
+      // delete the arrest case (which will delete the link to the person, diversion plan, and arrest charge)
+      const arrestCaseEKID :UUID = cwpArrestCaseByArrestCharge.get(cwpArrestChargeEKID, '');
+      entitiesToDelete.push({ entitySetId: arrestCaseESID, entityKeyId: arrestCaseEKID });
+      // delete the association between person and arrest charge
+      const personEKID :UUID = getEntityKeyId(participant);
+      associationToDelete = {
+        dstESID: cwpArrestChargeESID,
+        srcEKID: personEKID,
+        srcESID: peopleESID,
+      };
+    }
+    if (has(formData, psaArrestChargeKey)) {
+      // delete the charge event (which will delete the link to arrest charge and person)
+      const relevantChargeMap :Map = arrestChargeMapsCreatedInPSA
+        .find((chargeMap :Map) => getEntityKeyId(chargeMap.get(MANUAL_ARREST_CHARGES)) === psaArrestChargeEKID);
+      const chargeEventEKID :UUID = getEntityKeyId(relevantChargeMap.get(CHARGE_EVENT));
+      entitiesToDelete.push({ entitySetId: chargeEventESID, entityKeyId: chargeEventEKID });
+      // delete the association between diversion plan and arrest case
+      associationToDelete = {
+        dstESID: arrestCaseESID,
+        srcEKID: diversionPlanEKID,
+        srcESID: diversionPlanESID,
+      };
+    }
+
+    const { path } = dataToDelete;
+    actions.removeArrestCharge({ associationToDelete, entitiesToDelete, path });
   }
 
   onChange = ({ formData } :Object) => {
@@ -312,7 +365,6 @@ class EditCourtChargesForm extends Component<Props, State> {
 
   render() {
     const {
-      actions,
       entityIndexToIdMap,
       entitySetIds,
       propertyTypeIds,
@@ -328,7 +380,7 @@ class EditCourtChargesForm extends Component<Props, State> {
       addActions: {
         addCharge: this.onSubmit
       },
-      deleteAction: () => {},
+      deleteAction: this.onDelete,
       entityIndexToIdMap,
       entitySetIds,
       propertyTypeIds,
@@ -363,6 +415,7 @@ class EditCourtChargesForm extends Component<Props, State> {
 const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
     addArrestCharges,
+    removeArrestCharge,
   }, dispatch)
 });
 

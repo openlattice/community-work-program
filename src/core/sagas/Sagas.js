@@ -49,6 +49,7 @@ export default function* sagas() :Generator<*, *, *> {
     fork(ChargesSagas.getArrestChargesWatcher),
     fork(ChargesSagas.getCourtChargesForCaseWatcher),
     fork(ChargesSagas.getCourtChargesWatcher),
+    fork(ChargesSagas.removeArrestChargeWatcher),
     fork(ChargesSagas.removeCourtChargeFromCaseWatcher),
 
     // DataSagas

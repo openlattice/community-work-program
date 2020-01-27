@@ -30,6 +30,9 @@ const getCourtCharges :RequestSequence = newRequestSequence(GET_COURT_CHARGES);
 const GET_COURT_CHARGES_FOR_CASE :'GET_COURT_CHARGES_FOR_CASE' = 'GET_COURT_CHARGES_FOR_CASE';
 const getCourtChargesForCase :RequestSequence = newRequestSequence(GET_COURT_CHARGES_FOR_CASE);
 
+const REMOVE_ARREST_CHARGE :'REMOVE_ARREST_CHARGE' = 'REMOVE_ARREST_CHARGE';
+const removeArrestCharge :RequestSequence = newRequestSequence(REMOVE_ARREST_CHARGE);
+
 const REMOVE_COURT_CHARGE_FROM_CASE :'REMOVE_COURT_CHARGE_FROM_CASE' = 'REMOVE_COURT_CHARGE_FROM_CASE';
 const removeCourtChargeFromCase :RequestSequence = newRequestSequence(REMOVE_COURT_CHARGE_FROM_CASE);
 
@@ -43,6 +46,7 @@ export {
   GET_ARREST_CHARGES_LINKED_TO_CWP,
   GET_COURT_CHARGES,
   GET_COURT_CHARGES_FOR_CASE,
+  REMOVE_ARREST_CHARGE,
   REMOVE_COURT_CHARGE_FROM_CASE,
   addArrestCharges,
   addCourtChargesToCase,
@@ -53,5 +57,6 @@ export {
   getArrestChargesLinkedToCWP,
   getCourtCharges,
   getCourtChargesForCase,
+  removeArrestCharge,
   removeCourtChargeFromCase,
 };
