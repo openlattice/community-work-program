@@ -65,7 +65,7 @@ import { CHARGES, PERSON, STATE } from '../../../utils/constants/ReduxStateConst
 import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../../utils/Errors';
 import { ASSOCIATION_DETAILS } from '../../../core/edm/constants/DataModelConsts';
 
-const { getPageSectionKey, getEntityAddressKey, processAssociationEntityData } = DataProcessingUtils;
+const { processAssociationEntityData } = DataProcessingUtils;
 const { FullyQualifiedName } = Models;
 const { getEntitySetData } = DataApiActions;
 const { getEntitySetDataWorker } = DataApiSagas;
@@ -104,8 +104,6 @@ function* addArrestChargesWorker(action :SequenceAction) :Generator<*, *, *> {
 
   const { id, value } = action;
   if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
-  const workerResponse = {};
-  let response :Object = {};
   let arrestChargeMapsCreatedInCWP :List = List();
   let arrestChargeMapsCreatedInPSA :List = List();
   let psaArrestCaseByArrestCharge :Map = Map();
@@ -115,7 +113,7 @@ function* addArrestChargesWorker(action :SequenceAction) :Generator<*, *, *> {
     yield put(addArrestCharges.request(id, value));
     const { associationEntityData, entityData } = value;
 
-    response = yield call(submitDataGraphWorker, submitDataGraph({ associationEntityData, entityData }));
+    const response :Object = yield call(submitDataGraphWorker, submitDataGraph({ associationEntityData, entityData }));
     if (response.error) {
       throw response.error;
     }
@@ -178,8 +176,7 @@ function* addArrestChargesWorker(action :SequenceAction) :Generator<*, *, *> {
     }));
   }
   catch (error) {
-    workerResponse.error = error;
-    LOG.error('caught exception in addArrestChargesWorker()', error);
+    LOG.error(action.type, error);
     yield put(addArrestCharges.failure(id, error));
   }
   finally {
@@ -202,8 +199,6 @@ function* addCourtChargesToCaseWorker(action :SequenceAction) :Generator<*, *, *
 
   const { id, value } = action;
   if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
-  const workerResponse = {};
-  let response :Object = {};
   let newChargeMaps :List = List();
   let chargeEKIDs :List = List();
 
@@ -264,7 +259,7 @@ function* addCourtChargesToCaseWorker(action :SequenceAction) :Generator<*, *, *
 
     }
 
-    response = yield call(submitDataGraphWorker, submitDataGraph({ associationEntityData, entityData }));
+    const response :Object = yield call(submitDataGraphWorker, submitDataGraph({ associationEntityData, entityData }));
     if (response.error) {
       throw response.error;
     }
@@ -285,8 +280,7 @@ function* addCourtChargesToCaseWorker(action :SequenceAction) :Generator<*, *, *
     yield put(addCourtChargesToCase.success(id, { chargeEKIDs, newChargeMaps }));
   }
   catch (error) {
-    workerResponse.error = error;
-    LOG.error('caught exception in addCourtChargesToCaseWorker()', error);
+    LOG.error(action.type, error);
     yield put(addCourtChargesToCase.failure(id, error));
   }
   finally {
@@ -308,12 +302,11 @@ function* addCourtChargesToCaseWatcher() :Generator<*, *, *> {
 function* addToAvailableArrestChargesWorker(action :SequenceAction) :Generator<*, *, *> {
 
   const { id, value } = action;
-  let response :Object = {};
 
   try {
     yield put(addToAvailableArrestCharges.request(id, value));
 
-    response = yield call(submitDataGraphWorker, submitDataGraph(value));
+    const response :Object = yield call(submitDataGraphWorker, submitDataGraph(value));
     if (response.error) {
       throw response.error;
     }
@@ -338,7 +331,7 @@ function* addToAvailableArrestChargesWorker(action :SequenceAction) :Generator<*
     yield put(addToAvailableArrestCharges.success(id, { newCharge }));
   }
   catch (error) {
-    LOG.error('caught exception in addToAvailableArrestChargesWorker()', error);
+    LOG.error(action.type, error);
     yield put(addToAvailableArrestCharges.failure(id, error));
   }
   finally {
@@ -360,12 +353,11 @@ function* addToAvailableArrestChargesWatcher() :Generator<*, *, *> {
 function* addToAvailableCourtChargesWorker(action :SequenceAction) :Generator<*, *, *> {
 
   const { id, value } = action;
-  let response :Object = {};
 
   try {
     yield put(addToAvailableCourtCharges.request(id, value));
 
-    response = yield call(submitDataGraphWorker, submitDataGraph(value));
+    const response :Object = yield call(submitDataGraphWorker, submitDataGraph(value));
     if (response.error) {
       throw response.error;
     }
@@ -413,7 +405,6 @@ function* getArrestChargesWorker(action :SequenceAction) :Generator<*, *, *> {
 
   const { id } = action;
   const workerResponse = {};
-  let response :Object = {};
   let arrestCharges :List = List();
   let arrestChargesByEKID :Map = Map();
 
@@ -422,7 +413,10 @@ function* getArrestChargesWorker(action :SequenceAction) :Generator<*, *, *> {
     const app = yield select(getAppFromState);
     const arrestChargeListESID :UUID = getEntitySetIdFromApp(app, ARREST_CHARGE_LIST);
 
-    response = yield call(getEntitySetDataWorker, getEntitySetData({ entitySetId: arrestChargeListESID }));
+    const response :Object = yield call(
+      getEntitySetDataWorker,
+      getEntitySetData({ entitySetId: arrestChargeListESID })
+    );
     if (response.error) {
       throw response.error;
     }
@@ -439,7 +433,7 @@ function* getArrestChargesWorker(action :SequenceAction) :Generator<*, *, *> {
   }
   catch (error) {
     workerResponse.error = error;
-    LOG.error('caught exception in getArrestChargesWorker()', error);
+    LOG.error(action.type, error);
     yield put(getArrestCharges.failure(id, error));
   }
   finally {
@@ -594,9 +588,10 @@ function* getArrestChargesLinkedToCWPWorker(action :SequenceAction) :Generator<*
           psaChargeEventNeighbors.forEach((neighborList :List, chargeEKID :UUID) => neighborList
             .forEach((neighbor :Map) => {
               const chargeEvent :Map = getNeighborDetails(neighbor);
-              let chargeMap :Map = Map();
-              chargeMap = chargeMap.set(MANUAL_ARREST_CHARGES, psaArrestChargesByEKID.get(chargeEKID, Map()));
-              chargeMap = chargeMap.set(CHARGE_EVENT, chargeEvent);
+              const chargeMap :Map = Map().withMutations((map :Map) => {
+                map.set(MANUAL_ARREST_CHARGES, psaArrestChargesByEKID.get(chargeEKID, Map()));
+                map.set(CHARGE_EVENT, chargeEvent);
+              });
               arrestChargeMapsCreatedInPSA = arrestChargeMapsCreatedInPSA.push(chargeMap);
             }));
         }
@@ -622,7 +617,7 @@ function* getArrestChargesLinkedToCWPWorker(action :SequenceAction) :Generator<*
   }
   catch (error) {
     workerResponse.error = error;
-    LOG.error('caught exception in getArrestChargesLinkedToCWPWorker()', error);
+    LOG.error(action.type, error);
     yield put(getArrestChargesLinkedToCWP.failure(id, error));
   }
   finally {
@@ -646,7 +641,6 @@ function* getCourtChargesWorker(action :SequenceAction) :Generator<*, *, *> {
 
   const { id } = action;
   const workerResponse = {};
-  let response :Object = {};
   let charges :List = List();
 
   try {
@@ -654,7 +648,7 @@ function* getCourtChargesWorker(action :SequenceAction) :Generator<*, *, *> {
     const app = yield select(getAppFromState);
     const courtChargeListESID = getEntitySetIdFromApp(app, COURT_CHARGE_LIST);
 
-    response = yield call(getEntitySetDataWorker, getEntitySetData({ entitySetId: courtChargeListESID }));
+    const response :Object = yield call(getEntitySetDataWorker, getEntitySetData({ entitySetId: courtChargeListESID }));
     if (response.error) {
       throw response.error;
     }
@@ -664,7 +658,7 @@ function* getCourtChargesWorker(action :SequenceAction) :Generator<*, *, *> {
   }
   catch (error) {
     workerResponse.error = error;
-    LOG.error('caught exception in getCourtChargesWorker()', error);
+    LOG.error(action.type, error);
     yield put(getCourtCharges.failure(id, error));
   }
   finally {
@@ -765,7 +759,7 @@ function* getCourtChargesForCaseWorker(action :SequenceAction) :Generator<*, *, 
   }
   catch (error) {
     workerResponse.error = error;
-    LOG.error('caught exception in getCourtChargesForCaseWorker()', error);
+    LOG.error(action.type, error);
     yield put(getCourtChargesForCase.failure(id, error));
   }
   finally {
@@ -873,7 +867,7 @@ function* getArrestCasesAndChargesFromPSAWorker(action :SequenceAction) :Generat
   }
   catch (error) {
     workerResponse.error = error;
-    LOG.error('caught exception in getArrestCasesAndChargesFromPSAWorker()', error);
+    LOG.error(action.type, error);
     yield put(getArrestCasesAndChargesFromPSA.failure(id, error));
   }
   finally {
@@ -937,7 +931,7 @@ function* removeArrestChargeWorker(action :SequenceAction) :Generator<*, *, *> {
     yield put(removeArrestCharge.success(id, path));
   }
   catch (error) {
-    LOG.error('caught exception in removeArrestChargeWorker()', error);
+    LOG.error(action.type, error);
     yield put(removeArrestCharge.failure(id, error));
   }
   finally {
@@ -1015,7 +1009,7 @@ function* removeCourtChargeFromCaseWorker(action :SequenceAction) :Generator<*, 
     yield put(removeCourtChargeFromCase.success(id, {}));
   }
   catch (error) {
-    LOG.error('caught exception in removeCourtChargeFromCaseWorker()', error);
+    LOG.error(action.type, error);
     yield put(removeCourtChargeFromCase.failure(id, error));
   }
   finally {
