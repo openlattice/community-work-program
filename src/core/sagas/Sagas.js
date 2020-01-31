@@ -7,6 +7,7 @@ import { AuthSagas } from 'lattice-auth';
 import { DataApiSagas, SearchApiSagas } from 'lattice-sagas';
 
 import * as AppSagas from '../../containers/app/AppSagas';
+import * as ChargesSagas from '../../containers/participant/charges/ChargesSagas';
 import * as DataSagas from './data/DataSagas';
 import * as EDMSagas from '../edm/EDMSagas';
 import * as InfractionsSagas from '../../containers/participant/infractions/InfractionsSagas';
@@ -38,6 +39,19 @@ export default function* sagas() :Generator<*, *, *> {
     fork(AppSagas.initializeApplicationWatcher),
     fork(AppSagas.switchOrganizationWatcher),
 
+    // ChargesSagas
+    fork(ChargesSagas.addArrestChargesWatcher),
+    fork(ChargesSagas.addCourtChargesToCaseWatcher),
+    fork(ChargesSagas.addToAvailableArrestChargesWatcher),
+    fork(ChargesSagas.addToAvailableCourtChargesWatcher),
+    fork(ChargesSagas.getArrestCasesAndChargesFromPSAWatcher),
+    fork(ChargesSagas.getArrestChargesLinkedToCWPWatcher),
+    fork(ChargesSagas.getArrestChargesWatcher),
+    fork(ChargesSagas.getCourtChargesForCaseWatcher),
+    fork(ChargesSagas.getCourtChargesWatcher),
+    fork(ChargesSagas.removeArrestChargeWatcher),
+    fork(ChargesSagas.removeCourtChargeFromCaseWatcher),
+
     // DataSagas
     fork(DataSagas.createOrReplaceAssociationWatcher),
     fork(DataSagas.deleteEntitiesWatcher),
@@ -56,11 +70,9 @@ export default function* sagas() :Generator<*, *, *> {
     fork(InfractionsSagas.getParticipantInfractionsWatcher),
 
     // ParticipantSagas
-    fork(ParticipantSagas.addChargesToCaseWatcher),
     fork(ParticipantSagas.addNewDiversionPlanStatusWatcher),
     fork(ParticipantSagas.addNewParticipantContactsWatcher),
     fork(ParticipantSagas.addPersonPhotoWatcher),
-    fork(ParticipantSagas.addToAvailableChargesWatcher),
     fork(ParticipantSagas.createCaseWatcher),
     fork(ParticipantSagas.createNewEnrollmentWatcher),
     fork(ParticipantSagas.editEnrollmentDatesWatcher),
@@ -72,8 +84,6 @@ export default function* sagas() :Generator<*, *, *> {
     fork(ParticipantSagas.editRequiredHoursWatcher),
     fork(ParticipantSagas.getAllParticipantInfoWatcher),
     fork(ParticipantSagas.getCaseInfoWatcher),
-    fork(ParticipantSagas.getChargesForCaseWatcher),
-    fork(ParticipantSagas.getChargesWatcher),
     fork(ParticipantSagas.getContactInfoWatcher),
     fork(ParticipantSagas.getEnrollmentHistoryWatcher),
     fork(ParticipantSagas.getEnrollmentFromDiversionPlanWatcher),
@@ -88,7 +98,6 @@ export default function* sagas() :Generator<*, *, *> {
     fork(ParticipantSagas.getProgramOutcomeWatcher),
     fork(ParticipantSagas.markDiversionPlanAsCompleteWatcher),
     fork(ParticipantSagas.reassignJudgeWatcher),
-    fork(ParticipantSagas.removeChargeFromCaseWatcher),
     fork(ParticipantSagas.updatePersonPhotoWatcher),
 
     // ParticipantsSagas

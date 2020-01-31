@@ -12,7 +12,7 @@ import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/F
 import {
   requiredHoursSchema,
   requiredHoursUiSchema,
-} from '../schemas/EditCaseInfoSchemas';
+} from './schemas/EditCaseInfoSchemas';
 import {
   getEntityProperties,
 } from '../../../utils/DataUtils';
@@ -95,7 +95,7 @@ class EditRequiredHoursForm extends Component<Props, State> {
 
     return (
       <Card>
-        <CardHeader padding="sm">Edit Required Hours</CardHeader>
+        <CardHeader mode="primary" padding="sm">Edit Required Hours</CardHeader>
         <Form
             disabled
             formContext={requiredHoursFormContext}

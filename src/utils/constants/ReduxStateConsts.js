@@ -1,5 +1,6 @@
 export const STATE = {
   APP: 'app',
+  CHARGES: 'charges',
   DATA: 'data',
   EDM: 'edm',
   INFRACTIONS: 'infractions',
@@ -11,8 +12,12 @@ export const STATE = {
   WORK_SCHEDULE: 'workSchedule',
 };
 
-/* App */
+export const SHARED = {
+  ACTIONS: 'actions',
+  REQUEST_STATE: 'requestState',
+};
 
+/* App */
 export const APP = {
   ACTIONS: 'actions',
   APP: 'app',
@@ -23,6 +28,30 @@ export const APP = {
   SELECTED_ORG_ID: 'selectedOrganizationId',
   SELECTED_ORG_TITLE: 'selectedOrganizationTitle',
   SWITCH_ORGANIZATION: 'switchOrganization',
+};
+
+/* Charges */
+export const CHARGES = {
+  ADD_COURT_CHARGES_TO_CASE: 'addCourtChargesToCase',
+  ADD_TO_AVAILABLE_ARREST_CHARGES: 'addToAvailableArrestCharges',
+  ADD_TO_AVAILABLE_COURT_CHARGES: 'addToAvailableCourtCharges',
+  ARREST_CASE_EKID_BY_ARREST_CHARGE_EKID_FROM_PSA: 'arrestCaseEKIDByArrestChargeEKIDFromPSA',
+  ARREST_CHARGES: 'arrestCharges',
+  ARREST_CHARGES_BY_EKID: 'arrestChargesByEKID',
+  ARREST_CHARGES_FROM_PSA: 'arrestChargesFromPSA',
+  ARREST_CHARGE_MAPS_CREATED_IN_CWP: 'arrestChargeMapsCreatedInCWP',
+  ARREST_CHARGE_MAPS_CREATED_IN_PSA: 'arrestChargeMapsCreatedInPSA',
+  COURT_CHARGES: 'courtCharges',
+  COURT_CHARGES_FOR_CASE: 'courtChargesForCase',
+  CWP_ARREST_CASE_BY_ARREST_CHARGE: 'cwpArrestCaseByArrestCharge',
+  GET_ARREST_CASES_AND_CHARGES_FROM_PSA: 'getArrestCasesAndChargesFromPSA',
+  GET_ARREST_CHARGES: 'getArrestCharges',
+  GET_ARREST_CHARGES_LINKED_TO_CWP: 'getArrestChargesLinkedToCWP',
+  GET_COURT_CHARGES: 'getCourtCharges',
+  GET_COURT_CHARGES_FOR_CASE: 'getCourtChargesForCase',
+  PSA_ARREST_CASE_BY_ARREST_CHARGE: 'psaArrestCaseByArrestCharge',
+  REMOVE_ARREST_CHARGE: 'removeArrestCharge',
+  REMOVE_COURT_CHARGE_FROM_CASE: 'removeCourtChargeFromCase',
 };
 
 /* EDM */
@@ -86,11 +115,9 @@ export const PERSON = {
   ADD_NEW_PARTICIPANT_CONTACTS: 'addNewParticipantContacts',
   ADD_ORIENTATION_DATE: 'addOrientationDate',
   ADD_PERSON_PHOTO: 'addPersonPhoto',
-  ADD_TO_AVAILABLE_CHARGES: 'addToAvailableCharges',
   ALL_DIVERSION_PLANS: 'allDiversionPlans',
   ALL_PARTICIPANT_CASES: 'allParticipantCases',
   CHARGES: 'charges',
-  CHARGES_FOR_CASE: 'chargesForCase',
   CREATE_CASE: 'createCase',
   CREATE_NEW_ENROLLMENT: 'createNewEnrollment',
   DIVERSION_PLAN: 'diversionPlan',
@@ -109,8 +136,6 @@ export const PERSON = {
   ERRORS: 'errors',
   GET_ALL_PARTICIPANT_INFO: 'getAllParticipantInfo',
   GET_CASE_INFO: 'getCaseInfo',
-  GET_CHARGES: 'getCharges',
-  GET_CHARGES_FOR_CASE: 'getChargesForCase',
   GET_CONTACT_INFO: 'getContactInfo',
   GET_ENROLLMENT_HISTORY: 'getEnrollmentHistory',
   GET_ENROLLMENT_FROM_DIVERSION_PLAN: 'getEnrollmentFromDiversionPlan',
@@ -136,7 +161,6 @@ export const PERSON = {
   PHONE: 'phone',
   PROGRAM_OUTCOME: 'programOutcome',
   REASSIGN_JUDGE: 'reassignJudge',
-  REMOVE_CHARGE_FROM_CASE: 'removeChargeFromCase',
   REQUEST_STATE: 'requestState',
   REQUIRED_HOURS: 'requiredHours',
   UPDATE_PERSON_PHOTO: 'updatePersonPhoto',
