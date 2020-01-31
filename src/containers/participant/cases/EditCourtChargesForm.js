@@ -18,18 +18,15 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import type { RequestSequence } from 'redux-reqseq';
 
-import AddToAvailableChargesModal from '../charges/AddToAvailableChargesModal';
+import AddToAvailableCourtChargesModal from '../charges/AddToAvailableCourtChargesModal';
 
-import {
-  addChargesToCase,
-  removeChargeFromCase,
-} from '../ParticipantActions';
+import { addCourtChargesToCase, removeCourtChargeFromCase } from '../charges/ChargesActions';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import {
-  chargeSchema,
-  chargeUiSchema,
-} from '../schemas/EditCaseInfoSchemas';
-import { disableChargesForm, hydrateChargeSchema } from '../utils/EditCaseInfoUtils';
+  courtChargeSchema,
+  courtChargeUiSchema,
+} from './schemas/EditCaseInfoSchemas';
+import { disableChargesForm, hydrateCourtChargeSchema } from './utils/EditCaseInfoUtils';
 import { getEntityKeyId } from '../../../utils/DataUtils';
 import { getCombinedDateTime } from '../../../utils/ScheduleUtils';
 
@@ -60,8 +57,8 @@ const InnerCardHeader = styled.div`
 
 type Props = {
   actions:{
-    addChargesToCase :RequestSequence;
-    removeChargeFromCase :RequestSequence;
+    addCourtChargesToCase :RequestSequence;
+    removeCourtChargeFromCase :RequestSequence;
   },
   charges :List;
   chargesForCase :List;
@@ -80,15 +77,15 @@ type State = {
   isAvailableChargesModalVisible :boolean;
 };
 
-class EditChargesForm extends Component<Props, State> {
+class EditCourtChargesForm extends Component<Props, State> {
 
   constructor(props :Props) {
     super(props);
 
     this.state = {
       chargesFormData: {},
-      chargesFormSchema: chargeSchema,
-      chargesFormUiSchema: chargeUiSchema,
+      chargesFormSchema: courtChargeSchema,
+      chargesFormUiSchema: courtChargeUiSchema,
       chargesPrepopulated: false,
       isAvailableChargesModalVisible: false,
     };
@@ -116,15 +113,15 @@ class EditChargesForm extends Component<Props, State> {
 
     const sectionOneKey = getPageSectionKey(1, 1);
     let chargesPrepopulated :boolean = !chargesForCase.isEmpty();
-    let newChargeUiSchema :Object = chargeUiSchema;
+    let newChargeUiSchema :Object = courtChargeUiSchema;
 
     if (personCase.isEmpty()) {
       chargesPrepopulated = true;
-      newChargeUiSchema = disableChargesForm(chargeUiSchema);
+      newChargeUiSchema = disableChargesForm(courtChargeUiSchema);
     }
 
     let chargesFormData :{} = {};
-    let newChargeSchema :Object = chargeSchema;
+    let newChargeSchema :Object = courtChargeSchema;
     if (!chargesForCase.isEmpty()) {
       chargesFormData = {
         [sectionOneKey]: []
@@ -138,7 +135,7 @@ class EditChargesForm extends Component<Props, State> {
         chargesFormData[sectionOneKey][index][getEntityAddressKey(-1, CHARGE_EVENT, DATETIME_COMPLETED)] = dateCharged;
       });
     }
-    newChargeSchema = hydrateChargeSchema(chargeSchema, charges);
+    newChargeSchema = hydrateCourtChargeSchema(courtChargeSchema, charges);
 
 
     this.setState({
@@ -193,7 +190,7 @@ class EditChargesForm extends Component<Props, State> {
     const associationEntityData :{} = processAssociationEntityData(associations, entitySetIds, propertyTypeIds);
     delete entityData[courtChargeListESID];
 
-    actions.addChargesToCase({ associationEntityData, entityData });
+    actions.addCourtChargesToCase({ associationEntityData, entityData });
   }
 
   handleOnChangeCharges = ({ formData } :Object) => {
@@ -216,7 +213,6 @@ class EditChargesForm extends Component<Props, State> {
       propertyTypeIds,
     } = this.props;
     const {
-
       chargesFormData,
       chargesFormSchema,
       chargesFormUiSchema,
@@ -226,9 +222,9 @@ class EditChargesForm extends Component<Props, State> {
 
     const chargesFormContext = {
       addActions: {
-        addCharge: actions.addChargesToCase
+        addCharge: actions.addCourtChargesToCase
       },
-      deleteAction: actions.removeChargeFromCase,
+      deleteAction: actions.removeCourtChargeFromCase,
       entityIndexToIdMap,
       entitySetIds,
       propertyTypeIds,
@@ -237,10 +233,10 @@ class EditChargesForm extends Component<Props, State> {
     return (
       <>
         <Card>
-          <CardHeader padding="sm">
+          <CardHeader mode="primary" padding="sm">
             <InnerCardHeader>
-              <div>Edit Charges in Case</div>
-              <Button onClick={this.handleShowModal}>Add to Available Charges</Button>
+              <div>Edit Court Charges</div>
+              <Button mode="secondary" onClick={this.handleShowModal}>Add to Available Court Charges</Button>
             </InnerCardHeader>
           </CardHeader>
           <Form
@@ -252,7 +248,7 @@ class EditChargesForm extends Component<Props, State> {
               schema={chargesFormSchema}
               uiSchema={chargesFormUiSchema} />
         </Card>
-        <AddToAvailableChargesModal
+        <AddToAvailableCourtChargesModal
             isOpen={isAvailableChargesModalVisible}
             onClose={this.handleHideModal} />
       </>
@@ -262,10 +258,10 @@ class EditChargesForm extends Component<Props, State> {
 
 const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
-    addChargesToCase,
-    removeChargeFromCase,
+    addCourtChargesToCase,
+    removeCourtChargeFromCase,
   }, dispatch)
 });
 
 // $FlowFixMe
-export default connect(null, mapDispatchToProps)(EditChargesForm);
+export default connect(null, mapDispatchToProps)(EditCourtChargesForm);

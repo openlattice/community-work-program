@@ -21,7 +21,6 @@ import EditAppointmentModal from '../participant/schedule/EditAppointmentModal';
 import { isDefined } from '../../utils/LangUtils';
 import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
 import {
-  APP,
   PERSON,
   STATE,
   WORKSITE_PLANS,

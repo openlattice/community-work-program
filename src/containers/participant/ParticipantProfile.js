@@ -50,6 +50,7 @@ import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/Full
 import { ENROLLMENT_STATUSES } from '../../core/edm/constants/DataModelConsts';
 import {
   APP,
+  CHARGES,
   PERSON,
   PERSON_INFRACTIONS,
   STATE,
@@ -74,11 +75,11 @@ const {
 } = PROPERTY_TYPE_FQNS;
 
 const { ENTITY_SET_IDS_BY_ORG, SELECTED_ORG_ID } = APP;
+const { COURT_CHARGES_FOR_CASE } = CHARGES;
 const {
   ACTIONS,
   ADDRESS,
   ALL_DIVERSION_PLANS,
-  CHARGES_FOR_CASE,
   DIVERSION_PLAN,
   EMAIL,
   ENROLLMENT_STATUS,
@@ -210,7 +211,7 @@ type Props = {
   };
   address :Map;
   allDiversionPlans :List;
-  chargesForCase :List;
+  courtChargesForCase :List;
   checkInsByAppointment :Map;
   diversionPlan :Map;
   email :Map;
@@ -377,7 +378,7 @@ class ParticipantProfile extends Component<Props, State> {
     const {
       address,
       allDiversionPlans,
-      chargesForCase,
+      courtChargesForCase,
       diversionPlan,
       email,
       enrollmentHistoryData,
@@ -494,7 +495,7 @@ class ParticipantProfile extends Component<Props, State> {
                   sentenceEndDateTime={sentenceEndDateTime}
                   workStartDateTime={workStartDateTime} />
               <CaseInfoSection
-                  charges={chargesForCase}
+                  charges={courtChargesForCase}
                   edit={this.editCaseInfo}
                   hours={requiredHours}
                   judge={judge}
@@ -605,6 +606,7 @@ class ParticipantProfile extends Component<Props, State> {
 
 const mapStateToProps = (state :Map<*, *>) => {
   const app = state.get(STATE.APP);
+  const charges = state.get(STATE.CHARGES);
   const infractions = state.get(STATE.INFRACTIONS);
   const person = state.get(STATE.PERSON);
   const worksitePlans = state.get(STATE.WORKSITE_PLANS);
@@ -613,17 +615,12 @@ const mapStateToProps = (state :Map<*, *>) => {
   return {
     [ADDRESS]: person.get(ADDRESS),
     [ALL_DIVERSION_PLANS]: person.get(ALL_DIVERSION_PLANS),
-    [CHARGES_FOR_CASE]: person.get(CHARGES_FOR_CASE),
     [CHECK_INS_BY_APPOINTMENT]: worksitePlans.get(CHECK_INS_BY_APPOINTMENT),
+    [COURT_CHARGES_FOR_CASE]: charges.get(COURT_CHARGES_FOR_CASE),
     [DIVERSION_PLAN]: person.get(DIVERSION_PLAN),
     [EMAIL]: person.get(EMAIL),
     [ENROLLMENT_HISTORY_DATA]: person.get(ENROLLMENT_HISTORY_DATA),
     [ENROLLMENT_STATUS]: person.get(ENROLLMENT_STATUS),
-    entitySetIds: app.getIn([ENTITY_SET_IDS_BY_ORG, selectedOrgId], Map()),
-    getAllParticipantInfoRequestState: person.getIn([ACTIONS, GET_ALL_PARTICIPANT_INFO, REQUEST_STATE]),
-    getEnrollmentFromDiversionPlanRequestState: person
-      .getIn([ACTIONS, GET_ENROLLMENT_FROM_DIVERSION_PLAN, REQUEST_STATE]),
-    initializeAppRequestState: app.getIn([APP.ACTIONS, APP.INITIALIZE_APPLICATION, APP.REQUEST_STATE]),
     [JUDGE]: person.get(JUDGE),
     [PARTICIPANT]: person.get(PARTICIPANT),
     [PERSON_CASE]: person.get(PERSON_CASE),
@@ -632,11 +629,16 @@ const mapStateToProps = (state :Map<*, *>) => {
     [PROGRAM_OUTCOME]: person.get(PROGRAM_OUTCOME),
     [VIOLATIONS]: infractions.get(VIOLATIONS),
     [WARNINGS]: infractions.get(WARNINGS),
-    [WORK_APPOINTMENTS_BY_WORKSITE_PLAN]: worksitePlans.get(WORK_APPOINTMENTS_BY_WORKSITE_PLAN),
     [WORKSITES_BY_WORKSITE_PLAN]: worksitePlans.get(WORKSITES_BY_WORKSITE_PLAN),
+    [WORKSITES_LIST]: worksites.get(WORKSITES_LIST),
     [WORKSITE_PLANS_LIST]: worksitePlans.get(WORKSITE_PLANS_LIST),
     [WORKSITE_PLAN_STATUSES]: worksitePlans.get(WORKSITE_PLAN_STATUSES),
-    [WORKSITES_LIST]: worksites.get(WORKSITES_LIST),
+    [WORK_APPOINTMENTS_BY_WORKSITE_PLAN]: worksitePlans.get(WORK_APPOINTMENTS_BY_WORKSITE_PLAN),
+    entitySetIds: app.getIn([ENTITY_SET_IDS_BY_ORG, selectedOrgId], Map()),
+    getAllParticipantInfoRequestState: person.getIn([ACTIONS, GET_ALL_PARTICIPANT_INFO, REQUEST_STATE]),
+    getEnrollmentFromDiversionPlanRequestState: person
+      .getIn([ACTIONS, GET_ENROLLMENT_FROM_DIVERSION_PLAN, REQUEST_STATE]),
+    initializeAppRequestState: app.getIn([APP.ACTIONS, APP.INITIALIZE_APPLICATION, APP.REQUEST_STATE]),
   };
 };
 

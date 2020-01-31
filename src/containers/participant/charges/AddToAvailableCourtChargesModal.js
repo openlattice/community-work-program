@@ -6,11 +6,12 @@ import { connect } from 'react-redux';
 import { RequestStates } from 'redux-reqseq';
 import type { RequestState } from 'redux-reqseq';
 
-import AddToAvailableChargesForm from './AddToAvailableChargesForm';
+import AddToAvailableCourtChargesForm from './AddToAvailableCourtChargesForm';
 
-import { PERSON, STATE } from '../../../utils/constants/ReduxStateConsts';
+import { CHARGES, SHARED, STATE } from '../../../utils/constants/ReduxStateConsts';
 
-const { ACTIONS, ADD_TO_AVAILABLE_CHARGES, REQUEST_STATE } = PERSON;
+const { ADD_TO_AVAILABLE_COURT_CHARGES } = CHARGES;
+const { ACTIONS, REQUEST_STATE } = SHARED;
 
 type Props = {
   addChargesRequestState :RequestState;
@@ -18,7 +19,7 @@ type Props = {
   onClose :() => void;
 };
 
-class AddToAvailableChargesModal extends Component<Props> {
+class AddToAvailableCourtChargesModal extends Component<Props> {
 
   componentDidUpdate(prevProps :Props) {
     const { addChargesRequestState, onClose } = this.props;
@@ -38,17 +39,17 @@ class AddToAvailableChargesModal extends Component<Props> {
       <Modal
           isVisible={isOpen}
           onClose={onClose}
-          textTitle="Create a Charge"
+          textTitle="Create a Court Charge"
           viewportScrolling>
-        <AddToAvailableChargesForm />
+        <AddToAvailableCourtChargesForm />
       </Modal>
     );
   }
 }
 
 const mapStateToProps = (state :Map) => ({
-  addChargesRequestState: state.getIn([STATE.PERSON, ACTIONS, ADD_TO_AVAILABLE_CHARGES, REQUEST_STATE]),
+  addChargesRequestState: state.getIn([STATE.CHARGES, ACTIONS, ADD_TO_AVAILABLE_COURT_CHARGES, REQUEST_STATE]),
 });
 
 // $FlowFixMe
-export default connect(mapStateToProps)(AddToAvailableChargesModal);
+export default connect(mapStateToProps)(AddToAvailableCourtChargesModal);

@@ -9,7 +9,7 @@ import type { RequestSequence } from 'redux-reqseq';
 
 import { createCase, editPersonCase } from '../ParticipantActions';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
-import { caseSchema, caseUiSchema } from '../schemas/EditCaseInfoSchemas';
+import { caseSchema, caseUiSchema } from './schemas/EditCaseInfoSchemas';
 import { getEntityProperties } from '../../../utils/DataUtils';
 
 const {
@@ -134,7 +134,7 @@ class EditCaseForm extends Component<Props, State> {
 
     return (
       <Card>
-        <CardHeader padding="sm">Edit Case</CardHeader>
+        <CardHeader mode="primary" padding="sm">Edit Court Case</CardHeader>
         <Form
             disabled={casePrepopulated}
             formContext={caseFormContext}

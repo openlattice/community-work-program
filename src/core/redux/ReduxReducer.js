@@ -7,6 +7,7 @@ import { AuthReducer } from 'lattice-auth';
 import { combineReducers } from 'redux-immutable';
 
 import appReducer from '../../containers/app/AppReducer';
+import chargesReducer from '../../containers/participant/charges/ChargesReducer';
 import edmReducer from '../edm/EDMReducer';
 import infractionsReducer from '../../containers/participant/infractions/InfractionsReducer';
 import participantReducer from '../../containers/participant/ParticipantReducer';
@@ -21,6 +22,7 @@ export default function reduxReducer(routerHistory :any) {
   return combineReducers({
     app: appReducer,
     auth: AuthReducer,
+    charges: chargesReducer,
     edm: edmReducer,
     infractions: infractionsReducer,
     people: participantsReducer,
