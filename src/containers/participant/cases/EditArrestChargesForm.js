@@ -7,8 +7,6 @@ import {
   fromJS,
   get,
   has,
-  getIn,
-  setIn,
 } from 'immutable';
 import { DateTime } from 'luxon';
 import {
@@ -25,7 +23,7 @@ import AddToAvailableArrestChargesModal from '../charges/AddToAvailableArrestCha
 
 import { addArrestCharges, removeArrestCharge } from '../charges/ChargesActions';
 import { arrestChargeSchema, arrestChargeUiSchema } from './schemas/EditCaseInfoSchemas';
-import { disableChargesForm, hydrateArrestChargeSchema } from './utils/EditCaseInfoUtils';
+import { hydrateArrestChargeSchema } from './utils/EditCaseInfoUtils';
 import { getCombinedDateTime } from '../../../utils/ScheduleUtils';
 import { getEntityKeyId, getEntityProperties } from '../../../utils/DataUtils';
 import { isDefined } from '../../../utils/LangUtils';
