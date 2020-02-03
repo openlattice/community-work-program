@@ -788,7 +788,7 @@ function* getArrestCasesAndChargesFromPSAWorker(action :SequenceAction) :Generat
   const { id, value } = action;
   const workerResponse = {};
   let response :Object = {};
-  let arrestCaseEKIDByArrestChargeEKIDFromPSA :Map = Map();
+  let arrestCaseByArrestChargeEKIDFromPSA :Map = Map();
   let arrestChargesFromPSA :List = List();
 
   try {
@@ -817,11 +817,13 @@ function* getArrestCasesAndChargesFromPSAWorker(action :SequenceAction) :Generat
 
     if (response.data[personEKID]) {
       const arrestCaseNeighbors :List = fromJS(response.data[personEKID]);
+      let arrestCaseEntityByItsEKID :Map = Map();
       const arrestCaseEKIDs :string[] = [];
       arrestCaseNeighbors.forEach((neighbor :Map) => {
         const entity :Map = getNeighborDetails(neighbor);
         const ekid :UUID = getEntityKeyId(entity);
         arrestCaseEKIDs.push(ekid);
+        arrestCaseEntityByItsEKID = arrestCaseEntityByItsEKID.set(ekid, entity);
       });
       const arrestChargesESID :UUID = getEntitySetIdFromApp(app, MANUAL_ARREST_CHARGES);
       // charge -> appears in -> case
@@ -846,8 +848,9 @@ function* getArrestCasesAndChargesFromPSAWorker(action :SequenceAction) :Generat
             .map((entity :Map) => getEntityKeyId(entity)));
         listOfChargeEKIDsByArrestCaseEKID.forEach((listOfChargeEKIDs :List, arrestCaseEKID :UUID) => {
           listOfChargeEKIDs.forEach((chargeEKID :UUID) => {
-            arrestCaseEKIDByArrestChargeEKIDFromPSA = arrestCaseEKIDByArrestChargeEKIDFromPSA
-              .set(chargeEKID, arrestCaseEKID);
+            const arrestCase :Map = arrestCaseEntityByItsEKID.get(arrestCaseEKID, Map());
+            arrestCaseByArrestChargeEKIDFromPSA = arrestCaseByArrestChargeEKIDFromPSA
+              .set(chargeEKID, arrestCase);
           });
         });
 
@@ -861,7 +864,7 @@ function* getArrestCasesAndChargesFromPSAWorker(action :SequenceAction) :Generat
     }
 
     yield put(getArrestCasesAndChargesFromPSA.success(id, {
-      arrestCaseEKIDByArrestChargeEKIDFromPSA,
+      arrestCaseByArrestChargeEKIDFromPSA,
       arrestChargesFromPSA,
     }));
   }

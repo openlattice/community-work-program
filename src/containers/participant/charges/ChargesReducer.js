@@ -26,7 +26,7 @@ const {
   ADD_COURT_CHARGES_TO_CASE,
   ADD_TO_AVAILABLE_ARREST_CHARGES,
   ADD_TO_AVAILABLE_COURT_CHARGES,
-  ARREST_CASE_EKID_BY_ARREST_CHARGE_EKID_FROM_PSA,
+  ARREST_CASE_BY_ARREST_CHARGE_EKID_FROM_PSA,
   ARREST_CHARGES,
   ARREST_CHARGES_BY_EKID,
   ARREST_CHARGES_FROM_PSA,
@@ -79,7 +79,7 @@ const INITIAL_STATE :Map = fromJS({
       [REQUEST_STATE]: RequestStates.STANDBY
     },
   },
-  [ARREST_CASE_EKID_BY_ARREST_CHARGE_EKID_FROM_PSA]: Map(),
+  [ARREST_CASE_BY_ARREST_CHARGE_EKID_FROM_PSA]: Map(),
   [ARREST_CHARGES]: List(),
   [ARREST_CHARGES_BY_EKID]: Map(),
   [ARREST_CHARGES_FROM_PSA]: List(),
@@ -224,11 +224,11 @@ export default function chargesReducer(state :Map = INITIAL_STATE, action :Seque
           }
 
           const { value } = action;
-          const { arrestCaseEKIDByArrestChargeEKIDFromPSA, arrestChargesFromPSA } = value;
+          const { arrestCaseByArrestChargeEKIDFromPSA, arrestChargesFromPSA } = value;
 
           return state
             .set(ARREST_CHARGES_FROM_PSA, arrestChargesFromPSA)
-            .set(ARREST_CASE_EKID_BY_ARREST_CHARGE_EKID_FROM_PSA, arrestCaseEKIDByArrestChargeEKIDFromPSA)
+            .set(ARREST_CASE_BY_ARREST_CHARGE_EKID_FROM_PSA, arrestCaseByArrestChargeEKIDFromPSA)
             .setIn([ACTIONS, GET_ARREST_CASES_AND_CHARGES_FROM_PSA, REQUEST_STATE], RequestStates.SUCCESS);
         },
         FAILURE: () => state
