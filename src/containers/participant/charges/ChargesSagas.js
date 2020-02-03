@@ -86,7 +86,7 @@ const {
   REGISTERED_FOR,
 } = APP_TYPE_FQNS;
 const { DATETIME_COMPLETED, ENTITY_KEY_ID } = PROPERTY_TYPE_FQNS;
-const { ARREST_CASE_EKID_BY_ARREST_CHARGE_EKID_FROM_PSA, ARREST_CHARGES_BY_EKID, ARREST_CHARGES_FROM_PSA } = CHARGES;
+const { ARREST_CASE_BY_ARREST_CHARGE_EKID_FROM_PSA, ARREST_CHARGES_BY_EKID, ARREST_CHARGES_FROM_PSA } = CHARGES;
 
 const getAppFromState = (state) => state.get(STATE.APP, Map());
 const getChargesFromState = (state) => state.get(STATE.CHARGES, Map());
@@ -144,8 +144,8 @@ function* addArrestChargesWorker(action :SequenceAction) :Generator<*, *, *> {
       const chargeEventToChargeAssociation :Object = associationEntityData[registeredForESID][index];
       const arrestChargesByEKID :Map = chargesState.get(ARREST_CHARGES_BY_EKID, Map());
       const arrestChargesFromPSA :List = chargesState.get(ARREST_CHARGES_FROM_PSA, List());
-      const arrestCaseEKIDByArrestChargeEKIDFromPSA :Map = chargesState
-        .get(ARREST_CASE_EKID_BY_ARREST_CHARGE_EKID_FROM_PSA, Map());
+      const arrestCaseByArrestChargeEKIDFromPSA :Map = chargesState
+        .get(ARREST_CASE_BY_ARREST_CHARGE_EKID_FROM_PSA, Map());
       let charge :Map = Map();
       if (chargeEventToChargeAssociation.dstEntitySetId === arrestChargeListESID) {
         const chargeEKID :UUID = chargeEventToChargeAssociation.dstEntityKeyId;
@@ -159,11 +159,11 @@ function* addArrestChargesWorker(action :SequenceAction) :Generator<*, *, *> {
       if (chargeEventToChargeAssociation.dstEntitySetId === manualArrestChargeESID) {
         charge = arrestChargesFromPSA
           .find((arrestCharge :Map) => getEntityKeyId(arrestCharge) === chargeEventToChargeAssociation.dstEntityKeyId);
-        newChargeMap = newChargeMap.set(MANUAL_ARREST_CASES, charge);
+        newChargeMap = newChargeMap.set(MANUAL_ARREST_CHARGES, charge);
         arrestChargeMapsCreatedInPSA = arrestChargeMapsCreatedInPSA.push(newChargeMap);
 
         const chargeEKID :UUID = getEntityKeyId(charge);
-        const caseEKID :UUID = arrestCaseEKIDByArrestChargeEKIDFromPSA.get(chargeEKID, '');
+        const caseEKID :UUID = getEntityKeyId(arrestCaseByArrestChargeEKIDFromPSA.get(chargeEKID, ''));
         psaArrestCaseByArrestCharge = psaArrestCaseByArrestCharge.set(chargeEKID, caseEKID);
       }
     });
