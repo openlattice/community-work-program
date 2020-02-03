@@ -51,7 +51,7 @@ const {
   REQUEST_STATE,
 } = PERSON;
 const {
-  ARREST_CASE_EKID_BY_ARREST_CHARGE_EKID_FROM_PSA,
+  ARREST_CASE_BY_ARREST_CHARGE_EKID_FROM_PSA,
   ARREST_CHARGES,
   ARREST_CHARGES_FROM_PSA,
   ARREST_CHARGE_MAPS_CREATED_IN_CWP,
@@ -80,7 +80,7 @@ type Props = {
     getInfoForEditCase :RequestSequence;
     goToRoute :GoToRoute;
   };
-  arrestCaseEKIDByArrestChargeEKIDFromPSA :Map;
+  arrestCaseByArrestChargeEKIDFromPSA :Map;
   arrestChargeMapsCreatedInCWP :List;
   arrestChargeMapsCreatedInPSA :List;
   arrestCharges :List;
@@ -161,7 +161,7 @@ class EditCaseInfoForm extends Component<Props> {
 
   render() {
     const {
-      arrestCaseEKIDByArrestChargeEKIDFromPSA,
+      arrestCaseByArrestChargeEKIDFromPSA,
       arrestCharges,
       arrestChargesFromPSA,
       courtCharges,
@@ -218,7 +218,7 @@ class EditCaseInfoForm extends Component<Props> {
               personEKID={personEKID}
               propertyTypeIds={propertyTypeIds} />
           <EditArrestChargesForm
-              arrestCaseEKIDByArrestChargeEKIDFromPSA={arrestCaseEKIDByArrestChargeEKIDFromPSA}
+              arrestCaseByArrestChargeEKIDFromPSA={arrestCaseByArrestChargeEKIDFromPSA}
               arrestChargeMapsCreatedInCWP={arrestChargeMapsCreatedInCWP}
               arrestChargeMapsCreatedInPSA={arrestChargeMapsCreatedInPSA}
               arrestCharges={arrestCharges}
@@ -256,7 +256,7 @@ const mapStateToProps = (state :Map) => {
   const person = state.get(STATE.PERSON);
   const selectedOrgId :string = app.get(SELECTED_ORG_ID);
   return ({
-    [ARREST_CASE_EKID_BY_ARREST_CHARGE_EKID_FROM_PSA]: charges.get(ARREST_CASE_EKID_BY_ARREST_CHARGE_EKID_FROM_PSA),
+    [ARREST_CASE_BY_ARREST_CHARGE_EKID_FROM_PSA]: charges.get(ARREST_CASE_BY_ARREST_CHARGE_EKID_FROM_PSA),
     [ARREST_CHARGES]: charges.get(ARREST_CHARGES),
     [ARREST_CHARGES_FROM_PSA]: charges.get(ARREST_CHARGES_FROM_PSA),
     [ARREST_CHARGE_MAPS_CREATED_IN_CWP]: charges.get(ARREST_CHARGE_MAPS_CREATED_IN_CWP),
