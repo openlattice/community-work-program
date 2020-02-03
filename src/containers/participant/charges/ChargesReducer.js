@@ -5,6 +5,7 @@ import { RequestStates } from 'redux-reqseq';
 import type { SequenceAction } from 'redux-reqseq';
 
 import {
+  addArrestCharges,
   addCourtChargesToCase,
   addToAvailableArrestCharges,
   addToAvailableCourtCharges,
@@ -23,6 +24,7 @@ import { APP_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 const { getPageSectionKey } = DataProcessingUtils;
 const { ACTIONS, REQUEST_STATE } = SHARED;
 const {
+  ADD_ARREST_CHARGES,
   ADD_COURT_CHARGES_TO_CASE,
   ADD_TO_AVAILABLE_ARREST_CHARGES,
   ADD_TO_AVAILABLE_COURT_CHARGES,
@@ -48,6 +50,9 @@ const { COURT_CHARGE_LIST } = APP_TYPE_FQNS;
 
 const INITIAL_STATE :Map = fromJS({
   [ACTIONS]: {
+    [ADD_ARREST_CHARGES]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
     [ADD_COURT_CHARGES_TO_CASE]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
@@ -94,6 +99,51 @@ const INITIAL_STATE :Map = fromJS({
 export default function chargesReducer(state :Map = INITIAL_STATE, action :SequenceAction) :Map {
 
   switch (action.type) {
+
+    case addArrestCharges.case(action.type): {
+
+      return addArrestCharges.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, ADD_ARREST_CHARGES, action.id], action)
+          .setIn([ACTIONS, ADD_ARREST_CHARGES, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+
+          const seqAction :SequenceAction = action;
+
+          const successValue :Object = seqAction.value;
+          const {
+            arrestChargeMapsCreatedInCWP,
+            arrestChargeMapsCreatedInPSA,
+            cwpArrestCaseByArrestCharge,
+            psaArrestCaseByArrestCharge,
+          } = successValue;
+
+          let currentArrestChargeMapsCreatedInCWP :List = state.get(ARREST_CHARGE_MAPS_CREATED_IN_CWP);
+          currentArrestChargeMapsCreatedInCWP = currentArrestChargeMapsCreatedInCWP
+            .concat(arrestChargeMapsCreatedInCWP);
+          let currentArrestChargeMapsCreatedInPSA :List = state.get(ARREST_CHARGE_MAPS_CREATED_IN_PSA);
+          currentArrestChargeMapsCreatedInPSA = currentArrestChargeMapsCreatedInPSA
+            .concat(arrestChargeMapsCreatedInPSA);
+          let currentCWPArrestCaseByArrestCharge :Map = state.get(CWP_ARREST_CASE_BY_ARREST_CHARGE);
+          currentCWPArrestCaseByArrestCharge = currentCWPArrestCaseByArrestCharge
+            .merge(cwpArrestCaseByArrestCharge);
+          let currentPSAArrestCaseByArrestCharge :Map = state.get(PSA_ARREST_CASE_BY_ARREST_CHARGE);
+          currentPSAArrestCaseByArrestCharge = currentPSAArrestCaseByArrestCharge
+            .merge(psaArrestCaseByArrestCharge);
+
+          return state
+            .set(ARREST_CHARGE_MAPS_CREATED_IN_CWP, currentArrestChargeMapsCreatedInCWP)
+            .set(ARREST_CHARGE_MAPS_CREATED_IN_PSA, currentArrestChargeMapsCreatedInPSA)
+            .set(CWP_ARREST_CASE_BY_ARREST_CHARGE, currentCWPArrestCaseByArrestCharge)
+            .set(PSA_ARREST_CASE_BY_ARREST_CHARGE, currentPSAArrestCaseByArrestCharge)
+            .setIn([ACTIONS, ADD_ARREST_CHARGES, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, ADD_ARREST_CHARGES, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, ADD_ARREST_CHARGES, action.id]),
+      });
+    }
 
     case addCourtChargesToCase.case(action.type): {
 
