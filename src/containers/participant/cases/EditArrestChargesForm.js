@@ -69,7 +69,7 @@ type Props = {
     addArrestCharges :RequestSequence;
     removeArrestCharge :RequestSequence;
   },
-  arrestCaseEKIDByArrestChargeEKIDFromPSA :Map;
+  arrestCaseByArrestChargeEKIDFromPSA :Map;
   arrestChargeMapsCreatedInCWP :List;
   arrestChargeMapsCreatedInPSA :List;
   arrestCharges :List;
@@ -176,7 +176,7 @@ class EditCourtChargesForm extends Component<Props, State> {
 
   onSubmit = () => {
     const {
-      arrestCaseEKIDByArrestChargeEKIDFromPSA,
+      arrestCaseByArrestChargeEKIDFromPSA,
       actions,
       diversionPlanEKID,
       entitySetIds,
@@ -186,8 +186,10 @@ class EditCourtChargesForm extends Component<Props, State> {
       psaArrestCaseByArrestCharge,
     } = this.props;
     const { chargesFormData } = this.state;
+    console.log('chargesFormData: ', chargesFormData);
 
-    const currentTime = DateTime.local().toLocaleString(DateTime.TIME_24_SIMPLE);
+    const todaysDateTime :DateTime = DateTime.local();
+    const currentTime :string = todaysDateTime.toLocaleString(DateTime.TIME_24_SIMPLE);
     const personEKID :UUID = getEntityKeyId(participant);
 
     const entities :Object = {
@@ -213,13 +215,17 @@ class EditCourtChargesForm extends Component<Props, State> {
         associations.push([REGISTERED_FOR, index, CHARGE_EVENT, existingArrestChargeEKID, MANUAL_ARREST_CHARGES]);
         associations.push([MANUAL_CHARGED_WITH, personEKID, PEOPLE, index, CHARGE_EVENT]);
 
-        const arrestCaseEKID :UUID = arrestCaseEKIDByArrestChargeEKIDFromPSA.get(existingArrestChargeEKID, '');
+        const arrestCase :Map = arrestCaseByArrestChargeEKIDFromPSA.get(existingArrestChargeEKID, Map());
+        const arrestCaseEKID :UUID = getEntityKeyId(arrestCase);
         associations.push([RELATED_TO, diversionPlanEKID, DIVERSION_PLAN, arrestCaseEKID, MANUAL_ARREST_CASES]);
 
-        const dateTimeCharged :string = getCombinedDateTime(
-          charge[getEntityAddressKey(-1, CHARGE_EVENT, DATETIME_COMPLETED)],
-          currentTime
-        );
+        const dateChargedFromForm :string = charge[getEntityAddressKey(-1, CHARGE_EVENT, DATETIME_COMPLETED)];
+        const { [ARREST_DATETIME]: arrestDateTime } = getEntityProperties(arrestCase, [ARREST_DATETIME]);
+        let dateTimeCharged :string = ' ';
+        if (isDefined(dateChargedFromForm)) dateTimeCharged = getCombinedDateTime(dateChargedFromForm, currentTime);
+        else if (isDefined(arrestDateTime) && arrestDateTime.length) dateTimeCharged = arrestDateTime;
+        else dateTimeCharged = todaysDateTime.toISO();
+
         chargeEventToSubmit[getEntityAddressKey(index, CHARGE_EVENT, DATETIME_COMPLETED)] = dateTimeCharged;
         entities[getPageSectionKey(1, 1)].push(chargeEventToSubmit);
       });
@@ -238,10 +244,11 @@ class EditCourtChargesForm extends Component<Props, State> {
         const arrestChargeEKID :UUID = chargeEventToSubmit[
           getEntityAddressKey(-1, ARREST_CHARGE_LIST, ENTITY_KEY_ID)
         ];
-        const dateTimeCharged :string = getCombinedDateTime(
-          charge[getEntityAddressKey(-1, CHARGE_EVENT, DATETIME_COMPLETED)],
-          currentTime
-        );
+        const dateChargedFromForm :string = charge[getEntityAddressKey(-1, CHARGE_EVENT, DATETIME_COMPLETED)];
+        let dateTimeCharged :string = ' ';
+        if (isDefined(dateChargedFromForm)) dateTimeCharged = getCombinedDateTime(dateChargedFromForm, currentTime);
+        else dateTimeCharged = todaysDateTime.toISO();
+
         entities[getPageSectionKey(1, 3)][getEntityAddressKey(
           index,
           MANUAL_ARREST_CASES,
