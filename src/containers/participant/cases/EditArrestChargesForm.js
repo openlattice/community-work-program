@@ -186,7 +186,6 @@ class EditCourtChargesForm extends Component<Props, State> {
       psaArrestCaseByArrestCharge,
     } = this.props;
     const { chargesFormData } = this.state;
-    console.log('chargesFormData: ', chargesFormData);
 
     const todaysDateTime :DateTime = DateTime.local();
     const currentTime :string = todaysDateTime.toLocaleString(DateTime.TIME_24_SIMPLE);
