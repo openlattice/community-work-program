@@ -46,7 +46,7 @@ const {
   REMOVE_ARREST_CHARGE,
   REMOVE_COURT_CHARGE_FROM_CASE,
 } = CHARGES;
-const { COURT_CHARGE_LIST } = APP_TYPE_FQNS;
+const { ARREST_CHARGE_LIST, COURT_CHARGE_LIST, MANUAL_ARREST_CHARGES } = APP_TYPE_FQNS;
 
 const INITIAL_STATE :Map = fromJS({
   [ACTIONS]: {
@@ -392,17 +392,27 @@ export default function chargesReducer(state :Map = INITIAL_STATE, action :Seque
 
           let arrestChargeMapsCreatedInCWP :List = state.get(ARREST_CHARGE_MAPS_CREATED_IN_CWP, List());
           let arrestChargeMapsCreatedInPSA :List = state.get(ARREST_CHARGE_MAPS_CREATED_IN_PSA, List());
+          let cwpArrestCaseByArrestCharge :Map = state.get(CWP_ARREST_CASE_BY_ARREST_CHARGE, Map());
+          let psaArrestCaseByArrestCharge :Map = state.get(PSA_ARREST_CASE_BY_ARREST_CHARGE, Map());
 
           if (path[0] === getPageSectionKey(1, 1)) {
+            const arrestChargeMapToDelete :Map = arrestChargeMapsCreatedInPSA.get(path[1]);
+            const arrestChargeEKIDToRemove :UUID = getEntityKeyId(arrestChargeMapToDelete.get(MANUAL_ARREST_CHARGES));
             arrestChargeMapsCreatedInPSA = arrestChargeMapsCreatedInPSA.delete(path[1]);
+            psaArrestCaseByArrestCharge = psaArrestCaseByArrestCharge.delete(arrestChargeEKIDToRemove);
           }
           if (path[0] === getPageSectionKey(1, 2)) {
+            const arrestChargeMapToDelete :Map = arrestChargeMapsCreatedInCWP.get(path[1]);
+            const arrestChargeEKIDToRemove :UUID = getEntityKeyId(arrestChargeMapToDelete.get(ARREST_CHARGE_LIST));
             arrestChargeMapsCreatedInCWP = arrestChargeMapsCreatedInCWP.delete(path[1]);
+            cwpArrestCaseByArrestCharge = cwpArrestCaseByArrestCharge.delete(arrestChargeEKIDToRemove);
           }
 
           return state
             .set(ARREST_CHARGE_MAPS_CREATED_IN_CWP, arrestChargeMapsCreatedInCWP)
             .set(ARREST_CHARGE_MAPS_CREATED_IN_PSA, arrestChargeMapsCreatedInPSA)
+            .set(CWP_ARREST_CASE_BY_ARREST_CHARGE, cwpArrestCaseByArrestCharge)
+            .set(PSA_ARREST_CASE_BY_ARREST_CHARGE, psaArrestCaseByArrestCharge)
             .setIn([ACTIONS, REMOVE_ARREST_CHARGE, REQUEST_STATE], RequestStates.SUCCESS);
         },
         FAILURE: () => state
