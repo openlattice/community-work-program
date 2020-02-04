@@ -75,7 +75,7 @@ const {
 } = PROPERTY_TYPE_FQNS;
 
 const { ENTITY_SET_IDS_BY_ORG, SELECTED_ORG_ID } = APP;
-const { COURT_CHARGES_FOR_CASE } = CHARGES;
+const { ARREST_CHARGE_MAPS_CREATED_IN_CWP, ARREST_CHARGE_MAPS_CREATED_IN_PSA } = CHARGES;
 const {
   ACTIONS,
   ADDRESS,
@@ -211,7 +211,8 @@ type Props = {
   };
   address :Map;
   allDiversionPlans :List;
-  courtChargesForCase :List;
+  arrestChargeMapsCreatedInCWP :List;
+  arrestChargeMapsCreatedInPSA :List;
   checkInsByAppointment :Map;
   diversionPlan :Map;
   email :Map;
@@ -378,7 +379,8 @@ class ParticipantProfile extends Component<Props, State> {
     const {
       address,
       allDiversionPlans,
-      courtChargesForCase,
+      arrestChargeMapsCreatedInCWP,
+      arrestChargeMapsCreatedInPSA,
       diversionPlan,
       email,
       enrollmentHistoryData,
@@ -495,7 +497,8 @@ class ParticipantProfile extends Component<Props, State> {
                   sentenceEndDateTime={sentenceEndDateTime}
                   workStartDateTime={workStartDateTime} />
               <CaseInfoSection
-                  charges={courtChargesForCase}
+                  arrestChargeMapsCreatedInCWP={arrestChargeMapsCreatedInCWP}
+                  arrestChargeMapsCreatedInPSA={arrestChargeMapsCreatedInPSA}
                   edit={this.editCaseInfo}
                   hours={requiredHours}
                   judge={judge}
@@ -616,7 +619,8 @@ const mapStateToProps = (state :Map<*, *>) => {
     [ADDRESS]: person.get(ADDRESS),
     [ALL_DIVERSION_PLANS]: person.get(ALL_DIVERSION_PLANS),
     [CHECK_INS_BY_APPOINTMENT]: worksitePlans.get(CHECK_INS_BY_APPOINTMENT),
-    [COURT_CHARGES_FOR_CASE]: charges.get(COURT_CHARGES_FOR_CASE),
+    [ARREST_CHARGE_MAPS_CREATED_IN_CWP]: charges.get(ARREST_CHARGE_MAPS_CREATED_IN_CWP),
+    [ARREST_CHARGE_MAPS_CREATED_IN_PSA]: charges.get(ARREST_CHARGE_MAPS_CREATED_IN_PSA),
     [DIVERSION_PLAN]: person.get(DIVERSION_PLAN),
     [EMAIL]: person.get(EMAIL),
     [ENROLLMENT_HISTORY_DATA]: person.get(ENROLLMENT_HISTORY_DATA),
