@@ -21,7 +21,7 @@ import { getEntityProperties, sortEntitiesByDateProperty } from '../../utils/Dat
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { EMPTY_FIELD } from '../../containers/participants/ParticipantsConstants';
 
-const { CHARGE_EVENT, COURT_CHARGE_LIST } = APP_TYPE_FQNS;
+const { ARREST_CHARGE_LIST, CHARGE_EVENT, MANUAL_ARREST_CHARGES } = APP_TYPE_FQNS;
 const {
   CASE_NUMBER_TEXT,
   COURT_CASE_TYPE,
@@ -29,19 +29,21 @@ const {
   FIRST_NAME,
   LAST_NAME,
   NAME,
+  OFFENSE_LOCAL_DESCRIPTION,
 } = PROPERTY_TYPE_FQNS;
 
 const labelMap :OrderedMap = OrderedMap({
   judge: 'Judge',
   courtType: 'Court type',
   docketNumber: 'Docket number',
-  charge: 'Charge (most recent)',
+  charge: 'Arrest Charge (latest)',
   chargeDate: 'Charge date',
   requiredHours: 'Required hours',
 });
 
 type Props = {
-  charges :List;
+  arrestChargeMapsCreatedInCWP :List;
+  arrestChargeMapsCreatedInPSA :List;
   edit :() => void;
   hours :number;
   judge :Map;
@@ -49,22 +51,42 @@ type Props = {
 };
 
 const CaseInfoSection = ({
-  charges,
+  arrestChargeMapsCreatedInCWP,
+  arrestChargeMapsCreatedInPSA,
   edit,
   hours,
   judge,
   personCase,
 } :Props) => {
 
-  const sortedChargeMaps :List = sortEntitiesByDateProperty(charges, [CHARGE_EVENT, DATETIME_COMPLETED]);
-  const mostRecentChargeAndChargeEvent :Map = sortedChargeMaps.last() || Map();
-  let { [NAME]: chargeName } = getEntityProperties(mostRecentChargeAndChargeEvent.get(COURT_CHARGE_LIST), [NAME]);
-  if (chargeName) chargeName = startCase(chargeName.toLowerCase());
-  let { [DATETIME_COMPLETED]: chargeDate } = getEntityProperties(
-    mostRecentChargeAndChargeEvent.get(CHARGE_EVENT),
-    [DATETIME_COMPLETED]
-  );
-  if (chargeDate) chargeDate = DateTime.fromISO(chargeDate).toLocaleString(DateTime.DATE_SHORT);
+  let chargeName :string = EMPTY_FIELD;
+  let chargeDate :string = EMPTY_FIELD;
+
+  const allChargeMaps :List = arrestChargeMapsCreatedInCWP.concat(arrestChargeMapsCreatedInPSA);
+  if (!allChargeMaps.isEmpty()) {
+    const sortedChargeMaps :List = sortEntitiesByDateProperty(allChargeMaps, [CHARGE_EVENT, DATETIME_COMPLETED]);
+    const mostRecentChargeMap :Map = sortedChargeMaps.last() || Map();
+    if (!mostRecentChargeMap.isEmpty()) {
+      const chargeESID = mostRecentChargeMap.delete(CHARGE_EVENT).keySeq().toList().first();
+      if (chargeESID.toString() === ARREST_CHARGE_LIST.toString()) {
+        const { [NAME]: chargeNameFound } = getEntityProperties(mostRecentChargeMap.get(chargeESID), [NAME]);
+        if (chargeNameFound) chargeName = startCase(chargeNameFound.toLowerCase());
+      }
+      if (chargeESID.toString() === MANUAL_ARREST_CHARGES.toString()) {
+        const { [OFFENSE_LOCAL_DESCRIPTION]: chargeNameFound } = getEntityProperties(
+          mostRecentChargeMap.get(chargeESID),
+          [OFFENSE_LOCAL_DESCRIPTION]
+        );
+        if (chargeNameFound) chargeName = startCase(chargeNameFound.toLowerCase());
+      }
+
+      const { [DATETIME_COMPLETED]: chargeDateFound } = getEntityProperties(
+        mostRecentChargeMap.get(CHARGE_EVENT),
+        [DATETIME_COMPLETED]
+      );
+      if (chargeDateFound) chargeDate = DateTime.fromISO(chargeDateFound).toLocaleString(DateTime.DATE_SHORT);
+    }
+  }
 
   const { [FIRST_NAME]: firstName, [LAST_NAME]: lastName } = getEntityProperties(judge, [FIRST_NAME, LAST_NAME]);
   const judgeName :string = (!!firstName && !!lastName) ? `${firstName} ${lastName}` : EMPTY_FIELD;
@@ -77,8 +99,8 @@ const CaseInfoSection = ({
     judge: judgeName,
     courtType: courtCaseType || EMPTY_FIELD,
     docketNumber: caseNumbers || EMPTY_FIELD,
-    charge: chargeName || EMPTY_FIELD,
-    chargeDate: chargeDate || EMPTY_FIELD,
+    charge: chargeName,
+    chargeDate,
     requiredHours: toString(hours) || EMPTY_FIELD,
   });
   return (
