@@ -32,10 +32,11 @@ export const APP = {
 
 /* Charges */
 export const CHARGES = {
+  ADD_ARREST_CHARGES: 'addArrestCharges',
   ADD_COURT_CHARGES_TO_CASE: 'addCourtChargesToCase',
   ADD_TO_AVAILABLE_ARREST_CHARGES: 'addToAvailableArrestCharges',
   ADD_TO_AVAILABLE_COURT_CHARGES: 'addToAvailableCourtCharges',
-  ARREST_CASE_EKID_BY_ARREST_CHARGE_EKID_FROM_PSA: 'arrestCaseEKIDByArrestChargeEKIDFromPSA',
+  ARREST_CASE_BY_ARREST_CHARGE_EKID_FROM_PSA: 'arrestCaseByArrestChargeEKIDFromPSA',
   ARREST_CHARGES: 'arrestCharges',
   ARREST_CHARGES_BY_EKID: 'arrestChargesByEKID',
   ARREST_CHARGES_FROM_PSA: 'arrestChargesFromPSA',
