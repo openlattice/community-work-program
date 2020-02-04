@@ -1,5 +1,5 @@
 // @flow
-import { List, setIn } from 'immutable';
+import { List, removeIn, setIn } from 'immutable';
 import { DataProcessingUtils } from 'lattice-fabricate';
 
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../../core/edm/constants/FullyQualifiedNames';
@@ -112,30 +112,36 @@ const hydrateArrestChargeSchema = (schema :Object, existingArrestChargesFromPSA 
     existingArrestChargesFromPSA,
     [OFFENSE_LOCAL_CODE, OFFENSE_LOCAL_DESCRIPTION]
   );
-  let newSchema = setIn(
-    schema,
-    [
-      'properties',
-      getPageSectionKey(1, 1),
-      'items',
-      'properties',
-      getEntityAddressKey(-1, MANUAL_ARREST_CHARGES, ENTITY_KEY_ID),
-      'enum'
-    ],
-    values
-  );
-  newSchema = setIn(
-    newSchema,
-    [
-      'properties',
-      getPageSectionKey(1, 1),
-      'items',
-      'properties',
-      getEntityAddressKey(-1, MANUAL_ARREST_CHARGES, ENTITY_KEY_ID),
-      'enumNames'
-    ],
-    labels
-  );
+  let newSchema :Object = schema;
+  if (values.length && labels.length) {
+    newSchema = setIn(
+      schema,
+      [
+        'properties',
+        getPageSectionKey(1, 1),
+        'items',
+        'properties',
+        getEntityAddressKey(-1, MANUAL_ARREST_CHARGES, ENTITY_KEY_ID),
+        'enum'
+      ],
+      values
+    );
+    newSchema = setIn(
+      newSchema,
+      [
+        'properties',
+        getPageSectionKey(1, 1),
+        'items',
+        'properties',
+        getEntityAddressKey(-1, MANUAL_ARREST_CHARGES, ENTITY_KEY_ID),
+        'enumNames'
+      ],
+      labels
+    );
+  }
+  else {
+    newSchema = removeIn(newSchema, ['properties', getPageSectionKey(1, 1)]);
+  }
   const [arrestValues, arrestLabels] = getValuesFromEntityList(arrestCharges, [OL_ID, NAME, LEVEL_STATE]);
   newSchema = setIn(
     newSchema,
