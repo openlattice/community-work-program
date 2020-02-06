@@ -1805,6 +1805,7 @@ function* getInfoForAddParticipantWorker(action :SequenceAction) :Generator<*, *
     const { personEKID } = value;
     if (isValidUUID(personEKID)) {
       workerCalls.push(call(getParticipantWorker, getParticipant({ personEKID })));
+      workerCalls.push(call(getArrestCasesAndChargesFromPSAWorker, getArrestCasesAndChargesFromPSA({ personEKID })));
     }
 
     const workerResponses = yield all(workerCalls);

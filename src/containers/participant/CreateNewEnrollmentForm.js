@@ -89,7 +89,7 @@ const {
   REQUEST_STATE,
 } = PERSON;
 const { ENTITY_SET_IDS_BY_ORG, SELECTED_ORG_ID } = APP;
-const { ARREST_CHARGES } = CHARGES;
+const { ARREST_CHARGES, ARREST_CHARGES_FROM_PSA } = CHARGES;
 const { PROPERTY_TYPES, TYPE_IDS_BY_FQNS } = EDM;
 
 const FormWrapper = styled.div`
@@ -132,8 +132,9 @@ type Props = {
     getInfoForAddParticipant :RequestSequence;
     goToRoute :GoToRoute;
   };
-  createNewEnrollmentRequestState :RequestState;
   arrestCharges :List;
+  arrestChargesFromPSA :List;
+  createNewEnrollmentRequestState :RequestState;
   entitySetIds :Map;
   getInfoRequestState :RequestState;
   judges :List;
@@ -279,6 +280,7 @@ class CreateNewEnrollmentForm extends Component<Props> {
     const {
       createNewEnrollmentRequestState,
       arrestCharges,
+      arrestChargesFromPSA,
       getInfoRequestState,
       judges,
     } = this.props;
@@ -291,7 +293,7 @@ class CreateNewEnrollmentForm extends Component<Props> {
       );
     }
 
-    const formSchema = hydrateSchema(schema, judges, arrestCharges);
+    const formSchema = hydrateSchema(schema, judges, arrestChargesFromPSA, arrestCharges);
 
     return (
       <FormWrapper>
@@ -356,6 +358,7 @@ const mapStateToProps = (state :Map) => {
   const selectedOrgId :string = app.get(SELECTED_ORG_ID);
   return ({
     [ARREST_CHARGES]: charges.get(ARREST_CHARGES),
+    [ARREST_CHARGES_FROM_PSA]: charges.get(ARREST_CHARGES_FROM_PSA),
     [PARTICIPANT]: person.get(PARTICIPANT),
     [PERSON.JUDGES]: person.get(PERSON.JUDGES),
     createNewEnrollmentRequestState: person.getIn([ACTIONS, CREATE_NEW_ENROLLMENT, REQUEST_STATE]),

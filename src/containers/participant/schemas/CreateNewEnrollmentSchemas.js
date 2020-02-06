@@ -7,10 +7,11 @@ import { COURT_TYPES } from '../../../core/edm/constants/DataModelConsts';
 const { getEntityAddressKey, getPageSectionKey } = DataProcessingUtils;
 
 const {
+  ARREST_CHARGE_LIST,
   CHARGE_EVENT,
-  COURT_CHARGE_LIST,
   DIVERSION_PLAN,
   JUDGES,
+  MANUAL_ARREST_CHARGES,
   MANUAL_PRETRIAL_COURT_CASES,
 } = APP_TYPE_FQNS;
 const {
@@ -58,13 +59,33 @@ export const schema = {
     },
     [getPageSectionKey(1, 2)]: {
       type: 'array',
-      title: '',
+      title: 'Add an Existing Arrest Charge from Case History',
       items: {
         type: 'object',
         properties: {
-          [getEntityAddressKey(-1, COURT_CHARGE_LIST, ENTITY_KEY_ID)]: {
+          [getEntityAddressKey(-1, MANUAL_ARREST_CHARGES, ENTITY_KEY_ID)]: {
             type: 'string',
-            title: 'Court charge',
+            title: 'Charge',
+            enum: [],
+            enumNames: [],
+          },
+          [getEntityAddressKey(-1, CHARGE_EVENT, DATETIME_COMPLETED)]: {
+            type: 'string',
+            title: 'Date charged',
+            format: 'date',
+          },
+        },
+      }
+    },
+    [getPageSectionKey(1, 3)]: {
+      type: 'array',
+      title: 'Add a New Arrest Charge',
+      items: {
+        type: 'object',
+        properties: {
+          [getEntityAddressKey(-1, ARREST_CHARGE_LIST, ENTITY_KEY_ID)]: {
+            type: 'string',
+            title: 'Charge',
             enum: [],
             enumNames: [],
           },
@@ -75,8 +96,7 @@ export const schema = {
           },
         },
       },
-      default: [{}]
-    },
+    }
   }
 };
 
@@ -108,7 +128,24 @@ export const uiSchema = {
     },
     items: {
       classNames: 'grid-container',
-      [getEntityAddressKey(-1, COURT_CHARGE_LIST, ENTITY_KEY_ID)]: {
+      [getEntityAddressKey(-1, MANUAL_ARREST_CHARGES, ENTITY_KEY_ID)]: {
+        classNames: 'column-span-8',
+      },
+      [getEntityAddressKey(-1, CHARGE_EVENT, DATETIME_COMPLETED)]: {
+        classNames: 'column-span-4',
+      },
+    },
+  },
+  [getPageSectionKey(1, 3)]: {
+    classNames: 'column-span-12',
+    'ui:options': {
+      addButtonText: '+ Add Charge',
+      orderable: false,
+      addActionKey: 'addCharge'
+    },
+    items: {
+      classNames: 'grid-container',
+      [getEntityAddressKey(-1, ARREST_CHARGE_LIST, ENTITY_KEY_ID)]: {
         classNames: 'column-span-8',
       },
       [getEntityAddressKey(-1, CHARGE_EVENT, DATETIME_COMPLETED)]: {
