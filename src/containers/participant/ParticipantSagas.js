@@ -1800,7 +1800,7 @@ function* getInfoForAddParticipantWorker(action :SequenceAction) :Generator<*, *
 
     const workerCalls = [
       call(getJudgesWorker, getJudges()),
-      call(getCourtChargesWorker, getCourtCharges()),
+      call(getArrestChargesWorker, getArrestCharges()),
     ];
     const { personEKID } = value;
     if (isValidUUID(personEKID)) {

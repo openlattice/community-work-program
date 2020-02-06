@@ -42,6 +42,7 @@ import { BackNavButton } from '../../components/controls/index';
 import { PARTICIPANT_PROFILE_WIDTH } from '../../core/style/Sizes';
 import {
   APP,
+  CHARGES,
   EDM,
   PERSON,
   STATE
@@ -82,13 +83,13 @@ const {
 } = PROPERTY_TYPE_FQNS;
 const {
   ACTIONS,
-  CHARGES,
   CREATE_NEW_ENROLLMENT,
   GET_INFO_FOR_ADD_PARTICIPANT,
   PARTICIPANT,
   REQUEST_STATE,
 } = PERSON;
 const { ENTITY_SET_IDS_BY_ORG, SELECTED_ORG_ID } = APP;
+const { ARREST_CHARGES } = CHARGES;
 const { PROPERTY_TYPES, TYPE_IDS_BY_FQNS } = EDM;
 
 const FormWrapper = styled.div`
@@ -132,7 +133,7 @@ type Props = {
     goToRoute :GoToRoute;
   };
   createNewEnrollmentRequestState :RequestState;
-  charges :List;
+  arrestCharges :List;
   entitySetIds :Map;
   getInfoRequestState :RequestState;
   judges :List;
@@ -277,7 +278,7 @@ class CreateNewEnrollmentForm extends Component<Props> {
   render() {
     const {
       createNewEnrollmentRequestState,
-      charges,
+      arrestCharges,
       getInfoRequestState,
       judges,
     } = this.props;
@@ -290,7 +291,7 @@ class CreateNewEnrollmentForm extends Component<Props> {
       );
     }
 
-    const formSchema = hydrateSchema(schema, judges, charges);
+    const formSchema = hydrateSchema(schema, judges, arrestCharges);
 
     return (
       <FormWrapper>
@@ -349,11 +350,12 @@ class CreateNewEnrollmentForm extends Component<Props> {
 
 const mapStateToProps = (state :Map) => {
   const app = state.get(STATE.APP);
+  const charges = state.get(STATE.CHARGES);
   const edm = state.get(STATE.EDM);
   const person = state.get(STATE.PERSON);
   const selectedOrgId :string = app.get(SELECTED_ORG_ID);
   return ({
-    [CHARGES]: person.get(CHARGES),
+    [ARREST_CHARGES]: charges.get(ARREST_CHARGES),
     [PARTICIPANT]: person.get(PARTICIPANT),
     [PERSON.JUDGES]: person.get(PERSON.JUDGES),
     createNewEnrollmentRequestState: person.getIn([ACTIONS, CREATE_NEW_ENROLLMENT, REQUEST_STATE]),
