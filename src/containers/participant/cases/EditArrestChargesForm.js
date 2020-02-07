@@ -27,6 +27,7 @@ import { hydrateArrestChargeSchema } from './utils/EditCaseInfoUtils';
 import { getCombinedDateTime } from '../../../utils/ScheduleUtils';
 import { getEntityKeyId, getEntityProperties } from '../../../utils/DataUtils';
 import { isDefined } from '../../../utils/LangUtils';
+import { formatNewArrestChargeDataAndAssociations } from '../charges/utils/ChargesUtils';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 
 const {
@@ -37,8 +38,6 @@ const {
   processEntityData,
 } = DataProcessingUtils;
 const {
-  APPEARS_IN,
-  APPEARS_IN_ARREST,
   CHARGE_EVENT,
   ARREST_CHARGE_LIST,
   MANUAL_ARREST_CASES,
@@ -196,7 +195,7 @@ class EditCourtChargesForm extends Component<Props, State> {
       [getPageSectionKey(1, 2)]: [],
       [getPageSectionKey(1, 3)]: {},
     };
-    const associations :Array<Array<*>> = [];
+    let associations :Array<Array<*>> = [];
     let existingChargesFromPSA :Object[] = [];
 
     if (isDefined(get(chargesFormData, getPageSectionKey(1, 1)))) {
@@ -233,54 +232,15 @@ class EditCourtChargesForm extends Component<Props, State> {
       }
     }
 
-    let newArrestCharges :Object[] = get(chargesFormData, getPageSectionKey(1, 2), []);
-    newArrestCharges = newArrestCharges.filter((chargeObject :Object) => {
-      const existingChargeEKID :UUID = chargeObject[getEntityAddressKey(-1, ARREST_CHARGE_LIST, ENTITY_KEY_ID)];
-      const existing :any = cwpArrestCaseByArrestCharge
-        .findKey((caseEKID, chargeEKID) => chargeEKID === existingChargeEKID);
-      return !isDefined(existing);
-    });
-    if (newArrestCharges.length && Object.values(newArrestCharges[0]).length) {
-      newArrestCharges.forEach((charge :Object, index :number) => {
-        const chargeEventToSubmit :Object = charge;
-        const arrestChargeEKID :UUID = chargeEventToSubmit[
-          getEntityAddressKey(-1, ARREST_CHARGE_LIST, ENTITY_KEY_ID)
-        ];
-        const dateChargedFromForm :string = charge[getEntityAddressKey(-1, CHARGE_EVENT, DATETIME_COMPLETED)];
-        let dateTimeCharged :string = ' ';
-        if (isDefined(dateChargedFromForm)) dateTimeCharged = getCombinedDateTime(dateChargedFromForm, currentTime);
-        else dateTimeCharged = todaysDateTime.toISO();
-
-        entities[getPageSectionKey(1, 3)][getEntityAddressKey(
-          index,
-          MANUAL_ARREST_CASES,
-          ARREST_DATETIME
-        )] = dateTimeCharged;
-
-        associations.push([
-          REGISTERED_FOR,
-          index + existingChargesFromPSA.length,
-          CHARGE_EVENT,
-          arrestChargeEKID,
-          ARREST_CHARGE_LIST
-        ]);
-        associations.push([APPEARS_IN, arrestChargeEKID, ARREST_CHARGE_LIST, index, MANUAL_ARREST_CASES]);
-        associations.push([APPEARS_IN_ARREST, personEKID, PEOPLE, index, MANUAL_ARREST_CASES]);
-        associations.push([MANUAL_CHARGED_WITH, personEKID, PEOPLE, arrestChargeEKID, ARREST_CHARGE_LIST]);
-        associations.push([
-          MANUAL_CHARGED_WITH,
-          personEKID,
-          PEOPLE,
-          index + existingChargesFromPSA.length,
-          CHARGE_EVENT
-        ]);
-        associations.push([RELATED_TO, diversionPlanEKID, DIVERSION_PLAN, index, MANUAL_ARREST_CASES]);
-
-        delete chargeEventToSubmit[getEntityAddressKey(-1, ARREST_CHARGE_LIST, ENTITY_KEY_ID)];
-        chargeEventToSubmit[getEntityAddressKey(-1, CHARGE_EVENT, DATETIME_COMPLETED)] = dateTimeCharged;
-        entities[getPageSectionKey(1, 2)].push(chargeEventToSubmit);
-      });
-    }
+    const newArrestCharges :Object[] = get(chargesFormData, getPageSectionKey(1, 2), []);
+    const { newChargeEntities, newChargeAssociations } = formatNewArrestChargeDataAndAssociations(
+      newArrestCharges,
+      existingChargesFromPSA.length,
+      { personIndexOrEKID: personEKID, diversionPlanIndexOrEKID: diversionPlanEKID },
+      cwpArrestCaseByArrestCharge
+    );
+    entities[getPageSectionKey(1, 2)] = newChargeEntities;
+    associations = associations.concat(newChargeAssociations);
 
     const entityMappers :Map = Map().withMutations((mappers :Map) => {
       const indexMappers = Map().withMutations((map :Map) => {
