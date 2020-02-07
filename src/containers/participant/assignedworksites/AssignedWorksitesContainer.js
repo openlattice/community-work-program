@@ -117,10 +117,8 @@ const AssignedWorksitesContainer = ({
                 }
               </CardStack>
               <CountWrapper>
-                <div>
-                  <CountLabel subtle>{ hoursWorkedText }</CountLabel>
-                  <CountLabel subtle>{ requiredHoursText }</CountLabel>
-                </div>
+                <CountLabel subtle>{ hoursWorkedText }</CountLabel>
+                <CountLabel subtle>{ requiredHoursText }</CountLabel>
               </CountWrapper>
             </>
           )
