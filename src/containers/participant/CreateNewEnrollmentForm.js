@@ -284,7 +284,6 @@ class CreateNewEnrollmentForm extends Component<Props> {
       });
       mappers.set(INDEX_MAPPERS, indexMappers);
     });
-    console.log('dataToSubmit: ', dataToSubmit);
     const entityData :Object = processEntityData(dataToSubmit, entitySetIds, propertyTypeIds, entityMappers);
     const associationEntityData :Object = processAssociationEntityData(
       fromJS(associations),
