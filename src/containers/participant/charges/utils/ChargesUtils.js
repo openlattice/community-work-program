@@ -5,6 +5,7 @@ import { DateTime } from 'luxon';
 
 import { isDefined } from '../../../../utils/LangUtils';
 import { getCombinedDateTime } from '../../../../utils/ScheduleUtils';
+import { getEntityKeyId, getEntityProperties } from '../../../../utils/DataUtils';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../../core/edm/constants/FullyQualifiedNames';
 
 const { getEntityAddressKey } = DataProcessingUtils;
@@ -15,6 +16,7 @@ const {
   CHARGE_EVENT,
   DIVERSION_PLAN,
   MANUAL_ARREST_CASES,
+  MANUAL_ARREST_CHARGES,
   MANUAL_CHARGED_WITH,
   PEOPLE,
   REGISTERED_FOR,
@@ -27,7 +29,7 @@ const formatNewArrestChargeDataAndAssociations = (
   numberOfExistingChargesAdded :number,
   { personIndexOrEKID, diversionPlanIndexOrEKID } :Object,
   cwpArrestCaseByArrestCharge :?Map,
-) => {
+) :Object => {
 
   const newChargeEntities :Object[] = [];
   const newChargeAssociations :Array<Array<*>> = [];
@@ -84,7 +86,60 @@ const formatNewArrestChargeDataAndAssociations = (
   return { newChargeEntities, newChargeAssociations };
 };
 
-/* eslint-disable import/prefer-default-export */
+const formatExistingChargeDataAndAssociation = (
+  existingPSAChargesInForm :Object[],
+  { personIndexOrEKID, diversionPlanIndexOrEKID } :Object,
+  psaArrestCaseByArrestCharge :Map,
+  arrestCaseByArrestChargeEKIDFromPSA :Map,
+) :Object => {
+
+  const psaChargeEntities :Object[] = [];
+  const psaChargeAssociations :Array<Array<*>> = [];
+  if (!isDefined(existingPSAChargesInForm)) return { psaChargeEntities, psaChargeAssociations };
+
+  let psaCharges :Object[] = existingPSAChargesInForm;
+  psaCharges = existingPSAChargesInForm.filter((chargeObject :Object) => {
+    const existingChargeEKID :UUID = chargeObject[getEntityAddressKey(-1, MANUAL_ARREST_CHARGES, ENTITY_KEY_ID)];
+    const existing :any = psaArrestCaseByArrestCharge
+      .findKey((caseEKID, chargeEKID) => chargeEKID === existingChargeEKID);
+    return !isDefined(existing);
+  });
+
+  if (!psaCharges.length || !Object.values(psaCharges[0]).length) {
+    return { psaChargeEntities, psaChargeAssociations };
+  }
+
+  const now :DateTime = DateTime.local();
+  const currentTime = now.toLocaleString(DateTime.TIME_24_SIMPLE);
+
+  psaCharges.forEach((charge :Object, index :number) => {
+    const chargeEventToSubmit :Object = {};
+    const existingArrestChargeEKID :UUID = charge[
+      getEntityAddressKey(-1, MANUAL_ARREST_CHARGES, ENTITY_KEY_ID)
+    ];
+    psaChargeAssociations.push([REGISTERED_FOR, index, CHARGE_EVENT, existingArrestChargeEKID, MANUAL_ARREST_CHARGES]);
+    psaChargeAssociations.push([MANUAL_CHARGED_WITH, personIndexOrEKID, PEOPLE, index, CHARGE_EVENT]);
+
+    const arrestCase :Map = arrestCaseByArrestChargeEKIDFromPSA.get(existingArrestChargeEKID, Map());
+    const arrestCaseEKID :UUID = getEntityKeyId(arrestCase);
+    psaChargeAssociations
+      .push([RELATED_TO, diversionPlanIndexOrEKID, DIVERSION_PLAN, arrestCaseEKID, MANUAL_ARREST_CASES]);
+
+    const dateChargedFromForm :string = charge[getEntityAddressKey(-1, CHARGE_EVENT, DATETIME_COMPLETED)];
+    const { [ARREST_DATETIME]: arrestDateTime } = getEntityProperties(arrestCase, [ARREST_DATETIME]);
+    let dateTimeCharged :string = ' ';
+    if (isDefined(dateChargedFromForm)) dateTimeCharged = getCombinedDateTime(dateChargedFromForm, currentTime);
+    else if (isDefined(arrestDateTime) && arrestDateTime.length) dateTimeCharged = arrestDateTime;
+    else dateTimeCharged = now.toISO();
+
+    chargeEventToSubmit[getEntityAddressKey(index, CHARGE_EVENT, DATETIME_COMPLETED)] = dateTimeCharged;
+    psaChargeEntities.push(chargeEventToSubmit);
+  });
+
+  return { psaChargeEntities, psaChargeAssociations };
+};
+
 export {
+  formatExistingChargeDataAndAssociation,
   formatNewArrestChargeDataAndAssociations,
 };

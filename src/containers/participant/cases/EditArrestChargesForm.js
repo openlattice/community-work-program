@@ -27,7 +27,10 @@ import { hydrateArrestChargeSchema } from './utils/EditCaseInfoUtils';
 import { getCombinedDateTime } from '../../../utils/ScheduleUtils';
 import { getEntityKeyId, getEntityProperties } from '../../../utils/DataUtils';
 import { isDefined } from '../../../utils/LangUtils';
-import { formatNewArrestChargeDataAndAssociations } from '../charges/utils/ChargesUtils';
+import {
+  formatExistingChargeDataAndAssociation,
+  formatNewArrestChargeDataAndAssociations,
+} from '../charges/utils/ChargesUtils';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 
 const {
@@ -185,9 +188,6 @@ class EditCourtChargesForm extends Component<Props, State> {
       psaArrestCaseByArrestCharge,
     } = this.props;
     const { chargesFormData } = this.state;
-
-    const todaysDateTime :DateTime = DateTime.local();
-    const currentTime :string = todaysDateTime.toLocaleString(DateTime.TIME_24_SIMPLE);
     const personEKID :UUID = getEntityKeyId(participant);
 
     const entities :Object = {
@@ -196,41 +196,16 @@ class EditCourtChargesForm extends Component<Props, State> {
       [getPageSectionKey(1, 3)]: {},
     };
     let associations :Array<Array<*>> = [];
-    let existingChargesFromPSA :Object[] = [];
 
-    if (isDefined(get(chargesFormData, getPageSectionKey(1, 1)))) {
-      existingChargesFromPSA = get(chargesFormData, getPageSectionKey(1, 1), []);
-      existingChargesFromPSA = existingChargesFromPSA.filter((chargeObject :Object) => {
-        const existingChargeEKID :UUID = chargeObject[getEntityAddressKey(-1, MANUAL_ARREST_CHARGES, ENTITY_KEY_ID)];
-        const existing :any = psaArrestCaseByArrestCharge
-          .findKey((caseEKID, chargeEKID) => chargeEKID === existingChargeEKID);
-        return !isDefined(existing);
-      });
-      if (existingChargesFromPSA.length && Object.values(existingChargesFromPSA[0]).length) {
-        existingChargesFromPSA.forEach((charge :Object, index :number) => {
-          const chargeEventToSubmit :Object = {};
-          const existingArrestChargeEKID :UUID = charge[
-            getEntityAddressKey(-1, MANUAL_ARREST_CHARGES, ENTITY_KEY_ID)
-          ];
-          associations.push([REGISTERED_FOR, index, CHARGE_EVENT, existingArrestChargeEKID, MANUAL_ARREST_CHARGES]);
-          associations.push([MANUAL_CHARGED_WITH, personEKID, PEOPLE, index, CHARGE_EVENT]);
-
-          const arrestCase :Map = arrestCaseByArrestChargeEKIDFromPSA.get(existingArrestChargeEKID, Map());
-          const arrestCaseEKID :UUID = getEntityKeyId(arrestCase);
-          associations.push([RELATED_TO, diversionPlanEKID, DIVERSION_PLAN, arrestCaseEKID, MANUAL_ARREST_CASES]);
-
-          const dateChargedFromForm :string = charge[getEntityAddressKey(-1, CHARGE_EVENT, DATETIME_COMPLETED)];
-          const { [ARREST_DATETIME]: arrestDateTime } = getEntityProperties(arrestCase, [ARREST_DATETIME]);
-          let dateTimeCharged :string = ' ';
-          if (isDefined(dateChargedFromForm)) dateTimeCharged = getCombinedDateTime(dateChargedFromForm, currentTime);
-          else if (isDefined(arrestDateTime) && arrestDateTime.length) dateTimeCharged = arrestDateTime;
-          else dateTimeCharged = todaysDateTime.toISO();
-
-          chargeEventToSubmit[getEntityAddressKey(index, CHARGE_EVENT, DATETIME_COMPLETED)] = dateTimeCharged;
-          entities[getPageSectionKey(1, 1)].push(chargeEventToSubmit);
-        });
-      }
-    }
+    const existingChargesFromPSA :Object[] = get(chargesFormData, getPageSectionKey(1, 1), []);
+    const { psaChargeEntities, psaChargeAssociations } = formatExistingChargeDataAndAssociation(
+      existingChargesFromPSA,
+      { personIndexOrEKID: personEKID, diversionPlanIndexOrEKID: diversionPlanEKID },
+      psaArrestCaseByArrestCharge,
+      arrestCaseByArrestChargeEKIDFromPSA
+    );
+    entities[getPageSectionKey(1, 1)] = psaChargeEntities;
+    associations = associations.concat(psaChargeAssociations);
 
     const newArrestCharges :Object[] = get(chargesFormData, getPageSectionKey(1, 2), []);
     const { newChargeEntities, newChargeAssociations } = formatNewArrestChargeDataAndAssociations(
