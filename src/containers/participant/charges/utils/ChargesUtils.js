@@ -89,8 +89,8 @@ const formatNewArrestChargeDataAndAssociations = (
 const formatExistingChargeDataAndAssociation = (
   existingPSAChargesInForm :Object[],
   { personIndexOrEKID, diversionPlanIndexOrEKID } :Object,
-  psaArrestCaseByArrestCharge :Map,
   arrestCaseByArrestChargeEKIDFromPSA :Map,
+  psaArrestCaseByArrestCharge :?Map,
 ) :Object => {
 
   const psaChargeEntities :Object[] = [];
@@ -98,12 +98,14 @@ const formatExistingChargeDataAndAssociation = (
   if (!isDefined(existingPSAChargesInForm)) return { psaChargeEntities, psaChargeAssociations };
 
   let psaCharges :Object[] = existingPSAChargesInForm;
-  psaCharges = existingPSAChargesInForm.filter((chargeObject :Object) => {
-    const existingChargeEKID :UUID = chargeObject[getEntityAddressKey(-1, MANUAL_ARREST_CHARGES, ENTITY_KEY_ID)];
-    const existing :any = psaArrestCaseByArrestCharge
-      .findKey((caseEKID, chargeEKID) => chargeEKID === existingChargeEKID);
-    return !isDefined(existing);
-  });
+  if (isDefined(psaArrestCaseByArrestCharge)) {
+    psaCharges = existingPSAChargesInForm.filter((chargeObject :Object) => {
+      const existingChargeEKID :UUID = chargeObject[getEntityAddressKey(-1, MANUAL_ARREST_CHARGES, ENTITY_KEY_ID)];
+      const existing :any = psaArrestCaseByArrestCharge
+        .findKey((caseEKID, chargeEKID) => chargeEKID === existingChargeEKID);
+      return !isDefined(existing);
+    });
+  }
 
   if (!psaCharges.length || !Object.values(psaCharges[0]).length) {
     return { psaChargeEntities, psaChargeAssociations };

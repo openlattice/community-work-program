@@ -40,7 +40,10 @@ import { CWP, ENROLLMENT_STATUSES } from '../../core/edm/constants/DataModelCons
 import { schema, uiSchema } from './schemas/CreateNewEnrollmentSchemas';
 import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
 import { getCombinedDateTime } from '../../utils/ScheduleUtils';
-import { formatNewArrestChargeDataAndAssociations } from './charges/utils/ChargesUtils';
+import {
+  formatExistingChargeDataAndAssociation,
+  formatNewArrestChargeDataAndAssociations,
+} from './charges/utils/ChargesUtils';
 import { BackNavButton } from '../../components/controls/index';
 import { PARTICIPANT_PROFILE_WIDTH } from '../../core/style/Sizes';
 import {
@@ -254,31 +257,14 @@ class CreateNewEnrollmentForm extends Component<Props> {
     /* should only submit charge event entities if there's charge data in the form */
     // charges that exist from PSA
     const chargesFromPSA :Object[] = get(dataToSubmit, getPageSectionKey(1, 2), []);
-    if (isDefined(chargesFromPSA) && chargesFromPSA.length && Object.values(chargesFromPSA[0]).length) {
-      dataToSubmit[getPageSectionKey(1, 2)] = [];
-      chargesFromPSA.forEach((charge :Object, index :number) => {
-        const chargeEventToSubmit :Object = {};
-        const existingArrestChargeEKID :UUID = charge[
-          getEntityAddressKey(-1, MANUAL_ARREST_CHARGES, ENTITY_KEY_ID)
-        ];
-        associations.push([REGISTERED_FOR, index, CHARGE_EVENT, existingArrestChargeEKID, MANUAL_ARREST_CHARGES]);
-        associations.push([MANUAL_CHARGED_WITH, personEKID, APP_TYPE_FQNS.PEOPLE, index, CHARGE_EVENT]);
+    const { psaChargeEntities, psaChargeAssociations } = formatExistingChargeDataAndAssociation(
+      chargesFromPSA,
+      { personIndexOrEKID: personEKID, diversionPlanIndexOrEKID: 0 },
+      arrestCaseByArrestChargeEKIDFromPSA,
+    );
+    dataToSubmit[getPageSectionKey(1, 2)] = psaChargeEntities;
+    associations = associations.concat(psaChargeAssociations);
 
-        const arrestCase :Map = arrestCaseByArrestChargeEKIDFromPSA.get(existingArrestChargeEKID, Map());
-        const arrestCaseEKID :UUID = getEntityKeyId(arrestCase);
-        associations.push([RELATED_TO, 0, DIVERSION_PLAN, arrestCaseEKID, MANUAL_ARREST_CASES]);
-
-        const dateChargedFromForm :string = charge[getEntityAddressKey(-1, CHARGE_EVENT, DATETIME_COMPLETED)];
-        const { [ARREST_DATETIME]: arrestDateTime } = getEntityProperties(arrestCase, [ARREST_DATETIME]);
-        let dateTimeCharged :string = ' ';
-        if (isDefined(dateChargedFromForm)) dateTimeCharged = getCombinedDateTime(dateChargedFromForm, currentTime);
-        else if (isDefined(arrestDateTime) && arrestDateTime.length) dateTimeCharged = arrestDateTime;
-        else dateTimeCharged = now.toISO();
-
-        chargeEventToSubmit[getEntityAddressKey(index, CHARGE_EVENT, DATETIME_COMPLETED)] = dateTimeCharged;
-        dataToSubmit[getPageSectionKey(1, 2)].push(chargeEventToSubmit);
-      });
-    }
     // new arrest charges
     const newCharges = get(dataToSubmit, getPageSectionKey(1, 3), []);
     const { newChargeEntities, newChargeAssociations } = formatNewArrestChargeDataAndAssociations(
@@ -298,7 +284,7 @@ class CreateNewEnrollmentForm extends Component<Props> {
       });
       mappers.set(INDEX_MAPPERS, indexMappers);
     });
-
+    console.log('dataToSubmit: ', dataToSubmit);
     const entityData :Object = processEntityData(dataToSubmit, entitySetIds, propertyTypeIds, entityMappers);
     const associationEntityData :Object = processAssociationEntityData(
       fromJS(associations),
