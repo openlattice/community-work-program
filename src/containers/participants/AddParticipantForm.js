@@ -94,7 +94,7 @@ const {
   GET_INFO_FOR_ADD_PARTICIPANT,
   REQUEST_STATE,
 } = PERSON;
-const { ADD_PARTICIPANT } = PEOPLE;
+const { ADD_PARTICIPANT, NEW_PARTICIPANT_EKID } = PEOPLE;
 const { ENTITY_SET_IDS_BY_ORG, SELECTED_ORG_ID } = APP;
 const { PROPERTY_TYPES, TYPE_IDS_BY_FQNS } = EDM;
 const { ARREST_CHARGES } = CHARGES;
@@ -133,6 +133,11 @@ const SubmittedWrapper = styled.div`
   }
 `;
 
+const AddButtonWrapper = styled.div`
+  display: flex;
+  margin-left: 15px;
+`;
+
 type Props = {
   actions:{
     addParticipant :RequestSequence;
@@ -144,6 +149,7 @@ type Props = {
   entitySetIds :Map;
   getInfoRequestState :RequestState;
   judges :List;
+  newParticipantEKID :UUID;
   propertyTypeIds :Map;
 };
 
@@ -187,6 +193,11 @@ class AddParticipantForm extends Component<Props, State> {
     this.setState({ formIsVisible: true });
   }
 
+  goToParticipantProfile = () => {
+    const { actions, newParticipantEKID } = this.props;
+    actions.goToRoute(Routes.PARTICIPANT_PROFILE.replace(':participantId', newParticipantEKID));
+  }
+
   handleOnSubmit = ({ formData } :Object) => {
     const { actions, entitySetIds, propertyTypeIds } = this.props;
 
@@ -216,8 +227,10 @@ class AddParticipantForm extends Component<Props, State> {
     ];
     if (hasIn(dataToSubmit, orientationDateKey)) {
       const orientationDate :string = getIn(dataToSubmit, orientationDateKey);
+      console.log('orientationDate: ', orientationDate);
       const orientationDateTime :string = getCombinedDateTime(orientationDate, currentTime);
-      dataToSubmit = setIn(dataToSubmit, sentenceDateKey, orientationDateTime);
+      console.log('orientationDateTime: ', orientationDateTime);
+      dataToSubmit = setIn(dataToSubmit, orientationDateKey, orientationDateTime);
     }
 
     dataToSubmit = setIn(dataToSubmit, [getPageSectionKey(1, 5)], {
@@ -369,7 +382,12 @@ class AddParticipantForm extends Component<Props, State> {
                         Participant Added!
                       </SubmittedWrapper>
                     </SubmittedWrapper>
-                    <Button onClick={this.showForm}>Add Another</Button>
+                    <div>
+                      <Button onClick={this.goToParticipantProfile}>Go To Profile</Button>
+                      <AddButtonWrapper>
+                        <Button onClick={this.showForm}>Add Another</Button>
+                      </AddButtonWrapper>
+                    </div>
                   </SubmissionActionsWrapper>
                 </CardSegment>
               )
@@ -390,6 +408,7 @@ const mapStateToProps = (state :Map) => {
   const selectedOrgId :string = app.get(SELECTED_ORG_ID);
   return ({
     [ARREST_CHARGES]: charges.get(ARREST_CHARGES),
+    [NEW_PARTICIPANT_EKID]: people.get(NEW_PARTICIPANT_EKID),
     [PERSON.JUDGES]: person.get(PERSON.JUDGES),
     addParticipantRequestState: people.getIn([ACTIONS, ADD_PARTICIPANT, REQUEST_STATE]),
     entitySetIds: app.getIn([ENTITY_SET_IDS_BY_ORG, selectedOrgId], Map()),

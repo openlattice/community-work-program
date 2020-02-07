@@ -34,6 +34,7 @@ const {
   HOURS_WORKED,
   INFRACTIONS_BY_PARTICIPANT,
   INFRACTION_COUNTS_BY_PARTICIPANT,
+  NEW_PARTICIPANT_EKID,
   PARTICIPANTS,
   REQUEST_STATE,
 } = PEOPLE;
@@ -72,6 +73,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [HOURS_WORKED]: Map(),
   [INFRACTIONS_BY_PARTICIPANT]: Map(),
   [INFRACTION_COUNTS_BY_PARTICIPANT]: Map(),
+  [NEW_PARTICIPANT_EKID]: '',
   [PARTICIPANTS]: List(),
 });
 
@@ -94,8 +96,13 @@ export default function participantsReducer(state :Map<*, *> = INITIAL_STATE, ac
         REQUEST: () => state
           .setIn([ACTIONS, ADD_PARTICIPANT, action.id], action)
           .setIn([ACTIONS, ADD_PARTICIPANT, REQUEST_STATE], RequestStates.PENDING),
-        SUCCESS: () => state
-          .setIn([ACTIONS, ADD_PARTICIPANT, REQUEST_STATE], RequestStates.SUCCESS),
+        SUCCESS: () => {
+          const seqAction :SequenceAction = (action :any);
+          const { newParticipantEKID } = seqAction.value;
+          return state
+            .set(NEW_PARTICIPANT_EKID, newParticipantEKID)
+            .setIn([ACTIONS, ADD_PARTICIPANT, REQUEST_STATE], RequestStates.SUCCESS);
+        },
         FAILURE: () => state
           .setIn([ACTIONS, ADD_PARTICIPANT, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, ADD_PARTICIPANT, action.id]),
