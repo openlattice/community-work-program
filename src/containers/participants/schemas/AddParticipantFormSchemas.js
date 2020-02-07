@@ -35,6 +35,7 @@ const {
   FIRST_NAME,
   FULL_ADDRESS,
   LAST_NAME,
+  ORIENTATION_DATETIME,
   PERSON_NOTES,
   PHONE_NUMBER,
   RACE,
@@ -131,6 +132,11 @@ export const schema = {
           type: 'number',
           title: 'Required hours',
         },
+        [getEntityAddressKey(0, DIVERSION_PLAN, ORIENTATION_DATETIME)]: {
+          type: 'string',
+          title: 'Orientation date',
+          format: 'date',
+        },
         [getEntityAddressKey(0, MANUAL_PRETRIAL_COURT_CASES, COURT_CASE_TYPE)]: {
           type: 'string',
           title: 'Court type',
@@ -221,10 +227,13 @@ export const uiSchema = {
   [getPageSectionKey(1, 3)]: {
     classNames: 'column-span-12 grid-container',
     [getEntityAddressKey(0, DIVERSION_PLAN, DATETIME_RECEIVED)]: {
-      classNames: 'column-span-6'
+      classNames: 'column-span-4'
     },
     [getEntityAddressKey(0, DIVERSION_PLAN, REQUIRED_HOURS)]: {
-      classNames: 'column-span-6'
+      classNames: 'column-span-4'
+    },
+    [getEntityAddressKey(0, DIVERSION_PLAN, ORIENTATION_DATETIME)]: {
+      classNames: 'column-span-4'
     },
     [getEntityAddressKey(0, MANUAL_PRETRIAL_COURT_CASES, COURT_CASE_TYPE)]: {
       classNames: 'column-span-4'

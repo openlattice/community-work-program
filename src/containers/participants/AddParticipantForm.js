@@ -87,6 +87,7 @@ const {
   FULL_ADDRESS,
   LAST_NAME,
   NAME,
+  ORIENTATION_DATETIME,
   PHONE_NUMBER,
   PREFERRED,
   STATUS,
@@ -210,6 +211,16 @@ class AddParticipantForm extends Component<Props, State> {
       const sentenceDate :string = getIn(dataToSubmit, sentenceDateKey);
       const sentenceDateTime :string = getCombinedDateTime(sentenceDate, currentTime);
       dataToSubmit = setIn(dataToSubmit, sentenceDateKey, sentenceDateTime);
+    }
+
+    const orientationDateKey :string[] = [
+      getPageSectionKey(1, 3),
+      getEntityAddressKey(0, DIVERSION_PLAN, ORIENTATION_DATETIME)
+    ];
+    if (hasIn(dataToSubmit, orientationDateKey)) {
+      const orientationDate :string = getIn(dataToSubmit, orientationDateKey);
+      const orientationDateTime :string = getCombinedDateTime(orientationDate, currentTime);
+      dataToSubmit = setIn(dataToSubmit, sentenceDateKey, orientationDateTime);
     }
 
     dataToSubmit = setIn(dataToSubmit, [getPageSectionKey(1, 5)], {
