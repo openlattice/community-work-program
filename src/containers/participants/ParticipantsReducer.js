@@ -98,9 +98,9 @@ export default function participantsReducer(state :Map<*, *> = INITIAL_STATE, ac
           .setIn([ACTIONS, ADD_PARTICIPANT, REQUEST_STATE], RequestStates.PENDING),
         SUCCESS: () => {
           const seqAction :SequenceAction = (action :any);
-          const { newParticipantEKID } = seqAction.value;
+          const { value } = seqAction;
           return state
-            .set(NEW_PARTICIPANT_EKID, newParticipantEKID)
+            .set(NEW_PARTICIPANT_EKID, value)
             .setIn([ACTIONS, ADD_PARTICIPANT, REQUEST_STATE], RequestStates.SUCCESS);
         },
         FAILURE: () => state

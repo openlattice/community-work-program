@@ -138,6 +138,10 @@ const AddButtonWrapper = styled.div`
   margin-left: 15px;
 `;
 
+const Wrapper = styled.div`
+  display: flex;
+`;
+
 type Props = {
   actions:{
     addParticipant :RequestSequence;
@@ -227,9 +231,7 @@ class AddParticipantForm extends Component<Props, State> {
     ];
     if (hasIn(dataToSubmit, orientationDateKey)) {
       const orientationDate :string = getIn(dataToSubmit, orientationDateKey);
-      console.log('orientationDate: ', orientationDate);
       const orientationDateTime :string = getCombinedDateTime(orientationDate, currentTime);
-      console.log('orientationDateTime: ', orientationDateTime);
       dataToSubmit = setIn(dataToSubmit, orientationDateKey, orientationDateTime);
     }
 
@@ -382,12 +384,12 @@ class AddParticipantForm extends Component<Props, State> {
                         Participant Added!
                       </SubmittedWrapper>
                     </SubmittedWrapper>
-                    <div>
+                    <Wrapper>
                       <Button onClick={this.goToParticipantProfile}>Go To Profile</Button>
                       <AddButtonWrapper>
                         <Button onClick={this.showForm}>Add Another</Button>
                       </AddButtonWrapper>
-                    </div>
+                    </Wrapper>
                   </SubmissionActionsWrapper>
                 </CardSegment>
               )

@@ -99,11 +99,9 @@ function* addParticipantWorker(action :SequenceAction) :Generator<*, *, *> {
       throw response.error;
     }
     const { entityKeyIds } = response.data;
-    console.log('response: ', response);
     const app = yield select(getAppFromState);
     const peopleESID :UUID = getEntitySetIdFromApp(app, PEOPLE);
     const newParticipantEKID :UUID = entityKeyIds[peopleESID][0];
-    console.log('newParticipantEKID: ', newParticipantEKID);
 
     yield put(addParticipant.success(id, newParticipantEKID));
   }
