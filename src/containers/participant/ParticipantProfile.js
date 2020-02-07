@@ -6,17 +6,22 @@ import {
   Button,
   Card,
   CardSegment,
-  CardStack,
-  IconSplash,
   Select,
   Table,
 } from 'lattice-ui-kit';
-import { faTools } from '@fortawesome/pro-light-svg-icons';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { RequestStates } from 'redux-reqseq';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
+import AssignWorksiteModal from './assignedworksites/AssignWorksiteModal';
+import AssignedWorksitesContainer from './assignedworksites/AssignedWorksitesContainer';
+import CreateWorkAppointmentModal from './schedule/CreateAppointmentModal';
+import EnrollmentTableRow from './enrollment/EnrollmentTableRow';
+import InfractionsContainer from './infractions/InfractionsContainer';
+import LogoLoader from '../../components/LogoLoader';
+import ParticipantWorkScheduleContainer from './schedule/ParticipantWorkScheduleContainer';
+import ProgramCompletionBanner from './ProgramCompletionBanner';
 import {
   CaseInfoSection,
   EnrollmentDates,
@@ -25,17 +30,7 @@ import {
   PersonNotes,
   ProgramNotes,
 } from '../../components/participant/index';
-import EnrollmentTableRow from './enrollment/EnrollmentTableRow';
-import ParticipantWorkScheduleContainer from './schedule/ParticipantWorkScheduleContainer';
-import ProgramCompletionBanner from './ProgramCompletionBanner';
-
-import AssignedWorksite from './assignedworksites/AssignedWorksite';
-import AssignWorksiteModal from './assignedworksites/AssignWorksiteModal';
-import InfractionsContainer from './infractions/InfractionsContainer';
-import CreateWorkAppointmentModal from './schedule/CreateAppointmentModal';
-import LogoLoader from '../../components/LogoLoader';
 import generateDiversionPlanOptions from './utils/ParticipantProfileUtils';
-
 import { getAllParticipantInfo, getEnrollmentFromDiversionPlan } from './ParticipantActions';
 import { clearAppointmentsAndPlans } from './assignedworksites/WorksitePlanActions';
 import { goToRoute } from '../../core/router/RoutingActions';
@@ -510,41 +505,12 @@ class ParticipantProfile extends Component<Props, State> {
           {
             ENROLLMENT_STATUSES_EXCLUDING_PREENROLLMENT.includes(status) && (
               <ProfileBody>
-                <NameRowWrapper>
-                  <NameHeader>Assigned Work Sites</NameHeader>
-                  <Button onClick={() => this.handleShowModal(ASSIGN_WORKSITE)}>Add Work Site</Button>
-                </NameRowWrapper>
-                {
-                  worksitePlansList.isEmpty()
-                    ? (
-                      <Card>
-                        <CardSegment>
-                          <IconSplash
-                              caption="No Assigned Work Sites"
-                              icon={faTools}
-                              size="3x" />
-                        </CardSegment>
-                      </Card>
-                    )
-                    : (
-                      <CardStack>
-                        {
-                          worksitePlansList.map((worksitePlan :Map) => {
-                            const worksitePlanEKID :UUID = getEntityKeyId(worksitePlan);
-                            const worksite :Map = worksitesByWorksitePlan.get(worksitePlanEKID);
-                            const worksitePlanStatus :Map = worksitePlanStatuses.get(worksitePlanEKID);
-                            return (
-                              <AssignedWorksite
-                                  key={worksitePlanEKID}
-                                  status={worksitePlanStatus}
-                                  worksite={worksite}
-                                  worksitePlan={worksitePlan} />
-                            );
-                          })
-                        }
-                      </CardStack>
-                    )
-                }
+                <AssignedWorksitesContainer
+                    assignWorksiteModal={ASSIGN_WORKSITE}
+                    handleShowModal={this.handleShowModal}
+                    worksitePlanStatuses={worksitePlanStatuses}
+                    worksitePlansList={worksitePlansList}
+                    worksitesByWorksitePlan={worksitesByWorksitePlan} />
               </ProfileBody>
             )
           }
