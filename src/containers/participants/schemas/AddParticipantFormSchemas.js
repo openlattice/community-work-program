@@ -14,15 +14,17 @@ const { getEntityAddressKey, getPageSectionKey } = DataProcessingUtils;
 
 const {
   ADDRESS,
+  ARREST_CHARGE_LIST,
   CHARGE_EVENT,
   CONTACT_INFORMATION,
-  COURT_CHARGE_LIST,
   DIVERSION_PLAN,
   JUDGES,
+  MANUAL_ARREST_CASES,
   MANUAL_PRETRIAL_COURT_CASES,
   PEOPLE,
 } = APP_TYPE_FQNS;
 const {
+  ARREST_DATETIME,
   CASE_NUMBER_TEXT,
   CITY,
   COURT_CASE_TYPE,
@@ -156,13 +158,13 @@ export const schema = {
     },
     [getPageSectionKey(1, 4)]: {
       type: 'array',
-      title: '',
+      title: 'Add a New Arrest Charge',
       items: {
         type: 'object',
         properties: {
-          [getEntityAddressKey(-1, COURT_CHARGE_LIST, ENTITY_KEY_ID)]: {
+          [getEntityAddressKey(-1, ARREST_CHARGE_LIST, ENTITY_KEY_ID)]: {
             type: 'string',
-            title: 'Court charge',
+            title: 'Charge',
             enum: [],
             enumNames: [],
           },
@@ -254,12 +256,15 @@ export const uiSchema = {
     },
     items: {
       classNames: 'grid-container',
-      [getEntityAddressKey(-1, COURT_CHARGE_LIST, ENTITY_KEY_ID)]: {
+      [getEntityAddressKey(-1, ARREST_CHARGE_LIST, ENTITY_KEY_ID)]: {
         classNames: 'column-span-8',
       },
       [getEntityAddressKey(-1, CHARGE_EVENT, DATETIME_COMPLETED)]: {
         classNames: 'column-span-4',
       },
+      [getEntityAddressKey(-1, MANUAL_ARREST_CASES, ARREST_DATETIME)]: {
+        'ui:widget': 'hidden'
+      }
     },
   }
 };
