@@ -1,6 +1,6 @@
 // @flow
 import React, { useEffect, useState } from 'react';
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 import { Map } from 'immutable';
 import {
   Button,
@@ -9,6 +9,7 @@ import {
   IconButton,
   StyleUtils
 } from 'lattice-ui-kit';
+import { NavLink } from 'react-router-dom';
 import { connect } from 'react-redux';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCheckCircle, faPen, faTrash } from '@fortawesome/pro-solid-svg-icons';
@@ -19,6 +20,7 @@ import CheckInDetailsModal from '../participant/schedule/CheckInDetailsModal';
 import DeleteAppointmentModal from '../participant/schedule/DeleteAppointmentModal';
 import EditAppointmentModal from '../participant/schedule/EditAppointmentModal';
 
+import * as Routes from '../../core/router/Routes';
 import { isDefined } from '../../utils/LangUtils';
 import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
 import {
@@ -58,10 +60,25 @@ const InnerWrapper = styled.div`
   min-height: 40px;
 `;
 
-const Text = styled.span`
+const sharedTextStyles = css`
   align-items: center;
   display: flex;
   font-size: 14px;
+`;
+
+const Text = styled.span`
+  ${sharedTextStyles}
+`;
+
+const LinkAsText = styled(NavLink)`
+  ${sharedTextStyles}
+  color: ${OL.GREY01};
+  text-decoration: none;
+
+  &:hover {
+    color: ${OL.PURPLE02};
+    cursor: pointer;
+  }
 `;
 
 const CheckWrapper = styled(ButtonWrapper)`
@@ -139,7 +156,10 @@ const AppointmentContainer = ({
             <Text>{ day }</Text>
             {
               personName && (
-                <Text>{ personName }</Text>
+                <LinkAsText
+                    to={Routes.PARTICIPANT_PROFILE.replace(':participantId', personEKID)}>
+                  { personName }
+                </LinkAsText>
               )
             }
             <Text>{ worksiteName }</Text>
