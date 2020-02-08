@@ -37,6 +37,7 @@ const OuterWrapper = styled.div`
 
 type Props = {
   appointments :List;
+  courtTypeByAppointmentEKID :?Map;
   editAppointmentsRequestState :RequestState;
   hasSearched :boolean;
   isLoading :boolean;
@@ -60,6 +61,7 @@ class AppointmentListContainer extends Component<Props, State> {
   }
 
   static defaultProps = {
+    courtTypeByAppointmentEKID: undefined,
     personByAppointmentEKID: undefined,
     worksitesToInclude: undefined,
   };
@@ -80,7 +82,7 @@ class AppointmentListContainer extends Component<Props, State> {
   );
 
   setFullWorkAppointments = (appointments :List) => {
-    const { personByAppointmentEKID, worksiteNamesByAppointmentEKID } = this.props;
+    const { courtTypeByAppointmentEKID, personByAppointmentEKID, worksiteNamesByAppointmentEKID } = this.props;
     let { worksitesToInclude } = this.props;
 
     if (isDefined(worksitesToInclude)) {
@@ -110,6 +112,10 @@ class AppointmentListContainer extends Component<Props, State> {
         personName = `${firstName} ${lastName}`;
       }
       const worksiteName :string = worksiteNamesByAppointmentEKID.get(appointmentEKID, EMPTY_FIELD);
+      let courtType :string = '';
+      if (isDefined(courtTypeByAppointmentEKID)) {
+        courtType = courtTypeByAppointmentEKID.get(appointmentEKID, EMPTY_FIELD);
+      }
 
       if (isNonEmptyArray(worksitesToInclude) && !worksitesToInclude.includes(worksiteName)) {
         return;
@@ -121,6 +127,7 @@ class AppointmentListContainer extends Component<Props, State> {
         hours,
         personName,
         worksiteName,
+        courtType,
       });
       fullWorkAppointments = fullWorkAppointments.push(fullWorkAppointment);
     });
