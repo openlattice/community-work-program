@@ -202,7 +202,6 @@ function* getWorksiteAndPersonNamesWorker(action :SequenceAction) :Generator<*, 
     const worksitePlanEKIDs :UUID[] = Array.from(setOfWorksitePlanEKIDs);
 
     const appointmentEKIDByWorksitePlanEKID :Map = appointmentWorksitePlanEKIDMap.flip();
-    console.log('appointmentEKIDByWorksitePlanEKID: ', appointmentEKIDByWorksitePlanEKID.toJS());
     yield call(getPersonCourtTypeWorker, getPersonCourtType({ appointmentEKIDByWorksitePlanEKID, worksitePlanEKIDs }));
 
     const worksiteESID :UUID = getEntitySetIdFromApp(app, WORKSITE);
