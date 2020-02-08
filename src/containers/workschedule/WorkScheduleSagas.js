@@ -23,8 +23,10 @@ import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/Full
 import { STATE } from '../../utils/constants/ReduxStateConsts';
 import {
   FIND_APPOINTMENTS,
+  GET_PERSON_COURT_TYPE,
   GET_WORKSITE_AND_PERSON_NAMES,
   findAppointments,
+  getPersonCourtType,
   getWorksiteAndPersonNames,
 } from './WorkScheduleActions';
 import { getAppointmentCheckIns } from '../participant/assignedworksites/WorksitePlanActions';
@@ -39,6 +41,7 @@ import {
   getSearchTerm,
   getUTCDateRangeSearchString
 } from '../../utils/DataUtils';
+import { isDefined } from '../../utils/LangUtils';
 import { timePeriods } from './WorkScheduleConstants';
 
 const LOG = new Logger('WorkScheduleSagas');
@@ -47,22 +50,108 @@ const { executeSearchWorker, searchEntityNeighborsWithFilterWorker } = SearchApi
 
 const {
   APPOINTMENT,
+  DIVERSION_PLAN,
+  MANUAL_PRETRIAL_COURT_CASES,
   PEOPLE,
   WORKSITE,
   WORKSITE_PLAN
 } = APP_TYPE_FQNS;
-const { INCIDENT_START_DATETIME, NAME } = PROPERTY_TYPE_FQNS;
+const { COURT_CASE_TYPE, INCIDENT_START_DATETIME, NAME } = PROPERTY_TYPE_FQNS;
 
 const getAppFromState = (state) => state.get(STATE.APP, Map());
 const getEdmFromState = (state) => state.get(STATE.EDM, Map());
 
 /*
-appointment -> addresses -> work site plan -> based on -> work site
-person -> has -> check-in -> fulfills -> appointment
-check-in -> has -> check-in details
-person -> assigned to -> work site plan
-person -> assigned to -> work site
+  appointment -> addresses -> work site plan -> based on -> work site
+  person -> has -> check-in -> fulfills -> appointment
+  check-in -> has -> check-in details
+  person -> assigned to -> work site plan
+  person -> assigned to -> work site
+  work site plan -> part of -> diversion plan
+  diversion plan -> related to -> court case
 */
+
+function* getPersonCourtTypeWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+  if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
+  let response :Object = {};
+  let courtTypeByAppointmentEKID :Map = Map();
+
+  try {
+
+    const { appointmentEKIDByWorksitePlanEKID, worksitePlanEKIDs } = value;
+    const app = yield select(getAppFromState);
+    const worksitePlanESID :UUID = getEntitySetIdFromApp(app, WORKSITE_PLAN);
+    const diversionPlanESID :UUID = getEntitySetIdFromApp(app, DIVERSION_PLAN);
+
+    let searchFilter = {
+      entityKeyIds: worksitePlanEKIDs,
+      destinationEntitySetIds: [diversionPlanESID],
+      sourceEntitySetIds: [],
+    };
+    response = yield call(
+      searchEntityNeighborsWithFilterWorker,
+      searchEntityNeighborsWithFilter({ entitySetId: worksitePlanESID, filter: searchFilter })
+    );
+    if (response.error) {
+      throw response.error;
+    }
+    let diversionPlanByWorksitePlanEKID :Map = fromJS(response.data);
+    if (!diversionPlanByWorksitePlanEKID.isEmpty()) {
+      const diversionPlanEKIDs :UUID[] = [];
+      diversionPlanByWorksitePlanEKID = diversionPlanByWorksitePlanEKID
+        .map((neighborList :List) => neighborList.get(0))
+        .map((neighbor :Map) => getNeighborDetails(neighbor))
+        .map((entity :Map) => getEntityKeyId(entity));
+      diversionPlanByWorksitePlanEKID.valueSeq().toList().forEach((ekid :string) => {
+        diversionPlanEKIDs.push(ekid);
+      });
+      const worksitePlanEKIDByDiversionPlanEKID :Map = diversionPlanByWorksitePlanEKID.flip();
+
+      const courtCasesESID :UUID = getEntitySetIdFromApp(app, MANUAL_PRETRIAL_COURT_CASES);
+      searchFilter = {
+        entityKeyIds: diversionPlanEKIDs,
+        destinationEntitySetIds: [courtCasesESID],
+        sourceEntitySetIds: [],
+      };
+      response = yield call(
+        searchEntityNeighborsWithFilterWorker,
+        searchEntityNeighborsWithFilter({ entitySetId: diversionPlanESID, filter: searchFilter })
+      );
+      if (response.error) {
+        throw response.error;
+      }
+      let courtCasesByDiversionPlanEKID :Map = fromJS(response.data);
+      if (!courtCasesByDiversionPlanEKID.isEmpty()) {
+        courtCasesByDiversionPlanEKID = courtCasesByDiversionPlanEKID
+          .map((neighborList :List) => neighborList.get(0))
+          .map((neighbor :Map) => getNeighborDetails(neighbor));
+        courtCasesByDiversionPlanEKID.forEach((courtCase :Map, diversionPlanEKID :UUID) => {
+          const { [COURT_CASE_TYPE]: courtType } = getEntityProperties(courtCase, [COURT_CASE_TYPE]);
+          const worksitePlanEKID :UUID = worksitePlanEKIDByDiversionPlanEKID.get(diversionPlanEKID, '');
+          const appointmentEKID :UUID = appointmentEKIDByWorksitePlanEKID.get(worksitePlanEKID, '');
+          courtTypeByAppointmentEKID = courtTypeByAppointmentEKID.set(appointmentEKID, courtType);
+        });
+      }
+    }
+
+    yield put(getPersonCourtType.success(id, courtTypeByAppointmentEKID));
+  }
+  catch (error) {
+    LOG.error(action.type, error);
+    yield put(getPersonCourtType.failure(id, error));
+  }
+  finally {
+    yield put(getPersonCourtType.finally(id));
+  }
+}
+
+function* getPersonCourtTypeWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(GET_PERSON_COURT_TYPE, getPersonCourtTypeWorker);
+}
+
 
 /*
  *
@@ -111,6 +200,10 @@ function* getWorksiteAndPersonNamesWorker(action :SequenceAction) :Generator<*, 
       appointmentWorksitePlanEKIDMap = appointmentWorksitePlanEKIDMap.set(appointmentEKID, worksitePlanEKID);
     });
     const worksitePlanEKIDs :UUID[] = Array.from(setOfWorksitePlanEKIDs);
+
+    const appointmentEKIDByWorksitePlanEKID :Map = appointmentWorksitePlanEKIDMap.flip();
+    console.log('appointmentEKIDByWorksitePlanEKID: ', appointmentEKIDByWorksitePlanEKID.toJS());
+    yield call(getPersonCourtTypeWorker, getPersonCourtType({ appointmentEKIDByWorksitePlanEKID, worksitePlanEKIDs }));
 
     const worksiteESID :UUID = getEntitySetIdFromApp(app, WORKSITE);
     const peopleESID :UUID = getEntitySetIdFromApp(app, PEOPLE);
@@ -259,6 +352,8 @@ function* findAppointmentsWatcher() :Generator<*, *, *> {
 export {
   findAppointmentsWatcher,
   findAppointmentsWorker,
+  getPersonCourtTypeWatcher,
+  getPersonCourtTypeWorker,
   getWorksiteAndPersonNamesWatcher,
   getWorksiteAndPersonNamesWorker,
 };

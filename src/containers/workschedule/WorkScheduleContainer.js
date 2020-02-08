@@ -40,6 +40,7 @@ const { WORKSITES_LIST } = WORKSITES;
 const {
   ACTIONS,
   APPOINTMENTS,
+  COURT_TYPE_BY_APPOINTMENT_EKID,
   FIND_APPOINTMENTS,
   PERSON_BY_APPOINTMENT_EKID,
   REQUEST_STATE,
@@ -98,6 +99,7 @@ type Props = {
     goToRoute :GoToRoute;
   };
   appointments :List;
+  courtTypeByAppointmentEKID :Map;
   entitySetIds :Map;
   findAppointmentsRequestState :RequestState;
   personByAppointmentEKID :Map;
@@ -237,6 +239,7 @@ class WorkScheduleContainer extends Component<Props, State> {
   render() {
     const {
       appointments,
+      courtTypeByAppointmentEKID,
       findAppointmentsRequestState,
       personByAppointmentEKID,
       worksiteNamesByAppointmentEKID
@@ -254,6 +257,7 @@ class WorkScheduleContainer extends Component<Props, State> {
           { this.renderFields() }
           <AppointmentListContainer
               appointments={appointments}
+              courtTypeByAppointmentEKID={courtTypeByAppointmentEKID}
               hasSearched={hasSearched}
               isLoading={isLoading}
               personByAppointmentEKID={personByAppointmentEKID}
@@ -271,6 +275,7 @@ const mapStateToProps = (state :Map) => {
   const selectedOrgId :string = app.get(SELECTED_ORG_ID);
   return ({
     [APPOINTMENTS]: workSchedule.get(APPOINTMENTS),
+    [COURT_TYPE_BY_APPOINTMENT_EKID]: workSchedule.get(COURT_TYPE_BY_APPOINTMENT_EKID),
     [PERSON_BY_APPOINTMENT_EKID]: workSchedule.get(PERSON_BY_APPOINTMENT_EKID),
     [WORKSITES_LIST]: state.getIn([STATE.WORKSITES, WORKSITES_LIST]),
     [WORKSITE_NAMES_BY_APPOINTMENT_EKID]: workSchedule.get(WORKSITE_NAMES_BY_APPOINTMENT_EKID),

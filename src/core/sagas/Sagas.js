@@ -114,6 +114,7 @@ export default function* sagas() :Generator<*, *, *> {
 
     // WorkScheduleSagas
     fork(WorkScheduleSagas.findAppointmentsWatcher),
+    fork(WorkScheduleSagas.getPersonCourtTypeWatcher),
     fork(WorkScheduleSagas.getWorksiteAndPersonNamesWatcher),
 
     // WorksitesSagas
