@@ -55,11 +55,11 @@ const FiltersHeader = styled.div`
 type Props = {
   dropdowns :List;
   onSelectFunctions :Map;
-  primaryButtonAction :() => void;
-  primaryButtonText :string;
   search :(input :string) => void;
-  tertiaryButtonAction :() => void;
-  tertiaryButtonText :string;
+  primaryButtonAction :?() => void;
+  primaryButtonText :?string;
+  tertiaryButtonAction :?() => void;
+  tertiaryButtonText :?string;
 };
 
 const ToolBar = ({
@@ -133,6 +133,13 @@ const ToolBar = ({
       }
     </ToolBarWrapper>
   );
+};
+
+ToolBar.defaultProps = {
+  primaryButtonAction: undefined,
+  primaryButtonText: undefined,
+  tertiaryButtonAction: undefined,
+  tertiaryButtonText: undefined,
 };
 
 export default ToolBar;
