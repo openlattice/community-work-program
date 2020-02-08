@@ -8,11 +8,14 @@ import {
   Button,
   CheckboxSelect,
   DatePicker,
+  IconButton,
   Label,
   Select
 } from 'lattice-ui-kit';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faFilter } from '@fortawesome/pro-light-svg-icons';
 import { RequestStates } from 'redux-reqseq';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
@@ -23,6 +26,7 @@ import { findAppointments } from './WorkScheduleActions';
 import { getWorksites } from '../worksites/WorksitesActions';
 import { goToRoute } from '../../core/router/RoutingActions';
 import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
+import { formatClickedProperty } from '../participants/utils/SearchContainerUtils';
 import { ContainerHeader } from '../../components/Layout';
 import { SEARCH_CONTAINER_WIDTH } from '../../core/style/Sizes';
 import {
@@ -33,6 +37,7 @@ import {
 } from '../../utils/constants/ReduxStateConsts';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { timePeriods, TIME_PERIOD_OPTIONS } from './WorkScheduleConstants';
+import { ALL, COURT_TYPE_FILTER_OPTIONS } from '../participants/ParticipantsConstants';
 import type { GoToRoute } from '../../core/router/RoutingActions';
 
 const { ENTITY_SET_IDS_BY_ORG, SELECTED_ORG_ID } = APP;
@@ -82,14 +87,27 @@ const FieldsRowWrapper = styled.div`
 const FieldsWrapper = styled.div`
   display: grid;
   grid-template-columns: 200px 200px minmax(200px, auto);
-  grid-gap: 0 20px;
+  grid-gap: 0 15px;
+  margin-right: 15px;
 `;
 
 const ButtonsWrapper = styled.div`
   display: grid;
   grid-template-columns: minmax(min-content, 1fr) minmax(min-content, 1fr);
   grid-gap: 0 15px;
-  margin-left: 8px;
+  margin-left: 15px;
+`;
+
+const SelectAndLabelWrapper = styled.div`
+  align-items: center;
+  align-self: flex-start;
+  display: flex;
+  margin-bottom: 20px;
+`;
+
+const SelectWrapper = styled.div`
+  margin-left: 20px;
+  width: 300px;
 `;
 
 type Props = {
@@ -108,6 +126,8 @@ type Props = {
 };
 
 type State = {
+  courtTypeToShow :string;
+  filtersVisible :boolean;
   selectedDate :string;
   timePeriod :string;
   worksites :Map;
@@ -120,6 +140,8 @@ class WorkScheduleContainer extends Component<Props, State> {
 
     const today = DateTime.local().toISODate();
     this.state = {
+      courtTypeToShow: ALL,
+      filtersVisible: false,
       selectedDate: today,
       timePeriod: timePeriods.DAY,
       worksites: Map(),
@@ -191,8 +213,18 @@ class WorkScheduleContainer extends Component<Props, State> {
     );
   }
 
+  showFilters = () => {
+    const { filtersVisible } = this.state;
+    this.setState({ filtersVisible: !filtersVisible });
+  }
+
+  handleCourtTypeSelect = (clickedProperty :Map) => {
+    const property :string = formatClickedProperty(clickedProperty);
+    this.setState({ courtTypeToShow: property });
+  }
+
   renderFields = () => {
-    const { worksitesList } = this.props;
+    const { appointments, worksitesList } = this.props;
 
     const WORKSITES_OPTIONS :Object[] = [];
     worksitesList.forEach((worksite :Map) => {
@@ -228,6 +260,10 @@ class WorkScheduleContainer extends Component<Props, State> {
                 options={WORKSITES_OPTIONS} />
           </div>
         </FieldsWrapper>
+        <IconButton
+            disabled={appointments.isEmpty()}
+            icon={<FontAwesomeIcon icon={faFilter} />}
+            onClick={this.showFilters} />
         <ButtonsWrapper>
           <Button onClick={this.goToPrintSchedule}>Print Schedule</Button>
           <Button mode="primary" onClick={this.getAppointments}>Display Appointments</Button>
@@ -244,7 +280,7 @@ class WorkScheduleContainer extends Component<Props, State> {
       personByAppointmentEKID,
       worksiteNamesByAppointmentEKID
     } = this.props;
-    const { worksites } = this.state;
+    const { filtersVisible, courtTypeToShow, worksites } = this.state;
     const isLoading :boolean = findAppointmentsRequestState === RequestStates.PENDING;
     const hasSearched :boolean = findAppointmentsRequestState === RequestStates.SUCCESS;
     const worksitesToInclude :Object[] | void = worksites.get('worksites');
@@ -255,9 +291,23 @@ class WorkScheduleContainer extends Component<Props, State> {
             <ContainerHeader>Work Schedule</ContainerHeader>
           </HeaderWrapper>
           { this.renderFields() }
+          {
+            filtersVisible && (
+              <SelectAndLabelWrapper>
+                <Label>Court type:</Label>
+                <SelectWrapper>
+                  <Select
+                      onChange={this.handleCourtTypeSelect}
+                      options={COURT_TYPE_FILTER_OPTIONS}
+                      placeholder="All" />
+                </SelectWrapper>
+              </SelectAndLabelWrapper>
+            )
+          }
           <AppointmentListContainer
               appointments={appointments}
               courtTypeByAppointmentEKID={courtTypeByAppointmentEKID}
+              courtTypeToShow={courtTypeToShow}
               hasSearched={hasSearched}
               isLoading={isLoading}
               personByAppointmentEKID={personByAppointmentEKID}
