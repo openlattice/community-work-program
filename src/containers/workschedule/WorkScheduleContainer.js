@@ -193,7 +193,12 @@ class WorkScheduleContainer extends Component<Props, State> {
 
   goToPrintSchedule = () => {
     const { actions } = this.props;
-    const { selectedDate, timePeriod, worksites } = this.state;
+    const {
+      courtTypeToShow,
+      selectedDate,
+      timePeriod,
+      worksites
+    } = this.state;
 
     let worksiteNames :string = 'all';
     if (!worksites.isEmpty()) {
@@ -210,6 +215,7 @@ class WorkScheduleContainer extends Component<Props, State> {
         .replace(':date', selectedDate)
         .replace(':timeframe', timePeriod)
         .replace(':worksites', worksiteNames)
+        .replace(':courtType', courtTypeToShow)
     );
   }
 
