@@ -181,8 +181,10 @@ export const PRINT_PARTICIPANT = {
 export const WORK_SCHEDULE = {
   ACTIONS: 'actions',
   APPOINTMENTS: 'appointments',
+  COURT_TYPE_BY_APPOINTMENT_EKID: 'courtTypeByAppointmentEKID',
   DELETE_APPOINTMENT: 'deleteAppointment',
   FIND_APPOINTMENTS: 'findAppointments',
+  GET_PERSON_COURT_TYPE: 'getPersonCourtType',
   GET_WORKSITE_AND_PERSON_NAMES: 'getWorksiteAndPersonNames',
   REQUEST_STATE: 'requestState',
   PERSON_BY_APPOINTMENT_EKID: 'personByAppointmentEKID',

@@ -8,6 +8,7 @@ import type { SequenceAction } from 'redux-reqseq';
 
 import {
   findAppointments,
+  getPersonCourtType,
   getWorksiteAndPersonNames,
 } from './WorkScheduleActions';
 import {
@@ -23,7 +24,9 @@ import { PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames
 const {
   ACTIONS,
   APPOINTMENTS,
+  COURT_TYPE_BY_APPOINTMENT_EKID,
   FIND_APPOINTMENTS,
+  GET_PERSON_COURT_TYPE,
   GET_WORKSITE_NAMES_FOR_APPOINTMENTS,
   REQUEST_STATE,
   PERSON_BY_APPOINTMENT_EKID,
@@ -44,6 +47,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     },
   },
   [APPOINTMENTS]: List(),
+  [COURT_TYPE_BY_APPOINTMENT_EKID]: Map(),
   [PERSON_BY_APPOINTMENT_EKID]: Map(),
   [WORKSITE_NAMES_BY_APPOINTMENT_EKID]: Map(),
 });
@@ -51,6 +55,23 @@ const INITIAL_STATE :Map<*, *> = fromJS({
 export default function worksitesReducer(state :Map<*, *> = INITIAL_STATE, action :Object) :Map<*, *> {
 
   switch (action.type) {
+
+    case getPersonCourtType.case(action.type): {
+      return getPersonCourtType.reducer(state, action, {
+        REQUEST: () => state
+          .setIn([ACTIONS, GET_PERSON_COURT_TYPE, action.id], action)
+          .setIn([ACTIONS, GET_PERSON_COURT_TYPE, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+          const seqAction :SequenceAction = action;
+          const { value } = seqAction;
+          return state
+            .set(COURT_TYPE_BY_APPOINTMENT_EKID, value)
+            .setIn([ACTIONS, GET_PERSON_COURT_TYPE, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state.setIn([ACTIONS, GET_PERSON_COURT_TYPE, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, GET_PERSON_COURT_TYPE, action.id]),
+      });
+    }
 
     case deleteAppointment.case(action.type): {
 
