@@ -46,6 +46,7 @@ import {
   GET_ALL_PARTICIPANT_INFO,
   GET_CASE_INFO,
   GET_CONTACT_INFO,
+  GET_DIVERSION_PLAN,
   GET_ENROLLMENT_HISTORY,
   GET_ENROLLMENT_FROM_DIVERSION_PLAN,
   GET_ENROLLMENT_STATUS,
@@ -77,6 +78,7 @@ import {
   getAllParticipantInfo,
   getCaseInfo,
   getContactInfo,
+  getDiversionPlan,
   getEnrollmentHistory,
   getEnrollmentFromDiversionPlan,
   getEnrollmentStatus,
@@ -380,6 +382,53 @@ function* createNewEnrollmentWorker(action :SequenceAction) :Generator<*, *, *> 
 function* createNewEnrollmentWatcher() :Generator<*, *, *> {
 
   yield takeEvery(CREATE_NEW_ENROLLMENT, createNewEnrollmentWorker);
+}
+
+/*
+ *
+ * ParticipantsActions.getDiversionPlan()
+ *
+ */
+
+function* getDiversionPlanWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+  if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
+  const workerResponse = {};
+  let response :Object = {};
+  let diversionPlan :Map = Map();
+
+  try {
+    yield put(getDiversionPlan.request(id));
+    const { diversionPlanEKID } = value;
+    const app = yield select(getAppFromState);
+    const diversionPlanESID :UUID = getEntitySetIdFromApp(app, DIVERSION_PLAN);
+
+    response = yield call(
+      getEntityDataWorker,
+      getEntityData({ entitySetId: diversionPlanESID, entityKeyId: diversionPlanEKID })
+    );
+    if (response.error) {
+      throw response.error;
+    }
+    diversionPlan = fromJS(response.data);
+
+    yield put(getDiversionPlan.success(id, diversionPlan));
+  }
+  catch (error) {
+    workerResponse.error = error;
+    LOG.error(action.type, error);
+    yield put(getDiversionPlan.failure(id, error));
+  }
+  finally {
+    yield put(getDiversionPlan.finally(id));
+  }
+  return workerResponse;
+}
+
+function* getDiversionPlanWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(GET_DIVERSION_PLAN, getDiversionPlanWorker);
 }
 
 /*
@@ -1962,6 +2011,8 @@ export {
   getCaseInfoWorker,
   getContactInfoWatcher,
   getContactInfoWorker,
+  getDiversionPlanWatcher,
+  getDiversionPlanWorker,
   getEnrollmentHistoryWatcher,
   getEnrollmentHistoryWorker,
   getEnrollmentFromDiversionPlanWatcher,
