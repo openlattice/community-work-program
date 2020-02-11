@@ -98,8 +98,12 @@ function* addParticipantWorker(action :SequenceAction) :Generator<*, *, *> {
     if (response.error) {
       throw response.error;
     }
+    const { entityKeyIds } = response.data;
+    const app = yield select(getAppFromState);
+    const peopleESID :UUID = getEntitySetIdFromApp(app, PEOPLE);
+    const newParticipantEKID :UUID = entityKeyIds[peopleESID][0];
 
-    yield put(addParticipant.success(id));
+    yield put(addParticipant.success(id, newParticipantEKID));
   }
   catch (error) {
     workerResponse.error = error;

@@ -103,6 +103,7 @@ export const PEOPLE = {
   HOURS_WORKED: 'hoursWorked',
   INFRACTIONS_BY_PARTICIPANT: 'infractionsByParticipant',
   INFRACTION_COUNTS_BY_PARTICIPANT: 'infractionCountsByParticipant',
+  NEW_PARTICIPANT_EKID: 'newParticipantEKID',
   PARTICIPANTS: 'participants',
   REQUEST_STATE: 'requestState',
 };
@@ -180,8 +181,10 @@ export const PRINT_PARTICIPANT = {
 export const WORK_SCHEDULE = {
   ACTIONS: 'actions',
   APPOINTMENTS: 'appointments',
+  COURT_TYPE_BY_APPOINTMENT_EKID: 'courtTypeByAppointmentEKID',
   DELETE_APPOINTMENT: 'deleteAppointment',
   FIND_APPOINTMENTS: 'findAppointments',
+  GET_PERSON_COURT_TYPE: 'getPersonCourtType',
   GET_WORKSITE_AND_PERSON_NAMES: 'getWorksiteAndPersonNames',
   REQUEST_STATE: 'requestState',
   PERSON_BY_APPOINTMENT_EKID: 'personByAppointmentEKID',

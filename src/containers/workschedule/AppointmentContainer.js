@@ -1,13 +1,15 @@
 // @flow
 import React, { useEffect, useState } from 'react';
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 import { Map } from 'immutable';
 import {
   Button,
   Card,
   CardSegment,
-  IconButton
+  IconButton,
+  StyleUtils
 } from 'lattice-ui-kit';
+import { NavLink } from 'react-router-dom';
 import { connect } from 'react-redux';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCheckCircle, faPen, faTrash } from '@fortawesome/pro-solid-svg-icons';
@@ -18,6 +20,7 @@ import CheckInDetailsModal from '../participant/schedule/CheckInDetailsModal';
 import DeleteAppointmentModal from '../participant/schedule/DeleteAppointmentModal';
 import EditAppointmentModal from '../participant/schedule/EditAppointmentModal';
 
+import * as Routes from '../../core/router/Routes';
 import { isDefined } from '../../utils/LangUtils';
 import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
 import {
@@ -30,6 +33,7 @@ import { PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames
 import { OL } from '../../core/style/Colors';
 import { ButtonWrapper } from '../../components/Layout';
 
+const { getStyleVariation } = StyleUtils;
 const { CHECK_INS_BY_APPOINTMENT } = WORKSITE_PLANS;
 const { PARTICIPANT } = PERSON;
 const { PERSON_BY_APPOINTMENT_EKID } = WORK_SCHEDULE;
@@ -44,17 +48,37 @@ const AppointmentCardSegment = styled(CardSegment)`
   justify-content: space-between;
 `;
 
+const getColumns = getStyleVariation('columns', {
+  profile: '50px 160px 160px 160px',
+  schedule: '15px 130px 130px 120px 140px 130px',
+});
+
 const InnerWrapper = styled.div`
   display: grid;
-  grid-template-columns: 50px 140px 140px 140px 140px;
+  grid-template-columns: ${getColumns};
   grid-gap: 5px 30px;
   min-height: 40px;
 `;
 
-const Text = styled.span`
+const sharedTextStyles = css`
   align-items: center;
   display: flex;
   font-size: 14px;
+`;
+
+const Text = styled.span`
+  ${sharedTextStyles}
+`;
+
+const LinkAsText = styled(NavLink)`
+  ${sharedTextStyles}
+  color: ${OL.GREY01};
+  text-decoration: none;
+
+  &:hover {
+    color: ${OL.PURPLE02};
+    cursor: pointer;
+  }
 `;
 
 const CheckWrapper = styled(ButtonWrapper)`
@@ -98,6 +122,7 @@ const AppointmentContainer = ({
 
   const personName = result.get('personName');
   const worksiteName = result.get('worksiteName');
+  const courtType = result.get('courtType');
 
   const appointmentEKID :UUID = result.get(ENTITY_KEY_ID);
   const checkIn :Map = checkInsByAppointment.get(appointmentEKID);
@@ -119,22 +144,31 @@ const AppointmentContainer = ({
     } = getEntityProperties(participant, [FIRST_NAME, LAST_NAME]);
     modalDisplayOfPersonName = `${firstName} ${lastName}`;
   }
+  const columns = personName || courtType ? 'schedule' : 'profile';
   return (
     <OuterWrapper>
       <Card>
         <AppointmentCardSegment padding="sm">
-          <InnerWrapper>
+          <InnerWrapper columns={columns}>
             <Text>
               <FontAwesomeIcon icon={faCalendarAlt} size="sm" />
             </Text>
             <Text>{ day }</Text>
             {
               personName && (
-                <Text>{ personName }</Text>
+                <LinkAsText
+                    to={Routes.PARTICIPANT_PROFILE.replace(':participantId', personEKID)}>
+                  { personName }
+                </LinkAsText>
               )
             }
             <Text>{ worksiteName }</Text>
             <Text>{ hours }</Text>
+            {
+              courtType && (
+                <Text>{ courtType }</Text>
+              )
+            }
           </InnerWrapper>
           <ActionButtonsWrapper>
             {

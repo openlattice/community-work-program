@@ -9,9 +9,13 @@ import { COURT_TYPES_MAP, ENROLLMENT_STATUSES } from '../../../core/edm/constant
 
 const { STATUS } = PROPERTY_TYPE_FQNS;
 
-const formatClickedProperty = (clickedProperty :Object) :string => (
-  clickedProperty.label.toUpperCase().replace(' ', '_').replace('-', '')
-);
+const formatClickedProperty = (clickedProperty :Object) :string => {
+  const property = clickedProperty.label.toUpperCase().split(' ');
+  property.splice(2, 1);
+  return (
+    property.join(' ').replace(' ', '_').replace('-', '')
+  );
+};
 
 const filterPeopleByProperty = (
   people :List,
