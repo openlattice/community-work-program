@@ -62,7 +62,7 @@ export const COURT_TYPES_MAP = {
   DRUG_COURT: 'Drug Court',
   DUI_COURT: 'DUI Court',
   HOPE_PROBATION: 'HOPE Probation',
-  MENTAL_HEALTH_COURT: 'Mental Health Court',
+  MENTAL_HEALTH: 'Mental Health Court',
   PROBATION: 'Probation',
   SENTENCED: 'Sentenced',
   VETERANS_COURT: 'Veterans Court',

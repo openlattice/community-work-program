@@ -21,11 +21,14 @@ import { getEntityKeyId, getEntityProperties, sortEntitiesByDateProperty } from 
 import { getPersonFullName } from '../../utils/PeopleUtils';
 import { APP, STATE, WORK_SCHEDULE } from '../../utils/constants/ReduxStateConsts';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { COURT_TYPES_MAP } from '../../core/edm/constants/DataModelConsts';
+import { EMPTY_FIELD } from '../participants/ParticipantsConstants';
 
 const { ENTITY_SET_IDS_BY_ORG, SELECTED_ORG_ID } = APP;
 const {
   ACTIONS,
   APPOINTMENTS,
+  COURT_TYPE_BY_APPOINTMENT_EKID,
   FIND_APPOINTMENTS,
   PERSON_BY_APPOINTMENT_EKID,
   REQUEST_STATE,
@@ -43,6 +46,7 @@ const headerLabelMap :OrderedMap = OrderedMap({
   date: 'Date',
   personName: 'Participant',
   worksiteName: 'Worksite',
+  personCourtType: 'Court Type',
   hours: 'Hours',
 });
 const appointmentLabelMap :OrderedMap = OrderedMap({
@@ -50,6 +54,7 @@ const appointmentLabelMap :OrderedMap = OrderedMap({
   date: EMPTY_STRING,
   personName: EMPTY_STRING,
   worksiteName: EMPTY_STRING,
+  personCourtType: EMPTY_STRING,
   hours: EMPTY_STRING,
 });
 const headerDataMap :Map = Map({
@@ -57,6 +62,7 @@ const headerDataMap :Map = Map({
   date: SPACED_STRING,
   personName: SPACED_STRING,
   worksiteName: SPACED_STRING,
+  personCourtType: SPACED_STRING,
   hours: SPACED_STRING,
 });
 
@@ -65,6 +71,7 @@ type Props = {
     findAppointments :RequestSequence;
   };
   appointments :List;
+  courtTypeByAppointmentEKID :Map;
   entitySetIds :Map;
   findAppointmentsRequestState :RequestState;
   initializeApplicationRequestState :RequestState;
@@ -108,10 +115,11 @@ class PrintWorkScheduleContainer extends Component<Props> {
   render() {
     const {
       appointments,
+      courtTypeByAppointmentEKID,
       findAppointmentsRequestState,
       initializeApplicationRequestState,
       match: {
-        params: { worksites }
+        params: { courtType, worksites }
       },
       personByAppointmentEKID,
       worksiteNamesByAppointmentEKID,
@@ -134,8 +142,11 @@ class PrintWorkScheduleContainer extends Component<Props> {
     const filteredAppointments :List = sortedAppointments.filter((appointment :Map) => {
       const appointmentEKID :UUID = getEntityKeyId(appointment);
       const worksiteName :string = worksiteNamesByAppointmentEKID.get(appointmentEKID);
+      const personCourtType :string = courtTypeByAppointmentEKID.get(appointmentEKID, '');
+      const selectedCourtType :string = courtType ? COURT_TYPES_MAP[courtType] : '';
+      if ((worksiteNames.includes(worksiteName) || !worksiteNames.length)
+        && personCourtType === selectedCourtType) return true;
       if (!worksiteNames.length) return true;
-      if (worksiteNames.includes(worksiteName)) return true;
       return false;
     });
     return (
@@ -145,7 +156,7 @@ class PrintWorkScheduleContainer extends Component<Props> {
         </CardSegment>
         <CardSegment padding="sm">
           <DataGrid
-              columns={5}
+              columns={6}
               data={headerDataMap}
               labelMap={headerLabelMap} />
         </CardSegment>
@@ -153,6 +164,7 @@ class PrintWorkScheduleContainer extends Component<Props> {
           filteredAppointments.map((appointment :Map) => {
             const appointmentEKID :UUID = getEntityKeyId(appointment);
             const worksiteName :string = worksiteNamesByAppointmentEKID.get(appointmentEKID);
+            const personCourtType :string = courtTypeByAppointmentEKID.get(appointmentEKID, EMPTY_FIELD);
             const person :Map = personByAppointmentEKID.get(appointmentEKID);
             const personName :string = getPersonFullName(person);
 
@@ -173,12 +185,13 @@ class PrintWorkScheduleContainer extends Component<Props> {
               date,
               personName,
               worksiteName,
+              personCourtType,
               hours,
             });
             return (
               <CardSegment key={appointmentEKID} padding="sm">
                 <DataGrid
-                    columns={5}
+                    columns={6}
                     data={data}
                     labelMap={appointmentLabelMap} />
               </CardSegment>
@@ -196,6 +209,7 @@ const mapStateToProps = (state) => {
   const selectedOrgId :string = app.get(SELECTED_ORG_ID);
   return {
     [APPOINTMENTS]: workSchedule.get(APPOINTMENTS),
+    [COURT_TYPE_BY_APPOINTMENT_EKID]: workSchedule.get(COURT_TYPE_BY_APPOINTMENT_EKID),
     [PERSON_BY_APPOINTMENT_EKID]: workSchedule.get(PERSON_BY_APPOINTMENT_EKID),
     [WORKSITE_NAMES_BY_APPOINTMENT_EKID]: workSchedule.get(WORKSITE_NAMES_BY_APPOINTMENT_EKID),
     entitySetIds: app.getIn([ENTITY_SET_IDS_BY_ORG, selectedOrgId], Map()),

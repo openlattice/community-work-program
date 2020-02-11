@@ -24,4 +24,4 @@ export const WORKSITE_PROFILE :string = '/worksites/:worksiteId';
 export const EDIT_WORKSITE_PROFILE_INFO :string = `${WORKSITE_PROFILE}/edit`;
 export const EDIT_WORKSITE_HOURS :string = `${WORKSITE_PROFILE}/hours/edit`;
 
-export const PRINT_WORK_SCHEDULE :string = `${WORK_SCHEDULE}/:date/:timeframe/:worksites/print`;
+export const PRINT_WORK_SCHEDULE :string = `${WORK_SCHEDULE}/:date/:timeframe/:worksites/:courtType/print`;
