@@ -64,7 +64,6 @@ type Props = {
   actions:{
     editEnrollmentDates :RequestSequence;
     getDiversionPlan :RequestSequence;
-    getEnrollmentStatus :RequestSequence;
     goToRoute :GoToRoute;
   },
   diversionPlan :Map;
