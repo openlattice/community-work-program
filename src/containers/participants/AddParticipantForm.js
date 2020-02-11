@@ -5,6 +5,7 @@ import {
   List,
   Map,
   fromJS,
+  get,
   getIn,
   hasIn,
   removeIn,
@@ -34,6 +35,7 @@ import { addParticipant } from './ParticipantsActions';
 import { getInfoForAddParticipant } from '../participant/ParticipantActions';
 import { goToRoute } from '../../core/router/RoutingActions';
 import { hydrateSchema } from './utils/AddParticipantFormUtils';
+import { formatNewArrestChargeDataAndAssociations } from '../participant/charges/utils/ChargesUtils';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { CWP, ENROLLMENT_STATUSES } from '../../core/edm/constants/DataModelConsts';
 import { schema, uiSchema } from './schemas/AddParticipantFormSchemas';
@@ -60,26 +62,21 @@ const {
 const {
   ADDRESS,
   APPEARS_IN,
-  CHARGE_EVENT,
   CONTACT_INFORMATION,
   CONTACT_INFO_GIVEN,
-  COURT_CHARGE_LIST,
   DIVERSION_PLAN,
   ENROLLMENT_STATUS,
   LOCATED_AT,
   JUDGES,
-  MANUAL_CHARGED_WITH,
   MANUAL_PRETRIAL_COURT_CASES,
   MANUAL_SENTENCED_WITH,
   PRESIDES_OVER,
-  REGISTERED_FOR,
   RELATED_TO,
 } = APP_TYPE_FQNS;
 const {
   CASE_NUMBER_TEXT,
   COMPLETED,
   COURT_CASE_TYPE,
-  DATETIME_COMPLETED,
   DATETIME_RECEIVED,
   EFFECTIVE_DATE,
   EMAIL,
@@ -87,6 +84,7 @@ const {
   FULL_ADDRESS,
   LAST_NAME,
   NAME,
+  ORIENTATION_DATETIME,
   PHONE_NUMBER,
   PREFERRED,
   STATUS,
@@ -96,10 +94,10 @@ const {
   GET_INFO_FOR_ADD_PARTICIPANT,
   REQUEST_STATE,
 } = PERSON;
-const { ADD_PARTICIPANT } = PEOPLE;
+const { ADD_PARTICIPANT, NEW_PARTICIPANT_EKID } = PEOPLE;
 const { ENTITY_SET_IDS_BY_ORG, SELECTED_ORG_ID } = APP;
 const { PROPERTY_TYPES, TYPE_IDS_BY_FQNS } = EDM;
-const { COURT_CHARGES } = CHARGES;
+const { ARREST_CHARGES } = CHARGES;
 
 const FormWrapper = styled.div`
   display: flex;
@@ -135,6 +133,15 @@ const SubmittedWrapper = styled.div`
   }
 `;
 
+const AddButtonWrapper = styled.div`
+  display: flex;
+  margin-left: 15px;
+`;
+
+const Wrapper = styled.div`
+  display: flex;
+`;
+
 type Props = {
   actions:{
     addParticipant :RequestSequence;
@@ -142,10 +149,11 @@ type Props = {
     goToRoute :GoToRoute;
   };
   addParticipantRequestState :RequestState;
-  courtCharges :List;
+  arrestCharges :List;
   entitySetIds :Map;
   getInfoRequestState :RequestState;
   judges :List;
+  newParticipantEKID :UUID;
   propertyTypeIds :Map;
 };
 
@@ -189,6 +197,11 @@ class AddParticipantForm extends Component<Props, State> {
     this.setState({ formIsVisible: true });
   }
 
+  goToParticipantProfile = () => {
+    const { actions, newParticipantEKID } = this.props;
+    actions.goToRoute(Routes.PARTICIPANT_PROFILE.replace(':participantId', newParticipantEKID));
+  }
+
   handleOnSubmit = ({ formData } :Object) => {
     const { actions, entitySetIds, propertyTypeIds } = this.props;
 
@@ -210,6 +223,16 @@ class AddParticipantForm extends Component<Props, State> {
       const sentenceDate :string = getIn(dataToSubmit, sentenceDateKey);
       const sentenceDateTime :string = getCombinedDateTime(sentenceDate, currentTime);
       dataToSubmit = setIn(dataToSubmit, sentenceDateKey, sentenceDateTime);
+    }
+
+    const orientationDateKey :string[] = [
+      getPageSectionKey(1, 3),
+      getEntityAddressKey(0, DIVERSION_PLAN, ORIENTATION_DATETIME)
+    ];
+    if (hasIn(dataToSubmit, orientationDateKey)) {
+      const orientationDate :string = getIn(dataToSubmit, orientationDateKey);
+      const orientationDateTime :string = getCombinedDateTime(orientationDate, currentTime);
+      dataToSubmit = setIn(dataToSubmit, orientationDateKey, orientationDateTime);
     }
 
     dataToSubmit = setIn(dataToSubmit, [getPageSectionKey(1, 5)], {
@@ -239,7 +262,7 @@ class AddParticipantForm extends Component<Props, State> {
     }
 
     /* required associations */
-    const associations = [];
+    let associations = [];
     associations.push([MANUAL_SENTENCED_WITH, 0, APP_TYPE_FQNS.PEOPLE, 0, DIVERSION_PLAN, {}]);
     associations.push([RELATED_TO, 0, ENROLLMENT_STATUS, 0, DIVERSION_PLAN, {}]);
     associations.push([RELATED_TO, 0, DIVERSION_PLAN, 0, MANUAL_PRETRIAL_COURT_CASES, {}]);
@@ -279,26 +302,14 @@ class AddParticipantForm extends Component<Props, State> {
       dataToSubmit = removeIn(dataToSubmit, judgesPath);
     }
     /* should only submit charge event entities if there's charge data in the form */
-    const charges = dataToSubmit[getPageSectionKey(1, 4)];
-    if (charges.length && Object.keys(charges[0]).length) {
-      const storedChargeData :[] = getIn(dataToSubmit, [getPageSectionKey(1, 4)]);
-      const chargeKey = getEntityAddressKey(-1, COURT_CHARGE_LIST, ENTITY_KEY_ID);
-      const chargeEventKey = getEntityAddressKey(-1, CHARGE_EVENT, DATETIME_COMPLETED);
-
-      storedChargeData.forEach((charge :Object, index :number) => {
-        const courtChargeEKID :UUID = charge[chargeKey];
-        const date :UUID = charge[chargeEventKey];
-        const datetime = getCombinedDateTime(date, currentTime);
-
-        dataToSubmit = setIn(dataToSubmit, [getPageSectionKey(1, 4), index], {
-          [getEntityAddressKey(index, CHARGE_EVENT, DATETIME_COMPLETED)]: datetime
-        });
-        associations.push([APPEARS_IN, courtChargeEKID, COURT_CHARGE_LIST, 0, MANUAL_PRETRIAL_COURT_CASES]);
-        associations.push([REGISTERED_FOR, index, CHARGE_EVENT, courtChargeEKID, COURT_CHARGE_LIST]);
-        associations.push([MANUAL_CHARGED_WITH, 0, APP_TYPE_FQNS.PEOPLE, courtChargeEKID, COURT_CHARGE_LIST]);
-        associations.push([MANUAL_CHARGED_WITH, 0, APP_TYPE_FQNS.PEOPLE, index, CHARGE_EVENT]);
-      });
-    }
+    const charges = get(dataToSubmit, getPageSectionKey(1, 4), []);
+    const { newChargeEntities, newChargeAssociations } = formatNewArrestChargeDataAndAssociations(
+      charges,
+      0,
+      { personIndexOrEKID: 0, diversionPlanIndexOrEKID: 0 }
+    );
+    dataToSubmit[getPageSectionKey(1, 4)] = newChargeEntities;
+    associations = associations.concat(newChargeAssociations);
 
     const entityData :Object = processEntityData(dataToSubmit, entitySetIds, propertyTypeIds);
     const associationEntityData :Object = processAssociationEntityData(
@@ -317,7 +328,7 @@ class AddParticipantForm extends Component<Props, State> {
   render() {
     const {
       addParticipantRequestState,
-      courtCharges,
+      arrestCharges,
       getInfoRequestState,
       judges,
     } = this.props;
@@ -331,7 +342,7 @@ class AddParticipantForm extends Component<Props, State> {
       );
     }
 
-    const formSchema = hydrateSchema(schema, judges, courtCharges);
+    const formSchema = hydrateSchema(schema, judges, arrestCharges);
 
     return (
       <FormWrapper>
@@ -373,7 +384,12 @@ class AddParticipantForm extends Component<Props, State> {
                         Participant Added!
                       </SubmittedWrapper>
                     </SubmittedWrapper>
-                    <Button onClick={this.showForm}>Add Another</Button>
+                    <Wrapper>
+                      <Button onClick={this.goToParticipantProfile}>Go To Profile</Button>
+                      <AddButtonWrapper>
+                        <Button onClick={this.showForm}>Add Another</Button>
+                      </AddButtonWrapper>
+                    </Wrapper>
                   </SubmissionActionsWrapper>
                 </CardSegment>
               )
@@ -393,7 +409,8 @@ const mapStateToProps = (state :Map) => {
   const people = state.get(STATE.PEOPLE);
   const selectedOrgId :string = app.get(SELECTED_ORG_ID);
   return ({
-    [COURT_CHARGES]: charges.get(COURT_CHARGES),
+    [ARREST_CHARGES]: charges.get(ARREST_CHARGES),
+    [NEW_PARTICIPANT_EKID]: people.get(NEW_PARTICIPANT_EKID),
     [PERSON.JUDGES]: person.get(PERSON.JUDGES),
     addParticipantRequestState: people.getIn([ACTIONS, ADD_PARTICIPANT, REQUEST_STATE]),
     entitySetIds: app.getIn([ENTITY_SET_IDS_BY_ORG, selectedOrgId], Map()),

@@ -6,18 +6,20 @@ import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/F
 import { getValuesFromEntityList } from '../../../utils/DataUtils';
 
 const { getEntityAddressKey, getPageSectionKey } = DataProcessingUtils;
-const { COURT_CHARGE_LIST, JUDGES } = APP_TYPE_FQNS;
+const { ARREST_CHARGE_LIST, JUDGES } = APP_TYPE_FQNS;
 const {
   ENTITY_KEY_ID,
   FIRST_NAME,
   LAST_NAME,
+  LEVEL_STATE,
   NAME,
+  OL_ID,
 } = PROPERTY_TYPE_FQNS;
 
 /* eslint-disable import/prefer-default-export */
 export const hydrateSchema = (schema :Object, judges :List, charges :List) => {
   const [judgesValues, judgesLabels] = getValuesFromEntityList(judges, [FIRST_NAME, LAST_NAME]);
-  const [chargesValues, chargesLabels] = getValuesFromEntityList(charges, [NAME]);
+  const [chargesValues, chargesLabels] = getValuesFromEntityList(charges, [OL_ID, NAME, LEVEL_STATE]);
   let newSchema = setIn(
     schema,
     [
@@ -47,7 +49,7 @@ export const hydrateSchema = (schema :Object, judges :List, charges :List) => {
       getPageSectionKey(1, 4),
       'items',
       'properties',
-      getEntityAddressKey(-1, COURT_CHARGE_LIST, ENTITY_KEY_ID),
+      getEntityAddressKey(-1, ARREST_CHARGE_LIST, ENTITY_KEY_ID),
       'enum'
     ],
     chargesValues
@@ -59,7 +61,7 @@ export const hydrateSchema = (schema :Object, judges :List, charges :List) => {
       getPageSectionKey(1, 4),
       'items',
       'properties',
-      getEntityAddressKey(-1, COURT_CHARGE_LIST, ENTITY_KEY_ID),
+      getEntityAddressKey(-1, ARREST_CHARGE_LIST, ENTITY_KEY_ID),
       'enumNames'
     ],
     chargesLabels

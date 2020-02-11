@@ -103,6 +103,7 @@ export const PEOPLE = {
   HOURS_WORKED: 'hoursWorked',
   INFRACTIONS_BY_PARTICIPANT: 'infractionsByParticipant',
   INFRACTION_COUNTS_BY_PARTICIPANT: 'infractionCountsByParticipant',
+  NEW_PARTICIPANT_EKID: 'newParticipantEKID',
   PARTICIPANTS: 'participants',
   REQUEST_STATE: 'requestState',
 };
