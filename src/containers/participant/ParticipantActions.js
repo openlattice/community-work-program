@@ -47,6 +47,9 @@ const getCaseInfo :RequestSequence = newRequestSequence(GET_CASE_INFO);
 const GET_CONTACT_INFO :'GET_CONTACT_INFO' = 'GET_CONTACT_INFO';
 const getContactInfo :RequestSequence = newRequestSequence(GET_CONTACT_INFO);
 
+const GET_DIVERSION_PLAN :'GET_DIVERSION_PLAN' = 'GET_DIVERSION_PLAN';
+const getDiversionPlan :RequestSequence = newRequestSequence(GET_DIVERSION_PLAN);
+
 const GET_ENROLLMENT_HISTORY :'GET_ENROLLMENT_HISTORY' = 'GET_ENROLLMENT_HISTORY';
 const getEnrollmentHistory :RequestSequence = newRequestSequence(GET_ENROLLMENT_HISTORY);
 
@@ -111,8 +114,9 @@ export {
   GET_ALL_PARTICIPANT_INFO,
   GET_CASE_INFO,
   GET_CONTACT_INFO,
-  GET_ENROLLMENT_HISTORY,
+  GET_DIVERSION_PLAN,
   GET_ENROLLMENT_FROM_DIVERSION_PLAN,
+  GET_ENROLLMENT_HISTORY,
   GET_ENROLLMENT_STATUS,
   GET_INFO_FOR_ADD_PARTICIPANT,
   GET_INFO_FOR_EDIT_CASE,
@@ -142,8 +146,9 @@ export {
   getAllParticipantInfo,
   getCaseInfo,
   getContactInfo,
-  getEnrollmentHistory,
+  getDiversionPlan,
   getEnrollmentFromDiversionPlan,
+  getEnrollmentHistory,
   getEnrollmentStatus,
   getInfoForAddParticipant,
   getInfoForEditCase,

@@ -139,6 +139,7 @@ export const PERSON = {
   GET_ALL_PARTICIPANT_INFO: 'getAllParticipantInfo',
   GET_CASE_INFO: 'getCaseInfo',
   GET_CONTACT_INFO: 'getContactInfo',
+  GET_DIVERSION_PLAN: 'getDiversionPlan',
   GET_ENROLLMENT_HISTORY: 'getEnrollmentHistory',
   GET_ENROLLMENT_FROM_DIVERSION_PLAN: 'getEnrollmentFromDiversionPlan',
   GET_ENROLLMENT_STATUS: 'getEnrollmentStatus',
