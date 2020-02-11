@@ -116,7 +116,6 @@ class AppointmentListContainer extends Component<Props, State> {
     }
 
     let fullWorkAppointments :List = List();
-    // console.log('courtTypeByAppointmentEKID: ', courtTypeByAppointmentEKID.toJS());
     const filteredAppointments :List = this.filterByCourtType(appointments);
     filteredAppointments.forEach((appointmentEntity :Map) => {
 
