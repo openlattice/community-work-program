@@ -108,11 +108,11 @@ class EditCaseInfoForm extends Component<Props> {
       actions,
       entitySetIds,
       match: {
-        params: { participantId: personEKID }
+        params: { diversionPlanId: diversionPlanEKID, participantId: personEKID }
       },
     } = this.props;
     if (entitySetIds.has(PEOPLE) && personEKID) {
-      actions.getInfoForEditCase({ personEKID });
+      actions.getInfoForEditCase({ diversionPlanEKID, personEKID });
     }
   }
 
@@ -121,11 +121,11 @@ class EditCaseInfoForm extends Component<Props> {
       actions,
       entitySetIds,
       match: {
-        params: { participantId: personEKID }
+        params: { diversionPlanId: diversionPlanEKID, participantId: personEKID }
       },
     } = this.props;
     if ((!prevProps.entitySetIds.has(PEOPLE) && entitySetIds.has(PEOPLE)) && personEKID) {
-      actions.getInfoForEditCase({ personEKID });
+      actions.getInfoForEditCase({ diversionPlanEKID, personEKID });
     }
   }
 

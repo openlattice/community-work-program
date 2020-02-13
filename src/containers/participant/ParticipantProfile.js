@@ -344,8 +344,11 @@ class ParticipantProfile extends Component<Props, State> {
   }
 
   editCaseInfo = () => {
-    const { actions, personEKID } = this.props;
-    actions.goToRoute(Routes.EDIT_CASE_INFO.replace(':participantId', personEKID));
+    const { actions, diversionPlan, personEKID } = this.props;
+    const diversionPlanEKID :UUID = getEntityKeyId(diversionPlan);
+    actions.goToRoute(Routes.EDIT_CASE_INFO
+      .replace(':participantId', personEKID)
+      .replace(':diversionPlanId', diversionPlanEKID));
   }
 
   editEnrollmentDates = () => {
