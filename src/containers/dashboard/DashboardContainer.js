@@ -55,6 +55,7 @@ const {
   ENROLLMENT_BY_PARTICIPANT,
   HOURS_WORKED,
   INFRACTION_COUNTS_BY_PARTICIPANT,
+  PARTICIPANT_PHOTOS_BY_PARTICIPANT_EKID,
   PARTICIPANTS,
 } = PEOPLE;
 const { ENTITY_SET_IDS_BY_ORG } = APP;
@@ -107,6 +108,7 @@ type Props = {
   getDiversionPlansRequestState :RequestState;
   hoursWorked :Map;
   infractionCountsByParticipant :Map;
+  participantPhotosByParticipantEKID :Map;
   participants :List;
 };
 
@@ -275,6 +277,7 @@ class DashboardContainer extends Component<Props, State> {
     const {
       currentDiversionPlansByParticipant,
       hoursWorked,
+      participantPhotosByParticipantEKID,
     } = this.props;
     const { newParticipants } = this.state;
 
@@ -292,7 +295,7 @@ class DashboardContainer extends Component<Props, State> {
         requiredHours = toString(requiredHours);
 
         const personRow :Object = {
-          [NEW_PARTICIPANTS_COLUMNS[0]]: getPersonPictureForTable(person, true),
+          [NEW_PARTICIPANTS_COLUMNS[0]]: getPersonPictureForTable(person, true, participantPhotosByParticipantEKID),
           [NEW_PARTICIPANTS_COLUMNS[1]]: getPersonFullName(person),
           [NEW_PARTICIPANTS_COLUMNS[2]]: sentenceDate,
           [NEW_PARTICIPANTS_COLUMNS[3]]: checkInDeadline,
@@ -309,6 +312,7 @@ class DashboardContainer extends Component<Props, State> {
     const {
       currentDiversionPlansByParticipant,
       hoursWorked,
+      participantPhotosByParticipantEKID,
     } = this.props;
     const { pendingCompletionReview } = this.state;
 
@@ -325,7 +329,7 @@ class DashboardContainer extends Component<Props, State> {
         requiredHours = toString(requiredHours);
 
         const personRow :Object = {
-          [PENDING_PARTICIPANTS_COLUMNS[0]]: getPersonPictureForTable(person, true),
+          [PENDING_PARTICIPANTS_COLUMNS[0]]: getPersonPictureForTable(person, true, participantPhotosByParticipantEKID),
           [PENDING_PARTICIPANTS_COLUMNS[1]]: getPersonFullName(person),
           [PENDING_PARTICIPANTS_COLUMNS[2]]: sentenceDate,
           [PENDING_PARTICIPANTS_COLUMNS[3]]: requiredHours,
@@ -339,7 +343,7 @@ class DashboardContainer extends Component<Props, State> {
   }
 
   aggregateViolationsWatchData = () => {
-    const { hoursWorked } = this.props;
+    const { hoursWorked, participantPhotosByParticipantEKID } = this.props;
     const { noShows, violationMap, violationsWatch } = this.state;
 
     const data :Object[] = [];
@@ -358,7 +362,7 @@ class DashboardContainer extends Component<Props, State> {
         if (noShows.includes(person)) reportTag = <ReportTag>Report</ReportTag>;
 
         const personRow :Object = {
-          [VIOLATIONS_WATCH_COLUMNS[0]]: getPersonPictureForTable(person, true),
+          [VIOLATIONS_WATCH_COLUMNS[0]]: getPersonPictureForTable(person, true, participantPhotosByParticipantEKID),
           [VIOLATIONS_WATCH_COLUMNS[1]]: getPersonFullName(person),
           [VIOLATIONS_WATCH_COLUMNS[2]]: toString(violationsCount),
           [VIOLATIONS_WATCH_COLUMNS[3]]: hoursServed,
@@ -482,12 +486,13 @@ const mapStateToProps = (state :Map<*, *>) => {
   return {
     [CURRENT_DIVERSION_PLANS_BY_PARTICIPANT]: people.get(CURRENT_DIVERSION_PLANS_BY_PARTICIPANT),
     [ENROLLMENT_BY_PARTICIPANT]: people.get(ENROLLMENT_BY_PARTICIPANT),
-    entitySetIds: app.get(ENTITY_SET_IDS_BY_ORG, Map()),
-    getDiversionPlansRequestState: people.getIn([PEOPLE.ACTIONS, PEOPLE.GET_DIVERSION_PLANS, PEOPLE.REQUEST_STATE]),
     [HOURS_WORKED]: people.get(HOURS_WORKED),
     [INFRACTION_COUNTS_BY_PARTICIPANT]: people.get(INFRACTION_COUNTS_BY_PARTICIPANT),
-    initializeAppRequestState: app.getIn([APP.ACTIONS, APP.INITIALIZE_APPLICATION, APP.REQUEST_STATE]),
     [PARTICIPANTS]: people.get(PARTICIPANTS),
+    [PARTICIPANT_PHOTOS_BY_PARTICIPANT_EKID]: people.get(PARTICIPANT_PHOTOS_BY_PARTICIPANT_EKID),
+    entitySetIds: app.get(ENTITY_SET_IDS_BY_ORG, Map()),
+    getDiversionPlansRequestState: people.getIn([PEOPLE.ACTIONS, PEOPLE.GET_DIVERSION_PLANS, PEOPLE.REQUEST_STATE]),
+    initializeAppRequestState: app.getIn([APP.ACTIONS, APP.INITIALIZE_APPLICATION, APP.REQUEST_STATE]),
   };
 };
 
