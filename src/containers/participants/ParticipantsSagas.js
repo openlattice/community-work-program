@@ -29,12 +29,14 @@ import {
   GET_HOURS_WORKED,
   GET_INFRACTIONS,
   GET_PARTICIPANTS,
+  GET_PARTICIPANT_PHOTOS,
   addParticipant,
   getCourtType,
   getDiversionPlans,
   getEnrollmentStatuses,
   getHoursWorked,
   getInfractions,
+  getParticipantPhotos,
   getParticipants,
 } from './ParticipantsActions';
 import { submitDataGraph } from '../../core/sagas/data/DataActions';
@@ -60,6 +62,7 @@ const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
 const {
   DIVERSION_PLAN,
   ENROLLMENT_STATUS,
+  IMAGE,
   INFRACTION_EVENT,
   MANUAL_PRETRIAL_COURT_CASES,
   PEOPLE,
@@ -118,6 +121,64 @@ function* addParticipantWorker(action :SequenceAction) :Generator<*, *, *> {
 function* addParticipantWatcher() :Generator<*, *, *> {
 
   yield takeEvery(ADD_PARTICIPANT, addParticipantWorker);
+}
+
+/*
+ *
+ * ParticipantActions.getParticipantPhotos()
+ *
+ */
+
+function* getParticipantPhotosWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+  if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
+  let participantPhotosByParticipantEKID :Map = Map();
+
+  try {
+    yield put(getParticipantPhotos.request(id));
+    const { participants, peopleESID } = value;
+
+    const app = yield select(getAppFromState);
+    const imageESID :UUID = getEntitySetIdFromApp(app, IMAGE);
+    const participantEKIDs :UUID[] = [];
+    participants.forEach((participant :Map) => {
+      participantEKIDs.push(getEntityKeyId(participant));
+    });
+
+    const searchFilter = {
+      entityKeyIds: participantEKIDs,
+      destinationEntitySetIds: [],
+      sourceEntitySetIds: [imageESID],
+    };
+    const response :Object = yield call(
+      searchEntityNeighborsWithFilterWorker,
+      searchEntityNeighborsWithFilter({ entitySetId: peopleESID, filter: searchFilter })
+    );
+    if (response.error) {
+      throw response.error;
+    }
+    const result = fromJS(response.data);
+    if (!result.isEmpty()) {
+      participantPhotosByParticipantEKID = result
+        .map((neighborList :List) => neighborList.get(0))
+        .map((neighbor :Map) => getNeighborDetails(neighbor));
+    }
+
+    yield put(getParticipantPhotos.success(id, participantPhotosByParticipantEKID));
+  }
+  catch (error) {
+    LOG.error('caught exception in getParticipantPhotosWorker()', error);
+    yield put(getParticipantPhotos.failure(id, error));
+  }
+  finally {
+    yield put(getParticipantPhotos.finally(id));
+  }
+}
+
+function* getParticipantPhotosWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(GET_PARTICIPANT_PHOTOS, getParticipantPhotosWorker);
 }
 
 /*
@@ -592,6 +653,7 @@ function* getParticipantsWorker(action :SequenceAction) :Generator<*, *, *> {
       yield all([
         call(getEnrollmentStatusesWorker, getEnrollmentStatuses({ allDiversionPlansByParticipant })),
         call(getInfractionsWorker, getInfractions({ participants, peopleESID })),
+        call(getParticipantPhotosWorker, getParticipantPhotos({ participants, peopleESID })),
       ]);
     }
 
@@ -666,6 +728,8 @@ export {
   getHoursWorkedWorker,
   getInfractionsWatcher,
   getInfractionsWorker,
+  getParticipantPhotosWatcher,
+  getParticipantPhotosWorker,
   getParticipantsWatcher,
   getParticipantsWorker,
 };

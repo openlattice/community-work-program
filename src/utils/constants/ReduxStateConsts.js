@@ -100,11 +100,13 @@ export const PEOPLE = {
   GET_HOURS_WORKED: 'getHoursWorked',
   GET_INFRACTIONS: 'getInfractions',
   GET_PARTICIPANTS: 'getParticipants',
+  GET_PARTICIPANT_PHOTOS: 'getParticipantPhotos',
   HOURS_WORKED: 'hoursWorked',
   INFRACTIONS_BY_PARTICIPANT: 'infractionsByParticipant',
   INFRACTION_COUNTS_BY_PARTICIPANT: 'infractionCountsByParticipant',
   NEW_PARTICIPANT_EKID: 'newParticipantEKID',
   PARTICIPANTS: 'participants',
+  PARTICIPANT_PHOTOS_BY_PARTICIPANT_EKID: 'participantPhotosByParticipantEKID',
   REQUEST_STATE: 'requestState',
 };
 
@@ -119,7 +121,6 @@ export const PERSON = {
   ADD_PERSON_PHOTO: 'addPersonPhoto',
   ALL_DIVERSION_PLANS: 'allDiversionPlans',
   ALL_PARTICIPANT_CASES: 'allParticipantCases',
-  CHARGES: 'charges',
   CREATE_CASE: 'createCase',
   CREATE_NEW_ENROLLMENT: 'createNewEnrollment',
   DIVERSION_PLAN: 'diversionPlan',
