@@ -1800,15 +1800,17 @@ function* getInfoForEditCaseWorker(action :SequenceAction) :Generator<*, *, *> {
 
   try {
     yield put(getInfoForEditCase.request(id));
-    const { personEKID } = value;
+    const { diversionPlanEKID, personEKID } = value;
 
     const workerResponses = yield all([
-      call(getParticipantWorker, getParticipant({ personEKID })),
-      call(getEnrollmentStatusWorker, getEnrollmentStatus({ personEKID, populateProfile: false })),
-      call(getJudgesWorker, getJudges()),
-      call(getCourtChargesWorker, getCourtCharges()),
-      call(getArrestChargesWorker, getArrestCharges()),
       call(getArrestCasesAndChargesFromPSAWorker, getArrestCasesAndChargesFromPSA({ personEKID })),
+      call(getArrestChargesLinkedToCWPWorker, getArrestChargesLinkedToCWP({ diversionPlanEKID })),
+      call(getArrestChargesWorker, getArrestCharges()),
+      call(getCaseInfoWorker, getCaseInfo({ diversionPlanEKID })),
+      call(getCourtChargesWorker, getCourtCharges()),
+      call(getDiversionPlanWorker, getDiversionPlan({ diversionPlanEKID })),
+      call(getJudgesWorker, getJudges()),
+      call(getParticipantWorker, getParticipant({ personEKID })),
     ]);
     const responseError = workerResponses.reduce(
       (error, workerResponse) => error || workerResponse.error,
