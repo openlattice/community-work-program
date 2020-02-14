@@ -159,11 +159,9 @@ function* getParticipantPhotosWorker(action :SequenceAction) :Generator<*, *, *>
       throw response.error;
     }
     const result = fromJS(response.data);
-    if (!result.isEmpty()) {
-      participantPhotosByParticipantEKID = result
-        .map((neighborList :List) => neighborList.get(0))
-        .map((neighbor :Map) => getNeighborDetails(neighbor));
-    }
+    participantPhotosByParticipantEKID = result
+      .map((neighborList :List) => neighborList.get(0))
+      .map((neighbor :Map) => getNeighborDetails(neighbor));
 
     yield put(getParticipantPhotos.success(id, participantPhotosByParticipantEKID));
   }
