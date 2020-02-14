@@ -13,6 +13,7 @@ import {
   getEnrollmentStatuses,
   getHoursWorked,
   getInfractions,
+  getParticipantPhotos,
   getParticipants,
   RESET_REQUEST_STATE,
 } from './ParticipantsActions';
@@ -30,11 +31,13 @@ const {
   GET_ENROLLMENT_STATUSES,
   GET_HOURS_WORKED,
   GET_INFRACTIONS,
+  GET_PARTICIPANT_PHOTOS,
   GET_PARTICIPANTS,
   HOURS_WORKED,
   INFRACTIONS_BY_PARTICIPANT,
   INFRACTION_COUNTS_BY_PARTICIPANT,
   NEW_PARTICIPANT_EKID,
+  PARTICIPANT_PHOTOS_BY_PARTICIPANT_EKID,
   PARTICIPANTS,
   REQUEST_STATE,
 } = PEOPLE;
@@ -56,6 +59,9 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     [GET_INFRACTIONS]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
+    [GET_PARTICIPANT_PHOTOS]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
     [GET_PARTICIPANTS]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
@@ -74,6 +80,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [INFRACTIONS_BY_PARTICIPANT]: Map(),
   [INFRACTION_COUNTS_BY_PARTICIPANT]: Map(),
   [NEW_PARTICIPANT_EKID]: '',
+  [PARTICIPANT_PHOTOS_BY_PARTICIPANT_EKID]: Map(),
   [PARTICIPANTS]: List(),
 });
 
@@ -136,6 +143,27 @@ export default function participantsReducer(state :Map<*, *> = INITIAL_STATE, ac
           .setIn([ACTIONS, GET_PARTICIPANTS, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state
           .deleteIn([ACTIONS, GET_PARTICIPANTS, seqAction.id]),
+      });
+    }
+
+    case getParticipantPhotos.case(action.type): {
+      const seqAction :SequenceAction = (action :any);
+      return getParticipantPhotos.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, GET_PARTICIPANT_PHOTOS, seqAction.id], seqAction)
+          .setIn([ACTIONS, GET_PARTICIPANT_PHOTOS, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+          const { value } = seqAction;
+          return state
+            .set(PARTICIPANT_PHOTOS_BY_PARTICIPANT_EKID, value)
+            .setIn([ACTIONS, GET_PARTICIPANT_PHOTOS, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .set(COURT_TYPE_BY_PARTICIPANT, Map())
+          .setIn([ACTIONS, GET_PARTICIPANT_PHOTOS, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state
+          .deleteIn([ACTIONS, GET_PARTICIPANT_PHOTOS, seqAction.id]),
       });
     }
 

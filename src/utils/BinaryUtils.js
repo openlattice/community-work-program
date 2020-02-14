@@ -42,7 +42,7 @@ const formatFileSource = (imageData :string, mimeType :string) :?string => {
   return undefined;
 };
 
-const getImageDataFromEntity = (imageEntity :Map) => {
+const getImageDataFromEntity = (imageEntity :Map) :?string => {
   const imageDataValue = imageEntity.getIn([IMAGE_DATA, 0]);
   return formatFileSource(imageDataValue, 'image/jpg');
 };
