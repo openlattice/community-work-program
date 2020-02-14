@@ -108,6 +108,7 @@ export default function* sagas() :Generator<*, *, *> {
     fork(ParticipantsSagas.getEnrollmentStatusesWatcher),
     fork(ParticipantsSagas.getHoursWorkedWatcher),
     fork(ParticipantsSagas.getInfractionsWatcher),
+    fork(ParticipantsSagas.getParticipantPhotosWatcher),
     fork(ParticipantsSagas.getParticipantsWatcher),
 
     // PrintParticipantSagas

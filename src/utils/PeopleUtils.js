@@ -10,7 +10,7 @@ import { PersonPhoto, PersonPicture, StyledPersonPhoto } from '../components/pic
 import { PROPERTY_TYPE_FQNS } from '../core/edm/constants/FullyQualifiedNames';
 import { EMPTY_FIELD } from '../containers/participants/ParticipantsConstants';
 import { isDefined } from './LangUtils';
-import { getEntityProperties } from './DataUtils';
+import { getEntityKeyId, getEntityProperties } from './DataUtils';
 import { getImageDataFromEntity } from './BinaryUtils';
 
 const {
@@ -58,12 +58,18 @@ const getPersonProfilePicture = (person :Map, image :Map) :Element<*> => {
   return defaultIcon;
 };
 
-const getPersonPictureForTable = (person :Map, small :boolean) :Element<*> => {
+const getPersonPictureForTable = (person :Map, small :boolean, personPhotosByPersonEKID :Map) :Element<*> => {
 
   const { [MUGSHOT]: mugshot, [PICTURE]: picture } = getEntityProperties(person, [MUGSHOT, PICTURE]);
-  const photo :string = mugshot || picture;
+  const personEKID :UUID = getEntityKeyId(person);
+  let photo :string = mugshot || picture;
 
-  if (photo) {
+  if (!photo.length) {
+    const personPhotoEntity :Map = personPhotosByPersonEKID.get(personEKID, Map());
+    const urlResult = getImageDataFromEntity(personPhotoEntity);
+    if (isDefined(urlResult)) photo = urlResult;
+  }
+  if (photo.length) {
     return (
       <StyledPersonPhoto small={small}>
         <PersonPicture src={photo} alt="" />
