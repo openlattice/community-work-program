@@ -1,5 +1,6 @@
 // @flow
 import React, { Component } from 'react';
+import styled from 'styled-components';
 import {
   fromJS,
   List,
@@ -7,10 +8,20 @@ import {
   OrderedMap
 } from 'immutable';
 import { DateTime } from 'luxon';
-import { Card, CardSegment, DataGrid } from 'lattice-ui-kit';
+import {
+  Card,
+  CardSegment,
+  DataGrid,
+  DatePicker,
+  IconButton,
+  Label,
+} from 'lattice-ui-kit';
+import { faCalendarWeek, faRedo } from '@fortawesome/pro-duotone-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
-import { PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { getEntityKeyId, getEntityProperties, sortEntitiesByDateProperty } from '../../../utils/DataUtils';
+import { PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
+import { OL } from '../../../core/style/Colors';
 
 const {
   DATETIME_END,
@@ -42,6 +53,25 @@ const headerDataMap :Map = Map({
   hours: SPACED_STRING,
 });
 
+const NameAndButtonRow = styled.div`
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+`;
+
+const DatePickersRow = styled.div`
+  align-items: center;
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 10px;
+`;
+
+const DatePickersWrapper = styled.div`
+  display: grid;
+  grid-template-columns: 216px 216px 56px;
+  grid-gap: 0 10px;
+`;
+
 type Props = {
   participant :Map;
   workAppointmentsByWorksitePlan :Map;
@@ -51,6 +81,9 @@ type Props = {
 type State = {
   appointments :List;
   appointmentsByWorksiteName :Map;
+  datePickersVisible :boolean;
+  startDate :string;
+  endDate :string;
 };
 
 class PrintWorkScheduleContainer extends Component<Props, State> {
@@ -63,6 +96,9 @@ class PrintWorkScheduleContainer extends Component<Props, State> {
     this.state = {
       appointments,
       appointmentsByWorksiteName,
+      datePickersVisible: false,
+      startDate: '',
+      endDate: '',
     };
   }
 
@@ -99,23 +135,89 @@ class PrintWorkScheduleContainer extends Component<Props, State> {
     return appointmentsByWorksiteName;
   }
 
+  showDatePickers = () => {
+    const { datePickersVisible } = this.state;
+    this.setState({ datePickersVisible: !datePickersVisible });
+  }
+
+  setStartDate = (date :string) => {
+    this.setState({ startDate: date });
+  }
+
+  setEndDate = (date :string) => {
+    this.setState({ endDate: date });
+  }
+
+  resetDateRange = () => {
+    this.setState({ startDate: '', endDate: '' });
+  }
+
+  filterAppointments = () => {
+    const { appointments, endDate, startDate } = this.state;
+    if (!startDate && !endDate) return appointments;
+    let filteredAppointments :List = appointments;
+    filteredAppointments = appointments.filter((appointment :Map) => {
+      const {
+        [DATETIME_END]: datetimeEnd,
+        [INCIDENT_START_DATETIME]: datetimeStart
+      } = getEntityProperties(appointment, [DATETIME_END, INCIDENT_START_DATETIME]);
+      const apptStartAsDateTime :DateTime = DateTime.fromISO(datetimeStart);
+      const apptEndAsDateTime :DateTime = DateTime.fromISO(datetimeEnd);
+      const rangeStartDateTime :DateTime = DateTime.fromISO(startDate);
+      const rangeEndDateTime :DateTime = DateTime.fromSQL(`${endDate} 23:59`);
+      // $FlowFixMe
+      const appointmentIsAfterRangeStart :boolean = apptStartAsDateTime > rangeStartDateTime;
+      if (!appointmentIsAfterRangeStart) return false;
+      if (!endDate) return true;
+      // $FlowFixMe
+      const appointmentIsBeforeRangeEnd :boolean = apptEndAsDateTime < rangeEndDateTime;
+      if (!appointmentIsBeforeRangeEnd) return false;
+      return true;
+    });
+    return filteredAppointments;
+  }
+
   render() {
+    const { participant } = this.props;
     const {
-      participant,
-    } = this.props;
-    const { appointments, appointmentsByWorksiteName } = this.state;
+      appointmentsByWorksiteName,
+      datePickersVisible,
+      endDate,
+      startDate,
+    } = this.state;
 
     const {
       [FIRST_NAME]: firstName,
       [LAST_NAME]: lastName
     } = getEntityProperties(participant, [FIRST_NAME, LAST_NAME]);
     const personFullName = `${firstName} ${lastName} `;
-
+    const filteredAppointments :List = this.filterAppointments();
     return (
       <Card>
         <CardSegment padding="sm" vertical>
-          { personFullName }
-          Schedule
+          <NameAndButtonRow>
+            <div>
+              { personFullName }
+              Schedule
+            </div>
+            <IconButton
+                icon={<FontAwesomeIcon icon={faCalendarWeek} color={OL.GREY02} />}
+                onClick={this.showDatePickers} />
+          </NameAndButtonRow>
+          {
+            datePickersVisible && (
+              <DatePickersRow>
+                <Label>Date Range:</Label>
+                <DatePickersWrapper>
+                  <DatePicker onChange={this.setStartDate} value={startDate} />
+                  <DatePicker onChange={this.setEndDate} value={endDate} />
+                  <IconButton
+                      icon={<FontAwesomeIcon icon={faRedo} color={OL.GREY02} />}
+                      onClick={this.resetDateRange} />
+                </DatePickersWrapper>
+              </DatePickersRow>
+            )
+          }
         </CardSegment>
         <CardSegment padding="sm">
           <DataGrid
@@ -124,7 +226,7 @@ class PrintWorkScheduleContainer extends Component<Props, State> {
               labelMap={headerLabelMap} />
         </CardSegment>
         {
-          appointments.map((appointment :Map) => {
+          filteredAppointments.map((appointment :Map) => {
             const appointmentEKID :UUID = getEntityKeyId(appointment);
             const worksiteName :string = appointmentsByWorksiteName.get(appointmentEKID);
 
