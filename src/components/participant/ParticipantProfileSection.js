@@ -93,8 +93,11 @@ const ParticipantProfileSection = ({
   } = getEntityProperties(person, [DOB, ETHNICITY, JUSTICE_XREF, RACE, SEX]);
   let zuercherID :string = EMPTY_FIELD;
   if (zuercherJacketID) {
-    if (zuercherJacketID.length && zuercherJacketID[zuercherJacketID.length - 1] === 'Z') {
+    if (zuercherJacketID.length && zuercherJacketID.endsWith('Z')) {
       zuercherID = zuercherJacketID.slice(0, -2);
+    }
+    else {
+      zuercherID = zuercherJacketID;
     }
   }
 
