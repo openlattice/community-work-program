@@ -27,6 +27,7 @@ const {
   DOB,
   EMAIL,
   ETHNICITY,
+  JUSTICE_XREF,
   PHONE_NUMBER,
   RACE,
   SEX,
@@ -87,8 +88,18 @@ const ParticipantProfileSection = ({
     [DOB]: dateOfBirth,
     [RACE]: race,
     [ETHNICITY]: ethnicity,
+    [JUSTICE_XREF]: zuercherJacketID,
     [SEX]: sex,
-  } = getEntityProperties(person, [DOB, ETHNICITY, RACE, SEX]);
+  } = getEntityProperties(person, [DOB, ETHNICITY, JUSTICE_XREF, RACE, SEX]);
+  let zuercherID :string = EMPTY_FIELD;
+  if (zuercherJacketID) {
+    if (zuercherJacketID.length && zuercherJacketID.endsWith('Z')) {
+      zuercherID = zuercherJacketID.slice(0, -2);
+    }
+    else {
+      zuercherID = zuercherJacketID;
+    }
+  }
 
   const picture = getPersonProfilePicture(person, personPhoto);
   const fullName = getPersonFullName(person);
@@ -110,6 +121,12 @@ const ParticipantProfileSection = ({
           {picture}
           <PersonNameHeader>{ fullName }</PersonNameHeader>
         </PersonHeaderRow>
+        <CardSegment noBleed padding="0">
+          <PersonInfoRow>
+            <Label subtle>Zuercher ID</Label>
+            <PersonValue>{ zuercherID }</PersonValue>
+          </PersonInfoRow>
+        </CardSegment>
         <CardSegment noBleed padding="0">
           <PersonInfoRow>
             <Label subtle>Date of Birth</Label>
