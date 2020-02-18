@@ -59,6 +59,7 @@ const {
   ENROLLMENT_BY_PARTICIPANT,
   HOURS_WORKED,
   INFRACTION_COUNTS_BY_PARTICIPANT,
+  PARTICIPANT_PHOTOS_BY_PARTICIPANT_EKID,
   PARTICIPANTS,
 } = PEOPLE;
 const {
@@ -112,6 +113,7 @@ type Props = {
   getDiversionPlansRequestState :RequestState;
   hoursWorked :Map;
   infractionCountsByParticipant :Map;
+  participantPhotosByParticipantEKID :Map;
   participants :List;
 };
 
@@ -230,6 +232,7 @@ class ParticipantsSearchContainer extends Component<Props, State> {
       enrollmentByParticipant,
       hoursWorked,
       infractionCountsByParticipant,
+      participantPhotosByParticipantEKID,
     } = this.props;
     const { peopleToRender } = this.state;
 
@@ -253,7 +256,7 @@ class ParticipantsSearchContainer extends Component<Props, State> {
         const hoursServed :string = getHoursServed(worked, required);
 
         const personRow :Object = {
-          [ALL_PARTICIPANTS_COLUMNS[0]]: getPersonPictureForTable(person, true),
+          [ALL_PARTICIPANTS_COLUMNS[0]]: getPersonPictureForTable(person, true, participantPhotosByParticipantEKID),
           [ALL_PARTICIPANTS_COLUMNS[1]]: getPersonFullName(person),
           [ALL_PARTICIPANTS_COLUMNS[2]]: toString(calculateAge(dateOfBirth)),
           [ALL_PARTICIPANTS_COLUMNS[3]]: formatAsDate(sentenceDateTime),
@@ -349,12 +352,13 @@ const mapStateToProps = (state :Map<*, *>) => {
     [COURT_TYPE_BY_PARTICIPANT]: people.get(COURT_TYPE_BY_PARTICIPANT),
     [CURRENT_DIVERSION_PLANS_BY_PARTICIPANT]: people.get(CURRENT_DIVERSION_PLANS_BY_PARTICIPANT),
     [ENROLLMENT_BY_PARTICIPANT]: people.get(ENROLLMENT_BY_PARTICIPANT),
-    entitySetIds: app.getIn([ENTITY_SET_IDS_BY_ORG, selectedOrgId], Map()),
-    getInitializeAppRequestState: app.getIn([APP.ACTIONS, APP.INITIALIZE_APPLICATION, APP.REQUEST_STATE]),
-    getDiversionPlansRequestState: people.getIn([PEOPLE.ACTIONS, PEOPLE.GET_DIVERSION_PLANS, PEOPLE.REQUEST_STATE]),
     [HOURS_WORKED]: people.get(HOURS_WORKED),
     [INFRACTION_COUNTS_BY_PARTICIPANT]: people.get(INFRACTION_COUNTS_BY_PARTICIPANT),
+    [PARTICIPANT_PHOTOS_BY_PARTICIPANT_EKID]: people.get(PARTICIPANT_PHOTOS_BY_PARTICIPANT_EKID),
     [PARTICIPANTS]: people.get(PARTICIPANTS),
+    entitySetIds: app.getIn([ENTITY_SET_IDS_BY_ORG, selectedOrgId], Map()),
+    getDiversionPlansRequestState: people.getIn([PEOPLE.ACTIONS, PEOPLE.GET_DIVERSION_PLANS, PEOPLE.REQUEST_STATE]),
+    getInitializeAppRequestState: app.getIn([APP.ACTIONS, APP.INITIALIZE_APPLICATION, APP.REQUEST_STATE]),
   };
 };
 

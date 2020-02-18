@@ -100,6 +100,7 @@ export const PROPERTY_TYPE_FQNS :Object = {
   HOURS_WORKED: new FullyQualifiedName('ol.hoursworked'),
   IMAGE_DATA: new FullyQualifiedName('ol.imagedata'),
   INCIDENT_START_DATETIME: new FullyQualifiedName('incident.startdatetime'),
+  JUSTICE_XREF: new FullyQualifiedName('justice.xref'),
   LAST_NAME: new FullyQualifiedName('nc.PersonSurName'),
   LEVEL_STATE: new FullyQualifiedName('ol.levelstate'),
   MIDDLE_NAME: new FullyQualifiedName('nc.PersonMiddleName'),

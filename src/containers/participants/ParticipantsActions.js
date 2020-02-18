@@ -26,6 +26,9 @@ const getInfractions :RequestSequence = newRequestSequence(GET_INFRACTIONS);
 const GET_PARTICIPANTS :'GET_PARTICIPANTS' = 'GET_PARTICIPANTS';
 const getParticipants :RequestSequence = newRequestSequence(GET_PARTICIPANTS);
 
+const GET_PARTICIPANT_PHOTOS :'GET_PARTICIPANT_PHOTOS' = 'GET_PARTICIPANT_PHOTOS';
+const getParticipantPhotos :RequestSequence = newRequestSequence(GET_PARTICIPANT_PHOTOS);
+
 const RESET_REQUEST_STATE :'RESET_REQUEST_STATE' = 'RESET_REQUEST_STATE';
 function resetRequestState(actionType :string) {
   return {
@@ -42,6 +45,7 @@ export {
   GET_HOURS_WORKED,
   GET_INFRACTIONS,
   GET_PARTICIPANTS,
+  GET_PARTICIPANT_PHOTOS,
   RESET_REQUEST_STATE,
   addParticipant,
   getCourtType,
@@ -49,6 +53,7 @@ export {
   getEnrollmentStatuses,
   getHoursWorked,
   getInfractions,
+  getParticipantPhotos,
   getParticipants,
   resetRequestState,
 };
