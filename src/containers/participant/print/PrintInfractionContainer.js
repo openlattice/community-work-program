@@ -12,6 +12,7 @@ import {
   Select,
   Sizes,
 } from 'lattice-ui-kit';
+import { AuthUtils } from 'lattice-auth';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { RequestStates } from 'redux-reqseq';
@@ -30,6 +31,7 @@ import {
   PERSON_INFRACTIONS,
   STATE
 } from '../../../utils/constants/ReduxStateConsts';
+import { EMPTY_FIELD } from '../../participants/ParticipantsConstants';
 
 const { PEOPLE } = APP_TYPE_FQNS;
 const {
@@ -210,6 +212,8 @@ class PrintInfractionContainer extends Component<Props, State> {
       caseFieldRowArray.push(i);
     }
 
+    const userInfo = AuthUtils.getUserInfo() || {};
+    const username = userInfo.name || EMPTY_FIELD;
     return (
       <Card>
         <CardSegment>
@@ -271,7 +275,7 @@ class PrintInfractionContainer extends Component<Props, State> {
         </CardSegment>
         <CardSegment vertical>
           <Label subtle>Work Program Staff Person</Label>
-          <TextWrapper>Skaare, Vanessa</TextWrapper>
+          <TextWrapper>{ username }</TextWrapper>
         </CardSegment>
       </Card>
     );
