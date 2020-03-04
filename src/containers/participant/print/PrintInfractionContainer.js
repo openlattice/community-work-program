@@ -12,6 +12,7 @@ import {
   Select,
   Sizes,
 } from 'lattice-ui-kit';
+import { AuthUtils } from 'lattice-auth';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { RequestStates } from 'redux-reqseq';
@@ -210,6 +211,7 @@ class PrintInfractionContainer extends Component<Props, State> {
       caseFieldRowArray.push(i);
     }
 
+    const userInfo = AuthUtils.getUserInfo();
     return (
       <Card>
         <CardSegment>
@@ -271,7 +273,7 @@ class PrintInfractionContainer extends Component<Props, State> {
         </CardSegment>
         <CardSegment vertical>
           <Label subtle>Work Program Staff Person</Label>
-          <TextWrapper>Skaare, Vanessa</TextWrapper>
+          <TextWrapper>{ userInfo.name }</TextWrapper>
         </CardSegment>
       </Card>
     );
