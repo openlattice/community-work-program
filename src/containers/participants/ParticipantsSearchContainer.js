@@ -42,7 +42,6 @@ import {
 import { ToolBar } from '../../components/controls/index';
 import { formatClickedProperty, getFilteredPeople } from './utils/SearchContainerUtils';
 import { calculateAge, formatAsDate } from '../../utils/DateTimeUtils';
-import { clearAppointmentsAndPlans } from '../participant/assignedworksites/WorksitePlanActions';
 import { generateTableHeaders } from '../../utils/FormattingUtils';
 import { getDiversionPlans } from './ParticipantsActions';
 import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
@@ -101,7 +100,6 @@ const ParticipantSearchInnerWrapper = styled.div`
 
 type Props = {
   actions:{
-    clearAppointmentsAndPlans :RequestSequence;
     getDiversionPlans :RequestSequence;
     goToRoute :GoToRoute;
   };
@@ -364,7 +362,6 @@ const mapStateToProps = (state :Map<*, *>) => {
 
 const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
-    clearAppointmentsAndPlans,
     getDiversionPlans,
     goToRoute,
   }, dispatch)

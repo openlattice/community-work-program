@@ -27,7 +27,6 @@ import {
 import { ErrorMessage } from '../../components/Layout';
 import { getDiversionPlans } from '../participants/ParticipantsActions';
 import { goToRoute } from '../../core/router/RoutingActions';
-import { clearAppointmentsAndPlans } from '../participant/assignedworksites/WorksitePlanActions';
 import { PARTICIPANT_PROFILE } from '../../core/router/Routes';
 import { DASHBOARD_WIDTH } from '../../core/style/Sizes';
 import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
@@ -97,7 +96,6 @@ const ReportTag = styled(SubtleTag)`
 
 type Props = {
   actions:{
-    clearAppointmentsAndPlans :RequestSequence;
     getDiversionPlans :RequestSequence;
     goToRoute :GoToRoute;
   };
@@ -498,7 +496,6 @@ const mapStateToProps = (state :Map<*, *>) => {
 
 const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
-    clearAppointmentsAndPlans,
     getDiversionPlans,
     goToRoute,
   }, dispatch)
