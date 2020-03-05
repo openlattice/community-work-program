@@ -280,6 +280,11 @@ class ParticipantProfile extends Component<Props, State> {
     }
   }
 
+  componentWillUnmount() {
+    const { actions } = this.props;
+    actions.clearAppointmentsAndPlans();
+  }
+
   loadProfile = () => {
     const { actions, personEKID } = this.props;
     actions.getAllParticipantInfo({ personEKID });
@@ -366,7 +371,6 @@ class ParticipantProfile extends Component<Props, State> {
 
   goBackToParticipants = () => {
     const { actions } = this.props;
-    actions.clearAppointmentsAndPlans();
     actions.goToRoute(Routes.PARTICIPANTS);
   }
 
