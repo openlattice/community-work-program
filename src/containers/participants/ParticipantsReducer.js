@@ -40,6 +40,7 @@ const {
   PARTICIPANT_PHOTOS_BY_PARTICIPANT_EKID,
   PARTICIPANTS,
   REQUEST_STATE,
+  TOTAL_DIVERSION_PLAN_COUNT,
 } = PEOPLE;
 
 const INITIAL_STATE :Map<*, *> = fromJS({
@@ -82,6 +83,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [NEW_PARTICIPANT_EKID]: '',
   [PARTICIPANT_PHOTOS_BY_PARTICIPANT_EKID]: Map(),
   [PARTICIPANTS]: List(),
+  [TOTAL_DIVERSION_PLAN_COUNT]: 0,
 });
 
 export default function participantsReducer(state :Map<*, *> = INITIAL_STATE, action :Object) :Map<*, *> {
@@ -204,8 +206,12 @@ export default function participantsReducer(state :Map<*, *> = INITIAL_STATE, ac
         REQUEST: () => state
           .setIn([ACTIONS, GET_DIVERSION_PLANS, seqAction.id], fromJS(seqAction))
           .setIn([ACTIONS, GET_DIVERSION_PLANS, REQUEST_STATE], RequestStates.PENDING),
-        SUCCESS: () => state
-          .setIn([ACTIONS, GET_DIVERSION_PLANS, REQUEST_STATE], RequestStates.SUCCESS),
+        SUCCESS: () => {
+          const { value } = seqAction;
+          return state
+            .set(TOTAL_DIVERSION_PLAN_COUNT, value)
+            .setIn([ACTIONS, GET_DIVERSION_PLANS, REQUEST_STATE], RequestStates.SUCCESS);
+        },
         FAILURE: () => state
           .setIn([ACTIONS, GET_DIVERSION_PLANS, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state

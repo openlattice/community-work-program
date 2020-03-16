@@ -693,11 +693,12 @@ function* getDiversionPlansWorker(action :SequenceAction) :Generator<*, *, *> {
     if (response.error) {
       throw response.error;
     }
+    const totalDiversionPlanCount :number = response.data.length;
     diversionPlans = fromJS(response.data).map((plan :Map) => getNeighborDetails(plan));
 
     yield call(getParticipantsWorker, getParticipants({ diversionPlanESID, diversionPlans }));
 
-    yield put(getDiversionPlans.success(id));
+    yield put(getDiversionPlans.success(id, totalDiversionPlanCount));
   }
   catch (error) {
     LOG.error('caught exception in getDiversionPlansWorker()', error);
