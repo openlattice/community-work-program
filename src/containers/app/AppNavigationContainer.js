@@ -62,6 +62,7 @@ const AppNavigationContainer = () => (
     <NavLinkWrapper to={Routes.PARTICIPANTS}>Participants</NavLinkWrapper>
     <NavLinkWrapper to={Routes.WORKSITES}>Work Sites</NavLinkWrapper>
     <NavLinkWrapper to={Routes.WORK_SCHEDULE}>Work Schedule</NavLinkWrapper>
+    <NavLinkWrapper to={Routes.STATS}>Stats</NavLinkWrapper>
   </NavigationContentWrapper>
 );
 
