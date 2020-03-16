@@ -337,7 +337,9 @@ function* getCourtTypeWorker(action :SequenceAction) :Generator<*, *, *> {
         const { [COURT_CASE_TYPE]: courtCaseType } = getEntityProperties(courtCase, [COURT_CASE_TYPE]);
         courtTypeByParticipant = courtTypeByParticipant.set(personEKID, courtCaseType);
         const enrollmentCount :number = enrollmentsByCourtTypeGraphData.get(courtCaseType, 0);
-        enrollmentsByCourtTypeGraphData = enrollmentsByCourtTypeGraphData.set(courtCaseType, enrollmentCount + 1);
+        if (isDefined(enrollmentsByCourtTypeGraphData.get(courtCaseType))) {
+          enrollmentsByCourtTypeGraphData = enrollmentsByCourtTypeGraphData.set(courtCaseType, enrollmentCount + 1);
+        }
       });
     }
 
