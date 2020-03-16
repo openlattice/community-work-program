@@ -108,6 +108,7 @@ export const PEOPLE = {
   PARTICIPANTS: 'participants',
   PARTICIPANT_PHOTOS_BY_PARTICIPANT_EKID: 'participantPhotosByParticipantEKID',
   REQUEST_STATE: 'requestState',
+  TOTAL_DIVERSION_PLAN_COUNT: 'totalDiversionPlanCount',
 };
 
 /* Person */
