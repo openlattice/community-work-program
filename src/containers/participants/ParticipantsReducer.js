@@ -25,6 +25,7 @@ const {
   COURT_TYPE_BY_PARTICIPANT,
   CURRENT_DIVERSION_PLANS_BY_PARTICIPANT,
   ENROLLMENT_BY_PARTICIPANT,
+  ENROLLMENTS_BY_COURT_TYPE_GRAPH_DATA,
   ERRORS,
   GET_COURT_TYPE,
   GET_DIVERSION_PLANS,
@@ -70,6 +71,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [COURT_TYPE_BY_PARTICIPANT]: Map(),
   [CURRENT_DIVERSION_PLANS_BY_PARTICIPANT]: Map(),
   [ENROLLMENT_BY_PARTICIPANT]: Map(),
+  [ENROLLMENTS_BY_COURT_TYPE_GRAPH_DATA]: Map(),
   [ERRORS]: {
     [ADD_PARTICIPANT]: Map(),
     [GET_ENROLLMENT_STATUSES]: Map(),
@@ -177,18 +179,11 @@ export default function participantsReducer(state :Map<*, *> = INITIAL_STATE, ac
           .setIn([ACTIONS, GET_COURT_TYPE, seqAction.id], fromJS(seqAction))
           .setIn([ACTIONS, GET_COURT_TYPE, REQUEST_STATE], RequestStates.PENDING),
         SUCCESS: () => {
-
-          if (!state.hasIn([ACTIONS, GET_COURT_TYPE, seqAction.id])) {
-            return state;
-          }
-
           const { value } = seqAction;
-          if (value === null || value === undefined) {
-            return state;
-          }
-
+          const { courtTypeByParticipant, enrollmentsByCourtTypeGraphData } = value;
           return state
-            .set(COURT_TYPE_BY_PARTICIPANT, value)
+            .set(COURT_TYPE_BY_PARTICIPANT, courtTypeByParticipant)
+            .set(ENROLLMENTS_BY_COURT_TYPE_GRAPH_DATA, enrollmentsByCourtTypeGraphData)
             .setIn([ACTIONS, GET_COURT_TYPE, REQUEST_STATE], RequestStates.SUCCESS);
         },
         FAILURE: () => state

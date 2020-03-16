@@ -93,6 +93,7 @@ export const PEOPLE = {
   COURT_TYPE_BY_PARTICIPANT: 'courtTypeByParticipant',
   CURRENT_DIVERSION_PLANS_BY_PARTICIPANT: 'currentDiversionPlansByParticipant',
   ENROLLMENT_BY_PARTICIPANT: 'enrollmentByParticipant',
+  ENROLLMENTS_BY_COURT_TYPE_GRAPH_DATA: 'enrollmentsByCourtTypeGraphData',
   ERRORS: 'errors',
   GET_COURT_TYPE: 'getCourtType',
   GET_DIVERSION_PLANS: 'getDiversionPlans',

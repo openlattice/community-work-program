@@ -52,7 +52,7 @@ import {
 import { STATE } from '../../utils/constants/ReduxStateConsts';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { isDefined } from '../../utils/LangUtils';
-import { INFRACTIONS_CONSTS } from '../../core/edm/constants/DataModelConsts';
+import { COURT_TYPES_MAP, INFRACTIONS_CONSTS } from '../../core/edm/constants/DataModelConsts';
 
 const { getEntitySetData } = DataApiActions;
 const { getEntitySetDataWorker } = DataApiSagas;
@@ -317,8 +317,17 @@ function* getCourtTypeWorker(action :SequenceAction) :Generator<*, *, *> {
       throw response.error;
     }
     const casesAndPeopleByDiversionPlan = fromJS(response.data);
+    let enrollmentsByCourtTypeGraphData :Map = Map({
+      [COURT_TYPES_MAP.CHILD_SUPPORT]: 0,
+      [COURT_TYPES_MAP.DRUG_COURT]: 0,
+      [COURT_TYPES_MAP.DUI_COURT]: 0,
+      [COURT_TYPES_MAP.HOPE_PROBATION]: 0,
+      [COURT_TYPES_MAP.MENTAL_HEALTH]: 0,
+      [COURT_TYPES_MAP.PROBATION]: 0,
+      [COURT_TYPES_MAP.SENTENCED]: 0,
+      [COURT_TYPES_MAP.VETERANS_COURT]: 0,
+    });
     if (!casesAndPeopleByDiversionPlan.isEmpty()) {
-
       casesAndPeopleByDiversionPlan.forEach((caseAndPersonNeighbors :List) => {
         const person :Map = caseAndPersonNeighbors.find((neighbor :Map) => getNeighborESID(neighbor) === peopleESID);
         const personEKID :UUID = getEntityKeyId(getNeighborDetails(person));
@@ -327,10 +336,12 @@ function* getCourtTypeWorker(action :SequenceAction) :Generator<*, *, *> {
         const courtCase :Map = getNeighborDetails(courtCaseObj);
         const { [COURT_CASE_TYPE]: courtCaseType } = getEntityProperties(courtCase, [COURT_CASE_TYPE]);
         courtTypeByParticipant = courtTypeByParticipant.set(personEKID, courtCaseType);
+        const enrollmentCount :number = enrollmentsByCourtTypeGraphData.get(courtCaseType, 0);
+        enrollmentsByCourtTypeGraphData = enrollmentsByCourtTypeGraphData.set(courtCaseType, enrollmentCount + 1);
       });
     }
 
-    yield put(getCourtType.success(id, courtTypeByParticipant));
+    yield put(getCourtType.success(id, { courtTypeByParticipant, enrollmentsByCourtTypeGraphData }));
   }
   catch (error) {
     LOG.error('caught exception in getCourtTypeWorker()', error);
