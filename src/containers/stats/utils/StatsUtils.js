@@ -15,7 +15,7 @@ const ACTIVE_STATUSES :string[] = [
   ENROLLMENT_STATUSES.JOB_SEARCH,
 ];
 
-const getCurrentlyActiveParticipants = (enrollmentByParticipant :Map, participants :List) => (
+const getCurrentlyActiveParticipants = (enrollmentByParticipant :Map, participants :List) :List => (
   participants.filter((participant :Map) => {
     const participantEKID :UUID = getEntityKeyId(participant);
     const enrollmentStatus :Map = enrollmentByParticipant.get(participantEKID, Map());
@@ -23,7 +23,15 @@ const getCurrentlyActiveParticipants = (enrollmentByParticipant :Map, participan
     return ACTIVE_STATUSES.includes(status);
   }));
 
-/* eslint-disable import/prefer-default-export */
+const formatCourtTypeGraphData = (enrollmentsByCourtTypeGraphData :Map) :Object[] => {
+  const graphData :Object[] = [];
+  enrollmentsByCourtTypeGraphData.forEach((numberOfEnrollments :number, courtType :string) => {
+    graphData.push({ y: numberOfEnrollments, x: courtType });
+  });
+  return graphData;
+};
+
 export {
+  formatCourtTypeGraphData,
   getCurrentlyActiveParticipants,
 };
