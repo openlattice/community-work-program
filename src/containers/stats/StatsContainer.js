@@ -1,7 +1,7 @@
 // @flow
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
-import { List, Map } from 'immutable';
+import { Map } from 'immutable';
 import {
   Card,
   CardSegment,
@@ -10,6 +10,7 @@ import {
   Spinner,
 } from 'lattice-ui-kit';
 import {
+  Hint,
   VerticalBarSeries,
   XYPlot,
   XAxis,
@@ -21,28 +22,29 @@ import { RequestStates } from 'redux-reqseq';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
 import { ContainerHeader, ContainerInnerWrapper, ContainerOuterWrapper } from '../../components/Layout';
-import { getDiversionPlans } from '../participants/ParticipantsActions';
-import { formatCourtTypeGraphData, getCurrentlyActiveParticipants } from './utils/StatsUtils';
+import { GET_STATS_DATA, getStatsData } from './StatsActions';
+import { formatCourtTypeGraphData } from './utils/StatsUtils';
 import {
   APP,
-  PEOPLE,
   SHARED,
-  STATE
+  STATE,
+  STATS,
 } from '../../utils/constants/ReduxStateConsts';
 
 const {
   BLACK,
-  BLUE_1,
+  BLUE_2,
   NEUTRALS,
+  PURPLES,
   WHITE
 } = Colors;
 const {
-  ENROLLMENT_BY_PARTICIPANT,
   ENROLLMENTS_BY_COURT_TYPE_GRAPH_DATA,
-  GET_DIVERSION_PLANS,
-  PARTICIPANTS,
-  TOTAL_DIVERSION_PLAN_COUNT
-} = PEOPLE;
+  PEOPLE_BY_COURT_TYPE_GRAPH_DATA,
+  TOTAL_ACTIVE_PARTICIPANT_COUNT,
+  TOTAL_DIVERSION_PLAN_COUNT,
+  TOTAL_PARTICIPANT_COUNT,
+} = STATS;
 const { ENTITY_SET_IDS_BY_ORG, SELECTED_ORG_ID } = APP;
 const { ACTIONS, REQUEST_STATE } = SHARED;
 
@@ -69,7 +71,7 @@ const StatBox = styled.div`
   padding: 17px 0;
   width: 225px;
 
-:last-of-type {
+  :last-of-type {
     margin-right: 0;
   }
 `;
@@ -92,35 +94,52 @@ const StatsBoxSkeleton = () => (
   </>
 );
 
+const toolTipStyle :Object = {
+  alignItems: 'center',
+  // background: PURPLES[1],
+  borderRadius: '3px',
+  color: WHITE,
+  display: 'flex',
+  fontFamily: 'Open Sans, sans-serif',
+  fontSize: '13px',
+  padding: '5px 10px',
+};
+
 type Props = {
   actions :{
-    getDiversionPlans :RequestSequence;
+    getStatsData :RequestSequence;
   };
-  enrollmentByParticipant :Map;
   enrollmentsByCourtTypeGraphData :Map;
+  peopleByCourtTypeGraphData :Map;
   entitySetIds :Map;
-  getDiversionPlansRequestState :RequestState;
-  participants :List;
+  requestStates :{
+    GET_STATS_DATA :RequestState;
+  };
+  totalActiveParticipantCount :number;
   totalDiversionPlanCount :number;
+  totalParticipantCount :number;
 };
 
 const StatsContainer = ({
   actions,
-  enrollmentByParticipant,
   enrollmentsByCourtTypeGraphData,
   entitySetIds,
-  getDiversionPlansRequestState,
-  participants,
+  peopleByCourtTypeGraphData,
+  requestStates,
+  totalActiveParticipantCount,
   totalDiversionPlanCount,
+  totalParticipantCount,
 } :Props) => {
 
+  const [hoveredBar, setHoveredBar] = useState({});
+  const [hoverText, setHoverText] = useState('');
+  const [background, setBackgroundColor] = useState(WHITE);
+  const toolTipStyleWithBackground :Object = { background, ...toolTipStyle };
+
   useEffect(() => {
-    if (!entitySetIds.isEmpty()) actions.getDiversionPlans();
+    if (!entitySetIds.isEmpty()) actions.getStatsData();
   }, [actions, entitySetIds]);
-  const diversionPlansAreLoading :boolean = getDiversionPlansRequestState === RequestStates.PENDING;
-  const participantsCount :number = participants.count();
-  const currentlyActiveParticipantCount :number = getCurrentlyActiveParticipants(enrollmentByParticipant, participants)
-    .count();
+  const dataIsLoading :boolean = requestStates[GET_STATS_DATA] === RequestStates.PENDING;
   const graphData :Object[] = formatCourtTypeGraphData(enrollmentsByCourtTypeGraphData);
   return (
     <ContainerOuterWrapper>
@@ -130,7 +149,7 @@ const StatsContainer = ({
         </HeaderWrapper>
         <StatsWrapper>
           {
-            diversionPlansAreLoading
+            dataIsLoading
               ? (
                 <>
                   {
@@ -149,11 +168,11 @@ const StatsContainer = ({
                     <Category>Total Enrollments</Category>
                   </StatBox>
                   <StatBox>
-                    <Number>{ participantsCount }</Number>
+                    <Number>{ totalParticipantCount }</Number>
                     <Category>Unique Participants</Category>
                   </StatBox>
                   <StatBox>
-                    <Number>{ currentlyActiveParticipantCount }</Number>
+                    <Number>{ totalActiveParticipantCount }</Number>
                     <Category>Currently Active</Category>
                   </StatBox>
                 </>
@@ -163,7 +182,7 @@ const StatsContainer = ({
         <Card>
           <CardSegment padding="30px" vertical>
             {
-              diversionPlansAreLoading
+              dataIsLoading
                 ? (
                   <Spinner size="2x" />
                 )
@@ -172,16 +191,39 @@ const StatsContainer = ({
                       xType="ordinal"
                       height={190}
                       margin={{
-                        left: 90,
+                        left: 40,
                         right: 10,
                         top: 10,
                         bottom: 40
                       }}
-                      style={{ fontFamily: 'Open Sans, sans-serif', fontSize: '11px' }}
-                      width={854}>
+                      style={{ fontFamily: 'Open Sans, sans-serif', fontSize: '12px' }}
+                      width={1000}>
                     <XAxis />
-                    <YAxis />
-                    <VerticalBarSeries barWidth={0.55} color={BLUE_1} data={graphData} />
+                    <YAxis title="Number of enrollments" />
+                    <VerticalBarSeries
+                        barWidth={0.55}
+                        color={BLUE_2}
+                        data={graphData}
+                        onValueMouseOver={(v :Object) => {
+                          if (v.x && v.y) {
+                            setHoveredBar(v);
+                            setHoverText(`${v.y} enrollments`);
+                            setBackgroundColor(PURPLES[1]);
+                          }
+                        }}
+                        onValueMouseOut={() => {
+                          setHoveredBar({});
+                          setHoverText('');
+                          setBackgroundColor(WHITE);
+                        }} />
+                    {
+                      hoveredBar && (
+                        <Hint
+                            value={hoveredBar}>
+                          <div style={Object.assign(toolTipStyleWithBackground)}>{ hoverText }</div>
+                        </Hint>
+                      )
+                    }
                   </XYPlot>
                 )
             }
@@ -193,22 +235,25 @@ const StatsContainer = ({
 };
 
 const mapStateToProps = (state :Map) => {
-  const people = state.get(STATE.PEOPLE);
+  const stats = state.get(STATE.STATS);
   const app = state.get(STATE.APP);
   const selectedOrgId :string = app.get(SELECTED_ORG_ID);
   return {
-    [ENROLLMENT_BY_PARTICIPANT]: people.get(ENROLLMENT_BY_PARTICIPANT),
-    [ENROLLMENTS_BY_COURT_TYPE_GRAPH_DATA]: people.get(ENROLLMENTS_BY_COURT_TYPE_GRAPH_DATA),
-    [PARTICIPANTS]: people.get(PARTICIPANTS),
-    [TOTAL_DIVERSION_PLAN_COUNT]: people.get(TOTAL_DIVERSION_PLAN_COUNT),
+    [ENROLLMENTS_BY_COURT_TYPE_GRAPH_DATA]: stats.get(ENROLLMENTS_BY_COURT_TYPE_GRAPH_DATA),
+    [TOTAL_DIVERSION_PLAN_COUNT]: stats.get(TOTAL_DIVERSION_PLAN_COUNT),
+    [TOTAL_PARTICIPANT_COUNT]: stats.get(TOTAL_PARTICIPANT_COUNT),
+    [TOTAL_ACTIVE_PARTICIPANT_COUNT]: stats.get(TOTAL_ACTIVE_PARTICIPANT_COUNT),
+    [PEOPLE_BY_COURT_TYPE_GRAPH_DATA]: stats.get(PEOPLE_BY_COURT_TYPE_GRAPH_DATA),
     entitySetIds: app.getIn([ENTITY_SET_IDS_BY_ORG, selectedOrgId], Map()),
-    getDiversionPlansRequestState: people.getIn([ACTIONS, GET_DIVERSION_PLANS, REQUEST_STATE]),
+    requestStates: {
+      [GET_STATS_DATA]: stats.getIn([ACTIONS, GET_STATS_DATA, REQUEST_STATE]),
+    }
   };
 };
 
 const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
-    getDiversionPlans,
+    getStatsData,
   }, dispatch)
 });
 
