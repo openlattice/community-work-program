@@ -141,9 +141,11 @@ function* getStatsDataWorker(action :SequenceAction) :Generator<*, *, *> {
 
       courtTypeAndDateByPersonEKID.forEach(({ courtType, status } :Object) => {
         const personCountForCourtType :number = peopleByCourtTypeGraphData.get(courtType, 0);
-        peopleByCourtTypeGraphData = peopleByCourtTypeGraphData.set(courtType, personCountForCourtType + 1);
+        if (ACTIVE_STATUSES.includes(status)) {
+          peopleByCourtTypeGraphData = peopleByCourtTypeGraphData.set(courtType, personCountForCourtType + 1);
+          totalActiveParticipantCount += 1;
+        }
         totalParticipantCount += 1;
-        if (ACTIVE_STATUSES.includes(status)) totalActiveParticipantCount += 1;
       });
     }
 
