@@ -7,6 +7,7 @@ export const STATE = {
   ORGANIZATION: 'organization',
   PEOPLE: 'people',
   PERSON: 'person',
+  STATS: 'stats',
   WORKSITES: 'worksites',
   WORKSITE_PLANS: 'worksitePlans',
   WORK_SCHEDULE: 'workSchedule',
@@ -93,7 +94,6 @@ export const PEOPLE = {
   COURT_TYPE_BY_PARTICIPANT: 'courtTypeByParticipant',
   CURRENT_DIVERSION_PLANS_BY_PARTICIPANT: 'currentDiversionPlansByParticipant',
   ENROLLMENT_BY_PARTICIPANT: 'enrollmentByParticipant',
-  ENROLLMENTS_BY_COURT_TYPE_GRAPH_DATA: 'enrollmentsByCourtTypeGraphData',
   ERRORS: 'errors',
   GET_COURT_TYPE: 'getCourtType',
   GET_DIVERSION_PLANS: 'getDiversionPlans',
@@ -109,7 +109,6 @@ export const PEOPLE = {
   PARTICIPANTS: 'participants',
   PARTICIPANT_PHOTOS_BY_PARTICIPANT_EKID: 'participantPhotosByParticipantEKID',
   REQUEST_STATE: 'requestState',
-  TOTAL_DIVERSION_PLAN_COUNT: 'totalDiversionPlanCount',
 };
 
 /* Person */
@@ -178,6 +177,15 @@ export const PRINT_PARTICIPANT = {
   ACTIONS: 'actions',
   GET_INFO_FOR_PRINT_INFRACTION: 'getInfoForPrintInfraction',
   REQUEST_STATE: 'requestState',
+};
+
+/* Stats */
+export const STATS = {
+  ENROLLMENTS_BY_COURT_TYPE_GRAPH_DATA: 'enrollmentsByCourtTypeGraphData',
+  PEOPLE_BY_COURT_TYPE_GRAPH_DATA: 'peopleByCourtTypeGraphData',
+  TOTAL_ACTIVE_PARTICIPANT_COUNT: 'totalActiveParticipantCount',
+  TOTAL_DIVERSION_PLAN_COUNT: 'totalDiversionPlanCount',
+  TOTAL_PARTICIPANT_COUNT: 'totalParticipantCount',
 };
 
 /* Work Schedule */
