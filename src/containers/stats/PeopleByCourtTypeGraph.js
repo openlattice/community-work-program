@@ -12,11 +12,18 @@ import {
 const { PURPLES, WHITE } = Colors;
 
 type Props = {
-  peopleGraphData :Object[];
+  activePeopleGraphData :Object[];
+  successfulPeopleGraphData :Object[];
+  unsuccessfulPeopleGraphData :Object[];
   toolTipStyle :Object;
 };
 
-const PeopleByCourtTypeGraph = ({ peopleGraphData, toolTipStyle } :Props) => {
+const PeopleByCourtTypeGraph = ({
+  activePeopleGraphData,
+  successfulPeopleGraphData,
+  toolTipStyle,
+  unsuccessfulPeopleGraphData,
+} :Props) => {
 
   const [peopleHoverValues, setPeopleHoverValues] = useState({
     peopleBackground: WHITE,
@@ -44,14 +51,54 @@ const PeopleByCourtTypeGraph = ({ peopleGraphData, toolTipStyle } :Props) => {
       <YAxis />
       <VerticalBarSeries
           barWidth={0.55}
-          color={PURPLES[1]}
-          data={peopleGraphData}
+          color={PURPLES[0]}
+          data={activePeopleGraphData}
           onValueMouseOver={(v :Object) => {
             if (v.x && v.y) {
               setPeopleHoverValues({
-                peopleBackground: PURPLES[0],
+                peopleBackground: PURPLES[1],
                 peopleHoveredBar: v,
                 peopleHoverText: `${v.y} active`
+              });
+            }
+          }}
+          onValueMouseOut={() => {
+            setPeopleHoverValues({
+              peopleBackground: WHITE,
+              peopleHoveredBar: {},
+              peopleHoverText: ''
+            });
+          }} />
+      <VerticalBarSeries
+          barWidth={0.55}
+          color={PURPLES[2]}
+          data={successfulPeopleGraphData}
+          onValueMouseOver={(v :Object) => {
+            if (v.x && v.y) {
+              setPeopleHoverValues({
+                peopleBackground: PURPLES[1],
+                peopleHoveredBar: v,
+                peopleHoverText: `${v.y} successful`
+              });
+            }
+          }}
+          onValueMouseOut={() => {
+            setPeopleHoverValues({
+              peopleBackground: WHITE,
+              peopleHoveredBar: {},
+              peopleHoverText: ''
+            });
+          }} />
+      <VerticalBarSeries
+          barWidth={0.55}
+          color={PURPLES[4]}
+          data={unsuccessfulPeopleGraphData}
+          onValueMouseOver={(v :Object) => {
+            if (v.x && v.y) {
+              setPeopleHoverValues({
+                peopleBackground: PURPLES[1],
+                peopleHoveredBar: v,
+                peopleHoverText: `${v.y} unsuccessful`
               });
             }
           }}

@@ -34,11 +34,13 @@ const {
   WHITE
 } = Colors;
 const {
+  ACTIVE_PEOPLE_BY_COURT_TYPE_GRAPH_DATA,
   ENROLLMENTS_BY_COURT_TYPE_GRAPH_DATA,
-  PEOPLE_BY_COURT_TYPE_GRAPH_DATA,
+  SUCCESSFUL_PEOPLE_BY_COURT_TYPE_GRAPH_DATA,
   TOTAL_ACTIVE_PARTICIPANT_COUNT,
   TOTAL_DIVERSION_PLAN_COUNT,
   TOTAL_PARTICIPANT_COUNT,
+  UNSUCCESSFUL_PEOPLE_BY_COURT_TYPE_GRAPH_DATA,
 } = STATS;
 const { ENTITY_SET_IDS_BY_ORG, SELECTED_ORG_ID } = APP;
 const { ACTIONS, REQUEST_STATE } = SHARED;
@@ -109,25 +111,29 @@ type Props = {
     getStatsData :RequestSequence;
   };
   enrollmentsByCourtTypeGraphData :Map;
-  peopleByCourtTypeGraphData :Map;
+  activePeopleByCourtTypeGraphData :Map;
   entitySetIds :Map;
   requestStates :{
     GET_STATS_DATA :RequestState;
   };
+  successfulPeopleByCourtTypeGraphData :Map;
   totalActiveParticipantCount :number;
   totalDiversionPlanCount :number;
   totalParticipantCount :number;
+  unsuccessfulPeopleByCourtTypeGraphData :Map;
 };
 
 const StatsContainer = ({
   actions,
+  activePeopleByCourtTypeGraphData,
   enrollmentsByCourtTypeGraphData,
   entitySetIds,
-  peopleByCourtTypeGraphData,
   requestStates,
+  successfulPeopleByCourtTypeGraphData,
   totalActiveParticipantCount,
   totalDiversionPlanCount,
   totalParticipantCount,
+  unsuccessfulPeopleByCourtTypeGraphData,
 } :Props) => {
 
   useEffect(() => {
@@ -135,7 +141,9 @@ const StatsContainer = ({
   }, [actions, entitySetIds]);
   const dataIsLoading :boolean = requestStates[GET_STATS_DATA] === RequestStates.PENDING;
   const enrollmentsGraphData :Object[] = formatEnrollmentsCourtTypeData(enrollmentsByCourtTypeGraphData);
-  const peopleGraphData :Object[] = formatPeopleCourtTypeData(peopleByCourtTypeGraphData);
+  const activePeopleGraphData :Object[] = formatPeopleCourtTypeData(activePeopleByCourtTypeGraphData);
+  const successfulPeopleGraphData :Object[] = formatPeopleCourtTypeData(successfulPeopleByCourtTypeGraphData);
+  const unsuccessfulPeopleGraphData :Object[] = formatPeopleCourtTypeData(unsuccessfulPeopleByCourtTypeGraphData);
   return (
     <ContainerOuterWrapper>
       <ContainerInnerWrapper>
@@ -201,8 +209,10 @@ const StatsContainer = ({
                   )
                   : (
                     <PeopleByCourtTypeGraph
-                        peopleGraphData={peopleGraphData}
-                        toolTipStyle={toolTipStyle} />
+                        activePeopleGraphData={activePeopleGraphData}
+                        successfulPeopleGraphData={successfulPeopleGraphData}
+                        toolTipStyle={toolTipStyle}
+                        unsuccessfulPeopleGraphData={unsuccessfulPeopleGraphData} />
                   )
               }
             </CardSegment>
@@ -218,11 +228,13 @@ const mapStateToProps = (state :Map) => {
   const app = state.get(STATE.APP);
   const selectedOrgId :string = app.get(SELECTED_ORG_ID);
   return {
+    [ACTIVE_PEOPLE_BY_COURT_TYPE_GRAPH_DATA]: stats.get(ACTIVE_PEOPLE_BY_COURT_TYPE_GRAPH_DATA),
     [ENROLLMENTS_BY_COURT_TYPE_GRAPH_DATA]: stats.get(ENROLLMENTS_BY_COURT_TYPE_GRAPH_DATA),
+    [SUCCESSFUL_PEOPLE_BY_COURT_TYPE_GRAPH_DATA]: stats.get(SUCCESSFUL_PEOPLE_BY_COURT_TYPE_GRAPH_DATA),
+    [TOTAL_ACTIVE_PARTICIPANT_COUNT]: stats.get(TOTAL_ACTIVE_PARTICIPANT_COUNT),
     [TOTAL_DIVERSION_PLAN_COUNT]: stats.get(TOTAL_DIVERSION_PLAN_COUNT),
     [TOTAL_PARTICIPANT_COUNT]: stats.get(TOTAL_PARTICIPANT_COUNT),
-    [TOTAL_ACTIVE_PARTICIPANT_COUNT]: stats.get(TOTAL_ACTIVE_PARTICIPANT_COUNT),
-    [PEOPLE_BY_COURT_TYPE_GRAPH_DATA]: stats.get(PEOPLE_BY_COURT_TYPE_GRAPH_DATA),
+    [UNSUCCESSFUL_PEOPLE_BY_COURT_TYPE_GRAPH_DATA]: stats.get(UNSUCCESSFUL_PEOPLE_BY_COURT_TYPE_GRAPH_DATA),
     entitySetIds: app.getIn([ENTITY_SET_IDS_BY_ORG, selectedOrgId], Map()),
     requestStates: {
       [GET_STATS_DATA]: stats.getIn([ACTIONS, GET_STATS_DATA, REQUEST_STATE]),
