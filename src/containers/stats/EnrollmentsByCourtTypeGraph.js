@@ -9,7 +9,7 @@ import {
   YAxis,
 } from 'react-vis';
 
-const { PURPLES, WHITE } = Colors;
+const { BLUE_2, PURPLES, WHITE } = Colors;
 
 type Props = {
   enrollmentsGraphData :Object[];
@@ -44,12 +44,12 @@ const EnrollmentsByCourtTypeGraph = ({ enrollmentsGraphData, toolTipStyle } :Pro
       <YAxis />
       <VerticalBarSeries
           barWidth={0.55}
-          color={PURPLES[3]}
+          color={BLUE_2}
           data={enrollmentsGraphData}
           onValueMouseOver={(v :Object) => {
             if (v.x && v.y) {
               setEnrollmentHoverValues({
-                enrollmentBackground: PURPLES[2],
+                enrollmentBackground: PURPLES[1],
                 enrollmentHoveredBar: v,
                 enrollmentHoverText: `${v.y} enrollments`
               });
@@ -64,8 +64,7 @@ const EnrollmentsByCourtTypeGraph = ({ enrollmentsGraphData, toolTipStyle } :Pro
           }} />
       {
         enrollmentHoverValues.enrollmentHoveredBar && (
-          <Hint
-              value={enrollmentHoverValues.enrollmentHoveredBar}>
+          <Hint value={enrollmentHoverValues.enrollmentHoveredBar}>
             <div style={Object.assign(enrollmentToolTipStyleWithBackground)}>
               { enrollmentHoverValues.enrollmentHoverText }
             </div>
