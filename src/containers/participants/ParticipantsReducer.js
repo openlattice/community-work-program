@@ -25,7 +25,6 @@ const {
   COURT_TYPE_BY_PARTICIPANT,
   CURRENT_DIVERSION_PLANS_BY_PARTICIPANT,
   ENROLLMENT_BY_PARTICIPANT,
-  ENROLLMENTS_BY_COURT_TYPE_GRAPH_DATA,
   ERRORS,
   GET_COURT_TYPE,
   GET_DIVERSION_PLANS,
@@ -41,7 +40,6 @@ const {
   PARTICIPANT_PHOTOS_BY_PARTICIPANT_EKID,
   PARTICIPANTS,
   REQUEST_STATE,
-  TOTAL_DIVERSION_PLAN_COUNT,
 } = PEOPLE;
 
 const INITIAL_STATE :Map<*, *> = fromJS({
@@ -71,7 +69,6 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [COURT_TYPE_BY_PARTICIPANT]: Map(),
   [CURRENT_DIVERSION_PLANS_BY_PARTICIPANT]: Map(),
   [ENROLLMENT_BY_PARTICIPANT]: Map(),
-  [ENROLLMENTS_BY_COURT_TYPE_GRAPH_DATA]: Map(),
   [ERRORS]: {
     [ADD_PARTICIPANT]: Map(),
     [GET_ENROLLMENT_STATUSES]: Map(),
@@ -85,7 +82,6 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [NEW_PARTICIPANT_EKID]: '',
   [PARTICIPANT_PHOTOS_BY_PARTICIPANT_EKID]: Map(),
   [PARTICIPANTS]: List(),
-  [TOTAL_DIVERSION_PLAN_COUNT]: 0,
 });
 
 export default function participantsReducer(state :Map<*, *> = INITIAL_STATE, action :Object) :Map<*, *> {
@@ -180,10 +176,8 @@ export default function participantsReducer(state :Map<*, *> = INITIAL_STATE, ac
           .setIn([ACTIONS, GET_COURT_TYPE, REQUEST_STATE], RequestStates.PENDING),
         SUCCESS: () => {
           const { value } = seqAction;
-          const { courtTypeByParticipant, enrollmentsByCourtTypeGraphData } = value;
           return state
-            .set(COURT_TYPE_BY_PARTICIPANT, courtTypeByParticipant)
-            .set(ENROLLMENTS_BY_COURT_TYPE_GRAPH_DATA, enrollmentsByCourtTypeGraphData)
+            .set(COURT_TYPE_BY_PARTICIPANT, value)
             .setIn([ACTIONS, GET_COURT_TYPE, REQUEST_STATE], RequestStates.SUCCESS);
         },
         FAILURE: () => state
@@ -201,12 +195,8 @@ export default function participantsReducer(state :Map<*, *> = INITIAL_STATE, ac
         REQUEST: () => state
           .setIn([ACTIONS, GET_DIVERSION_PLANS, seqAction.id], fromJS(seqAction))
           .setIn([ACTIONS, GET_DIVERSION_PLANS, REQUEST_STATE], RequestStates.PENDING),
-        SUCCESS: () => {
-          const { value } = seqAction;
-          return state
-            .set(TOTAL_DIVERSION_PLAN_COUNT, value)
-            .setIn([ACTIONS, GET_DIVERSION_PLANS, REQUEST_STATE], RequestStates.SUCCESS);
-        },
+        SUCCESS: state
+          .setIn([ACTIONS, GET_DIVERSION_PLANS, REQUEST_STATE], RequestStates.SUCCESS),
         FAILURE: () => state
           .setIn([ACTIONS, GET_DIVERSION_PLANS, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state
