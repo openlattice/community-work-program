@@ -1,27 +1,23 @@
 // @flow
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import styled from 'styled-components';
 import { Map } from 'immutable';
 import {
   Card,
   CardHeader,
   CardSegment,
+  CardStack,
   Colors,
   Skeleton,
   Spinner,
 } from 'lattice-ui-kit';
-import {
-  Hint,
-  VerticalBarSeries,
-  XYPlot,
-  XAxis,
-  YAxis,
-} from 'react-vis';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { RequestStates } from 'redux-reqseq';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
+import EnrollmentsByCourtTypeGraph from './EnrollmentsByCourtTypeGraph';
+import PeopleByCourtTypeGraph from './PeopleByCourtTypeGraph';
 import { ContainerHeader, ContainerInnerWrapper, ContainerOuterWrapper } from '../../components/Layout';
 import { GET_STATS_DATA, getStatsData } from './StatsActions';
 import { formatEnrollmentsCourtTypeData, formatPeopleCourtTypeData } from './utils/StatsUtils';
@@ -35,7 +31,6 @@ import {
 const {
   BLACK,
   NEUTRALS,
-  PURPLES,
   WHITE
 } = Colors;
 const {
@@ -135,25 +130,6 @@ const StatsContainer = ({
   totalParticipantCount,
 } :Props) => {
 
-  const [enrollmentHoverValues, setEnrollmentHoverValues] = useState({
-    enrollmentBackground: WHITE,
-    enrollmentHoveredBar: {},
-    enrollmentHoverText: ''
-  });
-  const enrollmentToolTipStyleWithBackground :Object = {
-    background: enrollmentHoverValues.enrollmentBackground,
-    ...toolTipStyle
-  };
-  const [peopleHoverValues, setPeopleHoverValues] = useState({
-    peopleBackground: WHITE,
-    peopleHoveredBar: {},
-    peopleHoverText: ''
-  });
-  const peopleToolTipStyleWithBackground :Object = {
-    background: peopleHoverValues.peopleBackground,
-    ...toolTipStyle
-  };
-
   useEffect(() => {
     if (!entitySetIds.isEmpty()) actions.getStatsData();
   }, [actions, entitySetIds]);
@@ -198,93 +174,40 @@ const StatsContainer = ({
               )
           }
         </StatsWrapper>
-        <Card>
-          <GraphHeader>Number of Enrollments, Active Participants by Court Type</GraphHeader>
-          <CardSegment padding="30px" vertical>
-            {
-              dataIsLoading
-                ? (
-                  <Spinner size="2x" />
-                )
-                : (
-                  <XYPlot
-                      xType="ordinal"
-                      height={190}
-                      margin={{
-                        left: 40,
-                        right: 10,
-                        top: 10,
-                        bottom: 40
-                      }}
-                      style={{ fontFamily: 'Open Sans, sans-serif', fontSize: '12px' }}
-                      width={1000}>
-                    <XAxis />
-                    <YAxis />
-                    <VerticalBarSeries
-                        barWidth={0.55}
-                        color={PURPLES[1]}
-                        data={peopleGraphData}
-                        onValueMouseOver={(v :Object) => {
-                          if (v.x && v.y) {
-                            setPeopleHoverValues({
-                              peopleBackground: PURPLES[0],
-                              peopleHoveredBar: v,
-                              peopleHoverText: `${v.y} active participants`
-                            });
-                          }
-                        }}
-                        onValueMouseOut={() => {
-                          setPeopleHoverValues({
-                            peopleBackground: WHITE,
-                            peopleHoveredBar: {},
-                            peopleHoverText: ''
-                          });
-                        }} />
-                    <VerticalBarSeries
-                        barWidth={0.55}
-                        color={PURPLES[3]}
-                        data={enrollmentsGraphData}
-                        onValueMouseOver={(v :Object) => {
-                          if (v.x && v.y) {
-                            setEnrollmentHoverValues({
-                              enrollmentBackground: PURPLES[2],
-                              enrollmentHoveredBar: v,
-                              enrollmentHoverText: `${v.y} enrollments`
-                            });
-                          }
-                        }}
-                        onValueMouseOut={() => {
-                          setEnrollmentHoverValues({
-                            enrollmentBackground: WHITE,
-                            enrollmentHoveredBar: {},
-                            enrollmentHoverText: ''
-                          });
-                        }} />
-                    {
-                      enrollmentHoverValues.enrollmentHoveredBar && (
-                        <Hint
-                            value={enrollmentHoverValues.enrollmentHoveredBar}>
-                          <div style={Object.assign(enrollmentToolTipStyleWithBackground)}>
-                            { enrollmentHoverValues.enrollmentHoverText }
-                          </div>
-                        </Hint>
-                      )
-                    }
-                    {
-                      peopleHoverValues.peopleHoveredBar && (
-                        <Hint
-                            value={peopleHoverValues.peopleHoveredBar}>
-                          <div style={Object.assign(peopleToolTipStyleWithBackground)}>
-                            { peopleHoverValues.peopleHoverText }
-                          </div>
-                        </Hint>
-                      )
-                    }
-                  </XYPlot>
-                )
-            }
-          </CardSegment>
-        </Card>
+        <CardStack>
+          <Card>
+            <GraphHeader>Number of Enrollments by Court Type</GraphHeader>
+            <CardSegment padding="30px" vertical>
+              {
+                dataIsLoading
+                  ? (
+                    <Spinner size="2x" />
+                  )
+                  : (
+                    <EnrollmentsByCourtTypeGraph
+                        enrollmentsGraphData={enrollmentsGraphData}
+                        toolTipStyle={toolTipStyle} />
+                  )
+              }
+            </CardSegment>
+          </Card>
+          <Card>
+            <GraphHeader>Number of Participants by Court Type</GraphHeader>
+            <CardSegment padding="30px" vertical>
+              {
+                dataIsLoading
+                  ? (
+                    <Spinner size="2x" />
+                  )
+                  : (
+                    <PeopleByCourtTypeGraph
+                        peopleGraphData={peopleGraphData}
+                        toolTipStyle={toolTipStyle} />
+                  )
+              }
+            </CardSegment>
+          </Card>
+        </CardStack>
       </ContainerInnerWrapper>
     </ContainerOuterWrapper>
   );
