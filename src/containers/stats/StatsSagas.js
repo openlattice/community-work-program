@@ -69,7 +69,9 @@ function* getStatsDataWorker(action :SequenceAction) :Generator<*, *, *> {
   const { id } = action;
   let response :Object = {};
   let enrollmentsByCourtTypeGraphData :Map = fromJS(courtTypeCountObj);
-  let peopleByCourtTypeGraphData :Map = fromJS(courtTypeCountObj);
+  let activePeopleByCourtTypeGraphData :Map = fromJS(courtTypeCountObj);
+  let successfulPeopleByCourtTypeGraphData :Map = fromJS(courtTypeCountObj);
+  let unsuccessfulPeopleByCourtTypeGraphData :Map = fromJS(courtTypeCountObj);
   let totalParticipantCount :number = 0;
   let totalActiveParticipantCount :number = 0;
 
@@ -140,21 +142,33 @@ function* getStatsDataWorker(action :SequenceAction) :Generator<*, *, *> {
       }
 
       courtTypeAndDateByPersonEKID.forEach(({ courtType, status } :Object) => {
-        const personCountForCourtType :number = peopleByCourtTypeGraphData.get(courtType, 0);
         if (ACTIVE_STATUSES.includes(status)) {
-          peopleByCourtTypeGraphData = peopleByCourtTypeGraphData.set(courtType, personCountForCourtType + 1);
+          const activePersonCount :number = activePeopleByCourtTypeGraphData.get(courtType, 0);
+          activePeopleByCourtTypeGraphData = activePeopleByCourtTypeGraphData.set(courtType, activePersonCount + 1);
           totalActiveParticipantCount += 1;
+        }
+        if (status === ENROLLMENT_STATUSES.COMPLETED || status === ENROLLMENT_STATUSES.SUCCESSFUL) {
+          const successfulPersonCount :number = successfulPeopleByCourtTypeGraphData.get(courtType, 0);
+          successfulPeopleByCourtTypeGraphData = successfulPeopleByCourtTypeGraphData
+            .set(courtType, successfulPersonCount + 1);
+        }
+        if (status === ENROLLMENT_STATUSES.REMOVED_NONCOMPLIANT || status === ENROLLMENT_STATUSES.UNSUCCESSFUL) {
+          const unsuccessfulPersonCount :number = unsuccessfulPeopleByCourtTypeGraphData.get(courtType, 0);
+          unsuccessfulPeopleByCourtTypeGraphData = unsuccessfulPeopleByCourtTypeGraphData
+            .set(courtType, unsuccessfulPersonCount + 1);
         }
         totalParticipantCount += 1;
       });
     }
 
     yield put(getStatsData.success(id, {
+      activePeopleByCourtTypeGraphData,
       enrollmentsByCourtTypeGraphData,
-      peopleByCourtTypeGraphData,
+      successfulPeopleByCourtTypeGraphData,
       totalActiveParticipantCount,
       totalDiversionPlanCount,
       totalParticipantCount,
+      unsuccessfulPeopleByCourtTypeGraphData,
     }));
   }
   catch (error) {

@@ -8,11 +8,13 @@ import { SHARED, STATS } from '../../utils/constants/ReduxStateConsts';
 
 const { ACTIONS, REQUEST_STATE } = SHARED;
 const {
+  ACTIVE_PEOPLE_BY_COURT_TYPE_GRAPH_DATA,
   ENROLLMENTS_BY_COURT_TYPE_GRAPH_DATA,
-  PEOPLE_BY_COURT_TYPE_GRAPH_DATA,
+  SUCCESSFUL_PEOPLE_BY_COURT_TYPE_GRAPH_DATA,
   TOTAL_ACTIVE_PARTICIPANT_COUNT,
   TOTAL_DIVERSION_PLAN_COUNT,
   TOTAL_PARTICIPANT_COUNT,
+  UNSUCCESSFUL_PEOPLE_BY_COURT_TYPE_GRAPH_DATA,
 } = STATS;
 
 const INITIAL_STATE :Map<*, *> = fromJS({
@@ -22,10 +24,12 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     },
   },
   [ENROLLMENTS_BY_COURT_TYPE_GRAPH_DATA]: Map(),
-  [PEOPLE_BY_COURT_TYPE_GRAPH_DATA]: Map(),
+  [ACTIVE_PEOPLE_BY_COURT_TYPE_GRAPH_DATA]: Map(),
+  [SUCCESSFUL_PEOPLE_BY_COURT_TYPE_GRAPH_DATA]: Map(),
   [TOTAL_ACTIVE_PARTICIPANT_COUNT]: 0,
   [TOTAL_DIVERSION_PLAN_COUNT]: 0,
   [TOTAL_PARTICIPANT_COUNT]: 0,
+  [UNSUCCESSFUL_PEOPLE_BY_COURT_TYPE_GRAPH_DATA]: Map(),
 });
 
 export default function statsReducer(state :Map<*, *> = INITIAL_STATE, action :Object) :Map<*, *> {
@@ -43,15 +47,19 @@ export default function statsReducer(state :Map<*, *> = INITIAL_STATE, action :O
           const seqAction :SequenceAction = (action :any);
           const { value } = seqAction;
           const {
+            activePeopleByCourtTypeGraphData,
             enrollmentsByCourtTypeGraphData,
-            peopleByCourtTypeGraphData,
+            successfulPeopleByCourtTypeGraphData,
             totalActiveParticipantCount,
             totalDiversionPlanCount,
             totalParticipantCount,
+            unsuccessfulPeopleByCourtTypeGraphData,
           } = value;
           return state
             .set(ENROLLMENTS_BY_COURT_TYPE_GRAPH_DATA, enrollmentsByCourtTypeGraphData)
-            .set(PEOPLE_BY_COURT_TYPE_GRAPH_DATA, peopleByCourtTypeGraphData)
+            .set(ACTIVE_PEOPLE_BY_COURT_TYPE_GRAPH_DATA, activePeopleByCourtTypeGraphData)
+            .set(SUCCESSFUL_PEOPLE_BY_COURT_TYPE_GRAPH_DATA, successfulPeopleByCourtTypeGraphData)
+            .set(UNSUCCESSFUL_PEOPLE_BY_COURT_TYPE_GRAPH_DATA, unsuccessfulPeopleByCourtTypeGraphData)
             .set(TOTAL_ACTIVE_PARTICIPANT_COUNT, totalActiveParticipantCount)
             .set(TOTAL_DIVERSION_PLAN_COUNT, totalDiversionPlanCount)
             .set(TOTAL_PARTICIPANT_COUNT, totalParticipantCount)

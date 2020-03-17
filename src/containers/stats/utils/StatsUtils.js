@@ -13,9 +13,9 @@ const formatEnrollmentsCourtTypeData = (enrollmentsByCourtTypeGraphData :Map) :O
 
 const formatPeopleCourtTypeData = (peopleByCourtTypeGraphData :Map) :Object[] => {
   const graphData :Object[] = [];
-  peopleByCourtTypeGraphData.forEach((numberOfActiveParticipants :number, courtType :string) => {
-    if (isDefined(numberOfActiveParticipants) && isDefined(courtType)) {
-      graphData.push({ y: numberOfActiveParticipants, x: courtType });
+  peopleByCourtTypeGraphData.forEach((numberOfParticipants :number, courtType :string) => {
+    if (isDefined(numberOfParticipants) && isDefined(courtType)) {
+      graphData.push({ y: numberOfParticipants, x: courtType });
     }
   });
   return graphData;

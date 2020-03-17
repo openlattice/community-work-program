@@ -181,11 +181,13 @@ export const PRINT_PARTICIPANT = {
 
 /* Stats */
 export const STATS = {
+  ACTIVE_PEOPLE_BY_COURT_TYPE_GRAPH_DATA: 'activePeopleByCourtTypeGraphData',
   ENROLLMENTS_BY_COURT_TYPE_GRAPH_DATA: 'enrollmentsByCourtTypeGraphData',
-  PEOPLE_BY_COURT_TYPE_GRAPH_DATA: 'peopleByCourtTypeGraphData',
+  SUCCESSFUL_PEOPLE_BY_COURT_TYPE_GRAPH_DATA: 'successfulPeopleByCourtTypeGraphData',
   TOTAL_ACTIVE_PARTICIPANT_COUNT: 'totalActiveParticipantCount',
   TOTAL_DIVERSION_PLAN_COUNT: 'totalDiversionPlanCount',
   TOTAL_PARTICIPANT_COUNT: 'totalParticipantCount',
+  UNSUCCESSFUL_PEOPLE_BY_COURT_TYPE_GRAPH_DATA: 'unsuccessfulPeopleByCourtTypeGraphData',
 };
 
 /* Work Schedule */
