@@ -23,7 +23,7 @@ import type { RequestSequence, RequestState } from 'redux-reqseq';
 
 import { ContainerHeader, ContainerInnerWrapper, ContainerOuterWrapper } from '../../components/Layout';
 import { GET_STATS_DATA, getStatsData } from './StatsActions';
-import { formatCourtTypeGraphData } from './utils/StatsUtils';
+import { formatEnrollmentsCourtTypeData, formatPeopleCourtTypeData } from './utils/StatsUtils';
 import {
   APP,
   SHARED,
@@ -33,7 +33,6 @@ import {
 
 const {
   BLACK,
-  BLUE_2,
   NEUTRALS,
   PURPLES,
   WHITE
@@ -96,7 +95,6 @@ const StatsBoxSkeleton = () => (
 
 const toolTipStyle :Object = {
   alignItems: 'center',
-  // background: PURPLES[1],
   borderRadius: '3px',
   color: WHITE,
   display: 'flex',
@@ -131,16 +129,31 @@ const StatsContainer = ({
   totalParticipantCount,
 } :Props) => {
 
-  const [hoveredBar, setHoveredBar] = useState({});
-  const [hoverText, setHoverText] = useState('');
-  const [background, setBackgroundColor] = useState(WHITE);
-  const toolTipStyleWithBackground :Object = { background, ...toolTipStyle };
+  const [enrollmentHoverValues, setEnrollmentHoverValues] = useState({
+    enrollmentBackground: WHITE,
+    enrollmentHoveredBar: {},
+    enrollmentHoverText: ''
+  });
+  const enrollmentToolTipStyleWithBackground :Object = {
+    background: enrollmentHoverValues.enrollmentBackground,
+    ...toolTipStyle
+  };
+  const [peopleHoverValues, setPeopleHoverValues] = useState({
+    peopleBackground: WHITE,
+    peopleHoveredBar: {},
+    peopleHoverText: ''
+  });
+  const peopleToolTipStyleWithBackground :Object = {
+    background: peopleHoverValues.peopleBackground,
+    ...toolTipStyle
+  };
 
   useEffect(() => {
     if (!entitySetIds.isEmpty()) actions.getStatsData();
   }, [actions, entitySetIds]);
   const dataIsLoading :boolean = requestStates[GET_STATS_DATA] === RequestStates.PENDING;
-  const graphData :Object[] = formatCourtTypeGraphData(enrollmentsByCourtTypeGraphData);
+  const enrollmentsGraphData :Object[] = formatEnrollmentsCourtTypeData(enrollmentsByCourtTypeGraphData);
+  const peopleGraphData :Object[] = formatPeopleCourtTypeData(peopleByCourtTypeGraphData);
   return (
     <ContainerOuterWrapper>
       <ContainerInnerWrapper>
@@ -199,28 +212,64 @@ const StatsContainer = ({
                       style={{ fontFamily: 'Open Sans, sans-serif', fontSize: '12px' }}
                       width={1000}>
                     <XAxis />
-                    <YAxis title="Number of enrollments" />
+                    <YAxis />
                     <VerticalBarSeries
                         barWidth={0.55}
-                        color={BLUE_2}
-                        data={graphData}
+                        color={PURPLES[1]}
+                        data={peopleGraphData}
                         onValueMouseOver={(v :Object) => {
                           if (v.x && v.y) {
-                            setHoveredBar(v);
-                            setHoverText(`${v.y} enrollments`);
-                            setBackgroundColor(PURPLES[1]);
+                            setPeopleHoverValues({
+                              peopleBackground: PURPLES[0],
+                              peopleHoveredBar: v,
+                              peopleHoverText: `${v.y} active participants`
+                            });
                           }
                         }}
                         onValueMouseOut={() => {
-                          setHoveredBar({});
-                          setHoverText('');
-                          setBackgroundColor(WHITE);
+                          setPeopleHoverValues({
+                            peopleBackground: WHITE,
+                            peopleHoveredBar: {},
+                            peopleHoverText: ''
+                          });
+                        }} />
+                    <VerticalBarSeries
+                        barWidth={0.55}
+                        color={PURPLES[3]}
+                        data={enrollmentsGraphData}
+                        onValueMouseOver={(v :Object) => {
+                          if (v.x && v.y) {
+                            setEnrollmentHoverValues({
+                              enrollmentBackground: PURPLES[2],
+                              enrollmentHoveredBar: v,
+                              enrollmentHoverText: `${v.y} enrollments`
+                            });
+                          }
+                        }}
+                        onValueMouseOut={() => {
+                          setEnrollmentHoverValues({
+                            enrollmentBackground: WHITE,
+                            enrollmentHoveredBar: {},
+                            enrollmentHoverText: ''
+                          });
                         }} />
                     {
-                      hoveredBar && (
+                      enrollmentHoverValues.enrollmentHoveredBar && (
                         <Hint
-                            value={hoveredBar}>
-                          <div style={Object.assign(toolTipStyleWithBackground)}>{ hoverText }</div>
+                            value={enrollmentHoverValues.enrollmentHoveredBar}>
+                          <div style={Object.assign(enrollmentToolTipStyleWithBackground)}>
+                            { enrollmentHoverValues.enrollmentHoverText }
+                          </div>
+                        </Hint>
+                      )
+                    }
+                    {
+                      peopleHoverValues.peopleHoveredBar && (
+                        <Hint
+                            value={peopleHoverValues.peopleHoveredBar}>
+                          <div style={Object.assign(peopleToolTipStyleWithBackground)}>
+                            { peopleHoverValues.peopleHoverText }
+                          </div>
                         </Hint>
                       )
                     }
