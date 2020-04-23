@@ -1793,7 +1793,7 @@ function* getPersonPhotoWatcher() :Generator<*, *, *> {
 function* getInfoForEditCaseWorker(action :SequenceAction) :Generator<*, *, *> {
 
   const { id, value } = action;
-  if (value === null || value === undefined) {
+  if (!isDefined(value)) {
     yield put(getInfoForEditCase.failure(id, ERR_ACTION_VALUE_NOT_DEFINED));
     return;
   }
