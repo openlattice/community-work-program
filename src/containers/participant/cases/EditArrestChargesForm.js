@@ -24,9 +24,7 @@ import AddToAvailableArrestChargesModal from '../charges/AddToAvailableArrestCha
 import { addArrestCharges, removeArrestCharge } from '../charges/ChargesActions';
 import { arrestChargeSchema, arrestChargeUiSchema } from './schemas/EditCaseInfoSchemas';
 import { hydrateArrestChargeSchema } from './utils/EditCaseInfoUtils';
-import { getCombinedDateTime } from '../../../utils/ScheduleUtils';
 import { getEntityKeyId, getEntityProperties } from '../../../utils/DataUtils';
-import { isDefined } from '../../../utils/LangUtils';
 import {
   formatExistingChargeDataAndAssociation,
   formatNewArrestChargeDataAndAssociations,
@@ -45,13 +43,10 @@ const {
   ARREST_CHARGE_LIST,
   MANUAL_ARREST_CASES,
   MANUAL_ARREST_CHARGES,
-  MANUAL_CHARGED_WITH,
   PEOPLE,
-  REGISTERED_FOR,
-  RELATED_TO,
   DIVERSION_PLAN,
 } = APP_TYPE_FQNS;
-const { ARREST_DATETIME, DATETIME_COMPLETED, ENTITY_KEY_ID } = PROPERTY_TYPE_FQNS;
+const { DATETIME_COMPLETED, ENTITY_KEY_ID } = PROPERTY_TYPE_FQNS;
 
 const getDateChargedFromChargeEvent = (chargeEvent :Map) :string => {
   const { [DATETIME_COMPLETED]: dateTimeCharged } = getEntityProperties(chargeEvent, [DATETIME_COMPLETED]);
