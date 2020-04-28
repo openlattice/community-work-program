@@ -512,54 +512,53 @@ function* getArrestChargesLinkedToCWPWorker(action :SequenceAction) :Generator<*
       });
 
       const psaArrestChargeESID :UUID = getEntitySetIdFromApp(app, MANUAL_ARREST_CHARGES);
-      const cwpArrestChargeESID :UUID = getEntitySetIdFromApp(app, ARREST_CHARGE_LIST);
+      const chargeEventESID :UUID = getEntitySetIdFromApp(app, CHARGE_EVENT);
 
       const arrestChargeSearchFilter = {
         entityKeyIds: arrestCaseEKIDs,
         destinationEntitySetIds: [],
-        sourceEntitySetIds: [psaArrestChargeESID, cwpArrestChargeESID],
+        sourceEntitySetIds: [psaArrestChargeESID, chargeEventESID],
       };
       response = yield call(
         searchEntityNeighborsWithFilterWorker,
         searchEntityNeighborsWithFilter({ entitySetId: arrestCaseESID, filter: arrestChargeSearchFilter })
       );
-      if (response.error) {
-        throw response.error;
-      }
+      if (response.error) throw response.error;
       const arrestChargeNeighbors :Map = fromJS(response.data);
+
       if (!arrestChargeNeighbors.isEmpty()) {
         let psaArrestChargesByEKID :Map = Map();
-        let cwpArrestChargesByEKID :Map = Map();
+        let cwpChargeEventsByEKID :Map = Map();
         const psaArrestChargeEKIDs :UUID[] = [];
-        const cwpArrestChargeEKIDs :UUID[] = [];
+        const cwpChargeEventEKIDs :UUID[] = [];
 
         arrestChargeNeighbors.forEach((neighborList :List, arrestCaseEKID :UUID) => neighborList
           .forEach((neighbor :Map) => {
             const neighborESID :UUID = getNeighborESID(neighbor);
             const entity :Map = getNeighborDetails(neighbor);
-            const chargeEKID :UUID = getEntityKeyId(entity);
+            const chargeOrChargeEventEKID :UUID = getEntityKeyId(entity);
             if (neighborESID === psaArrestChargeESID) {
-              psaArrestChargesByEKID = psaArrestChargesByEKID.set(chargeEKID, entity);
-              psaArrestChargeEKIDs.push(chargeEKID);
-              psaArrestCaseByArrestCharge = psaArrestCaseByArrestCharge.set(chargeEKID, arrestCaseEKID);
+              psaArrestChargesByEKID = psaArrestChargesByEKID.set(chargeOrChargeEventEKID, entity);
+              psaArrestChargeEKIDs.push(chargeOrChargeEventEKID);
+              psaArrestCaseByArrestCharge = psaArrestCaseByArrestCharge.set(chargeOrChargeEventEKID, arrestCaseEKID);
             }
-            if (neighborESID === cwpArrestChargeESID) {
-              cwpArrestChargesByEKID = cwpArrestChargesByEKID.set(chargeEKID, entity);
-              cwpArrestChargeEKIDs.push(chargeEKID);
-              cwpArrestCaseByArrestCharge = cwpArrestCaseByArrestCharge.set(chargeEKID, arrestCaseEKID);
+            if (neighborESID === chargeEventESID) {
+              cwpChargeEventsByEKID = cwpChargeEventsByEKID.set(chargeOrChargeEventEKID, entity);
+              cwpChargeEventEKIDs.push(chargeOrChargeEventEKID);
+              cwpArrestCaseByArrestCharge = cwpArrestCaseByArrestCharge.set(chargeOrChargeEventEKID, arrestCaseEKID);
             }
           }));
 
-        const chargeEventESID :UUID = getEntitySetIdFromApp(app, CHARGE_EVENT);
+        const cwpArrestChargeESID :UUID = getEntitySetIdFromApp(app, ARREST_CHARGE_LIST);
         const psaChargeEventSearchFilter = {
           entityKeyIds: psaArrestChargeEKIDs,
           destinationEntitySetIds: [],
           sourceEntitySetIds: [chargeEventESID],
         };
-        const cwpChargeEventSearchFilter = {
-          entityKeyIds: cwpArrestChargeEKIDs,
-          destinationEntitySetIds: [],
-          sourceEntitySetIds: [chargeEventESID],
+        const cwpChargeSearchFilter = {
+          entityKeyIds: cwpChargeEventEKIDs,
+          destinationEntitySetIds: [cwpArrestChargeESID],
+          sourceEntitySetIds: [],
         };
         let psaChargeEvents :Object = { data: {} };
         if (psaArrestChargeEKIDs.length) {
@@ -568,21 +567,20 @@ function* getArrestChargesLinkedToCWPWorker(action :SequenceAction) :Generator<*
             searchEntityNeighborsWithFilter({ entitySetId: psaArrestChargeESID, filter: psaChargeEventSearchFilter })
           );
         }
-        let cwpChargeEvents :Object = { data: {} };
-        if (cwpArrestChargeEKIDs.length) {
-          cwpChargeEvents = yield call(
+        let cwpArrestCharges :Object = { data: {} };
+        if (cwpChargeEventEKIDs.length) {
+          cwpArrestCharges = yield call(
             searchEntityNeighborsWithFilterWorker,
-            searchEntityNeighborsWithFilter({ entitySetId: cwpArrestChargeESID, filter: cwpChargeEventSearchFilter })
+            searchEntityNeighborsWithFilter({
+              entitySetId: chargeEventESID,
+              filter: cwpChargeSearchFilter
+            })
           );
         }
-        if (psaChargeEvents.error) {
-          throw psaChargeEvents.error;
-        }
-        if (cwpChargeEvents.error) {
-          throw cwpChargeEvents.error;
-        }
+        if (psaChargeEvents.error) throw psaChargeEvents.error;
+        if (cwpArrestCharges.error) throw cwpArrestCharges.error;
         const psaChargeEventNeighbors :Map = fromJS(psaChargeEvents.data);
-        const cwpChargeEventNeighbors :Map = fromJS(cwpChargeEvents.data);
+        const cwpArrestChargeNeighbors :Map = fromJS(cwpArrestCharges.data);
 
         if (!psaChargeEventNeighbors.isEmpty()) {
           psaChargeEventNeighbors.forEach((neighborList :List, chargeEKID :UUID) => neighborList
@@ -595,14 +593,18 @@ function* getArrestChargesLinkedToCWPWorker(action :SequenceAction) :Generator<*
               arrestChargeMapsCreatedInPSA = arrestChargeMapsCreatedInPSA.push(chargeMap);
             }));
         }
-        if (!cwpChargeEventNeighbors.isEmpty()) {
-          cwpChargeEventNeighbors.forEach((neighborList :List, chargeEKID :UUID) => neighborList
+        if (!cwpArrestChargeNeighbors.isEmpty()) {
+          cwpArrestChargeNeighbors.forEach((neighborList :List, chargeEventEKID :UUID) => neighborList
             .forEach((neighbor :Map) => {
-              const chargeEvent :Map = getNeighborDetails(neighbor);
+              const arrestCharge :Map = getNeighborDetails(neighbor);
               let chargeMap :Map = Map();
-              chargeMap = chargeMap.set(ARREST_CHARGE_LIST, cwpArrestChargesByEKID.get(chargeEKID, Map()));
-              chargeMap = chargeMap.set(CHARGE_EVENT, chargeEvent);
+              chargeMap = chargeMap.set(CHARGE_EVENT, cwpChargeEventsByEKID.get(chargeEventEKID, Map()));
+              chargeMap = chargeMap.set(ARREST_CHARGE_LIST, arrestCharge);
               arrestChargeMapsCreatedInCWP = arrestChargeMapsCreatedInCWP.push(chargeMap);
+              const arrestCaseEKID :UUID = cwpArrestCaseByArrestCharge.get(chargeEventEKID);
+              cwpArrestCaseByArrestCharge = cwpArrestCaseByArrestCharge
+                .set(getEntityKeyId(arrestCharge), arrestCaseEKID);
+              cwpArrestCaseByArrestCharge = cwpArrestCaseByArrestCharge.delete(chargeEventEKID);
             }));
         }
       }
