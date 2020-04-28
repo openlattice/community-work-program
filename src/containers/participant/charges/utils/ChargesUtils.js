@@ -70,14 +70,6 @@ const formatNewArrestChargeDataAndAssociations = (
       arrestChargeEKID,
       ARREST_CHARGE_LIST
     ]);
-
-    newChargeAssociations.push([
-      APPEARS_IN,
-      index + numberOfExistingChargesAdded,
-      CHARGE_EVENT,
-      index,
-      MANUAL_ARREST_CASES
-    ]);
     newChargeAssociations.push([APPEARS_IN, arrestChargeEKID, ARREST_CHARGE_LIST, index, MANUAL_ARREST_CASES]);
     newChargeAssociations.push([APPEARS_IN_ARREST, personIndexOrEKID, PEOPLE, index, MANUAL_ARREST_CASES]);
     newChargeAssociations.push([MANUAL_CHARGED_WITH, personIndexOrEKID, PEOPLE, arrestChargeEKID, ARREST_CHARGE_LIST]);
@@ -89,13 +81,6 @@ const formatNewArrestChargeDataAndAssociations = (
       CHARGE_EVENT
     ]);
     newChargeAssociations.push([RELATED_TO, diversionPlanIndexOrEKID, DIVERSION_PLAN, index, MANUAL_ARREST_CASES]);
-    newChargeAssociations.push([
-      RELATED_TO,
-      diversionPlanIndexOrEKID,
-      DIVERSION_PLAN,
-      index + numberOfExistingChargesAdded,
-      CHARGE_EVENT
-    ]);
   });
 
   return { newChargeEntities, newChargeAssociations };
