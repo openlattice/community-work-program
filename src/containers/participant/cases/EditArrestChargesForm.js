@@ -87,7 +87,7 @@ type State = {
   isAvailableChargesModalVisible :boolean;
 };
 
-class EditCourtChargesForm extends Component<Props, State> {
+class EditArrestChargesForm extends Component<Props, State> {
 
   constructor(props :Props) {
     super(props);
@@ -221,10 +221,8 @@ class EditCourtChargesForm extends Component<Props, State> {
       });
       mappers.set(INDEX_MAPPERS, indexMappers);
     });
-
     const entityData :{} = processEntityData(entities, entitySetIds, propertyTypeIds, entityMappers);
     const associationEntityData :{} = processAssociationEntityData(fromJS(associations), entitySetIds, propertyTypeIds);
-
     actions.addArrestCharges({ associationEntityData, entityData });
   }
 
@@ -358,4 +356,4 @@ const mapDispatchToProps = (dispatch) => ({
 });
 
 // $FlowFixMe
-export default connect(null, mapDispatchToProps)(EditCourtChargesForm);
+export default connect(null, mapDispatchToProps)(EditArrestChargesForm);
