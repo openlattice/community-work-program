@@ -18,7 +18,7 @@ import type { RequestSequence, RequestState } from 'redux-reqseq';
 
 import EnrollmentsByCourtTypeGraph from './EnrollmentsByCourtTypeGraph';
 import PeopleByCourtTypeGraph from './PeopleByCourtTypeGraph';
-import { ContainerHeader, ContainerInnerWrapper, ContainerOuterWrapper } from '../../components/Layout';
+import { ContainerInnerWrapper, ContainerOuterWrapper } from '../../components/Layout';
 import { GET_STATS_DATA, getStatsData } from './StatsActions';
 import { formatEnrollmentsCourtTypeData, formatPeopleCourtTypeData } from './utils/StatsUtils';
 import {
@@ -44,11 +44,6 @@ const {
 } = STATS;
 const { ENTITY_SET_IDS_BY_ORG, SELECTED_ORG_ID } = APP;
 const { ACTIONS, REQUEST_STATE } = SHARED;
-
-const HeaderWrapper = styled.div`
-  display: flex;
-  width: 100%;
-`;
 
 const StatsWrapper = styled.div`
   display: flex;
@@ -147,9 +142,6 @@ const StatsContainer = ({
   return (
     <ContainerOuterWrapper>
       <ContainerInnerWrapper>
-        <HeaderWrapper>
-          <ContainerHeader>Statistics on Community Work Program</ContainerHeader>
-        </HeaderWrapper>
         <StatsWrapper>
           {
             dataIsLoading
