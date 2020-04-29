@@ -1,26 +1,23 @@
 // @flow
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { Map } from 'immutable';
 import {
-  Card,
-  CardHeader,
-  CardSegment,
-  CardStack,
+  Button,
   Colors,
   Skeleton,
-  Spinner,
 } from 'lattice-ui-kit';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { RequestStates } from 'redux-reqseq';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
-import EnrollmentsByCourtTypeGraph from './EnrollmentsByCourtTypeGraph';
-import PeopleByCourtTypeGraph from './PeopleByCourtTypeGraph';
+import CourtTypeGraphs from './courttype/CourtTypeGraphs';
+import DemographicsGraphs from './demographics/DemographicsGraphs';
+import WorkSiteGraphs from './worksite/WorkSiteGraphs';
+import LogoLoader from '../../components/LogoLoader';
 import { ContainerInnerWrapper, ContainerOuterWrapper } from '../../components/Layout';
 import { GET_STATS_DATA, getStatsData } from './StatsActions';
-import { formatEnrollmentsCourtTypeData, formatPeopleCourtTypeData } from './utils/StatsUtils';
 import {
   APP,
   SHARED,
