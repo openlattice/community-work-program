@@ -28,6 +28,7 @@ import {
 const {
   BLACK,
   NEUTRALS,
+  PURPLES,
   WHITE
 } = Colors;
 const {
@@ -76,6 +77,33 @@ const Category = styled.div`
   font-weight: 600;
 `;
 
+const ToolbarWrapper = styled.div`
+  display: flex;
+  margin: 30px 0;
+`;
+
+const ToolbarButton = styled(Button)`
+  background-color: ${(props) => (props.selected ? PURPLES[1] : NEUTRALS[7])};
+  border-bottom: 1px solid ${NEUTRALS[4]};
+  border-radius: 0;
+  border-right: 1px solid ${NEUTRALS[4]};
+  border-top: 1px solid ${NEUTRALS[4]};
+  color: ${(props) => (props.selected ? WHITE : NEUTRALS[0])};
+  width: 150px;
+
+  &:hover {
+    background-color: ${(props) => (props.selected ? PURPLES[1] : NEUTRALS[5])};
+    border-color: ${(props) => (props.selected ? PURPLES[1] : NEUTRALS[4])};
+  }
+
+  &:first-child {
+    border-radius: 4px 0 0 4px;
+    border-left: 1px solid ${NEUTRALS[4]};
+  }
+
+  &:last-child {
+    border-radius: 0 4px 4px 0;
+  }
 `;
 
 const StatsBoxSkeleton = () => (
@@ -85,13 +113,10 @@ const StatsBoxSkeleton = () => (
   </>
 );
 
-const toolTipStyle :Object = {
-  borderRadius: '3px',
-  color: WHITE,
-  display: 'flex',
-  fontFamily: 'Open Sans, sans-serif',
-  fontSize: '13px',
-  padding: '5px 10px',
+const SCREEN_VIEWS = {
+  COURT_TYPE: 'Court Type',
+  WORK_SITES: 'Work Sites',
+  DEMOGRAPHICS: 'Demographics'
 };
 
 type Props = {
@@ -129,6 +154,36 @@ const StatsContainer = ({
   useEffect(() => {
     if (!entitySetIds.isEmpty()) actions.getStatsData();
   }, [actions, entitySetIds]);
+
+  let screenViewComponent;
+  switch (screenViewSelected) {
+    case SCREEN_VIEWS.COURT_TYPE:
+      screenViewComponent = (
+        <CourtTypeGraphs
+            activePeopleByCourtTypeGraphData={activePeopleByCourtTypeGraphData}
+            enrollmentsByCourtTypeGraphData={enrollmentsByCourtTypeGraphData}
+            dataIsLoading={dataIsLoading}
+            successfulPeopleByCourtTypeGraphData={successfulPeopleByCourtTypeGraphData}
+            unsuccessfulPeopleByCourtTypeGraphData={unsuccessfulPeopleByCourtTypeGraphData} />
+      );
+      break;
+
+    case SCREEN_VIEWS.WORK_SITES:
+      screenViewComponent = <WorkSiteGraphs />;
+      break;
+
+    case SCREEN_VIEWS.DEMOGRAPHICS:
+    default:
+      screenViewComponent = <DemographicsGraphs />;
+      break;
+  }
+
+  const buttonOptions :Object[] = Object.values(SCREEN_VIEWS).map((value) => ({
+    label: value,
+    value,
+    onClick: () => toggleScreenView(value)
+  }));
+
   return (
     <ContainerOuterWrapper>
       <ContainerInnerWrapper>
@@ -164,6 +219,17 @@ const StatsContainer = ({
               )
           }
         </StatsWrapper>
+        <ToolbarWrapper>
+          { buttonOptions.map((option :Object) => (
+            <ToolbarButton
+                key={option.value}
+                onClick={option.onClick}
+                selected={option.value === screenViewSelected}>
+              {option.label}
+            </ToolbarButton>
+          )) }
+        </ToolbarWrapper>
+        { dataIsLoading ? <LogoLoader loadingText="Loading charts..." size={50} /> : screenViewComponent }
       </ContainerInnerWrapper>
     </ContainerOuterWrapper>
   );
