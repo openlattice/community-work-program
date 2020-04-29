@@ -76,10 +76,6 @@ const Category = styled.div`
   font-weight: 600;
 `;
 
-const GraphHeader = styled(CardHeader)`
-  color: ${BLACK};
-  font-size: 20px;
-  font-weight: 600;
 `;
 
 const StatsBoxSkeleton = () => (
@@ -128,14 +124,11 @@ const StatsContainer = ({
   unsuccessfulPeopleByCourtTypeGraphData,
 } :Props) => {
 
+  const dataIsLoading :boolean = requestStates[GET_STATS_DATA] === RequestStates.PENDING;
+  const [screenViewSelected, toggleScreenView] = useState(SCREEN_VIEWS.COURT_TYPE);
   useEffect(() => {
     if (!entitySetIds.isEmpty()) actions.getStatsData();
   }, [actions, entitySetIds]);
-  const dataIsLoading :boolean = requestStates[GET_STATS_DATA] === RequestStates.PENDING;
-  const enrollmentsGraphData :Object[] = formatEnrollmentsCourtTypeData(enrollmentsByCourtTypeGraphData);
-  const activePeopleGraphData :Object[] = formatPeopleCourtTypeData(activePeopleByCourtTypeGraphData);
-  const successfulPeopleGraphData :Object[] = formatPeopleCourtTypeData(successfulPeopleByCourtTypeGraphData);
-  const unsuccessfulPeopleGraphData :Object[] = formatPeopleCourtTypeData(unsuccessfulPeopleByCourtTypeGraphData);
   return (
     <ContainerOuterWrapper>
       <ContainerInnerWrapper>
