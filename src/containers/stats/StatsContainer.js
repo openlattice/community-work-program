@@ -182,42 +182,6 @@ const StatsContainer = ({
               )
           }
         </StatsWrapper>
-        <CardStack>
-          <Card>
-            <GraphHeader>Number of Enrollments by Court Type</GraphHeader>
-            <CardSegment padding="30px" vertical>
-              {
-                dataIsLoading
-                  ? (
-                    <Spinner size="2x" />
-                  )
-                  : (
-                    <EnrollmentsByCourtTypeGraph
-                        enrollmentsGraphData={enrollmentsGraphData}
-                        toolTipStyle={toolTipStyle} />
-                  )
-              }
-            </CardSegment>
-          </Card>
-          <Card>
-            <GraphHeader>Number of Participants by Court Type</GraphHeader>
-            <CardSegment padding="30px" vertical>
-              {
-                dataIsLoading
-                  ? (
-                    <Spinner size="2x" />
-                  )
-                  : (
-                    <PeopleByCourtTypeGraph
-                        activePeopleGraphData={activePeopleGraphData}
-                        successfulPeopleGraphData={successfulPeopleGraphData}
-                        toolTipStyle={toolTipStyle}
-                        unsuccessfulPeopleGraphData={unsuccessfulPeopleGraphData} />
-                  )
-              }
-            </CardSegment>
-          </Card>
-        </CardStack>
       </ContainerInnerWrapper>
     </ContainerOuterWrapper>
   );
