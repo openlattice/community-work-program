@@ -8,7 +8,13 @@ import {
   Skeleton,
 } from 'lattice-ui-kit';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBriefcase, faClipboard, faUserAlt } from '@fortawesome/pro-duotone-svg-icons';
+import {
+  faBriefcase,
+  faCheckCircle,
+  faClipboard,
+  faTimesCircle,
+  faUserAlt,
+} from '@fortawesome/pro-duotone-svg-icons';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { RequestStates } from 'redux-reqseq';
@@ -41,6 +47,8 @@ const {
   TOTAL_ACTIVE_PARTICIPANT_COUNT,
   TOTAL_DIVERSION_PLAN_COUNT,
   TOTAL_PARTICIPANT_COUNT,
+  TOTAL_SUCCESSFUL_PARTICIPANT_COUNT,
+  TOTAL_UNSUCCESSFUL_PARTICIPANT_COUNT,
   UNSUCCESSFUL_PEOPLE_BY_COURT_TYPE_GRAPH_DATA,
 } = STATS;
 const { ENTITY_SET_IDS_BY_ORG, SELECTED_ORG_ID } = APP;
@@ -48,6 +56,12 @@ const { ACTIONS, REQUEST_STATE } = SHARED;
 
 const StatsWrapper = styled.div`
   display: flex;
+  flex-direction: column;
+`;
+
+const StatsRow = styled.div`
+  display: flex;
+  margin-bottom: 20px;
 `;
 
 const StatBox = styled.div`
@@ -59,7 +73,7 @@ const StatBox = styled.div`
   display: flex;
   margin: 0 20px 20px 0;
   padding: 20px;
-  width: 275px;
+  width: 300px;
 
   :last-of-type {
     margin-right: 0;
@@ -113,10 +127,34 @@ const ToolbarButton = styled(Button)`
 `;
 
 const StatsBoxSkeleton = () => (
-  <>
-    <Skeleton height={36} width="20%" />
-    <Skeleton height={26} width="80%" />
-  </>
+  <StatsWrapper>
+    <StatsRow>
+      {
+        [0, 1, 2].map((num) => (
+          <StatBox key={num}>
+            <Skeleton height={48} width="48px" />
+            <StatBoxInnerWrapper>
+              <Skeleton height={45} width="136px" />
+              <Skeleton height={26} width="180px" />
+            </StatBoxInnerWrapper>
+          </StatBox>
+        ))
+      }
+    </StatsRow>
+    <StatsRow>
+      {
+        [0, 1].map((num) => (
+          <StatBox key={num}>
+            <Skeleton height={48} width="48px" />
+            <StatBoxInnerWrapper>
+              <Skeleton height={45} width="136px" />
+              <Skeleton height={26} width="180px" />
+            </StatBoxInnerWrapper>
+          </StatBox>
+        ))
+      }
+    </StatsRow>
+  </StatsWrapper>
 );
 
 const SCREEN_VIEWS = {
@@ -140,6 +178,8 @@ type Props = {
   totalActiveParticipantCount :number;
   totalDiversionPlanCount :number;
   totalParticipantCount :number;
+  totalSuccessfulParticipantCount :number;
+  totalUnsuccessfulParticipantCount :number;
   unsuccessfulPeopleByCourtTypeGraphData :Map;
 };
 
@@ -153,6 +193,8 @@ const StatsContainer = ({
   totalActiveParticipantCount,
   totalDiversionPlanCount,
   totalParticipantCount,
+  totalSuccessfulParticipantCount,
+  totalUnsuccessfulParticipantCount,
   unsuccessfulPeopleByCourtTypeGraphData,
 } :Props) => {
 
@@ -207,39 +249,49 @@ const StatsContainer = ({
           {
             dataIsLoading
               ? (
-                <>
-                  {
-                    [1, 2, 3].map((num :number) => (
-                      <StatBox key={num}>
-                        <StatsBoxSkeleton />
-                      </StatBox>
-                    ))
-                  }
-                </>
+                <StatsBoxSkeleton />
               )
               : (
                 <>
-                  <StatBox>
-                    <FontAwesomeIcon icon={faClipboard} size="3x" />
-                    <StatBoxInnerWrapper>
-                      <Number>{ totalDiversionPlanCount }</Number>
-                      <Category>Total Enrollments</Category>
-                    </StatBoxInnerWrapper>
-                  </StatBox>
-                  <StatBox>
-                    <FontAwesomeIcon icon={faUserAlt} size="3x" />
-                    <StatBoxInnerWrapper>
-                      <Number>{ totalParticipantCount }</Number>
-                      <Category>Unique Participants</Category>
-                    </StatBoxInnerWrapper>
-                  </StatBox>
-                  <StatBox>
-                    <FontAwesomeIcon icon={faBriefcase} size="3x" />
-                    <StatBoxInnerWrapper>
-                      <Number>{ totalActiveParticipantCount }</Number>
-                      <Category>Currently Active</Category>
-                    </StatBoxInnerWrapper>
-                  </StatBox>
+                  <StatsRow>
+                    <StatBox>
+                      <FontAwesomeIcon icon={faClipboard} size="3x" />
+                      <StatBoxInnerWrapper>
+                        <Number>{ totalDiversionPlanCount }</Number>
+                        <Category>Total Enrollments</Category>
+                      </StatBoxInnerWrapper>
+                    </StatBox>
+                    <StatBox>
+                      <FontAwesomeIcon icon={faUserAlt} size="3x" />
+                      <StatBoxInnerWrapper>
+                        <Number>{ totalParticipantCount }</Number>
+                        <Category>Unique Participants</Category>
+                      </StatBoxInnerWrapper>
+                    </StatBox>
+                    <StatBox>
+                      <FontAwesomeIcon icon={faBriefcase} size="3x" />
+                      <StatBoxInnerWrapper>
+                        <Number>{ totalActiveParticipantCount }</Number>
+                        <Category>Currently Active</Category>
+                      </StatBoxInnerWrapper>
+                    </StatBox>
+                  </StatsRow>
+                  <StatsRow>
+                    <StatBox>
+                      <FontAwesomeIcon icon={faCheckCircle} size="3x" />
+                      <StatBoxInnerWrapper>
+                        <Number>{ totalSuccessfulParticipantCount }</Number>
+                        <Category>Completed/Successful</Category>
+                      </StatBoxInnerWrapper>
+                    </StatBox>
+                    <StatBox>
+                      <FontAwesomeIcon icon={faTimesCircle} size="3x" />
+                      <StatBoxInnerWrapper>
+                        <Number>{ totalUnsuccessfulParticipantCount }</Number>
+                        <Category>Removed/Unsuccessful</Category>
+                      </StatBoxInnerWrapper>
+                    </StatBox>
+                  </StatsRow>
                 </>
               )
           }
@@ -271,6 +323,8 @@ const mapStateToProps = (state :Map) => {
     [TOTAL_ACTIVE_PARTICIPANT_COUNT]: stats.get(TOTAL_ACTIVE_PARTICIPANT_COUNT),
     [TOTAL_DIVERSION_PLAN_COUNT]: stats.get(TOTAL_DIVERSION_PLAN_COUNT),
     [TOTAL_PARTICIPANT_COUNT]: stats.get(TOTAL_PARTICIPANT_COUNT),
+    [TOTAL_SUCCESSFUL_PARTICIPANT_COUNT]: stats.get(TOTAL_SUCCESSFUL_PARTICIPANT_COUNT),
+    [TOTAL_UNSUCCESSFUL_PARTICIPANT_COUNT]: stats.get(TOTAL_UNSUCCESSFUL_PARTICIPANT_COUNT),
     [UNSUCCESSFUL_PEOPLE_BY_COURT_TYPE_GRAPH_DATA]: stats.get(UNSUCCESSFUL_PEOPLE_BY_COURT_TYPE_GRAPH_DATA),
     entitySetIds: app.getIn([ENTITY_SET_IDS_BY_ORG, selectedOrgId], Map()),
     requestStates: {

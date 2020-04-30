@@ -74,6 +74,8 @@ function* getStatsDataWorker(action :SequenceAction) :Generator<*, *, *> {
   let unsuccessfulPeopleByCourtTypeGraphData :Map = fromJS(courtTypeCountObj);
   let totalParticipantCount :number = 0;
   let totalActiveParticipantCount :number = 0;
+  let totalSuccessfulParticipantCount :number = 0;
+  let totalUnsuccessfulParticipantCount :number = 0;
 
   try {
     yield put(getStatsData.request(id));
@@ -154,11 +156,13 @@ function* getStatsDataWorker(action :SequenceAction) :Generator<*, *, *> {
           const successfulPersonCount :number = successfulPeopleByCourtTypeGraphData.get(courtType, 0);
           successfulPeopleByCourtTypeGraphData = successfulPeopleByCourtTypeGraphData
             .set(courtType, successfulPersonCount + 1);
+          totalSuccessfulParticipantCount += 1;
         }
         if (status === ENROLLMENT_STATUSES.REMOVED_NONCOMPLIANT || status === ENROLLMENT_STATUSES.UNSUCCESSFUL) {
           const unsuccessfulPersonCount :number = unsuccessfulPeopleByCourtTypeGraphData.get(courtType, 0);
           unsuccessfulPeopleByCourtTypeGraphData = unsuccessfulPeopleByCourtTypeGraphData
             .set(courtType, unsuccessfulPersonCount + 1);
+          totalUnsuccessfulParticipantCount += 1;
         }
         totalParticipantCount += 1;
       });
@@ -171,6 +175,8 @@ function* getStatsDataWorker(action :SequenceAction) :Generator<*, *, *> {
       totalActiveParticipantCount,
       totalDiversionPlanCount,
       totalParticipantCount,
+      totalSuccessfulParticipantCount,
+      totalUnsuccessfulParticipantCount,
       unsuccessfulPeopleByCourtTypeGraphData,
     }));
   }

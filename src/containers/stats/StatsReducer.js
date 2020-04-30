@@ -14,6 +14,8 @@ const {
   TOTAL_ACTIVE_PARTICIPANT_COUNT,
   TOTAL_DIVERSION_PLAN_COUNT,
   TOTAL_PARTICIPANT_COUNT,
+  TOTAL_SUCCESSFUL_PARTICIPANT_COUNT,
+  TOTAL_UNSUCCESSFUL_PARTICIPANT_COUNT,
   UNSUCCESSFUL_PEOPLE_BY_COURT_TYPE_GRAPH_DATA,
 } = STATS;
 
@@ -29,6 +31,8 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [TOTAL_ACTIVE_PARTICIPANT_COUNT]: 0,
   [TOTAL_DIVERSION_PLAN_COUNT]: 0,
   [TOTAL_PARTICIPANT_COUNT]: 0,
+  [TOTAL_SUCCESSFUL_PARTICIPANT_COUNT]: 0,
+  [TOTAL_UNSUCCESSFUL_PARTICIPANT_COUNT]: 0,
   [UNSUCCESSFUL_PEOPLE_BY_COURT_TYPE_GRAPH_DATA]: Map(),
 });
 
@@ -53,6 +57,8 @@ export default function statsReducer(state :Map<*, *> = INITIAL_STATE, action :O
             totalActiveParticipantCount,
             totalDiversionPlanCount,
             totalParticipantCount,
+            totalSuccessfulParticipantCount,
+            totalUnsuccessfulParticipantCount,
             unsuccessfulPeopleByCourtTypeGraphData,
           } = value;
           return state
@@ -63,6 +69,8 @@ export default function statsReducer(state :Map<*, *> = INITIAL_STATE, action :O
             .set(TOTAL_ACTIVE_PARTICIPANT_COUNT, totalActiveParticipantCount)
             .set(TOTAL_DIVERSION_PLAN_COUNT, totalDiversionPlanCount)
             .set(TOTAL_PARTICIPANT_COUNT, totalParticipantCount)
+            .set(TOTAL_SUCCESSFUL_PARTICIPANT_COUNT, totalSuccessfulParticipantCount)
+            .set(TOTAL_UNSUCCESSFUL_PARTICIPANT_COUNT, totalUnsuccessfulParticipantCount)
             .setIn([ACTIONS, GET_STATS_DATA, REQUEST_STATE], RequestStates.SUCCESS);
         },
         FAILURE: () => state

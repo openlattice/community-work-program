@@ -187,6 +187,8 @@ export const STATS = {
   TOTAL_ACTIVE_PARTICIPANT_COUNT: 'totalActiveParticipantCount',
   TOTAL_DIVERSION_PLAN_COUNT: 'totalDiversionPlanCount',
   TOTAL_PARTICIPANT_COUNT: 'totalParticipantCount',
+  TOTAL_SUCCESSFUL_PARTICIPANT_COUNT: 'totalSuccessfulParticipantCount',
+  TOTAL_UNSUCCESSFUL_PARTICIPANT_COUNT: 'totalUnsuccessfulParticipantCount',
   UNSUCCESSFUL_PEOPLE_BY_COURT_TYPE_GRAPH_DATA: 'unsuccessfulPeopleByCourtTypeGraphData',
 };
 
