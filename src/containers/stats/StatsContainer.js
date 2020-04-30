@@ -45,7 +45,6 @@ const { ACTIONS, REQUEST_STATE } = SHARED;
 
 const StatsWrapper = styled.div`
   display: flex;
-  margin-top: 20px;
 `;
 
 const StatBox = styled.div`
