@@ -14,6 +14,7 @@ import { bindActionCreators } from 'redux';
 import { RequestStates } from 'redux-reqseq';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
+import ChargesGraphs from './charges/ChargesGraphs';
 import CourtTypeGraphs from './courttype/CourtTypeGraphs';
 import DemographicsGraphs from './demographics/DemographicsGraphs';
 import WorkSiteGraphs from './worksite/WorkSiteGraphs';
@@ -121,7 +122,8 @@ const StatsBoxSkeleton = () => (
 const SCREEN_VIEWS = {
   COURT_TYPE: 'Court Type',
   WORK_SITES: 'Work Sites',
-  DEMOGRAPHICS: 'Demographics'
+  DEMOGRAPHICS: 'Demographics',
+  CHARGES: 'Charges'
 };
 
 type Props = {
@@ -161,16 +163,18 @@ const StatsContainer = ({
   }, [actions, entitySetIds]);
 
   let screenViewComponent;
+
+  const courtTypeGraphsComponent = (
+    <CourtTypeGraphs
+        activePeopleByCourtTypeGraphData={activePeopleByCourtTypeGraphData}
+        enrollmentsByCourtTypeGraphData={enrollmentsByCourtTypeGraphData}
+        dataIsLoading={dataIsLoading}
+        successfulPeopleByCourtTypeGraphData={successfulPeopleByCourtTypeGraphData}
+        unsuccessfulPeopleByCourtTypeGraphData={unsuccessfulPeopleByCourtTypeGraphData} />
+  );
   switch (screenViewSelected) {
     case SCREEN_VIEWS.COURT_TYPE:
-      screenViewComponent = (
-        <CourtTypeGraphs
-            activePeopleByCourtTypeGraphData={activePeopleByCourtTypeGraphData}
-            enrollmentsByCourtTypeGraphData={enrollmentsByCourtTypeGraphData}
-            dataIsLoading={dataIsLoading}
-            successfulPeopleByCourtTypeGraphData={successfulPeopleByCourtTypeGraphData}
-            unsuccessfulPeopleByCourtTypeGraphData={unsuccessfulPeopleByCourtTypeGraphData} />
-      );
+      screenViewComponent = courtTypeGraphsComponent;
       break;
 
     case SCREEN_VIEWS.WORK_SITES:
@@ -178,8 +182,15 @@ const StatsContainer = ({
       break;
 
     case SCREEN_VIEWS.DEMOGRAPHICS:
-    default:
       screenViewComponent = <DemographicsGraphs />;
+      break;
+
+    case SCREEN_VIEWS.CHARGES:
+      screenViewComponent = <ChargesGraphs />;
+      break;
+
+    default:
+      screenViewComponent = courtTypeGraphsComponent;
       break;
   }
 
