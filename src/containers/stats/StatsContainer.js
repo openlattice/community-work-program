@@ -7,6 +7,8 @@ import {
   Colors,
   Skeleton,
 } from 'lattice-ui-kit';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faBriefcase, faClipboard, faUserAlt } from '@fortawesome/pro-duotone-svg-icons';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { RequestStates } from 'redux-reqseq';
@@ -54,15 +56,19 @@ const StatBox = styled.div`
   border: 1px solid ${NEUTRALS[4]};
   box-sizing: border-box;
   display: flex;
-  flex-direction: column;
-  justify-content: space-between;
   margin: 0 20px 20px 0;
-  padding: 17px 0;
-  width: 225px;
+  padding: 20px;
+  width: 275px;
 
   :last-of-type {
     margin-right: 0;
   }
+`;
+
+const StatBoxInnerWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  margin-left: 20px;
 `;
 
 const Number = styled.div`
@@ -203,16 +209,25 @@ const StatsContainer = ({
               : (
                 <>
                   <StatBox>
-                    <Number>{ totalDiversionPlanCount }</Number>
-                    <Category>Total Enrollments</Category>
+                    <FontAwesomeIcon icon={faClipboard} size="3x" />
+                    <StatBoxInnerWrapper>
+                      <Number>{ totalDiversionPlanCount }</Number>
+                      <Category>Total Enrollments</Category>
+                    </StatBoxInnerWrapper>
                   </StatBox>
                   <StatBox>
-                    <Number>{ totalParticipantCount }</Number>
-                    <Category>Unique Participants</Category>
+                    <FontAwesomeIcon icon={faUserAlt} size="3x" />
+                    <StatBoxInnerWrapper>
+                      <Number>{ totalParticipantCount }</Number>
+                      <Category>Unique Participants</Category>
+                    </StatBoxInnerWrapper>
                   </StatBox>
                   <StatBox>
-                    <Number>{ totalActiveParticipantCount }</Number>
-                    <Category>Currently Active</Category>
+                    <FontAwesomeIcon icon={faBriefcase} size="3x" />
+                    <StatBoxInnerWrapper>
+                      <Number>{ totalActiveParticipantCount }</Number>
+                      <Category>Currently Active</Category>
+                    </StatBoxInnerWrapper>
                   </StatBox>
                 </>
               )
