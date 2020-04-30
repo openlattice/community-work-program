@@ -124,15 +124,18 @@ function* getStatsDataWorker(action :SequenceAction) :Generator<*, *, *> {
           const person :Map = caseAndPersonNeighbors.find((neighbor :Map) => getNeighborESID(neighbor) === peopleESID);
           const personEKID :UUID = getEntityKeyId(getNeighborDetails(person));
           const { enrollmentStatusDate } = courtTypeAndDateByPersonEKID.get(personEKID, {});
-          const enrollmentStatusNeighbor :Map = caseAndPersonNeighbors
-            .find((neighbor :Map) => getNeighborESID(neighbor) === enrollmentStatusESID);
+          const mostRecentEnrollmentStatus :Map = caseAndPersonNeighbors
+            .filter((neighbor :Map) => getNeighborESID(neighbor) === enrollmentStatusESID)
+            .map((neighbor :Map) => getNeighborDetails(neighbor))
+            .sortBy((entity :Map) => entity.getIn([EFFECTIVE_DATE, 0]))
+            .last();
           const { [EFFECTIVE_DATE]: neighborDate, [STATUS]: status } = getEntityProperties(
-            getNeighborDetails(enrollmentStatusNeighbor),
+            mostRecentEnrollmentStatus,
             [EFFECTIVE_DATE, STATUS]
           );
           // $FlowFixMe
-          if (DateTime.fromISO(enrollmentStatusDate).startOf('day')
-            < DateTime.fromISO(neighborDate).startOf('day') || !isDefined(enrollmentStatusDate)) {
+          if (DateTime.fromISO(enrollmentStatusDate).startOf('day') < DateTime.fromISO(neighborDate).startOf('day')
+            || !DateTime.fromISO(enrollmentStatusDate).isValid) {
             courtTypeAndDateByPersonEKID = courtTypeAndDateByPersonEKID.set(
               personEKID,
               { courtType: courtCaseType, enrollmentStatusDate: neighborDate, status }
