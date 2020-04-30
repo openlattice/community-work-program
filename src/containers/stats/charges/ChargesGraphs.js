@@ -9,8 +9,8 @@ const Wrapper = styled.div`
   justify-content: center;
 `;
 
-const DemographicsGraphs = () => (
+const ChargesGraphs = () => (
   <Wrapper>Coming Soon</Wrapper>
 );
 
-export default DemographicsGraphs;
+export default ChargesGraphs;

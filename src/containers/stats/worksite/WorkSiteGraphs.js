@@ -6,7 +6,7 @@ const Wrapper = styled.div`
   align-items: center;
   display: flex;
   font-size: 24px;
-  justify-content center;
+  justify-content: center;
 `;
 
 const WorkSiteGraphs = () => (
