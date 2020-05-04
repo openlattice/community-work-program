@@ -8,27 +8,21 @@ import {
   getIn,
 } from 'immutable';
 import { DateTime } from 'luxon';
-import {
-  Button,
-  Card,
-  CardHeader,
-} from 'lattice-ui-kit';
+import { Button, Card, CardHeader } from 'lattice-ui-kit';
 import { Form, DataProcessingUtils } from 'lattice-fabricate';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import type { RequestSequence } from 'redux-reqseq';
+import type { RequestSequence, RequestState } from 'redux-reqseq';
 
 import AddToAvailableCourtChargesModal from '../charges/AddToAvailableCourtChargesModal';
-
-import { addCourtChargesToCase, removeCourtChargeFromCase } from '../charges/ChargesActions';
-import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
-import {
-  courtChargeSchema,
-  courtChargeUiSchema,
-} from './schemas/EditCaseInfoSchemas';
+import { courtChargeSchema, courtChargeUiSchema } from './schemas/EditCaseInfoSchemas';
 import { disableChargesForm, hydrateCourtChargeSchema } from './utils/EditCaseInfoUtils';
 import { getEntityKeyId } from '../../../utils/DataUtils';
 import { getCombinedDateTime } from '../../../utils/ScheduleUtils';
+import { requestIsPending } from '../../../utils/RequestStateUtils';
+import { addCourtChargesToCase, removeCourtChargeFromCase } from '../charges/ChargesActions';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
+import { CHARGES, SHARED, STATE } from '../../../utils/constants/ReduxStateConsts';
 
 const {
   getEntityAddressKey,
@@ -47,6 +41,8 @@ const {
   REGISTERED_FOR,
 } = APP_TYPE_FQNS;
 const { DATETIME_COMPLETED, ENTITY_KEY_ID } = PROPERTY_TYPE_FQNS;
+const { ACTIONS, REQUEST_STATE } = SHARED;
+const { ADD_COURT_CHARGES_TO_CASE } = CHARGES;
 
 const InnerCardHeader = styled.div`
   align-items: center;
@@ -67,6 +63,9 @@ type Props = {
   participant :Map;
   personCase :Map;
   propertyTypeIds :Object;
+  requestStates:{
+    ADD_COURT_CHARGES_TO_CASE :RequestState;
+  };
 };
 
 type State = {
@@ -211,6 +210,7 @@ class EditCourtChargesForm extends Component<Props, State> {
       entityIndexToIdMap,
       entitySetIds,
       propertyTypeIds,
+      requestStates,
     } = this.props;
     const {
       chargesFormData,
@@ -230,6 +230,8 @@ class EditCourtChargesForm extends Component<Props, State> {
       propertyTypeIds,
     };
 
+    const courtChargesSubmitting :boolean = requestIsPending(requestStates[ADD_COURT_CHARGES_TO_CASE]);
+    // console.log('courtChargesSubmitting: ', courtChargesSubmitting);
     return (
       <>
         <Card>
@@ -240,9 +242,10 @@ class EditCourtChargesForm extends Component<Props, State> {
             </InnerCardHeader>
           </CardHeader>
           <Form
-              disabled={chargesPrepopulated}
+              disabled={chargesPrepopulated || courtChargesSubmitting}
               formContext={chargesFormContext}
               formData={chargesFormData}
+              isSubmitting={courtChargesSubmitting}
               onChange={this.handleOnChangeCharges}
               onSubmit={this.handleOnChargesSubmit}
               schema={chargesFormSchema}
@@ -256,6 +259,15 @@ class EditCourtChargesForm extends Component<Props, State> {
   }
 }
 
+const mapStateToProps = (state :Map) => {
+  const charges = state.get(STATE.CHARGES);
+  return {
+    requestStates: {
+      [ADD_COURT_CHARGES_TO_CASE]: charges.getIn([ACTIONS, ADD_COURT_CHARGES_TO_CASE, REQUEST_STATE])
+    }
+  };
+};
+
 const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
     addCourtChargesToCase,
@@ -264,4 +276,4 @@ const mapDispatchToProps = (dispatch) => ({
 });
 
 // $FlowFixMe
-export default connect(null, mapDispatchToProps)(EditCourtChargesForm);
+export default connect(mapStateToProps, mapDispatchToProps)(EditCourtChargesForm);
