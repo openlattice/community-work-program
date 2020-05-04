@@ -172,9 +172,14 @@ const hydrateArrestChargeSchema = (schema :Object, existingArrestChargesFromPSA 
 };
 
 const temporarilyDisableForm = (uiSchema :Object, path :string[]) => {
-  const newUiSchema = setIn(
+  let newUiSchema = setIn(
     uiSchema,
     path.concat(['ui:options', 'addable']),
+    false
+  );
+  newUiSchema = setIn(
+    newUiSchema,
+    path.concat(['ui:options', 'removable']),
     false
   );
   return newUiSchema;

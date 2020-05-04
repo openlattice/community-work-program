@@ -7,15 +7,12 @@ import {
   fromJS,
   get,
   has,
-  setIn,
 } from 'immutable';
 import { DateTime } from 'luxon';
 import {
   Button,
   Card,
   CardHeader,
-  CardSegment,
-  Spinner
 } from 'lattice-ui-kit';
 import { Form, DataProcessingUtils } from 'lattice-fabricate';
 import { connect } from 'react-redux';
@@ -335,8 +332,6 @@ class EditArrestChargesForm extends Component<Props, State> {
     };
     const arrestChargesSubmitting :boolean = requestIsPending(requestStates[ADD_ARREST_CHARGES]);
     const arrestChargesDeleting :boolean = requestIsPending(requestStates[REMOVE_ARREST_CHARGE]);
-    console.log('arrestChargesSubmitting: ', arrestChargesSubmitting);
-    console.log('DELETING: ', arrestChargesDeleting);
     let uiSchemaToUse = arrestChargeUiSchema;
     if (arrestChargesDeleting || arrestChargesSubmitting) {
       uiSchemaToUse = temporarilyDisableForm(arrestChargeUiSchema, [getPageSectionKey(1, 2)]);
@@ -359,26 +354,6 @@ class EditArrestChargesForm extends Component<Props, State> {
               onSubmit={this.onSubmit}
               schema={chargesFormSchema}
               uiSchema={uiSchemaToUse} />
-          {/*
-            arrestChargesDeleting ? (
-              <CardSegment padding="30px" vertical>
-                <div>Add a New Arrest Charge</div>
-                <Spinner centered={false} size="2x" />
-              </CardSegment>
-            )
-              :
-              (
-                <Form
-                    disabled={chargesPrepopulated}
-                    isSubmitting={arrestChargesSubmitting}
-                    formContext={chargesFormContext}
-                    formData={chargesFormData}
-                    onChange={this.onChange}
-                    onSubmit={this.onSubmit}
-                    schema={chargesFormSchema}
-                    uiSchema={uiSchemaToUse} />
-              )
-          */}
         </Card>
         <AddToAvailableArrestChargesModal
             isOpen={isAvailableChargesModalVisible}
