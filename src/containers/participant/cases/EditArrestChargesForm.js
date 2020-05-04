@@ -7,29 +7,34 @@ import {
   fromJS,
   get,
   has,
+  setIn,
 } from 'immutable';
 import { DateTime } from 'luxon';
 import {
   Button,
   Card,
   CardHeader,
+  CardSegment,
+  Spinner
 } from 'lattice-ui-kit';
 import { Form, DataProcessingUtils } from 'lattice-fabricate';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import type { RequestSequence } from 'redux-reqseq';
+import type { RequestSequence, RequestState } from 'redux-reqseq';
 
 import AddToAvailableArrestChargesModal from '../charges/AddToAvailableArrestChargesModal';
 
 import { addArrestCharges, removeArrestCharge } from '../charges/ChargesActions';
 import { arrestChargeSchema, arrestChargeUiSchema } from './schemas/EditCaseInfoSchemas';
-import { hydrateArrestChargeSchema } from './utils/EditCaseInfoUtils';
+import { hydrateArrestChargeSchema, temporarilyDisableForm } from './utils/EditCaseInfoUtils';
 import { getEntityKeyId, getEntityProperties } from '../../../utils/DataUtils';
 import {
   formatExistingChargeDataAndAssociation,
   formatNewArrestChargeDataAndAssociations,
 } from '../charges/utils/ChargesUtils';
+import { requestIsPending } from '../../../utils/RequestStateUtils';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
+import { CHARGES, SHARED, STATE } from '../../../utils/constants/ReduxStateConsts';
 
 const {
   INDEX_MAPPERS,
@@ -47,6 +52,8 @@ const {
   DIVERSION_PLAN,
 } = APP_TYPE_FQNS;
 const { DATETIME_COMPLETED, ENTITY_KEY_ID } = PROPERTY_TYPE_FQNS;
+const { ACTIONS, REQUEST_STATE } = SHARED;
+const { ADD_ARREST_CHARGES, REMOVE_ARREST_CHARGE } = CHARGES;
 
 const getDateChargedFromChargeEvent = (chargeEvent :Map) :string => {
   const { [DATETIME_COMPLETED]: dateTimeCharged } = getEntityProperties(chargeEvent, [DATETIME_COMPLETED]);
@@ -78,6 +85,10 @@ type Props = {
   participant :Map;
   propertyTypeIds :Object;
   psaArrestCaseByArrestCharge :Map;
+  requestStates:{
+    ADD_ARREST_CHARGES :RequestState;
+    REMOVE_ARREST_CHARGE :RequestState;
+  };
 };
 
 type State = {
@@ -304,6 +315,7 @@ class EditArrestChargesForm extends Component<Props, State> {
       entityIndexToIdMap,
       entitySetIds,
       propertyTypeIds,
+      requestStates,
     } = this.props;
     const {
       chargesFormData,
@@ -321,7 +333,14 @@ class EditArrestChargesForm extends Component<Props, State> {
       entitySetIds,
       propertyTypeIds,
     };
-
+    const arrestChargesSubmitting :boolean = requestIsPending(requestStates[ADD_ARREST_CHARGES]);
+    const arrestChargesDeleting :boolean = requestIsPending(requestStates[REMOVE_ARREST_CHARGE]);
+    console.log('arrestChargesSubmitting: ', arrestChargesSubmitting);
+    console.log('DELETING: ', arrestChargesDeleting);
+    let uiSchemaToUse = arrestChargeUiSchema;
+    if (arrestChargesDeleting || arrestChargesSubmitting) {
+      uiSchemaToUse = temporarilyDisableForm(arrestChargeUiSchema, [getPageSectionKey(1, 2)]);
+    }
     return (
       <>
         <Card>
@@ -333,12 +352,33 @@ class EditArrestChargesForm extends Component<Props, State> {
           </CardHeader>
           <Form
               disabled={chargesPrepopulated}
+              isSubmitting={arrestChargesSubmitting}
               formContext={chargesFormContext}
               formData={chargesFormData}
               onChange={this.onChange}
               onSubmit={this.onSubmit}
               schema={chargesFormSchema}
-              uiSchema={arrestChargeUiSchema} />
+              uiSchema={uiSchemaToUse} />
+          {/*
+            arrestChargesDeleting ? (
+              <CardSegment padding="30px" vertical>
+                <div>Add a New Arrest Charge</div>
+                <Spinner centered={false} size="2x" />
+              </CardSegment>
+            )
+              :
+              (
+                <Form
+                    disabled={chargesPrepopulated}
+                    isSubmitting={arrestChargesSubmitting}
+                    formContext={chargesFormContext}
+                    formData={chargesFormData}
+                    onChange={this.onChange}
+                    onSubmit={this.onSubmit}
+                    schema={chargesFormSchema}
+                    uiSchema={uiSchemaToUse} />
+              )
+          */}
         </Card>
         <AddToAvailableArrestChargesModal
             isOpen={isAvailableChargesModalVisible}
@@ -348,6 +388,16 @@ class EditArrestChargesForm extends Component<Props, State> {
   }
 }
 
+const mapStateToProps = (state :Map) => {
+  const charges = state.get(STATE.CHARGES);
+  return {
+    requestStates: {
+      [ADD_ARREST_CHARGES]: charges.getIn([ACTIONS, ADD_ARREST_CHARGES, REQUEST_STATE]),
+      [REMOVE_ARREST_CHARGE]: charges.getIn([ACTIONS, REMOVE_ARREST_CHARGE, REQUEST_STATE])
+    }
+  };
+};
+
 const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
     addArrestCharges,
@@ -356,4 +406,4 @@ const mapDispatchToProps = (dispatch) => ({
 });
 
 // $FlowFixMe
-export default connect(null, mapDispatchToProps)(EditArrestChargesForm);
+export default connect(mapStateToProps, mapDispatchToProps)(EditArrestChargesForm);
