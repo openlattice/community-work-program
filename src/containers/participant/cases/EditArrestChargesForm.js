@@ -20,6 +20,7 @@ import { bindActionCreators } from 'redux';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
 import AddToAvailableArrestChargesModal from '../charges/AddToAvailableArrestChargesModal';
+import ErrorMessage from '../../../components/error/ErrorMessage';
 
 import { addArrestCharges, removeArrestCharge } from '../charges/ChargesActions';
 import { arrestChargeSchema, arrestChargeUiSchema } from './schemas/EditCaseInfoSchemas';
@@ -29,7 +30,7 @@ import {
   formatExistingChargeDataAndAssociation,
   formatNewArrestChargeDataAndAssociations,
 } from '../charges/utils/ChargesUtils';
-import { requestIsPending } from '../../../utils/RequestStateUtils';
+import { requestIsFailure, requestIsPending } from '../../../utils/RequestStateUtils';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { CHARGES, SHARED, STATE } from '../../../utils/constants/ReduxStateConsts';
 
@@ -332,6 +333,8 @@ class EditArrestChargesForm extends Component<Props, State> {
     };
     const arrestChargesSubmitting :boolean = requestIsPending(requestStates[ADD_ARREST_CHARGES]);
     const arrestChargesDeleting :boolean = requestIsPending(requestStates[REMOVE_ARREST_CHARGE]);
+    const failedSubmit :boolean = requestIsFailure(requestStates[ADD_ARREST_CHARGES]);
+    const failedDelete :boolean = requestIsFailure(requestStates[REMOVE_ARREST_CHARGE]);
     let uiSchemaToUse = arrestChargeUiSchema;
     if (arrestChargesDeleting || arrestChargesSubmitting) {
       uiSchemaToUse = temporarilyDisableForm(arrestChargeUiSchema, [getPageSectionKey(1, 2)]);
@@ -354,6 +357,7 @@ class EditArrestChargesForm extends Component<Props, State> {
               onSubmit={this.onSubmit}
               schema={chargesFormSchema}
               uiSchema={uiSchemaToUse} />
+          { (failedDelete || failedSubmit) && <ErrorMessage padding="30px" /> }
         </Card>
         <AddToAvailableArrestChargesModal
             isOpen={isAvailableChargesModalVisible}
