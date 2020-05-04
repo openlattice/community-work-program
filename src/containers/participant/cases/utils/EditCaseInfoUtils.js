@@ -171,10 +171,20 @@ const hydrateArrestChargeSchema = (schema :Object, existingArrestChargesFromPSA 
   return newSchema;
 };
 
+const temporarilyDisableForm = (uiSchema :Object, path :string[]) => {
+  const newUiSchema = setIn(
+    uiSchema,
+    path.concat(['ui:options', 'addable']),
+    false
+  );
+  return newUiSchema;
+};
+
 export {
   disableChargesForm,
   disableJudgeForm,
   hydrateArrestChargeSchema,
   hydrateCourtChargeSchema,
   hydrateJudgeSchema,
+  temporarilyDisableForm,
 };
