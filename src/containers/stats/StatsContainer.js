@@ -5,7 +5,6 @@ import { Map } from 'immutable';
 import {
   Button,
   Colors,
-  Select,
   Skeleton,
 } from 'lattice-ui-kit';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -34,14 +33,6 @@ import {
   STATE,
   STATS,
 } from '../../utils/constants/ReduxStateConsts';
-import {
-  ALL_TIME,
-  MONTHLY,
-  MONTHS_OPTIONS,
-  TIME_FRAME_OPTIONS,
-  YEARLY,
-  YEARS_OPTIONS,
-} from './consts/StatsConsts';
 
 const {
   BLACK,
@@ -112,11 +103,6 @@ const ToolbarRow = styled.div`
   justify-content: space-between;
 `;
 
-const SelectWrapper = styled.div`
-  margin-left: 20px;
-  width: 150px;
-`;
-
 const ToolbarWrapper = styled.div`
   display: flex;
   margin: 30px 0;
@@ -144,11 +130,6 @@ const ToolbarButton = styled(Button)`
   &:last-child {
     border-radius: 0 4px 4px 0;
   }
-`;
-
-const MonthAndYearRow = styled(ToolbarRow)`
-  justify-content: flex-end;
-  margin-bottom: 30px;
 `;
 
 const StatsBoxSkeleton = () => (
@@ -267,12 +248,6 @@ const StatsContainer = ({
     onClick: () => toggleScreenView(value)
   }));
 
-  const [timeFrame, setTimeFrame] = useState(ALL_TIME);
-  const timeFrameSelectChange = (option :Object) => {
-    const { value } = option;
-    setTimeFrame(value);
-  };
-
   return (
     <ContainerOuterWrapper>
       <ContainerInnerWrapper>
@@ -338,31 +313,7 @@ const StatsContainer = ({
               </ToolbarButton>
             )) }
           </ToolbarWrapper>
-          <SelectWrapper>
-            <Select
-                onChange={timeFrameSelectChange}
-                options={TIME_FRAME_OPTIONS}
-                placeholder={timeFrame} />
-          </SelectWrapper>
         </ToolbarRow>
-        <MonthAndYearRow>
-          { timeFrame === MONTHLY
-            && (
-              <SelectWrapper>
-                <Select
-                    options={MONTHS_OPTIONS}
-                    placeholder="Select month..." />
-              </SelectWrapper>
-            )}
-          { (timeFrame === MONTHLY || timeFrame === YEARLY)
-            && (
-              <SelectWrapper>
-                <Select
-                    options={YEARS_OPTIONS}
-                    placeholder="Select year..." />
-              </SelectWrapper>
-            )}
-        </MonthAndYearRow>
         { dataIsLoading ? <LogoLoader loadingText="Loading charts..." size={50} /> : screenViewComponent }
       </ContainerInnerWrapper>
     </ContainerOuterWrapper>
