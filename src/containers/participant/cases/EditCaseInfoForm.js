@@ -2,7 +2,7 @@
 import React, { Component } from 'react';
 import styled from 'styled-components';
 import { List, Map } from 'immutable';
-import { CardStack } from 'lattice-ui-kit';
+import { CardStack, Colors } from 'lattice-ui-kit';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { RequestStates } from 'redux-reqseq';
@@ -21,6 +21,7 @@ import { getInfoForEditCase } from '../ParticipantActions';
 import { goToRoute } from '../../../core/router/RoutingActions';
 import { APP_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { getEntityKeyId } from '../../../utils/DataUtils';
+import { getPersonFullName } from '../../../utils/PeopleUtils';
 import { BackNavButton } from '../../../components/controls/index';
 import { PARTICIPANT_PROFILE_WIDTH } from '../../../core/style/Sizes';
 import {
@@ -32,6 +33,7 @@ import {
 } from '../../../utils/constants/ReduxStateConsts';
 import type { GoToRoute } from '../../../core/router/RoutingActions';
 
+const { BLACK } = Colors;
 const {
   CHARGE_EVENT,
   COURT_CHARGE_LIST,
@@ -72,6 +74,18 @@ const FormWrapper = styled.div`
 `;
 
 const ButtonWrapper = styled.div`
+  margin-bottom: 20px;
+`;
+
+const PersonName = styled.div`
+  color: ${BLACK};
+  font-size: 24px;
+  font-weight: 600;
+  margin-bottom: 5px;
+`;
+
+const PageTitle = styled.div`
+  font-size: 16px;
   margin-bottom: 30px;
 `;
 
@@ -192,6 +206,7 @@ class EditCaseInfoForm extends Component<Props> {
     const entityIndexToIdMap = this.createEntityIndexToIdMap();
     const personEKID :UUID = getEntityKeyId(participant);
     const diversionPlanEKID :UUID = getEntityKeyId(diversionPlan);
+    const personName :string = getPersonFullName(participant);
 
     return (
       <FormWrapper>
@@ -201,6 +216,8 @@ class EditCaseInfoForm extends Component<Props> {
             Back to Profile
           </BackNavButton>
         </ButtonWrapper>
+        <PersonName>{ personName }</PersonName>
+        <PageTitle>Court Case, Charges, Judge, Required Hours</PageTitle>
         <CardStack>
           <AssignJudgeForm
               diversionPlan={diversionPlan}
