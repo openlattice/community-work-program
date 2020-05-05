@@ -51,7 +51,7 @@ const {
   PEOPLE,
   REGISTERED_FOR,
 } = APP_TYPE_FQNS;
-const { DATETIME_COMPLETED, ENTITY_KEY_ID } = PROPERTY_TYPE_FQNS;
+const { DATETIME_COMPLETED, ENTITY_KEY_ID, NOTES } = PROPERTY_TYPE_FQNS;
 const { ACTIONS, REQUEST_STATE } = SHARED;
 const { ADD_COURT_CHARGES_TO_CASE, REMOVE_COURT_CHARGE_FROM_CASE } = CHARGES;
 
@@ -137,11 +137,13 @@ class EditCourtChargesForm extends Component<Props, State> {
       chargesForCase.forEach((chargeMap :Map, index :number) => {
         const chargeEKID :UUID = chargeMap.getIn([COURT_CHARGE_LIST, ENTITY_KEY_ID, 0]);
         const chargeEventEKID :UUID = chargeMap.getIn([CHARGE_EVENT, ENTITY_KEY_ID, 0]);
+        const chargeEventNotes :UUID = chargeMap.getIn([CHARGE_EVENT, NOTES, 0]);
         const datetimeCharged :string = chargeMap.getIn([CHARGE_EVENT, DATETIME_COMPLETED, 0]);
         const dateCharged :string = DateTime.fromISO(datetimeCharged).toISODate();
         chargesFormData[sectionOneKey][index] = {};
         chargesFormData[sectionOneKey][index][getEntityAddressKey(-1, COURT_CHARGE_LIST, ENTITY_KEY_ID)] = chargeEKID;
         chargesFormData[sectionOneKey][index][getEntityAddressKey(-1, CHARGE_EVENT, DATETIME_COMPLETED)] = dateCharged;
+        chargesFormData[sectionOneKey][index][getEntityAddressKey(-1, CHARGE_EVENT, NOTES)] = chargeEventNotes;
         chargesFormData[sectionOneKey][index][getEntityAddressKey(-1, CHARGE_EVENT, ENTITY_KEY_ID)] = chargeEventEKID;
       });
     }
@@ -170,13 +172,14 @@ class EditCourtChargesForm extends Component<Props, State> {
     const storedChargeData :[] = get(chargesFormData, getPageSectionKey(1, 1));
 
     const chargeKey = getEntityAddressKey(-1, COURT_CHARGE_LIST, ENTITY_KEY_ID);
-    const chargeEventKey = getEntityAddressKey(-1, CHARGE_EVENT, DATETIME_COMPLETED);
+    const chargeEventDateKey = getEntityAddressKey(-1, CHARGE_EVENT, DATETIME_COMPLETED);
+    const chargeEventNotesKey = getEntityAddressKey(-1, CHARGE_EVENT, NOTES);
     const chargeEventEKIDKey = getEntityAddressKey(-1, CHARGE_EVENT, ENTITY_KEY_ID);
     const newChargesList :Object[] = storedChargeData
       .filter((charge :Object) => !charge[chargeEventEKIDKey])
       .map((charge :Object) => {
         const chargeName = charge[chargeKey];
-        const date :UUID = charge[chargeEventKey];
+        const date :UUID = charge[chargeEventDateKey];
         const now :DateTime = DateTime.local();
         const currentTime = now.toLocaleString(DateTime.TIME_24_SIMPLE);
         let datetime :string = '';
@@ -184,7 +187,8 @@ class EditCourtChargesForm extends Component<Props, State> {
         else datetime = now.toISO();
         return {
           [chargeKey]: chargeName,
-          [chargeEventKey]: datetime
+          [chargeEventDateKey]: datetime,
+          [chargeEventNotesKey]: charge[chargeEventNotesKey]
         };
       });
     chargesFormData[getPageSectionKey(1, 1)] = newChargesList;
