@@ -157,20 +157,19 @@ export default function chargesReducer(state :Map = INITIAL_STATE, action :Seque
           const seqAction :SequenceAction = action;
 
           const successValue :Object = seqAction.value;
-          const { chargeEKIDs } = successValue;
+          const { courtChargeEKIDs } = successValue;
           let { newChargeMaps } = successValue;
 
           const charges :List = state.get(COURT_CHARGES, List());
-          chargeEKIDs.forEach((chargeEKID :UUID, index :number) => {
+          courtChargeEKIDs.forEach((chargeEKID :UUID, index :number) => {
             const chargeEntity :Map = charges.find((charge :Map) => getEntityKeyId(charge) === chargeEKID);
-            let chargeMap :Map = newChargeMaps.get(index);
-            chargeMap = chargeMap.set(COURT_CHARGE_LIST, chargeEntity);
+            const chargeMap :Map = newChargeMaps.get(index)
+              .set(COURT_CHARGE_LIST, chargeEntity);
             newChargeMaps = newChargeMaps.set(index, chargeMap);
           });
 
-          let existingChargesForCase :List = state.get(COURT_CHARGES_FOR_CASE, List());
-          existingChargesForCase = existingChargesForCase.concat(newChargeMaps);
-
+          const existingChargesForCase :List = state.get(COURT_CHARGES_FOR_CASE, List())
+            .concat(newChargeMaps);
           return state
             .set(COURT_CHARGES_FOR_CASE, existingChargesForCase)
             .setIn([ACTIONS, ADD_COURT_CHARGES_TO_CASE, REQUEST_STATE], RequestStates.SUCCESS);
