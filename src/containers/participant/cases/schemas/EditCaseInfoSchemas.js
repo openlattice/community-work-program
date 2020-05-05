@@ -93,7 +93,7 @@ export const courtChargeSchema = {
   properties: {
     [getPageSectionKey(1, 1)]: {
       type: 'array',
-      title: '',
+      title: 'Add a New Court Charge',
       items: {
         type: 'object',
         properties: {
