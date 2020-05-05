@@ -13,6 +13,7 @@ import {
   Card,
   CardHeader,
   CardSegment,
+  Spinner,
 } from 'lattice-ui-kit';
 import { Form, DataProcessingUtils } from 'lattice-fabricate';
 import { connect } from 'react-redux';
@@ -276,6 +277,9 @@ class EditCourtChargesForm extends Component<Props, State> {
               onSubmit={this.onSubmit}
               schema={chargesFormSchema}
               uiSchema={uiSchemaToUse} />
+          { (courtChargesSubmitting || courtChargesDeleting) && (
+            <CardSegment padding="30px"><Spinner size="2x" /></CardSegment>
+          )}
           { (failedDelete || failedSubmit) && <ErrorMessage padding="30px" /> }
         </Card>
         <AddToAvailableCourtChargesModal
