@@ -643,8 +643,8 @@ function* getCourtChargesWatcher() :Generator<*, *, *> {
 function* getCourtChargesForCaseWorker(action :SequenceAction) :Generator<*, *, *> {
 
   /*
-    person -> charged with -> charge (datetime stored on charged with)
-    charge -> appears in -> case
+    charge event -> registered for -> court charge
+    charge event -> appears in -> court case
   */
   const { id, value } = action;
   const workerResponse = {};
@@ -653,67 +653,57 @@ function* getCourtChargesForCaseWorker(action :SequenceAction) :Generator<*, *, 
 
   try {
     yield put(getCourtChargesForCase.request(id));
-    if (value === null || value === undefined) {
-      throw ERR_ACTION_VALUE_NOT_DEFINED;
-    }
+    if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
+
     const { caseEKID } = value;
     const app = yield select(getAppFromState);
     const courtCasesESID :UUID = getEntitySetIdFromApp(app, MANUAL_PRETRIAL_COURT_CASES);
     const courtChargeListESID :UUID = getEntitySetIdFromApp(app, COURT_CHARGE_LIST);
+    const chargeEventESID :UUID = getEntitySetIdFromApp(app, CHARGE_EVENT);
 
     let searchFilter :Object = {
       entityKeyIds: [caseEKID],
       destinationEntitySetIds: [],
-      sourceEntitySetIds: [courtChargeListESID],
+      sourceEntitySetIds: [chargeEventESID],
     };
     response = yield call(
       searchEntityNeighborsWithFilterWorker,
       searchEntityNeighborsWithFilter({ entitySetId: courtCasesESID, filter: searchFilter })
     );
-    if (response.error) {
-      throw response.error;
-    }
+    if (response.error) throw response.error;
+    let chargeEventByEKID :Map = Map();
     if (response.data[caseEKID]) {
-      const chargesNeighborsResults :List = fromJS(response.data[caseEKID]);
-      const chargesEKIDs = [];
-      chargesNeighborsResults.forEach((neighbor :Map) => {
-        const chargeEntity :Map = getNeighborDetails(neighbor);
-        const chargeEKID :UUID = getEntityKeyId(chargeEntity);
-        chargesEKIDs.push(chargeEKID);
-        chargesInCase = chargesInCase.push(fromJS({
-          [COURT_CHARGE_LIST]: chargeEntity
-        }));
+      const chargeEventNeighbors :List = fromJS(response.data[caseEKID]);
+      const chargeEventEKIDs = [];
+      chargeEventNeighbors.forEach((neighbor :Map) => {
+        const chargeEventEntity :Map = getNeighborDetails(neighbor);
+        const chargeEventEKID :UUID = getEntityKeyId(chargeEventEntity);
+        chargeEventEKIDs.push(chargeEventEKID);
+        chargeEventByEKID = chargeEventByEKID.set(chargeEventEKID, chargeEventEntity);
       });
 
-      const chargeEventESID :UUID = getEntitySetIdFromApp(app, CHARGE_EVENT);
+
       searchFilter = {
-        entityKeyIds: chargesEKIDs,
-        destinationEntitySetIds: [],
-        sourceEntitySetIds: [chargeEventESID],
+        entityKeyIds: chargeEventEKIDs,
+        destinationEntitySetIds: [courtChargeListESID],
+        sourceEntitySetIds: [],
       };
       response = yield call(
         searchEntityNeighborsWithFilterWorker,
-        searchEntityNeighborsWithFilter({ entitySetId: courtChargeListESID, filter: searchFilter })
+        searchEntityNeighborsWithFilter({ entitySetId: chargeEventESID, filter: searchFilter })
       );
-      if (response.error) {
-        throw response.error;
-      }
-      const chargeEventResults :Map = fromJS(response.data);
-      if (!chargeEventResults.isEmpty()) {
-        chargeEventResults.forEach((chargeEventObj :List, chargeEKID :UUID) => {
-          const chargeEvent :Map = getNeighborDetails(chargeEventObj.get(0));
-          let chargeMap :Map = chargesInCase.find((map :Map) => getEntityKeyId(
-            map.get(COURT_CHARGE_LIST)
-          ) === chargeEKID);
-          if (isDefined(chargeMap)) {
-            const chargeMapIndex :number = chargesInCase.findIndex((map :Map) => getEntityKeyId(
-              map.get(COURT_CHARGE_LIST)
-            ) === chargeEKID);
-            chargeMap = chargeMap.set(CHARGE_EVENT, chargeEvent);
-            chargesInCase = chargesInCase.set(chargeMapIndex, chargeMap);
-          }
-        });
-      }
+      if (response.error) throw response.error;
+
+      const courtChargeNeighbors :Map = fromJS(response.data);
+      courtChargeNeighbors.forEach((neighbors :List, chargeEventEKID :UUID) => {
+        const courtCharge :Map = getNeighborDetails(neighbors.get(0));
+        const chargeMap :Map = Map().withMutations((map :Map) => {
+          const chargeEvent :Map = chargeEventByEKID.get(chargeEventEKID, Map());
+          map.set(CHARGE_EVENT, chargeEvent);
+          map.set(COURT_CHARGE_LIST, courtCharge);
+        }).asImmutable();
+        chargesInCase = chargesInCase.push(chargeMap);
+      });
     }
 
     yield put(getCourtChargesForCase.success(id, chargesInCase));
