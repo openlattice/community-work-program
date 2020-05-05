@@ -15,11 +15,14 @@ import { bindActionCreators } from 'redux';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
 import AddToAvailableCourtChargesModal from '../charges/AddToAvailableCourtChargesModal';
+import ErrorMessage from '../../../components/error/ErrorMessage';
+
 import { courtChargeSchema, courtChargeUiSchema } from './schemas/EditCaseInfoSchemas';
-import { disableChargesForm, hydrateCourtChargeSchema } from './utils/EditCaseInfoUtils';
+import { disableChargesForm, hydrateCourtChargeSchema, temporarilyDisableForm } from './utils/EditCaseInfoUtils';
 import { getEntityKeyId } from '../../../utils/DataUtils';
 import { getCombinedDateTime } from '../../../utils/ScheduleUtils';
-import { requestIsPending } from '../../../utils/RequestStateUtils';
+import { requestIsFailure, requestIsPending } from '../../../utils/RequestStateUtils';
+import { isDefined } from '../../../utils/LangUtils';
 import { addCourtChargesToCase, removeCourtChargeFromCase } from '../charges/ChargesActions';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { CHARGES, SHARED, STATE } from '../../../utils/constants/ReduxStateConsts';
@@ -42,7 +45,7 @@ const {
 } = APP_TYPE_FQNS;
 const { DATETIME_COMPLETED, ENTITY_KEY_ID } = PROPERTY_TYPE_FQNS;
 const { ACTIONS, REQUEST_STATE } = SHARED;
-const { ADD_COURT_CHARGES_TO_CASE } = CHARGES;
+const { ADD_COURT_CHARGES_TO_CASE, REMOVE_COURT_CHARGE_FROM_CASE } = CHARGES;
 
 const InnerCardHeader = styled.div`
   align-items: center;
@@ -65,6 +68,7 @@ type Props = {
   propertyTypeIds :Object;
   requestStates:{
     ADD_COURT_CHARGES_TO_CASE :RequestState;
+    REMOVE_COURT_CHARGE_FROM_CASE :RequestState;
   };
 };
 
@@ -161,8 +165,11 @@ class EditCourtChargesForm extends Component<Props, State> {
     const newChargesList :Object[] = storedChargeData.map((charge :{}) => {
       const chargeName = charge[chargeKey];
       const date :UUID = charge[chargeEventKey];
-      const currentTime = DateTime.local().toLocaleString(DateTime.TIME_24_SIMPLE);
-      const datetime = getCombinedDateTime(date, currentTime);
+      const now :DateTime = DateTime.local();
+      const currentTime = now.toLocaleString(DateTime.TIME_24_SIMPLE);
+      let datetime :string = '';
+      if (isDefined(date)) datetime = getCombinedDateTime(date, currentTime);
+      else datetime = now.toISO();
       return {
         [chargeKey]: chargeName,
         [chargeEventKey]: datetime
@@ -231,7 +238,13 @@ class EditCourtChargesForm extends Component<Props, State> {
     };
 
     const courtChargesSubmitting :boolean = requestIsPending(requestStates[ADD_COURT_CHARGES_TO_CASE]);
-    // console.log('courtChargesSubmitting: ', courtChargesSubmitting);
+    const courtChargesDeleting :boolean = requestIsPending(requestStates[REMOVE_COURT_CHARGE_FROM_CASE]);
+    const failedSubmit :boolean = requestIsFailure(requestStates[ADD_COURT_CHARGES_TO_CASE]);
+    const failedDelete :boolean = requestIsFailure(requestStates[REMOVE_COURT_CHARGE_FROM_CASE]);
+    let uiSchemaToUse = chargesFormUiSchema;
+    if (courtChargesSubmitting || courtChargesDeleting) {
+      uiSchemaToUse = temporarilyDisableForm(chargesFormUiSchema, [getPageSectionKey(1, 1)]);
+    }
     return (
       <>
         <Card>
@@ -249,7 +262,8 @@ class EditCourtChargesForm extends Component<Props, State> {
               onChange={this.handleOnChangeCharges}
               onSubmit={this.handleOnChargesSubmit}
               schema={chargesFormSchema}
-              uiSchema={chargesFormUiSchema} />
+              uiSchema={uiSchemaToUse} />
+          { (failedDelete || failedSubmit) && <ErrorMessage padding="30px" /> }
         </Card>
         <AddToAvailableCourtChargesModal
             isOpen={isAvailableChargesModalVisible}
@@ -263,7 +277,8 @@ const mapStateToProps = (state :Map) => {
   const charges = state.get(STATE.CHARGES);
   return {
     requestStates: {
-      [ADD_COURT_CHARGES_TO_CASE]: charges.getIn([ACTIONS, ADD_COURT_CHARGES_TO_CASE, REQUEST_STATE])
+      [ADD_COURT_CHARGES_TO_CASE]: charges.getIn([ACTIONS, ADD_COURT_CHARGES_TO_CASE, REQUEST_STATE]),
+      [REMOVE_COURT_CHARGE_FROM_CASE]: charges.getIn([ACTIONS, REMOVE_COURT_CHARGE_FROM_CASE, REQUEST_STATE])
     }
   };
 };
