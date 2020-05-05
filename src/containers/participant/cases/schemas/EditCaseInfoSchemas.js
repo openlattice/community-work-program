@@ -20,6 +20,7 @@ const {
   COURT_CASE_TYPE,
   DATETIME_COMPLETED,
   ENTITY_KEY_ID,
+  NOTES,
   REQUIRED_HOURS,
 } = PROPERTY_TYPE_FQNS;
 
@@ -108,6 +109,14 @@ export const courtChargeSchema = {
             title: 'Date charged',
             format: 'date',
           },
+          [getEntityAddressKey(-1, CHARGE_EVENT, NOTES)]: {
+            type: 'string',
+            title: 'Notes',
+          },
+          [getEntityAddressKey(-1, CHARGE_EVENT, ENTITY_KEY_ID)]: {
+            type: 'string',
+            title: 'Charge Event EKID',
+          },
         },
       },
       default: [{}]
@@ -131,6 +140,12 @@ export const courtChargeUiSchema = {
       [getEntityAddressKey(-1, CHARGE_EVENT, DATETIME_COMPLETED)]: {
         classNames: 'column-span-4',
       },
+      [getEntityAddressKey(-1, CHARGE_EVENT, NOTES)]: {
+        classNames: 'column-span-12',
+      },
+      [getEntityAddressKey(-1, CHARGE_EVENT, ENTITY_KEY_ID)]: {
+        'ui:widget': 'hidden'
+      }
     },
   },
 };
