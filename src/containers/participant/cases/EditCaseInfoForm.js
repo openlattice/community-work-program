@@ -250,6 +250,7 @@ class EditCaseInfoForm extends Component<Props> {
           <EditCourtChargesForm
               charges={courtCharges}
               chargesForCase={courtChargesForCase}
+              diversionPlanEKID={diversionPlanEKID}
               entityIndexToIdMap={entityIndexToIdMap}
               entitySetIds={entitySetIds}
               participant={participant}
