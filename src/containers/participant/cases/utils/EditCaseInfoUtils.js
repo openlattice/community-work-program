@@ -65,7 +65,7 @@ const disableJudgeForm = (uiSchema :Object) :Object => {
 };
 
 const hydrateCourtChargeSchema = (schema :Object, charges :List) => {
-  const [values, labels] = getValuesFromEntityList(charges, [NAME]);
+  const [values, labels] = getValuesFromEntityList(charges, [OL_ID, NAME]);
   let newSchema = setIn(
     schema,
     [
