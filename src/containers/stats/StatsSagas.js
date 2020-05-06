@@ -69,6 +69,7 @@ function* getStatsDataWorker(action :SequenceAction) :Generator<*, *, *> {
   const { id } = action;
   let response :Object = {};
   let enrollmentsByCourtTypeGraphData :Map = fromJS(courtTypeCountObj).asMutable();
+  let referralsByCourtTypeGraphData :Map = fromJS(courtTypeCountObj).asMutable();
   let activePeopleByCourtTypeGraphData :Map = fromJS(courtTypeCountObj).asMutable();
   let successfulPeopleByCourtTypeGraphData :Map = fromJS(courtTypeCountObj).asMutable();
   let unsuccessfulPeopleByCourtTypeGraphData :Map = fromJS(courtTypeCountObj).asMutable();
@@ -111,6 +112,7 @@ function* getStatsDataWorker(action :SequenceAction) :Generator<*, *, *> {
       const neighborsByDiversionPlanEKID :Map = fromJS(response.data);
 
       let courtTypeAndDateByPersonEKID :Map = Map();
+      let allEnrollmentsByPersonEKID :Map = Map();
 
       neighborsByDiversionPlanEKID.forEach((caseAndPersonNeighbors :List) => {
         const courtCaseObj :Map = caseAndPersonNeighbors
@@ -142,8 +144,35 @@ function* getStatsDataWorker(action :SequenceAction) :Generator<*, *, *> {
             { courtType: courtCaseType, enrollmentStatusDate: neighborDate, status }
           );
         }
+
+        let enrollments :List = allEnrollmentsByPersonEKID.get(personEKID, List());
+        enrollments = enrollments.push(Map({ courtType: courtCaseType, enrollmentStatusDate: neighborDate }));
+        allEnrollmentsByPersonEKID = allEnrollmentsByPersonEKID.set(personEKID, enrollments);
       });
+
       enrollmentsByCourtTypeGraphData = enrollmentsByCourtTypeGraphData.asImmutable();
+      allEnrollmentsByPersonEKID.forEach((enrollments :List) => {
+        let currentCourtType :string = '';
+        let repeats :Map = Map();
+        const sortedEnrollments = enrollments.sortBy((enrollment :Map) => enrollment.get('enrollmentStatusDate'));
+
+        sortedEnrollments.forEach((enrollment :Map) => {
+          const courtType :string = enrollment.get('courtType');
+          if (courtType !== currentCourtType) currentCourtType = courtType;
+          else {
+            let courtTypeRepeatCount = repeats.get(currentCourtType, 0);
+            repeats = repeats.set(currentCourtType, courtTypeRepeatCount += 1);
+          }
+        });
+
+        repeats.forEach((referralCountToAdd :number, courtType :string) => {
+          const totalReferralsForCourtType :number = referralsByCourtTypeGraphData.get(courtType, 0);
+          referralsByCourtTypeGraphData = referralsByCourtTypeGraphData
+            .set(courtType, totalReferralsForCourtType + referralCountToAdd);
+        });
+      });
+
+      referralsByCourtTypeGraphData = referralsByCourtTypeGraphData.asImmutable();
 
       courtTypeAndDateByPersonEKID.forEach(({ courtType, status } :Object) => {
         if (ACTIVE_STATUSES.includes(status)) {
@@ -174,6 +203,7 @@ function* getStatsDataWorker(action :SequenceAction) :Generator<*, *, *> {
     yield put(getStatsData.success(id, {
       activePeopleByCourtTypeGraphData,
       enrollmentsByCourtTypeGraphData,
+      referralsByCourtTypeGraphData,
       successfulPeopleByCourtTypeGraphData,
       totalActiveParticipantCount,
       totalDiversionPlanCount,
@@ -184,7 +214,7 @@ function* getStatsDataWorker(action :SequenceAction) :Generator<*, *, *> {
     }));
   }
   catch (error) {
-    LOG.error('caught exception in getStatsDataWorker()', error);
+    LOG.error(action.type, error);
     yield put(getStatsData.failure(id, error));
   }
   finally {
