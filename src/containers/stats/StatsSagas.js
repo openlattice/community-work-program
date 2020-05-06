@@ -68,10 +68,10 @@ const ACTIVE_STATUSES :string[] = [
 function* getStatsDataWorker(action :SequenceAction) :Generator<*, *, *> {
   const { id } = action;
   let response :Object = {};
-  let enrollmentsByCourtTypeGraphData :Map = fromJS(courtTypeCountObj);
-  let activePeopleByCourtTypeGraphData :Map = fromJS(courtTypeCountObj);
-  let successfulPeopleByCourtTypeGraphData :Map = fromJS(courtTypeCountObj);
-  let unsuccessfulPeopleByCourtTypeGraphData :Map = fromJS(courtTypeCountObj);
+  let enrollmentsByCourtTypeGraphData :Map = fromJS(courtTypeCountObj).asMutable();
+  let activePeopleByCourtTypeGraphData :Map = fromJS(courtTypeCountObj).asMutable();
+  let successfulPeopleByCourtTypeGraphData :Map = fromJS(courtTypeCountObj).asMutable();
+  let unsuccessfulPeopleByCourtTypeGraphData :Map = fromJS(courtTypeCountObj).asMutable();
   let totalParticipantCount :number = 0;
   let totalActiveParticipantCount :number = 0;
   let totalSuccessfulParticipantCount :number = 0;
@@ -143,6 +143,7 @@ function* getStatsDataWorker(action :SequenceAction) :Generator<*, *, *> {
           );
         }
       });
+      enrollmentsByCourtTypeGraphData = enrollmentsByCourtTypeGraphData.asImmutable();
 
       courtTypeAndDateByPersonEKID.forEach(({ courtType, status } :Object) => {
         if (ACTIVE_STATUSES.includes(status)) {
@@ -165,6 +166,10 @@ function* getStatsDataWorker(action :SequenceAction) :Generator<*, *, *> {
         totalParticipantCount += 1;
       });
     }
+
+    activePeopleByCourtTypeGraphData = activePeopleByCourtTypeGraphData.asImmutable();
+    successfulPeopleByCourtTypeGraphData = successfulPeopleByCourtTypeGraphData.asImmutable();
+    unsuccessfulPeopleByCourtTypeGraphData = unsuccessfulPeopleByCourtTypeGraphData.asImmutable();
 
     yield put(getStatsData.success(id, {
       activePeopleByCourtTypeGraphData,
