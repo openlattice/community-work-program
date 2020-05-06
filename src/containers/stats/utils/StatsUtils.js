@@ -21,7 +21,16 @@ const formatPeopleCourtTypeData = (peopleByCourtTypeGraphData :Map) :Object[] =>
   return graphData;
 };
 
+const formatReferralsCourtTypeData = (referralsByCourtTypeGraphData :Map) :Object[] => {
+  const graphData :Object[] = [];
+  referralsByCourtTypeGraphData.forEach((numberOfReferrals :number, courtType :string) => {
+    graphData.push({ y: numberOfReferrals, x: courtType });
+  });
+  return graphData;
+};
+
 export {
   formatEnrollmentsCourtTypeData,
   formatPeopleCourtTypeData,
+  formatReferralsCourtTypeData,
 };
