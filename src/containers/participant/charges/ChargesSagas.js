@@ -901,12 +901,12 @@ function* removeCourtChargeFromCaseWorker(action :SequenceAction) :Generator<*, 
 
   const { id, value } = action;
   if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
-  let response :{} = {};
+  let response :Object = {};
 
   try {
     yield put(removeCourtChargeFromCase.request(id, value));
 
-    const { entityData } = value;
+    const { entityData, path } = value;
 
     const app = yield select(getAppFromState);
     const courtChargeListESID :UUID = getEntitySetIdFromApp(app, COURT_CHARGE_LIST);
@@ -949,11 +949,9 @@ function* removeCourtChargeFromCaseWorker(action :SequenceAction) :Generator<*, 
     }
 
     response = yield call(deleteEntitiesWorker, deleteEntities(entitiesToDelete));
-    if (response.error) {
-      throw response.error;
-    }
+    if (response.error) throw response.error;
 
-    yield put(removeCourtChargeFromCase.success(id, {}));
+    yield put(removeCourtChargeFromCase.success(id, path));
   }
   catch (error) {
     LOG.error(action.type, error);

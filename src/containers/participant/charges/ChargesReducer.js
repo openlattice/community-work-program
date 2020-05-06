@@ -427,8 +427,14 @@ export default function chargesReducer(state :Map = INITIAL_STATE, action :Seque
         REQUEST: () => state
           .setIn([ACTIONS, REMOVE_COURT_CHARGE_FROM_CASE, action.id], action)
           .setIn([ACTIONS, REMOVE_COURT_CHARGE_FROM_CASE, REQUEST_STATE], RequestStates.PENDING),
-        SUCCESS: () => state
-          .setIn([ACTIONS, REMOVE_COURT_CHARGE_FROM_CASE, REQUEST_STATE], RequestStates.SUCCESS),
+        SUCCESS: () => {
+          const path = action.value;
+          const courtChargesForCase :List = state.get(COURT_CHARGES_FOR_CASE, List())
+            .delete(path[1]);
+          return state
+            .set(COURT_CHARGES_FOR_CASE, courtChargesForCase)
+            .setIn([ACTIONS, REMOVE_COURT_CHARGE_FROM_CASE, REQUEST_STATE], RequestStates.SUCCESS);
+        },
         FAILURE: () => state
           .setIn([ACTIONS, REMOVE_COURT_CHARGE_FROM_CASE, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, REMOVE_COURT_CHARGE_FROM_CASE, action.id])
