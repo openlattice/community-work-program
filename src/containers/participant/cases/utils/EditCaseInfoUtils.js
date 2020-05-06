@@ -65,7 +65,7 @@ const disableJudgeForm = (uiSchema :Object) :Object => {
 };
 
 const hydrateCourtChargeSchema = (schema :Object, charges :List) => {
-  const [values, labels] = getValuesFromEntityList(charges, [NAME]);
+  const [values, labels] = getValuesFromEntityList(charges, [OL_ID, NAME]);
   let newSchema = setIn(
     schema,
     [
@@ -171,10 +171,25 @@ const hydrateArrestChargeSchema = (schema :Object, existingArrestChargesFromPSA 
   return newSchema;
 };
 
+const temporarilyDisableForm = (uiSchema :Object, path :string[]) => {
+  let newUiSchema = setIn(
+    uiSchema,
+    path.concat(['ui:options', 'addable']),
+    false
+  );
+  newUiSchema = setIn(
+    newUiSchema,
+    path.concat(['ui:options', 'removable']),
+    false
+  );
+  return newUiSchema;
+};
+
 export {
   disableChargesForm,
   disableJudgeForm,
   hydrateArrestChargeSchema,
   hydrateCourtChargeSchema,
   hydrateJudgeSchema,
+  temporarilyDisableForm,
 };
