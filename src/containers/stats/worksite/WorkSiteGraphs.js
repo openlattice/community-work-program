@@ -1,16 +1,10 @@
 // @flow
 import React from 'react';
-import styled from 'styled-components';
 
-const Wrapper = styled.div`
-  align-items: center;
-  display: flex;
-  font-size: 24px;
-  justify-content: center;
-`;
+import ComingSoon from '../../../components/ComingSoon';
 
-const WorkSiteGraphs = () => (
-  <Wrapper>Coming Soon</Wrapper>
+const WorksiteGraph = () => (
+  <ComingSoon />
 );
 
-export default WorkSiteGraphs;
+export default WorksiteGraph;
