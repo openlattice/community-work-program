@@ -175,6 +175,10 @@ export const arrestChargeSchema = {
             type: 'string',
             title: 'Notes',
           },
+          [getEntityAddressKey(-1, CHARGE_EVENT, ENTITY_KEY_ID)]: {
+            type: 'string',
+            title: 'Charge Event EKID',
+          },
         },
       },
     },
@@ -198,6 +202,10 @@ export const arrestChargeSchema = {
           [getEntityAddressKey(-1, CHARGE_EVENT, NOTES)]: {
             type: 'string',
             title: 'Notes',
+          },
+          [getEntityAddressKey(-1, CHARGE_EVENT, ENTITY_KEY_ID)]: {
+            type: 'string',
+            title: 'Charge Event EKID',
           },
         },
       },
@@ -224,6 +232,9 @@ export const arrestChargeUiSchema = {
       [getEntityAddressKey(-1, CHARGE_EVENT, NOTES)]: {
         classNames: 'column-span-12',
       },
+      [getEntityAddressKey(-1, CHARGE_EVENT, ENTITY_KEY_ID)]: {
+        'ui:widget': 'hidden'
+      }
     },
   },
   [getPageSectionKey(1, 2)]: {
@@ -244,6 +255,9 @@ export const arrestChargeUiSchema = {
       [getEntityAddressKey(-1, CHARGE_EVENT, NOTES)]: {
         classNames: 'column-span-12',
       },
+      [getEntityAddressKey(-1, CHARGE_EVENT, ENTITY_KEY_ID)]: {
+        'ui:widget': 'hidden'
+      }
     },
   },
 };

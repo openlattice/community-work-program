@@ -78,7 +78,7 @@ type Props = {
   arrestChargeMapsCreatedInPSA :List;
   arrestCharges :List;
   arrestChargesFromPSA :List;
-  cwpArrestCaseByArrestCharge :Map;
+  cwpArrestCaseEKIDByChargeEventEKID :Map;
   diversionPlanEKID :UUID;
   entityIndexToIdMap :Map;
   entitySetIds :Map;
@@ -153,10 +153,12 @@ class EditArrestChargesForm extends Component<Props, State> {
         const dateCharged :string = getDateChargedFromChargeEvent(chargeEvent);
         const notes :string = chargeEvent.getIn([NOTES, 0]);
         const chargeEKID :UUID = getEntityKeyId(chargeMap.get(MANUAL_ARREST_CHARGES, Map()));
+        const chargeEventEKID :UUID = getEntityKeyId(chargeMap.get(CHARGE_EVENT, Map()));
         chargesFormData[sectionOneKey][index] = {
           [getEntityAddressKey(-1, MANUAL_ARREST_CHARGES, ENTITY_KEY_ID)]: chargeEKID,
           [getEntityAddressKey(-1, CHARGE_EVENT, DATETIME_COMPLETED)]: dateCharged,
-          [getEntityAddressKey(-1, CHARGE_EVENT, NOTES)]: notes
+          [getEntityAddressKey(-1, CHARGE_EVENT, NOTES)]: notes,
+          [getEntityAddressKey(-1, CHARGE_EVENT, ENTITY_KEY_ID)]: chargeEventEKID
         };
       });
     }
@@ -170,10 +172,12 @@ class EditArrestChargesForm extends Component<Props, State> {
         const dateCharged :string = getDateChargedFromChargeEvent(chargeEvent);
         const notes :string = chargeEvent.getIn([NOTES, 0]);
         const chargeEKID :UUID = getEntityKeyId(chargeMap.get(ARREST_CHARGE_LIST, Map()));
+        const chargeEventEKID :UUID = getEntityKeyId(chargeMap.get(CHARGE_EVENT, Map()));
         chargesFormData[sectionTwoKey][index] = {
           [getEntityAddressKey(-1, ARREST_CHARGE_LIST, ENTITY_KEY_ID)]: chargeEKID,
           [getEntityAddressKey(-1, CHARGE_EVENT, DATETIME_COMPLETED)]: dateCharged,
-          [getEntityAddressKey(-1, CHARGE_EVENT, NOTES)]: notes
+          [getEntityAddressKey(-1, CHARGE_EVENT, NOTES)]: notes,
+          [getEntityAddressKey(-1, CHARGE_EVENT, ENTITY_KEY_ID)]: chargeEventEKID
         };
       });
     }
@@ -196,7 +200,6 @@ class EditArrestChargesForm extends Component<Props, State> {
       entitySetIds,
       participant,
       propertyTypeIds,
-      cwpArrestCaseByArrestCharge,
       psaArrestCaseByArrestCharge,
     } = this.props;
     const { chargesFormData } = this.state;
@@ -223,8 +226,7 @@ class EditArrestChargesForm extends Component<Props, State> {
     const { newChargeEntities, newChargeAssociations } = formatNewArrestChargeDataAndAssociations(
       newArrestCharges,
       existingChargesFromPSA.length,
-      { personIndexOrEKID: personEKID, diversionPlanIndexOrEKID: diversionPlanEKID },
-      cwpArrestCaseByArrestCharge
+      { personIndexOrEKID: personEKID, diversionPlanIndexOrEKID: diversionPlanEKID }
     );
     entities[getPageSectionKey(1, 2)] = newChargeEntities;
     associations = associations.concat(newChargeAssociations);
@@ -252,7 +254,7 @@ class EditArrestChargesForm extends Component<Props, State> {
       actions,
       arrestChargeMapsCreatedInCWP,
       arrestChargeMapsCreatedInPSA,
-      cwpArrestCaseByArrestCharge,
+      cwpArrestCaseEKIDByChargeEventEKID,
       diversionPlanEKID,
       entitySetIds,
       participant,
@@ -279,7 +281,7 @@ class EditArrestChargesForm extends Component<Props, State> {
         const chargeEventEKID :UUID = getEntityKeyId(relevantChargeMap.get(CHARGE_EVENT));
         entitiesToDelete.push({ entitySetId: chargeEventESID, entityKeyId: chargeEventEKID });
         // delete the arrest case (which will delete the link to the person, diversion plan, and arrest charge)
-        const arrestCaseEKID :UUID = cwpArrestCaseByArrestCharge.get(cwpArrestChargeEKID, '');
+        const arrestCaseEKID :UUID = cwpArrestCaseEKIDByChargeEventEKID.get(chargeEventEKID, '');
         entitiesToDelete.push({ entitySetId: arrestCaseESID, entityKeyId: arrestCaseEKID });
         // delete the association between person and arrest charge
         const personEKID :UUID = getEntityKeyId(participant);

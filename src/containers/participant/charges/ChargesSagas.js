@@ -99,7 +99,7 @@ function* addArrestChargesWorker(action :SequenceAction) :Generator<*, *, *> {
   let arrestChargeMapsCreatedInCWP :List = List();
   let arrestChargeMapsCreatedInPSA :List = List();
   let psaArrestCaseByArrestCharge :Map = Map();
-  let cwpArrestCaseByArrestCharge :Map = Map();
+  let cwpArrestCaseEKIDByChargeEventEKID :Map = Map();
 
   try {
     yield put(addArrestCharges.request(id, value));
@@ -119,10 +119,10 @@ function* addArrestChargesWorker(action :SequenceAction) :Generator<*, *, *> {
     const chargeEventESID :UUID = getEntitySetIdFromApp(app, CHARGE_EVENT);
     const chargeEventEKIDs :UUID[] = entityKeyIds[chargeEventESID];
 
-    chargeEventEKIDs.forEach((ekid :UUID, index :number) => {
+    chargeEventEKIDs.forEach((chargeEventEKID :UUID, index :number) => {
       // construct charge event entity:
       const newChargeEvent :Map = Map().withMutations((map :Map) => {
-        map.set(ENTITY_KEY_ID, List([ekid]));
+        map.set(ENTITY_KEY_ID, List([chargeEventEKID]));
         fromJS(entityData[chargeEventESID][index]).forEach((chargeEventValue, ptid) => {
           const propertyTypeFqn :FullyQualifiedName = getPropertyFqnFromEdm(edm, ptid);
           map.set(propertyTypeFqn, chargeEventValue);
@@ -147,7 +147,7 @@ function* addArrestChargesWorker(action :SequenceAction) :Generator<*, *, *> {
         arrestChargeMapsCreatedInCWP = arrestChargeMapsCreatedInCWP.push(newChargeMap);
 
         const newCaseUUID :UUID = entitySetIds[appearsInArrestESID][index];
-        cwpArrestCaseByArrestCharge = cwpArrestCaseByArrestCharge.set(chargeEKID, newCaseUUID);
+        cwpArrestCaseEKIDByChargeEventEKID = cwpArrestCaseEKIDByChargeEventEKID.set(chargeEventEKID, newCaseUUID);
       }
       if (chargeEventToChargeAssociation.dstEntitySetId === manualArrestChargeESID) {
         charge = arrestChargesFromPSA
@@ -164,7 +164,7 @@ function* addArrestChargesWorker(action :SequenceAction) :Generator<*, *, *> {
     yield put(addArrestCharges.success(id, {
       arrestChargeMapsCreatedInCWP,
       arrestChargeMapsCreatedInPSA,
-      cwpArrestCaseByArrestCharge,
+      cwpArrestCaseEKIDByChargeEventEKID,
       psaArrestCaseByArrestCharge,
     }));
   }
@@ -429,7 +429,7 @@ function* getArrestChargesLinkedToCWPWorker(action :SequenceAction) :Generator<*
   let arrestChargeMapsCreatedInCWP :List = List();
   let arrestChargeMapsCreatedInPSA :List = List();
   let psaArrestCaseByArrestCharge :Map = Map();
-  let cwpArrestCaseByArrestCharge :Map = Map();
+  let cwpArrestCaseEKIDByChargeEventEKID :Map = Map();
 
   try {
     yield put(getArrestChargesLinkedToCWP.request(id));
@@ -451,9 +451,7 @@ function* getArrestChargesLinkedToCWPWorker(action :SequenceAction) :Generator<*
       searchEntityNeighborsWithFilterWorker,
       searchEntityNeighborsWithFilter({ entitySetId: diversionPlanESID, filter: arrestCaseSearchFilter })
     );
-    if (response.error) {
-      throw response.error;
-    }
+    if (response.error) throw response.error;
 
     if (response.data[diversionPlanEKID]) {
       const arrestCaseNeighbors :List = fromJS(response.data[diversionPlanEKID]);
@@ -497,7 +495,8 @@ function* getArrestChargesLinkedToCWPWorker(action :SequenceAction) :Generator<*
             if (neighborESID === chargeEventESID) {
               cwpChargeEventsByEKID = cwpChargeEventsByEKID.set(chargeOrChargeEventEKID, entity);
               cwpChargeEventEKIDs.push(chargeOrChargeEventEKID);
-              cwpArrestCaseByArrestCharge = cwpArrestCaseByArrestCharge.set(chargeOrChargeEventEKID, arrestCaseEKID);
+              cwpArrestCaseEKIDByChargeEventEKID = cwpArrestCaseEKIDByChargeEventEKID
+                .set(chargeOrChargeEventEKID, arrestCaseEKID);
             }
           }));
 
@@ -553,10 +552,6 @@ function* getArrestChargesLinkedToCWPWorker(action :SequenceAction) :Generator<*
               chargeMap = chargeMap.set(CHARGE_EVENT, cwpChargeEventsByEKID.get(chargeEventEKID, Map()));
               chargeMap = chargeMap.set(ARREST_CHARGE_LIST, arrestCharge);
               arrestChargeMapsCreatedInCWP = arrestChargeMapsCreatedInCWP.push(chargeMap);
-              const arrestCaseEKID :UUID = cwpArrestCaseByArrestCharge.get(chargeEventEKID);
-              cwpArrestCaseByArrestCharge = cwpArrestCaseByArrestCharge
-                .set(getEntityKeyId(arrestCharge), arrestCaseEKID);
-              cwpArrestCaseByArrestCharge = cwpArrestCaseByArrestCharge.delete(chargeEventEKID);
             }));
         }
       }
@@ -565,7 +560,7 @@ function* getArrestChargesLinkedToCWPWorker(action :SequenceAction) :Generator<*
     yield put(getArrestChargesLinkedToCWP.success(id, {
       arrestChargeMapsCreatedInCWP,
       arrestChargeMapsCreatedInPSA,
-      cwpArrestCaseByArrestCharge,
+      cwpArrestCaseEKIDByChargeEventEKID,
       psaArrestCaseByArrestCharge,
     }));
   }

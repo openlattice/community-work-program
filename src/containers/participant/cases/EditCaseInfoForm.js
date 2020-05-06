@@ -60,7 +60,7 @@ const {
   ARREST_CHARGE_MAPS_CREATED_IN_PSA,
   COURT_CHARGES,
   COURT_CHARGES_FOR_CASE,
-  CWP_ARREST_CASE_BY_ARREST_CHARGE,
+  CWP_ARREST_CASE_EKID_BY_CHARGE_EVENT_EKID,
   PSA_ARREST_CASE_BY_ARREST_CHARGE,
 } = CHARGES;
 
@@ -101,7 +101,7 @@ type Props = {
   arrestChargesFromPSA :List;
   courtCharges :List;
   courtChargesForCase :List;
-  cwpArrestCaseByArrestCharge :Map;
+  cwpArrestCaseEKIDByChargeEventEKID :Map;
   diversionPlan :Map;
   entitySetIds :Map;
   getInfoForEditCaseRequestState :RequestState;
@@ -191,7 +191,7 @@ class EditCaseInfoForm extends Component<Props> {
       propertyTypeIds,
       arrestChargeMapsCreatedInCWP,
       arrestChargeMapsCreatedInPSA,
-      cwpArrestCaseByArrestCharge,
+      cwpArrestCaseEKIDByChargeEventEKID,
       psaArrestCaseByArrestCharge,
     } = this.props;
 
@@ -240,7 +240,7 @@ class EditCaseInfoForm extends Component<Props> {
               arrestChargeMapsCreatedInPSA={arrestChargeMapsCreatedInPSA}
               arrestCharges={arrestCharges}
               arrestChargesFromPSA={arrestChargesFromPSA}
-              cwpArrestCaseByArrestCharge={cwpArrestCaseByArrestCharge}
+              cwpArrestCaseEKIDByChargeEventEKID={cwpArrestCaseEKIDByChargeEventEKID}
               diversionPlanEKID={diversionPlanEKID}
               entityIndexToIdMap={entityIndexToIdMap}
               entitySetIds={entitySetIds}
@@ -281,7 +281,7 @@ const mapStateToProps = (state :Map) => {
     [ARREST_CHARGE_MAPS_CREATED_IN_PSA]: charges.get(ARREST_CHARGE_MAPS_CREATED_IN_PSA),
     [COURT_CHARGES]: charges.get(COURT_CHARGES),
     [COURT_CHARGES_FOR_CASE]: charges.get(COURT_CHARGES_FOR_CASE),
-    [CWP_ARREST_CASE_BY_ARREST_CHARGE]: charges.get(CWP_ARREST_CASE_BY_ARREST_CHARGE),
+    [CWP_ARREST_CASE_EKID_BY_CHARGE_EVENT_EKID]: charges.get(CWP_ARREST_CASE_EKID_BY_CHARGE_EVENT_EKID),
     [JUDGE]: person.get(JUDGE),
     [PARTICIPANT]: person.get(PARTICIPANT),
     [PERSON.DIVERSION_PLAN]: person.get(PERSON.DIVERSION_PLAN),

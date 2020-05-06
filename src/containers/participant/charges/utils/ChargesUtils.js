@@ -33,22 +33,13 @@ const formatNewArrestChargeDataAndAssociations = (
   newChargesFormData :Object[],
   numberOfExistingChargesAdded :number,
   { personIndexOrEKID, diversionPlanIndexOrEKID } :Object,
-  cwpArrestCaseByArrestCharge :?Map,
 ) :Object => {
 
   const newChargeEntities :Object[] = [];
   const newChargeAssociations :Array<Array<*>> = [];
   if (!isDefined(newChargesFormData)) return { newChargeEntities, newChargeAssociations };
-
-  let newArrestCharges :Object[] = newChargesFormData;
-  if (isDefined(cwpArrestCaseByArrestCharge) && !cwpArrestCaseByArrestCharge.isEmpty()) {
-    newArrestCharges = newChargesFormData.filter((chargeObject :Object) => {
-      const existingChargeEKID :UUID = chargeObject[getEntityAddressKey(-1, ARREST_CHARGE_LIST, ENTITY_KEY_ID)];
-      const existing :any = cwpArrestCaseByArrestCharge
-        .findKey((caseEKID, chargeEKID) => chargeEKID === existingChargeEKID);
-      return !isDefined(existing);
-    });
-  }
+  const newArrestCharges :Object[] = newChargesFormData
+    .filter((chargeObject :Object) => !chargeObject[getEntityAddressKey(-1, CHARGE_EVENT, ENTITY_KEY_ID)]);
   if (!newArrestCharges.length || !Object.values(newArrestCharges[0]).length) {
     return { newChargeEntities, newChargeAssociations };
   }
