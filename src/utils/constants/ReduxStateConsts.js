@@ -45,7 +45,7 @@ export const CHARGES = {
   ARREST_CHARGE_MAPS_CREATED_IN_PSA: 'arrestChargeMapsCreatedInPSA',
   COURT_CHARGES: 'courtCharges',
   COURT_CHARGES_FOR_CASE: 'courtChargesForCase',
-  CWP_ARREST_CASE_BY_ARREST_CHARGE: 'cwpArrestCaseByArrestCharge',
+  CWP_ARREST_CASE_EKID_BY_CHARGE_EVENT_EKID: 'cwpArrestCaseEKIDByChargeEventEKID',
   GET_ARREST_CASES_AND_CHARGES_FROM_PSA: 'getArrestCasesAndChargesFromPSA',
   GET_ARREST_CHARGES: 'getArrestCharges',
   GET_ARREST_CHARGES_LINKED_TO_CWP: 'getArrestChargesLinkedToCWP',

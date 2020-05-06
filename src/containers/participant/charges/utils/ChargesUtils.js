@@ -22,28 +22,24 @@ const {
   REGISTERED_FOR,
   RELATED_TO,
 } = APP_TYPE_FQNS;
-const { ARREST_DATETIME, DATETIME_COMPLETED, ENTITY_KEY_ID } = PROPERTY_TYPE_FQNS;
+const {
+  ARREST_DATETIME,
+  DATETIME_COMPLETED,
+  ENTITY_KEY_ID,
+  NOTES,
+} = PROPERTY_TYPE_FQNS;
 
 const formatNewArrestChargeDataAndAssociations = (
   newChargesFormData :Object[],
   numberOfExistingChargesAdded :number,
   { personIndexOrEKID, diversionPlanIndexOrEKID } :Object,
-  cwpArrestCaseByArrestCharge :?Map,
 ) :Object => {
 
   const newChargeEntities :Object[] = [];
   const newChargeAssociations :Array<Array<*>> = [];
   if (!isDefined(newChargesFormData)) return { newChargeEntities, newChargeAssociations };
-
-  let newArrestCharges :Object[] = newChargesFormData;
-  if (isDefined(cwpArrestCaseByArrestCharge) && !cwpArrestCaseByArrestCharge.isEmpty()) {
-    newArrestCharges = newChargesFormData.filter((chargeObject :Object) => {
-      const existingChargeEKID :UUID = chargeObject[getEntityAddressKey(-1, ARREST_CHARGE_LIST, ENTITY_KEY_ID)];
-      const existing :any = cwpArrestCaseByArrestCharge
-        .findKey((caseEKID, chargeEKID) => chargeEKID === existingChargeEKID);
-      return !isDefined(existing);
-    });
-  }
+  const newArrestCharges :Object[] = newChargesFormData
+    .filter((chargeObject :Object) => !chargeObject[getEntityAddressKey(-1, CHARGE_EVENT, ENTITY_KEY_ID)]);
   if (!newArrestCharges.length || !Object.values(newArrestCharges[0]).length) {
     return { newChargeEntities, newChargeAssociations };
   }
@@ -60,6 +56,9 @@ const formatNewArrestChargeDataAndAssociations = (
     else dateTimeCharged = now.toISO();
     chargeEventToSubmit[getEntityAddressKey(-1, CHARGE_EVENT, DATETIME_COMPLETED)] = dateTimeCharged;
     chargeEventToSubmit[getEntityAddressKey(index, MANUAL_ARREST_CASES, ARREST_DATETIME)] = dateTimeCharged;
+
+    const notesKey :string = getEntityAddressKey(-1, CHARGE_EVENT, NOTES);
+    chargeEventToSubmit[notesKey] = charge[notesKey];
     newChargeEntities.push(chargeEventToSubmit);
 
     const arrestChargeEKID :UUID = charge[getEntityAddressKey(-1, ARREST_CHARGE_LIST, ENTITY_KEY_ID)];
@@ -69,6 +68,14 @@ const formatNewArrestChargeDataAndAssociations = (
       CHARGE_EVENT,
       arrestChargeEKID,
       ARREST_CHARGE_LIST
+    ]);
+
+    newChargeAssociations.push([
+      APPEARS_IN,
+      index + numberOfExistingChargesAdded,
+      CHARGE_EVENT,
+      index,
+      MANUAL_ARREST_CASES
     ]);
     newChargeAssociations.push([APPEARS_IN, arrestChargeEKID, ARREST_CHARGE_LIST, index, MANUAL_ARREST_CASES]);
     newChargeAssociations.push([APPEARS_IN_ARREST, personIndexOrEKID, PEOPLE, index, MANUAL_ARREST_CASES]);
@@ -81,6 +88,13 @@ const formatNewArrestChargeDataAndAssociations = (
       CHARGE_EVENT
     ]);
     newChargeAssociations.push([RELATED_TO, diversionPlanIndexOrEKID, DIVERSION_PLAN, index, MANUAL_ARREST_CASES]);
+    newChargeAssociations.push([
+      RELATED_TO,
+      diversionPlanIndexOrEKID,
+      DIVERSION_PLAN,
+      index + numberOfExistingChargesAdded,
+      CHARGE_EVENT
+    ]);
   });
 
   return { newChargeEntities, newChargeAssociations };
@@ -133,8 +147,11 @@ const formatExistingChargeDataAndAssociation = (
     if (isDefined(dateChargedFromForm)) dateTimeCharged = getCombinedDateTime(dateChargedFromForm, currentTime);
     else if (isDefined(arrestDateTime) && arrestDateTime.length) dateTimeCharged = arrestDateTime;
     else dateTimeCharged = now.toISO();
-
     chargeEventToSubmit[getEntityAddressKey(index, CHARGE_EVENT, DATETIME_COMPLETED)] = dateTimeCharged;
+
+    const notesKey :string = getEntityAddressKey(index, CHARGE_EVENT, NOTES);
+    chargeEventToSubmit[notesKey] = charge[notesKey];
+
     psaChargeEntities.push(chargeEventToSubmit);
   });
 

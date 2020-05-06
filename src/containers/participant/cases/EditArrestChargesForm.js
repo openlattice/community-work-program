@@ -13,25 +13,28 @@ import {
   Button,
   Card,
   CardHeader,
+  CardSegment,
+  Spinner,
 } from 'lattice-ui-kit';
 import { Form, DataProcessingUtils } from 'lattice-fabricate';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import type { RequestSequence } from 'redux-reqseq';
+import type { RequestSequence, RequestState } from 'redux-reqseq';
 
 import AddToAvailableArrestChargesModal from '../charges/AddToAvailableArrestChargesModal';
+import ErrorMessage from '../../../components/error/ErrorMessage';
 
 import { addArrestCharges, removeArrestCharge } from '../charges/ChargesActions';
 import { arrestChargeSchema, arrestChargeUiSchema } from './schemas/EditCaseInfoSchemas';
-import { hydrateArrestChargeSchema } from './utils/EditCaseInfoUtils';
-import { getCombinedDateTime } from '../../../utils/ScheduleUtils';
+import { hydrateArrestChargeSchema, temporarilyDisableForm } from './utils/EditCaseInfoUtils';
 import { getEntityKeyId, getEntityProperties } from '../../../utils/DataUtils';
-import { isDefined } from '../../../utils/LangUtils';
 import {
   formatExistingChargeDataAndAssociation,
   formatNewArrestChargeDataAndAssociations,
 } from '../charges/utils/ChargesUtils';
+import { requestIsFailure, requestIsPending } from '../../../utils/RequestStateUtils';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
+import { CHARGES, SHARED, STATE } from '../../../utils/constants/ReduxStateConsts';
 
 const {
   INDEX_MAPPERS,
@@ -45,13 +48,12 @@ const {
   ARREST_CHARGE_LIST,
   MANUAL_ARREST_CASES,
   MANUAL_ARREST_CHARGES,
-  MANUAL_CHARGED_WITH,
   PEOPLE,
-  REGISTERED_FOR,
-  RELATED_TO,
   DIVERSION_PLAN,
 } = APP_TYPE_FQNS;
-const { ARREST_DATETIME, DATETIME_COMPLETED, ENTITY_KEY_ID } = PROPERTY_TYPE_FQNS;
+const { DATETIME_COMPLETED, ENTITY_KEY_ID, NOTES } = PROPERTY_TYPE_FQNS;
+const { ACTIONS, REQUEST_STATE } = SHARED;
+const { ADD_ARREST_CHARGES, REMOVE_ARREST_CHARGE } = CHARGES;
 
 const getDateChargedFromChargeEvent = (chargeEvent :Map) :string => {
   const { [DATETIME_COMPLETED]: dateTimeCharged } = getEntityProperties(chargeEvent, [DATETIME_COMPLETED]);
@@ -76,13 +78,17 @@ type Props = {
   arrestChargeMapsCreatedInPSA :List;
   arrestCharges :List;
   arrestChargesFromPSA :List;
-  cwpArrestCaseByArrestCharge :Map;
+  cwpArrestCaseEKIDByChargeEventEKID :Map;
   diversionPlanEKID :UUID;
   entityIndexToIdMap :Map;
   entitySetIds :Map;
   participant :Map;
   propertyTypeIds :Object;
   psaArrestCaseByArrestCharge :Map;
+  requestStates:{
+    ADD_ARREST_CHARGES :RequestState;
+    REMOVE_ARREST_CHARGE :RequestState;
+  };
 };
 
 type State = {
@@ -90,9 +96,10 @@ type State = {
   chargesFormSchema :Object;
   chargesPrepopulated :boolean;
   isAvailableChargesModalVisible :boolean;
+  isFirstTimeSubmission :boolean;
 };
 
-class EditCourtChargesForm extends Component<Props, State> {
+class EditArrestChargesForm extends Component<Props, State> {
 
   constructor(props :Props) {
     super(props);
@@ -102,6 +109,7 @@ class EditCourtChargesForm extends Component<Props, State> {
       chargesFormSchema: arrestChargeSchema,
       chargesPrepopulated: false,
       isAvailableChargesModalVisible: false,
+      isFirstTimeSubmission: false,
     };
   }
 
@@ -143,12 +151,15 @@ class EditCourtChargesForm extends Component<Props, State> {
       arrestChargeMapsCreatedInPSA.forEach((chargeMap :Map, index :number) => {
         const chargeEvent :Map = chargeMap.get(CHARGE_EVENT, Map());
         const dateCharged :string = getDateChargedFromChargeEvent(chargeEvent);
+        const notes :string = chargeEvent.getIn([NOTES, 0]);
         const chargeEKID :UUID = getEntityKeyId(chargeMap.get(MANUAL_ARREST_CHARGES, Map()));
-        chargesFormData[sectionOneKey][index] = {};
-        chargesFormData[sectionOneKey][index][
-          getEntityAddressKey(-1, MANUAL_ARREST_CHARGES, ENTITY_KEY_ID)
-        ] = chargeEKID;
-        chargesFormData[sectionOneKey][index][getEntityAddressKey(-1, CHARGE_EVENT, DATETIME_COMPLETED)] = dateCharged;
+        const chargeEventEKID :UUID = getEntityKeyId(chargeMap.get(CHARGE_EVENT, Map()));
+        chargesFormData[sectionOneKey][index] = {
+          [getEntityAddressKey(-1, MANUAL_ARREST_CHARGES, ENTITY_KEY_ID)]: chargeEKID,
+          [getEntityAddressKey(-1, CHARGE_EVENT, DATETIME_COMPLETED)]: dateCharged,
+          [getEntityAddressKey(-1, CHARGE_EVENT, NOTES)]: notes,
+          [getEntityAddressKey(-1, CHARGE_EVENT, ENTITY_KEY_ID)]: chargeEventEKID
+        };
       });
     }
 
@@ -159,20 +170,25 @@ class EditCourtChargesForm extends Component<Props, State> {
       arrestChargeMapsCreatedInCWP.forEach((chargeMap :Map, index :number) => {
         const chargeEvent :Map = chargeMap.get(CHARGE_EVENT, Map());
         const dateCharged :string = getDateChargedFromChargeEvent(chargeEvent);
+        const notes :string = chargeEvent.getIn([NOTES, 0]);
         const chargeEKID :UUID = getEntityKeyId(chargeMap.get(ARREST_CHARGE_LIST, Map()));
-        chargesFormData[sectionTwoKey][index] = {};
-        chargesFormData[sectionTwoKey][index][getEntityAddressKey(-1, ARREST_CHARGE_LIST, ENTITY_KEY_ID)] = chargeEKID;
-        chargesFormData[sectionTwoKey][index][getEntityAddressKey(-1, CHARGE_EVENT, DATETIME_COMPLETED)] = dateCharged;
+        const chargeEventEKID :UUID = getEntityKeyId(chargeMap.get(CHARGE_EVENT, Map()));
+        chargesFormData[sectionTwoKey][index] = {
+          [getEntityAddressKey(-1, ARREST_CHARGE_LIST, ENTITY_KEY_ID)]: chargeEKID,
+          [getEntityAddressKey(-1, CHARGE_EVENT, DATETIME_COMPLETED)]: dateCharged,
+          [getEntityAddressKey(-1, CHARGE_EVENT, NOTES)]: notes,
+          [getEntityAddressKey(-1, CHARGE_EVENT, ENTITY_KEY_ID)]: chargeEventEKID
+        };
       });
     }
 
     newChargeSchema = hydrateArrestChargeSchema(arrestChargeSchema, arrestChargesFromPSA, arrestCharges);
 
-
     this.setState({
       chargesFormData,
       chargesFormSchema: newChargeSchema,
       chargesPrepopulated,
+      isFirstTimeSubmission: !chargesFormData[sectionOneKey] && !chargesFormData[sectionTwoKey]
     });
   }
 
@@ -184,7 +200,6 @@ class EditCourtChargesForm extends Component<Props, State> {
       entitySetIds,
       participant,
       propertyTypeIds,
-      cwpArrestCaseByArrestCharge,
       psaArrestCaseByArrestCharge,
     } = this.props;
     const { chargesFormData } = this.state;
@@ -211,8 +226,7 @@ class EditCourtChargesForm extends Component<Props, State> {
     const { newChargeEntities, newChargeAssociations } = formatNewArrestChargeDataAndAssociations(
       newArrestCharges,
       existingChargesFromPSA.length,
-      { personIndexOrEKID: personEKID, diversionPlanIndexOrEKID: diversionPlanEKID },
-      cwpArrestCaseByArrestCharge
+      { personIndexOrEKID: personEKID, diversionPlanIndexOrEKID: diversionPlanEKID }
     );
     entities[getPageSectionKey(1, 2)] = newChargeEntities;
     associations = associations.concat(newChargeAssociations);
@@ -223,13 +237,15 @@ class EditCourtChargesForm extends Component<Props, State> {
           getEntityAddressKey(-1, CHARGE_EVENT, DATETIME_COMPLETED),
           (i) => i + entities[getPageSectionKey(1, 1)].length
         );
+        map.set(
+          getEntityAddressKey(-1, CHARGE_EVENT, NOTES),
+          (i) => i + entities[getPageSectionKey(1, 1)].length
+        );
       });
       mappers.set(INDEX_MAPPERS, indexMappers);
     });
-
     const entityData :{} = processEntityData(entities, entitySetIds, propertyTypeIds, entityMappers);
     const associationEntityData :{} = processAssociationEntityData(fromJS(associations), entitySetIds, propertyTypeIds);
-
     actions.addArrestCharges({ associationEntityData, entityData });
   }
 
@@ -238,7 +254,7 @@ class EditCourtChargesForm extends Component<Props, State> {
       actions,
       arrestChargeMapsCreatedInCWP,
       arrestChargeMapsCreatedInPSA,
-      cwpArrestCaseByArrestCharge,
+      cwpArrestCaseEKIDByChargeEventEKID,
       diversionPlanEKID,
       entitySetIds,
       participant,
@@ -265,7 +281,7 @@ class EditCourtChargesForm extends Component<Props, State> {
         const chargeEventEKID :UUID = getEntityKeyId(relevantChargeMap.get(CHARGE_EVENT));
         entitiesToDelete.push({ entitySetId: chargeEventESID, entityKeyId: chargeEventEKID });
         // delete the arrest case (which will delete the link to the person, diversion plan, and arrest charge)
-        const arrestCaseEKID :UUID = cwpArrestCaseByArrestCharge.get(cwpArrestChargeEKID, '');
+        const arrestCaseEKID :UUID = cwpArrestCaseEKIDByChargeEventEKID.get(chargeEventEKID, '');
         entitiesToDelete.push({ entitySetId: arrestCaseESID, entityKeyId: arrestCaseEKID });
         // delete the association between person and arrest charge
         const personEKID :UUID = getEntityKeyId(participant);
@@ -311,12 +327,14 @@ class EditCourtChargesForm extends Component<Props, State> {
       entityIndexToIdMap,
       entitySetIds,
       propertyTypeIds,
+      requestStates,
     } = this.props;
     const {
       chargesFormData,
       chargesFormSchema,
       chargesPrepopulated,
       isAvailableChargesModalVisible,
+      isFirstTimeSubmission,
     } = this.state;
 
     const chargesFormContext = {
@@ -328,7 +346,14 @@ class EditCourtChargesForm extends Component<Props, State> {
       entitySetIds,
       propertyTypeIds,
     };
-
+    const arrestChargesSubmitting :boolean = requestIsPending(requestStates[ADD_ARREST_CHARGES]);
+    const arrestChargesDeleting :boolean = requestIsPending(requestStates[REMOVE_ARREST_CHARGE]);
+    const failedSubmit :boolean = requestIsFailure(requestStates[ADD_ARREST_CHARGES]);
+    const failedDelete :boolean = requestIsFailure(requestStates[REMOVE_ARREST_CHARGE]);
+    let uiSchemaToUse = arrestChargeUiSchema;
+    if (arrestChargesDeleting || arrestChargesSubmitting) {
+      uiSchemaToUse = temporarilyDisableForm(arrestChargeUiSchema, [getPageSectionKey(1, 2)]);
+    }
     return (
       <>
         <Card>
@@ -340,12 +365,17 @@ class EditCourtChargesForm extends Component<Props, State> {
           </CardHeader>
           <Form
               disabled={chargesPrepopulated}
+              isSubmitting={arrestChargesSubmitting}
               formContext={chargesFormContext}
               formData={chargesFormData}
               onChange={this.onChange}
               onSubmit={this.onSubmit}
               schema={chargesFormSchema}
-              uiSchema={arrestChargeUiSchema} />
+              uiSchema={uiSchemaToUse} />
+          { (!isFirstTimeSubmission && (arrestChargesSubmitting || arrestChargesDeleting)) && (
+            <CardSegment padding="30px"><Spinner size="2x" /></CardSegment>
+          )}
+          { (failedDelete || failedSubmit) && <ErrorMessage padding="30px" /> }
         </Card>
         <AddToAvailableArrestChargesModal
             isOpen={isAvailableChargesModalVisible}
@@ -355,6 +385,16 @@ class EditCourtChargesForm extends Component<Props, State> {
   }
 }
 
+const mapStateToProps = (state :Map) => {
+  const charges = state.get(STATE.CHARGES);
+  return {
+    requestStates: {
+      [ADD_ARREST_CHARGES]: charges.getIn([ACTIONS, ADD_ARREST_CHARGES, REQUEST_STATE]),
+      [REMOVE_ARREST_CHARGE]: charges.getIn([ACTIONS, REMOVE_ARREST_CHARGE, REQUEST_STATE])
+    }
+  };
+};
+
 const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
     addArrestCharges,
@@ -363,4 +403,4 @@ const mapDispatchToProps = (dispatch) => ({
 });
 
 // $FlowFixMe
-export default connect(null, mapDispatchToProps)(EditCourtChargesForm);
+export default connect(mapStateToProps, mapDispatchToProps)(EditArrestChargesForm);

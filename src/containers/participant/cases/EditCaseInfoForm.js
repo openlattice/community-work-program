@@ -2,7 +2,7 @@
 import React, { Component } from 'react';
 import styled from 'styled-components';
 import { List, Map } from 'immutable';
-import { CardStack } from 'lattice-ui-kit';
+import { CardStack, Colors } from 'lattice-ui-kit';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { RequestStates } from 'redux-reqseq';
@@ -21,6 +21,7 @@ import { getInfoForEditCase } from '../ParticipantActions';
 import { goToRoute } from '../../../core/router/RoutingActions';
 import { APP_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { getEntityKeyId } from '../../../utils/DataUtils';
+import { getPersonFullName } from '../../../utils/PeopleUtils';
 import { BackNavButton } from '../../../components/controls/index';
 import { PARTICIPANT_PROFILE_WIDTH } from '../../../core/style/Sizes';
 import {
@@ -32,6 +33,7 @@ import {
 } from '../../../utils/constants/ReduxStateConsts';
 import type { GoToRoute } from '../../../core/router/RoutingActions';
 
+const { BLACK } = Colors;
 const {
   CHARGE_EVENT,
   COURT_CHARGE_LIST,
@@ -58,7 +60,7 @@ const {
   ARREST_CHARGE_MAPS_CREATED_IN_PSA,
   COURT_CHARGES,
   COURT_CHARGES_FOR_CASE,
-  CWP_ARREST_CASE_BY_ARREST_CHARGE,
+  CWP_ARREST_CASE_EKID_BY_CHARGE_EVENT_EKID,
   PSA_ARREST_CASE_BY_ARREST_CHARGE,
 } = CHARGES;
 
@@ -72,6 +74,18 @@ const FormWrapper = styled.div`
 `;
 
 const ButtonWrapper = styled.div`
+  margin-bottom: 20px;
+`;
+
+const PersonName = styled.div`
+  color: ${BLACK};
+  font-size: 24px;
+  font-weight: 600;
+  margin-bottom: 5px;
+`;
+
+const PageTitle = styled.div`
+  font-size: 16px;
   margin-bottom: 30px;
 `;
 
@@ -87,7 +101,7 @@ type Props = {
   arrestChargesFromPSA :List;
   courtCharges :List;
   courtChargesForCase :List;
-  cwpArrestCaseByArrestCharge :Map;
+  cwpArrestCaseEKIDByChargeEventEKID :Map;
   diversionPlan :Map;
   entitySetIds :Map;
   getInfoForEditCaseRequestState :RequestState;
@@ -177,7 +191,7 @@ class EditCaseInfoForm extends Component<Props> {
       propertyTypeIds,
       arrestChargeMapsCreatedInCWP,
       arrestChargeMapsCreatedInPSA,
-      cwpArrestCaseByArrestCharge,
+      cwpArrestCaseEKIDByChargeEventEKID,
       psaArrestCaseByArrestCharge,
     } = this.props;
 
@@ -192,6 +206,7 @@ class EditCaseInfoForm extends Component<Props> {
     const entityIndexToIdMap = this.createEntityIndexToIdMap();
     const personEKID :UUID = getEntityKeyId(participant);
     const diversionPlanEKID :UUID = getEntityKeyId(diversionPlan);
+    const personName :string = getPersonFullName(participant);
 
     return (
       <FormWrapper>
@@ -201,6 +216,8 @@ class EditCaseInfoForm extends Component<Props> {
             Back to Profile
           </BackNavButton>
         </ButtonWrapper>
+        <PersonName>{ personName }</PersonName>
+        <PageTitle>Court Case, Charges, Judge, Required Hours</PageTitle>
         <CardStack>
           <AssignJudgeForm
               diversionPlan={diversionPlan}
@@ -223,7 +240,7 @@ class EditCaseInfoForm extends Component<Props> {
               arrestChargeMapsCreatedInPSA={arrestChargeMapsCreatedInPSA}
               arrestCharges={arrestCharges}
               arrestChargesFromPSA={arrestChargesFromPSA}
-              cwpArrestCaseByArrestCharge={cwpArrestCaseByArrestCharge}
+              cwpArrestCaseEKIDByChargeEventEKID={cwpArrestCaseEKIDByChargeEventEKID}
               diversionPlanEKID={diversionPlanEKID}
               entityIndexToIdMap={entityIndexToIdMap}
               entitySetIds={entitySetIds}
@@ -233,6 +250,7 @@ class EditCaseInfoForm extends Component<Props> {
           <EditCourtChargesForm
               charges={courtCharges}
               chargesForCase={courtChargesForCase}
+              diversionPlanEKID={diversionPlanEKID}
               entityIndexToIdMap={entityIndexToIdMap}
               entitySetIds={entitySetIds}
               participant={participant}
@@ -263,7 +281,7 @@ const mapStateToProps = (state :Map) => {
     [ARREST_CHARGE_MAPS_CREATED_IN_PSA]: charges.get(ARREST_CHARGE_MAPS_CREATED_IN_PSA),
     [COURT_CHARGES]: charges.get(COURT_CHARGES),
     [COURT_CHARGES_FOR_CASE]: charges.get(COURT_CHARGES_FOR_CASE),
-    [CWP_ARREST_CASE_BY_ARREST_CHARGE]: charges.get(CWP_ARREST_CASE_BY_ARREST_CHARGE),
+    [CWP_ARREST_CASE_EKID_BY_CHARGE_EVENT_EKID]: charges.get(CWP_ARREST_CASE_EKID_BY_CHARGE_EVENT_EKID),
     [JUDGE]: person.get(JUDGE),
     [PARTICIPANT]: person.get(PARTICIPANT),
     [PERSON.DIVERSION_PLAN]: person.get(PERSON.DIVERSION_PLAN),
