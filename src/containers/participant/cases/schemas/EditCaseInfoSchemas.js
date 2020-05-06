@@ -20,6 +20,7 @@ const {
   COURT_CASE_TYPE,
   DATETIME_COMPLETED,
   ENTITY_KEY_ID,
+  NOTES,
   REQUIRED_HOURS,
 } = PROPERTY_TYPE_FQNS;
 
@@ -93,7 +94,7 @@ export const courtChargeSchema = {
   properties: {
     [getPageSectionKey(1, 1)]: {
       type: 'array',
-      title: '',
+      title: 'Add a New Court Charge',
       items: {
         type: 'object',
         properties: {
@@ -107,6 +108,14 @@ export const courtChargeSchema = {
             type: 'string',
             title: 'Date charged',
             format: 'date',
+          },
+          [getEntityAddressKey(-1, CHARGE_EVENT, NOTES)]: {
+            type: 'string',
+            title: 'Notes',
+          },
+          [getEntityAddressKey(-1, CHARGE_EVENT, ENTITY_KEY_ID)]: {
+            type: 'string',
+            title: 'Charge Event EKID',
           },
         },
       },
@@ -131,6 +140,12 @@ export const courtChargeUiSchema = {
       [getEntityAddressKey(-1, CHARGE_EVENT, DATETIME_COMPLETED)]: {
         classNames: 'column-span-4',
       },
+      [getEntityAddressKey(-1, CHARGE_EVENT, NOTES)]: {
+        classNames: 'column-span-12',
+      },
+      [getEntityAddressKey(-1, CHARGE_EVENT, ENTITY_KEY_ID)]: {
+        'ui:widget': 'hidden'
+      }
     },
   },
 };
@@ -156,6 +171,14 @@ export const arrestChargeSchema = {
             title: 'Date charged',
             format: 'date',
           },
+          [getEntityAddressKey(-1, CHARGE_EVENT, NOTES)]: {
+            type: 'string',
+            title: 'Notes',
+          },
+          [getEntityAddressKey(-1, CHARGE_EVENT, ENTITY_KEY_ID)]: {
+            type: 'string',
+            title: 'Charge Event EKID',
+          },
         },
       },
     },
@@ -175,6 +198,14 @@ export const arrestChargeSchema = {
             type: 'string',
             title: 'Date charged',
             format: 'date',
+          },
+          [getEntityAddressKey(-1, CHARGE_EVENT, NOTES)]: {
+            type: 'string',
+            title: 'Notes',
+          },
+          [getEntityAddressKey(-1, CHARGE_EVENT, ENTITY_KEY_ID)]: {
+            type: 'string',
+            title: 'Charge Event EKID',
           },
         },
       },
@@ -198,6 +229,12 @@ export const arrestChargeUiSchema = {
       [getEntityAddressKey(-1, CHARGE_EVENT, DATETIME_COMPLETED)]: {
         classNames: 'column-span-4',
       },
+      [getEntityAddressKey(-1, CHARGE_EVENT, NOTES)]: {
+        classNames: 'column-span-12',
+      },
+      [getEntityAddressKey(-1, CHARGE_EVENT, ENTITY_KEY_ID)]: {
+        'ui:widget': 'hidden'
+      }
     },
   },
   [getPageSectionKey(1, 2)]: {
@@ -215,6 +252,12 @@ export const arrestChargeUiSchema = {
       [getEntityAddressKey(-1, CHARGE_EVENT, DATETIME_COMPLETED)]: {
         classNames: 'column-span-4',
       },
+      [getEntityAddressKey(-1, CHARGE_EVENT, NOTES)]: {
+        classNames: 'column-span-12',
+      },
+      [getEntityAddressKey(-1, CHARGE_EVENT, ENTITY_KEY_ID)]: {
+        'ui:widget': 'hidden'
+      }
     },
   },
 };

@@ -157,7 +157,6 @@ class DashboardContainer extends Component<Props, State> {
 
   handleOnSelectPerson = (personEKID :string) => {
     const { actions } = this.props;
-    actions.clearAppointmentsAndPlans();
     actions.goToRoute(PARTICIPANT_PROFILE.replace(':participantId', personEKID));
   }
 
