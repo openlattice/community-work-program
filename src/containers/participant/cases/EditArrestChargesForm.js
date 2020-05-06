@@ -13,6 +13,8 @@ import {
   Button,
   Card,
   CardHeader,
+  CardSegment,
+  Spinner,
 } from 'lattice-ui-kit';
 import { Form, DataProcessingUtils } from 'lattice-fabricate';
 import { connect } from 'react-redux';
@@ -94,6 +96,7 @@ type State = {
   chargesFormSchema :Object;
   chargesPrepopulated :boolean;
   isAvailableChargesModalVisible :boolean;
+  isFirstTimeSubmission :boolean;
 };
 
 class EditArrestChargesForm extends Component<Props, State> {
@@ -106,6 +109,7 @@ class EditArrestChargesForm extends Component<Props, State> {
       chargesFormSchema: arrestChargeSchema,
       chargesPrepopulated: false,
       isAvailableChargesModalVisible: false,
+      isFirstTimeSubmission: false,
     };
   }
 
@@ -180,6 +184,7 @@ class EditArrestChargesForm extends Component<Props, State> {
       chargesFormData,
       chargesFormSchema: newChargeSchema,
       chargesPrepopulated,
+      isFirstTimeSubmission: !chargesFormData[sectionOneKey] && !chargesFormData[sectionTwoKey]
     });
   }
 
@@ -327,6 +332,7 @@ class EditArrestChargesForm extends Component<Props, State> {
       chargesFormSchema,
       chargesPrepopulated,
       isAvailableChargesModalVisible,
+      isFirstTimeSubmission,
     } = this.state;
 
     const chargesFormContext = {
@@ -364,6 +370,9 @@ class EditArrestChargesForm extends Component<Props, State> {
               onSubmit={this.onSubmit}
               schema={chargesFormSchema}
               uiSchema={uiSchemaToUse} />
+          { (!isFirstTimeSubmission && (arrestChargesSubmitting || arrestChargesDeleting)) && (
+            <CardSegment padding="30px"><Spinner size="2x" /></CardSegment>
+          )}
           { (failedDelete || failedSubmit) && <ErrorMessage padding="30px" /> }
         </Card>
         <AddToAvailableArrestChargesModal
