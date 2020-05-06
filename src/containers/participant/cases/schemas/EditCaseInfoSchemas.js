@@ -171,6 +171,10 @@ export const arrestChargeSchema = {
             title: 'Date charged',
             format: 'date',
           },
+          [getEntityAddressKey(-1, CHARGE_EVENT, NOTES)]: {
+            type: 'string',
+            title: 'Notes',
+          },
         },
       },
     },
@@ -190,6 +194,10 @@ export const arrestChargeSchema = {
             type: 'string',
             title: 'Date charged',
             format: 'date',
+          },
+          [getEntityAddressKey(-1, CHARGE_EVENT, NOTES)]: {
+            type: 'string',
+            title: 'Notes',
           },
         },
       },
@@ -213,6 +221,9 @@ export const arrestChargeUiSchema = {
       [getEntityAddressKey(-1, CHARGE_EVENT, DATETIME_COMPLETED)]: {
         classNames: 'column-span-4',
       },
+      [getEntityAddressKey(-1, CHARGE_EVENT, NOTES)]: {
+        classNames: 'column-span-12',
+      },
     },
   },
   [getPageSectionKey(1, 2)]: {
@@ -229,6 +240,9 @@ export const arrestChargeUiSchema = {
       },
       [getEntityAddressKey(-1, CHARGE_EVENT, DATETIME_COMPLETED)]: {
         classNames: 'column-span-4',
+      },
+      [getEntityAddressKey(-1, CHARGE_EVENT, NOTES)]: {
+        classNames: 'column-span-12',
       },
     },
   },

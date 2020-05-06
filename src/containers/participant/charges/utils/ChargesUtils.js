@@ -22,7 +22,12 @@ const {
   REGISTERED_FOR,
   RELATED_TO,
 } = APP_TYPE_FQNS;
-const { ARREST_DATETIME, DATETIME_COMPLETED, ENTITY_KEY_ID } = PROPERTY_TYPE_FQNS;
+const {
+  ARREST_DATETIME,
+  DATETIME_COMPLETED,
+  ENTITY_KEY_ID,
+  NOTES,
+} = PROPERTY_TYPE_FQNS;
 
 const formatNewArrestChargeDataAndAssociations = (
   newChargesFormData :Object[],
@@ -60,6 +65,9 @@ const formatNewArrestChargeDataAndAssociations = (
     else dateTimeCharged = now.toISO();
     chargeEventToSubmit[getEntityAddressKey(-1, CHARGE_EVENT, DATETIME_COMPLETED)] = dateTimeCharged;
     chargeEventToSubmit[getEntityAddressKey(index, MANUAL_ARREST_CASES, ARREST_DATETIME)] = dateTimeCharged;
+
+    const notesKey :string = getEntityAddressKey(-1, CHARGE_EVENT, NOTES);
+    chargeEventToSubmit[notesKey] = charge[notesKey];
     newChargeEntities.push(chargeEventToSubmit);
 
     const arrestChargeEKID :UUID = charge[getEntityAddressKey(-1, ARREST_CHARGE_LIST, ENTITY_KEY_ID)];
@@ -148,8 +156,11 @@ const formatExistingChargeDataAndAssociation = (
     if (isDefined(dateChargedFromForm)) dateTimeCharged = getCombinedDateTime(dateChargedFromForm, currentTime);
     else if (isDefined(arrestDateTime) && arrestDateTime.length) dateTimeCharged = arrestDateTime;
     else dateTimeCharged = now.toISO();
-
     chargeEventToSubmit[getEntityAddressKey(index, CHARGE_EVENT, DATETIME_COMPLETED)] = dateTimeCharged;
+
+    const notesKey :string = getEntityAddressKey(index, CHARGE_EVENT, NOTES);
+    chargeEventToSubmit[notesKey] = charge[notesKey];
+
     psaChargeEntities.push(chargeEventToSubmit);
   });
 

@@ -11,14 +11,12 @@ import {
   takeEvery,
 } from '@redux-saga/core/effects';
 import { Models } from 'lattice';
-import { DateTime } from 'luxon';
 import {
   DataApiActions,
   DataApiSagas,
   SearchApiActions,
   SearchApiSagas,
 } from 'lattice-sagas';
-import { DataProcessingUtils } from 'lattice-fabricate';
 import type { SequenceAction } from 'redux-reqseq';
 
 import Logger from '../../../utils/Logger';
@@ -31,9 +29,7 @@ import {
   getNeighborDetails,
   getNeighborESID,
   getPropertyFqnFromEdm,
-  getPropertyTypeIdFromEdm,
 } from '../../../utils/DataUtils';
-import { getCombinedDateTime } from '../../../utils/ScheduleUtils';
 import { deleteEntities, submitDataGraph } from '../../../core/sagas/data/DataActions';
 import { deleteEntitiesWorker, submitDataGraphWorker } from '../../../core/sagas/data/DataSagas';
 import {
@@ -61,18 +57,16 @@ import {
   removeCourtChargeFromCase,
 } from './ChargesActions';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
-import { CHARGES, PERSON, STATE } from '../../../utils/constants/ReduxStateConsts';
+import { CHARGES, STATE } from '../../../utils/constants/ReduxStateConsts';
 import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../../utils/Errors';
 import { ASSOCIATION_DETAILS } from '../../../core/edm/constants/DataModelConsts';
 
-const { processAssociationEntityData } = DataProcessingUtils;
 const { FullyQualifiedName } = Models;
 const { getEntitySetData } = DataApiActions;
 const { getEntitySetDataWorker } = DataApiSagas;
 const { searchEntityNeighborsWithFilter } = SearchApiActions;
 const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
 const {
-  APPEARS_IN,
   APPEARS_IN_ARREST,
   ARREST_CHARGE_LIST,
   CHARGE_EVENT,
@@ -80,18 +74,16 @@ const {
   DIVERSION_PLAN,
   MANUAL_ARREST_CASES,
   MANUAL_ARREST_CHARGES,
-  MANUAL_CHARGED_WITH,
   MANUAL_PRETRIAL_COURT_CASES,
   PEOPLE,
   REGISTERED_FOR,
 } = APP_TYPE_FQNS;
-const { DATETIME_COMPLETED, ENTITY_KEY_ID } = PROPERTY_TYPE_FQNS;
+const { ENTITY_KEY_ID } = PROPERTY_TYPE_FQNS;
 const { ARREST_CASE_BY_ARREST_CHARGE_EKID_FROM_PSA, ARREST_CHARGES_BY_EKID, ARREST_CHARGES_FROM_PSA } = CHARGES;
 
 const getAppFromState = (state) => state.get(STATE.APP, Map());
 const getChargesFromState = (state) => state.get(STATE.CHARGES, Map());
 const getEdmFromState = (state) => state.get(STATE.EDM, Map());
-const getPersonFromState = (state) => state.get(STATE.PERSON, Map());
 const LOG = new Logger('ChargesSagas');
 
 /*
@@ -128,14 +120,15 @@ function* addArrestChargesWorker(action :SequenceAction) :Generator<*, *, *> {
     const chargeEventEKIDs :UUID[] = entityKeyIds[chargeEventESID];
 
     chargeEventEKIDs.forEach((ekid :UUID, index :number) => {
-      let newChargeMap :Map = Map();
       // construct charge event entity:
-      let newChargeEvent :Map = Map();
-      newChargeEvent = newChargeEvent.set(ENTITY_KEY_ID, ekid);
-      const datetimeCompletedPTID :string = getPropertyTypeIdFromEdm(edm, DATETIME_COMPLETED);
-      const datetimeCompleted :string[] = entityData[chargeEventESID][index][datetimeCompletedPTID];
-      newChargeEvent = newChargeEvent.set(DATETIME_COMPLETED, datetimeCompleted);
-      newChargeMap = newChargeMap.set(CHARGE_EVENT, newChargeEvent);
+      const newChargeEvent :Map = Map().withMutations((map :Map) => {
+        map.set(ENTITY_KEY_ID, List([ekid]));
+        fromJS(entityData[chargeEventESID][index]).forEach((chargeEventValue, ptid) => {
+          const propertyTypeFqn :FullyQualifiedName = getPropertyFqnFromEdm(edm, ptid);
+          map.set(propertyTypeFqn, chargeEventValue);
+        });
+      }).asImmutable();
+      let newChargeMap :Map = Map({ [CHARGE_EVENT]: newChargeEvent });
       // find associated charge:
       const registeredForESID :UUID = getEntitySetIdFromApp(app, REGISTERED_FOR);
       const arrestChargeListESID :UUID = getEntitySetIdFromApp(app, ARREST_CHARGE_LIST);

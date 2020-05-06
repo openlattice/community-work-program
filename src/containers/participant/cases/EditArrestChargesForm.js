@@ -49,7 +49,7 @@ const {
   PEOPLE,
   DIVERSION_PLAN,
 } = APP_TYPE_FQNS;
-const { DATETIME_COMPLETED, ENTITY_KEY_ID } = PROPERTY_TYPE_FQNS;
+const { DATETIME_COMPLETED, ENTITY_KEY_ID, NOTES } = PROPERTY_TYPE_FQNS;
 const { ACTIONS, REQUEST_STATE } = SHARED;
 const { ADD_ARREST_CHARGES, REMOVE_ARREST_CHARGE } = CHARGES;
 
@@ -147,12 +147,13 @@ class EditArrestChargesForm extends Component<Props, State> {
       arrestChargeMapsCreatedInPSA.forEach((chargeMap :Map, index :number) => {
         const chargeEvent :Map = chargeMap.get(CHARGE_EVENT, Map());
         const dateCharged :string = getDateChargedFromChargeEvent(chargeEvent);
+        const notes :string = chargeEvent.getIn([NOTES, 0]);
         const chargeEKID :UUID = getEntityKeyId(chargeMap.get(MANUAL_ARREST_CHARGES, Map()));
-        chargesFormData[sectionOneKey][index] = {};
-        chargesFormData[sectionOneKey][index][
-          getEntityAddressKey(-1, MANUAL_ARREST_CHARGES, ENTITY_KEY_ID)
-        ] = chargeEKID;
-        chargesFormData[sectionOneKey][index][getEntityAddressKey(-1, CHARGE_EVENT, DATETIME_COMPLETED)] = dateCharged;
+        chargesFormData[sectionOneKey][index] = {
+          [getEntityAddressKey(-1, MANUAL_ARREST_CHARGES, ENTITY_KEY_ID)]: chargeEKID,
+          [getEntityAddressKey(-1, CHARGE_EVENT, DATETIME_COMPLETED)]: dateCharged,
+          [getEntityAddressKey(-1, CHARGE_EVENT, NOTES)]: notes
+        };
       });
     }
 
@@ -163,15 +164,17 @@ class EditArrestChargesForm extends Component<Props, State> {
       arrestChargeMapsCreatedInCWP.forEach((chargeMap :Map, index :number) => {
         const chargeEvent :Map = chargeMap.get(CHARGE_EVENT, Map());
         const dateCharged :string = getDateChargedFromChargeEvent(chargeEvent);
+        const notes :string = chargeEvent.getIn([NOTES, 0]);
         const chargeEKID :UUID = getEntityKeyId(chargeMap.get(ARREST_CHARGE_LIST, Map()));
-        chargesFormData[sectionTwoKey][index] = {};
-        chargesFormData[sectionTwoKey][index][getEntityAddressKey(-1, ARREST_CHARGE_LIST, ENTITY_KEY_ID)] = chargeEKID;
-        chargesFormData[sectionTwoKey][index][getEntityAddressKey(-1, CHARGE_EVENT, DATETIME_COMPLETED)] = dateCharged;
+        chargesFormData[sectionTwoKey][index] = {
+          [getEntityAddressKey(-1, ARREST_CHARGE_LIST, ENTITY_KEY_ID)]: chargeEKID,
+          [getEntityAddressKey(-1, CHARGE_EVENT, DATETIME_COMPLETED)]: dateCharged,
+          [getEntityAddressKey(-1, CHARGE_EVENT, NOTES)]: notes
+        };
       });
     }
 
     newChargeSchema = hydrateArrestChargeSchema(arrestChargeSchema, arrestChargesFromPSA, arrestCharges);
-
 
     this.setState({
       chargesFormData,
@@ -225,6 +228,10 @@ class EditArrestChargesForm extends Component<Props, State> {
       const indexMappers = Map().withMutations((map :Map) => {
         map.set(
           getEntityAddressKey(-1, CHARGE_EVENT, DATETIME_COMPLETED),
+          (i) => i + entities[getPageSectionKey(1, 1)].length
+        );
+        map.set(
+          getEntityAddressKey(-1, CHARGE_EVENT, NOTES),
           (i) => i + entities[getPageSectionKey(1, 1)].length
         );
       });
