@@ -43,6 +43,7 @@ const {
 const {
   ACTIVE_PEOPLE_BY_COURT_TYPE_GRAPH_DATA,
   ENROLLMENTS_BY_COURT_TYPE_GRAPH_DATA,
+  REFERRALS_BY_COURT_TYPE_GRAPH_DATA,
   SUCCESSFUL_PEOPLE_BY_COURT_TYPE_GRAPH_DATA,
   TOTAL_ACTIVE_PARTICIPANT_COUNT,
   TOTAL_DIVERSION_PLAN_COUNT,
@@ -177,6 +178,7 @@ type Props = {
   enrollmentsByCourtTypeGraphData :Map;
   activePeopleByCourtTypeGraphData :Map;
   entitySetIds :Map;
+  referralsByCourtTypeGraphData :Map;
   requestStates :{
     GET_STATS_DATA :RequestState;
   };
@@ -194,6 +196,7 @@ const StatsContainer = ({
   activePeopleByCourtTypeGraphData,
   enrollmentsByCourtTypeGraphData,
   entitySetIds,
+  referralsByCourtTypeGraphData,
   requestStates,
   successfulPeopleByCourtTypeGraphData,
   totalActiveParticipantCount,
@@ -217,6 +220,7 @@ const StatsContainer = ({
         activePeopleByCourtTypeGraphData={activePeopleByCourtTypeGraphData}
         enrollmentsByCourtTypeGraphData={enrollmentsByCourtTypeGraphData}
         dataIsLoading={dataIsLoading}
+        referralsByCourtTypeGraphData={referralsByCourtTypeGraphData}
         successfulPeopleByCourtTypeGraphData={successfulPeopleByCourtTypeGraphData}
         unsuccessfulPeopleByCourtTypeGraphData={unsuccessfulPeopleByCourtTypeGraphData} />
   );
@@ -327,6 +331,7 @@ const mapStateToProps = (state :Map) => {
   return {
     [ACTIVE_PEOPLE_BY_COURT_TYPE_GRAPH_DATA]: stats.get(ACTIVE_PEOPLE_BY_COURT_TYPE_GRAPH_DATA),
     [ENROLLMENTS_BY_COURT_TYPE_GRAPH_DATA]: stats.get(ENROLLMENTS_BY_COURT_TYPE_GRAPH_DATA),
+    [REFERRALS_BY_COURT_TYPE_GRAPH_DATA]: stats.get(REFERRALS_BY_COURT_TYPE_GRAPH_DATA),
     [SUCCESSFUL_PEOPLE_BY_COURT_TYPE_GRAPH_DATA]: stats.get(SUCCESSFUL_PEOPLE_BY_COURT_TYPE_GRAPH_DATA),
     [TOTAL_ACTIVE_PARTICIPANT_COUNT]: stats.get(TOTAL_ACTIVE_PARTICIPANT_COUNT),
     [TOTAL_DIVERSION_PLAN_COUNT]: stats.get(TOTAL_DIVERSION_PLAN_COUNT),

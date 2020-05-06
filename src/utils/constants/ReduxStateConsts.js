@@ -183,6 +183,7 @@ export const PRINT_PARTICIPANT = {
 export const STATS = {
   ACTIVE_PEOPLE_BY_COURT_TYPE_GRAPH_DATA: 'activePeopleByCourtTypeGraphData',
   ENROLLMENTS_BY_COURT_TYPE_GRAPH_DATA: 'enrollmentsByCourtTypeGraphData',
+  REFERRALS_BY_COURT_TYPE_GRAPH_DATA: 'referralsByCourtTypeGraphData',
   SUCCESSFUL_PEOPLE_BY_COURT_TYPE_GRAPH_DATA: 'successfulPeopleByCourtTypeGraphData',
   TOTAL_ACTIVE_PARTICIPANT_COUNT: 'totalActiveParticipantCount',
   TOTAL_DIVERSION_PLAN_COUNT: 'totalDiversionPlanCount',

@@ -10,6 +10,7 @@ const { ACTIONS, REQUEST_STATE } = SHARED;
 const {
   ACTIVE_PEOPLE_BY_COURT_TYPE_GRAPH_DATA,
   ENROLLMENTS_BY_COURT_TYPE_GRAPH_DATA,
+  REFERRALS_BY_COURT_TYPE_GRAPH_DATA,
   SUCCESSFUL_PEOPLE_BY_COURT_TYPE_GRAPH_DATA,
   TOTAL_ACTIVE_PARTICIPANT_COUNT,
   TOTAL_DIVERSION_PLAN_COUNT,
@@ -25,8 +26,9 @@ const INITIAL_STATE :Map<*, *> = fromJS({
       [REQUEST_STATE]: RequestStates.STANDBY
     },
   },
-  [ENROLLMENTS_BY_COURT_TYPE_GRAPH_DATA]: Map(),
   [ACTIVE_PEOPLE_BY_COURT_TYPE_GRAPH_DATA]: Map(),
+  [ENROLLMENTS_BY_COURT_TYPE_GRAPH_DATA]: Map(),
+  [REFERRALS_BY_COURT_TYPE_GRAPH_DATA]: Map(),
   [SUCCESSFUL_PEOPLE_BY_COURT_TYPE_GRAPH_DATA]: Map(),
   [TOTAL_ACTIVE_PARTICIPANT_COUNT]: 0,
   [TOTAL_DIVERSION_PLAN_COUNT]: 0,
@@ -53,6 +55,7 @@ export default function statsReducer(state :Map<*, *> = INITIAL_STATE, action :O
           const {
             activePeopleByCourtTypeGraphData,
             enrollmentsByCourtTypeGraphData,
+            referralsByCourtTypeGraphData,
             successfulPeopleByCourtTypeGraphData,
             totalActiveParticipantCount,
             totalDiversionPlanCount,
@@ -64,6 +67,7 @@ export default function statsReducer(state :Map<*, *> = INITIAL_STATE, action :O
           return state
             .set(ENROLLMENTS_BY_COURT_TYPE_GRAPH_DATA, enrollmentsByCourtTypeGraphData)
             .set(ACTIVE_PEOPLE_BY_COURT_TYPE_GRAPH_DATA, activePeopleByCourtTypeGraphData)
+            .set(REFERRALS_BY_COURT_TYPE_GRAPH_DATA, referralsByCourtTypeGraphData)
             .set(SUCCESSFUL_PEOPLE_BY_COURT_TYPE_GRAPH_DATA, successfulPeopleByCourtTypeGraphData)
             .set(UNSUCCESSFUL_PEOPLE_BY_COURT_TYPE_GRAPH_DATA, unsuccessfulPeopleByCourtTypeGraphData)
             .set(TOTAL_ACTIVE_PARTICIPANT_COUNT, totalActiveParticipantCount)
