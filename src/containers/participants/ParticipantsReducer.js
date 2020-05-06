@@ -175,16 +175,7 @@ export default function participantsReducer(state :Map<*, *> = INITIAL_STATE, ac
           .setIn([ACTIONS, GET_COURT_TYPE, seqAction.id], fromJS(seqAction))
           .setIn([ACTIONS, GET_COURT_TYPE, REQUEST_STATE], RequestStates.PENDING),
         SUCCESS: () => {
-
-          if (!state.hasIn([ACTIONS, GET_COURT_TYPE, seqAction.id])) {
-            return state;
-          }
-
           const { value } = seqAction;
-          if (value === null || value === undefined) {
-            return state;
-          }
-
           return state
             .set(COURT_TYPE_BY_PARTICIPANT, value)
             .setIn([ACTIONS, GET_COURT_TYPE, REQUEST_STATE], RequestStates.SUCCESS);

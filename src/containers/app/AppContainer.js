@@ -9,11 +9,7 @@ import { Map } from 'immutable';
 import { AuthActions } from 'lattice-auth';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
-import {
-  Redirect,
-  Route,
-  Switch,
-} from 'react-router-dom';
+import { Redirect, Route, Switch } from 'react-router-dom';
 import { RequestStates } from 'redux-reqseq';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
@@ -26,6 +22,7 @@ import LogoLoader from '../../components/LogoLoader';
 import ParticipantProfileContainer from '../participant/ParticipantProfileContainer';
 import ParticipantsSearchContainer from '../participants/ParticipantsSearchContainer';
 import PrintWorkScheduleContainer from '../workschedule/PrintWorkScheduleContainer';
+import StatsContainer from '../stats/StatsContainer';
 import WorkScheduleContainer from '../workschedule/WorkScheduleContainer';
 import WorksiteProfile from '../worksites/WorksiteProfile';
 import WorksitesContainer from '../worksites/WorksitesContainer';
@@ -109,6 +106,7 @@ class AppContainer extends Component<Props> {
       <Route exact strict path={Routes.ADD_PARTICIPANT} component={AddParticipantForm} />
       <Route path={Routes.PARTICIPANT_PROFILE} component={ParticipantProfileContainer} />
       <Route path={Routes.PARTICIPANTS} component={ParticipantsSearchContainer} />
+      <Route path={Routes.STATS} component={StatsContainer} />
       <Route path={Routes.DASHBOARD} component={DashboardContainer} />
       <Redirect to={Routes.DASHBOARD} />
     </Switch>

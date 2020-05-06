@@ -7,6 +7,7 @@ export const STATE = {
   ORGANIZATION: 'organization',
   PEOPLE: 'people',
   PERSON: 'person',
+  STATS: 'stats',
   WORKSITES: 'worksites',
   WORKSITE_PLANS: 'worksitePlans',
   WORK_SCHEDULE: 'workSchedule',
@@ -176,6 +177,19 @@ export const PRINT_PARTICIPANT = {
   ACTIONS: 'actions',
   GET_INFO_FOR_PRINT_INFRACTION: 'getInfoForPrintInfraction',
   REQUEST_STATE: 'requestState',
+};
+
+/* Stats */
+export const STATS = {
+  ACTIVE_PEOPLE_BY_COURT_TYPE_GRAPH_DATA: 'activePeopleByCourtTypeGraphData',
+  ENROLLMENTS_BY_COURT_TYPE_GRAPH_DATA: 'enrollmentsByCourtTypeGraphData',
+  SUCCESSFUL_PEOPLE_BY_COURT_TYPE_GRAPH_DATA: 'successfulPeopleByCourtTypeGraphData',
+  TOTAL_ACTIVE_PARTICIPANT_COUNT: 'totalActiveParticipantCount',
+  TOTAL_DIVERSION_PLAN_COUNT: 'totalDiversionPlanCount',
+  TOTAL_PARTICIPANT_COUNT: 'totalParticipantCount',
+  TOTAL_SUCCESSFUL_PARTICIPANT_COUNT: 'totalSuccessfulParticipantCount',
+  TOTAL_UNSUCCESSFUL_PARTICIPANT_COUNT: 'totalUnsuccessfulParticipantCount',
+  UNSUCCESSFUL_PEOPLE_BY_COURT_TYPE_GRAPH_DATA: 'unsuccessfulPeopleByCourtTypeGraphData',
 };
 
 /* Work Schedule */

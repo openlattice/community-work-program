@@ -8,6 +8,7 @@ export const DASHBOARD :string = '/dashboard';
 export const PARTICIPANTS :string = '/participants';
 export const WORKSITES :string = '/worksitesbyorganization';
 export const WORK_SCHEDULE :string = '/workschedule';
+export const STATS :string = '/stats';
 
 export const ADD_PARTICIPANT :string = `${PARTICIPANTS}/add`;
 
