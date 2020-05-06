@@ -112,39 +112,37 @@ function* getStatsDataWorker(action :SequenceAction) :Generator<*, *, *> {
 
       let courtTypeAndDateByPersonEKID :Map = Map();
 
-      if (!neighborsByDiversionPlanEKID.isEmpty()) {
-        neighborsByDiversionPlanEKID.forEach((caseAndPersonNeighbors :List) => {
-          const courtCaseObj :Map = caseAndPersonNeighbors
-            .find((neighbor :Map) => getNeighborESID(neighbor) === manualCourtCasesESID);
-          const courtCase :Map = getNeighborDetails(courtCaseObj);
-          const { [COURT_CASE_TYPE]: courtCaseType } = getEntityProperties(courtCase, [COURT_CASE_TYPE]);
-          const enrollmentCount :number = enrollmentsByCourtTypeGraphData.get(courtCaseType, 0);
-          if (isDefined(enrollmentsByCourtTypeGraphData.get(courtCaseType))) {
-            enrollmentsByCourtTypeGraphData = enrollmentsByCourtTypeGraphData.set(courtCaseType, enrollmentCount + 1);
-          }
+      neighborsByDiversionPlanEKID.forEach((caseAndPersonNeighbors :List) => {
+        const courtCaseObj :Map = caseAndPersonNeighbors
+          .find((neighbor :Map) => getNeighborESID(neighbor) === manualCourtCasesESID);
+        const courtCase :Map = getNeighborDetails(courtCaseObj);
+        const { [COURT_CASE_TYPE]: courtCaseType } = getEntityProperties(courtCase, [COURT_CASE_TYPE]);
+        const enrollmentCount :number = enrollmentsByCourtTypeGraphData.get(courtCaseType, 0);
+        if (isDefined(enrollmentsByCourtTypeGraphData.get(courtCaseType))) {
+          enrollmentsByCourtTypeGraphData = enrollmentsByCourtTypeGraphData.set(courtCaseType, enrollmentCount + 1);
+        }
 
-          const person :Map = caseAndPersonNeighbors.find((neighbor :Map) => getNeighborESID(neighbor) === peopleESID);
-          const personEKID :UUID = getEntityKeyId(getNeighborDetails(person));
-          const { enrollmentStatusDate } = courtTypeAndDateByPersonEKID.get(personEKID, {});
-          const mostRecentEnrollmentStatus :Map = caseAndPersonNeighbors
-            .filter((neighbor :Map) => getNeighborESID(neighbor) === enrollmentStatusESID)
-            .map((neighbor :Map) => getNeighborDetails(neighbor))
-            .sortBy((entity :Map) => entity.getIn([EFFECTIVE_DATE, 0]))
-            .last();
-          const { [EFFECTIVE_DATE]: neighborDate, [STATUS]: status } = getEntityProperties(
-            mostRecentEnrollmentStatus,
-            [EFFECTIVE_DATE, STATUS]
+        const person :Map = caseAndPersonNeighbors.find((neighbor :Map) => getNeighborESID(neighbor) === peopleESID);
+        const personEKID :UUID = getEntityKeyId(getNeighborDetails(person));
+        const { enrollmentStatusDate } = courtTypeAndDateByPersonEKID.get(personEKID, {});
+        const mostRecentEnrollmentStatus :Map = caseAndPersonNeighbors
+          .filter((neighbor :Map) => getNeighborESID(neighbor) === enrollmentStatusESID)
+          .map((neighbor :Map) => getNeighborDetails(neighbor))
+          .sortBy((entity :Map) => entity.getIn([EFFECTIVE_DATE, 0]))
+          .last();
+        const { [EFFECTIVE_DATE]: neighborDate, [STATUS]: status } = getEntityProperties(
+          mostRecentEnrollmentStatus,
+          [EFFECTIVE_DATE, STATUS]
+        );
+        // $FlowFixMe
+        if (DateTime.fromISO(enrollmentStatusDate).startOf('day') < DateTime.fromISO(neighborDate).startOf('day')
+          || !DateTime.fromISO(enrollmentStatusDate).isValid) {
+          courtTypeAndDateByPersonEKID = courtTypeAndDateByPersonEKID.set(
+            personEKID,
+            { courtType: courtCaseType, enrollmentStatusDate: neighborDate, status }
           );
-          // $FlowFixMe
-          if (DateTime.fromISO(enrollmentStatusDate).startOf('day') < DateTime.fromISO(neighborDate).startOf('day')
-            || !DateTime.fromISO(enrollmentStatusDate).isValid) {
-            courtTypeAndDateByPersonEKID = courtTypeAndDateByPersonEKID.set(
-              personEKID,
-              { courtType: courtCaseType, enrollmentStatusDate: neighborDate, status }
-            );
-          }
-        });
-      }
+        }
+      });
 
       courtTypeAndDateByPersonEKID.forEach(({ courtType, status } :Object) => {
         if (ACTIVE_STATUSES.includes(status)) {
