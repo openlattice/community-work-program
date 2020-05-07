@@ -3,13 +3,20 @@ import { Map, fromJS } from 'immutable';
 import { RequestStates } from 'redux-reqseq';
 import type { SequenceAction } from 'redux-reqseq';
 
-import { GET_STATS_DATA, getStatsData } from './StatsActions';
+import {
+  GET_MONTHLY_COURT_TYPE_DATA,
+  GET_STATS_DATA,
+  getMonthlyCourtTypeData,
+  getStatsData,
+} from './StatsActions';
 import { SHARED, STATS } from '../../utils/constants/ReduxStateConsts';
 
 const { ACTIONS, REQUEST_STATE } = SHARED;
 const {
   ACTIVE_ENROLLMENTS_BY_COURT_TYPE,
   CLOSED_ENROLLMENTS_BY_COURT_TYPE,
+  MONTHLY_HOURS_WORKED_BY_COURT_TYPE,
+  MONTHLY_TOTAL_PARTICIPANTS_BY_COURT_TYPE,
   REFERRALS_BY_COURT_TYPE_GRAPH_DATA,
   SUCCESSFUL_ENROLLMENTS_BY_COURT_TYPE,
   TOTAL_ACTIVE_ENROLLMENTS_COUNT,
@@ -26,9 +33,14 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     [GET_STATS_DATA]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
+    [GET_MONTHLY_COURT_TYPE_DATA]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
   },
   [ACTIVE_ENROLLMENTS_BY_COURT_TYPE]: Map(),
   [CLOSED_ENROLLMENTS_BY_COURT_TYPE]: Map(),
+  [MONTHLY_HOURS_WORKED_BY_COURT_TYPE]: Map(),
+  [MONTHLY_TOTAL_PARTICIPANTS_BY_COURT_TYPE]: Map(),
   [REFERRALS_BY_COURT_TYPE_GRAPH_DATA]: Map(),
   [SUCCESSFUL_ENROLLMENTS_BY_COURT_TYPE]: Map(),
   [TOTAL_ACTIVE_ENROLLMENTS_COUNT]: 0,
@@ -43,6 +55,31 @@ const INITIAL_STATE :Map<*, *> = fromJS({
 export default function statsReducer(state :Map<*, *> = INITIAL_STATE, action :Object) :Map<*, *> {
 
   switch (action.type) {
+
+    case getMonthlyCourtTypeData.case(action.type): {
+
+      return getMonthlyCourtTypeData.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, GET_MONTHLY_COURT_TYPE_DATA, action.id], action)
+          .setIn([ACTIONS, GET_MONTHLY_COURT_TYPE_DATA, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+          const seqAction :SequenceAction = (action :any);
+          const { value } = seqAction;
+          const {
+            monthlyHoursWorkedByCourtType,
+            monthlyTotalParticipantsByCourtType
+          } = value;
+          return state
+            .set(MONTHLY_HOURS_WORKED_BY_COURT_TYPE, monthlyHoursWorkedByCourtType)
+            .set(MONTHLY_TOTAL_PARTICIPANTS_BY_COURT_TYPE, monthlyTotalParticipantsByCourtType)
+            .setIn([ACTIONS, GET_MONTHLY_COURT_TYPE_DATA, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, GET_MONTHLY_COURT_TYPE_DATA, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, GET_MONTHLY_COURT_TYPE_DATA, action.id]),
+      });
+    }
 
     case getStatsData.case(action.type): {
 
