@@ -8,17 +8,16 @@ import {
   CardSegment,
   CardStack,
   Colors,
+  Select,
   Spinner,
 } from 'lattice-ui-kit';
 
-import EnrollmentsByCourtTypeGraph from './EnrollmentsByCourtTypeGraph';
-import PeopleByCourtTypeGraph from './PeopleByCourtTypeGraph';
+import PeopleAndStatusByCourtType from './PeopleAndStatusByCourtType';
 import ReferralsByCourtTypeGraph from './ReferralsByCourtTypeGraph';
+import { formatReferralsCourtTypeData } from '../utils/StatsUtils';
 import {
-  formatEnrollmentsCourtTypeData,
-  formatPeopleCourtTypeData,
-  formatReferralsCourtTypeData
-} from '../utils/StatsUtils';
+  TIME_FRAME_OPTIONS,
+} from '../consts/StatsConsts';
 
 const { BLACK, WHITE } = Colors;
 const toolTipStyle :Object = {
@@ -32,36 +31,39 @@ const toolTipStyle :Object = {
 
 const GraphHeader = styled(CardHeader)`
   color: ${BLACK};
+  justify-content: space-between;
   font-size: 20px;
   font-weight: 600;
 `;
 
+const SelectWrapper = styled.div`
+  /* margin-left: 20px; */
+  width: 150px;
+  font-weight: normal;
+`;
+
 type Props = {
-  activePeopleByCourtTypeGraphData :Map;
+  activeEnrollmentsByCourtType :Map;
+  closedEnrollmentsByCourtType :Map;
   dataIsLoading :boolean;
-  enrollmentsByCourtTypeGraphData :Map;
   referralsByCourtTypeGraphData :Map;
-  successfulPeopleByCourtTypeGraphData :Map;
-  unsuccessfulPeopleByCourtTypeGraphData :Map;
+  successfulEnrollmentsByCourtType :Map;
+  unsuccessfulEnrollmentsByCourtType :Map;
 };
 
 const CourtTypeGraphs = ({
-  activePeopleByCourtTypeGraphData,
+  activeEnrollmentsByCourtType,
+  closedEnrollmentsByCourtType,
   dataIsLoading,
-  enrollmentsByCourtTypeGraphData,
   referralsByCourtTypeGraphData,
-  successfulPeopleByCourtTypeGraphData,
-  unsuccessfulPeopleByCourtTypeGraphData,
+  successfulEnrollmentsByCourtType,
+  unsuccessfulEnrollmentsByCourtType,
 } :Props) => {
-  const enrollmentsGraphData :Object[] = formatEnrollmentsCourtTypeData(enrollmentsByCourtTypeGraphData);
-  const activePeopleGraphData :Object[] = formatPeopleCourtTypeData(activePeopleByCourtTypeGraphData);
   const referralsGraphData :Object[] = formatReferralsCourtTypeData(referralsByCourtTypeGraphData);
-  const successfulPeopleGraphData :Object[] = formatPeopleCourtTypeData(successfulPeopleByCourtTypeGraphData);
-  const unsuccessfulPeopleGraphData :Object[] = formatPeopleCourtTypeData(unsuccessfulPeopleByCourtTypeGraphData);
   return (
     <CardStack>
       <Card>
-        <GraphHeader>Number of Enrollments by Court Type</GraphHeader>
+        <GraphHeader>Total Enrollments by Court Type</GraphHeader>
         <CardSegment padding="30px" vertical>
           {
             dataIsLoading
@@ -69,15 +71,23 @@ const CourtTypeGraphs = ({
                 <Spinner size="2x" />
               )
               : (
-                <EnrollmentsByCourtTypeGraph
-                    enrollmentsGraphData={enrollmentsGraphData}
-                    toolTipStyle={toolTipStyle} />
+                <PeopleAndStatusByCourtType
+                    activeEnrollmentsByCourtType={activeEnrollmentsByCourtType}
+                    closedEnrollmentsByCourtType={closedEnrollmentsByCourtType}
+                    successfulEnrollmentsByCourtType={successfulEnrollmentsByCourtType}
+                    toolTipStyle={toolTipStyle}
+                    unsuccessfulEnrollmentsByCourtType={unsuccessfulEnrollmentsByCourtType} />
               )
           }
         </CardSegment>
       </Card>
       <Card>
-        <GraphHeader>Number of Referrals (Repeat Enrollments) by Court Type</GraphHeader>
+        <GraphHeader>
+          <div>Number of Referrals (Repeat Enrollments) by Court Type</div>
+          <SelectWrapper>
+            <Select options={TIME_FRAME_OPTIONS} />
+          </SelectWrapper>
+        </GraphHeader>
         <CardSegment padding="30px" vertical>
           {
             dataIsLoading
@@ -88,24 +98,6 @@ const CourtTypeGraphs = ({
                 <ReferralsByCourtTypeGraph
                     referralsGraphData={referralsGraphData}
                     toolTipStyle={toolTipStyle} />
-              )
-          }
-        </CardSegment>
-      </Card>
-      <Card>
-        <GraphHeader>Number of Participants by Court Type</GraphHeader>
-        <CardSegment padding="30px" vertical>
-          {
-            dataIsLoading
-              ? (
-                <Spinner size="2x" />
-              )
-              : (
-                <PeopleByCourtTypeGraph
-                    activePeopleGraphData={activePeopleGraphData}
-                    successfulPeopleGraphData={successfulPeopleGraphData}
-                    toolTipStyle={toolTipStyle}
-                    unsuccessfulPeopleGraphData={unsuccessfulPeopleGraphData} />
               )
           }
         </CardSegment>
