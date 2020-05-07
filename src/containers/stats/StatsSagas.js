@@ -1,6 +1,5 @@
 // @flow
 import { List, Map, fromJS } from 'immutable';
-import { DateTime } from 'luxon';
 import {
   call,
   put,
@@ -16,7 +15,6 @@ import {
 import type { SequenceAction } from 'redux-reqseq';
 
 import Logger from '../../utils/Logger';
-import { isDefined } from '../../utils/LangUtils';
 import {
   getEntityKeyId,
   getEntityProperties,
@@ -68,15 +66,16 @@ const ACTIVE_STATUSES :string[] = [
 function* getStatsDataWorker(action :SequenceAction) :Generator<*, *, *> {
   const { id } = action;
   let response :Object = {};
-  let enrollmentsByCourtTypeGraphData :Map = fromJS(courtTypeCountObj).asMutable();
   let referralsByCourtTypeGraphData :Map = fromJS(courtTypeCountObj).asMutable();
-  let activePeopleByCourtTypeGraphData :Map = fromJS(courtTypeCountObj).asMutable();
-  let successfulPeopleByCourtTypeGraphData :Map = fromJS(courtTypeCountObj).asMutable();
-  let unsuccessfulPeopleByCourtTypeGraphData :Map = fromJS(courtTypeCountObj).asMutable();
+  let activeEnrollmentsByCourtType :Map = fromJS(courtTypeCountObj).asMutable();
+  let successfulEnrollmentsByCourtType :Map = fromJS(courtTypeCountObj).asMutable();
+  let unsuccessfulEnrollmentsByCourtType :Map = fromJS(courtTypeCountObj).asMutable();
+  let closedEnrollmentsByCourtType :Map = fromJS(courtTypeCountObj).asMutable();
   let totalParticipantCount :number = 0;
-  let totalActiveParticipantCount :number = 0;
-  let totalSuccessfulParticipantCount :number = 0;
-  let totalUnsuccessfulParticipantCount :number = 0;
+  let totalActiveEnrollmentCount :number = 0;
+  let totalSuccessfulEnrollmentCount :number = 0;
+  let totalUnsuccessfulEnrollmentCount :number = 0;
+  let totalClosedEnrollmentsCount :number = 0;
 
   try {
     yield put(getStatsData.request(id));
@@ -111,22 +110,16 @@ function* getStatsDataWorker(action :SequenceAction) :Generator<*, *, *> {
       if (response.error) throw response.error;
       const neighborsByDiversionPlanEKID :Map = fromJS(response.data);
 
-      let courtTypeAndDateByPersonEKID :Map = Map();
       let allEnrollmentsByPersonEKID :Map = Map();
 
       neighborsByDiversionPlanEKID.forEach((caseAndPersonNeighbors :List) => {
+
         const courtCaseObj :Map = caseAndPersonNeighbors
           .find((neighbor :Map) => getNeighborESID(neighbor) === manualCourtCasesESID);
         const courtCase :Map = getNeighborDetails(courtCaseObj);
         const { [COURT_CASE_TYPE]: courtCaseType } = getEntityProperties(courtCase, [COURT_CASE_TYPE]);
-        const enrollmentCount :number = enrollmentsByCourtTypeGraphData.get(courtCaseType, 0);
-        if (isDefined(enrollmentsByCourtTypeGraphData.get(courtCaseType))) {
-          enrollmentsByCourtTypeGraphData = enrollmentsByCourtTypeGraphData.set(courtCaseType, enrollmentCount + 1);
-        }
 
-        const person :Map = caseAndPersonNeighbors.find((neighbor :Map) => getNeighborESID(neighbor) === peopleESID);
-        const personEKID :UUID = getEntityKeyId(getNeighborDetails(person));
-        const { enrollmentStatusDate } = courtTypeAndDateByPersonEKID.get(personEKID, {});
+
         const mostRecentEnrollmentStatus :Map = caseAndPersonNeighbors
           .filter((neighbor :Map) => getNeighborESID(neighbor) === enrollmentStatusESID)
           .map((neighbor :Map) => getNeighborDetails(neighbor))
@@ -136,22 +129,45 @@ function* getStatsDataWorker(action :SequenceAction) :Generator<*, *, *> {
           mostRecentEnrollmentStatus,
           [EFFECTIVE_DATE, STATUS]
         );
-        // $FlowFixMe
-        if (DateTime.fromISO(enrollmentStatusDate).startOf('day') < DateTime.fromISO(neighborDate).startOf('day')
-          || !DateTime.fromISO(enrollmentStatusDate).isValid) {
-          courtTypeAndDateByPersonEKID = courtTypeAndDateByPersonEKID.set(
-            personEKID,
-            { courtType: courtCaseType, enrollmentStatusDate: neighborDate, status }
-          );
+
+        if (ACTIVE_STATUSES.includes(status)) {
+          const count :number = activeEnrollmentsByCourtType.get(courtCaseType, 0);
+          activeEnrollmentsByCourtType = activeEnrollmentsByCourtType.set(courtCaseType, count + 1);
+          totalActiveEnrollmentCount += 1;
+        }
+        if (status === ENROLLMENT_STATUSES.COMPLETED || status === ENROLLMENT_STATUSES.SUCCESSFUL) {
+          const count :number = successfulEnrollmentsByCourtType.get(courtCaseType, 0);
+          successfulEnrollmentsByCourtType = successfulEnrollmentsByCourtType
+            .set(courtCaseType, count + 1);
+          totalSuccessfulEnrollmentCount += 1;
+        }
+        if (status === ENROLLMENT_STATUSES.REMOVED_NONCOMPLIANT || status === ENROLLMENT_STATUSES.UNSUCCESSFUL) {
+          const count :number = unsuccessfulEnrollmentsByCourtType.get(courtCaseType, 0);
+          unsuccessfulEnrollmentsByCourtType = unsuccessfulEnrollmentsByCourtType
+            .set(courtCaseType, count + 1);
+          totalUnsuccessfulEnrollmentCount += 1;
+        }
+        if (status === ENROLLMENT_STATUSES.CLOSED) {
+          const count :number = closedEnrollmentsByCourtType.get(courtCaseType, 0);
+          closedEnrollmentsByCourtType = closedEnrollmentsByCourtType
+            .set(courtCaseType, count + 1);
+          totalClosedEnrollmentsCount += 1;
         }
 
+        const person :Map = caseAndPersonNeighbors.find((neighbor :Map) => getNeighborESID(neighbor) === peopleESID);
+        const personEKID :UUID = getEntityKeyId(getNeighborDetails(person));
         let enrollments :List = allEnrollmentsByPersonEKID.get(personEKID, List());
         enrollments = enrollments.push(Map({ courtType: courtCaseType, enrollmentStatusDate: neighborDate }));
         allEnrollmentsByPersonEKID = allEnrollmentsByPersonEKID.set(personEKID, enrollments);
       });
 
-      enrollmentsByCourtTypeGraphData = enrollmentsByCourtTypeGraphData.asImmutable();
+      activeEnrollmentsByCourtType = activeEnrollmentsByCourtType.asImmutable();
+      closedEnrollmentsByCourtType = closedEnrollmentsByCourtType.asImmutable();
+      successfulEnrollmentsByCourtType = successfulEnrollmentsByCourtType.asImmutable();
+      unsuccessfulEnrollmentsByCourtType = unsuccessfulEnrollmentsByCourtType.asImmutable();
+
       allEnrollmentsByPersonEKID.forEach((enrollments :List) => {
+        totalParticipantCount += 1;
         let currentCourtType :string = '';
         let repeats :Map = Map();
         const sortedEnrollments = enrollments.sortBy((enrollment :Map) => enrollment.get('enrollmentStatusDate'));
@@ -173,44 +189,20 @@ function* getStatsDataWorker(action :SequenceAction) :Generator<*, *, *> {
       });
 
       referralsByCourtTypeGraphData = referralsByCourtTypeGraphData.asImmutable();
-
-      courtTypeAndDateByPersonEKID.forEach(({ courtType, status } :Object) => {
-        if (ACTIVE_STATUSES.includes(status)) {
-          const activePersonCount :number = activePeopleByCourtTypeGraphData.get(courtType, 0);
-          activePeopleByCourtTypeGraphData = activePeopleByCourtTypeGraphData.set(courtType, activePersonCount + 1);
-          totalActiveParticipantCount += 1;
-        }
-        if (status === ENROLLMENT_STATUSES.COMPLETED || status === ENROLLMENT_STATUSES.SUCCESSFUL) {
-          const successfulPersonCount :number = successfulPeopleByCourtTypeGraphData.get(courtType, 0);
-          successfulPeopleByCourtTypeGraphData = successfulPeopleByCourtTypeGraphData
-            .set(courtType, successfulPersonCount + 1);
-          totalSuccessfulParticipantCount += 1;
-        }
-        if (status === ENROLLMENT_STATUSES.REMOVED_NONCOMPLIANT || status === ENROLLMENT_STATUSES.UNSUCCESSFUL) {
-          const unsuccessfulPersonCount :number = unsuccessfulPeopleByCourtTypeGraphData.get(courtType, 0);
-          unsuccessfulPeopleByCourtTypeGraphData = unsuccessfulPeopleByCourtTypeGraphData
-            .set(courtType, unsuccessfulPersonCount + 1);
-          totalUnsuccessfulParticipantCount += 1;
-        }
-        totalParticipantCount += 1;
-      });
     }
 
-    activePeopleByCourtTypeGraphData = activePeopleByCourtTypeGraphData.asImmutable();
-    successfulPeopleByCourtTypeGraphData = successfulPeopleByCourtTypeGraphData.asImmutable();
-    unsuccessfulPeopleByCourtTypeGraphData = unsuccessfulPeopleByCourtTypeGraphData.asImmutable();
-
     yield put(getStatsData.success(id, {
-      activePeopleByCourtTypeGraphData,
-      enrollmentsByCourtTypeGraphData,
+      activeEnrollmentsByCourtType,
+      closedEnrollmentsByCourtType,
       referralsByCourtTypeGraphData,
-      successfulPeopleByCourtTypeGraphData,
-      totalActiveParticipantCount,
+      successfulEnrollmentsByCourtType,
+      totalActiveEnrollmentCount,
+      totalClosedEnrollmentsCount,
       totalDiversionPlanCount,
       totalParticipantCount,
-      totalSuccessfulParticipantCount,
-      totalUnsuccessfulParticipantCount,
-      unsuccessfulPeopleByCourtTypeGraphData,
+      totalSuccessfulEnrollmentCount,
+      totalUnsuccessfulEnrollmentCount,
+      unsuccessfulEnrollmentsByCourtType,
     }));
   }
   catch (error) {
