@@ -3,24 +3,6 @@ import { Map } from 'immutable';
 
 import { isDefined } from '../../../utils/LangUtils';
 
-const formatEnrollmentsCourtTypeData = (enrollmentsByCourtTypeGraphData :Map) :Object[] => {
-  const graphData :Object[] = [];
-  enrollmentsByCourtTypeGraphData.forEach((numberOfEnrollments :number, courtType :string) => {
-    graphData.push({ y: numberOfEnrollments, x: courtType });
-  });
-  return graphData;
-};
-
-const formatPeopleCourtTypeData = (peopleByCourtTypeGraphData :Map) :Object[] => {
-  const graphData :Object[] = [];
-  peopleByCourtTypeGraphData.forEach((numberOfParticipants :number, courtType :string) => {
-    if (isDefined(numberOfParticipants) && isDefined(courtType)) {
-      graphData.push({ y: numberOfParticipants, x: courtType });
-    }
-  });
-  return graphData;
-};
-
 const formatReferralsCourtTypeData = (referralsByCourtTypeGraphData :Map) :Object[] => {
   const graphData :Object[] = [];
   referralsByCourtTypeGraphData.forEach((numberOfReferrals :number, courtType :string) => {
@@ -29,8 +11,22 @@ const formatReferralsCourtTypeData = (referralsByCourtTypeGraphData :Map) :Objec
   return graphData;
 };
 
+const formatEnrollmentStatusPeopleData = (enrollmentsByCourtType :Map) :Object[] => {
+  let graphData :Object[] = [];
+  enrollmentsByCourtType.forEach((numberOfParticipants :number, courtType :string) => {
+    if (isDefined(numberOfParticipants) && isDefined(courtType)) {
+      graphData.push({ y: courtType, x: numberOfParticipants });
+    }
+  });
+  graphData = graphData.sort((obj1 :Object, obj2 :Object) => {
+    if (obj1.x < obj2.x) return -1;
+    if (obj1.x > obj2.x) return 1;
+    return 0;
+  });
+  return graphData;
+};
+
 export {
-  formatEnrollmentsCourtTypeData,
-  formatPeopleCourtTypeData,
+  formatEnrollmentStatusPeopleData,
   formatReferralsCourtTypeData,
 };
