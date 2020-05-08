@@ -44,6 +44,8 @@ const {
 const {
   ACTIVE_ENROLLMENTS_BY_COURT_TYPE,
   CLOSED_ENROLLMENTS_BY_COURT_TYPE,
+  MONTHLY_HOURS_WORKED_BY_COURT_TYPE,
+  MONTHLY_TOTAL_PARTICIPANTS_BY_COURT_TYPE,
   REFERRALS_BY_COURT_TYPE_GRAPH_DATA,
   SUCCESSFUL_ENROLLMENTS_BY_COURT_TYPE,
   TOTAL_ACTIVE_ENROLLMENTS_COUNT,
@@ -180,6 +182,8 @@ type Props = {
   activeEnrollmentsByCourtType :Map;
   closedEnrollmentsByCourtType :Map;
   entitySetIds :Map;
+  monthlyHoursWorkedByCourtType :Map;
+  monthlyTotalParticipantsByCourtType :Map;
   referralsByCourtTypeGraphData :Map;
   requestStates :{
     GET_STATS_DATA :RequestState;
@@ -199,6 +203,8 @@ const StatsContainer = ({
   activeEnrollmentsByCourtType,
   closedEnrollmentsByCourtType,
   entitySetIds,
+  monthlyHoursWorkedByCourtType,
+  monthlyTotalParticipantsByCourtType,
   referralsByCourtTypeGraphData,
   requestStates,
   successfulEnrollmentsByCourtType,
@@ -210,6 +216,9 @@ const StatsContainer = ({
   totalUnsuccessfulEnrollmentsCount,
   unsuccessfulEnrollmentsByCourtType,
 } :Props) => {
+
+  console.log('monthlyHoursWorkedByCourtType: ', monthlyHoursWorkedByCourtType.toJS());
+  console.log('monthlyTotalParticipantsByCourtType: ', monthlyTotalParticipantsByCourtType.toJS());
 
   const dataIsLoading :boolean = requestStates[GET_STATS_DATA] === RequestStates.PENDING;
   const [screenViewSelected, toggleScreenView] = useState(SCREEN_VIEWS.COURT_TYPE);
@@ -342,6 +351,8 @@ const mapStateToProps = (state :Map) => {
   return {
     [ACTIVE_ENROLLMENTS_BY_COURT_TYPE]: stats.get(ACTIVE_ENROLLMENTS_BY_COURT_TYPE),
     [CLOSED_ENROLLMENTS_BY_COURT_TYPE]: stats.get(CLOSED_ENROLLMENTS_BY_COURT_TYPE),
+    [MONTHLY_HOURS_WORKED_BY_COURT_TYPE]: stats.get(MONTHLY_HOURS_WORKED_BY_COURT_TYPE),
+    [MONTHLY_TOTAL_PARTICIPANTS_BY_COURT_TYPE]: stats.get(MONTHLY_TOTAL_PARTICIPANTS_BY_COURT_TYPE),
     [REFERRALS_BY_COURT_TYPE_GRAPH_DATA]: stats.get(REFERRALS_BY_COURT_TYPE_GRAPH_DATA),
     [SUCCESSFUL_ENROLLMENTS_BY_COURT_TYPE]: stats.get(SUCCESSFUL_ENROLLMENTS_BY_COURT_TYPE),
     [TOTAL_ACTIVE_ENROLLMENTS_COUNT]: stats.get(TOTAL_ACTIVE_ENROLLMENTS_COUNT),
