@@ -47,7 +47,7 @@ type Props = {
   judges :List;
   personCase :Map;
   propertyTypeIds :Object;
-  requestStates:{
+  requestStates :{
     REASSIGN_JUDGE :RequestState;
   };
 };
@@ -202,9 +202,9 @@ class AssignJudgeForm extends Component<Props, State> {
             schema={judgeFormSchema}
             uiSchema={judgeFormUiSchema} />
         { (judgePrepopulated && submissionIsPending) && (
-          <CardSegment padding="30px"><Spinner size="2x" /></CardSegment>
+          <CardSegment><Spinner size="2x" /></CardSegment>
         )}
-        { submissionFailed && <ErrorMessage padding="30px" /> }
+        { submissionFailed && <ErrorMessage /> }
       </Card>
     );
   }
