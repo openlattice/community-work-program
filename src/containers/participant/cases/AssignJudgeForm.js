@@ -1,17 +1,25 @@
 // @flow
 import React, { Component } from 'react';
 import { List, Map, getIn } from 'immutable';
-import { Card, CardHeader } from 'lattice-ui-kit';
+import {
+  Card,
+  CardHeader,
+  CardSegment,
+  Spinner,
+} from 'lattice-ui-kit';
 import { Form, DataProcessingUtils } from 'lattice-fabricate';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import type { RequestSequence } from 'redux-reqseq';
+import type { RequestSequence, RequestState } from 'redux-reqseq';
 
-import { reassignJudge } from '../ParticipantActions';
-import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
-import { judgeSchema, judgeUiSchema } from './schemas/EditCaseInfoSchemas';
+import ErrorMessage from '../../../components/error/ErrorMessage';
 import { disableJudgeForm, hydrateJudgeSchema } from './utils/EditCaseInfoUtils';
 import { getEntityKeyId } from '../../../utils/DataUtils';
+import { requestIsFailure, requestIsPending } from '../../../utils/RequestStateUtils';
+import { judgeSchema, judgeUiSchema } from './schemas/EditCaseInfoSchemas';
+import { reassignJudge } from '../ParticipantActions';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
+import { PERSON, SHARED, STATE } from '../../../utils/constants/ReduxStateConsts';
 
 const {
   getEntityAddressKey,
@@ -25,6 +33,8 @@ const {
   PRESIDES_OVER,
 } = APP_TYPE_FQNS;
 const { ENTITY_KEY_ID } = PROPERTY_TYPE_FQNS;
+const { ACTIONS, REQUEST_STATE } = SHARED;
+const { REASSIGN_JUDGE } = PERSON;
 
 type Props = {
   actions:{
@@ -37,6 +47,9 @@ type Props = {
   judges :List;
   personCase :Map;
   propertyTypeIds :Object;
+  requestStates :{
+    REASSIGN_JUDGE :RequestState;
+  };
 };
 
 type State = {
@@ -158,6 +171,7 @@ class AssignJudgeForm extends Component<Props, State> {
       entityIndexToIdMap,
       entitySetIds,
       propertyTypeIds,
+      requestStates,
     } = this.props;
     const {
       judgeFormData,
@@ -165,6 +179,9 @@ class AssignJudgeForm extends Component<Props, State> {
       judgeFormSchema,
       judgeFormUiSchema,
     } = this.state;
+
+    const submissionFailed = requestIsFailure(requestStates[REASSIGN_JUDGE]);
+    const submissionIsPending = requestIsPending(requestStates[REASSIGN_JUDGE]);
 
     const judgeFormContext = {
       editAction: actions.reassignJudge,
@@ -177,16 +194,30 @@ class AssignJudgeForm extends Component<Props, State> {
         <CardHeader mode="primary" padding="sm">Assign Judge</CardHeader>
         <Form
             disabled={judgePrepopulated}
+            isSubmitting={submissionIsPending}
             formContext={judgeFormContext}
             formData={judgeFormData}
             onChange={this.handleOnChangeJudge}
             onSubmit={this.handleOnJudgeSubmit}
             schema={judgeFormSchema}
             uiSchema={judgeFormUiSchema} />
+        { (judgePrepopulated && submissionIsPending) && (
+          <CardSegment><Spinner size="2x" /></CardSegment>
+        )}
+        { submissionFailed && <ErrorMessage /> }
       </Card>
     );
   }
 }
+
+const mapStateToProps = (state :Map) => {
+  const person = state.get(STATE.PERSON);
+  return {
+    requestStates: {
+      [REASSIGN_JUDGE]: person.getIn([ACTIONS, REASSIGN_JUDGE, REQUEST_STATE])
+    }
+  };
+};
 
 const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
@@ -195,4 +226,4 @@ const mapDispatchToProps = (dispatch) => ({
 });
 
 // $FlowFixMe
-export default connect(null, mapDispatchToProps)(AssignJudgeForm);
+export default connect(mapStateToProps, mapDispatchToProps)(AssignJudgeForm);

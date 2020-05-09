@@ -1125,29 +1125,25 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
           const seqAction :SequenceAction = action;
           const storedSeqAction :SequenceAction = state.getIn([ACTIONS, REASSIGN_JUDGE, seqAction.id]);
 
-          if (storedSeqAction) {
+          const requestValue = storedSeqAction.value;
+          const { associationEntityData, entityData } = requestValue;
+          const successValue = seqAction.value;
+          const { openlatticeIDUUID, judgesESID, presidesOverESID } = successValue;
 
-            const requestValue = storedSeqAction.value;
-            const { associationEntityData, entityData } = requestValue;
-            const successValue = seqAction.value;
-            const { edm, judgesESID, presidesOverESID } = successValue;
-
-            let judgeEKID :UUID = '';
-            if (entityData) {
-              judgeEKID = getIn(entityData, [judgesESID, 0, getPropertyTypeIdFromEdm(edm, ENTITY_KEY_ID), 0]);
-            }
-            if (associationEntityData) {
-              judgeEKID = getIn(associationEntityData, [presidesOverESID, 0, 'src', 'entityKeyId']);
-            }
-
-            const judges = state.get(JUDGES);
-            const judge :Map = judges.find((storedJudge :Map) => getEntityKeyId(storedJudge) === judgeEKID);
-
-            return state
-              .set(JUDGE, judge)
-              .setIn([ACTIONS, JUDGE, REQUEST_STATE], RequestStates.SUCCESS);
+          let judgeEKID :UUID = '';
+          if (entityData) {
+            judgeEKID = getIn(entityData, [judgesESID, 0, openlatticeIDUUID, 0]);
           }
-          return state;
+          if (associationEntityData) {
+            judgeEKID = getIn(associationEntityData, [presidesOverESID, 0, 'src', 'entityKeyId']);
+          }
+
+          const judges = state.get(JUDGES);
+          const judge :Map = judges.find((storedJudge :Map) => getEntityKeyId(storedJudge) === judgeEKID);
+
+          return state
+            .set(JUDGE, judge)
+            .setIn([ACTIONS, REASSIGN_JUDGE, REQUEST_STATE], RequestStates.SUCCESS);
         },
         FAILURE: () => state
           .setIn([ACTIONS, REASSIGN_JUDGE, REQUEST_STATE], RequestStates.FAILURE),
