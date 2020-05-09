@@ -1128,11 +1128,11 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
           const requestValue = storedSeqAction.value;
           const { associationEntityData, entityData } = requestValue;
           const successValue = seqAction.value;
-          const { entityKeyIdPTID, judgesESID, presidesOverESID } = successValue;
+          const { openlatticeIDUUID, judgesESID, presidesOverESID } = successValue;
 
           let judgeEKID :UUID = '';
           if (entityData) {
-            judgeEKID = getIn(entityData, [judgesESID, 0, entityKeyIdPTID, 0]);
+            judgeEKID = getIn(entityData, [judgesESID, 0, openlatticeIDUUID, 0]);
           }
           if (associationEntityData) {
             judgeEKID = getIn(associationEntityData, [presidesOverESID, 0, 'src', 'entityKeyId']);

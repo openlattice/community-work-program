@@ -962,9 +962,9 @@ function* reassignJudgeWorker(action :SequenceAction) :Generator<*, *, *> {
       })
     );
     if (associationResponse.error) throw associationResponse.error;
-    const entityKeyIdPTID = getPropertyTypeIdFromEdm(edm, ENTITY_KEY_ID);
+    const openlatticeIDUUID = getPropertyTypeIdFromEdm(edm, ENTITY_KEY_ID);
 
-    yield put(reassignJudge.success(id, { entityKeyIdPTID, judgesESID, presidesOverESID }));
+    yield put(reassignJudge.success(id, { openlatticeIDUUID, judgesESID, presidesOverESID }));
   }
   catch (error) {
     LOG.error('caught exception in reassignJudgeWorker()', error);
