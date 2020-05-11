@@ -44,6 +44,7 @@ const { executeSearchWorker, searchEntityNeighborsWithFilterWorker } = SearchApi
 const {
   APPOINTMENT,
   CHECK_INS,
+  CHECK_IN_DETAILS,
   DIVERSION_PLAN,
   ENROLLMENT_STATUS,
   MANUAL_PRETRIAL_COURT_CASES,
@@ -109,8 +110,7 @@ function* getMonthlyCourtTypeDataWorker(action :SequenceAction) :Generator<*, *,
       constraints: []
     };
     const mmMonth :string = month < 10 ? `0${month}` : month;
-    // const firstDateOfMonth = DateTime.fromISO(`${year}-${mmMonth}-01`);
-    const firstDateOfMonth = DateTime.fromISO(`${year}-02-01`);
+    const firstDateOfMonth = DateTime.fromISO(`${year}-${mmMonth}-01`);
     const searchTerm = getUTCDateRangeSearchString(datetimeStartPTID, 'month', firstDateOfMonth);
     searchOptions.constraints.push({
       min: 1,
@@ -122,142 +122,146 @@ function* getMonthlyCourtTypeDataWorker(action :SequenceAction) :Generator<*, *,
     response = yield call(executeSearchWorker, executeSearch({ searchOptions }));
     if (response.error) throw response.error;
     const checkInsWithinMonth :List = fromJS(response.data.hits);
-    console.log('checkInsWithinMonth: ', checkInsWithinMonth);
     const checkInEKIDs :UUID[] = [];
-    const hoursByCheckInEKID :Map = Map().withMutations((map :Map) => {
-      checkInsWithinMonth.forEach((checkIn :Map) => {
-        const checkInEKID :UUID = getEntityKeyId(checkIn);
-        const { [HOURS_WORKED]: hoursWorked } = getEntityProperties(checkIn, [HOURS_WORKED]);
-        map.set(checkInEKID, hoursWorked);
-        checkInEKIDs.push(checkInEKID);
+    checkInsWithinMonth.forEach((checkIn :Map) => {
+      const checkInEKID :UUID = getEntityKeyId(checkIn);
+      checkInEKIDs.push(checkInEKID);
+    });
+    if (checkInEKIDs.length) {
+      const peopleESID :UUID = getEntitySetIdFromApp(app, PEOPLE);
+      const appointmentESID :UUID = getEntitySetIdFromApp(app, APPOINTMENT);
+      const checkInDetailsESID :UUID = getEntitySetIdFromApp(app, CHECK_IN_DETAILS);
+      let searchFilter :Object = {
+        entityKeyIds: checkInEKIDs,
+        destinationEntitySetIds: [appointmentESID, checkInDetailsESID],
+        sourceEntitySetIds: [peopleESID],
+      };
+      response = yield call(
+        searchEntityNeighborsWithFilterWorker,
+        searchEntityNeighborsWithFilter({ entitySetId: checkInsESID, filter: searchFilter })
+      );
+      if (response.error) throw response.error;
+      const appointmentAndPeopleNeighbors :Map = fromJS(response.data);
+      const appointmentEKIDs :UUID[] = [];
+
+      let appointmentEKIDsByCheckInEKIDs :Map = Map().asMutable();
+      let hoursByCheckInEKID :Map = Map().asMutable();
+
+      const checkInEKIDsByPersonEKID :Map = Map().withMutations((map :Map) => {
+        appointmentAndPeopleNeighbors.forEach((neighborsList :List, checkInEKID :UUID) => {
+          const appointmentNeighbor :Map = neighborsList
+            .find((neighbor :Map) => getNeighborESID(neighbor) === appointmentESID);
+          const appointmentEKID :UUID = getEntityKeyId(getNeighborDetails(appointmentNeighbor));
+          if (isDefined(appointmentEKID)) appointmentEKIDs.push(appointmentEKID);
+          appointmentEKIDsByCheckInEKIDs = appointmentEKIDsByCheckInEKIDs.set(checkInEKID, appointmentEKID);
+
+          const personNeighbor :Map = neighborsList
+            .find((neighbor :Map) => getNeighborESID(neighbor) === peopleESID);
+          const personEKID :UUID = getEntityKeyId(getNeighborDetails(personNeighbor));
+          map.update(personEKID, List(), (ekids) => ekids.concat(fromJS([checkInEKID])));
+
+          const checkInDetailsNeighbor :Map = neighborsList
+            .find((neighbor :Map) => getNeighborESID(neighbor) === checkInDetailsESID);
+          const checkInDetails :Map = getNeighborDetails(checkInDetailsNeighbor);
+          const { [HOURS_WORKED]: hoursWorked } = getEntityProperties(checkInDetails, [HOURS_WORKED]);
+          hoursByCheckInEKID = hoursByCheckInEKID.set(checkInEKID, hoursWorked);
+        });
+      }).asImmutable();
+
+      const worksitePlanESID :UUID = getEntitySetIdFromApp(app, WORKSITE_PLAN);
+      searchFilter = {
+        entityKeyIds: appointmentEKIDs,
+        destinationEntitySetIds: [worksitePlanESID],
+        sourceEntitySetIds: [],
+      };
+      response = yield call(
+        searchEntityNeighborsWithFilterWorker,
+        searchEntityNeighborsWithFilter({ entitySetId: appointmentESID, filter: searchFilter })
+      );
+      if (response.error) throw response.error;
+      const worksitePlanEKIDs :UUID[] = [];
+      const worksitePlanEKIDsByAppointmentEKIDs :Map = Map().withMutations((map :Map) => {
+        fromJS(response.data).forEach((neighborsList :List, appointmentEKID :UUID) => {
+          const worksitePlanEKID :UUID = getEntityKeyId(getNeighborDetails(neighborsList.get(0)));
+          worksitePlanEKIDs.push(worksitePlanEKID);
+          map.set(appointmentEKID, worksitePlanEKID);
+        });
+      }).asImmutable();
+
+      const diversionPlanESID :UUID = getEntitySetIdFromApp(app, DIVERSION_PLAN);
+      searchFilter = {
+        entityKeyIds: worksitePlanEKIDs,
+        destinationEntitySetIds: [diversionPlanESID],
+        sourceEntitySetIds: [],
+      };
+      response = yield call(
+        searchEntityNeighborsWithFilterWorker,
+        searchEntityNeighborsWithFilter({ entitySetId: worksitePlanESID, filter: searchFilter })
+      );
+      if (response.error) throw response.error;
+      const diversionPlanEKIDs :UUID[] = [];
+      const diversionPlanEKIDsByWorksitePlanEKIDs :Map = Map().withMutations((map :Map) => {
+        fromJS(response.data).forEach((neighborsList :List, worksitePlanEKID :UUID) => {
+          const diversionPlanEKID :UUID = getEntityKeyId(getNeighborDetails(neighborsList.get(0)));
+          diversionPlanEKIDs.push(diversionPlanEKID);
+          map.set(worksitePlanEKID, diversionPlanEKID);
+        });
+      }).asImmutable();
+
+      const courtCaseESID :UUID = getEntitySetIdFromApp(app, MANUAL_PRETRIAL_COURT_CASES);
+      searchFilter = {
+        entityKeyIds: diversionPlanEKIDs,
+        destinationEntitySetIds: [courtCaseESID],
+        sourceEntitySetIds: [],
+      };
+      response = yield call(
+        searchEntityNeighborsWithFilterWorker,
+        searchEntityNeighborsWithFilter({ entitySetId: diversionPlanESID, filter: searchFilter })
+      );
+      if (response.error) throw response.error;
+      const courtTypesByDiversionPlanEKIDs :Map = Map().withMutations((map :Map) => {
+        fromJS(response.data).forEach((neighborsList :List, diversionPlanEKID :UUID) => {
+          const courtCase :Map = getNeighborDetails(neighborsList.get(0));
+          const { [COURT_CASE_TYPE]: courtType } = getEntityProperties(courtCase, [COURT_CASE_TYPE]);
+          map.set(diversionPlanEKID, courtType);
+        });
+      }).asImmutable();
+
+      checkInEKIDsByPersonEKID.forEach((checkInEKIDsList :List) => {
+        let personCourtTypes :Map = fromJS(courtTypeCountObj).asMutable();
+        checkInEKIDsList.forEach((checkInEKID :UUID) => {
+          const appointmentEKID :UUID = appointmentEKIDsByCheckInEKIDs.get(checkInEKID, '');
+          const worksitePlanEKID :UUID = worksitePlanEKIDsByAppointmentEKIDs.get(appointmentEKID, '');
+          const diversionPlanEKID :UUID = diversionPlanEKIDsByWorksitePlanEKIDs.get(worksitePlanEKID, '');
+          const courtType :string = courtTypesByDiversionPlanEKIDs.get(diversionPlanEKID, '');
+          if (isDefined(personCourtTypes.get(courtType))) {
+            personCourtTypes = personCourtTypes.set(courtType, personCourtTypes.get(courtType) + 1);
+          }
+        });
+
+        personCourtTypes.forEach((total :number, courtType :string) => {
+          if (isDefined(monthlyTotalParticipantsByCourtType.get(courtType))) {
+            const participantCount :number = monthlyTotalParticipantsByCourtType
+              .get(courtType, 0);
+            monthlyTotalParticipantsByCourtType = monthlyTotalParticipantsByCourtType
+              .set(courtType, participantCount + total);
+          }
+        });
       });
-    }).asImmutable();
-    console.log('checkInEKIDs: ', checkInEKIDs);
 
-    const peopleESID :UUID = getEntitySetIdFromApp(app, PEOPLE);
-    const appointmentESID :UUID = getEntitySetIdFromApp(app, APPOINTMENT);
-    let searchFilter :Object = {
-      entityKeyIds: checkInEKIDs,
-      destinationEntitySetIds: [appointmentESID],
-      sourceEntitySetIds: [peopleESID],
-    };
-    response = yield call(
-      searchEntityNeighborsWithFilterWorker,
-      searchEntityNeighborsWithFilter({ entitySetId: checkInsESID, filter: searchFilter })
-    );
-    if (response.error) throw response.error;
-    const appointmentAndPeopleNeighbors :Map = fromJS(response.data);
-    const appointmentEKIDs :UUID[] = [];
-
-    let appointmentEKIDsByCheckInEKIDs :Map = Map().asMutable();
-    const checkInEKIDsByPersonEKID :Map = Map().withMutations((map :Map) => {
-      appointmentAndPeopleNeighbors.forEach((neighborsList :List, checkInEKID :UUID) => {
-        const appointmentNeighbor :Map = neighborsList
-          .find((neighbor :Map) => getNeighborESID(neighbor) === appointmentESID);
-        const appointmentEKID :UUID = getEntityKeyId(getNeighborDetails(appointmentNeighbor));
-        appointmentEKIDs.push();
-        appointmentEKIDsByCheckInEKIDs = appointmentEKIDsByCheckInEKIDs.set(appointmentEKID, checkInEKID);
-        const personNeighbor :Map = neighborsList
-          .find((neighbor :Map) => getNeighborESID(neighbor) === peopleESID);
-        const personEKID :UUID = getEntityKeyId(getNeighborDetails(personNeighbor));
-        map.update(personEKID, List(), (ekids) => ekids.concat(fromJS([checkInEKID])));
-      });
-    }).asImmutable();
-    console.log('appointmentEKIDs: ', appointmentEKIDs);
-
-    const worksitePlanESID :UUID = getEntitySetIdFromApp(app, WORKSITE_PLAN);
-    searchFilter = {
-      entityKeyIds: appointmentEKIDs,
-      destinationEntitySetIds: [worksitePlanESID],
-      sourceEntitySetIds: [],
-    };
-    response = yield call(
-      searchEntityNeighborsWithFilterWorker,
-      searchEntityNeighborsWithFilter({ entitySetId: appointmentESID, filter: searchFilter })
-    );
-    if (response.error) throw response.error;
-    const worksitePlanEKIDs :UUID[] = [];
-    const worksitePlanEKIDsByAppointmentEKIDs :Map = Map().withMutations((map :Map) => {
-      fromJS(response.data).forEach((neighborsList :List, appointmentEKID :UUID) => {
-        const worksitePlanEKID :UUID = getEntityKeyId(getNeighborDetails(neighborsList.get(0)));
-        worksitePlanEKIDs.push(worksitePlanEKID);
-        map.set(appointmentEKID, worksitePlanEKID);
-      });
-    }).asImmutable();
-
-    const diversionPlanESID :UUID = getEntitySetIdFromApp(app, WORKSITE_PLAN);
-    searchFilter = {
-      entityKeyIds: worksitePlanEKIDs,
-      destinationEntitySetIds: [diversionPlanESID],
-      sourceEntitySetIds: [],
-    };
-    response = yield call(
-      searchEntityNeighborsWithFilterWorker,
-      searchEntityNeighborsWithFilter({ entitySetId: worksitePlanESID, filter: searchFilter })
-    );
-    if (response.error) throw response.error;
-    const diversionPlanEKIDs :UUID[] = [];
-    const diversionPlanEKIDsByWorksitePlanEKIDs :Map = Map().withMutations((map :Map) => {
-      fromJS(response.data).forEach((neighborsList :List, worksitePlanEKID :UUID) => {
-        const diversionPlanEKID :UUID = getEntityKeyId(getNeighborDetails(neighborsList.get(0)));
-        diversionPlanEKIDs.push(diversionPlanEKID);
-        map.set(worksitePlanEKID, diversionPlanEKID);
-      });
-    }).asImmutable();
-
-    const courtCaseESID :UUID = getEntitySetIdFromApp(app, MANUAL_PRETRIAL_COURT_CASES);
-    searchFilter = {
-      entityKeyIds: diversionPlanEKIDs,
-      destinationEntitySetIds: [courtCaseESID],
-      sourceEntitySetIds: [],
-    };
-    response = yield call(
-      searchEntityNeighborsWithFilterWorker,
-      searchEntityNeighborsWithFilter({ entitySetId: diversionPlanESID, filter: searchFilter })
-    );
-    if (response.error) throw response.error;
-    const courtTypesByDiversionPlanEKIDs :Map = Map().withMutations((map :Map) => {
-      fromJS(response.data).forEach((neighborsList :List, diversionPlanEKID :UUID) => {
-        const courtCase :Map = getNeighborDetails(neighborsList.get(0));
-        const { [COURT_CASE_TYPE]: courtType } = getEntityProperties(courtCase, [COURT_CASE_TYPE]);
-        map.set(diversionPlanEKID, courtType);
-      });
-    }).asImmutable();
-
-    checkInEKIDsByPersonEKID.forEach((checkInEKIDsList :List) => {
-      let personCourtTypes :Map = Map().asMutable();
-      checkInEKIDsList.forEach((checkInEKID :UUID) => {
+      hoursByCheckInEKID.forEach((hoursTotal :number, checkInEKID :UUID) => {
         const appointmentEKID :UUID = appointmentEKIDsByCheckInEKIDs.get(checkInEKID, '');
         const worksitePlanEKID :UUID = worksitePlanEKIDsByAppointmentEKIDs.get(appointmentEKID, '');
         const diversionPlanEKID :UUID = diversionPlanEKIDsByWorksitePlanEKIDs.get(worksitePlanEKID, '');
         const courtType :string = courtTypesByDiversionPlanEKIDs.get(diversionPlanEKID, '');
-        if (isDefined(personCourtTypes.get(courtType))) {
-          personCourtTypes = personCourtTypes.set(courtType, personCourtTypes.get(courtType) + 1);
-        }
-      });
-      personCourtTypes.forEach((total :number, courtType :string) => {
-        if (isDefined(monthlyTotalParticipantsByCourtType.get(courtType))) {
-          const participantCount :number = monthlyTotalParticipantsByCourtType
+        if (isDefined(monthlyHoursWorkedByCourtType.get(courtType))) {
+          const hours :number = monthlyHoursWorkedByCourtType
             .get(courtType, 0);
-          monthlyTotalParticipantsByCourtType = monthlyTotalParticipantsByCourtType
-            .set(courtType, participantCount + 1);
+          monthlyHoursWorkedByCourtType = monthlyHoursWorkedByCourtType
+            .set(courtType, hours + hoursTotal);
         }
       });
-    });
-
-    hoursByCheckInEKID.forEach((hoursTotal :number, checkInEKID :UUID) => {
-      const appointmentEKID :UUID = appointmentEKIDsByCheckInEKIDs.get(checkInEKID, '');
-      const worksitePlanEKID :UUID = worksitePlanEKIDsByAppointmentEKIDs.get(appointmentEKID, '');
-      const diversionPlanEKID :UUID = diversionPlanEKIDsByWorksitePlanEKIDs.get(worksitePlanEKID, '');
-      const courtType :string = courtTypesByDiversionPlanEKIDs.get(diversionPlanEKID, '');
-
-      if (isDefined(monthlyHoursWorkedByCourtType.get(courtType))) {
-        const hours :number = monthlyHoursWorkedByCourtType
-          .get(courtType, 0);
-        monthlyHoursWorkedByCourtType = monthlyHoursWorkedByCourtType
-          .set(courtType, hours + 1);
-      }
-    });
+    }
 
     yield put(getMonthlyCourtTypeData.success(id, {
       monthlyHoursWorkedByCourtType,
