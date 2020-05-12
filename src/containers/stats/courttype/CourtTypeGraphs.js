@@ -5,10 +5,8 @@ import { Map } from 'immutable';
 import { DateTime } from 'luxon';
 import {
   Card,
-  CardHeader,
   CardSegment,
   CardStack,
-  Colors,
   IconButton,
   Select,
   Spinner,
@@ -19,32 +17,17 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
-import MonthlyHoursAndParticipantsGraph from './MonthlyHoursAndParticipantsGraph';
 import EnrollmentsAndStatusByCourtType from './EnrollmentsAndStatusByCourtType';
+import MonthlyHoursAndParticipantsGraph from './MonthlyHoursAndParticipantsGraph';
 import ReferralsByCourtTypeGraph from './ReferralsByCourtTypeGraph';
+import { GraphHeader } from '../styled/GraphStyles';
+import { MONTHS_OPTIONS, YEARS_OPTIONS } from '../consts/TimeConsts';
+import { SHARED, STATE } from '../../../utils/constants/ReduxStateConsts';
+import { GET_MONTHLY_COURT_TYPE_DATA, getMonthlyCourtTypeData } from '../StatsActions';
 import { formatReferralsCourtTypeData } from '../utils/StatsUtils';
 import { requestIsPending } from '../../../utils/RequestStateUtils';
-import { MONTHS_OPTIONS, YEARS_OPTIONS } from '../consts/StatsConsts';
-import { GET_MONTHLY_COURT_TYPE_DATA, getMonthlyCourtTypeData } from '../StatsActions';
-import { SHARED, STATE } from '../../../utils/constants/ReduxStateConsts';
 
 const { ACTIONS, REQUEST_STATE } = SHARED;
-const { BLACK, WHITE } = Colors;
-const toolTipStyle :Object = {
-  borderRadius: '3px',
-  color: WHITE,
-  display: 'flex',
-  fontFamily: 'Open Sans, sans-serif',
-  fontSize: '13px',
-  padding: '5px 10px',
-};
-
-const GraphHeader = styled(CardHeader)`
-  flex-direction: column;
-  color: ${BLACK};
-  font-size: 20px;
-  font-weight: 600;
-`;
 
 const ActionsWrapper = styled.div`
   display: flex;
@@ -113,7 +96,6 @@ const CourtTypeGraphs = ({
                     activeEnrollmentsByCourtType={activeEnrollmentsByCourtType}
                     closedEnrollmentsByCourtType={closedEnrollmentsByCourtType}
                     successfulEnrollmentsByCourtType={successfulEnrollmentsByCourtType}
-                    toolTipStyle={toolTipStyle}
                     unsuccessfulEnrollmentsByCourtType={unsuccessfulEnrollmentsByCourtType} />
               )
           }
@@ -131,8 +113,7 @@ const CourtTypeGraphs = ({
               )
               : (
                 <ReferralsByCourtTypeGraph
-                    referralsGraphData={referralsGraphData}
-                    toolTipStyle={toolTipStyle} />
+                    referralsGraphData={referralsGraphData} />
               )
           }
         </CardSegment>
@@ -167,8 +148,7 @@ const CourtTypeGraphs = ({
               : (
                 <MonthlyHoursAndParticipantsGraph
                     monthlyHoursWorkedByCourtType={monthlyHoursWorkedByCourtType}
-                    monthlyTotalParticipantsByCourtType={monthlyTotalParticipantsByCourtType}
-                    toolTipStyle={toolTipStyle} />
+                    monthlyTotalParticipantsByCourtType={monthlyTotalParticipantsByCourtType} />
               )
           }
         </CardSegment>

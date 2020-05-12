@@ -12,6 +12,7 @@ import {
   YAxis,
 } from 'react-vis';
 
+import { toolTipStyle } from '../styled/GraphStyles';
 import { formatMonthlyHoursAndParticipantsData } from '../utils/StatsUtils';
 
 const { BLUE_1, BLUE_2, PURPLES } = Colors;
@@ -24,13 +25,11 @@ const defaultToolTipValues :Object = {
 type Props = {
   monthlyHoursWorkedByCourtType :Map;
   monthlyTotalParticipantsByCourtType :Map;
-  toolTipStyle :Object;
 };
 
 const MonthlyHoursAndParticipantsGraphs = ({
   monthlyHoursWorkedByCourtType,
   monthlyTotalParticipantsByCourtType,
-  toolTipStyle,
 } :Props) => {
 
   const { hoursGraphData, participantsGraphData } = formatMonthlyHoursAndParticipantsData(

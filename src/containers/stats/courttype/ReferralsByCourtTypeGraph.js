@@ -11,14 +11,15 @@ import {
   YAxis,
 } from 'react-vis';
 
+import { toolTipStyle } from '../styled/GraphStyles';
+
 const { GREENS, PURPLES, WHITE } = Colors;
 
 type Props = {
   referralsGraphData :Object[];
-  toolTipStyle :Object;
 };
 
-const ReferralsByCourtTypeGraph = ({ referralsGraphData, toolTipStyle } :Props) => {
+const ReferralsByCourtTypeGraph = ({ referralsGraphData } :Props) => {
 
   const [referralHoverValues, setReferralHoverValues] = useState({
     referralBackground: WHITE,

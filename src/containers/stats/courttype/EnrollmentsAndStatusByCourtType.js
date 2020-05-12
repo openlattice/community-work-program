@@ -12,6 +12,7 @@ import {
   YAxis,
 } from 'react-vis';
 
+import { toolTipStyle } from '../styled/GraphStyles';
 import { formatEnrollmentStatusPeopleData } from '../utils/StatsUtils';
 import { isDefined } from '../../../utils/LangUtils';
 import { OL } from '../../../core/style/Colors';
@@ -31,7 +32,6 @@ type Props = {
   activeEnrollmentsByCourtType :Map;
   closedEnrollmentsByCourtType :Map;
   successfulEnrollmentsByCourtType :Map;
-  toolTipStyle :Object;
   unsuccessfulEnrollmentsByCourtType :Map;
 };
 
@@ -39,7 +39,6 @@ const EnrollmentsAndStatusByCourtType = ({
   activeEnrollmentsByCourtType,
   closedEnrollmentsByCourtType,
   successfulEnrollmentsByCourtType,
-  toolTipStyle,
   unsuccessfulEnrollmentsByCourtType,
 } :Props) => {
 
