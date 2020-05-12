@@ -38,6 +38,7 @@ import { STATE } from '../../utils/constants/ReduxStateConsts';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { COURT_TYPES_MAP, ENROLLMENT_STATUSES } from '../../core/edm/constants/DataModelConsts';
 import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../utils/Errors';
+import { ALL_TIME, MONTHLY, YEARLY } from './consts/TimeConsts';
 
 const { getEntitySetData } = DataApiActions;
 const { getEntitySetDataWorker } = DataApiSagas;
@@ -97,7 +98,7 @@ function* getHoursWorkedByWorksiteWorker(action :SequenceAction) :Generator<*, *
   let hoursByWorksite :Map = Map().asMutable();
   /*
     if it's all time, you only need all worksite plans and then worksite neighbors
-    if it's monthly or yearly, you need to search for all checkins -> appointment neighbors
+    if it's monthly or yearly, you need all checkins -> appointment neighbors
       -> worksite plan neighbors -> worksite neighbors
   */
 
@@ -107,40 +108,169 @@ function* getHoursWorkedByWorksiteWorker(action :SequenceAction) :Generator<*, *
     const worksitePlanESID :UUID = getEntitySetIdFromApp(app, WORKSITE_PLAN);
     const worksiteESID :UUID = getEntitySetIdFromApp(app, WORKSITE);
 
-    const { value } = action;
-    if (fromJS(value).isEmpty()) {
-      response = yield call(getEntitySetDataWorker, getEntitySetData({ entitySetId: worksitePlanESID }));
-      if (response.error) throw response.error;
-      const worksitePlans :List = fromJS(response.data);
-      const worksitePlanEKIDs :UUID[] = [];
-      worksitePlans.forEach((worksitePlan :Map) => worksitePlanEKIDs.push(getEntityKeyId(worksitePlan)));
-      const worksitePlanByEKID :Map = Map().withMutations((map :Map) => {
-        worksitePlans.forEach((worksitePlan :Map) => map.set(getEntityKeyId(worksitePlan), worksitePlan));
-      }).asImmutable();
+    response = yield call(getEntitySetDataWorker, getEntitySetData({ entitySetId: worksiteESID }));
+    const worksiteEKIDs :UUID[] = [];
+    const worksiteByEKID :Map = Map().withMutations((map :Map) => {
+      fromJS(response.data).forEach((worksite :Map) => {
+        const { [NAME]: worksiteName } = getEntityProperties(worksite, [NAME]);
+        if (worksiteName.length) hoursByWorksite.set(worksiteName, 0);
 
-      const searchFilter = {
-        entityKeyIds: worksitePlanEKIDs,
-        destinationEntitySetIds: [worksiteESID],
-        sourceEntitySetIds: [],
+        const worksiteEKID :UUID = getEntityKeyId(worksite);
+        map.set(worksiteEKID, worksite);
+        worksiteEKIDs.push(getEntityKeyId(worksite));
+      });
+    }).asImmutable();
+
+    const { value } = action;
+    if (fromJS(value).isEmpty() || value.timeFrame === ALL_TIME) {
+
+      const searchFilter :Object = {
+        entityKeyIds: worksiteEKIDs,
+        destinationEntitySetIds: [],
+        sourceEntitySetIds: [worksitePlanESID],
       };
+
       response = yield call(
         searchEntityNeighborsWithFilterWorker,
-        searchEntityNeighborsWithFilter({ entitySetId: worksitePlanESID, filter: searchFilter })
+        searchEntityNeighborsWithFilter({ entitySetId: worksiteESID, filter: searchFilter })
       );
       if (response.error) throw response.error;
-      const worksiteNeighbors :Map = fromJS(response.data);
-      worksiteNeighbors.forEach((neighborsList :List, worksitePlanEKID :UUID) => {
-        const worksite :Map = getNeighborDetails(neighborsList.get(0));
+      const worksitePlanNeighbors :Map = fromJS(response.data);
+
+      worksitePlanNeighbors.forEach((neighborsList :List, worksiteEKID :UUID) => {
+        const worksite :Map = worksiteByEKID.get(worksiteEKID, Map());
         const { [NAME]: worksiteName } = getEntityProperties(worksite, [NAME]);
-        const worksitePlan :Map = worksitePlanByEKID.get(worksitePlanEKID, Map());
-        let { [HOURS_WORKED]: hoursWorked } = getEntityProperties(worksitePlan, [HOURS_WORKED]);
-        if (isNonEmptyString(hoursWorked)) hoursWorked = parseFloat(hoursWorked);
-        if (isEmptyString(hoursWorked)) hoursWorked = 0;
-        if (worksiteName.length) {
-          const hoursTotalForWorksite :number = hoursByWorksite.get(worksiteName, 0);
-          hoursByWorksite = hoursByWorksite.set(worksiteName, hoursTotalForWorksite + hoursWorked);
-        }
+
+        neighborsList.forEach((neighbor :Map) => {
+          const worksitePlan :Map = getNeighborDetails(neighbor);
+          let { [HOURS_WORKED]: hoursWorked } = getEntityProperties(worksitePlan, [HOURS_WORKED]);
+          if (isNonEmptyString(hoursWorked)) hoursWorked = parseFloat(hoursWorked);
+          if (isEmptyString(hoursWorked)) hoursWorked = 0;
+          if (worksiteName.length) {
+            const hoursTotalForWorksite :number = hoursByWorksite.get(worksiteName, 0);
+            hoursByWorksite = hoursByWorksite.set(worksiteName, hoursTotalForWorksite + hoursWorked);
+          }
+        });
       });
+    }
+    else {
+      const { month, timeFrame, year } = value;
+
+      const edm = yield select(getEdmFromState);
+      const checkInsESID :UUID = getEntitySetIdFromApp(app, CHECK_INS);
+      const datetimeStartPTID :UUID = getPropertyTypeIdFromEdm(edm, DATETIME_START);
+      const searchOptions = {
+        entitySetIds: [checkInsESID],
+        start: 0,
+        maxHits: 10000,
+        constraints: []
+      };
+
+      let searchTerm :string = '';
+
+      if (timeFrame === MONTHLY) {
+        const mmMonth :string = month < 10 ? `0${month}` : month;
+        const firstDateOfMonth :DateTime = DateTime.fromISO(`${year}-${mmMonth}-01`);
+        searchTerm = getUTCDateRangeSearchString(datetimeStartPTID, 'month', firstDateOfMonth);
+      }
+      else if (timeFrame === YEARLY) {
+        const firstDateOfYear :DateTime = DateTime.fromISO(`${year}-01-01`);
+        searchTerm = getUTCDateRangeSearchString(datetimeStartPTID, 'year', firstDateOfYear);
+      }
+      searchOptions.constraints.push({
+        min: 1,
+        constraints: [{
+          searchTerm,
+          fuzzy: false
+        }]
+      });
+      response = yield call(executeSearchWorker, executeSearch({ searchOptions }));
+      if (response.error) throw response.error;
+      const checkIns :List = fromJS(response.data.hits);
+      const checkInEKIDs :UUID[] = [];
+      checkIns.forEach((checkIn :Map) => checkInEKIDs.push(getEntityKeyId(checkIn)));
+
+      if (checkInEKIDs.length) {
+        const appointmentESID :UUID = getEntitySetIdFromApp(app, APPOINTMENT);
+        const checkInDetailsESID :UUID = getEntitySetIdFromApp(app, CHECK_IN_DETAILS);
+        let searchFilter :Object = {
+          entityKeyIds: checkInEKIDs,
+          destinationEntitySetIds: [appointmentESID, checkInDetailsESID],
+          sourceEntitySetIds: [],
+        };
+        response = yield call(
+          searchEntityNeighborsWithFilterWorker,
+          searchEntityNeighborsWithFilter({ entitySetId: checkInsESID, filter: searchFilter })
+        );
+        if (response.error) throw response.error;
+        const neighbors :Map = fromJS(response.data);
+        const appointmentEKIDs :UUID[] = [];
+
+        let checkInEKIDByAppointmentEKID :Map = Map().asMutable();
+        const hoursByCheckInEKID :Map = Map().withMutations((map :Map) => {
+          neighbors.forEach((neighborsList :List, checkInEKID :UUID) => {
+            const appointmentNeighbor :Map = neighborsList
+              .find((neighbor :Map) => getNeighborESID(neighbor) === appointmentESID);
+            const appointmentEKID :UUID = getEntityKeyId(getNeighborDetails(appointmentNeighbor));
+            if (isDefined(appointmentEKID)) appointmentEKIDs.push(appointmentEKID);
+            checkInEKIDByAppointmentEKID = checkInEKIDByAppointmentEKID.set(appointmentEKID, checkInEKID);
+
+            const checkInDetailsNeighbor :Map = neighborsList
+              .find((neighbor :Map) => getNeighborESID(neighbor) === checkInDetailsESID);
+            const checkInDetails :Map = getNeighborDetails(checkInDetailsNeighbor);
+            const { [HOURS_WORKED]: hoursWorked } = getEntityProperties(checkInDetails, [HOURS_WORKED]);
+            map.set(checkInEKID, hoursWorked);
+          });
+        }).asImmutable();
+
+        searchFilter = {
+          entityKeyIds: appointmentEKIDs,
+          destinationEntitySetIds: [worksitePlanESID],
+          sourceEntitySetIds: [],
+        };
+        response = yield call(
+          searchEntityNeighborsWithFilterWorker,
+          searchEntityNeighborsWithFilter({ entitySetId: appointmentESID, filter: searchFilter })
+        );
+        if (response.error) throw response.error;
+        const worksitePlanEKIDs :UUID[] = [];
+        const worksitePlanEKIDsByAppointmentEKIDs :Map = Map().withMutations((map :Map) => {
+          fromJS(response.data).forEach((neighborsList :List, appointmentEKID :UUID) => {
+            const worksitePlanEKID :UUID = getEntityKeyId(getNeighborDetails(neighborsList.get(0)));
+            worksitePlanEKIDs.push(worksitePlanEKID);
+            map.set(appointmentEKID, worksitePlanEKID);
+          });
+        }).asImmutable();
+
+        searchFilter = {
+          entityKeyIds: worksitePlanEKIDs,
+          destinationEntitySetIds: [worksiteESID],
+          sourceEntitySetIds: [],
+        };
+        response = yield call(
+          searchEntityNeighborsWithFilterWorker,
+          searchEntityNeighborsWithFilter({ entitySetId: worksitePlanESID, filter: searchFilter })
+        );
+        if (response.error) throw response.error;
+        const worksiteNeighbors :Map = fromJS(response.data);
+        const worksiteNameByWorksitePlanEKID :Map = Map().withMutations((map :Map) => {
+          worksiteNeighbors.forEach((neighborsList :List, worksitePlanEKID :UUID) => {
+            const worksite :Map = getNeighborDetails(neighborsList.get(0));
+            const { [NAME]: worksiteName } = getEntityProperties(worksite, [NAME]);
+            map.set(worksitePlanEKID, worksiteName);
+          });
+        });
+
+        worksitePlanEKIDsByAppointmentEKIDs.forEach((worksitePlanEKID :UUID, appointmentEKID :UUID) => {
+          const worksiteName :string = worksiteNameByWorksitePlanEKID.get(worksitePlanEKID, '');
+          const checkInEKID :UUID = checkInEKIDByAppointmentEKID.get(appointmentEKID, '');
+          const hours :number = hoursByCheckInEKID.get(checkInEKID, 0);
+          if (worksiteName.length) {
+            const hoursTotalForWorksite :number = hoursByWorksite.get(worksiteName, 0);
+            hoursByWorksite = hoursByWorksite.set(worksiteName, hoursTotalForWorksite + hours);
+          }
+        });
+      }
     }
 
     hoursByWorksite = hoursByWorksite.asImmutable();
