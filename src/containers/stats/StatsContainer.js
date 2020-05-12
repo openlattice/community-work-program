@@ -24,7 +24,7 @@ import type { RequestSequence, RequestState } from 'redux-reqseq';
 import ChargesGraphs from './charges/ChargesGraphs';
 import CourtTypeGraphs from './courttype/CourtTypeGraphs';
 import DemographicsGraphs from './demographics/DemographicsGraphs';
-import WorksiteGraph from './worksite/WorksiteGraph';
+import WorksiteGraphs from './worksite/WorksiteGraphs';
 import LogoLoader from '../../components/LogoLoader';
 import { ContainerInnerWrapper, ContainerOuterWrapper } from '../../components/Layout';
 import { GET_STATS_DATA, getStatsData } from './StatsActions';
@@ -242,7 +242,7 @@ const StatsContainer = ({
       break;
 
     case SCREEN_VIEWS.WORK_SITES:
-      screenViewComponent = <WorksiteGraph />;
+      screenViewComponent = <WorksiteGraphs />;
       break;
 
     case SCREEN_VIEWS.DEMOGRAPHICS:
