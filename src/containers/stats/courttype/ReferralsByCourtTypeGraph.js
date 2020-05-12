@@ -39,7 +39,7 @@ const ReferralsByCourtTypeGraph = ({ referralsGraphData, toolTipStyle } :Props) 
           top: 10,
           bottom: 40
         }}
-        style={{ fontFamily: 'Open Sans, sans-serif', fontSize: '12px' }}
+        style={{ fontFamily: 'Open Sans, sans-serif', fontSize: '14px' }}
         width={600}
         height={600}>
       <VerticalGridLines />
