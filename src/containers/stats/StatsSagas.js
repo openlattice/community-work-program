@@ -25,10 +25,12 @@ import {
   getPropertyTypeIdFromEdm,
   getUTCDateRangeSearchString,
 } from '../../utils/DataUtils';
-import { isDefined } from '../../utils/LangUtils';
+import { isDefined, isEmptyString, isNonEmptyString } from '../../utils/LangUtils';
 import {
+  GET_HOURS_WORKED_BY_WORKSITE,
   GET_MONTHLY_COURT_TYPE_DATA,
   GET_STATS_DATA,
+  getHoursWorkedByWorksite,
   getMonthlyCourtTypeData,
   getStatsData,
 } from './StatsActions';
@@ -49,6 +51,7 @@ const {
   ENROLLMENT_STATUS,
   MANUAL_PRETRIAL_COURT_CASES,
   PEOPLE,
+  WORKSITE,
   WORKSITE_PLAN,
 } = APP_TYPE_FQNS;
 const {
@@ -56,6 +59,7 @@ const {
   DATETIME_START,
   EFFECTIVE_DATE,
   HOURS_WORKED,
+  NAME,
   STATUS,
 } = PROPERTY_TYPE_FQNS;
 
@@ -80,6 +84,81 @@ const ACTIVE_STATUSES :string[] = [
   ENROLLMENT_STATUSES.AWAITING_ORIENTATION,
   ENROLLMENT_STATUSES.JOB_SEARCH,
 ];
+
+/*
+ *
+ * StatsActions.getHoursWorkedByWorksite()
+ *
+ */
+
+function* getHoursWorkedByWorksiteWorker(action :SequenceAction) :Generator<*, *, *> {
+  const { id } = action;
+  let response :Object = {};
+  let hoursByWorksite :Map = Map().asMutable();
+  /*
+    if it's all time, you only need all worksite plans and then worksite neighbors
+    if it's monthly or yearly, you need to search for all checkins -> appointment neighbors
+      -> worksite plan neighbors -> worksite neighbors
+  */
+
+  try {
+    yield put(getHoursWorkedByWorksite.request(id));
+    const app = yield select(getAppFromState);
+    const worksitePlanESID :UUID = getEntitySetIdFromApp(app, WORKSITE_PLAN);
+    const worksiteESID :UUID = getEntitySetIdFromApp(app, WORKSITE);
+
+    const { value } = action;
+    if (fromJS(value).isEmpty()) {
+      response = yield call(getEntitySetDataWorker, getEntitySetData({ entitySetId: worksitePlanESID }));
+      if (response.error) throw response.error;
+      const worksitePlans :List = fromJS(response.data);
+      const worksitePlanEKIDs :UUID[] = [];
+      worksitePlans.forEach((worksitePlan :Map) => worksitePlanEKIDs.push(getEntityKeyId(worksitePlan)));
+      const worksitePlanByEKID :Map = Map().withMutations((map :Map) => {
+        worksitePlans.forEach((worksitePlan :Map) => map.set(getEntityKeyId(worksitePlan), worksitePlan));
+      }).asImmutable();
+
+      const searchFilter = {
+        entityKeyIds: worksitePlanEKIDs,
+        destinationEntitySetIds: [worksiteESID],
+        sourceEntitySetIds: [],
+      };
+      response = yield call(
+        searchEntityNeighborsWithFilterWorker,
+        searchEntityNeighborsWithFilter({ entitySetId: worksitePlanESID, filter: searchFilter })
+      );
+      if (response.error) throw response.error;
+      const worksiteNeighbors :Map = fromJS(response.data);
+      worksiteNeighbors.forEach((neighborsList :List, worksitePlanEKID :UUID) => {
+        const worksite :Map = getNeighborDetails(neighborsList.get(0));
+        const { [NAME]: worksiteName } = getEntityProperties(worksite, [NAME]);
+        const worksitePlan :Map = worksitePlanByEKID.get(worksitePlanEKID, Map());
+        let { [HOURS_WORKED]: hoursWorked } = getEntityProperties(worksitePlan, [HOURS_WORKED]);
+        if (isNonEmptyString(hoursWorked)) hoursWorked = parseFloat(hoursWorked);
+        if (isEmptyString(hoursWorked)) hoursWorked = 0;
+        if (worksiteName.length) {
+          const hoursTotalForWorksite :number = hoursByWorksite.get(worksiteName, 0);
+          hoursByWorksite = hoursByWorksite.set(worksiteName, hoursTotalForWorksite + hoursWorked);
+        }
+      });
+    }
+
+    hoursByWorksite = hoursByWorksite.asImmutable();
+    yield put(getHoursWorkedByWorksite.success(id, hoursByWorksite));
+  }
+  catch (error) {
+    LOG.error(action.type, error);
+    yield put(getHoursWorkedByWorksite.failure(id, error));
+  }
+  finally {
+    yield put(getHoursWorkedByWorksite.finally(id));
+  }
+}
+
+function* getHoursWorkedByWorksiteWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(GET_HOURS_WORKED_BY_WORKSITE, getHoursWorkedByWorksiteWorker);
+}
 
 /*
  *
@@ -449,6 +528,8 @@ function* getStatsDataWatcher() :Generator<*, *, *> {
 }
 
 export {
+  getHoursWorkedByWorksiteWatcher,
+  getHoursWorkedByWorksiteWorker,
   getMonthlyCourtTypeDataWatcher,
   getMonthlyCourtTypeDataWorker,
   getStatsDataWatcher,

@@ -183,6 +183,7 @@ export const PRINT_PARTICIPANT = {
 export const STATS = {
   ACTIVE_ENROLLMENTS_BY_COURT_TYPE: 'activeEnrollmentsByCourtType',
   CLOSED_ENROLLMENTS_BY_COURT_TYPE: 'closedEnrollmentsByCourtType',
+  HOURS_BY_WORKSITE: 'hoursByWorksite',
   MONTHLY_HOURS_WORKED_BY_COURT_TYPE: 'monthlyHoursWorkedByCourtType',
   MONTHLY_TOTAL_PARTICIPANTS_BY_COURT_TYPE: 'monthlyTotalParticipantsByCourtType',
   REFERRALS_BY_COURT_TYPE_GRAPH_DATA: 'referralsByCourtTypeGraphData',

@@ -4,8 +4,10 @@ import { RequestStates } from 'redux-reqseq';
 import type { SequenceAction } from 'redux-reqseq';
 
 import {
+  GET_HOURS_WORKED_BY_WORKSITE,
   GET_MONTHLY_COURT_TYPE_DATA,
   GET_STATS_DATA,
+  getHoursWorkedByWorksite,
   getMonthlyCourtTypeData,
   getStatsData,
 } from './StatsActions';
@@ -15,6 +17,7 @@ const { ACTIONS, REQUEST_STATE } = SHARED;
 const {
   ACTIVE_ENROLLMENTS_BY_COURT_TYPE,
   CLOSED_ENROLLMENTS_BY_COURT_TYPE,
+  HOURS_BY_WORKSITE,
   MONTHLY_HOURS_WORKED_BY_COURT_TYPE,
   MONTHLY_TOTAL_PARTICIPANTS_BY_COURT_TYPE,
   REFERRALS_BY_COURT_TYPE_GRAPH_DATA,
@@ -39,6 +42,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   },
   [ACTIVE_ENROLLMENTS_BY_COURT_TYPE]: Map(),
   [CLOSED_ENROLLMENTS_BY_COURT_TYPE]: Map(),
+  [HOURS_BY_WORKSITE]: Map(),
   [MONTHLY_HOURS_WORKED_BY_COURT_TYPE]: Map(),
   [MONTHLY_TOTAL_PARTICIPANTS_BY_COURT_TYPE]: Map(),
   [REFERRALS_BY_COURT_TYPE_GRAPH_DATA]: Map(),
@@ -55,6 +59,26 @@ const INITIAL_STATE :Map<*, *> = fromJS({
 export default function statsReducer(state :Map<*, *> = INITIAL_STATE, action :Object) :Map<*, *> {
 
   switch (action.type) {
+
+    case getHoursWorkedByWorksite.case(action.type): {
+
+      return getHoursWorkedByWorksite.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, GET_HOURS_WORKED_BY_WORKSITE, action.id], action)
+          .setIn([ACTIONS, GET_HOURS_WORKED_BY_WORKSITE, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+          const seqAction :SequenceAction = (action :any);
+          const hoursByWorksite = seqAction.value;
+          return state
+            .set(HOURS_BY_WORKSITE, hoursByWorksite)
+            .setIn([ACTIONS, GET_HOURS_WORKED_BY_WORKSITE, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, GET_HOURS_WORKED_BY_WORKSITE, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, GET_HOURS_WORKED_BY_WORKSITE, action.id]),
+      });
+    }
 
     case getMonthlyCourtTypeData.case(action.type): {
 
