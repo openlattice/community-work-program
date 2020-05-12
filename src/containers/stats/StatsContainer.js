@@ -31,8 +31,9 @@ import { reduceRequestStates, requestIsPending } from '../../utils/RequestStateU
 import {
   GET_MONTHLY_COURT_TYPE_DATA,
   GET_STATS_DATA,
-  getStatsData,
+  getHoursWorkedByWorksite,
   getMonthlyCourtTypeData,
+  getStatsData,
 } from './StatsActions';
 import {
   APP,
@@ -191,6 +192,7 @@ const SCREEN_VIEWS_LIST :string[] = [
 
 type Props = {
   actions :{
+    getHoursWorkedByWorksite :RequestSequence;
     getMonthlyCourtTypeData :RequestSequence;
     getStatsData :RequestSequence;
   };
@@ -280,6 +282,7 @@ const StatsContainer = ({
 
   const SCREEN_VIEW_ACTIONS = {
     [SCREEN_VIEWS.COURT_TYPE]: actions.getMonthlyCourtTypeData,
+    [SCREEN_VIEWS.WORK_SITES]: actions.getHoursWorkedByWorksite,
   };
 
   const buttonOptions :Object[] = SCREEN_VIEWS_LIST.map((value :string) => ({
@@ -399,6 +402,7 @@ const mapStateToProps = (state :Map) => {
 
 const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
+    getHoursWorkedByWorksite,
     getMonthlyCourtTypeData,
     getStatsData,
   }, dispatch)
