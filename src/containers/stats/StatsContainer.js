@@ -42,6 +42,10 @@ import {
   STATE,
   STATS,
 } from '../../utils/constants/ReduxStateConsts';
+import {
+  SCREEN_VIEWS,
+  SCREEN_VIEWS_LIST,
+} from './consts/StatsConsts';
 
 const {
   BLACK,
@@ -175,21 +179,6 @@ const StatsBoxSkeleton = () => (
     </StatsRow>
   </StatsWrapper>
 );
-
-const SCREEN_VIEWS = {
-  COURT_TYPE: 'Court Type',
-  WORK_SITES: 'Work Sites',
-  DEMOGRAPHICS: 'Demographics',
-  CHARGES: 'Charges'
-};
-
-// to get rid of flow errors
-const SCREEN_VIEWS_LIST :string[] = [
-  SCREEN_VIEWS.COURT_TYPE,
-  SCREEN_VIEWS.WORK_SITES,
-  SCREEN_VIEWS.DEMOGRAPHICS,
-  SCREEN_VIEWS.CHARGES,
-];
 
 type Props = {
   actions :{
