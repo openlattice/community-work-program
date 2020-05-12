@@ -217,9 +217,6 @@ const StatsContainer = ({
   unsuccessfulEnrollmentsByCourtType,
 } :Props) => {
 
-  console.log('monthlyHoursWorkedByCourtType: ', monthlyHoursWorkedByCourtType.toJS());
-  console.log('monthlyTotalParticipantsByCourtType: ', monthlyTotalParticipantsByCourtType.toJS());
-
   const dataIsLoading :boolean = requestStates[GET_STATS_DATA] === RequestStates.PENDING;
   const [screenViewSelected, toggleScreenView] = useState(SCREEN_VIEWS.COURT_TYPE);
   useEffect(() => {
@@ -233,6 +230,8 @@ const StatsContainer = ({
         activeEnrollmentsByCourtType={activeEnrollmentsByCourtType}
         closedEnrollmentsByCourtType={closedEnrollmentsByCourtType}
         dataIsLoading={dataIsLoading}
+        monthlyHoursWorkedByCourtType={monthlyHoursWorkedByCourtType}
+        monthlyTotalParticipantsByCourtType={monthlyTotalParticipantsByCourtType}
         referralsByCourtTypeGraphData={referralsByCourtTypeGraphData}
         successfulEnrollmentsByCourtType={successfulEnrollmentsByCourtType}
         unsuccessfulEnrollmentsByCourtType={unsuccessfulEnrollmentsByCourtType} />
