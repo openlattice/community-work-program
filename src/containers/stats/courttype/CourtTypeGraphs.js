@@ -20,14 +20,11 @@ import { bindActionCreators } from 'redux';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
 import MonthlyHoursAndParticipantsGraph from './MonthlyHoursAndParticipantsGraph';
-import PeopleAndStatusByCourtType from './PeopleAndStatusByCourtType';
+import EnrollmentsAndStatusByCourtType from './EnrollmentsAndStatusByCourtType';
 import ReferralsByCourtTypeGraph from './ReferralsByCourtTypeGraph';
 import { formatReferralsCourtTypeData } from '../utils/StatsUtils';
 import { requestIsPending } from '../../../utils/RequestStateUtils';
-import {
-  MONTHS_OPTIONS,
-  YEARS_OPTIONS,
-} from '../consts/StatsConsts';
+import { MONTHS_OPTIONS, YEARS_OPTIONS } from '../consts/StatsConsts';
 import { GET_MONTHLY_COURT_TYPE_DATA, getMonthlyCourtTypeData } from '../StatsActions';
 import { SHARED, STATE } from '../../../utils/constants/ReduxStateConsts';
 
@@ -112,7 +109,7 @@ const CourtTypeGraphs = ({
                 <Spinner size="2x" />
               )
               : (
-                <PeopleAndStatusByCourtType
+                <EnrollmentsAndStatusByCourtType
                     activeEnrollmentsByCourtType={activeEnrollmentsByCourtType}
                     closedEnrollmentsByCourtType={closedEnrollmentsByCourtType}
                     successfulEnrollmentsByCourtType={successfulEnrollmentsByCourtType}
