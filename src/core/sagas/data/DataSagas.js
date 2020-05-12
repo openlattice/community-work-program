@@ -32,14 +32,12 @@ const { DeleteTypes, UpdateTypes } = Types;
 const {
   createAssociations,
   createEntityAndAssociationData,
-  deleteEntity,
   deleteEntityData,
   updateEntityData,
 } = DataApiActions;
 const {
   createAssociationsWorker,
   createEntityAndAssociationDataWorker,
-  deleteEntityWorker,
   deleteEntityDataWorker,
   updateEntityDataWorker,
 } = DataApiSagas;

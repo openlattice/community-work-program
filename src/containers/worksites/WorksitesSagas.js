@@ -396,15 +396,13 @@ function* deleteWorksiteContactWorker(action :SequenceAction) :Generator<*, *, *
       setOfEKIDs.forEach((entityKeyId :UUID) => {
         entitiesToDelete.push({
           entitySetId,
-          entityKeyId
+          entityKeyIds: [entityKeyId]
         });
       });
     });
 
     response = yield call(deleteEntitiesWorker, deleteEntities(entitiesToDelete));
-    if (response.error) {
-      throw response.error;
-    }
+    if (response.error) throw response.error;
 
     yield put(deleteWorksiteContact.success(id));
   }
