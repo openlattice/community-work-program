@@ -26,7 +26,28 @@ const formatEnrollmentStatusPeopleData = (enrollmentsByCourtType :Map) :Object[]
   return graphData;
 };
 
+const formatMonthlyHoursAndParticipantsData = (
+  monthlyHoursWorkedByCourtType :Map,
+  monthlyTotalParticipantsByCourtType :Map
+) :Object => {
+
+  const hoursGraphData :Object[] = [];
+  const participantsGraphData :Object[] = [];
+  monthlyHoursWorkedByCourtType.forEach((hoursTotal :number, courtType :string) => {
+    if (isDefined(hoursTotal) && isDefined(courtType)) {
+      hoursGraphData.push({ y: courtType, x: hoursTotal });
+    }
+  });
+  monthlyTotalParticipantsByCourtType.forEach((participantsTotal :number, courtType :string) => {
+    if (isDefined(participantsTotal) && isDefined(courtType)) {
+      participantsGraphData.push({ y: courtType, x: participantsTotal });
+    }
+  });
+  return { hoursGraphData, participantsGraphData };
+};
+
 export {
   formatEnrollmentStatusPeopleData,
+  formatMonthlyHoursAndParticipantsData,
   formatReferralsCourtTypeData,
 };
