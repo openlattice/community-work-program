@@ -13,6 +13,7 @@ import {
 } from 'react-vis';
 
 import { formatEnrollmentStatusPeopleData } from '../utils/StatsUtils';
+import { isDefined } from '../../../utils/LangUtils';
 import { OL } from '../../../core/style/Colors';
 
 const { BLUE_2, PURPLES, WHITE } = Colors;
@@ -20,7 +21,6 @@ const { PINK01 } = OL;
 
 const defaultToolTipValues :Object = {
   background: 'rgba(0, 0, 0, 0.0)',
-  color: 'rgba(0, 0, 0, 0.0)',
   hoveredBar: {},
   format: []
 };
@@ -35,7 +35,7 @@ type Props = {
   unsuccessfulEnrollmentsByCourtType :Map;
 };
 
-const PeopleAndStatusByCourtType = ({
+const EnrollmentsAndStatusByCourtType = ({
   activeEnrollmentsByCourtType,
   closedEnrollmentsByCourtType,
   successfulEnrollmentsByCourtType,
@@ -59,25 +59,25 @@ const PeopleAndStatusByCourtType = ({
 
   const getTotalsForBar = (v) => {
     const courtType :string = v.y;
+    if (!isDefined(courtType)) return [];
     const active = activeEnrollmentsByCourtType.get(courtType, 0);
     const closed = closedEnrollmentsByCourtType.get(courtType, 0);
     const successful = successfulEnrollmentsByCourtType.get(courtType, 0);
     const unsuccessful = unsuccessfulEnrollmentsByCourtType.get(courtType, 0);
     return [
       { title: courtType, value: '' },
-      { title: 'active', value: active },
-      { title: 'closed', value: closed },
       { title: 'successful', value: successful },
       { title: 'unsuccessful', value: unsuccessful },
+      { title: 'closed', value: closed },
+      { title: 'active', value: active },
       { title: 'total', value: active + closed + successful + unsuccessful },
     ];
   };
-
   return (
     <XYPlot
         yType="ordinal"
-        width={600}
-        height={600}
+        width={800}
+        height={800}
         stackBy="x"
         margin={{
           left: 200,
@@ -122,4 +122,4 @@ const PeopleAndStatusByCourtType = ({
   );
 };
 
-export default PeopleAndStatusByCourtType;
+export default EnrollmentsAndStatusByCourtType;
