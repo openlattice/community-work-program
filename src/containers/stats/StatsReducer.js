@@ -33,10 +33,13 @@ const {
 
 const INITIAL_STATE :Map<*, *> = fromJS({
   [ACTIONS]: {
-    [GET_STATS_DATA]: {
+    [GET_HOURS_WORKED_BY_WORKSITE]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [GET_MONTHLY_COURT_TYPE_DATA]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [GET_STATS_DATA]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
   },
