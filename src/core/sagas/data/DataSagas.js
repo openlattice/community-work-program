@@ -33,12 +33,14 @@ const {
   createAssociations,
   createEntityAndAssociationData,
   deleteEntity,
+  deleteEntityData,
   updateEntityData,
 } = DataApiActions;
 const {
   createAssociationsWorker,
   createEntityAndAssociationDataWorker,
   deleteEntityWorker,
+  deleteEntityDataWorker,
   updateEntityDataWorker,
 } = DataApiSagas;
 
@@ -182,9 +184,9 @@ function* deleteEntitiesWorker(action :SequenceAction) :Generator<*, *, *> {
 
       const deleteRequests = value.map((dataObject) => {
 
-        const { entitySetId, entityKeyId } = dataObject;
-        return call(deleteEntityWorker, deleteEntity({
-          entityKeyId,
+        const { entitySetId, entityKeyIds } = dataObject;
+        return call(deleteEntityDataWorker, deleteEntityData({
+          entityKeyIds,
           entitySetId,
           deleteType: DeleteTypes.SOFT,
         }));
@@ -243,8 +245,10 @@ function* createOrReplaceAssociationWorker(action :SequenceAction) :Generator<*,
 
     const { associations, associationsToDelete } = value;
 
-    const deleteResponse = yield call(deleteEntitiesWorker, deleteEntities(associationsToDelete));
-    if (deleteResponse.error) throw deleteResponse.error;
+    if (associationsToDelete.length) {
+      const deleteResponse = yield call(deleteEntitiesWorker, deleteEntities(associationsToDelete));
+      if (deleteResponse.error) throw deleteResponse.error;
+    }
 
     const createAssociationResponse = yield call(
       createAssociationsWorker,
@@ -253,7 +257,6 @@ function* createOrReplaceAssociationWorker(action :SequenceAction) :Generator<*,
 
     if (createAssociationResponse.error) throw createAssociationResponse.error;
     workerResponse.data = createAssociationResponse.data;
-
     yield put(createOrReplaceAssociation.success(action.id, createAssociationResponse));
   }
   catch (error) {
