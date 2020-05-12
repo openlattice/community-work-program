@@ -52,7 +52,7 @@ class DeleteAppointmentForm extends Component<Props, State> {
     const appointmentESID :UUID = getEntitySetIdFromApp(app, APPOINTMENT);
     const appointmentToDelete :Object[] = [{
       entitySetId: appointmentESID,
-      entityKeyId: appointmentEKID
+      entityKeyIds: [appointmentEKID]
     }];
     actions.deleteAppointment(appointmentToDelete);
   }
