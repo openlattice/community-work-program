@@ -1,6 +1,5 @@
 // @flow
 import React, { useState } from 'react';
-import styled from 'styled-components';
 import { Map } from 'immutable';
 import { DateTime } from 'luxon';
 import {
@@ -20,7 +19,7 @@ import type { RequestSequence, RequestState } from 'redux-reqseq';
 import EnrollmentsAndStatusByCourtType from './EnrollmentsAndStatusByCourtType';
 import MonthlyHoursAndParticipantsGraph from './MonthlyHoursAndParticipantsGraph';
 import ReferralsByCourtTypeGraph from './ReferralsByCourtTypeGraph';
-import { GraphHeader } from '../styled/GraphStyles';
+import { ActionsWrapper, GraphHeader, SelectsWrapper } from '../styled/GraphStyles';
 import { MONTHS_OPTIONS, YEARS_OPTIONS } from '../consts/TimeConsts';
 import { SHARED, STATE } from '../../../utils/constants/ReduxStateConsts';
 import { GET_MONTHLY_COURT_TYPE_DATA, getMonthlyCourtTypeData } from '../StatsActions';
@@ -28,19 +27,6 @@ import { formatReferralsCourtTypeData } from '../utils/StatsUtils';
 import { requestIsPending } from '../../../utils/RequestStateUtils';
 
 const { ACTIONS, REQUEST_STATE } = SHARED;
-
-const ActionsWrapper = styled.div`
-  display: flex;
-  margin-top: 20px;
-`;
-
-const SelectsWrapper = styled.div`
-  display: grid;
-  grid-template-columns: 150px 150px;
-  grid-gap: 0 10px;
-  font-weight: normal;
-  margin-right: 10px;
-`;
 
 type Props = {
   actions :{

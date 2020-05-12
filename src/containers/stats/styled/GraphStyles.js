@@ -20,7 +20,22 @@ const GraphHeader = styled(CardHeader)`
   font-weight: 600;
 `;
 
+const ActionsWrapper = styled.div`
+  display: flex;
+  margin-top: 20px;
+`;
+
+const SelectsWrapper = styled.div`
+  display: grid;
+  grid-template-columns: 150px 150px;
+  grid-gap: 0 10px;
+  font-weight: normal;
+  margin-right: 10px;
+`;
+
 export {
+  ActionsWrapper,
   GraphHeader,
+  SelectsWrapper,
   toolTipStyle,
 };
