@@ -1127,7 +1127,6 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
 
           const judge = state.get(JUDGES)
             .find((storedJudge :Map) => getEntityKeyId(storedJudge) === judgeEKID);
-          console.log('judge: ', judge.toJS());
 
           return state
             .set(JUDGE, judge)

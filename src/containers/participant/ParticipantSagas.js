@@ -127,7 +127,6 @@ import {
   getCourtChargesWorker,
 } from './charges/ChargesSagas';
 import {
-  getAssociationDetails,
   getEntityKeyId,
   getEntityProperties,
   getEntitySetIdFromApp,
