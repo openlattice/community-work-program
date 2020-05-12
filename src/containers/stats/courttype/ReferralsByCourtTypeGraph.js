@@ -3,14 +3,15 @@ import React, { useState } from 'react';
 import { Colors } from 'lattice-ui-kit';
 import {
   Hint,
-  VerticalBarSeries,
+  HorizontalBarSeries,
+  HorizontalGridLines,
+  VerticalGridLines,
   XYPlot,
   XAxis,
   YAxis,
 } from 'react-vis';
 
-
-const { MUSTARD_1, PURPLES, WHITE } = Colors;
+const { GREENS, PURPLES, WHITE } = Colors;
 
 type Props = {
   referralsGraphData :Object[];
@@ -31,28 +32,29 @@ const ReferralsByCourtTypeGraph = ({ referralsGraphData, toolTipStyle } :Props) 
 
   return (
     <XYPlot
-        xType="ordinal"
-        height={190}
+        yType="ordinal"
         margin={{
-          left: 40,
+          left: 200,
           right: 10,
           top: 10,
           bottom: 40
         }}
         style={{ fontFamily: 'Open Sans, sans-serif', fontSize: '12px' }}
-        width={1000}>
+        width={600}
+        height={600}>
+      <VerticalGridLines />
+      <HorizontalGridLines />
       <XAxis />
       <YAxis />
-      <VerticalBarSeries
-          barWidth={0.55}
-          color={MUSTARD_1}
+      <HorizontalBarSeries
+          color={GREENS[4]}
           data={referralsGraphData}
           onValueMouseOver={(v :Object) => {
             if (v.x && v.y) {
               setReferralHoverValues({
                 referralBackground: PURPLES[1],
                 referralHoveredBar: v,
-                referralHoverText: `${v.y} referrals`
+                referralHoverText: `${v.x} referrals`
               });
             }
           }}

@@ -6,7 +6,7 @@ import { isDefined } from '../../../utils/LangUtils';
 const formatReferralsCourtTypeData = (referralsByCourtTypeGraphData :Map) :Object[] => {
   const graphData :Object[] = [];
   referralsByCourtTypeGraphData.forEach((numberOfReferrals :number, courtType :string) => {
-    graphData.push({ y: numberOfReferrals, x: courtType });
+    graphData.push({ x: numberOfReferrals, y: courtType });
   });
   return graphData;
 };
