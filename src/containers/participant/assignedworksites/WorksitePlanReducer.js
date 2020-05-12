@@ -255,7 +255,8 @@ export default function worksitePlanReducer(state :Map<*, *> = INITIAL_STATE, ac
           if (storedSeqAction) {
 
             const requestValue :Object = storedSeqAction.value;
-            const { entityKeyId } :Object = requestValue[0];
+            const { entityKeyIds } :Object = requestValue[0];
+            const [entityKeyId] = entityKeyIds;
 
             let workAppointmentsByWorksitePlan = state.get(WORK_APPOINTMENTS_BY_WORKSITE_PLAN);
 
