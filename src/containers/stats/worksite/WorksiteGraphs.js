@@ -64,7 +64,7 @@ const WorksiteGraph = ({ actions, hoursByWorksite, requestStates } :Props) => {
   const currentYearOption :Object = YEARS_OPTIONS.find((obj) => obj.value === today.year);
   const [year, setYear] = useState(currentYearOption);
   const getTimeBasedData = () => {
-    actions.getHoursWorkedByWorksite({ month: month.value, year: year.value });
+    actions.getHoursWorkedByWorksite({ month: month.value, year: year.value, timeFrame: timeFrame.value });
   };
   const onTimeFrameSelectChange = (option :Object) => {
     if (option.value === ALL_TIME) {
