@@ -1,6 +1,7 @@
 // @flow
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
+import isFunction from 'lodash/isFunction';
 import { Map } from 'immutable';
 import {
   Button,
@@ -18,7 +19,6 @@ import {
 } from '@fortawesome/pro-duotone-svg-icons';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import { RequestStates } from 'redux-reqseq';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
 import ChargesGraphs from './charges/ChargesGraphs';
@@ -27,7 +27,13 @@ import DemographicsGraphs from './demographics/DemographicsGraphs';
 import WorksiteGraphs from './worksite/WorksiteGraphs';
 import LogoLoader from '../../components/LogoLoader';
 import { ContainerInnerWrapper, ContainerOuterWrapper } from '../../components/Layout';
-import { GET_STATS_DATA, getStatsData } from './StatsActions';
+import { reduceRequestStates, requestIsPending } from '../../utils/RequestStateUtils';
+import {
+  GET_MONTHLY_COURT_TYPE_DATA,
+  GET_STATS_DATA,
+  getStatsData,
+  getMonthlyCourtTypeData,
+} from './StatsActions';
 import {
   APP,
   SHARED,
@@ -175,8 +181,17 @@ const SCREEN_VIEWS = {
   CHARGES: 'Charges'
 };
 
+// to get rid of flow errors
+const SCREEN_VIEWS_LIST :string[] = [
+  SCREEN_VIEWS.COURT_TYPE,
+  SCREEN_VIEWS.WORK_SITES,
+  SCREEN_VIEWS.DEMOGRAPHICS,
+  SCREEN_VIEWS.CHARGES,
+];
+
 type Props = {
   actions :{
+    getMonthlyCourtTypeData :RequestSequence;
     getStatsData :RequestSequence;
   };
   activeEnrollmentsByCourtType :Map;
@@ -186,6 +201,7 @@ type Props = {
   monthlyTotalParticipantsByCourtType :Map;
   referralsByCourtTypeGraphData :Map;
   requestStates :{
+    GET_MONTHLY_COURT_TYPE_DATA :RequestState;
     GET_STATS_DATA :RequestState;
   };
   successfulEnrollmentsByCourtType :Map;
@@ -217,7 +233,11 @@ const StatsContainer = ({
   unsuccessfulEnrollmentsByCourtType,
 } :Props) => {
 
-  const dataIsLoading :boolean = requestStates[GET_STATS_DATA] === RequestStates.PENDING;
+  const reducedFetchRequestStates = reduceRequestStates([
+    requestStates[GET_MONTHLY_COURT_TYPE_DATA],
+    requestStates[GET_STATS_DATA]
+  ]);
+  const dataIsLoading :boolean = reducedFetchRequestStates ? requestIsPending(reducedFetchRequestStates) : false;
   const [screenViewSelected, toggleScreenView] = useState(SCREEN_VIEWS.COURT_TYPE);
   useEffect(() => {
     if (!entitySetIds.isEmpty()) actions.getStatsData();
@@ -258,10 +278,18 @@ const StatsContainer = ({
       break;
   }
 
-  const buttonOptions :Object[] = Object.values(SCREEN_VIEWS).map((value) => ({
+  const SCREEN_VIEW_ACTIONS = {
+    [SCREEN_VIEWS.COURT_TYPE]: actions.getMonthlyCourtTypeData,
+  };
+
+  const buttonOptions :Object[] = SCREEN_VIEWS_LIST.map((value :string) => ({
     label: value,
     value,
-    onClick: () => toggleScreenView(value)
+    onClick: () => {
+      toggleScreenView(value);
+      const loadData = SCREEN_VIEW_ACTIONS[value];
+      if (isFunction(loadData)) loadData();
+    }
   }));
 
   return (
@@ -269,7 +297,7 @@ const StatsContainer = ({
       <ContainerInnerWrapper>
         <StatsWrapper>
           {
-            dataIsLoading
+            requestIsPending(requestStates[GET_STATS_DATA])
               ? (
                 <StatsBoxSkeleton />
               )
@@ -363,6 +391,7 @@ const mapStateToProps = (state :Map) => {
     [UNSUCCESSFUL_ENROLLMENTS_BY_COURT_TYPE]: stats.get(UNSUCCESSFUL_ENROLLMENTS_BY_COURT_TYPE),
     entitySetIds: app.getIn([ENTITY_SET_IDS_BY_ORG, selectedOrgId], Map()),
     requestStates: {
+      [GET_MONTHLY_COURT_TYPE_DATA]: stats.getIn([ACTIONS, GET_MONTHLY_COURT_TYPE_DATA, REQUEST_STATE]),
       [GET_STATS_DATA]: stats.getIn([ACTIONS, GET_STATS_DATA, REQUEST_STATE]),
     }
   };
@@ -370,6 +399,7 @@ const mapStateToProps = (state :Map) => {
 
 const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
+    getMonthlyCourtTypeData,
     getStatsData,
   }, dispatch)
 });
