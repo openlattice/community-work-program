@@ -227,7 +227,6 @@ const StatsContainer = ({
 } :Props) => {
 
   const reducedFetchRequestStates = reduceRequestStates([
-    requestStates[GET_HOURS_WORKED_BY_WORKSITE],
     requestStates[GET_MONTHLY_COURT_TYPE_DATA],
     requestStates[GET_STATS_DATA]
   ]);
