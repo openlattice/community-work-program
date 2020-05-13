@@ -45,6 +45,12 @@ const { HOURS_BY_WORKSITE, PARTICIPANTS_BY_WORKSITE } = STATS;
 
 const expandIcon = <FontAwesomeIcon icon={faChevronDown} size="xs" />;
 
+const StyledExpansionPanelSummary = styled(ExpansionPanelSummary)`
+  && {
+    background-color: white;
+  }
+`;
+
 const InnerHeaderRow = styled.div`
   align-items: center;
   display: flex;
@@ -55,6 +61,13 @@ const InnerHeaderRow = styled.div`
 const SmallSelectWrapper = styled.div`
   font-weight: normal;
   width: 150px;
+`;
+
+const SpinnerWrapper = styled.div`
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  width: 100%;
 `;
 
 type Props = {
@@ -182,7 +195,9 @@ const WorksiteGraphs = ({
         {
           participantsDataIsLoading
             ? (
-              <Spinner size="2x" />
+              <SpinnerWrapper>
+                <Spinner size="2x" />
+              </SpinnerWrapper>
             )
             : (
               worksites.map((worksiteName :string) => {
@@ -195,9 +210,9 @@ const WorksiteGraphs = ({
                 const title = `${worksiteName} • ${participants.count()}`;
                 return (
                   <ExpansionPanel>
-                    <ExpansionPanelSummary expandIcon={expandIcon}>
+                    <StyledExpansionPanelSummary expandIcon={expandIcon}>
                       <div>{ title }</div>
-                    </ExpansionPanelSummary>
+                    </StyledExpansionPanelSummary>
                     <ExpansionPanelDetails>
                       <CardSegment padding="0" vertical>
                         { participants.map((name :string) => <div>{ name }</div>) }

@@ -7,7 +7,6 @@ import React, { Component } from 'react';
 import styled from 'styled-components';
 import { Map } from 'immutable';
 import {
-  Colors,
   LatticeLuxonUtils,
   MuiPickersUtilsProvider,
   ThemeProvider,
@@ -44,10 +43,6 @@ import { OL } from '../../core/style/Colors';
 import { APP, STATE } from '../../utils/constants/ReduxStateConsts';
 
 const { logout } = AuthActions;
-const { WHITE } = Colors;
-
-const editedLightTheme = lightTheme;
-editedLightTheme.palette.background.header = WHITE;
 
 const AppContainerWrapper = styled.div`
   display: flex;
@@ -136,7 +131,7 @@ class AppContainer extends Component<Props> {
     });
     const loading = initializeAppRequestState === RequestStates.PENDING;
     return (
-      <ThemeProvider theme={editedLightTheme}>
+      <ThemeProvider theme={lightTheme}>
         <MuiPickersUtilsProvider utils={LatticeLuxonUtils}>
           <AppContainerWrapper>
             {
