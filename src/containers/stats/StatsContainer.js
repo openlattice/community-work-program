@@ -34,7 +34,7 @@ import {
   getMonthlyCourtTypeData,
   getStatsData,
 } from './StatsActions';
-import { getHoursWorkedByWorksite } from './worksite/WorksiteStatsActions';
+import { GET_WORKSITE_STATS_DATA, getWorksiteStatsData } from './worksite/WorksiteStatsActions';
 import {
   APP,
   SHARED,
@@ -181,9 +181,9 @@ const StatsBoxSkeleton = () => (
 
 type Props = {
   actions :{
-    getHoursWorkedByWorksite :RequestSequence;
     getMonthlyCourtTypeData :RequestSequence;
     getStatsData :RequestSequence;
+    getWorksiteStatsData :RequestSequence;
   };
   activeEnrollmentsByCourtType :Map;
   closedEnrollmentsByCourtType :Map;
@@ -194,6 +194,7 @@ type Props = {
   requestStates :{
     GET_MONTHLY_COURT_TYPE_DATA :RequestState;
     GET_STATS_DATA :RequestState;
+    GET_WORKSITE_STATS_DATA :RequestState;
   };
   successfulEnrollmentsByCourtType :Map;
   totalActiveEnrollmentsCount :number;
@@ -226,7 +227,8 @@ const StatsContainer = ({
 
   const reducedFetchRequestStates = reduceRequestStates([
     requestStates[GET_MONTHLY_COURT_TYPE_DATA],
-    requestStates[GET_STATS_DATA]
+    requestStates[GET_STATS_DATA],
+    requestStates[GET_WORKSITE_STATS_DATA]
   ]);
   const dataIsLoading :boolean = reducedFetchRequestStates ? requestIsPending(reducedFetchRequestStates) : false;
   const [screenViewSelected, toggleScreenView] = useState(SCREEN_VIEWS.COURT_TYPE);
@@ -271,7 +273,7 @@ const StatsContainer = ({
 
   const SCREEN_VIEW_ACTIONS = {
     [SCREEN_VIEWS.COURT_TYPE]: actions.getMonthlyCourtTypeData,
-    [SCREEN_VIEWS.WORK_SITES]: actions.getHoursWorkedByWorksite,
+    [SCREEN_VIEWS.WORK_SITES]: actions.getWorksiteStatsData,
   };
 
   const buttonOptions :Object[] = SCREEN_VIEWS_LIST.map((value :string) => ({
@@ -385,15 +387,16 @@ const mapStateToProps = (state :Map) => {
     requestStates: {
       [GET_MONTHLY_COURT_TYPE_DATA]: stats.getIn([ACTIONS, GET_MONTHLY_COURT_TYPE_DATA, REQUEST_STATE]),
       [GET_STATS_DATA]: stats.getIn([ACTIONS, GET_STATS_DATA, REQUEST_STATE]),
+      [GET_WORKSITE_STATS_DATA]: stats.getIn([ACTIONS, GET_WORKSITE_STATS_DATA, REQUEST_STATE]),
     }
   };
 };
 
 const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
-    getHoursWorkedByWorksite,
     getMonthlyCourtTypeData,
     getStatsData,
+    getWorksiteStatsData,
   }, dispatch)
 });
 
