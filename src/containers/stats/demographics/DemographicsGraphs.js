@@ -1,10 +1,10 @@
 // @flow
 import React from 'react';
 
-import ComingSoon from '../../../components/ComingSoon';
+import RaceChart from './RaceChart';
 
 const DemographicsGraphs = () => (
-  <ComingSoon />
+  <RaceChart />
 );
 
 export default DemographicsGraphs;
