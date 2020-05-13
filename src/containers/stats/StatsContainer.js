@@ -35,6 +35,7 @@ import {
   getStatsData,
 } from './StatsActions';
 import { GET_WORKSITE_STATS_DATA, getWorksiteStatsData } from './worksite/WorksiteStatsActions';
+import { GET_PARTICIPANTS_DEMOGRAPHICS, getParticipantsDemographics } from './demographics/DemographicsActions';
 import {
   APP,
   SHARED,
@@ -182,6 +183,7 @@ const StatsBoxSkeleton = () => (
 type Props = {
   actions :{
     getMonthlyCourtTypeData :RequestSequence;
+    getParticipantsDemographics :RequestSequence;
     getStatsData :RequestSequence;
     getWorksiteStatsData :RequestSequence;
   };
@@ -193,6 +195,7 @@ type Props = {
   referralsByCourtTypeGraphData :Map;
   requestStates :{
     GET_MONTHLY_COURT_TYPE_DATA :RequestState;
+    GET_PARTICIPANTS_DEMOGRAPHICS :RequestState;
     GET_STATS_DATA :RequestState;
     GET_WORKSITE_STATS_DATA :RequestState;
   };
@@ -227,6 +230,7 @@ const StatsContainer = ({
 
   const reducedFetchRequestStates = reduceRequestStates([
     requestStates[GET_MONTHLY_COURT_TYPE_DATA],
+    requestStates[GET_PARTICIPANTS_DEMOGRAPHICS],
     requestStates[GET_STATS_DATA],
     requestStates[GET_WORKSITE_STATS_DATA]
   ]);
@@ -274,6 +278,7 @@ const StatsContainer = ({
   const SCREEN_VIEW_ACTIONS = {
     [SCREEN_VIEWS.COURT_TYPE]: actions.getMonthlyCourtTypeData,
     [SCREEN_VIEWS.WORK_SITES]: actions.getWorksiteStatsData,
+    [SCREEN_VIEWS.DEMOGRAPHICS]: actions.getParticipantsDemographics,
   };
 
   const buttonOptions :Object[] = SCREEN_VIEWS_LIST.map((value :string) => ({
@@ -386,6 +391,7 @@ const mapStateToProps = (state :Map) => {
     entitySetIds: app.getIn([ENTITY_SET_IDS_BY_ORG, selectedOrgId], Map()),
     requestStates: {
       [GET_MONTHLY_COURT_TYPE_DATA]: stats.getIn([ACTIONS, GET_MONTHLY_COURT_TYPE_DATA, REQUEST_STATE]),
+      [GET_PARTICIPANTS_DEMOGRAPHICS]: stats.getIn([ACTIONS, GET_PARTICIPANTS_DEMOGRAPHICS, REQUEST_STATE]),
       [GET_STATS_DATA]: stats.getIn([ACTIONS, GET_STATS_DATA, REQUEST_STATE]),
       [GET_WORKSITE_STATS_DATA]: stats.getIn([ACTIONS, GET_WORKSITE_STATS_DATA, REQUEST_STATE]),
     }
@@ -395,6 +401,7 @@ const mapStateToProps = (state :Map) => {
 const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
     getMonthlyCourtTypeData,
+    getParticipantsDemographics,
     getStatsData,
     getWorksiteStatsData,
   }, dispatch)

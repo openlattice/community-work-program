@@ -17,6 +17,7 @@ import {
   getMonthlyParticipantsByWorksite,
   getWorksiteStatsData,
 } from './worksite/WorksiteStatsActions';
+import { GET_PARTICIPANTS_DEMOGRAPHICS, getParticipantsDemographics } from './demographics/DemographicsActions';
 import { SHARED, STATS } from '../../utils/constants/ReduxStateConsts';
 
 const { ACTIONS, REQUEST_STATE } = SHARED;
@@ -27,6 +28,7 @@ const {
   MONTHLY_HOURS_WORKED_BY_COURT_TYPE,
   MONTHLY_TOTAL_PARTICIPANTS_BY_COURT_TYPE,
   PARTICIPANTS_BY_WORKSITE,
+  RACE_DEMOGRAPHICS,
   REFERRALS_BY_COURT_TYPE_GRAPH_DATA,
   SUCCESSFUL_ENROLLMENTS_BY_COURT_TYPE,
   TOTAL_ACTIVE_ENROLLMENTS_COUNT,
@@ -47,6 +49,9 @@ const INITIAL_STATE :Map<*, *> = fromJS({
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [GET_MONTHLY_PARTICIPANTS_BY_WORKSITE]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [GET_PARTICIPANTS_DEMOGRAPHICS]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [GET_STATS_DATA]: {
@@ -139,6 +144,26 @@ export default function statsReducer(state :Map<*, *> = INITIAL_STATE, action :O
         FAILURE: () => state
           .setIn([ACTIONS, GET_MONTHLY_PARTICIPANTS_BY_WORKSITE, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, GET_MONTHLY_PARTICIPANTS_BY_WORKSITE, action.id]),
+      });
+    }
+
+    case getParticipantsDemographics.case(action.type): {
+
+      return getParticipantsDemographics.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, GET_PARTICIPANTS_DEMOGRAPHICS, action.id], action)
+          .setIn([ACTIONS, GET_PARTICIPANTS_DEMOGRAPHICS, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+          const seqAction :SequenceAction = (action :any);
+          const raceDemographics = seqAction.value;
+          return state
+            .set(RACE_DEMOGRAPHICS, raceDemographics)
+            .setIn([ACTIONS, GET_PARTICIPANTS_DEMOGRAPHICS, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, GET_PARTICIPANTS_DEMOGRAPHICS, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, GET_PARTICIPANTS_DEMOGRAPHICS, action.id]),
       });
     }
 
