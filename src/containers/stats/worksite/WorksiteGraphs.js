@@ -8,10 +8,9 @@ import {
   CardSegment,
   CardStack,
   ExpansionPanel,
-  ExpansionPanelSummary,
   ExpansionPanelDetails,
+  ExpansionPanelSummary,
   IconButton,
-  Label,
   Select,
   Spinner,
 } from 'lattice-ui-kit';
@@ -105,6 +104,8 @@ const WorksiteGraphs = ({
     else setTimeFrame(option);
   };
 
+  const worksites :List = participantsByWorksite.keySeq().toList().sort();
+
   return (
     <CardStack>
       <Card>
@@ -177,24 +178,37 @@ const WorksiteGraphs = ({
           </ActionsWrapper>
         </GraphHeader>
       </Card>
-      {
-        participantsDataIsLoading
-          ? (
-            <Spinner size="2x" />
-          )
-          : (
-            participantsByWorksite.map((participants :List, worksiteName :string) => (
-              <ExpansionPanel>
-                <ExpansionPanelSummary expandIcon={expandIcon}>
-                  <Label subtle>{ worksiteName }</Label>
-                </ExpansionPanelSummary>
-                <ExpansionPanelDetails>
-                  { participants.map((name :string) => <div>{ name }</div>)}
-                </ExpansionPanelDetails>
-              </ExpansionPanel>
-            ))
-          )
-      }
+      <div>
+        {
+          participantsDataIsLoading
+            ? (
+              <Spinner size="2x" />
+            )
+            : (
+              worksites.map((worksiteName :string) => {
+                const participants :List = participantsByWorksite.get(worksiteName, List())
+                  .sort((name1 :string, name2 :string) => {
+                    if (name1.split(' ')[1] < name2.split(' ')[1]) return -1;
+                    if (name1.split(' ')[1] > name2.split(' ')[1]) return 1;
+                    return 0;
+                  });
+                const title = `${worksiteName} • ${participants.count()}`;
+                return (
+                  <ExpansionPanel>
+                    <ExpansionPanelSummary expandIcon={expandIcon}>
+                      <div>{ title }</div>
+                    </ExpansionPanelSummary>
+                    <ExpansionPanelDetails>
+                      <CardSegment padding="0" vertical>
+                        { participants.map((name :string) => <div>{ name }</div>) }
+                      </CardSegment>
+                    </ExpansionPanelDetails>
+                  </ExpansionPanel>
+                );
+              })
+            )
+        }
+      </div>
     </CardStack>
   );
 };
