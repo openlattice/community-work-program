@@ -186,6 +186,7 @@ export const STATS = {
   HOURS_BY_WORKSITE: 'hoursByWorksite',
   MONTHLY_HOURS_WORKED_BY_COURT_TYPE: 'monthlyHoursWorkedByCourtType',
   MONTHLY_TOTAL_PARTICIPANTS_BY_COURT_TYPE: 'monthlyTotalParticipantsByCourtType',
+  PARTICIPANTS_BY_WORKSITE: 'participantsByWorksite',
   REFERRALS_BY_COURT_TYPE_GRAPH_DATA: 'referralsByCourtTypeGraphData',
   SUCCESSFUL_ENROLLMENTS_BY_COURT_TYPE: 'successfulEnrollmentsByCourtType',
   TOTAL_ACTIVE_ENROLLMENTS_COUNT: 'totalActiveEnrollmentsCount',
