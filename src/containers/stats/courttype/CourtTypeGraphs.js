@@ -1,20 +1,34 @@
 // @flow
-import React from 'react';
+import React, { useState } from 'react';
 import styled from 'styled-components';
 import { Map } from 'immutable';
+import { DateTime } from 'luxon';
 import {
   Card,
   CardHeader,
   CardSegment,
   CardStack,
   Colors,
+  IconButton,
+  Select,
   Spinner,
 } from 'lattice-ui-kit';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faSearch } from '@fortawesome/pro-duotone-svg-icons';
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+import type { RequestSequence, RequestState } from 'redux-reqseq';
 
-import EnrollmentsByCourtTypeGraph from './EnrollmentsByCourtTypeGraph';
-import PeopleByCourtTypeGraph from './PeopleByCourtTypeGraph';
-import { formatEnrollmentsCourtTypeData, formatPeopleCourtTypeData } from '../utils/StatsUtils';
+import MonthlyHoursAndParticipantsGraph from './MonthlyHoursAndParticipantsGraph';
+import EnrollmentsAndStatusByCourtType from './EnrollmentsAndStatusByCourtType';
+import ReferralsByCourtTypeGraph from './ReferralsByCourtTypeGraph';
+import { formatReferralsCourtTypeData } from '../utils/StatsUtils';
+import { requestIsPending } from '../../../utils/RequestStateUtils';
+import { MONTHS_OPTIONS, YEARS_OPTIONS } from '../consts/StatsConsts';
+import { GET_MONTHLY_COURT_TYPE_DATA, getMonthlyCourtTypeData } from '../StatsActions';
+import { SHARED, STATE } from '../../../utils/constants/ReduxStateConsts';
 
+const { ACTIONS, REQUEST_STATE } = SHARED;
 const { BLACK, WHITE } = Colors;
 const toolTipStyle :Object = {
   borderRadius: '3px',
@@ -27,33 +41,67 @@ const toolTipStyle :Object = {
 
 const GraphHeader = styled(CardHeader)`
   color: ${BLACK};
+  flex-direction: column;
   font-size: 20px;
   font-weight: 600;
 `;
 
+const ActionsWrapper = styled.div`
+  display: flex;
+  margin-top: 20px;
+`;
+
+const SelectsWrapper = styled.div`
+  display: grid;
+  grid-template-columns: 150px 150px;
+  grid-gap: 0 10px;
+  font-weight: normal;
+  margin-right: 10px;
+`;
+
 type Props = {
-  activePeopleByCourtTypeGraphData :Map;
+  actions :{
+    getMonthlyCourtTypeData :RequestSequence;
+  };
+  activeEnrollmentsByCourtType :Map;
+  closedEnrollmentsByCourtType :Map;
   dataIsLoading :boolean;
-  enrollmentsByCourtTypeGraphData :Map;
-  successfulPeopleByCourtTypeGraphData :Map;
-  unsuccessfulPeopleByCourtTypeGraphData :Map;
+  monthlyHoursWorkedByCourtType :Map;
+  monthlyTotalParticipantsByCourtType :Map;
+  referralsByCourtTypeGraphData :Map;
+  requestStates :{
+    GET_MONTHLY_COURT_TYPE_DATA :RequestState;
+  };
+  successfulEnrollmentsByCourtType :Map;
+  unsuccessfulEnrollmentsByCourtType :Map;
 };
 
 const CourtTypeGraphs = ({
-  activePeopleByCourtTypeGraphData,
+  actions,
+  activeEnrollmentsByCourtType,
+  closedEnrollmentsByCourtType,
   dataIsLoading,
-  enrollmentsByCourtTypeGraphData,
-  successfulPeopleByCourtTypeGraphData,
-  unsuccessfulPeopleByCourtTypeGraphData,
+  monthlyHoursWorkedByCourtType,
+  monthlyTotalParticipantsByCourtType,
+  referralsByCourtTypeGraphData,
+  requestStates,
+  successfulEnrollmentsByCourtType,
+  unsuccessfulEnrollmentsByCourtType,
 } :Props) => {
-  const enrollmentsGraphData :Object[] = formatEnrollmentsCourtTypeData(enrollmentsByCourtTypeGraphData);
-  const activePeopleGraphData :Object[] = formatPeopleCourtTypeData(activePeopleByCourtTypeGraphData);
-  const successfulPeopleGraphData :Object[] = formatPeopleCourtTypeData(successfulPeopleByCourtTypeGraphData);
-  const unsuccessfulPeopleGraphData :Object[] = formatPeopleCourtTypeData(unsuccessfulPeopleByCourtTypeGraphData);
+
+  const monthlyDataIsLoading = requestIsPending(requestStates[GET_MONTHLY_COURT_TYPE_DATA]);
+  const referralsGraphData :Object[] = formatReferralsCourtTypeData(referralsByCourtTypeGraphData);
+  const today :DateTime = DateTime.local();
+  const [month, setMonth] = useState(MONTHS_OPTIONS[today.month - 1]);
+  const currentYearOption :Object = YEARS_OPTIONS.find((obj) => obj.value === today.year);
+  const [year, setYear] = useState(currentYearOption);
+  const getNewData = () => {
+    actions.getMonthlyCourtTypeData({ month: month.value, year: year.value });
+  };
   return (
     <CardStack>
       <Card>
-        <GraphHeader>Number of Enrollments by Court Type</GraphHeader>
+        <GraphHeader>Total Enrollments by Court Type</GraphHeader>
         <CardSegment padding="30px" vertical>
           {
             dataIsLoading
@@ -61,27 +109,66 @@ const CourtTypeGraphs = ({
                 <Spinner size="2x" />
               )
               : (
-                <EnrollmentsByCourtTypeGraph
-                    enrollmentsGraphData={enrollmentsGraphData}
+                <EnrollmentsAndStatusByCourtType
+                    activeEnrollmentsByCourtType={activeEnrollmentsByCourtType}
+                    closedEnrollmentsByCourtType={closedEnrollmentsByCourtType}
+                    successfulEnrollmentsByCourtType={successfulEnrollmentsByCourtType}
+                    toolTipStyle={toolTipStyle}
+                    unsuccessfulEnrollmentsByCourtType={unsuccessfulEnrollmentsByCourtType} />
+              )
+          }
+        </CardSegment>
+      </Card>
+      <Card>
+        <GraphHeader>
+          Number of Referrals (Repeat Enrollments) by Court Type
+        </GraphHeader>
+        <CardSegment padding="30px" vertical>
+          {
+            dataIsLoading
+              ? (
+                <Spinner size="2x" />
+              )
+              : (
+                <ReferralsByCourtTypeGraph
+                    referralsGraphData={referralsGraphData}
                     toolTipStyle={toolTipStyle} />
               )
           }
         </CardSegment>
       </Card>
       <Card>
-        <GraphHeader>Number of Participants by Court Type</GraphHeader>
+        <GraphHeader>
+          <div>Number of Participants and Hours Worked by Court Type, Monthly</div>
+          <ActionsWrapper>
+            <SelectsWrapper>
+              <Select
+                  name="month"
+                  onChange={setMonth}
+                  options={MONTHS_OPTIONS}
+                  placeholder={MONTHS_OPTIONS[today.month - 1].label} />
+              <Select
+                  name="year"
+                  onChange={setYear}
+                  options={YEARS_OPTIONS}
+                  placeholder={today.year} />
+            </SelectsWrapper>
+            <IconButton
+                icon={<FontAwesomeIcon icon={faSearch} />}
+                onClick={getNewData} />
+          </ActionsWrapper>
+        </GraphHeader>
         <CardSegment padding="30px" vertical>
           {
-            dataIsLoading
+            (dataIsLoading || monthlyDataIsLoading)
               ? (
                 <Spinner size="2x" />
               )
               : (
-                <PeopleByCourtTypeGraph
-                    activePeopleGraphData={activePeopleGraphData}
-                    successfulPeopleGraphData={successfulPeopleGraphData}
-                    toolTipStyle={toolTipStyle}
-                    unsuccessfulPeopleGraphData={unsuccessfulPeopleGraphData} />
+                <MonthlyHoursAndParticipantsGraph
+                    monthlyHoursWorkedByCourtType={monthlyHoursWorkedByCourtType}
+                    monthlyTotalParticipantsByCourtType={monthlyTotalParticipantsByCourtType}
+                    toolTipStyle={toolTipStyle} />
               )
           }
         </CardSegment>
@@ -90,4 +177,20 @@ const CourtTypeGraphs = ({
   );
 };
 
-export default CourtTypeGraphs;
+const mapStateToProps = (state :Map) => {
+  const stats = state.get(STATE.STATS);
+  return {
+    requestStates: {
+      [GET_MONTHLY_COURT_TYPE_DATA]: stats.getIn([ACTIONS, GET_MONTHLY_COURT_TYPE_DATA, REQUEST_STATE]),
+    }
+  };
+};
+
+const mapDispatchToProps = (dispatch) => ({
+  actions: bindActionCreators({
+    getMonthlyCourtTypeData,
+  }, dispatch)
+});
+
+// $FlowFixMe
+export default connect(mapStateToProps, mapDispatchToProps)(CourtTypeGraphs);

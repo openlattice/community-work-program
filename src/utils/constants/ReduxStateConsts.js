@@ -181,15 +181,20 @@ export const PRINT_PARTICIPANT = {
 
 /* Stats */
 export const STATS = {
-  ACTIVE_PEOPLE_BY_COURT_TYPE_GRAPH_DATA: 'activePeopleByCourtTypeGraphData',
-  ENROLLMENTS_BY_COURT_TYPE_GRAPH_DATA: 'enrollmentsByCourtTypeGraphData',
-  SUCCESSFUL_PEOPLE_BY_COURT_TYPE_GRAPH_DATA: 'successfulPeopleByCourtTypeGraphData',
-  TOTAL_ACTIVE_PARTICIPANT_COUNT: 'totalActiveParticipantCount',
+  ACTIVE_ENROLLMENTS_BY_COURT_TYPE: 'activeEnrollmentsByCourtType',
+  CLOSED_ENROLLMENTS_BY_COURT_TYPE: 'closedEnrollmentsByCourtType',
+  MONTHLY_HOURS_WORKED_BY_COURT_TYPE: 'monthlyHoursWorkedByCourtType',
+  MONTHLY_TOTAL_PARTICIPANTS_BY_COURT_TYPE: 'monthlyTotalParticipantsByCourtType',
+  REFERRALS_BY_COURT_TYPE_GRAPH_DATA: 'referralsByCourtTypeGraphData',
+  SUCCESSFUL_ENROLLMENTS_BY_COURT_TYPE: 'successfulEnrollmentsByCourtType',
+  TOTAL_ACTIVE_ENROLLMENTS_COUNT: 'totalActiveEnrollmentsCount',
+  TOTAL_CLOSED_ENROLLMENTS_COUNT: 'totalClosedEnrollmentsCount',
   TOTAL_DIVERSION_PLAN_COUNT: 'totalDiversionPlanCount',
+  TOTAL_ENROLLMENTS_COUNT: 'totalEnrollmentsCount',
   TOTAL_PARTICIPANT_COUNT: 'totalParticipantCount',
-  TOTAL_SUCCESSFUL_PARTICIPANT_COUNT: 'totalSuccessfulParticipantCount',
-  TOTAL_UNSUCCESSFUL_PARTICIPANT_COUNT: 'totalUnsuccessfulParticipantCount',
-  UNSUCCESSFUL_PEOPLE_BY_COURT_TYPE_GRAPH_DATA: 'unsuccessfulPeopleByCourtTypeGraphData',
+  TOTAL_SUCCESSFUL_ENROLLMENTS_COUNT: 'totalSuccessfulEnrollmentsCount',
+  TOTAL_UNSUCCESSFUL_ENROLLMENTS_COUNT: 'totalUnsuccessfulEnrollmentsCount',
+  UNSUCCESSFUL_ENROLLMENTS_BY_COURT_TYPE: 'unsuccessfulEnrollmentsByCourtType',
 };
 
 /* Work Schedule */

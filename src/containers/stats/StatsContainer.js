@@ -12,6 +12,7 @@ import {
   faBriefcase,
   faCheckCircle,
   faClipboard,
+  faHandPaper,
   faTimesCircle,
   faUserAlt,
 } from '@fortawesome/pro-duotone-svg-icons';
@@ -23,7 +24,7 @@ import type { RequestSequence, RequestState } from 'redux-reqseq';
 import ChargesGraphs from './charges/ChargesGraphs';
 import CourtTypeGraphs from './courttype/CourtTypeGraphs';
 import DemographicsGraphs from './demographics/DemographicsGraphs';
-import WorksiteGraph from './worksite/WorksiteGraph';
+import WorksiteGraphs from './worksite/WorksiteGraphs';
 import LogoLoader from '../../components/LogoLoader';
 import { ContainerInnerWrapper, ContainerOuterWrapper } from '../../components/Layout';
 import { GET_STATS_DATA, getStatsData } from './StatsActions';
@@ -41,15 +42,19 @@ const {
   WHITE
 } = Colors;
 const {
-  ACTIVE_PEOPLE_BY_COURT_TYPE_GRAPH_DATA,
-  ENROLLMENTS_BY_COURT_TYPE_GRAPH_DATA,
-  SUCCESSFUL_PEOPLE_BY_COURT_TYPE_GRAPH_DATA,
-  TOTAL_ACTIVE_PARTICIPANT_COUNT,
+  ACTIVE_ENROLLMENTS_BY_COURT_TYPE,
+  CLOSED_ENROLLMENTS_BY_COURT_TYPE,
+  MONTHLY_HOURS_WORKED_BY_COURT_TYPE,
+  MONTHLY_TOTAL_PARTICIPANTS_BY_COURT_TYPE,
+  REFERRALS_BY_COURT_TYPE_GRAPH_DATA,
+  SUCCESSFUL_ENROLLMENTS_BY_COURT_TYPE,
+  TOTAL_ACTIVE_ENROLLMENTS_COUNT,
+  TOTAL_CLOSED_ENROLLMENTS_COUNT,
   TOTAL_DIVERSION_PLAN_COUNT,
   TOTAL_PARTICIPANT_COUNT,
-  TOTAL_SUCCESSFUL_PARTICIPANT_COUNT,
-  TOTAL_UNSUCCESSFUL_PARTICIPANT_COUNT,
-  UNSUCCESSFUL_PEOPLE_BY_COURT_TYPE_GRAPH_DATA,
+  TOTAL_SUCCESSFUL_ENROLLMENTS_COUNT,
+  TOTAL_UNSUCCESSFUL_ENROLLMENTS_COUNT,
+  UNSUCCESSFUL_ENROLLMENTS_BY_COURT_TYPE,
 } = STATS;
 const { ENTITY_SET_IDS_BY_ORG, SELECTED_ORG_ID } = APP;
 const { ACTIONS, REQUEST_STATE } = SHARED;
@@ -174,34 +179,42 @@ type Props = {
   actions :{
     getStatsData :RequestSequence;
   };
-  enrollmentsByCourtTypeGraphData :Map;
-  activePeopleByCourtTypeGraphData :Map;
+  activeEnrollmentsByCourtType :Map;
+  closedEnrollmentsByCourtType :Map;
   entitySetIds :Map;
+  monthlyHoursWorkedByCourtType :Map;
+  monthlyTotalParticipantsByCourtType :Map;
+  referralsByCourtTypeGraphData :Map;
   requestStates :{
     GET_STATS_DATA :RequestState;
   };
-  successfulPeopleByCourtTypeGraphData :Map;
-  totalActiveParticipantCount :number;
+  successfulEnrollmentsByCourtType :Map;
+  totalActiveEnrollmentsCount :number;
+  totalClosedEnrollmentsCount :number;
   totalDiversionPlanCount :number;
   totalParticipantCount :number;
-  totalSuccessfulParticipantCount :number;
-  totalUnsuccessfulParticipantCount :number;
-  unsuccessfulPeopleByCourtTypeGraphData :Map;
+  totalSuccessfulEnrollmentsCount :number;
+  totalUnsuccessfulEnrollmentsCount :number;
+  unsuccessfulEnrollmentsByCourtType :Map;
 };
 
 const StatsContainer = ({
   actions,
-  activePeopleByCourtTypeGraphData,
-  enrollmentsByCourtTypeGraphData,
+  activeEnrollmentsByCourtType,
+  closedEnrollmentsByCourtType,
   entitySetIds,
+  monthlyHoursWorkedByCourtType,
+  monthlyTotalParticipantsByCourtType,
+  referralsByCourtTypeGraphData,
   requestStates,
-  successfulPeopleByCourtTypeGraphData,
-  totalActiveParticipantCount,
+  successfulEnrollmentsByCourtType,
+  totalActiveEnrollmentsCount,
+  totalClosedEnrollmentsCount,
   totalDiversionPlanCount,
   totalParticipantCount,
-  totalSuccessfulParticipantCount,
-  totalUnsuccessfulParticipantCount,
-  unsuccessfulPeopleByCourtTypeGraphData,
+  totalSuccessfulEnrollmentsCount,
+  totalUnsuccessfulEnrollmentsCount,
+  unsuccessfulEnrollmentsByCourtType,
 } :Props) => {
 
   const dataIsLoading :boolean = requestStates[GET_STATS_DATA] === RequestStates.PENDING;
@@ -214,11 +227,14 @@ const StatsContainer = ({
 
   const courtTypeGraphsComponent = (
     <CourtTypeGraphs
-        activePeopleByCourtTypeGraphData={activePeopleByCourtTypeGraphData}
-        enrollmentsByCourtTypeGraphData={enrollmentsByCourtTypeGraphData}
+        activeEnrollmentsByCourtType={activeEnrollmentsByCourtType}
+        closedEnrollmentsByCourtType={closedEnrollmentsByCourtType}
         dataIsLoading={dataIsLoading}
-        successfulPeopleByCourtTypeGraphData={successfulPeopleByCourtTypeGraphData}
-        unsuccessfulPeopleByCourtTypeGraphData={unsuccessfulPeopleByCourtTypeGraphData} />
+        monthlyHoursWorkedByCourtType={monthlyHoursWorkedByCourtType}
+        monthlyTotalParticipantsByCourtType={monthlyTotalParticipantsByCourtType}
+        referralsByCourtTypeGraphData={referralsByCourtTypeGraphData}
+        successfulEnrollmentsByCourtType={successfulEnrollmentsByCourtType}
+        unsuccessfulEnrollmentsByCourtType={unsuccessfulEnrollmentsByCourtType} />
   );
   switch (screenViewSelected) {
     case SCREEN_VIEWS.COURT_TYPE:
@@ -226,7 +242,7 @@ const StatsContainer = ({
       break;
 
     case SCREEN_VIEWS.WORK_SITES:
-      screenViewComponent = <WorksiteGraph />;
+      screenViewComponent = <WorksiteGraphs />;
       break;
 
     case SCREEN_VIEWS.DEMOGRAPHICS:
@@ -277,8 +293,8 @@ const StatsContainer = ({
                     <StatBox>
                       <FontAwesomeIcon icon={faBriefcase} size="3x" />
                       <StatBoxInnerWrapper>
-                        <Number>{ totalActiveParticipantCount }</Number>
-                        <Category>Currently Active</Category>
+                        <Number>{ totalActiveEnrollmentsCount }</Number>
+                        <Category>Active Enrollments</Category>
                       </StatBoxInnerWrapper>
                     </StatBox>
                   </StatsRow>
@@ -286,15 +302,22 @@ const StatsContainer = ({
                     <StatBox>
                       <FontAwesomeIcon icon={faCheckCircle} size="3x" />
                       <StatBoxInnerWrapper>
-                        <Number>{ totalSuccessfulParticipantCount }</Number>
+                        <Number>{ totalSuccessfulEnrollmentsCount }</Number>
                         <Category>Completed/Successful</Category>
                       </StatBoxInnerWrapper>
                     </StatBox>
                     <StatBox>
                       <FontAwesomeIcon icon={faTimesCircle} size="3x" />
                       <StatBoxInnerWrapper>
-                        <Number>{ totalUnsuccessfulParticipantCount }</Number>
+                        <Number>{ totalUnsuccessfulEnrollmentsCount }</Number>
                         <Category>Removed/Unsuccessful</Category>
+                      </StatBoxInnerWrapper>
+                    </StatBox>
+                    <StatBox>
+                      <FontAwesomeIcon icon={faHandPaper} size="3x" />
+                      <StatBoxInnerWrapper>
+                        <Number>{ totalClosedEnrollmentsCount }</Number>
+                        <Category>Closed Enrollments</Category>
                       </StatBoxInnerWrapper>
                     </StatBox>
                   </StatsRow>
@@ -325,15 +348,19 @@ const mapStateToProps = (state :Map) => {
   const app = state.get(STATE.APP);
   const selectedOrgId :string = app.get(SELECTED_ORG_ID);
   return {
-    [ACTIVE_PEOPLE_BY_COURT_TYPE_GRAPH_DATA]: stats.get(ACTIVE_PEOPLE_BY_COURT_TYPE_GRAPH_DATA),
-    [ENROLLMENTS_BY_COURT_TYPE_GRAPH_DATA]: stats.get(ENROLLMENTS_BY_COURT_TYPE_GRAPH_DATA),
-    [SUCCESSFUL_PEOPLE_BY_COURT_TYPE_GRAPH_DATA]: stats.get(SUCCESSFUL_PEOPLE_BY_COURT_TYPE_GRAPH_DATA),
-    [TOTAL_ACTIVE_PARTICIPANT_COUNT]: stats.get(TOTAL_ACTIVE_PARTICIPANT_COUNT),
+    [ACTIVE_ENROLLMENTS_BY_COURT_TYPE]: stats.get(ACTIVE_ENROLLMENTS_BY_COURT_TYPE),
+    [CLOSED_ENROLLMENTS_BY_COURT_TYPE]: stats.get(CLOSED_ENROLLMENTS_BY_COURT_TYPE),
+    [MONTHLY_HOURS_WORKED_BY_COURT_TYPE]: stats.get(MONTHLY_HOURS_WORKED_BY_COURT_TYPE),
+    [MONTHLY_TOTAL_PARTICIPANTS_BY_COURT_TYPE]: stats.get(MONTHLY_TOTAL_PARTICIPANTS_BY_COURT_TYPE),
+    [REFERRALS_BY_COURT_TYPE_GRAPH_DATA]: stats.get(REFERRALS_BY_COURT_TYPE_GRAPH_DATA),
+    [SUCCESSFUL_ENROLLMENTS_BY_COURT_TYPE]: stats.get(SUCCESSFUL_ENROLLMENTS_BY_COURT_TYPE),
+    [TOTAL_ACTIVE_ENROLLMENTS_COUNT]: stats.get(TOTAL_ACTIVE_ENROLLMENTS_COUNT),
+    [TOTAL_CLOSED_ENROLLMENTS_COUNT]: stats.get(TOTAL_CLOSED_ENROLLMENTS_COUNT),
     [TOTAL_DIVERSION_PLAN_COUNT]: stats.get(TOTAL_DIVERSION_PLAN_COUNT),
     [TOTAL_PARTICIPANT_COUNT]: stats.get(TOTAL_PARTICIPANT_COUNT),
-    [TOTAL_SUCCESSFUL_PARTICIPANT_COUNT]: stats.get(TOTAL_SUCCESSFUL_PARTICIPANT_COUNT),
-    [TOTAL_UNSUCCESSFUL_PARTICIPANT_COUNT]: stats.get(TOTAL_UNSUCCESSFUL_PARTICIPANT_COUNT),
-    [UNSUCCESSFUL_PEOPLE_BY_COURT_TYPE_GRAPH_DATA]: stats.get(UNSUCCESSFUL_PEOPLE_BY_COURT_TYPE_GRAPH_DATA),
+    [TOTAL_SUCCESSFUL_ENROLLMENTS_COUNT]: stats.get(TOTAL_SUCCESSFUL_ENROLLMENTS_COUNT),
+    [TOTAL_UNSUCCESSFUL_ENROLLMENTS_COUNT]: stats.get(TOTAL_UNSUCCESSFUL_ENROLLMENTS_COUNT),
+    [UNSUCCESSFUL_ENROLLMENTS_BY_COURT_TYPE]: stats.get(UNSUCCESSFUL_ENROLLMENTS_BY_COURT_TYPE),
     entitySetIds: app.getIn([ENTITY_SET_IDS_BY_ORG, selectedOrgId], Map()),
     requestStates: {
       [GET_STATS_DATA]: stats.getIn([ACTIONS, GET_STATS_DATA, REQUEST_STATE]),
