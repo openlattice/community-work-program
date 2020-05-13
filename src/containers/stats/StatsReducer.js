@@ -4,13 +4,17 @@ import { RequestStates } from 'redux-reqseq';
 import type { SequenceAction } from 'redux-reqseq';
 
 import {
-  GET_HOURS_WORKED_BY_WORKSITE,
   GET_MONTHLY_COURT_TYPE_DATA,
   GET_STATS_DATA,
-  getHoursWorkedByWorksite,
   getMonthlyCourtTypeData,
   getStatsData,
 } from './StatsActions';
+import {
+  GET_HOURS_WORKED_BY_WORKSITE,
+  GET_MONTHLY_PARTICIPANTS_BY_WORKSITE,
+  getHoursWorkedByWorksite,
+  getMonthlyParticipantsByWorksite,
+} from './worksite/WorksiteStatsActions';
 import { SHARED, STATS } from '../../utils/constants/ReduxStateConsts';
 
 const { ACTIONS, REQUEST_STATE } = SHARED;
@@ -20,6 +24,7 @@ const {
   HOURS_BY_WORKSITE,
   MONTHLY_HOURS_WORKED_BY_COURT_TYPE,
   MONTHLY_TOTAL_PARTICIPANTS_BY_COURT_TYPE,
+  PARTICIPANTS_BY_WORKSITE,
   REFERRALS_BY_COURT_TYPE_GRAPH_DATA,
   SUCCESSFUL_ENROLLMENTS_BY_COURT_TYPE,
   TOTAL_ACTIVE_ENROLLMENTS_COUNT,
@@ -39,6 +44,9 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     [GET_MONTHLY_COURT_TYPE_DATA]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
+    [GET_MONTHLY_PARTICIPANTS_BY_WORKSITE]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
     [GET_STATS_DATA]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
@@ -48,6 +56,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [HOURS_BY_WORKSITE]: Map(),
   [MONTHLY_HOURS_WORKED_BY_COURT_TYPE]: Map(),
   [MONTHLY_TOTAL_PARTICIPANTS_BY_COURT_TYPE]: Map(),
+  [PARTICIPANTS_BY_WORKSITE]: Map(),
   [REFERRALS_BY_COURT_TYPE_GRAPH_DATA]: Map(),
   [SUCCESSFUL_ENROLLMENTS_BY_COURT_TYPE]: Map(),
   [TOTAL_ACTIVE_ENROLLMENTS_COUNT]: 0,
@@ -105,6 +114,26 @@ export default function statsReducer(state :Map<*, *> = INITIAL_STATE, action :O
         FAILURE: () => state
           .setIn([ACTIONS, GET_MONTHLY_COURT_TYPE_DATA, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, GET_MONTHLY_COURT_TYPE_DATA, action.id]),
+      });
+    }
+
+    case getMonthlyParticipantsByWorksite.case(action.type): {
+
+      return getMonthlyParticipantsByWorksite.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, GET_MONTHLY_PARTICIPANTS_BY_WORKSITE, action.id], action)
+          .setIn([ACTIONS, GET_MONTHLY_PARTICIPANTS_BY_WORKSITE, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+          const seqAction :SequenceAction = (action :any);
+          const participantsByWorksite = seqAction.value;
+          return state
+            .set(PARTICIPANTS_BY_WORKSITE, participantsByWorksite)
+            .setIn([ACTIONS, GET_MONTHLY_PARTICIPANTS_BY_WORKSITE, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, GET_MONTHLY_PARTICIPANTS_BY_WORKSITE, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, GET_MONTHLY_PARTICIPANTS_BY_WORKSITE, action.id]),
       });
     }
 
