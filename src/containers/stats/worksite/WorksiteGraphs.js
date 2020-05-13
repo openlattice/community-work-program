@@ -1,13 +1,17 @@
 // @flow
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import { Map } from 'immutable';
+import { List, Map } from 'immutable';
 import { DateTime } from 'luxon';
 import {
   Card,
   CardSegment,
   CardStack,
+  ExpansionPanel,
+  ExpansionPanelSummary,
+  ExpansionPanelDetails,
   IconButton,
+  Label,
   Select,
   Spinner,
 } from 'lattice-ui-kit';
@@ -15,12 +19,14 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSearch } from '@fortawesome/pro-duotone-svg-icons';
+import { faChevronDown } from '@fortawesome/pro-light-svg-icons';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
 import HoursByWorksiteGraph from './HoursByWorksiteGraph';
 import { ActionsWrapper, GraphHeader, SelectsWrapper } from '../styled/GraphStyles';
 import {
   GET_HOURS_WORKED_BY_WORKSITE,
+  GET_MONTHLY_PARTICIPANTS_BY_WORKSITE,
   getHoursWorkedByWorksite,
   getMonthlyParticipantsByWorksite
 } from './WorksiteStatsActions';
@@ -37,6 +43,8 @@ import {
 
 const { ACTIONS, REQUEST_STATE } = SHARED;
 const { HOURS_BY_WORKSITE, PARTICIPANTS_BY_WORKSITE } = STATS;
+
+const expandIcon = <FontAwesomeIcon icon={faChevronDown} size="xs" />;
 
 const InnerHeaderRow = styled.div`
   align-items: center;
@@ -56,14 +64,22 @@ type Props = {
     getMonthlyParticipantsByWorksite :RequestSequence;
   };
   hoursByWorksite :Map;
+  participantsByWorksite :Map;
   requestStates :{
     GET_HOURS_WORKED_BY_WORKSITE :RequestState;
+    GET_MONTHLY_PARTICIPANTS_BY_WORKSITE :RequestState;
   };
 };
 
-const WorksiteGraphs = ({ actions, hoursByWorksite, requestStates } :Props) => {
+const WorksiteGraphs = ({
+  actions,
+  hoursByWorksite,
+  participantsByWorksite,
+  requestStates
+} :Props) => {
 
   const hoursDataIsLoading :boolean = requestIsPending(requestStates[GET_HOURS_WORKED_BY_WORKSITE]);
+  const participantsDataIsLoading :boolean = requestIsPending(requestStates[GET_MONTHLY_PARTICIPANTS_BY_WORKSITE]);
 
   const [timeFrame, setTimeFrame] = useState(TIME_FRAME_OPTIONS[2]);
   const today :DateTime = DateTime.local();
@@ -160,9 +176,25 @@ const WorksiteGraphs = ({ actions, hoursByWorksite, requestStates } :Props) => {
                 onClick={getParticipantsData} />
           </ActionsWrapper>
         </GraphHeader>
-        <CardSegment vertical>
-        </CardSegment>
       </Card>
+      {
+        participantsDataIsLoading
+          ? (
+            <Spinner size="2x" />
+          )
+          : (
+            participantsByWorksite.map((participants :List, worksiteName :string) => (
+              <ExpansionPanel>
+                <ExpansionPanelSummary expandIcon={expandIcon}>
+                  <Label subtle>{ worksiteName }</Label>
+                </ExpansionPanelSummary>
+                <ExpansionPanelDetails>
+                  { participants.map((name :string) => <div>{ name }</div>)}
+                </ExpansionPanelDetails>
+              </ExpansionPanel>
+            ))
+          )
+      }
     </CardStack>
   );
 };
@@ -174,6 +206,8 @@ const mapStateToProps = (state :Map) => {
     [PARTICIPANTS_BY_WORKSITE]: stats.get(PARTICIPANTS_BY_WORKSITE),
     requestStates: {
       [GET_HOURS_WORKED_BY_WORKSITE]: stats.getIn([ACTIONS, GET_HOURS_WORKED_BY_WORKSITE, REQUEST_STATE]),
+      [GET_MONTHLY_PARTICIPANTS_BY_WORKSITE]: stats
+        .getIn([ACTIONS, GET_MONTHLY_PARTICIPANTS_BY_WORKSITE, REQUEST_STATE]),
     }
   };
 };
