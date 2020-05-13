@@ -29,13 +29,12 @@ import LogoLoader from '../../components/LogoLoader';
 import { ContainerInnerWrapper, ContainerOuterWrapper } from '../../components/Layout';
 import { reduceRequestStates, requestIsPending } from '../../utils/RequestStateUtils';
 import {
-  GET_HOURS_WORKED_BY_WORKSITE,
   GET_MONTHLY_COURT_TYPE_DATA,
   GET_STATS_DATA,
-  getHoursWorkedByWorksite,
   getMonthlyCourtTypeData,
   getStatsData,
 } from './StatsActions';
+import { getHoursWorkedByWorksite } from './worksite/WorksiteStatsActions';
 import {
   APP,
   SHARED,
@@ -193,7 +192,6 @@ type Props = {
   monthlyTotalParticipantsByCourtType :Map;
   referralsByCourtTypeGraphData :Map;
   requestStates :{
-    GET_HOURS_WORKED_BY_WORKSITE :RequestState;
     GET_MONTHLY_COURT_TYPE_DATA :RequestState;
     GET_STATS_DATA :RequestState;
   };
@@ -385,7 +383,6 @@ const mapStateToProps = (state :Map) => {
     [UNSUCCESSFUL_ENROLLMENTS_BY_COURT_TYPE]: stats.get(UNSUCCESSFUL_ENROLLMENTS_BY_COURT_TYPE),
     entitySetIds: app.getIn([ENTITY_SET_IDS_BY_ORG, selectedOrgId], Map()),
     requestStates: {
-      [GET_HOURS_WORKED_BY_WORKSITE]: stats.getIn([ACTIONS, GET_HOURS_WORKED_BY_WORKSITE, REQUEST_STATE]),
       [GET_MONTHLY_COURT_TYPE_DATA]: stats.getIn([ACTIONS, GET_MONTHLY_COURT_TYPE_DATA, REQUEST_STATE]),
       [GET_STATS_DATA]: stats.getIn([ACTIONS, GET_STATS_DATA, REQUEST_STATE]),
     }
