@@ -40,8 +40,8 @@ const toolTipStyle :Object = {
 };
 
 const GraphHeader = styled(CardHeader)`
-  flex-direction: column;
   color: ${BLACK};
+  flex-direction: column;
   font-size: 20px;
   font-weight: 600;
 `;
