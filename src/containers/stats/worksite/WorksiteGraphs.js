@@ -19,7 +19,11 @@ import type { RequestSequence, RequestState } from 'redux-reqseq';
 
 import HoursByWorksiteGraph from './HoursByWorksiteGraph';
 import { ActionsWrapper, GraphHeader, SelectsWrapper } from '../styled/GraphStyles';
-import { GET_HOURS_WORKED_BY_WORKSITE, getHoursWorkedByWorksite } from '../StatsActions';
+import {
+  GET_HOURS_WORKED_BY_WORKSITE,
+  getHoursWorkedByWorksite,
+  getMonthlyParticipantsByWorksite
+} from './WorksiteStatsActions';
 import { requestIsPending } from '../../../utils/RequestStateUtils';
 import { SHARED, STATE, STATS } from '../../../utils/constants/ReduxStateConsts';
 import {
@@ -32,7 +36,7 @@ import {
 } from '../consts/TimeConsts';
 
 const { ACTIONS, REQUEST_STATE } = SHARED;
-const { HOURS_BY_WORKSITE } = STATS;
+const { HOURS_BY_WORKSITE, PARTICIPANTS_BY_WORKSITE } = STATS;
 
 const InnerHeaderRow = styled.div`
   align-items: center;
@@ -49,6 +53,7 @@ const SmallSelectWrapper = styled.div`
 type Props = {
   actions :{
     getHoursWorkedByWorksite :RequestSequence;
+    getMonthlyParticipantsByWorksite :RequestSequence;
   };
   hoursByWorksite :Map;
   requestStates :{
@@ -56,16 +61,26 @@ type Props = {
   };
 };
 
-const WorksiteGraph = ({ actions, hoursByWorksite, requestStates } :Props) => {
+const WorksiteGraphs = ({ actions, hoursByWorksite, requestStates } :Props) => {
+
   const hoursDataIsLoading :boolean = requestIsPending(requestStates[GET_HOURS_WORKED_BY_WORKSITE]);
+
   const [timeFrame, setTimeFrame] = useState(TIME_FRAME_OPTIONS[2]);
   const today :DateTime = DateTime.local();
-  const [month, setMonth] = useState(MONTHS_OPTIONS[today.month - 1]);
+  const [hoursMonth, setHoursMonth] = useState(MONTHS_OPTIONS[today.month - 1]);
   const currentYearOption :Object = YEARS_OPTIONS.find((obj) => obj.value === today.year);
-  const [year, setYear] = useState(currentYearOption);
-  const getTimeBasedData = () => {
-    actions.getHoursWorkedByWorksite({ month: month.value, year: year.value, timeFrame: timeFrame.value });
+  const [hoursYear, setHoursYear] = useState(currentYearOption);
+  const [participantsMonth, setParticipantsMonth] = useState(MONTHS_OPTIONS[today.month - 1]);
+  const [participantsYear, setParticipantsYear] = useState(currentYearOption);
+
+  const getHoursData = () => {
+    actions.getHoursWorkedByWorksite({ month: hoursMonth.value, year: hoursYear.value, timeFrame: timeFrame.value });
   };
+
+  const getParticipantsData = () => {
+    actions.getMonthlyParticipantsByWorksite({ month: participantsMonth.value, year: participantsYear.value });
+  };
+
   const onTimeFrameSelectChange = (option :Object) => {
     if (option.value === ALL_TIME) {
       actions.getHoursWorkedByWorksite();
@@ -73,6 +88,7 @@ const WorksiteGraph = ({ actions, hoursByWorksite, requestStates } :Props) => {
     }
     else setTimeFrame(option);
   };
+
   return (
     <CardStack>
       <Card>
@@ -94,18 +110,18 @@ const WorksiteGraph = ({ actions, hoursByWorksite, requestStates } :Props) => {
                     <Select
                         isDisabled={timeFrame.value === YEARLY}
                         name="month"
-                        onChange={setMonth}
+                        onChange={setHoursMonth}
                         options={MONTHS_OPTIONS}
                         placeholder={MONTHS_OPTIONS[today.month - 1].label} />
                     <Select
                         name="year"
-                        onChange={setYear}
+                        onChange={setHoursYear}
                         options={YEARS_OPTIONS}
                         placeholder={today.year} />
                   </SelectsWrapper>
                   <IconButton
                       icon={<FontAwesomeIcon icon={faSearch} />}
-                      onClick={getTimeBasedData} />
+                      onClick={getHoursData} />
                 </ActionsWrapper>
               </InnerHeaderRow>
             )
@@ -123,6 +139,30 @@ const WorksiteGraph = ({ actions, hoursByWorksite, requestStates } :Props) => {
           }
         </CardSegment>
       </Card>
+      <Card>
+        <GraphHeader>
+          <div>Participants by Work Site, Monthly</div>
+          <ActionsWrapper>
+            <SelectsWrapper>
+              <Select
+                  name="month"
+                  onChange={setParticipantsMonth}
+                  options={MONTHS_OPTIONS}
+                  placeholder={MONTHS_OPTIONS[today.month - 1].label} />
+              <Select
+                  name="year"
+                  onChange={setParticipantsYear}
+                  options={YEARS_OPTIONS}
+                  placeholder={today.year} />
+            </SelectsWrapper>
+            <IconButton
+                icon={<FontAwesomeIcon icon={faSearch} />}
+                onClick={getParticipantsData} />
+          </ActionsWrapper>
+        </GraphHeader>
+        <CardSegment vertical>
+        </CardSegment>
+      </Card>
     </CardStack>
   );
 };
@@ -131,6 +171,7 @@ const mapStateToProps = (state :Map) => {
   const stats = state.get(STATE.STATS);
   return {
     [HOURS_BY_WORKSITE]: stats.get(HOURS_BY_WORKSITE),
+    [PARTICIPANTS_BY_WORKSITE]: stats.get(PARTICIPANTS_BY_WORKSITE),
     requestStates: {
       [GET_HOURS_WORKED_BY_WORKSITE]: stats.getIn([ACTIONS, GET_HOURS_WORKED_BY_WORKSITE, REQUEST_STATE]),
     }
@@ -140,8 +181,9 @@ const mapStateToProps = (state :Map) => {
 const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
     getHoursWorkedByWorksite,
+    getMonthlyParticipantsByWorksite,
   }, dispatch)
 });
 
 // $FlowFixMe
-export default connect(mapStateToProps, mapDispatchToProps)(WorksiteGraph);
+export default connect(mapStateToProps, mapDispatchToProps)(WorksiteGraphs);
