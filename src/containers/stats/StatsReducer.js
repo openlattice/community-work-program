@@ -12,8 +12,10 @@ import {
 import {
   GET_HOURS_WORKED_BY_WORKSITE,
   GET_MONTHLY_PARTICIPANTS_BY_WORKSITE,
+  GET_WORKSITE_STATS_DATA,
   getHoursWorkedByWorksite,
   getMonthlyParticipantsByWorksite,
+  getWorksiteStatsData,
 } from './worksite/WorksiteStatsActions';
 import { SHARED, STATS } from '../../utils/constants/ReduxStateConsts';
 
@@ -48,6 +50,9 @@ const INITIAL_STATE :Map<*, *> = fromJS({
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [GET_STATS_DATA]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [GET_WORKSITE_STATS_DATA]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
   },
@@ -177,6 +182,21 @@ export default function statsReducer(state :Map<*, *> = INITIAL_STATE, action :O
         FAILURE: () => state
           .setIn([ACTIONS, GET_STATS_DATA, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, GET_STATS_DATA, action.id]),
+      });
+    }
+
+    case getWorksiteStatsData.case(action.type): {
+
+      return getWorksiteStatsData.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, GET_WORKSITE_STATS_DATA, action.id], action)
+          .setIn([ACTIONS, GET_WORKSITE_STATS_DATA, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => state
+          .setIn([ACTIONS, GET_WORKSITE_STATS_DATA, REQUEST_STATE], RequestStates.SUCCESS),
+        FAILURE: () => state
+          .setIn([ACTIONS, GET_WORKSITE_STATS_DATA, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, GET_WORKSITE_STATS_DATA, action.id]),
       });
     }
 

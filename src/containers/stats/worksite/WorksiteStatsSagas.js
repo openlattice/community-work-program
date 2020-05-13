@@ -2,6 +2,7 @@
 import { List, Map, fromJS } from 'immutable';
 import { DateTime } from 'luxon';
 import {
+  all,
   call,
   put,
   select,
@@ -32,9 +33,11 @@ import {
   GET_HOURS_WORKED_BY_WORKSITE,
   GET_MONTHLY_PARTICIPANTS_BY_WORKSITE,
   GET_WORKSITES,
+  GET_WORKSITE_STATS_DATA,
   getCheckInNeighbors,
   getHoursWorkedByWorksite,
   getMonthlyParticipantsByWorksite,
+  getWorksiteStatsData,
   getWorksites,
 } from './WorksiteStatsActions';
 import { STATE } from '../../../utils/constants/ReduxStateConsts';
@@ -408,7 +411,12 @@ function* getMonthlyParticipantsByWorksiteWorker(action :SequenceAction) :Genera
       if (worksiteName.length) participantsByWorksite.set(worksiteName, List());
     });
 
-    const { month, year } = value;
+    let { month, year } = value;
+    const today :DateTime = DateTime.local();
+    if (!month && !year) {
+      month = today.month;
+      year = today.year;
+    }
 
     const app = yield select(getAppFromState);
     const edm = yield select(getEdmFromState);
@@ -420,7 +428,7 @@ function* getMonthlyParticipantsByWorksiteWorker(action :SequenceAction) :Genera
       maxHits: 10000,
       constraints: []
     };
-    const mmMonth :string = month < 10 ? `0${month}` : month;
+    const mmMonth :string = month < 10 ? `0${month}` : `${month}`;
     const firstDateOfMonth :DateTime = DateTime.fromISO(`${year}-${mmMonth}-01`);
     const searchTerm :string = getUTCDateRangeSearchString(datetimeStartPTID, 'month', firstDateOfMonth);
     searchOptions.constraints.push({
@@ -475,6 +483,40 @@ function* getMonthlyParticipantsByWorksiteWatcher() :Generator<*, *, *> {
   yield takeEvery(GET_MONTHLY_PARTICIPANTS_BY_WORKSITE, getMonthlyParticipantsByWorksiteWorker);
 }
 
+/*
+ *
+ * WorksiteStatsActions.getWorksiteStatsData()
+ *
+ */
+
+function* getWorksiteStatsDataWorker(action :SequenceAction) :Generator<*, *, *> {
+  const { id } = action;
+  try {
+    yield put(getWorksiteStatsData.request(id));
+
+    const [hoursResponse, participantsResponse] = yield all([
+      call(getHoursWorkedByWorksiteWorker, getHoursWorkedByWorksite()),
+      call(getMonthlyParticipantsByWorksiteWorker, getMonthlyParticipantsByWorksite()),
+    ]);
+    if (hoursResponse.error) throw hoursResponse.error;
+    if (participantsResponse.error) throw participantsResponse.error;
+
+    yield put(getWorksiteStatsData.success(id));
+  }
+  catch (error) {
+    LOG.error(action.type, error);
+    yield put(getWorksiteStatsData.failure(id, error));
+  }
+  finally {
+    yield put(getWorksiteStatsData.finally(id));
+  }
+}
+
+function* getWorksiteStatsDataWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(GET_WORKSITE_STATS_DATA, getWorksiteStatsDataWorker);
+}
+
 export {
   getCheckInNeighborsWatcher,
   getCheckInNeighborsWorker,
@@ -482,6 +524,8 @@ export {
   getHoursWorkedByWorksiteWorker,
   getMonthlyParticipantsByWorksiteWatcher,
   getMonthlyParticipantsByWorksiteWorker,
+  getWorksiteStatsDataWatcher,
+  getWorksiteStatsDataWorker,
   getWorksitesWatcher,
   getWorksitesWorker,
 };
