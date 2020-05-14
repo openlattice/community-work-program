@@ -143,7 +143,7 @@ import { enrollmentHeaderNames } from './ParticipantProfile';
 import { EMPTY_FIELD } from '../participants/ParticipantsConstants';
 import { PERSON, STATE } from '../../utils/constants/ReduxStateConsts';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
-import { CONTACT_METHODS } from '../../core/edm/constants/DataModelConsts';
+import { ASSOCIATION_DETAILS, CONTACT_METHODS } from '../../core/edm/constants/DataModelConsts';
 
 const { getEntityData, getEntitySetData } = DataApiActions;
 const { getEntityDataWorker, getEntitySetDataWorker } = DataApiSagas;
@@ -892,67 +892,55 @@ function* reassignJudgeWorker(action :SequenceAction) :Generator<*, *, *> {
     yield put(reassignJudge.request(id, value));
 
     const app = yield select(getAppFromState);
-    const edm = yield select(getEdmFromState);
     const judgesESID :UUID = getEntitySetIdFromApp(app, JUDGES);
     const presidesOverESID :UUID = getEntitySetIdFromApp(app, PRESIDES_OVER);
 
-    const { associationEntityData } = value;
-    let associations :Object = associationEntityData;
-    const associationsToDelete = [];
+    const {
+      associations,
+      caseEKID,
+      diversionPlanEKID,
+      judgeEKID
+    } = value;
 
-    const { entityData } = value;
-    if (has(entityData, judgesESID)) {
+    const caseESID :UUID = getEntitySetIdFromApp(app, MANUAL_PRETRIAL_COURT_CASES);
+    const diversionPlanESID :UUID = getEntitySetIdFromApp(app, DIVERSION_PLAN);
 
-      const judgeEKID :UUID = getIn(entityData, [judgesESID, 0, getPropertyTypeIdFromEdm(edm, ENTITY_KEY_ID), 0]);
-      const person = yield select(getPersonFromState);
-      const caseEKID :UUID = getEntityKeyId(person.getIn([PERSON.PERSON_CASE]));
-      const caseESID :UUID = getEntitySetIdFromApp(app, MANUAL_PRETRIAL_COURT_CASES);
-      const diversionPlanEKID :UUID = getEntityKeyId(person.getIn([PERSON.DIVERSION_PLAN]));
-      const diversionPlanESID :UUID = getEntitySetIdFromApp(app, DIVERSION_PLAN);
+    const caseFilter = {
+      entityKeyIds: [caseEKID],
+      destinationEntitySetIds: [],
+      sourceEntitySetIds: [judgesESID],
+    };
+    const diversionPlanFilter = {
+      entityKeyIds: [diversionPlanEKID],
+      destinationEntitySetIds: [],
+      sourceEntitySetIds: [judgesESID],
+    };
+    const [caseResponse, diversionPlanResponse] = yield all([
+      call(
+        searchEntityNeighborsWithFilterWorker,
+        searchEntityNeighborsWithFilter({ entitySetId: caseESID, filter: caseFilter })
+      ),
+      call(
+        searchEntityNeighborsWithFilterWorker,
+        searchEntityNeighborsWithFilter({ entitySetId: diversionPlanESID, filter: diversionPlanFilter })
+      ),
+    ]);
+    if (caseResponse.error) throw caseResponse.error;
+    if (diversionPlanResponse.error) throw diversionPlanResponse.error;
+    const casePresidesOverAssociation :Map = fromJS(caseResponse.data).getIn([caseEKID, 0, ASSOCIATION_DETAILS]);
+    const casePresidesOverEKID :UUID = getEntityKeyId(casePresidesOverAssociation);
+    const diversionPlanPresidesOverAssociation :Map = fromJS(diversionPlanResponse.data)
+      .getIn([diversionPlanEKID, 0, ASSOCIATION_DETAILS]);
+    const diversionPlanPresidesOverEKID :UUID = getEntityKeyId(diversionPlanPresidesOverAssociation);
 
-      const existingAssociationsResponse = yield call(
-        getEntitySetDataWorker,
-        getEntitySetData({ entitySetId: presidesOverESID })
-      );
-      if (existingAssociationsResponse.error) throw existingAssociationsResponse.error;
-      if (existingAssociationsResponse.data) {
-
-        fromJS(existingAssociationsResponse.data)
-          .forEach((associationEntity :Map) => {
-            associationsToDelete.push({
-              entitySetId: presidesOverESID,
-              entityKeyId: getEntityKeyId(associationEntity)
-            });
-          });
-      }
-
-      associations = {
-        [presidesOverESID]: [
-          {
-            data: {},
-            dst: {
-              entitySetId: caseESID,
-              entityKeyId: caseEKID
-            },
-            src: {
-              entitySetId: judgesESID,
-              entityKeyId: judgeEKID
-            }
-          },
-          {
-            data: {},
-            dst: {
-              entitySetId: diversionPlanESID,
-              entityKeyId: diversionPlanEKID
-            },
-            src: {
-              entitySetId: judgesESID,
-              entityKeyId: judgeEKID
-            }
-          }
-        ]
-      };
+    const associationEKIDsToDelete :UUID[] = [];
+    if (casePresidesOverEKID && diversionPlanPresidesOverEKID) {
+      associationEKIDsToDelete.push(casePresidesOverEKID);
+      associationEKIDsToDelete.push(diversionPlanPresidesOverEKID);
     }
+    const associationsToDelete :Object[] = associationEKIDsToDelete.length
+      ? [{ entitySetId: presidesOverESID, entityKeyIds: associationEKIDsToDelete }]
+      : [];
 
     const associationResponse = yield call(
       createOrReplaceAssociationWorker,
@@ -964,7 +952,7 @@ function* reassignJudgeWorker(action :SequenceAction) :Generator<*, *, *> {
     if (associationResponse.error) throw associationResponse.error;
     const openlatticeIDUUID = getPropertyTypeIdFromEdm(edm, ENTITY_KEY_ID);
 
-    yield put(reassignJudge.success(id, { openlatticeIDUUID, judgesESID, presidesOverESID }));
+    yield put(reassignJudge.success(id, judgeEKID));
   }
   catch (error) {
     LOG.error('caught exception in reassignJudgeWorker()', error);
