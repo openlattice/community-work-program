@@ -48,7 +48,7 @@ class DeleteInfractionForm extends Component<Props, State> {
     const infractionEventESID :UUID = getEntitySetIdFromApp(app, INFRACTION_EVENT);
     const entitiesToDelete :Object[] = [{
       entitySetId: infractionEventESID,
-      entityKeyId: infractionEventEKID
+      entityKeyIds: [infractionEventEKID]
     }];
     actions.deleteInfractionEvent(entitiesToDelete);
   }

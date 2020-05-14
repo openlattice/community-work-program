@@ -1122,24 +1122,11 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
           .setIn([ACTIONS, REASSIGN_JUDGE, REQUEST_STATE], RequestStates.PENDING),
         SUCCESS: () => {
 
-          const seqAction :SequenceAction = action;
-          const storedSeqAction :SequenceAction = state.getIn([ACTIONS, REASSIGN_JUDGE, seqAction.id]);
+          const seqAction :SequenceAction = (action :any);
+          const judgeEKID = seqAction.value;
 
-          const requestValue = storedSeqAction.value;
-          const { associationEntityData, entityData } = requestValue;
-          const successValue = seqAction.value;
-          const { openlatticeIDUUID, judgesESID, presidesOverESID } = successValue;
-
-          let judgeEKID :UUID = '';
-          if (entityData) {
-            judgeEKID = getIn(entityData, [judgesESID, 0, openlatticeIDUUID, 0]);
-          }
-          if (associationEntityData) {
-            judgeEKID = getIn(associationEntityData, [presidesOverESID, 0, 'src', 'entityKeyId']);
-          }
-
-          const judges = state.get(JUDGES);
-          const judge :Map = judges.find((storedJudge :Map) => getEntityKeyId(storedJudge) === judgeEKID);
+          const judge = state.get(JUDGES)
+            .find((storedJudge :Map) => getEntityKeyId(storedJudge) === judgeEKID);
 
           return state
             .set(JUDGE, judge)

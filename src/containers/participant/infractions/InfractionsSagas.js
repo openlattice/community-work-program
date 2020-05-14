@@ -146,10 +146,9 @@ function* deleteInfractionEventWorker(action :SequenceAction) :Generator<*, *, *
     yield put(deleteInfractionEvent.request(id, value));
 
     response = yield call(deleteEntitiesWorker, deleteEntities(value));
-    if (response.error) {
-      throw response.error;
-    }
-    const { entityKeyId } = value[0];
+    if (response.error) throw response.error;
+    const { entityKeyIds } = value[0];
+    const [entityKeyId] = entityKeyIds;
 
     yield put(deleteInfractionEvent.success(id, entityKeyId));
   }
