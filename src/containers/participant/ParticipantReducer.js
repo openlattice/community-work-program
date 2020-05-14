@@ -1130,7 +1130,7 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
 
           return state
             .set(JUDGE, judge)
-            .setIn([ACTIONS, JUDGE, REQUEST_STATE], RequestStates.SUCCESS);
+            .setIn([ACTIONS, REASSIGN_JUDGE, REQUEST_STATE], RequestStates.SUCCESS);
         },
         FAILURE: () => state
           .setIn([ACTIONS, REASSIGN_JUDGE, REQUEST_STATE], RequestStates.FAILURE),
