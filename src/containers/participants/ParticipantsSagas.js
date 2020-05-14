@@ -49,9 +49,9 @@ import {
   getNeighborESID,
   sortEntitiesByDateProperty,
 } from '../../utils/DataUtils';
+import { isDefined } from '../../utils/LangUtils';
 import { STATE } from '../../utils/constants/ReduxStateConsts';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
-import { isDefined } from '../../utils/LangUtils';
 import { INFRACTIONS_CONSTS } from '../../core/edm/constants/DataModelConsts';
 
 const { getEntitySetData } = DataApiActions;
@@ -317,8 +317,8 @@ function* getCourtTypeWorker(action :SequenceAction) :Generator<*, *, *> {
       throw response.error;
     }
     const casesAndPeopleByDiversionPlan = fromJS(response.data);
-    if (!casesAndPeopleByDiversionPlan.isEmpty()) {
 
+    if (!casesAndPeopleByDiversionPlan.isEmpty()) {
       casesAndPeopleByDiversionPlan.forEach((caseAndPersonNeighbors :List) => {
         const person :Map = caseAndPersonNeighbors.find((neighbor :Map) => getNeighborESID(neighbor) === peopleESID);
         const personEKID :UUID = getEntityKeyId(getNeighborDetails(person));

@@ -7,6 +7,7 @@ export const STATE = {
   ORGANIZATION: 'organization',
   PEOPLE: 'people',
   PERSON: 'person',
+  STATS: 'stats',
   WORKSITES: 'worksites',
   WORKSITE_PLANS: 'worksitePlans',
   WORK_SCHEDULE: 'workSchedule',
@@ -176,6 +177,24 @@ export const PRINT_PARTICIPANT = {
   ACTIONS: 'actions',
   GET_INFO_FOR_PRINT_INFRACTION: 'getInfoForPrintInfraction',
   REQUEST_STATE: 'requestState',
+};
+
+/* Stats */
+export const STATS = {
+  ACTIVE_ENROLLMENTS_BY_COURT_TYPE: 'activeEnrollmentsByCourtType',
+  CLOSED_ENROLLMENTS_BY_COURT_TYPE: 'closedEnrollmentsByCourtType',
+  MONTHLY_HOURS_WORKED_BY_COURT_TYPE: 'monthlyHoursWorkedByCourtType',
+  MONTHLY_TOTAL_PARTICIPANTS_BY_COURT_TYPE: 'monthlyTotalParticipantsByCourtType',
+  REFERRALS_BY_COURT_TYPE_GRAPH_DATA: 'referralsByCourtTypeGraphData',
+  SUCCESSFUL_ENROLLMENTS_BY_COURT_TYPE: 'successfulEnrollmentsByCourtType',
+  TOTAL_ACTIVE_ENROLLMENTS_COUNT: 'totalActiveEnrollmentsCount',
+  TOTAL_CLOSED_ENROLLMENTS_COUNT: 'totalClosedEnrollmentsCount',
+  TOTAL_DIVERSION_PLAN_COUNT: 'totalDiversionPlanCount',
+  TOTAL_ENROLLMENTS_COUNT: 'totalEnrollmentsCount',
+  TOTAL_PARTICIPANT_COUNT: 'totalParticipantCount',
+  TOTAL_SUCCESSFUL_ENROLLMENTS_COUNT: 'totalSuccessfulEnrollmentsCount',
+  TOTAL_UNSUCCESSFUL_ENROLLMENTS_COUNT: 'totalUnsuccessfulEnrollmentsCount',
+  UNSUCCESSFUL_ENROLLMENTS_BY_COURT_TYPE: 'unsuccessfulEnrollmentsByCourtType',
 };
 
 /* Work Schedule */
