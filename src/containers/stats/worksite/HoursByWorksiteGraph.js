@@ -12,35 +12,28 @@ import {
   YAxis,
 } from 'react-vis';
 
+import { formatHoursByWorksiteData } from '../utils/StatsUtils';
 import { toolTipStyle } from '../styled/GraphStyles';
-import { formatMonthlyHoursAndParticipantsData } from '../utils/StatsUtils';
 
-const { BLUE_1, BLUE_2, PURPLES } = Colors;
+const { BLUE_2, ORANGE_1, WHITE } = Colors;
 const defaultToolTipValues :Object = {
-  background: 'rgba(0, 0, 0, 0.0)',
+  background: WHITE,
   hoveredBar: {},
   toolTipText: ''
 };
 
 type Props = {
-  monthlyHoursWorkedByCourtType :Map;
-  monthlyTotalParticipantsByCourtType :Map;
+  hoursByWorksite :Map;
 };
 
-const MonthlyHoursAndParticipantsGraphs = ({
-  monthlyHoursWorkedByCourtType,
-  monthlyTotalParticipantsByCourtType,
-} :Props) => {
+const HoursByWorksiteGraph = ({ hoursByWorksite } :Props) => {
 
-  const { hoursGraphData, participantsGraphData } = formatMonthlyHoursAndParticipantsData(
-    monthlyHoursWorkedByCourtType,
-    monthlyTotalParticipantsByCourtType
-  );
   const [toolTipValues, setToolTipValues] = useState(defaultToolTipValues);
   const toolTipStyleWithBackground :Object = {
     background: toolTipValues.background,
     ...toolTipStyle
   };
+  const hoursGraphData = formatHoursByWorksiteData(hoursByWorksite);
 
   return (
     <XYPlot
@@ -48,7 +41,7 @@ const MonthlyHoursAndParticipantsGraphs = ({
         width={600}
         height={600}
         margin={{
-          left: 200,
+          left: 250,
           right: 10,
           top: 10,
           bottom: 40
@@ -59,17 +52,10 @@ const MonthlyHoursAndParticipantsGraphs = ({
       <XAxis />
       <YAxis />
       <HorizontalBarSeries
-          color={BLUE_2}
+          color={ORANGE_1}
           data={hoursGraphData}
           onValueMouseOver={(v :Object) => setToolTipValues(
-            { background: PURPLES[1], hoveredBar: v, toolTipText: `${v.x} hours` }
-          )}
-          onValueMouseOut={() => setToolTipValues(defaultToolTipValues)} />
-      <HorizontalBarSeries
-          color={BLUE_1}
-          data={participantsGraphData}
-          onValueMouseOver={(v :Object) => setToolTipValues(
-            { background: PURPLES[1], hoveredBar: v, toolTipText: `${v.x} participants` }
+            { background: BLUE_2, hoveredBar: v, toolTipText: `${v.x} hours` }
           )}
           onValueMouseOut={() => setToolTipValues(defaultToolTipValues)} />
       {
@@ -85,4 +71,4 @@ const MonthlyHoursAndParticipantsGraphs = ({
   );
 };
 
-export default MonthlyHoursAndParticipantsGraphs;
+export default HoursByWorksiteGraph;

@@ -9,14 +9,24 @@ import {
   getMonthlyCourtTypeData,
   getStatsData,
 } from './StatsActions';
+import {
+  GET_HOURS_WORKED_BY_WORKSITE,
+  GET_MONTHLY_PARTICIPANTS_BY_WORKSITE,
+  GET_WORKSITE_STATS_DATA,
+  getHoursWorkedByWorksite,
+  getMonthlyParticipantsByWorksite,
+  getWorksiteStatsData,
+} from './worksite/WorksiteStatsActions';
 import { SHARED, STATS } from '../../utils/constants/ReduxStateConsts';
 
 const { ACTIONS, REQUEST_STATE } = SHARED;
 const {
   ACTIVE_ENROLLMENTS_BY_COURT_TYPE,
   CLOSED_ENROLLMENTS_BY_COURT_TYPE,
+  HOURS_BY_WORKSITE,
   MONTHLY_HOURS_WORKED_BY_COURT_TYPE,
   MONTHLY_TOTAL_PARTICIPANTS_BY_COURT_TYPE,
+  PARTICIPANTS_BY_WORKSITE,
   REFERRALS_BY_COURT_TYPE_GRAPH_DATA,
   SUCCESSFUL_ENROLLMENTS_BY_COURT_TYPE,
   TOTAL_ACTIVE_ENROLLMENTS_COUNT,
@@ -30,17 +40,28 @@ const {
 
 const INITIAL_STATE :Map<*, *> = fromJS({
   [ACTIONS]: {
-    [GET_STATS_DATA]: {
+    [GET_HOURS_WORKED_BY_WORKSITE]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [GET_MONTHLY_COURT_TYPE_DATA]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
+    [GET_MONTHLY_PARTICIPANTS_BY_WORKSITE]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [GET_STATS_DATA]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [GET_WORKSITE_STATS_DATA]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
   },
   [ACTIVE_ENROLLMENTS_BY_COURT_TYPE]: Map(),
   [CLOSED_ENROLLMENTS_BY_COURT_TYPE]: Map(),
+  [HOURS_BY_WORKSITE]: Map(),
   [MONTHLY_HOURS_WORKED_BY_COURT_TYPE]: Map(),
   [MONTHLY_TOTAL_PARTICIPANTS_BY_COURT_TYPE]: Map(),
+  [PARTICIPANTS_BY_WORKSITE]: Map(),
   [REFERRALS_BY_COURT_TYPE_GRAPH_DATA]: Map(),
   [SUCCESSFUL_ENROLLMENTS_BY_COURT_TYPE]: Map(),
   [TOTAL_ACTIVE_ENROLLMENTS_COUNT]: 0,
@@ -55,6 +76,26 @@ const INITIAL_STATE :Map<*, *> = fromJS({
 export default function statsReducer(state :Map<*, *> = INITIAL_STATE, action :Object) :Map<*, *> {
 
   switch (action.type) {
+
+    case getHoursWorkedByWorksite.case(action.type): {
+
+      return getHoursWorkedByWorksite.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, GET_HOURS_WORKED_BY_WORKSITE, action.id], action)
+          .setIn([ACTIONS, GET_HOURS_WORKED_BY_WORKSITE, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+          const seqAction :SequenceAction = (action :any);
+          const hoursByWorksite = seqAction.value;
+          return state
+            .set(HOURS_BY_WORKSITE, hoursByWorksite)
+            .setIn([ACTIONS, GET_HOURS_WORKED_BY_WORKSITE, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, GET_HOURS_WORKED_BY_WORKSITE, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, GET_HOURS_WORKED_BY_WORKSITE, action.id]),
+      });
+    }
 
     case getMonthlyCourtTypeData.case(action.type): {
 
@@ -78,6 +119,26 @@ export default function statsReducer(state :Map<*, *> = INITIAL_STATE, action :O
         FAILURE: () => state
           .setIn([ACTIONS, GET_MONTHLY_COURT_TYPE_DATA, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, GET_MONTHLY_COURT_TYPE_DATA, action.id]),
+      });
+    }
+
+    case getMonthlyParticipantsByWorksite.case(action.type): {
+
+      return getMonthlyParticipantsByWorksite.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, GET_MONTHLY_PARTICIPANTS_BY_WORKSITE, action.id], action)
+          .setIn([ACTIONS, GET_MONTHLY_PARTICIPANTS_BY_WORKSITE, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+          const seqAction :SequenceAction = (action :any);
+          const participantsByWorksite = seqAction.value;
+          return state
+            .set(PARTICIPANTS_BY_WORKSITE, participantsByWorksite)
+            .setIn([ACTIONS, GET_MONTHLY_PARTICIPANTS_BY_WORKSITE, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, GET_MONTHLY_PARTICIPANTS_BY_WORKSITE, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, GET_MONTHLY_PARTICIPANTS_BY_WORKSITE, action.id]),
       });
     }
 
@@ -121,6 +182,21 @@ export default function statsReducer(state :Map<*, *> = INITIAL_STATE, action :O
         FAILURE: () => state
           .setIn([ACTIONS, GET_STATS_DATA, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, GET_STATS_DATA, action.id]),
+      });
+    }
+
+    case getWorksiteStatsData.case(action.type): {
+
+      return getWorksiteStatsData.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, GET_WORKSITE_STATS_DATA, action.id], action)
+          .setIn([ACTIONS, GET_WORKSITE_STATS_DATA, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => state
+          .setIn([ACTIONS, GET_WORKSITE_STATS_DATA, REQUEST_STATE], RequestStates.SUCCESS),
+        FAILURE: () => state
+          .setIn([ACTIONS, GET_WORKSITE_STATS_DATA, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, GET_WORKSITE_STATS_DATA, action.id]),
       });
     }
 

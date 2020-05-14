@@ -6,6 +6,12 @@ import React, { Component } from 'react';
 
 import styled from 'styled-components';
 import { Map } from 'immutable';
+import {
+  LatticeLuxonUtils,
+  MuiPickersUtilsProvider,
+  ThemeProvider,
+  lightTheme
+} from 'lattice-ui-kit';
 import { AuthActions } from 'lattice-auth';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
@@ -125,31 +131,35 @@ class AppContainer extends Component<Props> {
     });
     const loading = initializeAppRequestState === RequestStates.PENDING;
     return (
-      <AppContainerWrapper>
-        {
-          !isPrintView && (
-            <AppHeaderContainer
-                loading={loading}
-                organizations={orgList}
-                selectedOrg={selectedOrg}
-                switchOrg={this.switchOrganization} />
-          )
-        }
-        <AppContentOuterWrapper>
-          <AppContentInnerWrapper>
+      <ThemeProvider theme={lightTheme}>
+        <MuiPickersUtilsProvider utils={LatticeLuxonUtils}>
+          <AppContainerWrapper>
             {
-              loading ? (
-                <LogoLoader
-                    loadingText="Please wait..."
-                    size={60} />
-              ) : (
-                this.renderAppContent()
+              !isPrintView && (
+                <AppHeaderContainer
+                    loading={loading}
+                    organizations={orgList}
+                    selectedOrg={selectedOrg}
+                    switchOrg={this.switchOrganization} />
               )
             }
-            <ContactSupport />
-          </AppContentInnerWrapper>
-        </AppContentOuterWrapper>
-      </AppContainerWrapper>
+            <AppContentOuterWrapper>
+              <AppContentInnerWrapper>
+                {
+                  loading ? (
+                    <LogoLoader
+                        loadingText="Please wait..."
+                        size={60} />
+                  ) : (
+                    this.renderAppContent()
+                  )
+                }
+                <ContactSupport />
+              </AppContentInnerWrapper>
+            </AppContentOuterWrapper>
+          </AppContainerWrapper>
+        </MuiPickersUtilsProvider>
+      </ThemeProvider>
     );
   }
 }
