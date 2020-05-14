@@ -861,7 +861,7 @@ function* removeArrestChargeWorker(action :SequenceAction) :Generator<*, *, *> {
       const associationESID :UUID = getAssociationNeighborESID(neighbor);
       completeListOfEntitiesToDelete.push({
         entitySetId: associationESID,
-        entityKeyId: associationEKID
+        entityKeyIds: [associationEKID]
       });
     }
 
@@ -916,7 +916,7 @@ function* removeCourtChargeFromCaseWorker(action :SequenceAction) :Generator<*, 
 
     const entitiesToDelete :Object[] = [{
       entitySetId: chargeEventESID,
-      entityKeyId: chargeEventEKID
+      entityKeyIds: [chargeEventEKID]
     }];
 
     const searchFilter = {
@@ -938,7 +938,7 @@ function* removeCourtChargeFromCaseWorker(action :SequenceAction) :Generator<*, 
         const associationESID :UUID = getAssociationNeighborESID(neighbor);
         entitiesToDelete.push({
           entitySetId: associationESID,
-          entityKeyId: associationEKID
+          entityKeyIds: [associationEKID]
         });
       });
     }
