@@ -29,6 +29,7 @@ import {
 import { STATE } from '../../../utils/constants/ReduxStateConsts';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { RACE_VALUES } from '../../../core/edm/constants/DataModelConsts';
+import { ALTERNATE_RACE_NAMES } from '../consts/StatsConsts';
 
 const { getEntitySetData } = DataApiActions;
 const { getEntitySetDataWorker } = DataApiSagas;
@@ -85,8 +86,20 @@ function* getParticipantsDemographicsWorker(action :SequenceAction) :Generator<*
       if (race.length && isDefined(currentTotalForRace)) {
         raceDemographics = raceDemographics.set(race, currentTotalForRace + 1);
       }
+      else if (!isDefined(currentTotalForRace)) {
+        fromJS(ALTERNATE_RACE_NAMES).forEach((listOfAlternates :List, standardName :string) => {
+          listOfAlternates.forEach((alternate :string) => {
+            if (race === alternate) {
+              const currentTotal :number = raceDemographics.get(standardName);
+              raceDemographics = raceDemographics.set(race, currentTotal + 1);
+            }
+          });
+        });
+      }
+      else if (!race.length) {
+        // raceDemographics.get()
+      }
     });
-
     raceDemographics = raceDemographics.asImmutable();
     yield put(getParticipantsDemographics.success(id, raceDemographics));
   }
