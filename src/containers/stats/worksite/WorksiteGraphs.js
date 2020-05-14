@@ -209,7 +209,7 @@ const WorksiteGraphs = ({
                   });
                 const title = `${worksiteName} • ${participants.count()}`;
                 return (
-                  <ExpansionPanel>
+                  <ExpansionPanel key={worksiteName}>
                     <StyledExpansionPanelSummary expandIcon={expandIcon}>
                       <div>{ title }</div>
                     </StyledExpansionPanelSummary>
