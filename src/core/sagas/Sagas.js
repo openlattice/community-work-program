@@ -18,6 +18,7 @@ import * as RoutingSagas from '../router/RoutingSagas';
 import * as StatsSagas from '../../containers/stats/StatsSagas';
 import * as WorkScheduleSagas from '../../containers/workschedule/WorkScheduleSagas';
 import * as WorksitePlanSagas from '../../containers/participant/assignedworksites/WorksitePlanSagas';
+import * as WorksiteStatsSagas from '../../containers/stats/worksite/WorksiteStatsSagas';
 import * as WorksitesSagas from '../../containers/worksites/WorksitesSagas';
 
 export default function* sagas() :Generator<*, *, *> {
@@ -118,6 +119,13 @@ export default function* sagas() :Generator<*, *, *> {
     // StatsSagas
     fork(StatsSagas.getMonthlyCourtTypeDataWatcher),
     fork(StatsSagas.getStatsDataWatcher),
+
+    // WorksiteStatsSagas
+    fork(WorksiteStatsSagas.getCheckInNeighborsWatcher),
+    fork(WorksiteStatsSagas.getHoursWorkedByWorksiteWatcher),
+    fork(WorksiteStatsSagas.getMonthlyParticipantsByWorksiteWatcher),
+    fork(WorksiteStatsSagas.getWorksitesWatcher),
+    fork(WorksiteStatsSagas.getWorksiteStatsDataWatcher),
 
     // WorkScheduleSagas
     fork(WorkScheduleSagas.findAppointmentsWatcher),

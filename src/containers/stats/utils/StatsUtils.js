@@ -3,6 +3,13 @@ import { Map } from 'immutable';
 
 import { isDefined } from '../../../utils/LangUtils';
 
+const sortGraphData = (graphData :Object[]) => (
+  graphData.sort((obj1 :Object, obj2 :Object) => {
+    if (obj1.x < obj2.x) return -1;
+    if (obj1.x > obj2.x) return 1;
+    return 0;
+  }));
+
 const formatReferralsCourtTypeData = (referralsByCourtTypeGraphData :Map) :Object[] => {
   const graphData :Object[] = [];
   referralsByCourtTypeGraphData.forEach((numberOfReferrals :number, courtType :string) => {
@@ -12,18 +19,13 @@ const formatReferralsCourtTypeData = (referralsByCourtTypeGraphData :Map) :Objec
 };
 
 const formatEnrollmentStatusPeopleData = (enrollmentsByCourtType :Map) :Object[] => {
-  let graphData :Object[] = [];
+  const graphData :Object[] = [];
   enrollmentsByCourtType.forEach((numberOfParticipants :number, courtType :string) => {
     if (isDefined(numberOfParticipants) && isDefined(courtType)) {
       graphData.push({ y: courtType, x: numberOfParticipants });
     }
   });
-  graphData = graphData.sort((obj1 :Object, obj2 :Object) => {
-    if (obj1.x < obj2.x) return -1;
-    if (obj1.x > obj2.x) return 1;
-    return 0;
-  });
-  return graphData;
+  return sortGraphData(graphData);
 };
 
 const formatMonthlyHoursAndParticipantsData = (
@@ -46,8 +48,19 @@ const formatMonthlyHoursAndParticipantsData = (
   return { hoursGraphData, participantsGraphData };
 };
 
+const formatHoursByWorksiteData = (hoursByWorksite :Map) :Object[] => {
+  const graphData :Object[] = [];
+  hoursByWorksite.forEach((hours :number, worksite :string) => {
+    if (isDefined(hours) && isDefined(worksite)) {
+      graphData.push({ y: worksite, x: hours });
+    }
+  });
+  return sortGraphData(graphData);
+};
+
 export {
   formatEnrollmentStatusPeopleData,
+  formatHoursByWorksiteData,
   formatMonthlyHoursAndParticipantsData,
   formatReferralsCourtTypeData,
 };
