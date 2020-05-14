@@ -34,11 +34,10 @@ import * as Routes from '../../core/router/Routes';
 import { createNewEnrollment, getInfoForAddParticipant } from './ParticipantActions';
 import { goToRoute } from '../../core/router/RoutingActions';
 import { hydrateSchema } from './utils/CreateNewEnrollmentUtils';
-import { isDefined } from '../../utils/LangUtils';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { CWP, ENROLLMENT_STATUSES } from '../../core/edm/constants/DataModelConsts';
 import { schema, uiSchema } from './schemas/CreateNewEnrollmentSchemas';
-import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
+import { getEntityKeyId } from '../../utils/DataUtils';
 import { getCombinedDateTime } from '../../utils/ScheduleUtils';
 import {
   formatExistingChargeDataAndAssociation,
@@ -69,17 +68,12 @@ const {
   DIVERSION_PLAN,
   ENROLLMENT_STATUS,
   JUDGES,
-  MANUAL_ARREST_CASES,
-  MANUAL_ARREST_CHARGES,
-  MANUAL_CHARGED_WITH,
   MANUAL_PRETRIAL_COURT_CASES,
   MANUAL_SENTENCED_WITH,
   PRESIDES_OVER,
-  REGISTERED_FOR,
   RELATED_TO,
 } = APP_TYPE_FQNS;
 const {
-  ARREST_DATETIME,
   CASE_NUMBER_TEXT,
   COMPLETED,
   COURT_CASE_TYPE,

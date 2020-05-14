@@ -53,7 +53,7 @@ const CountWrapper = styled.div`
 const CountLabel = styled(Label)`
   color: ${OL.GREY01};
   font-size: 12px;
-  margin-left 15px;
+  margin-left: 15px;
 `;
 
 type Props = {
