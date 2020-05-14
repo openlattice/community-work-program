@@ -250,6 +250,7 @@ function* getCheckInNeighborsWatcher() :Generator<*, *, *> {
 function* getHoursWorkedByWorksiteWorker(action :SequenceAction) :Generator<*, *, *> {
   const { id } = action;
   let response :Object = {};
+  const workerResponse :Object = {};
   let hoursByWorksite :Map = Map().asMutable();
   /*
     if it's all time, you only need all worksite plans and then worksite neighbors
@@ -374,12 +375,14 @@ function* getHoursWorkedByWorksiteWorker(action :SequenceAction) :Generator<*, *
     yield put(getHoursWorkedByWorksite.success(id, hoursByWorksite));
   }
   catch (error) {
+    workerResponse.error = error;
     LOG.error(action.type, error);
     yield put(getHoursWorkedByWorksite.failure(id, error));
   }
   finally {
     yield put(getHoursWorkedByWorksite.finally(id));
   }
+  return workerResponse;
 }
 
 function* getHoursWorkedByWorksiteWatcher() :Generator<*, *, *> {
@@ -397,6 +400,7 @@ function* getMonthlyParticipantsByWorksiteWorker(action :SequenceAction) :Genera
   const { id, value } = action;
   if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
   let response :Object = {};
+  const workerResponse :Object = {};
   let participantsByWorksite :Map = Map().asMutable();
 
   try {
@@ -470,12 +474,14 @@ function* getMonthlyParticipantsByWorksiteWorker(action :SequenceAction) :Genera
     yield put(getMonthlyParticipantsByWorksite.success(id, participantsByWorksite));
   }
   catch (error) {
+    workerResponse.error = error;
     LOG.error(action.type, error);
     yield put(getMonthlyParticipantsByWorksite.failure(id, error));
   }
   finally {
     yield put(getMonthlyParticipantsByWorksite.finally(id));
   }
+  return workerResponse;
 }
 
 function* getMonthlyParticipantsByWorksiteWatcher() :Generator<*, *, *> {
