@@ -3,7 +3,6 @@ import {
   List,
   Map,
   fromJS,
-  getIn,
 } from 'immutable';
 import { RequestStates } from 'redux-reqseq';
 import type { SequenceAction } from 'redux-reqseq';
