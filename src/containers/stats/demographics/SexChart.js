@@ -27,9 +27,7 @@ const SexChart = ({ sexDemographics } :Props) => {
     ...toolTipStyle
   };
 
-  const { chartData, valuesNotFound } :Object = formatRadialChartData(
-    sexDemographics
-  );
+  const { chartData, valuesNotFound } :Object = formatRadialChartData(sexDemographics);
   const sortedListOfSexes :List = getListForRadialChartKey(chartData, valuesNotFound);
   return (
     <CardSegment>

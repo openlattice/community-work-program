@@ -27,9 +27,7 @@ const EthnicityChart = ({ ethnicityDemographics } :Props) => {
     ...toolTipStyle
   };
 
-  const { chartData, valuesNotFound } :Object = formatRadialChartData(
-    ethnicityDemographics
-  );
+  const { chartData, valuesNotFound } :Object = formatRadialChartData(ethnicityDemographics);
   const sortedListOfEths :List = getListForRadialChartKey(chartData, valuesNotFound);
   return (
     <CardSegment>

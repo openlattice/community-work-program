@@ -27,9 +27,7 @@ const RaceChart = ({ raceDemographics } :Props) => {
     ...toolTipStyle
   };
 
-  const { chartData, valuesNotFound } :Object = formatRadialChartData(
-    raceDemographics
-  );
+  const { chartData, valuesNotFound } :Object = formatRadialChartData(raceDemographics);
   const sortedListOfRaces :List = getListForRadialChartKey(chartData, valuesNotFound);
   return (
     <CardSegment>
