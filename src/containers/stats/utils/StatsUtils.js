@@ -58,9 +58,36 @@ const formatHoursByWorksiteData = (hoursByWorksite :Map) :Object[] => {
   return sortGraphData(graphData);
 };
 
+const formatRadialChartData = (valuesMap :Map) => {
+  const chartData :Object[] = [];
+  const valuesNotFound :string[] = [];
+  const sortedValuesMap = valuesMap.sort((val1 :number, val2 :number) => {
+    if (val1 < val2) return -1;
+    if (val1 > val2) return 1;
+    return 0;
+  });
+  // const totalCount :number = valuesMap.reduce((sum :number, value :number) => sum + value);
+  let lowestValue = 0;
+  sortedValuesMap.forEach((valueCount :number, value :string) => {
+    if (lowestValue) {
+      const angle :number = valueCount / lowestValue;
+      chartData.push({ angle, label: value });
+    }
+    if (!lowestValue) {
+      if (valueCount === lowestValue) valuesNotFound.push(value);
+      else {
+        lowestValue = valueCount;
+        chartData.push({ angle: 1, label: value });
+      }
+    }
+  });
+  return { chartData, valuesNotFound };
+};
+
 export {
   formatEnrollmentStatusPeopleData,
   formatHoursByWorksiteData,
   formatMonthlyHoursAndParticipantsData,
+  formatRadialChartData,
   formatReferralsCourtTypeData,
 };

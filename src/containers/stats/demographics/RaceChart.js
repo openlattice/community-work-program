@@ -1,19 +1,38 @@
 // @flow
-import React, { useState } from 'react';
+import React from 'react';
 import { Map } from 'immutable';
-import { Colors } from 'lattice-ui-kit';
-import {
-  RadialChart
-} from 'react-vis';
+import { CardSegment } from 'lattice-ui-kit';
+import { RadialChart } from 'react-vis';
 
-const RaceChart = () => {
-  const myData = [{ angle: 1, label: 'hey' }, { angle: 5, label: 'hello' }, { angle: 2, label: 'hi' }];
+import { formatRadialChartData } from '../utils/StatsUtils';
+
+type Props = {
+  ethnicityDemographics :Map;
+  raceDemographics :Map;
+};
+
+const RaceChart = ({ ethnicityDemographics, raceDemographics } :Props) => {
+  const { chartData: raceChartData } :Object = formatRadialChartData(
+    raceDemographics
+  );
+  const { chartData: ethChartData } :Object = formatRadialChartData(
+    ethnicityDemographics
+  );
   return (
-    <RadialChart
-        data={myData}
-        width={300}
-        height={300}
-        showLabels />
+    <CardSegment>
+      <RadialChart
+          data={raceChartData}
+          height={400}
+          labelsRadiusMultiplier={0.7}
+          showLabels
+          width={400} />
+      <RadialChart
+          data={ethChartData}
+          height={400}
+          labelsRadiusMultiplier={0.7}
+          showLabels
+          width={400} />
+    </CardSegment>
   );
 };
 
