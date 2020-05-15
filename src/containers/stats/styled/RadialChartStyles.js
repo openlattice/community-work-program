@@ -4,7 +4,7 @@ import { CardSegment } from 'lattice-ui-kit';
 
 const KeyWrapper = styled(CardSegment)`
   justify-content: center;
-  margin-left: 50px;
+  margin-left: 70px;
 `;
 
 const KeyItemWrapper = styled.div`
@@ -23,7 +23,12 @@ const KeySquare = styled.div`
   width: 24px;
 `;
 
+const GraphDescription = styled.div`
+  font-size: 12px;
+`;
+
 export {
+  GraphDescription,
   KeyItem,
   KeyItemWrapper,
   KeySquare,
