@@ -1,7 +1,8 @@
 // @flow
-import { Map } from 'immutable';
+import { List, Map, fromJS } from 'immutable';
 
 import { isDefined } from '../../../utils/LangUtils';
+import { RADIAL_CHART_COLORS } from '../consts/ColorConsts';
 
 const sortGraphData = (graphData :Object[]) => (
   graphData.sort((obj1 :Object, obj2 :Object) => {
@@ -66,22 +67,54 @@ const formatRadialChartData = (valuesMap :Map) => {
     if (val1 > val2) return 1;
     return 0;
   });
-  // const totalCount :number = valuesMap.reduce((sum :number, value :number) => sum + value);
+  const totalCount :number = valuesMap.reduce((sum :number, value :number) => sum + value);
   let lowestValue = 0;
   sortedValuesMap.forEach((valueCount :number, value :string) => {
     if (lowestValue) {
       const angle :number = valueCount / lowestValue;
-      chartData.push({ angle, label: value });
+      chartData.push({
+        angle,
+        count: valueCount,
+        label: `${Math.ceil((valueCount / totalCount) * 100)}%`,
+        name: value
+      });
     }
     if (!lowestValue) {
       if (valueCount === lowestValue) valuesNotFound.push(value);
       else {
         lowestValue = valueCount;
-        chartData.push({ angle: 1, label: value });
+        chartData.push({
+          angle: 1,
+          count: valueCount,
+          label: `${Math.ceil((valueCount / totalCount) * 100)}%`,
+          name: value
+        });
       }
     }
   });
+
+  chartData.map((obj :Object, index :number) => {
+    const newObj = obj;
+    newObj.color = RADIAL_CHART_COLORS[chartData.length - 1 - index];
+    return newObj;
+  });
   return { chartData, valuesNotFound };
+};
+
+const getListForRadialChartKey = (chartData :Object[], valuesNotFound :string[]) :List => {
+  const sortedChartData :List = fromJS(chartData).sortBy((obj :Map) => obj.get('angle'));
+
+  let sortedListOfValues :List = sortedChartData.reverse().map((obj :Map, index :number) => {
+    const name :string = obj.get('name');
+    const color :string = RADIAL_CHART_COLORS[index];
+    return { color, name };
+  });
+
+  const valuesFoundCount :number = sortedListOfValues.count();
+  valuesNotFound.forEach((name :string, index :number) => {
+    sortedListOfValues = sortedListOfValues.push({ color: RADIAL_CHART_COLORS[valuesFoundCount + index], name });
+  });
+  return sortedListOfValues;
 };
 
 export {
@@ -90,4 +123,5 @@ export {
   formatMonthlyHoursAndParticipantsData,
   formatRadialChartData,
   formatReferralsCourtTypeData,
+  getListForRadialChartKey,
 };
