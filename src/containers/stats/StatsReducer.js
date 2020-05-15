@@ -24,6 +24,7 @@ const { ACTIONS, REQUEST_STATE } = SHARED;
 const {
   ACTIVE_ENROLLMENTS_BY_COURT_TYPE,
   CLOSED_ENROLLMENTS_BY_COURT_TYPE,
+  ETHNICITY_DEMOGRAPHICS,
   HOURS_BY_WORKSITE,
   MONTHLY_HOURS_WORKED_BY_COURT_TYPE,
   MONTHLY_TOTAL_PARTICIPANTS_BY_COURT_TYPE,
@@ -156,8 +157,9 @@ export default function statsReducer(state :Map<*, *> = INITIAL_STATE, action :O
           .setIn([ACTIONS, GET_PARTICIPANTS_DEMOGRAPHICS, REQUEST_STATE], RequestStates.PENDING),
         SUCCESS: () => {
           const seqAction :SequenceAction = (action :any);
-          const raceDemographics = seqAction.value;
+          const { ethnicityDemographics, raceDemographics } = seqAction.value;
           return state
+            .set(ETHNICITY_DEMOGRAPHICS, ethnicityDemographics)
             .set(RACE_DEMOGRAPHICS, raceDemographics)
             .setIn([ACTIONS, GET_PARTICIPANTS_DEMOGRAPHICS, REQUEST_STATE], RequestStates.SUCCESS);
         },
