@@ -26,21 +26,15 @@ const DemographicsGraphs = ({ ethnicityDemographics, raceDemographics, sexDemogr
   <CardStack>
     <Card>
       <GraphHeader>Race</GraphHeader>
-      <CardSegment vertical>
-        <RaceChart raceDemographics={raceDemographics} />
-      </CardSegment>
+      <RaceChart raceDemographics={raceDemographics} />
     </Card>
     <Card>
       <GraphHeader>Ethnicity</GraphHeader>
-      <CardSegment vertical>
-        <EthnicityChart ethnicityDemographics={ethnicityDemographics} />
-      </CardSegment>
+      <EthnicityChart ethnicityDemographics={ethnicityDemographics} />
     </Card>
     <Card>
       <GraphHeader>Sex</GraphHeader>
-      <CardSegment vertical>
-        <SexChart sexDemographics={sexDemographics} />
-      </CardSegment>
+      <SexChart sexDemographics={sexDemographics} />
     </Card>
   </CardStack>
 );
