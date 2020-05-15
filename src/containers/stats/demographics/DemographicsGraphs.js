@@ -8,6 +8,7 @@ import {
 } from 'lattice-ui-kit';
 import { connect } from 'react-redux';
 
+import EthnicityChart from './EthnicityChart';
 import RaceChart from './RaceChart';
 import SexChart from './SexChart';
 import { GraphHeader } from '../styled/GraphStyles';
@@ -24,9 +25,15 @@ type Props = {
 const DemographicsGraphs = ({ ethnicityDemographics, raceDemographics, sexDemographics } :Props) => (
   <CardStack>
     <Card>
-      <GraphHeader>Race and Ethnicity</GraphHeader>
+      <GraphHeader>Race</GraphHeader>
       <CardSegment vertical>
-        <RaceChart ethnicityDemographics={ethnicityDemographics} raceDemographics={raceDemographics} />
+        <RaceChart raceDemographics={raceDemographics} />
+      </CardSegment>
+    </Card>
+    <Card>
+      <GraphHeader>Ethnicity</GraphHeader>
+      <CardSegment vertical>
+        <EthnicityChart ethnicityDemographics={ethnicityDemographics} />
       </CardSegment>
     </Card>
     <Card>
