@@ -31,6 +31,7 @@ const {
   PARTICIPANTS_BY_WORKSITE,
   RACE_DEMOGRAPHICS,
   REFERRALS_BY_COURT_TYPE_GRAPH_DATA,
+  SEX_DEMOGRAPHICS,
   SUCCESSFUL_ENROLLMENTS_BY_COURT_TYPE,
   TOTAL_ACTIVE_ENROLLMENTS_COUNT,
   TOTAL_CLOSED_ENROLLMENTS_COUNT,
@@ -69,6 +70,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [MONTHLY_TOTAL_PARTICIPANTS_BY_COURT_TYPE]: Map(),
   [PARTICIPANTS_BY_WORKSITE]: Map(),
   [REFERRALS_BY_COURT_TYPE_GRAPH_DATA]: Map(),
+  [SEX_DEMOGRAPHICS]: Map(),
   [SUCCESSFUL_ENROLLMENTS_BY_COURT_TYPE]: Map(),
   [TOTAL_ACTIVE_ENROLLMENTS_COUNT]: 0,
   [TOTAL_CLOSED_ENROLLMENTS_COUNT]: 0,
@@ -157,10 +159,11 @@ export default function statsReducer(state :Map<*, *> = INITIAL_STATE, action :O
           .setIn([ACTIONS, GET_PARTICIPANTS_DEMOGRAPHICS, REQUEST_STATE], RequestStates.PENDING),
         SUCCESS: () => {
           const seqAction :SequenceAction = (action :any);
-          const { ethnicityDemographics, raceDemographics } = seqAction.value;
+          const { ethnicityDemographics, raceDemographics, sexDemographics } = seqAction.value;
           return state
             .set(ETHNICITY_DEMOGRAPHICS, ethnicityDemographics)
             .set(RACE_DEMOGRAPHICS, raceDemographics)
+            .set(SEX_DEMOGRAPHICS, sexDemographics)
             .setIn([ACTIONS, GET_PARTICIPANTS_DEMOGRAPHICS, REQUEST_STATE], RequestStates.SUCCESS);
         },
         FAILURE: () => state

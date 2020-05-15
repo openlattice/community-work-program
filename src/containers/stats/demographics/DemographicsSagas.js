@@ -28,7 +28,7 @@ import {
 } from './DemographicsActions';
 import { STATE } from '../../../utils/constants/ReduxStateConsts';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
-import { ETHNICITY_VALUES, RACE_VALUES } from '../../../core/edm/constants/DataModelConsts';
+import { ETHNICITY_VALUES, RACE_VALUES, SEX_VALUES } from '../../../core/edm/constants/DataModelConsts';
 import { ETHNICITY_ALIASES, RACE_ALIASES } from '../consts/StatsConsts';
 
 const { getEntitySetData } = DataApiActions;
@@ -37,7 +37,7 @@ const { searchEntityNeighborsWithFilter } = SearchApiActions;
 const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
 
 const { DIVERSION_PLAN, PEOPLE } = APP_TYPE_FQNS;
-const { ETHNICITY, RACE } = PROPERTY_TYPE_FQNS;
+const { ETHNICITY, RACE, SEX } = PROPERTY_TYPE_FQNS;
 const getAppFromState = (state) => state.get(STATE.APP, Map());
 const LOG = new Logger('DemographicsSagas');
 
@@ -56,6 +56,9 @@ function* getParticipantsDemographicsWorker(action :SequenceAction) :Generator<*
   });
   let ethnicityDemographics :Map = Map().withMutations((map :Map) => {
     ETHNICITY_VALUES.concat([RACE_VALUES[5], RACE_VALUES[6]]).forEach((ethnicity :string) => map.set(ethnicity, 0));
+  });
+  let sexDemographics :Map = Map().withMutations((map :Map) => {
+    SEX_VALUES.forEach((sex :string) => map.set(sex, 0));
   });
 
   try {
@@ -86,7 +89,7 @@ function* getParticipantsDemographicsWorker(action :SequenceAction) :Generator<*
     participantNeighbors.forEach((neighborsList :List) => {
 
       const person :Map = getNeighborDetails(neighborsList.get(0));
-      const { [ETHNICITY]: ethnicity, [RACE]: race } = getEntityProperties(person, [ETHNICITY, RACE]);
+      const { [ETHNICITY]: ethnicity, [RACE]: race, [SEX]: sex } = getEntityProperties(person, [ETHNICITY, RACE, SEX]);
 
       const currentTotalForRace :any = raceDemographics.get(race);
       if (race.length && isDefined(currentTotalForRace)) {
@@ -137,11 +140,31 @@ function* getParticipantsDemographicsWorker(action :SequenceAction) :Generator<*
         const unknownTotal = ethnicityDemographics.get(RACE_VALUES[6], 0);
         ethnicityDemographics = ethnicityDemographics.set(RACE_VALUES[6], unknownTotal + 1);
       }
+
+      const currentTotalForSex :any = sexDemographics.get(sex);
+      if (sex.length && isDefined(currentTotalForSex)) {
+        sexDemographics = sexDemographics.set(sex, currentTotalForSex + 1);
+      }
+      else if (sex.length && !isDefined(currentTotalForSex)) {
+        if (sex.trim() === 'M') {
+          const currentTotalForMale :any = sexDemographics.get(SEX_VALUES[1]);
+          sexDemographics = sexDemographics.set(SEX_VALUES[1], currentTotalForMale + 1);
+        }
+        if (sex.trim() === 'F') {
+          const currentTotalForFemale :any = sexDemographics.get(SEX_VALUES[0]);
+          sexDemographics = sexDemographics.set(SEX_VALUES[0], currentTotalForFemale + 1);
+        }
+      }
+      else if (!sex.length) {
+        const unknownTotal = sexDemographics.get(SEX_VALUES[2], 0);
+        sexDemographics = sexDemographics.set(SEX_VALUES[2], unknownTotal + 1);
+      }
     });
 
     raceDemographics = raceDemographics.asImmutable();
     ethnicityDemographics = ethnicityDemographics.asImmutable();
-    yield put(getParticipantsDemographics.success(id, { ethnicityDemographics, raceDemographics }));
+    sexDemographics = sexDemographics.asImmutable();
+    yield put(getParticipantsDemographics.success(id, { ethnicityDemographics, raceDemographics, sexDemographics }));
   }
   catch (error) {
     LOG.error(action.type, error);

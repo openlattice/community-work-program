@@ -190,6 +190,7 @@ export const STATS = {
   PARTICIPANTS_BY_WORKSITE: 'participantsByWorksite',
   RACE_DEMOGRAPHICS: 'raceDemographics',
   REFERRALS_BY_COURT_TYPE_GRAPH_DATA: 'referralsByCourtTypeGraphData',
+  SEX_DEMOGRAPHICS: 'sexDemographics',
   SUCCESSFUL_ENROLLMENTS_BY_COURT_TYPE: 'successfulEnrollmentsByCourtType',
   TOTAL_ACTIVE_ENROLLMENTS_COUNT: 'totalActiveEnrollmentsCount',
   TOTAL_CLOSED_ENROLLMENTS_COUNT: 'totalClosedEnrollmentsCount',
