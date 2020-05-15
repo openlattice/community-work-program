@@ -264,7 +264,7 @@ function* getHoursWorkedByWorksiteWorker(action :SequenceAction) :Generator<*, *
     const worksitePlanESID :UUID = getEntitySetIdFromApp(app, WORKSITE_PLAN);
     const worksiteESID :UUID = getEntitySetIdFromApp(app, WORKSITE);
 
-    response = yield call(getWorksitesWorker, getWorksites());
+    response = yield call(getWorksitesForStatsWorker, getWorksitesForStats());
     if (response.error) throw response.error;
     const { worksites, worksiteEKIDs, worksiteByEKID } = response.data;
 
@@ -406,7 +406,7 @@ function* getMonthlyParticipantsByWorksiteWorker(action :SequenceAction) :Genera
   try {
     yield put(getMonthlyParticipantsByWorksite.request(id));
 
-    response = yield call(getWorksitesWorker, getWorksites());
+    response = yield call(getWorksitesForStatsWorker, getWorksitesForStats());
     if (response.error) throw response.error;
     const { worksites } = response.data;
 
