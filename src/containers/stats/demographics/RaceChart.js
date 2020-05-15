@@ -1,27 +1,69 @@
 // @flow
-import React from 'react';
-import { Map } from 'immutable';
-import { CardSegment } from 'lattice-ui-kit';
-import { RadialChart } from 'react-vis';
+import React, { useState } from 'react';
+import { List, Map } from 'immutable';
+import { CardSegment, Colors } from 'lattice-ui-kit';
+import { Hint, RadialChart } from 'react-vis';
 
-import { formatRadialChartData } from '../utils/StatsUtils';
+import {
+  KeyItem,
+  KeyItemWrapper,
+  KeySquare,
+  KeyWrapper,
+} from '../styled/RadialChartStyles';
+import { formatRadialChartData, getListForRadialChartKey } from '../utils/StatsUtils';
+import { toolTipStyle } from '../styled/GraphStyles';
+
+const { NEUTRALS } = Colors;
 
 type Props = {
   raceDemographics :Map;
 };
 
-const RaceChart = ({ ethnicityDemographics, raceDemographics } :Props) => {
-  const { chartData: raceChartData } :Object = formatRadialChartData(
+const RaceChart = ({ raceDemographics } :Props) => {
+
+  const [hintValue, setHintValue] = useState();
+  const toolTipStyleWithBackground :Object = {
+    background: NEUTRALS[0],
+    ...toolTipStyle
+  };
+
+  const { chartData, valuesNotFound } :Object = formatRadialChartData(
     raceDemographics
   );
+  const sortedListOfRaces :List = getListForRadialChartKey(chartData, valuesNotFound);
   return (
     <CardSegment>
       <RadialChart
-          data={raceChartData}
+          colorType="literal"
+          data={chartData}
           height={400}
-          labelsRadiusMultiplier={0.7}
-          showLabels
-          width={400} />
+          onValueMouseOver={(v) => setHintValue(v)}
+          onValueMouseOut={() => setHintValue(undefined)}
+          width={400}>
+        {
+          hintValue && (
+            <Hint
+                align={{ vertical: 'top', horizontal: 'right' }}
+                format={() => [
+                  { title: hintValue.name, value: '' },
+                  { title: 'percentage', value: hintValue.label },
+                  { title: 'count', value: `${hintValue.count}` }
+                ]}
+                style={toolTipStyleWithBackground}
+                value={hintValue} />
+          )
+        }
+      </RadialChart>
+      <KeyWrapper padding="0" vertical>
+        {
+          sortedListOfRaces.map(({ color, name } :Object) => (
+            <KeyItemWrapper key={name}>
+              <KeySquare color={color} />
+              <KeyItem>{ name }</KeyItem>
+            </KeyItemWrapper>
+          ))
+        }
+      </KeyWrapper>
     </CardSegment>
   );
 };
