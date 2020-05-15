@@ -1,5 +1,5 @@
 // @flow
-import { List, Map, Set, fromJS } from 'immutable';
+import { List, Map, fromJS } from 'immutable';
 import {
   call,
   put,
