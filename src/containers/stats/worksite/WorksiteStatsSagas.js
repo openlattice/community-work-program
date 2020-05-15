@@ -32,13 +32,13 @@ import {
   GET_CHECK_IN_NEIGHBORS,
   GET_HOURS_WORKED_BY_WORKSITE,
   GET_MONTHLY_PARTICIPANTS_BY_WORKSITE,
-  GET_WORKSITES,
+  GET_WORKSITES_FOR_STATS,
   GET_WORKSITE_STATS_DATA,
   getCheckInNeighbors,
   getHoursWorkedByWorksite,
   getMonthlyParticipantsByWorksite,
   getWorksiteStatsData,
-  getWorksites,
+  getWorksitesForStats,
 } from './WorksiteStatsActions';
 import { STATE } from '../../../utils/constants/ReduxStateConsts';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
@@ -69,17 +69,17 @@ const LOG = new Logger('StatsSagas');
 
 /*
  *
- * WorksiteStatsActions.getWorksites()
+ * WorksiteStatsActions.getWorksitesForStats()
  *
  */
 
-function* getWorksitesWorker(action :SequenceAction) :Generator<*, *, *> {
+function* getWorksitesForStatsWorker(action :SequenceAction) :Generator<*, *, *> {
   const { id } = action;
   const workerResponse :Object = {};
   let response :Object = {};
 
   try {
-    yield put(getWorksites.request(id));
+    yield put(getWorksitesForStats.request(id));
 
     const app = yield select(getAppFromState);
     const worksiteESID :UUID = getEntitySetIdFromApp(app, WORKSITE);
@@ -95,22 +95,22 @@ function* getWorksitesWorker(action :SequenceAction) :Generator<*, *, *> {
     }).asImmutable();
 
     workerResponse.data = { worksites, worksiteEKIDs, worksiteByEKID };
-    yield put(getWorksites.success(id));
+    yield put(getWorksitesForStats.success(id));
   }
   catch (error) {
     workerResponse.error = error;
     LOG.error(action.type, error);
-    yield put(getWorksites.failure(id, error));
+    yield put(getWorksitesForStats.failure(id, error));
   }
   finally {
-    yield put(getWorksites.finally(id));
+    yield put(getWorksitesForStats.finally(id));
   }
   return workerResponse;
 }
 
-function* getWorksitesWatcher() :Generator<*, *, *> {
+function* getWorksitesForStatsWatcher() :Generator<*, *, *> {
 
-  yield takeEvery(GET_WORKSITES, getWorksitesWorker);
+  yield takeEvery(GET_WORKSITES_FOR_STATS, getWorksitesForStatsWorker);
 }
 
 /*
@@ -532,6 +532,6 @@ export {
   getMonthlyParticipantsByWorksiteWorker,
   getWorksiteStatsDataWatcher,
   getWorksiteStatsDataWorker,
-  getWorksitesWatcher,
-  getWorksitesWorker,
+  getWorksitesForStatsWatcher,
+  getWorksitesForStatsWorker,
 };
