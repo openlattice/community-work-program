@@ -1,5 +1,5 @@
 // @flow
-import { List, Map, fromJS } from 'immutable';
+import { List, Map, Set, fromJS } from 'immutable';
 import {
   call,
   put,
@@ -84,11 +84,19 @@ function* getParticipantsDemographicsWorker(action :SequenceAction) :Generator<*
       searchEntityNeighborsWithFilter({ entitySetId: diversionPlanESID, filter: searchFilter })
     );
     if (response.error) throw response.error;
-    const participantNeighbors :Map = fromJS(response.data);
+    const participantNeighbors :Map = fromJS(response.data)
+      .map((neighborsList) => getNeighborDetails(neighborsList.get(0)))
+      .valueSeq()
+      .toList();
+    const nonDuplicatedPersonMap :Map = Map().withMutations((map :Map) => {
+      participantNeighbors.forEach((person :Map) => {
+        const personEKID = getEntityKeyId(person);
+        if (!isDefined(map.get(personEKID))) map.set(personEKID, person);
+      });
+    });
 
-    participantNeighbors.forEach((neighborsList :List) => {
+    nonDuplicatedPersonMap.forEach((person :Map) => {
 
-      const person :Map = getNeighborDetails(neighborsList.get(0));
       const { [ETHNICITY]: ethnicity, [RACE]: race, [SEX]: sex } = getEntityProperties(person, [ETHNICITY, RACE, SEX]);
 
       const currentTotalForRace :any = raceDemographics.get(race);
