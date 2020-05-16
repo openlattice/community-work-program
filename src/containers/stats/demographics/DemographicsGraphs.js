@@ -56,11 +56,25 @@ const DemographicsGraphs = ({
       <RaceChart raceDemographics={raceDemographics} />
     </Card>
     <Card>
-      <GraphHeader>Ethnicity</GraphHeader>
+      <DemographicsCardHeader>
+        <div>Ethnicity</div>
+        <Button
+            isLoading={requestIsPending(requestStates[DOWNLOAD_DEMOGRAPHICS_DATA])}
+            onClick={() => actions.downloadDemographicsData(formatRadialChartData(ethnicityDemographics))}>
+          Download
+        </Button>
+      </DemographicsCardHeader>
       <EthnicityChart ethnicityDemographics={ethnicityDemographics} />
     </Card>
     <Card>
-      <GraphHeader>Sex</GraphHeader>
+      <DemographicsCardHeader>
+        <div>Sex</div>
+        <Button
+            isLoading={requestIsPending(requestStates[DOWNLOAD_DEMOGRAPHICS_DATA])}
+            onClick={() => actions.downloadDemographicsData(formatRadialChartData(sexDemographics))}>
+          Download
+        </Button>
+      </DemographicsCardHeader>
       <SexChart sexDemographics={sexDemographics} />
     </Card>
   </CardStack>
