@@ -17,7 +17,12 @@ import {
   getMonthlyParticipantsByWorksite,
   getWorksiteStatsData,
 } from './worksite/WorksiteStatsActions';
-import { GET_PARTICIPANTS_DEMOGRAPHICS, getParticipantsDemographics } from './demographics/DemographicsActions';
+import {
+  DOWNLOAD_DEMOGRAPHICS_DATA,
+  GET_PARTICIPANTS_DEMOGRAPHICS,
+  downloadDemographicsData,
+  getParticipantsDemographics,
+} from './demographics/DemographicsActions';
 import { SHARED, STATS } from '../../utils/constants/ReduxStateConsts';
 
 const { ACTIONS, REQUEST_STATE } = SHARED;
@@ -44,6 +49,9 @@ const {
 
 const INITIAL_STATE :Map<*, *> = fromJS({
   [ACTIONS]: {
+    [DOWNLOAD_DEMOGRAPHICS_DATA]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
     [GET_HOURS_WORKED_BY_WORKSITE]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
@@ -84,6 +92,21 @@ const INITIAL_STATE :Map<*, *> = fromJS({
 export default function statsReducer(state :Map<*, *> = INITIAL_STATE, action :Object) :Map<*, *> {
 
   switch (action.type) {
+
+    case downloadDemographicsData.case(action.type): {
+
+      return downloadDemographicsData.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, DOWNLOAD_DEMOGRAPHICS_DATA, action.id], action)
+          .setIn([ACTIONS, DOWNLOAD_DEMOGRAPHICS_DATA, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => state
+          .setIn([ACTIONS, DOWNLOAD_DEMOGRAPHICS_DATA, REQUEST_STATE], RequestStates.SUCCESS),
+        FAILURE: () => state
+          .setIn([ACTIONS, DOWNLOAD_DEMOGRAPHICS_DATA, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, DOWNLOAD_DEMOGRAPHICS_DATA, action.id]),
+      });
+    }
 
     case getHoursWorkedByWorksite.case(action.type): {
 

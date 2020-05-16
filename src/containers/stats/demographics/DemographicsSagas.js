@@ -1,4 +1,6 @@
 // @flow
+import Papa from 'papaparse';
+import FS from 'file-saver';
 import { List, Map, fromJS } from 'immutable';
 import {
   call,
@@ -23,13 +25,16 @@ import {
 } from '../../../utils/DataUtils';
 import { isDefined } from '../../../utils/LangUtils';
 import {
+  DOWNLOAD_DEMOGRAPHICS_DATA,
   GET_PARTICIPANTS_DEMOGRAPHICS,
+  downloadDemographicsData,
   getParticipantsDemographics,
 } from './DemographicsActions';
 import { STATE } from '../../../utils/constants/ReduxStateConsts';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { ETHNICITY_VALUES, RACE_VALUES, SEX_VALUES } from '../../../core/edm/constants/DataModelConsts';
 import { ETHNICITY_ALIASES, RACE_ALIASES } from '../consts/StatsConsts';
+import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../../utils/Errors';
 
 const { getEntitySetData } = DataApiActions;
 const { getEntitySetDataWorker } = DataApiSagas;
@@ -40,6 +45,69 @@ const { DIVERSION_PLAN, PEOPLE } = APP_TYPE_FQNS;
 const { ETHNICITY, RACE, SEX } = PROPERTY_TYPE_FQNS;
 const getAppFromState = (state) => state.get(STATE.APP, Map());
 const LOG = new Logger('DemographicsSagas');
+
+/*
+ *
+ * DemographicsSagas.downloadDemographicsData()
+ *
+ */
+
+function* downloadDemographicsDataWorker(action :SequenceAction) :Generator<*, *, *> {
+  const { id, value } = action;
+  if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
+
+  try {
+    yield put(downloadDemographicsData.request(id));
+
+    const { chartData, valuesNotFound } = value;
+    let csvData :Object[] = chartData.map((chartObj :Object) => {
+      const newChartObj :Object = {};
+      newChartObj.demographic = chartObj.name;
+      newChartObj.count = chartObj.count;
+      newChartObj.percentage = chartObj.label;
+      return newChartObj;
+    });
+    valuesNotFound.forEach((demographic :string) => csvData.push({
+      demographic,
+      count: 0,
+      percentage: '0%',
+    }));
+    csvData = csvData.sort((row1 :Object, row2 :Object) => {
+      if (row1.demographic < row2.demographic) return -1;
+      if (row1.demographic > row2.demographic) return 1;
+      return 0;
+    });
+
+    const countTotal :number = csvData.map((obj :Object) => obj.count)
+      .reduce((sum :number, count :number) => sum + count);
+    const total = {
+      demographic: 'Total',
+      count: countTotal,
+      percentage: '100%',
+    };
+    csvData.push(total);
+
+    const csv = Papa.unparse(csvData);
+    const blob = new Blob([csv], {
+      type: 'application/json'
+    });
+    const fileName :string = 'CWP_Race_Demographics';
+    FS.saveAs(blob, fileName.concat('.csv'));
+    yield put(downloadDemographicsData.success(id));
+  }
+  catch (error) {
+    LOG.error(action.type, error);
+    yield put(downloadDemographicsData.failure(id, error));
+  }
+  finally {
+    yield put(downloadDemographicsData.finally(id));
+  }
+}
+
+function* downloadDemographicsDataWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(DOWNLOAD_DEMOGRAPHICS_DATA, downloadDemographicsDataWorker);
+}
 
 /*
  *
@@ -189,6 +257,8 @@ function* getParticipantsDemographicsWatcher() :Generator<*, *, *> {
 }
 
 export {
+  downloadDemographicsDataWatcher,
+  downloadDemographicsDataWorker,
   getParticipantsDemographicsWatcher,
   getParticipantsDemographicsWorker,
 };
