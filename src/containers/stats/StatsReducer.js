@@ -23,11 +23,13 @@ import {
   downloadDemographicsData,
   getParticipantsDemographics,
 } from './demographics/DemographicsActions';
+import { GET_ARREST_CHARGE_STATS, getArrestChargeStats } from './charges/ChargesStatsActions';
 import { SHARED, STATS } from '../../utils/constants/ReduxStateConsts';
 
 const { ACTIONS, REQUEST_STATE } = SHARED;
 const {
   ACTIVE_ENROLLMENTS_BY_COURT_TYPE,
+  ARREST_CHARGE_TABLE_DATA,
   CLOSED_ENROLLMENTS_BY_COURT_TYPE,
   ETHNICITY_DEMOGRAPHICS,
   HOURS_BY_WORKSITE,
@@ -50,6 +52,9 @@ const {
 const INITIAL_STATE :Map<*, *> = fromJS({
   [ACTIONS]: {
     [DOWNLOAD_DEMOGRAPHICS_DATA]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [GET_ARREST_CHARGE_STATS]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [GET_HOURS_WORKED_BY_WORKSITE]: {
@@ -105,6 +110,26 @@ export default function statsReducer(state :Map<*, *> = INITIAL_STATE, action :O
         FAILURE: () => state
           .setIn([ACTIONS, DOWNLOAD_DEMOGRAPHICS_DATA, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, DOWNLOAD_DEMOGRAPHICS_DATA, action.id]),
+      });
+    }
+
+    case getArrestChargeStats.case(action.type): {
+
+      return getArrestChargeStats.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, GET_ARREST_CHARGE_STATS, action.id], action)
+          .setIn([ACTIONS, GET_ARREST_CHARGE_STATS, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+          const seqAction :SequenceAction = (action :any);
+          const arrestChargeTableData = seqAction.value;
+          return state
+            .set(ARREST_CHARGE_TABLE_DATA, arrestChargeTableData)
+            .setIn([ACTIONS, GET_ARREST_CHARGE_STATS, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, GET_ARREST_CHARGE_STATS, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, GET_ARREST_CHARGE_STATS, action.id]),
       });
     }
 
