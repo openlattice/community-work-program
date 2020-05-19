@@ -27,6 +27,7 @@ import {
 } from './ChargesStatsActions';
 import { STATE } from '../../../utils/constants/ReduxStateConsts';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
+import { ARREST_CHARGE_HEADERS } from '../consts/StatsConsts';
 
 const { getEntitySetData } = DataApiActions;
 const { getEntitySetDataWorker } = DataApiSagas;
@@ -115,13 +116,15 @@ function* getArrestChargeStatsWorker(action :SequenceAction) :Generator<*, *, *>
         const arrestChargeCount :number = arrestChargeCounts.get(fullChargeString, 0);
 
         if (arrestChargeCount !== 0) {
-          const index :Map = arrestChargeTableData.findIndex((map :Map) => map.get('charge') === fullChargeString);
-          arrestChargeTableData = arrestChargeTableData.setIn([index, 'count'], arrestChargeCount + 1);
+          const index :Map = arrestChargeTableData
+            .findIndex((map :Map) => map.get(ARREST_CHARGE_HEADERS[0]) === fullChargeString);
+          arrestChargeTableData = arrestChargeTableData.setIn([index, ARREST_CHARGE_HEADERS[1]], arrestChargeCount + 1);
         }
         else {
           arrestChargeTableData = arrestChargeTableData.push(Map({
-            charge: fullChargeString,
-            count: arrestChargeCount + 1,
+            [ARREST_CHARGE_HEADERS[0]]: fullChargeString,
+            [ARREST_CHARGE_HEADERS[1]]: arrestChargeCount + 1,
+            id: getEntityKeyId(arrestCharge)
           }));
         }
 
