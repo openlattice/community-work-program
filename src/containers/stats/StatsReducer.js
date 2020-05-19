@@ -1,5 +1,5 @@
 // @flow
-import { Map, fromJS } from 'immutable';
+import { List, Map, fromJS } from 'immutable';
 import { RequestStates } from 'redux-reqseq';
 import type { SequenceAction } from 'redux-reqseq';
 
@@ -77,6 +77,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     },
   },
   [ACTIVE_ENROLLMENTS_BY_COURT_TYPE]: Map(),
+  [ARREST_CHARGE_TABLE_DATA]: List(),
   [CLOSED_ENROLLMENTS_BY_COURT_TYPE]: Map(),
   [HOURS_BY_WORKSITE]: Map(),
   [MONTHLY_HOURS_WORKED_BY_COURT_TYPE]: Map(),
