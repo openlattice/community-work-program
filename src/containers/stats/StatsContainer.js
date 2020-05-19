@@ -36,6 +36,7 @@ import {
 } from './StatsActions';
 import { GET_WORKSITE_STATS_DATA, getWorksiteStatsData } from './worksite/WorksiteStatsActions';
 import { GET_PARTICIPANTS_DEMOGRAPHICS, getParticipantsDemographics } from './demographics/DemographicsActions';
+import { GET_ARREST_CHARGE_STATS, getArrestChargeStats } from './charges/ChargesStatsActions';
 import {
   APP,
   SHARED,
@@ -182,6 +183,7 @@ const StatsBoxSkeleton = () => (
 
 type Props = {
   actions :{
+    getArrestChargeStats :RequestSequence;
     getMonthlyCourtTypeData :RequestSequence;
     getParticipantsDemographics :RequestSequence;
     getStatsData :RequestSequence;
@@ -194,6 +196,7 @@ type Props = {
   monthlyTotalParticipantsByCourtType :Map;
   referralsByCourtTypeGraphData :Map;
   requestStates :{
+    GET_ARREST_CHARGE_STATS :RequestState;
     GET_MONTHLY_COURT_TYPE_DATA :RequestState;
     GET_PARTICIPANTS_DEMOGRAPHICS :RequestState;
     GET_STATS_DATA :RequestState;
@@ -229,6 +232,7 @@ const StatsContainer = ({
 } :Props) => {
 
   const reducedFetchRequestStates = reduceRequestStates([
+    requestStates[GET_ARREST_CHARGE_STATS],
     requestStates[GET_MONTHLY_COURT_TYPE_DATA],
     requestStates[GET_PARTICIPANTS_DEMOGRAPHICS],
     requestStates[GET_STATS_DATA],
@@ -279,6 +283,7 @@ const StatsContainer = ({
     [SCREEN_VIEWS.COURT_TYPE]: actions.getMonthlyCourtTypeData,
     [SCREEN_VIEWS.WORK_SITES]: actions.getWorksiteStatsData,
     [SCREEN_VIEWS.DEMOGRAPHICS]: actions.getParticipantsDemographics,
+    [SCREEN_VIEWS.CHARGES]: actions.getArrestChargeStats,
   };
 
   const buttonOptions :Object[] = SCREEN_VIEWS_LIST.map((value :string) => ({
@@ -400,6 +405,7 @@ const mapStateToProps = (state :Map) => {
 
 const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
+    getArrestChargeStats,
     getMonthlyCourtTypeData,
     getParticipantsDemographics,
     getStatsData,
