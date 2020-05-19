@@ -9,6 +9,7 @@ import { DataApiSagas, SearchApiSagas } from 'lattice-sagas';
 import * as AppSagas from '../../containers/app/AppSagas';
 import * as ChargesSagas from '../../containers/participant/charges/ChargesSagas';
 import * as DataSagas from './data/DataSagas';
+import * as DemographicsSagas from '../../containers/stats/demographics/DemographicsSagas';
 import * as EDMSagas from '../edm/EDMSagas';
 import * as InfractionsSagas from '../../containers/participant/infractions/InfractionsSagas';
 import * as ParticipantSagas from '../../containers/participant/ParticipantSagas';
@@ -59,6 +60,10 @@ export default function* sagas() :Generator<*, *, *> {
     fork(DataSagas.deleteEntitiesWatcher),
     fork(DataSagas.submitDataGraphWatcher),
     fork(DataSagas.submitPartialReplaceWatcher),
+
+    // DemographicsSagas
+    fork(DemographicsSagas.downloadDemographicsDataWatcher),
+    fork(DemographicsSagas.getParticipantsDemographicsWatcher),
 
     // EDMSagas
     fork(EDMSagas.getEntityDataModelTypesWatcher),
