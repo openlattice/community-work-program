@@ -1,6 +1,7 @@
 // @flow
 import { List, Map, fromJS } from 'immutable';
 import {
+  all,
   call,
   put,
   select,
@@ -23,11 +24,15 @@ import {
 } from '../../../utils/DataUtils';
 import {
   GET_ARREST_CHARGE_STATS,
+  GET_CHARGES_STATS,
+  GET_COURT_CHARGE_STATS,
   getArrestChargeStats,
+  getChargesStats,
+  getCourtChargeStats,
 } from './ChargesStatsActions';
 import { STATE } from '../../../utils/constants/ReduxStateConsts';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
-import { ARREST_CHARGE_HEADERS } from '../consts/StatsConsts';
+import { ARREST_CHARGE_HEADERS, COURT_CHARGE_HEADERS } from '../consts/StatsConsts';
 
 const { getEntitySetData } = DataApiActions;
 const { getEntitySetDataWorker } = DataApiSagas;
@@ -36,6 +41,7 @@ const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
 
 const {
   ARREST_CHARGE_LIST,
+  COURT_CHARGE_LIST,
   DIVERSION_PLAN,
   CHARGE_EVENT,
 } = APP_TYPE_FQNS;
@@ -53,16 +59,11 @@ function* getArrestChargeStatsWorker(action :SequenceAction) :Generator<*, *, *>
 
   const { id } = action;
   let response :Object = {};
+  const workerResponse :Object = {};
   let arrestChargeTableData :List = List().asMutable();
 
   try {
     yield put(getArrestChargeStats.request(id));
-
-    /*
-      get all diversion plans
-      get all charge events tied to div plans
-      get all arrest charges tied to those charge events
-    */
 
     const app = yield select(getAppFromState);
     const diversionPlanESID :UUID = getEntitySetIdFromApp(app, DIVERSION_PLAN);
@@ -106,7 +107,7 @@ function* getArrestChargeStatsWorker(action :SequenceAction) :Generator<*, *, *>
       const arrestChargeNeighbors :Map = fromJS(response.data);
 
       let arrestChargeCounts :Map = Map().asMutable();
-      arrestChargeNeighbors.forEach((neighborsList :List) => {
+      arrestChargeNeighbors.forEach((neighborsList :List, chargeEventEKID :UUID) => {
         const arrestCharge :Map = getNeighborDetails(neighborsList.get(0));
         const { [OL_ID]: statuteNumber, [NAME]: chargeName, [LEVEL_STATE]: level } = getEntityProperties(
           arrestCharge,
@@ -124,7 +125,7 @@ function* getArrestChargeStatsWorker(action :SequenceAction) :Generator<*, *, *>
           arrestChargeTableData = arrestChargeTableData.push(Map({
             [ARREST_CHARGE_HEADERS[0]]: fullChargeString,
             [ARREST_CHARGE_HEADERS[1]]: arrestChargeCount + 1,
-            id: getEntityKeyId(arrestCharge)
+            id: `${chargeEventEKID}.${getEntityKeyId(arrestCharge)}`
           }));
         }
 
@@ -133,15 +134,18 @@ function* getArrestChargeStatsWorker(action :SequenceAction) :Generator<*, *, *>
     }
 
     arrestChargeTableData = arrestChargeTableData.asImmutable();
+    workerResponse.data = arrestChargeTableData;
     yield put(getArrestChargeStats.success(id, arrestChargeTableData));
   }
   catch (error) {
+    workerResponse.error = error;
     LOG.error(action.type, error);
     yield put(getArrestChargeStats.failure(id, error));
   }
   finally {
     yield put(getArrestChargeStats.finally(id));
   }
+  return workerResponse;
 }
 
 function* getArrestChargeStatsWatcher() :Generator<*, *, *> {
@@ -149,7 +153,146 @@ function* getArrestChargeStatsWatcher() :Generator<*, *, *> {
   yield takeEvery(GET_ARREST_CHARGE_STATS, getArrestChargeStatsWorker);
 }
 
+/*
+ *
+ * ChargesStatsActions.getCourtChargeStats()
+ *
+ */
+
+function* getCourtChargeStatsWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id } = action;
+  let response :Object = {};
+  const workerResponse :Object = {};
+  let courtChargeTableData :List = List().asMutable();
+
+  try {
+    yield put(getCourtChargeStats.request(id));
+
+    const app = yield select(getAppFromState);
+    const diversionPlanESID :UUID = getEntitySetIdFromApp(app, DIVERSION_PLAN);
+
+    response = yield call(getEntitySetDataWorker, getEntitySetData({ entitySetId: diversionPlanESID }));
+    if (response.error) throw response.error;
+    const diversionPlans :List = fromJS(response.data).map((plan :Map) => getNeighborDetails(plan));
+    const diversionPlanEKIDs :UUID[] = [];
+    diversionPlans.forEach((plan :Map) => diversionPlanEKIDs.push(getEntityKeyId(plan)));
+
+    const chargeEventESID :UUID = getEntitySetIdFromApp(app, CHARGE_EVENT);
+    let searchFilter :Object = {
+      entityKeyIds: diversionPlanEKIDs,
+      destinationEntitySetIds: [chargeEventESID],
+      sourceEntitySetIds: [],
+    };
+    response = yield call(
+      searchEntityNeighborsWithFilterWorker,
+      searchEntityNeighborsWithFilter({ entitySetId: diversionPlanESID, filter: searchFilter })
+    );
+    if (response.error) throw response.error;
+    const chargeEventNeighbors :Map = fromJS(response.data);
+
+    const chargeEventEKIDs :UUID[] = [];
+    chargeEventNeighbors.forEach((neighborsList :List) => {
+      neighborsList.forEach((neighbor :Map) => chargeEventEKIDs.push(getEntityKeyId(getNeighborDetails(neighbor))));
+    });
+
+    const courtChargeListESID :UUID = getEntitySetIdFromApp(app, COURT_CHARGE_LIST);
+    if (chargeEventESID.length) {
+      searchFilter = {
+        entityKeyIds: chargeEventEKIDs,
+        destinationEntitySetIds: [courtChargeListESID],
+        sourceEntitySetIds: [],
+      };
+      response = yield call(
+        searchEntityNeighborsWithFilterWorker,
+        searchEntityNeighborsWithFilter({ entitySetId: chargeEventESID, filter: searchFilter })
+      );
+      if (response.error) throw response.error;
+      const courtChargeNeighbors :Map = fromJS(response.data);
+
+      let courtChargeCounts :Map = Map().asMutable();
+      courtChargeNeighbors.forEach((neighborsList :List, chargeEventEKID :UUID) => {
+        const courtCharge :Map = getNeighborDetails(neighborsList.get(0));
+        const { [OL_ID]: statuteNumber, [NAME]: chargeName } = getEntityProperties(courtCharge, [OL_ID, NAME]);
+        const fullChargeString :string = `${statuteNumber} ${chargeName}`;
+        const courtChargeCount :number = courtChargeCounts.get(fullChargeString, 0);
+
+        if (courtChargeCount !== 0) {
+          const index :Map = courtChargeTableData
+            .findIndex((map :Map) => map.get(COURT_CHARGE_HEADERS[0]) === fullChargeString);
+          courtChargeTableData = courtChargeTableData.setIn([index, COURT_CHARGE_HEADERS[1]], courtChargeCount + 1);
+        }
+        else {
+          courtChargeTableData = courtChargeTableData.push(Map({
+            [COURT_CHARGE_HEADERS[0]]: fullChargeString,
+            [COURT_CHARGE_HEADERS[1]]: courtChargeCount + 1,
+            id: `${chargeEventEKID}.${getEntityKeyId(courtCharge)}`
+          }));
+        }
+
+        courtChargeCounts = courtChargeCounts.set(fullChargeString, courtChargeCount + 1);
+      });
+    }
+
+    courtChargeTableData = courtChargeTableData.asImmutable();
+    workerResponse.data = courtChargeTableData;
+    yield put(getCourtChargeStats.success(id, courtChargeTableData));
+  }
+  catch (error) {
+    workerResponse.error = error;
+    LOG.error(action.type, error);
+    yield put(getCourtChargeStats.failure(id, error));
+  }
+  finally {
+    yield put(getCourtChargeStats.finally(id));
+  }
+  return workerResponse;
+}
+
+function* getCourtChargeStatsWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(GET_COURT_CHARGE_STATS, getCourtChargeStatsWorker);
+}
+
+/*
+ *
+ * ChargesStatsActions.getChargesStats()
+ *
+ */
+
+function* getChargesStatsWorker(action :SequenceAction) :Generator<*, *, *> {
+  const { id } = action;
+
+  try {
+    yield put(getChargesStats.request(id));
+
+    const [arrestResponse, courtResponse] = yield all([
+      call(getArrestChargeStatsWorker, getArrestChargeStats()),
+      call(getCourtChargeStatsWorker, getCourtChargeStats()),
+    ]);
+    if (arrestResponse.error) throw arrestResponse.error;
+    if (courtResponse.error) throw courtResponse.error;
+
+    yield put(getChargesStats.success(id));
+  }
+  catch (error) {
+    LOG.error(action.type, error);
+    yield put(getChargesStats.failure(id, error));
+  }
+  finally {
+    yield put(getChargesStats.finally(id));
+  }
+}
+
+function* getChargesStatsWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(GET_CHARGES_STATS, getChargesStatsWorker);
+}
+
 export {
   getArrestChargeStatsWatcher,
   getArrestChargeStatsWorker,
+  getCourtChargeStatsWatcher,
+  getCourtChargeStatsWorker,
+  getChargesStatsWatcher,
 };

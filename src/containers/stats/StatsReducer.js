@@ -23,7 +23,14 @@ import {
   downloadDemographicsData,
   getParticipantsDemographics,
 } from './demographics/DemographicsActions';
-import { GET_ARREST_CHARGE_STATS, getArrestChargeStats } from './charges/ChargesStatsActions';
+import {
+  GET_ARREST_CHARGE_STATS,
+  GET_CHARGES_STATS,
+  GET_COURT_CHARGE_STATS,
+  getArrestChargeStats,
+  getChargesStats,
+  getCourtChargeStats,
+} from './charges/ChargesStatsActions';
 import { SHARED, STATS } from '../../utils/constants/ReduxStateConsts';
 
 const { ACTIONS, REQUEST_STATE } = SHARED;
@@ -31,6 +38,7 @@ const {
   ACTIVE_ENROLLMENTS_BY_COURT_TYPE,
   ARREST_CHARGE_TABLE_DATA,
   CLOSED_ENROLLMENTS_BY_COURT_TYPE,
+  COURT_CHARGE_TABLE_DATA,
   ETHNICITY_DEMOGRAPHICS,
   HOURS_BY_WORKSITE,
   MONTHLY_HOURS_WORKED_BY_COURT_TYPE,
@@ -57,6 +65,12 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     [GET_ARREST_CHARGE_STATS]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
+    [GET_CHARGES_STATS]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [GET_COURT_CHARGE_STATS]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
     [GET_HOURS_WORKED_BY_WORKSITE]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
@@ -79,6 +93,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [ACTIVE_ENROLLMENTS_BY_COURT_TYPE]: Map(),
   [ARREST_CHARGE_TABLE_DATA]: List(),
   [CLOSED_ENROLLMENTS_BY_COURT_TYPE]: Map(),
+  [COURT_CHARGE_TABLE_DATA]: List(),
   [HOURS_BY_WORKSITE]: Map(),
   [MONTHLY_HOURS_WORKED_BY_COURT_TYPE]: Map(),
   [MONTHLY_TOTAL_PARTICIPANTS_BY_COURT_TYPE]: Map(),
@@ -131,6 +146,41 @@ export default function statsReducer(state :Map<*, *> = INITIAL_STATE, action :O
         FAILURE: () => state
           .setIn([ACTIONS, GET_ARREST_CHARGE_STATS, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, GET_ARREST_CHARGE_STATS, action.id]),
+      });
+    }
+
+    case getChargesStats.case(action.type): {
+
+      return getChargesStats.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, GET_CHARGES_STATS, action.id], action)
+          .setIn([ACTIONS, GET_CHARGES_STATS, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => state
+          .setIn([ACTIONS, GET_CHARGES_STATS, REQUEST_STATE], RequestStates.SUCCESS),
+        FAILURE: () => state
+          .setIn([ACTIONS, GET_CHARGES_STATS, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, GET_CHARGES_STATS, action.id]),
+      });
+    }
+
+    case getCourtChargeStats.case(action.type): {
+
+      return getCourtChargeStats.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, GET_COURT_CHARGE_STATS, action.id], action)
+          .setIn([ACTIONS, GET_COURT_CHARGE_STATS, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+          const seqAction :SequenceAction = (action :any);
+          const courtChargeTableData = seqAction.value;
+          return state
+            .set(COURT_CHARGE_TABLE_DATA, courtChargeTableData)
+            .setIn([ACTIONS, GET_COURT_CHARGE_STATS, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, GET_COURT_CHARGE_STATS, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, GET_COURT_CHARGE_STATS, action.id]),
       });
     }
 
