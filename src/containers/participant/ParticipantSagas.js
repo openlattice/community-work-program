@@ -7,7 +7,6 @@ import {
   Map,
   fromJS,
   getIn,
-  has,
   setIn,
 } from 'immutable';
 import { DateTime } from 'luxon';
@@ -141,7 +140,7 @@ import { formatAsDate } from '../../utils/DateTimeUtils';
 import { getCombinedDateTime } from '../../utils/ScheduleUtils';
 import { enrollmentHeaderNames } from './ParticipantProfile';
 import { EMPTY_FIELD } from '../participants/ParticipantsConstants';
-import { PERSON, STATE } from '../../utils/constants/ReduxStateConsts';
+import { STATE } from '../../utils/constants/ReduxStateConsts';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { ASSOCIATION_DETAILS, CONTACT_METHODS } from '../../core/edm/constants/DataModelConsts';
 
@@ -178,7 +177,6 @@ const {
 
 const getAppFromState = (state) => state.get(STATE.APP, Map());
 const getEdmFromState = (state) => state.get(STATE.EDM, Map());
-const getPersonFromState = (state) => state.get(STATE.PERSON, Map());
 const LOG = new Logger('ParticipantSagas');
 
 /*
