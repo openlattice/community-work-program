@@ -2,11 +2,11 @@
 import React from 'react';
 import styled from 'styled-components';
 import { List, Map } from 'immutable';
+import { CardStack } from 'lattice-ui-kit';
 import { connect } from 'react-redux';
 
 import ChargesTableRow from '../../../components/table/ChargesTableRow';
 import TableHeaderRow from '../../../components/table/TableHeaderRow';
-import TableHeadCell from '../../../components/table/TableHeadCell';
 import {
   TableCell,
   CustomTable,
@@ -23,13 +23,13 @@ const arrestChargeTableHeaders :Object[] = generateTableHeaders(ARREST_CHARGE_HE
 
 const ChargesHeadCell = styled(TableCell)`
   :first-child {
-    padding-left: 50px;
+    padding-left: 40px;
     width: 600px;
     white-space: normal;
   }
 
   :last-child {
-    padding-right: 50px;
+    padding-right: 40px;
   }
 `;
 
@@ -50,18 +50,20 @@ type Props = {
 
 const ChargesGraphs = ({ arrestChargeTableData } :Props) => {
   return (
-    <TableCard>
-      <TableHeader padding="40px">
-        <TableName>
-          Arrest Charges
-        </TableName>
-      </TableHeader>
-      <CustomTable
-          components={tableComponents}
-          data={arrestChargeTableData.toJS()}
-          headers={arrestChargeTableHeaders}
-          isLoading={false} />
-    </TableCard>
+    <CardStack>
+      <TableCard>
+        <TableHeader padding="40px">
+          <TableName>
+            Arrest Charges
+          </TableName>
+        </TableHeader>
+        <CustomTable
+            components={tableComponents}
+            data={arrestChargeTableData.toJS()}
+            headers={arrestChargeTableHeaders}
+            isLoading={false} />
+      </TableCard>
+    </CardStack>
   );
 };
 
