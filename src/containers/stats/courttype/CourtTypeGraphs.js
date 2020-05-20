@@ -1,9 +1,10 @@
 // @flow
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import { Map } from 'immutable';
+import { Map, fromJS } from 'immutable';
 import { DateTime } from 'luxon';
 import {
+  Button,
   Card,
   CardSegment,
   CardStack,
@@ -37,8 +38,10 @@ import {
 import { formatReferralsCourtTypeData } from '../utils/StatsUtils';
 import { requestIsPending } from '../../../utils/RequestStateUtils';
 import {
+  DOWNLOAD_COURT_TYPE_DATA,
   GET_ENROLLMENTS_BY_COURT_TYPE,
   GET_MONTHLY_COURT_TYPE_DATA,
+  downloadCourtTypeData,
   getEnrollmentsByCourtType,
   getMonthlyCourtTypeData,
   getStatsData,
@@ -77,6 +80,7 @@ const KeyItemWrapperHorizontal = styled(KeyItemWrapper)`
 
 type Props = {
   actions :{
+    downloadCourtTypeData :RequestSequence;
     getEnrollmentsByCourtType :RequestSequence;
     getMonthlyCourtTypeData :RequestSequence;
     getStatsData :RequestSequence;
@@ -89,6 +93,7 @@ type Props = {
   monthlyTotalParticipantsByCourtType :Map;
   referralsByCourtTypeGraphData :Map;
   requestStates :{
+    DOWNLOAD_COURT_TYPE_DATA :RequestState;
     GET_ENROLLMENTS_BY_COURT_TYPE :RequestState;
     GET_MONTHLY_COURT_TYPE_DATA :RequestState;
   };
@@ -138,6 +143,14 @@ const CourtTypeGraphs = ({
       year: enrollmentsYear.value,
       timeFrame: timeFrame.value
     });
+  };
+
+  const downloadReferralData = () => {
+    const formattedReferralData = referralsGraphData.map((graphObj :Object) => ({
+      courtType: graphObj.y,
+      total: graphObj.x,
+    }));
+    actions.downloadCourtTypeData({ courtTypeData: fromJS(formattedReferralData), fileName: 'CWP_Referrals' });
   };
 
   return (
@@ -213,7 +226,14 @@ const CourtTypeGraphs = ({
       </Card>
       <Card>
         <GraphHeader>
-          Number of Referrals (Repeat Enrollments) by Court Type
+          <InnerHeaderRow>
+            <div>Number of Referrals (Repeat Enrollments) by Court Type</div>
+            <Button
+                isLoading={requestIsPending(requestStates[DOWNLOAD_COURT_TYPE_DATA])}
+                onClick={downloadReferralData}>
+              Download
+            </Button>
+          </InnerHeaderRow>
         </GraphHeader>
         <CardSegment padding="30px" vertical>
           {
@@ -279,6 +299,7 @@ const mapStateToProps = (state :Map) => {
 
 const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
+    downloadCourtTypeData,
     getEnrollmentsByCourtType,
     getMonthlyCourtTypeData,
     getStatsData,
