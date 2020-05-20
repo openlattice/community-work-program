@@ -56,6 +56,7 @@ type Props = {
   activeEnrollmentsByCourtType :Map;
   closedEnrollmentsByCourtType :Map;
   dataIsLoading :boolean;
+  jobSearchEnrollmentsByCourtType :Map;
   monthlyHoursWorkedByCourtType :Map;
   monthlyTotalParticipantsByCourtType :Map;
   referralsByCourtTypeGraphData :Map;
@@ -73,6 +74,7 @@ const CourtTypeGraphs = ({
   activeEnrollmentsByCourtType,
   closedEnrollmentsByCourtType,
   dataIsLoading,
+  jobSearchEnrollmentsByCourtType,
   monthlyHoursWorkedByCourtType,
   monthlyTotalParticipantsByCourtType,
   referralsByCourtTypeGraphData,
@@ -159,6 +161,7 @@ const CourtTypeGraphs = ({
                 <EnrollmentsAndStatusByCourtType
                     activeEnrollmentsByCourtType={activeEnrollmentsByCourtType}
                     closedEnrollmentsByCourtType={closedEnrollmentsByCourtType}
+                    jobSearchEnrollmentsByCourtType={jobSearchEnrollmentsByCourtType}
                     successfulEnrollmentsByCourtType={successfulEnrollmentsByCourtType}
                     unsuccessfulEnrollmentsByCourtType={unsuccessfulEnrollmentsByCourtType} />
               )

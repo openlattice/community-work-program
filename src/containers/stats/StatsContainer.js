@@ -56,6 +56,7 @@ const {
 const {
   ACTIVE_ENROLLMENTS_BY_COURT_TYPE,
   CLOSED_ENROLLMENTS_BY_COURT_TYPE,
+  JOB_SEARCH_ENROLLMENTS_BY_COURT_TYPE,
   MONTHLY_HOURS_WORKED_BY_COURT_TYPE,
   MONTHLY_TOTAL_PARTICIPANTS_BY_COURT_TYPE,
   REFERRALS_BY_COURT_TYPE_GRAPH_DATA,
@@ -190,6 +191,7 @@ type Props = {
   activeEnrollmentsByCourtType :Map;
   closedEnrollmentsByCourtType :Map;
   entitySetIds :Map;
+  jobSearchEnrollmentsByCourtType :Map;
   monthlyHoursWorkedByCourtType :Map;
   monthlyTotalParticipantsByCourtType :Map;
   referralsByCourtTypeGraphData :Map;
@@ -214,6 +216,7 @@ const StatsContainer = ({
   activeEnrollmentsByCourtType,
   closedEnrollmentsByCourtType,
   entitySetIds,
+  jobSearchEnrollmentsByCourtType,
   monthlyHoursWorkedByCourtType,
   monthlyTotalParticipantsByCourtType,
   referralsByCourtTypeGraphData,
@@ -247,6 +250,7 @@ const StatsContainer = ({
         activeEnrollmentsByCourtType={activeEnrollmentsByCourtType}
         closedEnrollmentsByCourtType={closedEnrollmentsByCourtType}
         dataIsLoading={dataIsLoading}
+        jobSearchEnrollmentsByCourtType={jobSearchEnrollmentsByCourtType}
         monthlyHoursWorkedByCourtType={monthlyHoursWorkedByCourtType}
         monthlyTotalParticipantsByCourtType={monthlyTotalParticipantsByCourtType}
         referralsByCourtTypeGraphData={referralsByCourtTypeGraphData}
@@ -377,6 +381,7 @@ const mapStateToProps = (state :Map) => {
   return {
     [ACTIVE_ENROLLMENTS_BY_COURT_TYPE]: stats.get(ACTIVE_ENROLLMENTS_BY_COURT_TYPE),
     [CLOSED_ENROLLMENTS_BY_COURT_TYPE]: stats.get(CLOSED_ENROLLMENTS_BY_COURT_TYPE),
+    [JOB_SEARCH_ENROLLMENTS_BY_COURT_TYPE]: stats.get(JOB_SEARCH_ENROLLMENTS_BY_COURT_TYPE),
     [MONTHLY_HOURS_WORKED_BY_COURT_TYPE]: stats.get(MONTHLY_HOURS_WORKED_BY_COURT_TYPE),
     [MONTHLY_TOTAL_PARTICIPANTS_BY_COURT_TYPE]: stats.get(MONTHLY_TOTAL_PARTICIPANTS_BY_COURT_TYPE),
     [REFERRALS_BY_COURT_TYPE_GRAPH_DATA]: stats.get(REFERRALS_BY_COURT_TYPE_GRAPH_DATA),

@@ -38,7 +38,7 @@ import { STATE } from '../../utils/constants/ReduxStateConsts';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { COURT_TYPES_MAP, ENROLLMENT_STATUSES } from '../../core/edm/constants/DataModelConsts';
 import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../utils/Errors';
-import { ALL_TIME, MONTHLY, YEARLY } from './consts/TimeConsts';
+import { MONTHLY, YEARLY } from './consts/TimeConsts';
 
 const { getEntitySetData } = DataApiActions;
 const { getEntitySetDataWorker } = DataApiSagas;
@@ -81,7 +81,6 @@ const ACTIVE_STATUSES :string[] = [
   ENROLLMENT_STATUSES.ACTIVE_REOPENED,
   ENROLLMENT_STATUSES.AWAITING_CHECKIN,
   ENROLLMENT_STATUSES.AWAITING_ORIENTATION,
-  ENROLLMENT_STATUSES.JOB_SEARCH,
 ];
 
 /*
@@ -297,9 +296,10 @@ function* getEnrollmentsByCourtTypeWorker(action :SequenceAction) :Generator<*, 
   if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
   let response :Object = {};
   let activeEnrollmentsByCourtType :Map = fromJS(courtTypeCountObj).asMutable();
+  let closedEnrollmentsByCourtType :Map = fromJS(courtTypeCountObj).asMutable();
+  let jobSearchEnrollmentsByCourtType :Map = fromJS(courtTypeCountObj).asMutable();
   let successfulEnrollmentsByCourtType :Map = fromJS(courtTypeCountObj).asMutable();
   let unsuccessfulEnrollmentsByCourtType :Map = fromJS(courtTypeCountObj).asMutable();
-  let closedEnrollmentsByCourtType :Map = fromJS(courtTypeCountObj).asMutable();
 
   try {
     yield put(getEnrollmentsByCourtType.request(id));
@@ -400,6 +400,11 @@ function* getEnrollmentsByCourtTypeWorker(action :SequenceAction) :Generator<*, 
               const count :number = activeEnrollmentsByCourtType.get(courtType, 0);
               activeEnrollmentsByCourtType = activeEnrollmentsByCourtType.set(courtType, count + 1);
             }
+            if (status === ENROLLMENT_STATUSES.JOB_SEARCH) {
+              const count :number = jobSearchEnrollmentsByCourtType.get(courtType, 0);
+              jobSearchEnrollmentsByCourtType = jobSearchEnrollmentsByCourtType
+                .set(courtType, count + 1);
+            }
             if (status === ENROLLMENT_STATUSES.COMPLETED || status === ENROLLMENT_STATUSES.SUCCESSFUL) {
               const count :number = successfulEnrollmentsByCourtType.get(courtType, 0);
               successfulEnrollmentsByCourtType = successfulEnrollmentsByCourtType
@@ -422,12 +427,14 @@ function* getEnrollmentsByCourtTypeWorker(action :SequenceAction) :Generator<*, 
 
     activeEnrollmentsByCourtType = activeEnrollmentsByCourtType.asImmutable();
     closedEnrollmentsByCourtType = closedEnrollmentsByCourtType.asImmutable();
+    jobSearchEnrollmentsByCourtType = jobSearchEnrollmentsByCourtType.asImmutable();
     successfulEnrollmentsByCourtType = successfulEnrollmentsByCourtType.asImmutable();
     unsuccessfulEnrollmentsByCourtType = unsuccessfulEnrollmentsByCourtType.asImmutable();
 
     yield put(getEnrollmentsByCourtType.success(id, {
       activeEnrollmentsByCourtType,
       closedEnrollmentsByCourtType,
+      jobSearchEnrollmentsByCourtType,
       successfulEnrollmentsByCourtType,
       unsuccessfulEnrollmentsByCourtType,
     }));
@@ -457,6 +464,7 @@ function* getStatsDataWorker(action :SequenceAction) :Generator<*, *, *> {
   let response :Object = {};
   let referralsByCourtTypeGraphData :Map = fromJS(courtTypeCountObj).asMutable();
   let activeEnrollmentsByCourtType :Map = fromJS(courtTypeCountObj).asMutable();
+  let jobSearchEnrollmentsByCourtType :Map = fromJS(courtTypeCountObj).asMutable();
   let successfulEnrollmentsByCourtType :Map = fromJS(courtTypeCountObj).asMutable();
   let unsuccessfulEnrollmentsByCourtType :Map = fromJS(courtTypeCountObj).asMutable();
   let closedEnrollmentsByCourtType :Map = fromJS(courtTypeCountObj).asMutable();
@@ -524,6 +532,11 @@ function* getStatsDataWorker(action :SequenceAction) :Generator<*, *, *> {
           activeEnrollmentsByCourtType = activeEnrollmentsByCourtType.set(courtCaseType, count + 1);
           totalActiveEnrollmentCount += 1;
         }
+        if (status === ENROLLMENT_STATUSES.JOB_SEARCH) {
+          const count :number = jobSearchEnrollmentsByCourtType.get(courtCaseType, 0);
+          jobSearchEnrollmentsByCourtType = jobSearchEnrollmentsByCourtType
+            .set(courtCaseType, count + 1);
+        }
         if (status === ENROLLMENT_STATUSES.COMPLETED || status === ENROLLMENT_STATUSES.SUCCESSFUL) {
           const count :number = successfulEnrollmentsByCourtType.get(courtCaseType, 0);
           successfulEnrollmentsByCourtType = successfulEnrollmentsByCourtType
@@ -552,6 +565,7 @@ function* getStatsDataWorker(action :SequenceAction) :Generator<*, *, *> {
 
       activeEnrollmentsByCourtType = activeEnrollmentsByCourtType.asImmutable();
       closedEnrollmentsByCourtType = closedEnrollmentsByCourtType.asImmutable();
+      jobSearchEnrollmentsByCourtType = jobSearchEnrollmentsByCourtType.asImmutable();
       successfulEnrollmentsByCourtType = successfulEnrollmentsByCourtType.asImmutable();
       unsuccessfulEnrollmentsByCourtType = unsuccessfulEnrollmentsByCourtType.asImmutable();
 
@@ -587,6 +601,7 @@ function* getStatsDataWorker(action :SequenceAction) :Generator<*, *, *> {
     yield put(getStatsData.success(id, {
       activeEnrollmentsByCourtType,
       closedEnrollmentsByCourtType,
+      jobSearchEnrollmentsByCourtType,
       referralsByCourtTypeGraphData,
       successfulEnrollmentsByCourtType,
       totalActiveEnrollmentCount,
