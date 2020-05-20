@@ -19,12 +19,25 @@ import type { RequestSequence, RequestState } from 'redux-reqseq';
 import EnrollmentsAndStatusByCourtType from './EnrollmentsAndStatusByCourtType';
 import MonthlyHoursAndParticipantsGraph from './MonthlyHoursAndParticipantsGraph';
 import ReferralsByCourtTypeGraph from './ReferralsByCourtTypeGraph';
-import { ActionsWrapper, GraphHeader, SelectsWrapper } from '../styled/GraphStyles';
-import { MONTHS_OPTIONS, YEARS_OPTIONS } from '../consts/TimeConsts';
-import { SHARED, STATE } from '../../../utils/constants/ReduxStateConsts';
-import { GET_MONTHLY_COURT_TYPE_DATA, getMonthlyCourtTypeData } from '../StatsActions';
+import {
+  ActionsWrapper,
+  GraphHeader,
+  InnerHeaderRow,
+  SelectsWrapper,
+  SmallSelectWrapper,
+} from '../styled/GraphStyles';
 import { formatReferralsCourtTypeData } from '../utils/StatsUtils';
 import { requestIsPending } from '../../../utils/RequestStateUtils';
+import { GET_MONTHLY_COURT_TYPE_DATA, getMonthlyCourtTypeData } from '../StatsActions';
+import {
+  ALL_TIME,
+  MONTHLY,
+  MONTHS_OPTIONS,
+  TIME_FRAME_OPTIONS,
+  YEARLY,
+  YEARS_OPTIONS,
+} from '../consts/TimeConsts';
+import { SHARED, STATE } from '../../../utils/constants/ReduxStateConsts';
 
 const { ACTIONS, REQUEST_STATE } = SHARED;
 
@@ -60,17 +73,68 @@ const CourtTypeGraphs = ({
 
   const monthlyDataIsLoading = requestIsPending(requestStates[GET_MONTHLY_COURT_TYPE_DATA]);
   const referralsGraphData :Object[] = formatReferralsCourtTypeData(referralsByCourtTypeGraphData);
+
   const today :DateTime = DateTime.local();
-  const [month, setMonth] = useState(MONTHS_OPTIONS[today.month - 1]);
+  // hours/participants by court type:
+  const [hoursMonth, setHoursMonth] = useState(MONTHS_OPTIONS[today.month - 1]);
   const currentYearOption :Object = YEARS_OPTIONS.find((obj) => obj.value === today.year);
-  const [year, setYear] = useState(currentYearOption);
-  const getNewData = () => {
-    actions.getMonthlyCourtTypeData({ month: month.value, year: year.value });
+  const [hoursYear, setHoursYear] = useState(currentYearOption);
+  const getNewHoursData = () => {
+    actions.getMonthlyCourtTypeData({ month: hoursMonth.value, year: hoursYear.value });
   };
+  // enrollments by court type:
+  const [timeFrame, setTimeFrame] = useState(TIME_FRAME_OPTIONS[2]);
+  const [enrollmentsMonth, setEnrollmentsMonth] = useState(MONTHS_OPTIONS[today.month - 1]);
+  const [enrollmentsYear, setEnrollmentsYear] = useState(currentYearOption);
+  const onTimeFrameSelectChange = (option :Object) => {
+    if (option.value === ALL_TIME) {
+      // actions.getHoursWorkedByWorksite();
+      setTimeFrame(option);
+    }
+    else setTimeFrame(option);
+  };
+  const getNewEnrollmentsData = () => {
+    // actions.getMonthlyCourtTypeData({ month: enrollmentsMonth.value, year: enrollmentsYear.value, timeFrame: timeFrame.value });
+  };
+
   return (
     <CardStack>
       <Card>
-        <GraphHeader>Total Enrollments by Court Type</GraphHeader>
+        <GraphHeader>
+          <InnerHeaderRow>
+            <div>Total Enrollments by Court Type</div>
+            <SmallSelectWrapper>
+              <Select
+                  onChange={onTimeFrameSelectChange}
+                  options={TIME_FRAME_OPTIONS}
+                  placeholder={TIME_FRAME_OPTIONS[2].label} />
+            </SmallSelectWrapper>
+          </InnerHeaderRow>
+          {
+            (timeFrame.value === MONTHLY || timeFrame.value === YEARLY) && (
+              <InnerHeaderRow>
+                <ActionsWrapper>
+                  <SelectsWrapper>
+                    <Select
+                        isDisabled={timeFrame.value === YEARLY}
+                        name="month"
+                        onChange={setEnrollmentsMonth}
+                        options={MONTHS_OPTIONS}
+                        placeholder={MONTHS_OPTIONS[today.month - 1].label} />
+                    <Select
+                        name="year"
+                        onChange={setEnrollmentsYear}
+                        options={YEARS_OPTIONS}
+                        placeholder={today.year} />
+                  </SelectsWrapper>
+                  <IconButton
+                      icon={<FontAwesomeIcon icon={faSearch} />}
+                      onClick={getNewEnrollmentsData} />
+                </ActionsWrapper>
+              </InnerHeaderRow>
+            )
+          }
+        </GraphHeader>
         <CardSegment padding="30px" vertical>
           {
             dataIsLoading
@@ -111,18 +175,18 @@ const CourtTypeGraphs = ({
             <SelectsWrapper>
               <Select
                   name="month"
-                  onChange={setMonth}
+                  onChange={setHoursMonth}
                   options={MONTHS_OPTIONS}
                   placeholder={MONTHS_OPTIONS[today.month - 1].label} />
               <Select
                   name="year"
-                  onChange={setYear}
+                  onChange={setHoursYear}
                   options={YEARS_OPTIONS}
                   placeholder={today.year} />
             </SelectsWrapper>
             <IconButton
                 icon={<FontAwesomeIcon icon={faSearch} />}
-                onClick={getNewData} />
+                onClick={getNewHoursData} />
           </ActionsWrapper>
         </GraphHeader>
         <CardSegment padding="30px" vertical>
