@@ -28,7 +28,13 @@ import {
 } from '../styled/GraphStyles';
 import { formatReferralsCourtTypeData } from '../utils/StatsUtils';
 import { requestIsPending } from '../../../utils/RequestStateUtils';
-import { GET_MONTHLY_COURT_TYPE_DATA, getMonthlyCourtTypeData } from '../StatsActions';
+import {
+  GET_ENROLLMENTS_BY_COURT_TYPE,
+  GET_MONTHLY_COURT_TYPE_DATA,
+  getEnrollmentsByCourtType,
+  getMonthlyCourtTypeData,
+  getStatsData,
+} from '../StatsActions';
 import {
   ALL_TIME,
   MONTHLY,
@@ -43,7 +49,9 @@ const { ACTIONS, REQUEST_STATE } = SHARED;
 
 type Props = {
   actions :{
+    getEnrollmentsByCourtType :RequestSequence;
     getMonthlyCourtTypeData :RequestSequence;
+    getStatsData :RequestSequence;
   };
   activeEnrollmentsByCourtType :Map;
   closedEnrollmentsByCourtType :Map;
@@ -52,7 +60,9 @@ type Props = {
   monthlyTotalParticipantsByCourtType :Map;
   referralsByCourtTypeGraphData :Map;
   requestStates :{
+    GET_ENROLLMENTS_BY_COURT_TYPE :RequestState;
     GET_MONTHLY_COURT_TYPE_DATA :RequestState;
+    // GET_STATS_DATA :RequestState;
   };
   successfulEnrollmentsByCourtType :Map;
   unsuccessfulEnrollmentsByCourtType :Map;
@@ -88,13 +98,17 @@ const CourtTypeGraphs = ({
   const [enrollmentsYear, setEnrollmentsYear] = useState(currentYearOption);
   const onTimeFrameSelectChange = (option :Object) => {
     if (option.value === ALL_TIME) {
-      // actions.getHoursWorkedByWorksite();
+      actions.getStatsData();
       setTimeFrame(option);
     }
     else setTimeFrame(option);
   };
   const getNewEnrollmentsData = () => {
-    // actions.getMonthlyCourtTypeData({ month: enrollmentsMonth.value, year: enrollmentsYear.value, timeFrame: timeFrame.value });
+    actions.getEnrollmentsByCourtType({
+      month: enrollmentsMonth.value,
+      year: enrollmentsYear.value,
+      timeFrame: timeFrame.value
+    });
   };
 
   return (
@@ -137,7 +151,7 @@ const CourtTypeGraphs = ({
         </GraphHeader>
         <CardSegment padding="30px" vertical>
           {
-            dataIsLoading
+            dataIsLoading || requestIsPending(requestStates[GET_ENROLLMENTS_BY_COURT_TYPE])
               ? (
                 <Spinner size="2x" />
               )
@@ -211,6 +225,7 @@ const mapStateToProps = (state :Map) => {
   const stats = state.get(STATE.STATS);
   return {
     requestStates: {
+      [GET_ENROLLMENTS_BY_COURT_TYPE]: stats.getIn([ACTIONS, GET_ENROLLMENTS_BY_COURT_TYPE, REQUEST_STATE]),
       [GET_MONTHLY_COURT_TYPE_DATA]: stats.getIn([ACTIONS, GET_MONTHLY_COURT_TYPE_DATA, REQUEST_STATE]),
     }
   };
@@ -218,7 +233,9 @@ const mapStateToProps = (state :Map) => {
 
 const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
+    getEnrollmentsByCourtType,
     getMonthlyCourtTypeData,
+    getStatsData,
   }, dispatch)
 });
 
