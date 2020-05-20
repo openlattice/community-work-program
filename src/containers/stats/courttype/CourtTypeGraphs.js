@@ -1,11 +1,13 @@
 // @flow
 import React, { useState } from 'react';
+import styled from 'styled-components';
 import { Map } from 'immutable';
 import { DateTime } from 'luxon';
 import {
   Card,
   CardSegment,
   CardStack,
+  Colors,
   IconButton,
   Select,
   Spinner,
@@ -26,6 +28,12 @@ import {
   SelectsWrapper,
   SmallSelectWrapper,
 } from '../styled/GraphStyles';
+import {
+  GraphDescription,
+  KeyItem,
+  KeyItemWrapper,
+  KeySquare,
+} from '../styled/RadialChartStyles';
 import { formatReferralsCourtTypeData } from '../utils/StatsUtils';
 import { requestIsPending } from '../../../utils/RequestStateUtils';
 import {
@@ -44,8 +52,28 @@ import {
   YEARS_OPTIONS,
 } from '../consts/TimeConsts';
 import { SHARED, STATE } from '../../../utils/constants/ReduxStateConsts';
+import { OL } from '../../../core/style/Colors';
 
 const { ACTIONS, REQUEST_STATE } = SHARED;
+const { BLUE_2, PURPLES, YELLOW_1 } = Colors;
+const { PINK01 } = OL;
+
+const STATUSES_PER_BAR = [
+  { status: 'Successful', color: PURPLES[2] },
+  { status: 'Unsuccessful', color: PURPLES[0] },
+  { status: 'Closed', color: BLUE_2 },
+  { status: 'Active', color: PINK01 },
+  { status: 'Job Search', color: YELLOW_1 },
+];
+
+const KeyWrapper = styled.div`
+  display: flex;
+  margin-bottom: 10px;
+`;
+
+const KeyItemWrapperHorizontal = styled(KeyItemWrapper)`
+  margin-right: 20px;
+`;
 
 type Props = {
   actions :{
@@ -63,7 +91,6 @@ type Props = {
   requestStates :{
     GET_ENROLLMENTS_BY_COURT_TYPE :RequestState;
     GET_MONTHLY_COURT_TYPE_DATA :RequestState;
-    // GET_STATS_DATA :RequestState;
   };
   successfulEnrollmentsByCourtType :Map;
   unsuccessfulEnrollmentsByCourtType :Map;
@@ -166,6 +193,22 @@ const CourtTypeGraphs = ({
                     unsuccessfulEnrollmentsByCourtType={unsuccessfulEnrollmentsByCourtType} />
               )
           }
+        </CardSegment>
+        <CardSegment padding="30px" vertical>
+          <KeyWrapper>
+            {
+              STATUSES_PER_BAR.map(({ status, color } :Object) => (
+                <KeyItemWrapperHorizontal key={status}>
+                  <KeySquare color={color} />
+                  <KeyItem>{ status }</KeyItem>
+                </KeyItemWrapperHorizontal>
+              ))
+            }
+          </KeyWrapper>
+          <GraphDescription>
+            Monthly and yearly graphs show all enrollment statuses recorded in that time period. Therefore,
+            enrollments may be counted more than once if the status changed within the time period.
+          </GraphDescription>
         </CardSegment>
       </Card>
       <Card>
