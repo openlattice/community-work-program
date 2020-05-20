@@ -27,8 +27,10 @@ import {
 } from '../../utils/DataUtils';
 import { isDefined } from '../../utils/LangUtils';
 import {
+  GET_ENROLLMENTS_BY_COURT_TYPE,
   GET_MONTHLY_COURT_TYPE_DATA,
   GET_STATS_DATA,
+  getEnrollmentsByCourtType,
   getMonthlyCourtTypeData,
   getStatsData,
 } from './StatsActions';
@@ -36,6 +38,7 @@ import { STATE } from '../../utils/constants/ReduxStateConsts';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { COURT_TYPES_MAP, ENROLLMENT_STATUSES } from '../../core/edm/constants/DataModelConsts';
 import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../utils/Errors';
+import { ALL_TIME, MONTHLY, YEARLY } from './consts/TimeConsts';
 
 const { getEntitySetData } = DataApiActions;
 const { getEntitySetDataWorker } = DataApiSagas;
@@ -284,6 +287,167 @@ function* getMonthlyCourtTypeDataWatcher() :Generator<*, *, *> {
 
 /*
  *
+ * StatsActions.getEnrollmentsByCourtType()
+ *
+ */
+
+function* getEnrollmentsByCourtTypeWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+  if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
+  let response :Object = {};
+  let activeEnrollmentsByCourtType :Map = fromJS(courtTypeCountObj).asMutable();
+  let successfulEnrollmentsByCourtType :Map = fromJS(courtTypeCountObj).asMutable();
+  let unsuccessfulEnrollmentsByCourtType :Map = fromJS(courtTypeCountObj).asMutable();
+  let closedEnrollmentsByCourtType :Map = fromJS(courtTypeCountObj).asMutable();
+
+  try {
+    yield put(getEnrollmentsByCourtType.request(id));
+
+    const { month, timeFrame, year } = value;
+    const app = yield select(getAppFromState);
+    const edm = yield select(getEdmFromState);
+    const enrollmentStatusESID :UUID = getEntitySetIdFromApp(app, ENROLLMENT_STATUS);
+    const effectiveDatePTID :UUID = getPropertyTypeIdFromEdm(edm, EFFECTIVE_DATE);
+    const searchOptions = {
+      entitySetIds: [enrollmentStatusESID],
+      start: 0,
+      maxHits: 10000,
+      constraints: []
+    };
+
+    let searchTerm :string = '';
+
+    if (timeFrame === MONTHLY) {
+      const mmMonth :string = month < 10 ? `0${month}` : month;
+      const firstDateOfMonth :DateTime = DateTime.fromISO(`${year}-${mmMonth}-01`);
+      searchTerm = getUTCDateRangeSearchString(effectiveDatePTID, 'month', firstDateOfMonth);
+    }
+    else if (timeFrame === YEARLY) {
+      const firstDateOfYear :DateTime = DateTime.fromISO(`${year}-01-01`);
+      searchTerm = getUTCDateRangeSearchString(effectiveDatePTID, 'year', firstDateOfYear);
+    }
+    searchOptions.constraints.push({
+      min: 1,
+      constraints: [{
+        searchTerm,
+        fuzzy: false
+      }]
+    });
+    response = yield call(executeSearchWorker, executeSearch({ searchOptions }));
+    if (response.error) throw response.error;
+    const enrollmentStatuses :List = fromJS(response.data.hits);
+    const enrollmentStatusEKIDs :UUID[] = [];
+    const enrollmentStatusByEKID :Map = Map().withMutations((map :Map) => {
+      enrollmentStatuses.forEach((enrollmentStatus :Map) => {
+        const enrollmentStatusEKID :UUID = getEntityKeyId(enrollmentStatus);
+        enrollmentStatusEKIDs.push(enrollmentStatusEKID);
+        map.set(enrollmentStatusEKID, enrollmentStatus);
+      });
+    });
+
+    if (enrollmentStatusEKIDs.length) {
+      const diversionPlanESID :UUID = getEntitySetIdFromApp(app, DIVERSION_PLAN);
+      let searchFilter = {
+        entityKeyIds: enrollmentStatusEKIDs,
+        destinationEntitySetIds: [diversionPlanESID],
+        sourceEntitySetIds: [diversionPlanESID],
+      };
+      response = yield call(
+        searchEntityNeighborsWithFilterWorker,
+        searchEntityNeighborsWithFilter({ entitySetId: enrollmentStatusESID, filter: searchFilter })
+      );
+      if (response.error) throw response.error;
+      const diversionPlanNeighbors :Map = fromJS(response.data);
+      const diversionPlanEKIDs :UUID[] = [];
+      const enrollmentStatusEKIDsByDiversionPlanEKID :Map = Map().withMutations((map :Map) => {
+        diversionPlanNeighbors.forEach((neighborsList :List, enrollmentStatusEKID :UUID) => {
+          const diversionPlanEKID :UUID = getEntityKeyId(getNeighborDetails(neighborsList.get(0)));
+          diversionPlanEKIDs.push(diversionPlanEKID);
+          let enrollmentStatusesForDiversionPlan :List = map.get(diversionPlanEKID, List());
+          enrollmentStatusesForDiversionPlan = enrollmentStatusesForDiversionPlan.push(enrollmentStatusEKID);
+          map.set(diversionPlanEKID, enrollmentStatusesForDiversionPlan);
+        });
+      });
+
+      if (diversionPlanEKIDs.length) {
+        const courtCaseESID :UUID = getEntitySetIdFromApp(app, MANUAL_PRETRIAL_COURT_CASES);
+        searchFilter = {
+          entityKeyIds: diversionPlanEKIDs,
+          destinationEntitySetIds: [courtCaseESID],
+          sourceEntitySetIds: [],
+        };
+        response = yield call(
+          searchEntityNeighborsWithFilterWorker,
+          searchEntityNeighborsWithFilter({ entitySetId: diversionPlanESID, filter: searchFilter })
+        );
+        if (response.error) throw response.error;
+        const courtCaseNeighbors :Map = fromJS(response.data);
+        courtCaseNeighbors.forEach((neighborsList :List, diversionPlanEKID :UUID) => {
+          const courtCase :Map = getNeighborDetails(neighborsList.get(0));
+          const { [COURT_CASE_TYPE]: courtType } = getEntityProperties(courtCase, [COURT_CASE_TYPE]);
+          const enrollmentStatusesForDiversionPlan :List = enrollmentStatusEKIDsByDiversionPlanEKID
+            .get(diversionPlanEKID, List());
+          /*
+            i'll add all enrollment statuses here, but this could be revised to use only the most
+            recent enrollment status, so enrollments (diversionPlans) aren't double counted:
+          */
+          enrollmentStatusesForDiversionPlan.forEach((enrollmentStatusEKID :UUID) => {
+            const enrollmentStatus :Map = enrollmentStatusByEKID.get(enrollmentStatusEKID, Map());
+            const { [STATUS]: status } = getEntityProperties(enrollmentStatus, [STATUS]);
+
+            if (ACTIVE_STATUSES.includes(status)) {
+              const count :number = activeEnrollmentsByCourtType.get(courtType, 0);
+              activeEnrollmentsByCourtType = activeEnrollmentsByCourtType.set(courtType, count + 1);
+            }
+            if (status === ENROLLMENT_STATUSES.COMPLETED || status === ENROLLMENT_STATUSES.SUCCESSFUL) {
+              const count :number = successfulEnrollmentsByCourtType.get(courtType, 0);
+              successfulEnrollmentsByCourtType = successfulEnrollmentsByCourtType
+                .set(courtType, count + 1);
+            }
+            if (status === ENROLLMENT_STATUSES.REMOVED_NONCOMPLIANT || status === ENROLLMENT_STATUSES.UNSUCCESSFUL) {
+              const count :number = unsuccessfulEnrollmentsByCourtType.get(courtType, 0);
+              unsuccessfulEnrollmentsByCourtType = unsuccessfulEnrollmentsByCourtType
+                .set(courtType, count + 1);
+            }
+            if (status === ENROLLMENT_STATUSES.CLOSED) {
+              const count :number = closedEnrollmentsByCourtType.get(courtType, 0);
+              closedEnrollmentsByCourtType = closedEnrollmentsByCourtType
+                .set(courtType, count + 1);
+            }
+          });
+        });
+      }
+    }
+
+    activeEnrollmentsByCourtType = activeEnrollmentsByCourtType.asImmutable();
+    closedEnrollmentsByCourtType = closedEnrollmentsByCourtType.asImmutable();
+    successfulEnrollmentsByCourtType = successfulEnrollmentsByCourtType.asImmutable();
+    unsuccessfulEnrollmentsByCourtType = unsuccessfulEnrollmentsByCourtType.asImmutable();
+
+    yield put(getEnrollmentsByCourtType.success(id, {
+      activeEnrollmentsByCourtType,
+      closedEnrollmentsByCourtType,
+      successfulEnrollmentsByCourtType,
+      unsuccessfulEnrollmentsByCourtType,
+    }));
+  }
+  catch (error) {
+    LOG.error(action.type, error);
+    yield put(getEnrollmentsByCourtType.failure(id, error));
+  }
+  finally {
+    yield put(getEnrollmentsByCourtType.finally(id));
+  }
+}
+
+function* getEnrollmentsByCourtTypeWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(GET_ENROLLMENTS_BY_COURT_TYPE, getEnrollmentsByCourtTypeWorker);
+}
+
+/*
+ *
  * StatsActions.getStatsData()
  *
  */
@@ -449,6 +613,8 @@ function* getStatsDataWatcher() :Generator<*, *, *> {
 }
 
 export {
+  getEnrollmentsByCourtTypeWatcher,
+  getEnrollmentsByCourtTypeWorker,
   getMonthlyCourtTypeDataWatcher,
   getMonthlyCourtTypeDataWorker,
   getStatsDataWatcher,

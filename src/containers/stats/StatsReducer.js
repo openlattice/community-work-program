@@ -4,8 +4,10 @@ import { RequestStates } from 'redux-reqseq';
 import type { SequenceAction } from 'redux-reqseq';
 
 import {
+  GET_ENROLLMENTS_BY_COURT_TYPE,
   GET_MONTHLY_COURT_TYPE_DATA,
   GET_STATS_DATA,
+  getEnrollmentsByCourtType,
   getMonthlyCourtTypeData,
   getStatsData,
 } from './StatsActions';
@@ -50,6 +52,9 @@ const {
 const INITIAL_STATE :Map<*, *> = fromJS({
   [ACTIONS]: {
     [DOWNLOAD_DEMOGRAPHICS_DATA]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [GET_ENROLLMENTS_BY_COURT_TYPE]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [GET_HOURS_WORKED_BY_WORKSITE]: {
@@ -105,6 +110,35 @@ export default function statsReducer(state :Map<*, *> = INITIAL_STATE, action :O
         FAILURE: () => state
           .setIn([ACTIONS, DOWNLOAD_DEMOGRAPHICS_DATA, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, DOWNLOAD_DEMOGRAPHICS_DATA, action.id]),
+      });
+    }
+
+    case getEnrollmentsByCourtType.case(action.type): {
+
+      return getEnrollmentsByCourtType.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, GET_ENROLLMENTS_BY_COURT_TYPE, action.id], action)
+          .setIn([ACTIONS, GET_ENROLLMENTS_BY_COURT_TYPE, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+          const seqAction :SequenceAction = (action :any);
+          const { value } = seqAction;
+          const {
+            activeEnrollmentsByCourtType,
+            closedEnrollmentsByCourtType,
+            successfulEnrollmentsByCourtType,
+            unsuccessfulEnrollmentsByCourtType,
+          } = value;
+          return state
+            .set(ACTIVE_ENROLLMENTS_BY_COURT_TYPE, activeEnrollmentsByCourtType)
+            .set(CLOSED_ENROLLMENTS_BY_COURT_TYPE, closedEnrollmentsByCourtType)
+            .set(SUCCESSFUL_ENROLLMENTS_BY_COURT_TYPE, successfulEnrollmentsByCourtType)
+            .set(UNSUCCESSFUL_ENROLLMENTS_BY_COURT_TYPE, unsuccessfulEnrollmentsByCourtType)
+            .setIn([ACTIONS, GET_ENROLLMENTS_BY_COURT_TYPE, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, GET_ENROLLMENTS_BY_COURT_TYPE, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, GET_ENROLLMENTS_BY_COURT_TYPE, action.id]),
       });
     }
 
