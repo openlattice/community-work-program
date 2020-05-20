@@ -79,7 +79,7 @@ const EnrollmentsAndStatusByCourtType = ({
       { title: 'closed', value: closed },
       { title: 'active', value: active },
       { title: 'job search', value: jobSearch },
-      { title: 'total', value: active + closed + successful + unsuccessful },
+      { title: 'total', value: active + closed + jobSearch + successful + unsuccessful },
     ];
   };
   return (
