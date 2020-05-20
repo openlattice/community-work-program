@@ -23,20 +23,19 @@ import {
   getEntityProperties,
   getEntitySetIdFromApp,
   getNeighborDetails,
+  getNeighborESID,
 } from '../../../utils/DataUtils';
 import { isDefined } from '../../../utils/LangUtils';
 import {
   DOWNLOAD_CHARGES_STATS,
-  GET_ARREST_CHARGE_STATS,
   GET_CHARGES_STATS,
-  GET_COURT_CHARGE_STATS,
+  GET_INDIVIDUAL_CHARGE_TYPE_STATS,
   downloadChargesStats,
-  getArrestChargeStats,
   getChargesStats,
-  getCourtChargeStats,
+  getIndividualChargeTypeStats,
 } from './ChargesStatsActions';
 import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../../utils/Errors';
-import { STATE } from '../../../utils/constants/ReduxStateConsts';
+import { STATE, STATS } from '../../../utils/constants/ReduxStateConsts';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { ARREST_CHARGE_HEADERS, COURT_CHARGE_HEADERS } from '../consts/StatsConsts';
 
@@ -50,8 +49,10 @@ const {
   COURT_CHARGE_LIST,
   DIVERSION_PLAN,
   CHARGE_EVENT,
+  PEOPLE,
 } = APP_TYPE_FQNS;
 const { OL_ID, NAME, LEVEL_STATE } = PROPERTY_TYPE_FQNS;
+const { ARREST_CHARGE_TABLE_DATA, COURT_CHARGE_TABLE_DATA } = STATS;
 const getAppFromState = (state) => state.get(STATE.APP, Map());
 const LOG = new Logger('ChargesStatsSagas');
 
@@ -76,11 +77,13 @@ function* downloadChargesStatsWorker(action :SequenceAction) :Generator<*, *, *>
       if (tableRow.get(ARREST_CHARGE_HEADERS[0])) {
         newDataObj[ARREST_CHARGE_HEADERS[0]] = tableRow.get(ARREST_CHARGE_HEADERS[0]);
         newDataObj[ARREST_CHARGE_HEADERS[1]] = tableRow.get(ARREST_CHARGE_HEADERS[1]);
+        newDataObj[ARREST_CHARGE_HEADERS[2]] = tableRow.get(ARREST_CHARGE_HEADERS[2]);
         fileName = 'Arrest_Charges_Stats';
       }
       if (tableRow.get(COURT_CHARGE_HEADERS[0])) {
         newDataObj[COURT_CHARGE_HEADERS[0]] = tableRow.get(COURT_CHARGE_HEADERS[0]);
         newDataObj[COURT_CHARGE_HEADERS[1]] = tableRow.get(COURT_CHARGE_HEADERS[1]);
+        newDataObj[COURT_CHARGE_HEADERS[2]] = tableRow.get(COURT_CHARGE_HEADERS[2]);
         fileName = 'Court_Charges_Stats';
       }
       csvData.push(newDataObj);
@@ -116,19 +119,20 @@ function* downloadChargesStatsWatcher() :Generator<*, *, *> {
 
 /*
  *
- * ChargesStatsActions.getArrestChargeStats()
+ * ChargesStatsActions.getIndividualChargeTypeStats()
  *
  */
 
-function* getArrestChargeStatsWorker(action :SequenceAction) :Generator<*, *, *> {
+function* getIndividualChargeTypeStatsWorker(action :SequenceAction) :Generator<*, *, *> {
 
-  const { id } = action;
+  const { id, value } = action;
   let response :Object = {};
   const workerResponse :Object = {};
   let arrestChargeTableData :List = List().asMutable();
 
   try {
-    yield put(getArrestChargeStats.request(id));
+    yield put(getIndividualChargeTypeStats.request(id));
+    const { chargeESID, mapInStateToUpdate, tableHeaders } = value;
 
     const app = yield select(getAppFromState);
     const diversionPlanESID :UUID = getEntitySetIdFromApp(app, DIVERSION_PLAN);
@@ -140,28 +144,43 @@ function* getArrestChargeStatsWorker(action :SequenceAction) :Generator<*, *, *>
     diversionPlans.forEach((plan :Map) => diversionPlanEKIDs.push(getEntityKeyId(plan)));
 
     const chargeEventESID :UUID = getEntitySetIdFromApp(app, CHARGE_EVENT);
+    const peopleESID :UUID = getEntitySetIdFromApp(app, PEOPLE);
     let searchFilter :Object = {
       entityKeyIds: diversionPlanEKIDs,
       destinationEntitySetIds: [chargeEventESID],
-      sourceEntitySetIds: [],
+      sourceEntitySetIds: [peopleESID],
     };
     response = yield call(
       searchEntityNeighborsWithFilterWorker,
       searchEntityNeighborsWithFilter({ entitySetId: diversionPlanESID, filter: searchFilter })
     );
     if (response.error) throw response.error;
-    const chargeEventNeighbors :Map = fromJS(response.data);
+    const diversionPlanNeighbors :Map = fromJS(response.data);
 
     const chargeEventEKIDs :UUID[] = [];
-    chargeEventNeighbors.forEach((neighborsList :List) => {
-      neighborsList.forEach((neighbor :Map) => chargeEventEKIDs.push(getEntityKeyId(getNeighborDetails(neighbor))));
+    let diversionPlanEKIDByChargeEventEKID :Map = Map().asMutable();
+    let personEKIDByDiversionPlanEKID :Map = Map().asMutable();
+
+    diversionPlanNeighbors.forEach((neighborsList :List, diversionPlanEKID :UUID) => {
+      const chargeEventNeighbors :List = neighborsList
+        .filter((neighbor :Map) => getNeighborESID(neighbor) === chargeEventESID);
+      chargeEventNeighbors.forEach((chargeEventNeighbor :Map) => {
+        const chargeEventEKID :UUID = getEntityKeyId(getNeighborDetails(chargeEventNeighbor));
+        chargeEventEKIDs.push(chargeEventEKID);
+        diversionPlanEKIDByChargeEventEKID = diversionPlanEKIDByChargeEventEKID
+          .set(chargeEventEKID, diversionPlanEKID);
+      });
+
+      const personNeighbor :Map = neighborsList.find((neighbor :Map) => getNeighborESID(neighbor) === peopleESID);
+      const personEKID :UUID = getEntityKeyId(getNeighborDetails(personNeighbor));
+      personEKIDByDiversionPlanEKID = personEKIDByDiversionPlanEKID.set(diversionPlanEKID, personEKID);
     });
 
-    const arrestChargeListESID :UUID = getEntitySetIdFromApp(app, ARREST_CHARGE_LIST);
+    // const arrestChargeListESID :UUID = getEntitySetIdFromApp(app, ARREST_CHARGE_LIST);
     if (chargeEventESID.length) {
       searchFilter = {
         entityKeyIds: chargeEventEKIDs,
-        destinationEntitySetIds: [arrestChargeListESID],
+        destinationEntitySetIds: [chargeESID],
         sourceEntitySetIds: [],
       };
       response = yield call(
@@ -172,151 +191,102 @@ function* getArrestChargeStatsWorker(action :SequenceAction) :Generator<*, *, *>
       const arrestChargeNeighbors :Map = fromJS(response.data);
 
       let arrestChargeCounts :Map = Map().asMutable();
-      arrestChargeNeighbors.forEach((neighborsList :List, chargeEventEKID :UUID) => {
-        const arrestCharge :Map = getNeighborDetails(neighborsList.get(0));
-        const { [OL_ID]: statuteNumber, [NAME]: chargeName, [LEVEL_STATE]: level } = getEntityProperties(
-          arrestCharge,
-          [OL_ID, NAME, LEVEL_STATE]
-        );
-        const fullChargeString :string = `${statuteNumber} ${chargeName} ${level}`;
-        const arrestChargeCount :number = arrestChargeCounts.get(fullChargeString, 0);
 
-        if (arrestChargeCount !== 0) {
-          const index :Map = arrestChargeTableData
-            .findIndex((map :Map) => map.get(ARREST_CHARGE_HEADERS[0]) === fullChargeString);
-          arrestChargeTableData = arrestChargeTableData.setIn([index, ARREST_CHARGE_HEADERS[1]], arrestChargeCount + 1);
-        }
-        else {
-          arrestChargeTableData = arrestChargeTableData.push(Map({
-            [ARREST_CHARGE_HEADERS[0]]: fullChargeString,
-            [ARREST_CHARGE_HEADERS[1]]: arrestChargeCount + 1,
-            id: `${chargeEventEKID}.${getEntityKeyId(arrestCharge)}`
-          }));
-        }
+      const chargeNamesByPersonDiversionPlan :Map = Map().withMutations((map :Map) => {
 
-        arrestChargeCounts = arrestChargeCounts.set(fullChargeString, arrestChargeCount + 1);
+        arrestChargeNeighbors.forEach((neighborsList :List, chargeEventEKID :UUID) => {
+          const arrestCharge :Map = getNeighborDetails(neighborsList.get(0));
+          const { [OL_ID]: statuteNumber, [NAME]: chargeName, [LEVEL_STATE]: level } = getEntityProperties(
+            arrestCharge,
+            [OL_ID, NAME, LEVEL_STATE]
+          );
+          const fullChargeString :string = `${statuteNumber} ${chargeName} ${level}`;
+          const arrestChargeCount :number = arrestChargeCounts.get(fullChargeString, 0);
+
+          const diversionPlanEKID :UUID = diversionPlanEKIDByChargeEventEKID.get(chargeEventEKID, '');
+          const personEKID :UUID = personEKIDByDiversionPlanEKID.get(diversionPlanEKID, '');
+          map.updateIn([personEKID, diversionPlanEKID], List(), (list) => list.push(fullChargeString));
+
+          if (arrestChargeCount !== 0) {
+            const index :Map = arrestChargeTableData
+              .findIndex((row :Map) => row.get(tableHeaders[0]) === fullChargeString);
+            arrestChargeTableData = arrestChargeTableData
+              .setIn([index, tableHeaders[1]], arrestChargeCount + 1);
+          }
+          else {
+            arrestChargeTableData = arrestChargeTableData.push(Map({
+              [tableHeaders[0]]: fullChargeString,
+              [tableHeaders[1]]: arrestChargeCount + 1,
+              id: `${chargeEventEKID}.${getEntityKeyId(arrestCharge)}`
+            }));
+          }
+
+          arrestChargeCounts = arrestChargeCounts.set(fullChargeString, arrestChargeCount + 1);
+        });
+      });
+
+      let arrestChargeReferralCounts :Map = Map().asMutable();
+
+      chargeNamesByPersonDiversionPlan.forEach((diversionPlanChargesMap :Map) => {
+        let chargeCountsAcrossDiversionPlans :Map = Map().asMutable();
+
+        diversionPlanChargesMap.forEach((chargesList :List) => {
+          let chargeCountsWithinDiversionPlan :Map = Map().asMutable();
+          // some div plans have multiple of the same charge but we only want to count it as 1:
+          chargesList.forEach((charge :string) => {
+            const count = chargeCountsWithinDiversionPlan.get(charge, 0);
+            if (count === 0) {
+              chargeCountsWithinDiversionPlan = chargeCountsWithinDiversionPlan.set(charge, 1);
+            }
+          });
+
+          chargeCountsWithinDiversionPlan.forEach((planCount :number, charge :string) => {
+            const chargeCountAcrossPlans :number = chargeCountsAcrossDiversionPlans.get(charge, 0);
+            chargeCountsAcrossDiversionPlans = chargeCountsAcrossDiversionPlans
+              .set(charge, planCount + chargeCountAcrossPlans);
+          });
+        });
+
+        chargeCountsAcrossDiversionPlans.forEach((totalCountForCharge :number, charge :string) => {
+          if (totalCountForCharge > 1) {
+            const totalReferralCountForCharge :number = arrestChargeReferralCounts.get(charge, 0);
+            arrestChargeReferralCounts = arrestChargeReferralCounts
+              .set(charge, (totalCountForCharge - 1) + totalReferralCountForCharge);
+          }
+        });
+      });
+
+      arrestChargeTableData = arrestChargeTableData.map((tableRow :Map) => {
+        let newTableRow :Map = tableRow;
+        const rowCharge :string = newTableRow.get(tableHeaders[0]);
+
+        if (isDefined(arrestChargeReferralCounts.get(rowCharge))) {
+          const referralCount :number = arrestChargeReferralCounts.get(rowCharge);
+          newTableRow = newTableRow.set(tableHeaders[2], referralCount);
+        }
+        else newTableRow = newTableRow.set(tableHeaders[2], 0);
+        return newTableRow;
       });
     }
 
     arrestChargeTableData = arrestChargeTableData.asImmutable();
     workerResponse.data = arrestChargeTableData;
-    yield put(getArrestChargeStats.success(id, arrestChargeTableData));
+    yield put(getIndividualChargeTypeStats.success(id, { arrestChargeTableData, mapInStateToUpdate }));
   }
   catch (error) {
     workerResponse.error = error;
     LOG.error(action.type, error);
-    yield put(getArrestChargeStats.failure(id, error));
+    yield put(getIndividualChargeTypeStats.failure(id, error));
   }
   finally {
-    yield put(getArrestChargeStats.finally(id));
+    yield put(getIndividualChargeTypeStats.finally(id));
   }
   return workerResponse;
 }
 
-function* getArrestChargeStatsWatcher() :Generator<*, *, *> {
+function* getIndividualChargeTypeStatsWatcher() :Generator<*, *, *> {
 
-  yield takeEvery(GET_ARREST_CHARGE_STATS, getArrestChargeStatsWorker);
-}
-
-/*
- *
- * ChargesStatsActions.getCourtChargeStats()
- *
- */
-
-function* getCourtChargeStatsWorker(action :SequenceAction) :Generator<*, *, *> {
-
-  const { id } = action;
-  let response :Object = {};
-  const workerResponse :Object = {};
-  let courtChargeTableData :List = List().asMutable();
-
-  try {
-    yield put(getCourtChargeStats.request(id));
-
-    const app = yield select(getAppFromState);
-    const diversionPlanESID :UUID = getEntitySetIdFromApp(app, DIVERSION_PLAN);
-
-    response = yield call(getEntitySetDataWorker, getEntitySetData({ entitySetId: diversionPlanESID }));
-    if (response.error) throw response.error;
-    const diversionPlans :List = fromJS(response.data).map((plan :Map) => getNeighborDetails(plan));
-    const diversionPlanEKIDs :UUID[] = [];
-    diversionPlans.forEach((plan :Map) => diversionPlanEKIDs.push(getEntityKeyId(plan)));
-
-    const chargeEventESID :UUID = getEntitySetIdFromApp(app, CHARGE_EVENT);
-    let searchFilter :Object = {
-      entityKeyIds: diversionPlanEKIDs,
-      destinationEntitySetIds: [chargeEventESID],
-      sourceEntitySetIds: [],
-    };
-    response = yield call(
-      searchEntityNeighborsWithFilterWorker,
-      searchEntityNeighborsWithFilter({ entitySetId: diversionPlanESID, filter: searchFilter })
-    );
-    if (response.error) throw response.error;
-    const chargeEventNeighbors :Map = fromJS(response.data);
-
-    const chargeEventEKIDs :UUID[] = [];
-    chargeEventNeighbors.forEach((neighborsList :List) => {
-      neighborsList.forEach((neighbor :Map) => chargeEventEKIDs.push(getEntityKeyId(getNeighborDetails(neighbor))));
-    });
-
-    const courtChargeListESID :UUID = getEntitySetIdFromApp(app, COURT_CHARGE_LIST);
-    if (chargeEventESID.length) {
-      searchFilter = {
-        entityKeyIds: chargeEventEKIDs,
-        destinationEntitySetIds: [courtChargeListESID],
-        sourceEntitySetIds: [],
-      };
-      response = yield call(
-        searchEntityNeighborsWithFilterWorker,
-        searchEntityNeighborsWithFilter({ entitySetId: chargeEventESID, filter: searchFilter })
-      );
-      if (response.error) throw response.error;
-      const courtChargeNeighbors :Map = fromJS(response.data);
-
-      let courtChargeCounts :Map = Map().asMutable();
-      courtChargeNeighbors.forEach((neighborsList :List, chargeEventEKID :UUID) => {
-        const courtCharge :Map = getNeighborDetails(neighborsList.get(0));
-        const { [OL_ID]: statuteNumber, [NAME]: chargeName } = getEntityProperties(courtCharge, [OL_ID, NAME]);
-        const fullChargeString :string = `${statuteNumber} ${chargeName}`;
-        const courtChargeCount :number = courtChargeCounts.get(fullChargeString, 0);
-
-        if (courtChargeCount !== 0) {
-          const index :Map = courtChargeTableData
-            .findIndex((map :Map) => map.get(COURT_CHARGE_HEADERS[0]) === fullChargeString);
-          courtChargeTableData = courtChargeTableData.setIn([index, COURT_CHARGE_HEADERS[1]], courtChargeCount + 1);
-        }
-        else {
-          courtChargeTableData = courtChargeTableData.push(Map({
-            [COURT_CHARGE_HEADERS[0]]: fullChargeString,
-            [COURT_CHARGE_HEADERS[1]]: courtChargeCount + 1,
-            id: `${chargeEventEKID}.${getEntityKeyId(courtCharge)}`
-          }));
-        }
-
-        courtChargeCounts = courtChargeCounts.set(fullChargeString, courtChargeCount + 1);
-      });
-    }
-
-    courtChargeTableData = courtChargeTableData.asImmutable();
-    workerResponse.data = courtChargeTableData;
-    yield put(getCourtChargeStats.success(id, courtChargeTableData));
-  }
-  catch (error) {
-    workerResponse.error = error;
-    LOG.error(action.type, error);
-    yield put(getCourtChargeStats.failure(id, error));
-  }
-  finally {
-    yield put(getCourtChargeStats.finally(id));
-  }
-  return workerResponse;
-}
-
-function* getCourtChargeStatsWatcher() :Generator<*, *, *> {
-
-  yield takeEvery(GET_COURT_CHARGE_STATS, getCourtChargeStatsWorker);
+  yield takeEvery(GET_INDIVIDUAL_CHARGE_TYPE_STATS, getIndividualChargeTypeStatsWorker);
 }
 
 /*
@@ -331,12 +301,25 @@ function* getChargesStatsWorker(action :SequenceAction) :Generator<*, *, *> {
   try {
     yield put(getChargesStats.request(id));
 
+    const app = yield select(getAppFromState);
+    const arrestChargeListESID :UUID = getEntitySetIdFromApp(app, ARREST_CHARGE_LIST);
+    const courtChargeListESID :UUID = getEntitySetIdFromApp(app, COURT_CHARGE_LIST);
+
     const [arrestResponse, courtResponse] = yield all([
-      call(getArrestChargeStatsWorker, getArrestChargeStats()),
-      call(getCourtChargeStatsWorker, getCourtChargeStats()),
+      call(getIndividualChargeTypeStatsWorker, getIndividualChargeTypeStats({
+        chargeESID: arrestChargeListESID,
+        mapInStateToUpdate: ARREST_CHARGE_TABLE_DATA,
+        tableHeaders: ARREST_CHARGE_HEADERS
+      })),
+      call(getIndividualChargeTypeStatsWorker, getIndividualChargeTypeStats({
+        chargeESID: courtChargeListESID,
+        mapInStateToUpdate: COURT_CHARGE_TABLE_DATA,
+        tableHeaders: COURT_CHARGE_HEADERS
+      })),
     ]);
     if (arrestResponse.error) throw arrestResponse.error;
     if (courtResponse.error) throw courtResponse.error;
+
 
     yield put(getChargesStats.success(id));
   }
@@ -357,9 +340,8 @@ function* getChargesStatsWatcher() :Generator<*, *, *> {
 export {
   downloadChargesStatsWatcher,
   downloadChargesStatsWorker,
-  getArrestChargeStatsWatcher,
-  getArrestChargeStatsWorker,
-  getCourtChargeStatsWatcher,
-  getCourtChargeStatsWorker,
   getChargesStatsWatcher,
+  getChargesStatsWorker,
+  getIndividualChargeTypeStatsWatcher,
+  getIndividualChargeTypeStatsWorker,
 };
