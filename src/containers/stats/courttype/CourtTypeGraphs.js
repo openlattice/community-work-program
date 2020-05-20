@@ -59,8 +59,8 @@ const { BLUE_2, PURPLES, YELLOW_1 } = Colors;
 const { PINK01 } = OL;
 
 const STATUSES_PER_BAR = [
-  { status: 'Successful', color: PURPLES[2] },
-  { status: 'Unsuccessful', color: PURPLES[0] },
+  { status: 'Successful/Completed', color: PURPLES[2] },
+  { status: 'Unsuccessful/Noncompliant', color: PURPLES[0] },
   { status: 'Closed', color: BLUE_2 },
   { status: 'Active', color: PINK01 },
   { status: 'Job Search', color: YELLOW_1 },
