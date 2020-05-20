@@ -45,7 +45,6 @@ const ChargesHeadCell = (props :Props) => {
   let icon = faSort;
   if (order === 'asc') icon = faSortUp;
   if (order === 'desc') icon = faSortDown;
-  console.log('order: ', order);
 
   return (
     <HeadCell
