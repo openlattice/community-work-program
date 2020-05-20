@@ -4,9 +4,11 @@ import { RequestStates } from 'redux-reqseq';
 import type { SequenceAction } from 'redux-reqseq';
 
 import {
+  DOWNLOAD_COURT_TYPE_DATA,
   GET_ENROLLMENTS_BY_COURT_TYPE,
   GET_MONTHLY_COURT_TYPE_DATA,
   GET_STATS_DATA,
+  downloadCourtTypeData,
   getEnrollmentsByCourtType,
   getMonthlyCourtTypeData,
   getStatsData,
@@ -99,6 +101,21 @@ const INITIAL_STATE :Map<*, *> = fromJS({
 export default function statsReducer(state :Map<*, *> = INITIAL_STATE, action :Object) :Map<*, *> {
 
   switch (action.type) {
+
+    case downloadCourtTypeData.case(action.type): {
+
+      return downloadCourtTypeData.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, DOWNLOAD_COURT_TYPE_DATA, action.id], action)
+          .setIn([ACTIONS, DOWNLOAD_COURT_TYPE_DATA, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => state
+          .setIn([ACTIONS, DOWNLOAD_COURT_TYPE_DATA, REQUEST_STATE], RequestStates.SUCCESS),
+        FAILURE: () => state
+          .setIn([ACTIONS, DOWNLOAD_COURT_TYPE_DATA, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, DOWNLOAD_COURT_TYPE_DATA, action.id]),
+      });
+    }
 
     case downloadDemographicsData.case(action.type): {
 

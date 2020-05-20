@@ -1,4 +1,6 @@
 // @flow
+import Papa from 'papaparse';
+import FS from 'file-saver';
 import { List, Map, fromJS } from 'immutable';
 import { DateTime } from 'luxon';
 import {
@@ -27,9 +29,11 @@ import {
 } from '../../utils/DataUtils';
 import { isDefined } from '../../utils/LangUtils';
 import {
+  DOWNLOAD_COURT_TYPE_DATA,
   GET_ENROLLMENTS_BY_COURT_TYPE,
   GET_MONTHLY_COURT_TYPE_DATA,
   GET_STATS_DATA,
+  downloadCourtTypeData,
   getEnrollmentsByCourtType,
   getMonthlyCourtTypeData,
   getStatsData,
@@ -82,6 +86,67 @@ const ACTIVE_STATUSES :string[] = [
   ENROLLMENT_STATUSES.AWAITING_CHECKIN,
   ENROLLMENT_STATUSES.AWAITING_ORIENTATION,
 ];
+
+/*
+ *
+ * StatsActions.downloadCourtTypeData()
+ *
+ */
+
+function* downloadCourtTypeDataWorker(action :SequenceAction) :Generator<*, *, *> {
+  const { id, value } = action;
+  if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
+
+  try {
+    yield put(downloadCourtTypeData.request(id));
+
+    const { courtTypeData, fileName } = value;
+    let csvData :Object[] = courtTypeData.map((row :Map) => {
+      const newCSVObject :Object = {};
+      newCSVObject['Court Type'] = row.get('courtType');
+      if (isDefined(row.get('statuses'))) {
+        row.get('statuses').forEach((statusCount :Map) => {
+          newCSVObject[statusCount.get('status')] = statusCount.get('count');
+        });
+      }
+      newCSVObject.Total = row.get('total');
+      return newCSVObject;
+    }).toJS();
+
+    csvData = csvData.sort((row1 :Object, row2 :Object) => {
+      if (row1.Total > row2.Total) return -1;
+      if (row1.Total < row2.Total) return 1;
+      return 0;
+    });
+
+    const countTotal :number = csvData.map((obj :Object) => obj.Total)
+      .reduce((sum :number, count :number) => sum + count);
+    const total = {
+      'Court Type': 'Total for All Court Types',
+      Total: countTotal,
+    };
+    csvData.push(total);
+
+    const csv = Papa.unparse(csvData);
+    const blob = new Blob([csv], {
+      type: 'application/json'
+    });
+    FS.saveAs(blob, fileName.concat('.csv'));
+    yield put(downloadCourtTypeData.success(id));
+  }
+  catch (error) {
+    LOG.error(action.type, error);
+    yield put(downloadCourtTypeData.failure(id, error));
+  }
+  finally {
+    yield put(downloadCourtTypeData.finally(id));
+  }
+}
+
+function* downloadCourtTypeDataWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(DOWNLOAD_COURT_TYPE_DATA, downloadCourtTypeDataWorker);
+}
 
 /*
  *
@@ -628,6 +693,8 @@ function* getStatsDataWatcher() :Generator<*, *, *> {
 }
 
 export {
+  downloadCourtTypeDataWatcher,
+  downloadCourtTypeDataWorker,
   getEnrollmentsByCourtTypeWatcher,
   getEnrollmentsByCourtTypeWorker,
   getMonthlyCourtTypeDataWatcher,
