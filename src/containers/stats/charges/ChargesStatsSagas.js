@@ -1,4 +1,6 @@
 // @flow
+import Papa from 'papaparse';
+import FS from 'file-saver';
 import { List, Map, fromJS } from 'immutable';
 import {
   all,
@@ -22,14 +24,18 @@ import {
   getEntitySetIdFromApp,
   getNeighborDetails,
 } from '../../../utils/DataUtils';
+import { isDefined } from '../../../utils/LangUtils';
 import {
+  DOWNLOAD_CHARGES_STATS,
   GET_ARREST_CHARGE_STATS,
   GET_CHARGES_STATS,
   GET_COURT_CHARGE_STATS,
+  downloadChargesStats,
   getArrestChargeStats,
   getChargesStats,
   getCourtChargeStats,
 } from './ChargesStatsActions';
+import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../../utils/Errors';
 import { STATE } from '../../../utils/constants/ReduxStateConsts';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { ARREST_CHARGE_HEADERS, COURT_CHARGE_HEADERS } from '../consts/StatsConsts';
@@ -48,6 +54,65 @@ const {
 const { OL_ID, NAME, LEVEL_STATE } = PROPERTY_TYPE_FQNS;
 const getAppFromState = (state) => state.get(STATE.APP, Map());
 const LOG = new Logger('ChargesStatsSagas');
+
+/*
+ *
+ * ChargesStatsActions.downloadChargesStats()
+ *
+ */
+
+function* downloadChargesStatsWorker(action :SequenceAction) :Generator<*, *, *> {
+  const { id, value } = action;
+  if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
+
+  try {
+    yield put(downloadChargesStats.request(id));
+    const chargesTableData :List = value;
+
+    let fileName :string = '';
+    let csvData :Object[] = [];
+    chargesTableData.forEach((tableRow :Map) => {
+      const newDataObj :Object = {};
+      if (tableRow.get(ARREST_CHARGE_HEADERS[0])) {
+        newDataObj[ARREST_CHARGE_HEADERS[0]] = tableRow.get(ARREST_CHARGE_HEADERS[0]);
+        newDataObj[ARREST_CHARGE_HEADERS[1]] = tableRow.get(ARREST_CHARGE_HEADERS[1]);
+        fileName = 'Arrest_Charges_Stats';
+      }
+      if (tableRow.get(COURT_CHARGE_HEADERS[0])) {
+        newDataObj[COURT_CHARGE_HEADERS[0]] = tableRow.get(COURT_CHARGE_HEADERS[0]);
+        newDataObj[COURT_CHARGE_HEADERS[1]] = tableRow.get(COURT_CHARGE_HEADERS[1]);
+        fileName = 'Court_Charges_Stats';
+      }
+      csvData.push(newDataObj);
+    });
+
+    csvData = csvData.sort((row1 :Object, row2 :Object) => {
+      // 1st position value is the same in both arrays
+      if (row1[COURT_CHARGE_HEADERS[1]] < row2[COURT_CHARGE_HEADERS[1]]) return -1;
+      if (row1[COURT_CHARGE_HEADERS[1]] > row2[COURT_CHARGE_HEADERS[1]]) return 1;
+      return 0;
+    }).reverse();
+
+    const csv = Papa.unparse(csvData);
+    const blob = new Blob([csv], {
+      type: 'application/json'
+    });
+    FS.saveAs(blob, fileName.concat('.csv'));
+    yield put(downloadChargesStats.success(id));
+  }
+  catch (error) {
+    LOG.error(action.type, error);
+    yield put(downloadChargesStats.failure(id, error));
+  }
+  finally {
+    yield put(downloadChargesStats.finally(id));
+  }
+}
+
+function* downloadChargesStatsWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(DOWNLOAD_CHARGES_STATS, downloadChargesStatsWorker);
+}
 
 /*
  *
@@ -290,6 +355,8 @@ function* getChargesStatsWatcher() :Generator<*, *, *> {
 }
 
 export {
+  downloadChargesStatsWatcher,
+  downloadChargesStatsWorker,
   getArrestChargeStatsWatcher,
   getArrestChargeStatsWorker,
   getCourtChargeStatsWatcher,

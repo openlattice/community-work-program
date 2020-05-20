@@ -24,9 +24,11 @@ import {
   getParticipantsDemographics,
 } from './demographics/DemographicsActions';
 import {
+  DOWNLOAD_CHARGES_STATS,
   GET_ARREST_CHARGE_STATS,
   GET_CHARGES_STATS,
   GET_COURT_CHARGE_STATS,
+  downloadChargesStats,
   getArrestChargeStats,
   getChargesStats,
   getCourtChargeStats,
@@ -59,6 +61,9 @@ const {
 
 const INITIAL_STATE :Map<*, *> = fromJS({
   [ACTIONS]: {
+    [DOWNLOAD_CHARGES_STATS]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
     [DOWNLOAD_DEMOGRAPHICS_DATA]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
@@ -113,6 +118,21 @@ const INITIAL_STATE :Map<*, *> = fromJS({
 export default function statsReducer(state :Map<*, *> = INITIAL_STATE, action :Object) :Map<*, *> {
 
   switch (action.type) {
+
+    case downloadChargesStats.case(action.type): {
+
+      return downloadChargesStats.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, DOWNLOAD_CHARGES_STATS, action.id], action)
+          .setIn([ACTIONS, DOWNLOAD_CHARGES_STATS, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => state
+          .setIn([ACTIONS, DOWNLOAD_CHARGES_STATS, REQUEST_STATE], RequestStates.SUCCESS),
+        FAILURE: () => state
+          .setIn([ACTIONS, DOWNLOAD_CHARGES_STATS, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, DOWNLOAD_CHARGES_STATS, action.id]),
+      });
+    }
 
     case downloadDemographicsData.case(action.type): {
 
