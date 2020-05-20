@@ -58,9 +58,8 @@ export default function* sagas() :Generator<*, *, *> {
 
     // ChargesStatsSagas
     fork(ChargesStatsSagas.downloadChargesStatsWatcher),
-    fork(ChargesStatsSagas.getArrestChargeStatsWatcher),
     fork(ChargesStatsSagas.getChargesStatsWatcher),
-    fork(ChargesStatsSagas.getCourtChargeStatsWatcher),
+    fork(ChargesStatsSagas.getIndividualChargeTypeStatsWatcher),
 
     // DataSagas
     fork(DataSagas.createOrReplaceAssociationWatcher),

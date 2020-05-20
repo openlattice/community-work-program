@@ -25,13 +25,11 @@ import {
 } from './demographics/DemographicsActions';
 import {
   DOWNLOAD_CHARGES_STATS,
-  GET_ARREST_CHARGE_STATS,
   GET_CHARGES_STATS,
-  GET_COURT_CHARGE_STATS,
+  GET_INDIVIDUAL_CHARGE_TYPE_STATS,
   downloadChargesStats,
-  getArrestChargeStats,
   getChargesStats,
-  getCourtChargeStats,
+  getIndividualChargeTypeStats,
 } from './charges/ChargesStatsActions';
 import { SHARED, STATS } from '../../utils/constants/ReduxStateConsts';
 
@@ -67,13 +65,10 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     [DOWNLOAD_DEMOGRAPHICS_DATA]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
-    [GET_ARREST_CHARGE_STATS]: {
-      [REQUEST_STATE]: RequestStates.STANDBY
-    },
     [GET_CHARGES_STATS]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
-    [GET_COURT_CHARGE_STATS]: {
+    [GET_INDIVIDUAL_CHARGE_TYPE_STATS]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [GET_HOURS_WORKED_BY_WORKSITE]: {
@@ -149,23 +144,24 @@ export default function statsReducer(state :Map<*, *> = INITIAL_STATE, action :O
       });
     }
 
-    case getArrestChargeStats.case(action.type): {
+    case getIndividualChargeTypeStats.case(action.type): {
 
-      return getArrestChargeStats.reducer(state, action, {
+      return getIndividualChargeTypeStats.reducer(state, action, {
 
         REQUEST: () => state
-          .setIn([ACTIONS, GET_ARREST_CHARGE_STATS, action.id], action)
-          .setIn([ACTIONS, GET_ARREST_CHARGE_STATS, REQUEST_STATE], RequestStates.PENDING),
+          .setIn([ACTIONS, GET_INDIVIDUAL_CHARGE_TYPE_STATS, action.id], action)
+          .setIn([ACTIONS, GET_INDIVIDUAL_CHARGE_TYPE_STATS, REQUEST_STATE], RequestStates.PENDING),
         SUCCESS: () => {
           const seqAction :SequenceAction = (action :any);
-          const arrestChargeTableData = seqAction.value;
+          const { value } = seqAction;
+          const { arrestChargeTableData, mapInStateToUpdate } = value;
           return state
-            .set(ARREST_CHARGE_TABLE_DATA, arrestChargeTableData)
-            .setIn([ACTIONS, GET_ARREST_CHARGE_STATS, REQUEST_STATE], RequestStates.SUCCESS);
+            .set(mapInStateToUpdate, arrestChargeTableData)
+            .setIn([ACTIONS, GET_INDIVIDUAL_CHARGE_TYPE_STATS, REQUEST_STATE], RequestStates.SUCCESS);
         },
         FAILURE: () => state
-          .setIn([ACTIONS, GET_ARREST_CHARGE_STATS, REQUEST_STATE], RequestStates.FAILURE),
-        FINALLY: () => state.deleteIn([ACTIONS, GET_ARREST_CHARGE_STATS, action.id]),
+          .setIn([ACTIONS, GET_INDIVIDUAL_CHARGE_TYPE_STATS, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, GET_INDIVIDUAL_CHARGE_TYPE_STATS, action.id]),
       });
     }
 
@@ -181,26 +177,6 @@ export default function statsReducer(state :Map<*, *> = INITIAL_STATE, action :O
         FAILURE: () => state
           .setIn([ACTIONS, GET_CHARGES_STATS, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, GET_CHARGES_STATS, action.id]),
-      });
-    }
-
-    case getCourtChargeStats.case(action.type): {
-
-      return getCourtChargeStats.reducer(state, action, {
-
-        REQUEST: () => state
-          .setIn([ACTIONS, GET_COURT_CHARGE_STATS, action.id], action)
-          .setIn([ACTIONS, GET_COURT_CHARGE_STATS, REQUEST_STATE], RequestStates.PENDING),
-        SUCCESS: () => {
-          const seqAction :SequenceAction = (action :any);
-          const courtChargeTableData = seqAction.value;
-          return state
-            .set(COURT_CHARGE_TABLE_DATA, courtChargeTableData)
-            .setIn([ACTIONS, GET_COURT_CHARGE_STATS, REQUEST_STATE], RequestStates.SUCCESS);
-        },
-        FAILURE: () => state
-          .setIn([ACTIONS, GET_COURT_CHARGE_STATS, REQUEST_STATE], RequestStates.FAILURE),
-        FINALLY: () => state.deleteIn([ACTIONS, GET_COURT_CHARGE_STATS, action.id]),
       });
     }
 
