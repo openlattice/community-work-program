@@ -1,6 +1,7 @@
 // @flow
 import Papa from 'papaparse';
 import FS from 'file-saver';
+import isFunction from 'lodash/isFunction';
 import { List, Map, fromJS } from 'immutable';
 import { DateTime } from 'luxon';
 import {
@@ -38,6 +39,7 @@ import {
   getMonthlyCourtTypeData,
   getStatsData,
 } from './StatsActions';
+import { DOWNLOAD_CONSTS } from './consts/StatsConsts';
 import { STATE } from '../../utils/constants/ReduxStateConsts';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { COURT_TYPES_MAP, ENROLLMENT_STATUSES } from '../../core/edm/constants/DataModelConsts';
@@ -100,16 +102,18 @@ function* downloadCourtTypeDataWorker(action :SequenceAction) :Generator<*, *, *
   try {
     yield put(downloadCourtTypeData.request(id));
 
-    const { courtTypeData, fileName } = value;
+    const { courtTypeData, fileName, getBottomRow } = value;
     let csvData :Object[] = courtTypeData.map((row :Map) => {
       const newCSVObject :Object = {};
-      newCSVObject['Court Type'] = row.get('courtType');
-      if (isDefined(row.get('statuses'))) {
-        row.get('statuses').forEach((statusCount :Map) => {
-          newCSVObject[statusCount.get('status')] = statusCount.get('count');
+      newCSVObject['Court Type'] = row.get(DOWNLOAD_CONSTS.COURT_TYPE);
+
+      if (isDefined(row.get(DOWNLOAD_CONSTS.STATUSES))) {
+        row.get(DOWNLOAD_CONSTS.STATUSES).forEach((statusCount :Map) => {
+          newCSVObject[statusCount.get(DOWNLOAD_CONSTS.STATUS)] = statusCount.get(DOWNLOAD_CONSTS.COUNT);
         });
       }
-      newCSVObject.Total = row.get('total');
+
+      newCSVObject.Total = row.get(DOWNLOAD_CONSTS.TOTAL);
       return newCSVObject;
     }).toJS();
 
@@ -119,13 +123,19 @@ function* downloadCourtTypeDataWorker(action :SequenceAction) :Generator<*, *, *
       return 0;
     });
 
-    const countTotal :number = csvData.map((obj :Object) => obj.Total)
-      .reduce((sum :number, count :number) => sum + count);
-    const total = {
-      'Court Type': 'Total for All Court Types',
-      Total: countTotal,
-    };
-    csvData.push(total);
+    if (isFunction(getBottomRow)) {
+      const total = getBottomRow(csvData);
+      csvData.push(total);
+    }
+    else {
+      const countTotal :number = csvData.map((obj :Object) => obj.Total)
+        .reduce((sum :number, count :number) => sum + count);
+      const total = {
+        'Court Type': 'Total for All Court Types',
+        Total: countTotal,
+      };
+      csvData.push(total);
+    }
 
     const csv = Papa.unparse(csvData);
     const blob = new Blob([csv], {
