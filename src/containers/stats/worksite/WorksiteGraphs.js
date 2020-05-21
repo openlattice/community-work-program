@@ -39,7 +39,7 @@ import {
   getHoursWorkedByWorksite,
   getMonthlyParticipantsByWorksite
 } from './WorksiteStatsActions';
-import { formatWorksiteHoursDataForDownload } from '../utils/StatsUtils';
+import { formatWorksiteHoursDataForDownload, formatWorksiteParticipantsDataForDownload } from '../utils/StatsUtils';
 import { requestIsPending } from '../../../utils/RequestStateUtils';
 import { SHARED, STATE, STATS } from '../../../utils/constants/ReduxStateConsts';
 import {
@@ -133,6 +133,17 @@ const WorksiteGraphs = ({
     });
   };
 
+  const downloadParticipantsByWorksite = () => {
+    const formattedParticipantsData = formatWorksiteParticipantsDataForDownload(participantsByWorksite);
+    /* eslint-disable-next-line */
+    let fileName :string = `CWP_Participant_Names_by_Worksite_${MONTHS_OPTIONS[participantsMonth.value - 1].label}_${participantsYear.value}`;
+    actions.downloadWorksiteStatsData({
+      getBottomRow: () => {},
+      fileName,
+      worksiteData: formattedParticipantsData,
+    });
+  };
+
   return (
     <CardStack>
       <Card>
@@ -192,7 +203,14 @@ const WorksiteGraphs = ({
       </Card>
       <Card>
         <GraphHeader>
-          <div>Participants by Work Site, Monthly</div>
+          <InnerHeaderRow>
+            <div>Participants by Work Site, Monthly</div>
+            <Button
+                isLoading={requestIsPending(requestStates[DOWNLOAD_WORKSITE_STATS_DATA])}
+                onClick={downloadParticipantsByWorksite}>
+              Download
+            </Button>
+          </InnerHeaderRow>
           <ActionsWrapper>
             <SelectsWrapper>
               <Select
