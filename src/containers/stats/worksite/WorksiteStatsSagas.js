@@ -91,6 +91,9 @@ function* downloadWorksiteStatsDataWorker(action :SequenceAction) :Generator<*, 
       const newCSVObject :Object = {};
       newCSVObject['Work Site'] = row.get(DOWNLOAD_CONSTS.WORKSITE);
       if (isDefined(row.get(DOWNLOAD_CONSTS.TOTAL))) newCSVObject.Total = row.get(DOWNLOAD_CONSTS.TOTAL);
+      if (isDefined(row.get(DOWNLOAD_CONSTS.PARTICIPANTS))) {
+        newCSVObject.Participants = row.get(DOWNLOAD_CONSTS.PARTICIPANTS);
+      }
       return newCSVObject;
     }).toJS();
 
@@ -102,7 +105,7 @@ function* downloadWorksiteStatsDataWorker(action :SequenceAction) :Generator<*, 
 
     if (isFunction(getBottomRow)) {
       const total = getBottomRow(csvData);
-      csvData.push(total);
+      if (isDefined(total)) csvData.push(total);
     }
     else {
       const countTotal :number = csvData.map((obj :Object) => obj.Total)
