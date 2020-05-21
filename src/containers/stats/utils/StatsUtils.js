@@ -9,9 +9,9 @@ import { ENROLLMENT_STATUSES } from '../../../core/edm/constants/DataModelConsts
 const {
   COUNT,
   COURT_TYPE,
-  STATUS,
   STATUSES,
   TOTAL,
+  TOTAL_FOR_ALL_COURT_TYPES,
 } = DOWNLOAD_CONSTS;
 
 const sortGraphData = (graphData :Object[]) => (
@@ -116,13 +116,43 @@ const getBottomRowForEnrollments = (csvData :Object[]) => {
     .reduce((sum :number, count :number) => sum + count);
   const countTotal :number = activeTotal + closedTotal + jobSearchTotal + successfulTotal + unsuccessfulTotal;
   return {
-    'Court Type': 'Total for All Court Types',
+    'Court Type': TOTAL_FOR_ALL_COURT_TYPES,
     [ENROLLMENT_STATUSES.ACTIVE]: activeTotal,
     [ENROLLMENT_STATUSES.CLOSED]: closedTotal,
     [ENROLLMENT_STATUSES.JOB_SEARCH]: jobSearchTotal,
     [ENROLLMENT_STATUSES.SUCCESSFUL]: successfulTotal,
     [ENROLLMENT_STATUSES.UNSUCCESSFUL]: unsuccessfulTotal,
     Total: countTotal,
+  };
+};
+
+const formatParticipantsAndHoursDataForDownload = (
+  monthlyHoursWorkedByCourtType :Map,
+  monthlyTotalParticipantsByCourtType :Map,
+) :List => {
+
+  const formattedData :List = List().withMutations((list :List) => {
+    monthlyTotalParticipantsByCourtType.forEach((participantsCount :number, courtType :string) => {
+      const hoursCount :number = monthlyHoursWorkedByCourtType.get(courtType);
+      list.push(fromJS({
+        [COURT_TYPE]: courtType,
+        Participants: participantsCount,
+        Hours: hoursCount,
+      }));
+    });
+  });
+  return formattedData;
+};
+
+const getBottomRowForParticipantsAndHours = (csvData :Object[]) => {
+  const participantsTotal :number = csvData.map((row :Object) => row.Participants)
+    .reduce((sum :number, count :number) => sum + count);
+  const hoursTotal :number = csvData.map((row :Object) => row.Hours)
+    .reduce((sum :number, count :number) => sum + count);
+  return {
+    'Court Type': TOTAL_FOR_ALL_COURT_TYPES,
+    Participants: participantsTotal,
+    Hours: hoursTotal,
   };
 };
 
@@ -199,12 +229,14 @@ const getListForRadialChartKey = (chartData :Object[], valuesNotFound :string[])
 };
 
 export {
-  formatEnrollmentsDataForDownload,
   formatEnrollmentStatusPeopleData,
+  formatEnrollmentsDataForDownload,
   formatHoursByWorksiteData,
   formatMonthlyHoursAndParticipantsData,
+  formatParticipantsAndHoursDataForDownload,
   formatRadialChartData,
   formatReferralsCourtTypeData,
   getBottomRowForEnrollments,
+  getBottomRowForParticipantsAndHours,
   getListForRadialChartKey,
 };

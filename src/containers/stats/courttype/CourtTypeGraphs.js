@@ -1,7 +1,7 @@
 // @flow
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import { Map, fromJS } from 'immutable';
+import { List, Map, fromJS } from 'immutable';
 import { DateTime } from 'luxon';
 import {
   Button,
@@ -37,8 +37,10 @@ import {
 } from '../styled/RadialChartStyles';
 import {
   formatEnrollmentsDataForDownload,
+  formatParticipantsAndHoursDataForDownload,
   formatReferralsCourtTypeData,
   getBottomRowForEnrollments,
+  getBottomRowForParticipantsAndHours,
 } from '../utils/StatsUtils';
 import { requestIsPending } from '../../../utils/RequestStateUtils';
 import {
@@ -89,7 +91,6 @@ const HeaderActionsWrapper = styled.div`
   grid-template-columns: 150px 109px;
   grid-gap: 0 10px;
 `;
-
 
 type Props = {
   actions :{
@@ -167,7 +168,7 @@ const CourtTypeGraphs = ({
   };
 
   const downloadEnrollmentsData = () => {
-    const formattedEnrollmentsData = formatEnrollmentsDataForDownload(
+    const formattedEnrollmentsData :List = formatEnrollmentsDataForDownload(
       activeEnrollmentsByCourtType,
       closedEnrollmentsByCourtType,
       jobSearchEnrollmentsByCourtType,
@@ -183,6 +184,20 @@ const CourtTypeGraphs = ({
       courtTypeData: formattedEnrollmentsData,
       fileName,
       getBottomRow: getBottomRowForEnrollments,
+    });
+  };
+
+  const downloadParticipantsAndHoursData = () => {
+    const formattedParticipantsAndHoursData :List = formatParticipantsAndHoursDataForDownload(
+      monthlyHoursWorkedByCourtType,
+      monthlyTotalParticipantsByCourtType,
+    );
+    /* eslint-disable-next-line */
+    const fileName :string = `CWP_Participants_and_Hours_by_Court_Type_${MONTHS_OPTIONS[hoursMonth.value - 1].label}_${hoursYear.value}`;
+    actions.downloadCourtTypeData({
+      courtTypeData: formattedParticipantsAndHoursData,
+      fileName,
+      getBottomRow: getBottomRowForParticipantsAndHours,
     });
   };
 
@@ -290,7 +305,14 @@ const CourtTypeGraphs = ({
       </Card>
       <Card>
         <GraphHeader>
-          <div>Number of Participants and Hours Worked by Court Type, Monthly</div>
+          <InnerHeaderRow>
+            <div>Number of Participants and Hours Worked by Court Type, Monthly</div>
+            <Button
+                isLoading={requestIsPending(requestStates[DOWNLOAD_COURT_TYPE_DATA])}
+                onClick={downloadParticipantsAndHoursData}>
+              Download
+            </Button>
+          </InnerHeaderRow>
           <ActionsWrapper>
             <SelectsWrapper>
               <Select
