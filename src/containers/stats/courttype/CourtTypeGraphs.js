@@ -333,7 +333,7 @@ const CourtTypeGraphs = ({
         </GraphHeader>
         <CardSegment padding="30px" vertical>
           {
-            (dataIsLoading || monthlyDataIsLoading)
+            monthlyDataIsLoading
               ? (
                 <Spinner size="2x" />
               )
