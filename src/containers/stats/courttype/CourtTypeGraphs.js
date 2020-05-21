@@ -21,6 +21,7 @@ import type { RequestSequence, RequestState } from 'redux-reqseq';
 
 import EnrollmentsAndStatusByCourtType from './EnrollmentsAndStatusByCourtType';
 import MonthlyHoursAndParticipantsGraph from './MonthlyHoursAndParticipantsGraph';
+import MonthlyParticipantsByCourtType from './MonthlyParticipantsByCourtType';
 import ReferralsByCourtTypeGraph from './ReferralsByCourtTypeGraph';
 import {
   ActionsWrapper,
@@ -340,6 +341,7 @@ const CourtTypeGraphs = ({
           }
         </CardSegment>
       </Card>
+      <MonthlyParticipantsByCourtType />
     </CardStack>
   );
 };
