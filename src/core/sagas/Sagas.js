@@ -128,6 +128,7 @@ export default function* sagas() :Generator<*, *, *> {
     fork(StatsSagas.getStatsDataWatcher),
 
     // WorksiteStatsSagas
+    fork(WorksiteStatsSagas.downloadWorksiteStatsDataWatcher),
     fork(WorksiteStatsSagas.getCheckInNeighborsWatcher),
     fork(WorksiteStatsSagas.getHoursWorkedByWorksiteWatcher),
     fork(WorksiteStatsSagas.getMonthlyParticipantsByWorksiteWatcher),
