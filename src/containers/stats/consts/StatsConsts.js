@@ -40,6 +40,7 @@ const ETHNICITY_ALIASES :Object = {
 const DOWNLOAD_CONSTS :Object = {
   COUNT: 'count',
   COURT_TYPE: 'courtType',
+  PARTICIPANTS: 'participants',
   STATUS: 'status',
   STATUSES: 'statuses',
   TOTAL: 'total',
