@@ -508,8 +508,11 @@ function* getMonthlyParticipantsByCourtTypeWorker(action :SequenceAction) :Gener
           const personName :string = personNameByPersonEKID.get(personEKID, '');
           const hours :number = hoursByCheckInEKID.get(checkInEKID, 0);
           if (isDefined(monthlyParticipantsByCourtType.get(courtType))) {
-            const listOfParticipantsAndTheirHours :List = monthlyParticipantsByCourtType.get(courtType, List())
-              .push(fromJS({ personName, hours }));
+            let listOfParticipantsAndTheirHours :List = monthlyParticipantsByCourtType.get(courtType, List());
+            if (!listOfParticipantsAndTheirHours
+              .find((participantMap :Map) => participantMap.get('personName') === personName)) {
+              listOfParticipantsAndTheirHours = listOfParticipantsAndTheirHours.push(fromJS({ personName, hours }));
+            }
             monthlyParticipantsByCourtType = monthlyParticipantsByCourtType
               .set(courtType, listOfParticipantsAndTheirHours);
           }
