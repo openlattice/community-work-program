@@ -28,11 +28,8 @@ import WorksiteGraphs from './worksite/WorksiteGraphs';
 import LogoLoader from '../../components/LogoLoader';
 import { ContainerInnerWrapper, ContainerOuterWrapper } from '../../components/Layout';
 import { reduceRequestStates, requestIsPending } from '../../utils/RequestStateUtils';
-import {
-  GET_STATS_DATA,
-  getMonthlyCourtTypeData,
-  getStatsData,
-} from './StatsActions';
+import { GET_STATS_DATA, getStatsData } from './StatsActions';
+import { getMonthlyCourtTypeData } from './courttype/CourtTypeActions';
 import { GET_WORKSITE_STATS_DATA, getWorksiteStatsData } from './worksite/WorksiteStatsActions';
 import { GET_PARTICIPANTS_DEMOGRAPHICS, getParticipantsDemographics } from './demographics/DemographicsActions';
 import { GET_CHARGES_STATS, getChargesStats } from './charges/ChargesStatsActions';

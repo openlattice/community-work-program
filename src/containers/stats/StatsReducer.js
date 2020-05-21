@@ -3,16 +3,15 @@ import { List, Map, fromJS } from 'immutable';
 import { RequestStates } from 'redux-reqseq';
 import type { SequenceAction } from 'redux-reqseq';
 
+import { GET_STATS_DATA, getStatsData } from './StatsActions';
 import {
   DOWNLOAD_COURT_TYPE_DATA,
   GET_ENROLLMENTS_BY_COURT_TYPE,
   GET_MONTHLY_COURT_TYPE_DATA,
-  GET_STATS_DATA,
   downloadCourtTypeData,
   getEnrollmentsByCourtType,
   getMonthlyCourtTypeData,
-  getStatsData,
-} from './StatsActions';
+} from './courttype/CourtTypeActions';
 import {
   DOWNLOAD_WORKSITE_STATS_DATA,
   GET_HOURS_WORKED_BY_WORKSITE,

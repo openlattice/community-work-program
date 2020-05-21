@@ -51,8 +51,8 @@ import {
   downloadCourtTypeData,
   getEnrollmentsByCourtType,
   getMonthlyCourtTypeData,
-  getStatsData,
-} from '../StatsActions';
+} from './CourtTypeActions';
+import { getStatsData } from '../StatsActions';
 import {
   ALL_TIME,
   MONTHLY,
