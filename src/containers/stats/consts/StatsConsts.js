@@ -37,7 +37,16 @@ const ETHNICITY_ALIASES :Object = {
   [NOT_HISPANIC_OR_LATINO]: ['NH', 'nonhispanic']
 };
 
+const DOWNLOAD_CONSTS :Object = {
+  COUNT: 'count',
+  COURT_TYPE: 'courtType',
+  STATUS: 'status',
+  STATUSES: 'statuses',
+  TOTAL: 'total',
+};
+
 export {
+  DOWNLOAD_CONSTS,
   ETHNICITY_ALIASES,
   RACE_ALIASES,
   SCREEN_VIEWS,
