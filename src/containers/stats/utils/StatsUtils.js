@@ -3,6 +3,16 @@ import { List, Map, fromJS } from 'immutable';
 
 import { isDefined } from '../../../utils/LangUtils';
 import { RADIAL_CHART_COLORS } from '../consts/ColorConsts';
+import { DOWNLOAD_CONSTS } from '../consts/StatsConsts';
+import { ENROLLMENT_STATUSES } from '../../../core/edm/constants/DataModelConsts';
+
+const {
+  COUNT,
+  COURT_TYPE,
+  STATUS,
+  STATUSES,
+  TOTAL,
+} = DOWNLOAD_CONSTS;
 
 const sortGraphData = (graphData :Object[]) => (
   graphData.sort((obj1 :Object, obj2 :Object) => {
@@ -10,6 +20,8 @@ const sortGraphData = (graphData :Object[]) => (
     if (obj1.x > obj2.x) return 1;
     return 0;
   }));
+
+// Court Type:
 
 const formatReferralsCourtTypeData = (referralsByCourtTypeGraphData :Map) :Object[] => {
   const graphData :Object[] = [];
@@ -49,6 +61,73 @@ const formatMonthlyHoursAndParticipantsData = (
   return { hoursGraphData, participantsGraphData };
 };
 
+const formatEnrollmentsDataForDownload = (
+  activeEnrollmentsByCourtType :Map,
+  closedEnrollmentsByCourtType :Map,
+  jobSearchEnrollmentsByCourtType :Map,
+  successfulEnrollmentsByCourtType :Map,
+  unsuccessfulEnrollmentsByCourtType :Map,
+) :List => {
+
+  let mergedEnrollmentsByCourtType = activeEnrollmentsByCourtType
+    .mergeWith((oldCount :number, newCount :number) => fromJS({
+      [ENROLLMENT_STATUSES.ACTIVE]: oldCount,
+      [ENROLLMENT_STATUSES.CLOSED]: newCount,
+    }), closedEnrollmentsByCourtType);
+  mergedEnrollmentsByCourtType = mergedEnrollmentsByCourtType
+    .mergeWith((statusMap :Map, newCount :number) => statusMap.merge(fromJS({
+      [ENROLLMENT_STATUSES.JOB_SEARCH]: newCount,
+    })), jobSearchEnrollmentsByCourtType);
+  mergedEnrollmentsByCourtType = mergedEnrollmentsByCourtType
+    .mergeWith((statusMap :Map, newCount :number) => statusMap.merge(fromJS({
+      [ENROLLMENT_STATUSES.SUCCESSFUL]: newCount,
+    })), successfulEnrollmentsByCourtType);
+  mergedEnrollmentsByCourtType = mergedEnrollmentsByCourtType
+    .mergeWith((statusMap :Map, newCount :number) => statusMap.merge(fromJS({
+      [ENROLLMENT_STATUSES.UNSUCCESSFUL]: newCount,
+    })), unsuccessfulEnrollmentsByCourtType);
+
+  mergedEnrollmentsByCourtType = mergedEnrollmentsByCourtType.delete(undefined);
+
+  const formattedData :List = List().withMutations((list :List) => {
+    mergedEnrollmentsByCourtType.forEach((statusMap :Map, courtType :string) => {
+      const totalForCourtType :number = statusMap.reduce((sum :number, count :number) => sum + count);
+      list.push(fromJS({
+        [COURT_TYPE]: courtType,
+        [STATUSES]: statusMap.keySeq().toList()
+          .map((status :string) => Map({ status, [COUNT]: statusMap.get(status) })),
+        [TOTAL]: totalForCourtType,
+      }));
+    });
+  });
+  return formattedData;
+};
+
+const getBottomRowForEnrollments = (csvData :Object[]) => {
+  const activeTotal :number = csvData.map((row :Object) => row[ENROLLMENT_STATUSES.ACTIVE])
+    .reduce((sum :number, count :number) => sum + count);
+  const closedTotal :number = csvData.map((row :Object) => row[ENROLLMENT_STATUSES.CLOSED])
+    .reduce((sum :number, count :number) => sum + count);
+  const jobSearchTotal :number = csvData.map((row :Object) => row[ENROLLMENT_STATUSES.JOB_SEARCH])
+    .reduce((sum :number, count :number) => sum + count);
+  const successfulTotal :number = csvData.map((row :Object) => row[ENROLLMENT_STATUSES.SUCCESSFUL])
+    .reduce((sum :number, count :number) => sum + count);
+  const unsuccessfulTotal :number = csvData.map((row :Object) => row[ENROLLMENT_STATUSES.UNSUCCESSFUL])
+    .reduce((sum :number, count :number) => sum + count);
+  const countTotal :number = activeTotal + closedTotal + jobSearchTotal + successfulTotal + unsuccessfulTotal;
+  return {
+    'Court Type': 'Total for All Court Types',
+    [ENROLLMENT_STATUSES.ACTIVE]: activeTotal,
+    [ENROLLMENT_STATUSES.CLOSED]: closedTotal,
+    [ENROLLMENT_STATUSES.JOB_SEARCH]: jobSearchTotal,
+    [ENROLLMENT_STATUSES.SUCCESSFUL]: successfulTotal,
+    [ENROLLMENT_STATUSES.UNSUCCESSFUL]: unsuccessfulTotal,
+    Total: countTotal,
+  };
+};
+
+// Worksite:
+
 const formatHoursByWorksiteData = (hoursByWorksite :Map) :Object[] => {
   const graphData :Object[] = [];
   hoursByWorksite.forEach((hours :number, worksite :string) => {
@@ -58,6 +137,8 @@ const formatHoursByWorksiteData = (hoursByWorksite :Map) :Object[] => {
   });
   return sortGraphData(graphData);
 };
+
+// Demographics:
 
 const formatRadialChartData = (valuesMap :Map) => {
   const chartData :Object[] = [];
@@ -118,10 +199,12 @@ const getListForRadialChartKey = (chartData :Object[], valuesNotFound :string[])
 };
 
 export {
+  formatEnrollmentsDataForDownload,
   formatEnrollmentStatusPeopleData,
   formatHoursByWorksiteData,
   formatMonthlyHoursAndParticipantsData,
   formatRadialChartData,
   formatReferralsCourtTypeData,
+  getBottomRowForEnrollments,
   getListForRadialChartKey,
 };
