@@ -125,7 +125,6 @@ const WorksiteGraphs = ({
     /* eslint-disable-next-line */
     let fileName :string = `CWP_Participant_Names_by_Worksite_${MONTHS_OPTIONS[participantsMonth.value - 1].label}_${participantsYear.value}`;
     actions.downloadWorksiteStatsData({
-      getBottomRow: () => {},
       fileName,
       worksiteData: formattedParticipantsData,
     });
@@ -241,7 +240,7 @@ const WorksiteGraphs = ({
                     </StyledExpansionPanelSummary>
                     <ExpansionPanelDetails>
                       <CardSegment padding="0" vertical>
-                        { participants.map((name :string) => <div>{ name }</div>) }
+                        { participants.map((name :string) => <div key={name}>{ name }</div>) }
                       </CardSegment>
                     </ExpansionPanelDetails>
                   </ExpansionPanel>

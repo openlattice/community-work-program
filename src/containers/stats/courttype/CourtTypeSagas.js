@@ -87,7 +87,7 @@ function* downloadCourtTypeDataWorker(action :SequenceAction) :Generator<*, *, *
     const { courtTypeData, fileName, getBottomRow } = value;
     let csvData :Object[] = courtTypeData.map((row :Map) => {
       const newCSVObject :Object = {};
-      newCSVObject['Court Type'] = row.get(DOWNLOAD_CONSTS.COURT_TYPE);
+      newCSVObject['Court Type'] = row.get(DOWNLOAD_CONSTS.COURT_TYPE, '');
 
       if (isDefined(row.get(DOWNLOAD_CONSTS.STATUSES))) {
         row.get(DOWNLOAD_CONSTS.STATUSES).forEach((statusCount :Map) => {
@@ -96,6 +96,7 @@ function* downloadCourtTypeDataWorker(action :SequenceAction) :Generator<*, *, *
       }
 
       if (isDefined(row.get('Participants'))) newCSVObject.Participants = row.get('Participants');
+      if (isDefined(row.get('Participant'))) newCSVObject.Participant = row.get('Participant');
       if (isDefined(row.get('Hours'))) newCSVObject.Hours = row.get('Hours');
 
       if (isDefined(row.get(DOWNLOAD_CONSTS.TOTAL))) newCSVObject.Total = row.get(DOWNLOAD_CONSTS.TOTAL);
@@ -112,7 +113,7 @@ function* downloadCourtTypeDataWorker(action :SequenceAction) :Generator<*, *, *
       const total = getBottomRow(csvData);
       csvData.push(total);
     }
-    else {
+    else if (isDefined(csvData[0].Total)) {
       const countTotal :number = csvData.map((obj :Object) => obj.Total)
         .reduce((sum :number, count :number) => sum + count);
       const total = {
