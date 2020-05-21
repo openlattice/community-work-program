@@ -43,6 +43,7 @@ const DOWNLOAD_CONSTS :Object = {
   STATUS: 'status',
   STATUSES: 'statuses',
   TOTAL: 'total',
+  TOTAL_FOR_ALL_COURT_TYPES: 'Total for All Court Types',
 };
 
 export {
