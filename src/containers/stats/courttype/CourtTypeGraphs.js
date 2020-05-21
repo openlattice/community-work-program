@@ -35,7 +35,11 @@ import {
   KeyItemWrapper,
   KeySquare,
 } from '../styled/RadialChartStyles';
-import { formatReferralsCourtTypeData } from '../utils/StatsUtils';
+import {
+  formatEnrollmentsDataForDownload,
+  formatReferralsCourtTypeData,
+  getBottomRowForEnrollments,
+} from '../utils/StatsUtils';
 import { requestIsPending } from '../../../utils/RequestStateUtils';
 import {
   DOWNLOAD_COURT_TYPE_DATA,
@@ -54,9 +58,11 @@ import {
   YEARLY,
   YEARS_OPTIONS,
 } from '../consts/TimeConsts';
+import { DOWNLOAD_CONSTS } from '../consts/StatsConsts';
 import { SHARED, STATE } from '../../../utils/constants/ReduxStateConsts';
 import { OL } from '../../../core/style/Colors';
 
+const { COURT_TYPE, TOTAL } = DOWNLOAD_CONSTS;
 const { ACTIONS, REQUEST_STATE } = SHARED;
 const { BLUE_2, PURPLES, YELLOW_1 } = Colors;
 const { PINK01 } = OL;
@@ -77,6 +83,13 @@ const KeyWrapper = styled.div`
 const KeyItemWrapperHorizontal = styled(KeyItemWrapper)`
   margin-right: 20px;
 `;
+
+const HeaderActionsWrapper = styled.div`
+  display: grid;
+  grid-template-columns: 150px 109px;
+  grid-gap: 0 10px;
+`;
+
 
 type Props = {
   actions :{
@@ -147,10 +160,30 @@ const CourtTypeGraphs = ({
 
   const downloadReferralData = () => {
     const formattedReferralData = referralsGraphData.map((graphObj :Object) => ({
-      courtType: graphObj.y,
-      total: graphObj.x,
+      [COURT_TYPE]: graphObj.y,
+      [TOTAL]: graphObj.x,
     }));
     actions.downloadCourtTypeData({ courtTypeData: fromJS(formattedReferralData), fileName: 'CWP_Referrals' });
+  };
+
+  const downloadEnrollmentsData = () => {
+    const formattedEnrollmentsData = formatEnrollmentsDataForDownload(
+      activeEnrollmentsByCourtType,
+      closedEnrollmentsByCourtType,
+      jobSearchEnrollmentsByCourtType,
+      successfulEnrollmentsByCourtType,
+      unsuccessfulEnrollmentsByCourtType
+    );
+    let fileName :string = 'CWP_Enrollments_by_Court_Type';
+    if (timeFrame.value === MONTHLY) {
+      fileName += `_${MONTHS_OPTIONS[enrollmentsMonth.value - 1].label}_${enrollmentsYear.value}`;
+    }
+    if (timeFrame.value === YEARLY) fileName += `_${enrollmentsYear.value}`;
+    actions.downloadCourtTypeData({
+      courtTypeData: formattedEnrollmentsData,
+      fileName,
+      getBottomRow: getBottomRowForEnrollments,
+    });
   };
 
   return (
@@ -159,12 +192,19 @@ const CourtTypeGraphs = ({
         <GraphHeader>
           <InnerHeaderRow>
             <div>Total Enrollments by Court Type</div>
-            <SmallSelectWrapper>
-              <Select
-                  onChange={onTimeFrameSelectChange}
-                  options={TIME_FRAME_OPTIONS}
-                  placeholder={TIME_FRAME_OPTIONS[2].label} />
-            </SmallSelectWrapper>
+            <HeaderActionsWrapper>
+              <SmallSelectWrapper>
+                <Select
+                    onChange={onTimeFrameSelectChange}
+                    options={TIME_FRAME_OPTIONS}
+                    placeholder={TIME_FRAME_OPTIONS[2].label} />
+              </SmallSelectWrapper>
+              <Button
+                  isLoading={requestIsPending(requestStates[DOWNLOAD_COURT_TYPE_DATA])}
+                  onClick={downloadEnrollmentsData}>
+                Download
+              </Button>
+            </HeaderActionsWrapper>
           </InnerHeaderRow>
           {
             (timeFrame.value === MONTHLY || timeFrame.value === YEARLY) && (
