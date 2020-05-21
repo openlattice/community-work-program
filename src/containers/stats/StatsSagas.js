@@ -113,7 +113,10 @@ function* downloadCourtTypeDataWorker(action :SequenceAction) :Generator<*, *, *
         });
       }
 
-      newCSVObject.Total = row.get(DOWNLOAD_CONSTS.TOTAL);
+      if (isDefined(row.get('Participants'))) newCSVObject.Participants = row.get('Participants');
+      if (isDefined(row.get('Hours'))) newCSVObject.Hours = row.get('Hours');
+
+      if (isDefined(row.get(DOWNLOAD_CONSTS.TOTAL))) newCSVObject.Total = row.get(DOWNLOAD_CONSTS.TOTAL);
       return newCSVObject;
     }).toJS();
 
@@ -131,7 +134,7 @@ function* downloadCourtTypeDataWorker(action :SequenceAction) :Generator<*, *, *
       const countTotal :number = csvData.map((obj :Object) => obj.Total)
         .reduce((sum :number, count :number) => sum + count);
       const total = {
-        'Court Type': 'Total for All Court Types',
+        'Court Type': DOWNLOAD_CONSTS.TOTAL_FOR_ALL_COURT_TYPES,
         Total: countTotal,
       };
       csvData.push(total);
