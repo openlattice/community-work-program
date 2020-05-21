@@ -9,6 +9,7 @@ import { ENROLLMENT_STATUSES } from '../../../core/edm/constants/DataModelConsts
 const {
   COUNT,
   COURT_TYPE,
+  PARTICIPANTS,
   STATUSES,
   TOTAL,
   TOTAL_FOR_ALL_COURT_TYPES,
@@ -181,6 +182,18 @@ const formatWorksiteHoursDataForDownload = (hoursByWorksite :Map) :List => {
   return formattedData;
 };
 
+const formatWorksiteParticipantsDataForDownload = (participantsByWorksite :Map) :List => {
+  const formattedData :List = List().withMutations((list :List) => {
+    participantsByWorksite.forEach((participantsNames :Map, worksite :string) => {
+      list.push(fromJS({
+        [WORKSITE]: worksite,
+        [PARTICIPANTS]: participantsNames.join(','),
+      }));
+    });
+  });
+  return formattedData;
+};
+
 // Demographics:
 
 const formatRadialChartData = (valuesMap :Map) => {
@@ -250,6 +263,7 @@ export {
   formatRadialChartData,
   formatReferralsCourtTypeData,
   formatWorksiteHoursDataForDownload,
+  formatWorksiteParticipantsDataForDownload,
   getBottomRowForEnrollments,
   getBottomRowForParticipantsAndHours,
   getListForRadialChartKey,
