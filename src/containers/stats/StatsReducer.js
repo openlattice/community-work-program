@@ -8,9 +8,11 @@ import {
   DOWNLOAD_COURT_TYPE_DATA,
   GET_ENROLLMENTS_BY_COURT_TYPE,
   GET_MONTHLY_COURT_TYPE_DATA,
+  GET_MONTHLY_PARTICIPANTS_BY_COURT_TYPE,
   downloadCourtTypeData,
   getEnrollmentsByCourtType,
   getMonthlyCourtTypeData,
+  getMonthlyParticipantsByCourtType,
 } from './courttype/CourtTypeActions';
 import {
   DOWNLOAD_WORKSITE_STATS_DATA,
@@ -48,6 +50,7 @@ const {
   HOURS_BY_WORKSITE,
   JOB_SEARCH_ENROLLMENTS_BY_COURT_TYPE,
   MONTHLY_HOURS_WORKED_BY_COURT_TYPE,
+  MONTHLY_PARTICIPANTS_BY_COURT_TYPE,
   MONTHLY_TOTAL_PARTICIPANTS_BY_COURT_TYPE,
   PARTICIPANTS_BY_WORKSITE,
   RACE_DEMOGRAPHICS,
@@ -92,6 +95,9 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     [GET_MONTHLY_COURT_TYPE_DATA]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
+    [GET_MONTHLY_PARTICIPANTS_BY_COURT_TYPE]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
     [GET_MONTHLY_PARTICIPANTS_BY_WORKSITE]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
@@ -112,6 +118,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [HOURS_BY_WORKSITE]: Map(),
   [JOB_SEARCH_ENROLLMENTS_BY_COURT_TYPE]: Map(),
   [MONTHLY_HOURS_WORKED_BY_COURT_TYPE]: Map(),
+  [MONTHLY_PARTICIPANTS_BY_COURT_TYPE]: Map(),
   [MONTHLY_TOTAL_PARTICIPANTS_BY_COURT_TYPE]: Map(),
   [PARTICIPANTS_BY_WORKSITE]: Map(),
   [REFERRALS_BY_COURT_TYPE_GRAPH_DATA]: Map(),
@@ -299,6 +306,26 @@ export default function statsReducer(state :Map<*, *> = INITIAL_STATE, action :O
         FAILURE: () => state
           .setIn([ACTIONS, GET_MONTHLY_COURT_TYPE_DATA, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, GET_MONTHLY_COURT_TYPE_DATA, action.id]),
+      });
+    }
+
+    case getMonthlyParticipantsByCourtType.case(action.type): {
+
+      return getMonthlyParticipantsByCourtType.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, GET_MONTHLY_PARTICIPANTS_BY_COURT_TYPE, action.id], action)
+          .setIn([ACTIONS, GET_MONTHLY_PARTICIPANTS_BY_COURT_TYPE, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+          const seqAction :SequenceAction = (action :any);
+          const monthlyParticipantsByCourtType = seqAction.value;
+          return state
+            .set(MONTHLY_PARTICIPANTS_BY_COURT_TYPE, monthlyParticipantsByCourtType)
+            .setIn([ACTIONS, GET_MONTHLY_PARTICIPANTS_BY_COURT_TYPE, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, GET_MONTHLY_PARTICIPANTS_BY_COURT_TYPE, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, GET_MONTHLY_PARTICIPANTS_BY_COURT_TYPE, action.id]),
       });
     }
 

@@ -2,6 +2,7 @@
 import { List, Map, fromJS } from 'immutable';
 import { DateTime } from 'luxon';
 import {
+  all,
   call,
   put,
   select,
@@ -24,8 +25,8 @@ import {
   getNeighborESID,
 } from '../../utils/DataUtils';
 import { GET_STATS_DATA, getStatsData } from './StatsActions';
-import { getMonthlyCourtTypeData } from './courttype/CourtTypeActions';
-import { getMonthlyCourtTypeDataWorker } from './courttype/CourtTypeSagas';
+import { getMonthlyCourtTypeData, getMonthlyParticipantsByCourtType } from './courttype/CourtTypeActions';
+import { getMonthlyCourtTypeDataWorker, getMonthlyParticipantsByCourtTypeWorker } from './courttype/CourtTypeSagas';
 import { STATE } from '../../utils/constants/ReduxStateConsts';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { ENROLLMENT_STATUSES } from '../../core/edm/constants/DataModelConsts';
@@ -193,7 +194,10 @@ function* getStatsDataWorker(action :SequenceAction) :Generator<*, *, *> {
 
     const now :DateTime = DateTime.local();
     const { month, year } = now;
-    yield call(getMonthlyCourtTypeDataWorker, getMonthlyCourtTypeData({ month, year }));
+    yield all([
+      call(getMonthlyCourtTypeDataWorker, getMonthlyCourtTypeData({ month, year })),
+      call(getMonthlyParticipantsByCourtTypeWorker, getMonthlyParticipantsByCourtType({ month, year })),
+    ]);
 
     yield put(getStatsData.success(id, {
       activeEnrollmentsByCourtType,
