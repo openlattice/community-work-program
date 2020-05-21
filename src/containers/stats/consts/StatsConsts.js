@@ -44,6 +44,8 @@ const DOWNLOAD_CONSTS :Object = {
   STATUSES: 'statuses',
   TOTAL: 'total',
   TOTAL_FOR_ALL_COURT_TYPES: 'Total for All Court Types',
+  TOTAL_FOR_ALL_WORK_SITES: 'Total for All Work Sites',
+  WORKSITE: 'worksite',
 };
 
 export {
