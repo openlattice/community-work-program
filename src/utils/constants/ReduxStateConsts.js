@@ -182,7 +182,9 @@ export const PRINT_PARTICIPANT = {
 /* Stats */
 export const STATS = {
   ACTIVE_ENROLLMENTS_BY_COURT_TYPE: 'activeEnrollmentsByCourtType',
+  ARREST_CHARGE_TABLE_DATA: 'arrestChargeTableData',
   CLOSED_ENROLLMENTS_BY_COURT_TYPE: 'closedEnrollmentsByCourtType',
+  COURT_CHARGE_TABLE_DATA: 'courtChargeTableData',
   ETHNICITY_DEMOGRAPHICS: 'ethnicityDemographics',
   HOURS_BY_WORKSITE: 'hoursByWorksite',
   MONTHLY_HOURS_WORKED_BY_COURT_TYPE: 'monthlyHoursWorkedByCourtType',

@@ -8,6 +8,7 @@ import { DataApiSagas, SearchApiSagas } from 'lattice-sagas';
 
 import * as AppSagas from '../../containers/app/AppSagas';
 import * as ChargesSagas from '../../containers/participant/charges/ChargesSagas';
+import * as ChargesStatsSagas from '../../containers/stats/charges/ChargesStatsSagas';
 import * as DataSagas from './data/DataSagas';
 import * as DemographicsSagas from '../../containers/stats/demographics/DemographicsSagas';
 import * as EDMSagas from '../edm/EDMSagas';
@@ -54,6 +55,11 @@ export default function* sagas() :Generator<*, *, *> {
     fork(ChargesSagas.getCourtChargesWatcher),
     fork(ChargesSagas.removeArrestChargeWatcher),
     fork(ChargesSagas.removeCourtChargeFromCaseWatcher),
+
+    // ChargesStatsSagas
+    fork(ChargesStatsSagas.downloadChargesStatsWatcher),
+    fork(ChargesStatsSagas.getChargesStatsWatcher),
+    fork(ChargesStatsSagas.getIndividualChargeTypeStatsWatcher),
 
     // DataSagas
     fork(DataSagas.createOrReplaceAssociationWatcher),
