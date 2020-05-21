@@ -158,6 +158,33 @@ const getBottomRowForParticipantsAndHours = (csvData :Object[]) => {
   };
 };
 
+const formatParticipantsByCourtTypeDataForDownload = (monthlyParticipantsByCourtType :Map) :List => {
+
+  const formattedData :List = List().withMutations((list :List) => {
+    monthlyParticipantsByCourtType.forEach((participantsList :Map, courtType :string) => {
+      if (participantsList.isEmpty()) {
+        list.push(fromJS({
+          [COURT_TYPE]: courtType,
+          Participant: '',
+          Hours: 0,
+        }));
+      }
+      participantsList.forEach((participantMap :Map) => {
+        const personName :string = participantMap.get('personName', '');
+        const hours :number = participantMap.get('hours', 0);
+        if (isDefined(courtType)) {
+          list.push(fromJS({
+            [COURT_TYPE]: courtType,
+            Participant: personName,
+            Hours: hours,
+          }));
+        }
+      });
+    });
+  });
+  return formattedData;
+};
+
 // Worksite:
 
 const formatHoursByWorksiteData = (hoursByWorksite :Map) :Object[] => {
@@ -260,6 +287,7 @@ export {
   formatHoursByWorksiteData,
   formatMonthlyHoursAndParticipantsData,
   formatParticipantsAndHoursDataForDownload,
+  formatParticipantsByCourtTypeDataForDownload,
   formatRadialChartData,
   formatReferralsCourtTypeData,
   formatWorksiteHoursDataForDownload,
