@@ -45,9 +45,16 @@ const SmallSelectWrapper = styled.div`
   width: 150px;
 `;
 
+const HeaderActionsWrapper = styled.div`
+  display: grid;
+  grid-template-columns: 150px 109px;
+  grid-gap: 0 10px;
+`;
+
 export {
   ActionsWrapper,
   GraphHeader,
+  HeaderActionsWrapper,
   InnerHeaderRow,
   SelectsWrapper,
   SmallSelectWrapper,

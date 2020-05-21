@@ -25,6 +25,7 @@ import ReferralsByCourtTypeGraph from './ReferralsByCourtTypeGraph';
 import {
   ActionsWrapper,
   GraphHeader,
+  HeaderActionsWrapper,
   InnerHeaderRow,
   SelectsWrapper,
   SmallSelectWrapper,
@@ -84,12 +85,6 @@ const KeyWrapper = styled.div`
 
 const KeyItemWrapperHorizontal = styled(KeyItemWrapper)`
   margin-right: 20px;
-`;
-
-const HeaderActionsWrapper = styled.div`
-  display: grid;
-  grid-template-columns: 150px 109px;
-  grid-gap: 0 10px;
 `;
 
 type Props = {
@@ -353,6 +348,7 @@ const mapStateToProps = (state :Map) => {
   const stats = state.get(STATE.STATS);
   return {
     requestStates: {
+      [DOWNLOAD_COURT_TYPE_DATA]: stats.getIn([ACTIONS, DOWNLOAD_COURT_TYPE_DATA, REQUEST_STATE]),
       [GET_ENROLLMENTS_BY_COURT_TYPE]: stats.getIn([ACTIONS, GET_ENROLLMENTS_BY_COURT_TYPE, REQUEST_STATE]),
       [GET_MONTHLY_COURT_TYPE_DATA]: stats.getIn([ACTIONS, GET_MONTHLY_COURT_TYPE_DATA, REQUEST_STATE]),
     }
