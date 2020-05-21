@@ -12,6 +12,7 @@ const {
   STATUSES,
   TOTAL,
   TOTAL_FOR_ALL_COURT_TYPES,
+  WORKSITE,
 } = DOWNLOAD_CONSTS;
 
 const sortGraphData = (graphData :Object[]) => (
@@ -168,6 +169,18 @@ const formatHoursByWorksiteData = (hoursByWorksite :Map) :Object[] => {
   return sortGraphData(graphData);
 };
 
+const formatWorksiteHoursDataForDownload = (hoursByWorksite :Map) :List => {
+  const formattedData :List = List().withMutations((list :List) => {
+    hoursByWorksite.forEach((hoursCount :Map, worksite :string) => {
+      list.push(fromJS({
+        [WORKSITE]: worksite,
+        [TOTAL]: hoursCount,
+      }));
+    });
+  });
+  return formattedData;
+};
+
 // Demographics:
 
 const formatRadialChartData = (valuesMap :Map) => {
@@ -236,6 +249,7 @@ export {
   formatParticipantsAndHoursDataForDownload,
   formatRadialChartData,
   formatReferralsCourtTypeData,
+  formatWorksiteHoursDataForDownload,
   getBottomRowForEnrollments,
   getBottomRowForParticipantsAndHours,
   getListForRadialChartKey,
