@@ -35,6 +35,7 @@ import {
 } from './StatsActions';
 import { GET_WORKSITE_STATS_DATA, getWorksiteStatsData } from './worksite/WorksiteStatsActions';
 import { GET_PARTICIPANTS_DEMOGRAPHICS, getParticipantsDemographics } from './demographics/DemographicsActions';
+import { GET_CHARGES_STATS, getChargesStats } from './charges/ChargesStatsActions';
 import {
   APP,
   SHARED,
@@ -182,6 +183,7 @@ const StatsBoxSkeleton = () => (
 
 type Props = {
   actions :{
+    getChargesStats :RequestSequence;
     getMonthlyCourtTypeData :RequestSequence;
     getParticipantsDemographics :RequestSequence;
     getStatsData :RequestSequence;
@@ -195,6 +197,7 @@ type Props = {
   monthlyTotalParticipantsByCourtType :Map;
   referralsByCourtTypeGraphData :Map;
   requestStates :{
+    GET_CHARGES_STATS :RequestState;
     GET_PARTICIPANTS_DEMOGRAPHICS :RequestState;
     GET_STATS_DATA :RequestState;
     GET_WORKSITE_STATS_DATA :RequestState;
@@ -230,6 +233,7 @@ const StatsContainer = ({
 } :Props) => {
 
   const reducedFetchRequestStates = reduceRequestStates([
+    requestStates[GET_CHARGES_STATS],
     requestStates[GET_PARTICIPANTS_DEMOGRAPHICS],
     requestStates[GET_STATS_DATA],
     requestStates[GET_WORKSITE_STATS_DATA]
@@ -280,6 +284,7 @@ const StatsContainer = ({
     [SCREEN_VIEWS.COURT_TYPE]: actions.getMonthlyCourtTypeData,
     [SCREEN_VIEWS.WORK_SITES]: actions.getWorksiteStatsData,
     [SCREEN_VIEWS.DEMOGRAPHICS]: actions.getParticipantsDemographics,
+    [SCREEN_VIEWS.CHARGES]: actions.getChargesStats,
   };
 
   const buttonOptions :Object[] = SCREEN_VIEWS_LIST.map((value :string) => ({
@@ -392,6 +397,7 @@ const mapStateToProps = (state :Map) => {
     [UNSUCCESSFUL_ENROLLMENTS_BY_COURT_TYPE]: stats.get(UNSUCCESSFUL_ENROLLMENTS_BY_COURT_TYPE),
     entitySetIds: app.getIn([ENTITY_SET_IDS_BY_ORG, selectedOrgId], Map()),
     requestStates: {
+      [GET_CHARGES_STATS]: stats.getIn([ACTIONS, GET_CHARGES_STATS, REQUEST_STATE]),
       [GET_PARTICIPANTS_DEMOGRAPHICS]: stats.getIn([ACTIONS, GET_PARTICIPANTS_DEMOGRAPHICS, REQUEST_STATE]),
       [GET_STATS_DATA]: stats.getIn([ACTIONS, GET_STATS_DATA, REQUEST_STATE]),
       [GET_WORKSITE_STATS_DATA]: stats.getIn([ACTIONS, GET_WORKSITE_STATS_DATA, REQUEST_STATE]),
@@ -401,6 +407,7 @@ const mapStateToProps = (state :Map) => {
 
 const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
+    getChargesStats,
     getMonthlyCourtTypeData,
     getParticipantsDemographics,
     getStatsData,
