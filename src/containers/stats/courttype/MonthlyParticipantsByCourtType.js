@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { List, Map } from 'immutable';
 import { DateTime } from 'luxon';
 import {
-  // Button,
+  Button,
   Card,
   CardSegment,
   ExpansionPanel,
@@ -31,7 +31,13 @@ import {
   SelectsWrapper,
 } from '../styled/GraphStyles';
 import { requestIsPending } from '../../../utils/RequestStateUtils';
-import { GET_MONTHLY_PARTICIPANTS_BY_COURT_TYPE, getMonthlyParticipantsByCourtType } from './CourtTypeActions';
+import { formatParticipantsByCourtTypeDataForDownload } from '../utils/StatsUtils';
+import {
+  DOWNLOAD_COURT_TYPE_DATA,
+  GET_MONTHLY_PARTICIPANTS_BY_COURT_TYPE,
+  downloadCourtTypeData,
+  getMonthlyParticipantsByCourtType,
+} from './CourtTypeActions';
 import { SHARED, STATE, STATS } from '../../../utils/constants/ReduxStateConsts';
 import { MONTHS_OPTIONS, YEARS_OPTIONS } from '../consts/TimeConsts';
 
@@ -40,10 +46,12 @@ const { MONTHLY_PARTICIPANTS_BY_COURT_TYPE } = STATS;
 
 type Props = {
   actions :{
+    downloadCourtTypeData :RequestSequence;
     getMonthlyParticipantsByCourtType :RequestSequence;
   };
   monthlyParticipantsByCourtType :Map;
   requestStates :{
+    DOWNLOAD_COURT_TYPE_DATA :RequestState;
     GET_MONTHLY_PARTICIPANTS_BY_COURT_TYPE :RequestState;
   };
 };
@@ -60,17 +68,27 @@ const MonthlyParticipantsByCourtTypeList = ({ actions, monthlyParticipantsByCour
     actions.getMonthlyParticipantsByCourtType({ month: month.value, year: year.value });
   };
 
+  const downloadParticipantsByCourtType = () => {
+    const formattedData :List = formatParticipantsByCourtTypeDataForDownload(monthlyParticipantsByCourtType);
+    /* eslint-disable-next-line */
+    const fileName :string = `CWP_Participant_Names_by_Court_Type_${MONTHS_OPTIONS[month.value - 1].label}_${year.value}`;
+    actions.downloadCourtTypeData({
+      courtTypeData: formattedData,
+      fileName,
+    });
+  };
+
   return (
     <div>
       <Card>
         <GraphHeader>
           <InnerHeaderRow>
             <div>Participants by Court Type, Monthly</div>
-            {/* <Button
+            <Button
                 isLoading={requestIsPending(requestStates[DOWNLOAD_COURT_TYPE_DATA])}
-                onClick={downloadParticipantsByWorksite}>
+                onClick={downloadParticipantsByCourtType}>
               Download
-            </Button> */}
+            </Button>
           </InnerHeaderRow>
           <ActionsWrapper>
             <SelectsWrapper>
@@ -118,7 +136,9 @@ const MonthlyParticipantsByCourtTypeList = ({ actions, monthlyParticipantsByCour
                     <ExpansionPanelDetails>
                       <CardSegment padding="0" vertical>
                         { participants.map((participantMap :Map) => (
-                          <div>{ `${participantMap.get('personName')} • ${participantMap.get('hours')} hours` }</div>
+                          <div key={participantMap.get('personName')}>
+                            { `${participantMap.get('personName')} • ${participantMap.get('hours')} hours` }
+                          </div>
                         ))}
                       </CardSegment>
                     </ExpansionPanelDetails>
@@ -137,6 +157,7 @@ const mapStateToProps = (state :Map) => {
   return {
     [MONTHLY_PARTICIPANTS_BY_COURT_TYPE]: stats.get(MONTHLY_PARTICIPANTS_BY_COURT_TYPE),
     requestStates: {
+      [DOWNLOAD_COURT_TYPE_DATA]: stats.getIn([ACTIONS, DOWNLOAD_COURT_TYPE_DATA, REQUEST_STATE]),
       [GET_MONTHLY_PARTICIPANTS_BY_COURT_TYPE]: stats
         .getIn([ACTIONS, GET_MONTHLY_PARTICIPANTS_BY_COURT_TYPE, REQUEST_STATE]),
     }
@@ -145,6 +166,7 @@ const mapStateToProps = (state :Map) => {
 
 const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
+    downloadCourtTypeData,
     getMonthlyParticipantsByCourtType,
   }, dispatch)
 });
