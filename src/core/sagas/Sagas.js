@@ -128,6 +128,7 @@ export default function* sagas() :Generator<*, *, *> {
     fork(PrintParticipantSagas.getInfoForPrintInfractionWatcher),
 
     // StatsSagas
+    fork(StatsSagas.getEnrollmentsByCourtTypeWatcher),
     fork(StatsSagas.getMonthlyCourtTypeDataWatcher),
     fork(StatsSagas.getStatsDataWatcher),
 

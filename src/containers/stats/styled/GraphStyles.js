@@ -33,9 +33,23 @@ const SelectsWrapper = styled.div`
   margin-right: 10px;
 `;
 
+const InnerHeaderRow = styled.div`
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+`;
+
+const SmallSelectWrapper = styled.div`
+  font-weight: normal;
+  width: 150px;
+`;
+
 export {
   ActionsWrapper,
   GraphHeader,
+  InnerHeaderRow,
   SelectsWrapper,
+  SmallSelectWrapper,
   toolTipStyle,
 };

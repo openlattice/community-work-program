@@ -187,6 +187,7 @@ export const STATS = {
   COURT_CHARGE_TABLE_DATA: 'courtChargeTableData',
   ETHNICITY_DEMOGRAPHICS: 'ethnicityDemographics',
   HOURS_BY_WORKSITE: 'hoursByWorksite',
+  JOB_SEARCH_ENROLLMENTS_BY_COURT_TYPE: 'jobSearchEnrollmentsByCourtType',
   MONTHLY_HOURS_WORKED_BY_COURT_TYPE: 'monthlyHoursWorkedByCourtType',
   MONTHLY_TOTAL_PARTICIPANTS_BY_COURT_TYPE: 'monthlyTotalParticipantsByCourtType',
   PARTICIPANTS_BY_WORKSITE: 'participantsByWorksite',

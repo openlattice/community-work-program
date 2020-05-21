@@ -17,7 +17,12 @@ import { formatEnrollmentStatusPeopleData } from '../utils/StatsUtils';
 import { isDefined } from '../../../utils/LangUtils';
 import { OL } from '../../../core/style/Colors';
 
-const { BLUE_2, PURPLES, WHITE } = Colors;
+const {
+  BLUE_2,
+  PURPLES,
+  WHITE,
+  YELLOW_1,
+} = Colors;
 const { PINK01 } = OL;
 
 const defaultToolTipValues :Object = {
@@ -31,6 +36,7 @@ const color :string = WHITE;
 type Props = {
   activeEnrollmentsByCourtType :Map;
   closedEnrollmentsByCourtType :Map;
+  jobSearchEnrollmentsByCourtType :Map;
   successfulEnrollmentsByCourtType :Map;
   unsuccessfulEnrollmentsByCourtType :Map;
 };
@@ -38,6 +44,7 @@ type Props = {
 const EnrollmentsAndStatusByCourtType = ({
   activeEnrollmentsByCourtType,
   closedEnrollmentsByCourtType,
+  jobSearchEnrollmentsByCourtType,
   successfulEnrollmentsByCourtType,
   unsuccessfulEnrollmentsByCourtType,
 } :Props) => {
@@ -48,6 +55,7 @@ const EnrollmentsAndStatusByCourtType = ({
     unsuccessfulEnrollmentsByCourtType
   );
   const closedPeopleGraphData = formatEnrollmentStatusPeopleData(closedEnrollmentsByCourtType);
+  const jobSearchPeopleGraphData = formatEnrollmentStatusPeopleData(jobSearchEnrollmentsByCourtType);
 
   const [toolTipValues, setToolTipValues] = useState(defaultToolTipValues);
   const toolTipStyleWithBackground :Object = {
@@ -61,6 +69,7 @@ const EnrollmentsAndStatusByCourtType = ({
     if (!isDefined(courtType)) return [];
     const active = activeEnrollmentsByCourtType.get(courtType, 0);
     const closed = closedEnrollmentsByCourtType.get(courtType, 0);
+    const jobSearch = jobSearchEnrollmentsByCourtType.get(courtType, 0);
     const successful = successfulEnrollmentsByCourtType.get(courtType, 0);
     const unsuccessful = unsuccessfulEnrollmentsByCourtType.get(courtType, 0);
     return [
@@ -69,7 +78,8 @@ const EnrollmentsAndStatusByCourtType = ({
       { title: 'unsuccessful', value: unsuccessful },
       { title: 'closed', value: closed },
       { title: 'active', value: active },
-      { title: 'total', value: active + closed + successful + unsuccessful },
+      { title: 'job search', value: jobSearch },
+      { title: 'total', value: active + closed + jobSearch + successful + unsuccessful },
     ];
   };
   return (
@@ -107,6 +117,11 @@ const EnrollmentsAndStatusByCourtType = ({
       <HorizontalBarSeries
           color={PINK01}
           data={activePeopleGraphData}
+          onValueMouseOver={(v :Object) => setToolTipValues({ background, color, hoveredBar: v })}
+          onValueMouseOut={() => setToolTipValues(defaultToolTipValues)} />
+      <HorizontalBarSeries
+          color={YELLOW_1}
+          data={jobSearchPeopleGraphData}
           onValueMouseOver={(v :Object) => setToolTipValues({ background, color, hoveredBar: v })}
           onValueMouseOut={() => setToolTipValues(defaultToolTipValues)} />
       {

@@ -22,7 +22,13 @@ import { faChevronDown } from '@fortawesome/pro-light-svg-icons';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
 import HoursByWorksiteGraph from './HoursByWorksiteGraph';
-import { ActionsWrapper, GraphHeader, SelectsWrapper } from '../styled/GraphStyles';
+import {
+  ActionsWrapper,
+  GraphHeader,
+  InnerHeaderRow,
+  SelectsWrapper,
+  SmallSelectWrapper,
+} from '../styled/GraphStyles';
 import {
   GET_HOURS_WORKED_BY_WORKSITE,
   GET_MONTHLY_PARTICIPANTS_BY_WORKSITE,
@@ -49,18 +55,6 @@ const StyledExpansionPanelSummary = styled(ExpansionPanelSummary)`
   && {
     background-color: white;
   }
-`;
-
-const InnerHeaderRow = styled.div`
-  align-items: center;
-  display: flex;
-  justify-content: space-between;
-  width: 100%;
-`;
-
-const SmallSelectWrapper = styled.div`
-  font-weight: normal;
-  width: 150px;
 `;
 
 const SpinnerWrapper = styled.div`

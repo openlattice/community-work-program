@@ -4,8 +4,10 @@ import { RequestStates } from 'redux-reqseq';
 import type { SequenceAction } from 'redux-reqseq';
 
 import {
+  GET_ENROLLMENTS_BY_COURT_TYPE,
   GET_MONTHLY_COURT_TYPE_DATA,
   GET_STATS_DATA,
+  getEnrollmentsByCourtType,
   getMonthlyCourtTypeData,
   getStatsData,
 } from './StatsActions';
@@ -41,6 +43,7 @@ const {
   COURT_CHARGE_TABLE_DATA,
   ETHNICITY_DEMOGRAPHICS,
   HOURS_BY_WORKSITE,
+  JOB_SEARCH_ENROLLMENTS_BY_COURT_TYPE,
   MONTHLY_HOURS_WORKED_BY_COURT_TYPE,
   MONTHLY_TOTAL_PARTICIPANTS_BY_COURT_TYPE,
   PARTICIPANTS_BY_WORKSITE,
@@ -66,6 +69,9 @@ const INITIAL_STATE :Map<*, *> = fromJS({
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [GET_CHARGES_STATS]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [GET_ENROLLMENTS_BY_COURT_TYPE]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [GET_INDIVIDUAL_CHARGE_TYPE_STATS]: {
@@ -95,6 +101,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [CLOSED_ENROLLMENTS_BY_COURT_TYPE]: Map(),
   [COURT_CHARGE_TABLE_DATA]: List(),
   [HOURS_BY_WORKSITE]: Map(),
+  [JOB_SEARCH_ENROLLMENTS_BY_COURT_TYPE]: Map(),
   [MONTHLY_HOURS_WORKED_BY_COURT_TYPE]: Map(),
   [MONTHLY_TOTAL_PARTICIPANTS_BY_COURT_TYPE]: Map(),
   [PARTICIPANTS_BY_WORKSITE]: Map(),
@@ -141,6 +148,37 @@ export default function statsReducer(state :Map<*, *> = INITIAL_STATE, action :O
         FAILURE: () => state
           .setIn([ACTIONS, DOWNLOAD_DEMOGRAPHICS_DATA, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, DOWNLOAD_DEMOGRAPHICS_DATA, action.id]),
+      });
+    }
+
+    case getEnrollmentsByCourtType.case(action.type): {
+
+      return getEnrollmentsByCourtType.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, GET_ENROLLMENTS_BY_COURT_TYPE, action.id], action)
+          .setIn([ACTIONS, GET_ENROLLMENTS_BY_COURT_TYPE, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+          const seqAction :SequenceAction = (action :any);
+          const { value } = seqAction;
+          const {
+            activeEnrollmentsByCourtType,
+            closedEnrollmentsByCourtType,
+            jobSearchEnrollmentsByCourtType,
+            successfulEnrollmentsByCourtType,
+            unsuccessfulEnrollmentsByCourtType,
+          } = value;
+          return state
+            .set(ACTIVE_ENROLLMENTS_BY_COURT_TYPE, activeEnrollmentsByCourtType)
+            .set(CLOSED_ENROLLMENTS_BY_COURT_TYPE, closedEnrollmentsByCourtType)
+            .set(JOB_SEARCH_ENROLLMENTS_BY_COURT_TYPE, jobSearchEnrollmentsByCourtType)
+            .set(SUCCESSFUL_ENROLLMENTS_BY_COURT_TYPE, successfulEnrollmentsByCourtType)
+            .set(UNSUCCESSFUL_ENROLLMENTS_BY_COURT_TYPE, unsuccessfulEnrollmentsByCourtType)
+            .setIn([ACTIONS, GET_ENROLLMENTS_BY_COURT_TYPE, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, GET_ENROLLMENTS_BY_COURT_TYPE, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, GET_ENROLLMENTS_BY_COURT_TYPE, action.id]),
       });
     }
 
@@ -280,6 +318,7 @@ export default function statsReducer(state :Map<*, *> = INITIAL_STATE, action :O
           const {
             activeEnrollmentsByCourtType,
             closedEnrollmentsByCourtType,
+            jobSearchEnrollmentsByCourtType,
             referralsByCourtTypeGraphData,
             successfulEnrollmentsByCourtType,
             totalActiveEnrollmentCount,
@@ -293,6 +332,7 @@ export default function statsReducer(state :Map<*, *> = INITIAL_STATE, action :O
           return state
             .set(ACTIVE_ENROLLMENTS_BY_COURT_TYPE, activeEnrollmentsByCourtType)
             .set(CLOSED_ENROLLMENTS_BY_COURT_TYPE, closedEnrollmentsByCourtType)
+            .set(JOB_SEARCH_ENROLLMENTS_BY_COURT_TYPE, jobSearchEnrollmentsByCourtType)
             .set(REFERRALS_BY_COURT_TYPE_GRAPH_DATA, referralsByCourtTypeGraphData)
             .set(SUCCESSFUL_ENROLLMENTS_BY_COURT_TYPE, successfulEnrollmentsByCourtType)
             .set(UNSUCCESSFUL_ENROLLMENTS_BY_COURT_TYPE, unsuccessfulEnrollmentsByCourtType)
