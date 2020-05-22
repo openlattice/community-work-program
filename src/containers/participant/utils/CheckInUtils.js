@@ -3,20 +3,12 @@ import { DateTime } from 'luxon';
 
 import { get24HourTimeFromString } from '../../../utils/ScheduleUtils';
 
-const getTimeFormat = (timeString :string) :string => {
-  if (timeString.includes('AM')) return 'hh mm a';
-  if (timeString.includes('PM')) return 'h mm a';
-  return 'h mm a';
-};
-
 const get24HourTimeForCheckIn = (hours :string) :Object => {
   const hoursArray :string[] = hours.split('-');
   const amPMTimeIn :string = hoursArray[0].trim();
   const amPMTimeOut :string = hoursArray[1].trim();
-  const timeInFormat :string = getTimeFormat(amPMTimeIn);
-  const timeOutFormat :string = getTimeFormat(amPMTimeOut);
-  const timeIn :string = get24HourTimeFromString(amPMTimeIn.replace(':', ' '), timeInFormat);
-  const timeOut :string = get24HourTimeFromString(amPMTimeOut.replace(':', ' '), timeOutFormat);
+  const timeIn :string = get24HourTimeFromString(amPMTimeIn.replace(':', ' '), 'h mm a');
+  const timeOut :string = get24HourTimeFromString(amPMTimeOut.replace(':', ' '), 'h mm a');
   return { timeIn, timeOut };
 };
 
@@ -33,5 +25,4 @@ const getHoursScheduled = (timeIn :string, timeOut :string) :number => {
 export {
   get24HourTimeForCheckIn,
   getHoursScheduled,
-  getTimeFormat,
 };
