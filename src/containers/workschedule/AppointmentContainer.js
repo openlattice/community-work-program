@@ -23,6 +23,7 @@ import EditAppointmentModal from '../participant/schedule/EditAppointmentModal';
 import * as Routes from '../../core/router/Routes';
 import { isDefined } from '../../utils/LangUtils';
 import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
+import { get24HourTimeForCheckIn, getHoursScheduled } from '../participant/utils/CheckInUtils';
 import {
   PERSON,
   STATE,
@@ -49,8 +50,8 @@ const AppointmentCardSegment = styled(CardSegment)`
 `;
 
 const getColumns = getStyleVariation('columns', {
-  profile: '50px 160px 160px 160px',
-  schedule: '15px 130px 130px 120px 140px 130px',
+  profile: '50px 130px 130px 130px 100px',
+  schedule: '15px 100px 130px 100px 140px 60px 100px',
 });
 
 const InnerWrapper = styled.div`
@@ -111,13 +112,17 @@ const AppointmentContainer = ({
 
   const [day, setDay] = useState('');
   const [hours, setHours] = useState('');
+  const [numHours, setNumHours] = useState('');
 
   // use effect for editable properties
   useEffect(() => {
     const storedDay = result.get('day');
     const storedHours = result.get('hours');
+    const { timeIn, timeOut } = get24HourTimeForCheckIn(result.get('hours'));
+    const hoursScheduled = getHoursScheduled(timeIn, timeOut);
     setDay(storedDay);
     setHours(storedHours);
+    setNumHours(hoursScheduled);
   }, [result]);
 
   const personName = result.get('personName');
@@ -164,6 +169,7 @@ const AppointmentContainer = ({
             }
             <Text>{ worksiteName }</Text>
             <Text>{ hours }</Text>
+            <Text>{ `${numHours} hrs` }</Text>
             {
               courtType && (
                 <Text>{ courtType }</Text>
