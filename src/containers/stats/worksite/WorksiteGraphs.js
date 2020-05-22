@@ -1,15 +1,14 @@
 // @flow
 import React, { useState } from 'react';
-import styled from 'styled-components';
 import { List, Map } from 'immutable';
 import { DateTime } from 'luxon';
 import {
+  Button,
   Card,
   CardSegment,
   CardStack,
   ExpansionPanel,
   ExpansionPanelDetails,
-  ExpansionPanelSummary,
   IconButton,
   Select,
   Spinner,
@@ -18,17 +17,31 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSearch } from '@fortawesome/pro-duotone-svg-icons';
-import { faChevronDown } from '@fortawesome/pro-light-svg-icons';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
 import HoursByWorksiteGraph from './HoursByWorksiteGraph';
-import { ActionsWrapper, GraphHeader, SelectsWrapper } from '../styled/GraphStyles';
 import {
+  ActionsWrapper,
+  GraphHeader,
+  HeaderActionsWrapper,
+  InnerHeaderRow,
+  SelectsWrapper,
+  SmallSelectWrapper,
+} from '../styled/GraphStyles';
+import {
+  SpinnerWrapper,
+  StyledExpansionPanelSummary,
+  expandIcon,
+} from '../styled/ExpansionStyles';
+import {
+  DOWNLOAD_WORKSITE_STATS_DATA,
   GET_HOURS_WORKED_BY_WORKSITE,
   GET_MONTHLY_PARTICIPANTS_BY_WORKSITE,
+  downloadWorksiteStatsData,
   getHoursWorkedByWorksite,
   getMonthlyParticipantsByWorksite
 } from './WorksiteStatsActions';
+import { formatWorksiteHoursDataForDownload, formatWorksiteParticipantsDataForDownload } from '../utils/StatsUtils';
 import { requestIsPending } from '../../../utils/RequestStateUtils';
 import { SHARED, STATE, STATS } from '../../../utils/constants/ReduxStateConsts';
 import {
@@ -43,41 +56,16 @@ import {
 const { ACTIONS, REQUEST_STATE } = SHARED;
 const { HOURS_BY_WORKSITE, PARTICIPANTS_BY_WORKSITE } = STATS;
 
-const expandIcon = <FontAwesomeIcon icon={faChevronDown} size="xs" />;
-
-const StyledExpansionPanelSummary = styled(ExpansionPanelSummary)`
-  && {
-    background-color: white;
-  }
-`;
-
-const InnerHeaderRow = styled.div`
-  align-items: center;
-  display: flex;
-  justify-content: space-between;
-  width: 100%;
-`;
-
-const SmallSelectWrapper = styled.div`
-  font-weight: normal;
-  width: 150px;
-`;
-
-const SpinnerWrapper = styled.div`
-  align-items: center;
-  display: flex;
-  justify-content: center;
-  width: 100%;
-`;
-
 type Props = {
   actions :{
+    downloadWorksiteStatsData :RequestSequence;
     getHoursWorkedByWorksite :RequestSequence;
     getMonthlyParticipantsByWorksite :RequestSequence;
   };
   hoursByWorksite :Map;
   participantsByWorksite :Map;
   requestStates :{
+    DOWNLOAD_WORKSITE_STATS_DATA :RequestState;
     GET_HOURS_WORKED_BY_WORKSITE :RequestState;
     GET_MONTHLY_PARTICIPANTS_BY_WORKSITE :RequestState;
   };
@@ -119,18 +107,48 @@ const WorksiteGraphs = ({
 
   const worksites :List = participantsByWorksite.keySeq().toList().sort();
 
+  const downloadHoursByWorksiteData = () => {
+    const formattedWorksiteHoursData = formatWorksiteHoursDataForDownload(hoursByWorksite);
+    let fileName :string = 'CWP_Hours_by_Worksite';
+    if (timeFrame.value === MONTHLY) {
+      fileName += `_${MONTHS_OPTIONS[hoursMonth.value - 1].label}_${hoursYear.value}`;
+    }
+    if (timeFrame.value === YEARLY) fileName += `_${hoursYear.value}`;
+    actions.downloadWorksiteStatsData({
+      fileName,
+      worksiteData: formattedWorksiteHoursData,
+    });
+  };
+
+  const downloadParticipantsByWorksite = () => {
+    const formattedParticipantsData = formatWorksiteParticipantsDataForDownload(participantsByWorksite);
+    /* eslint-disable-next-line */
+    let fileName :string = `CWP_Participant_Names_by_Worksite_${MONTHS_OPTIONS[participantsMonth.value - 1].label}_${participantsYear.value}`;
+    actions.downloadWorksiteStatsData({
+      fileName,
+      worksiteData: formattedParticipantsData,
+    });
+  };
+
   return (
     <CardStack>
       <Card>
         <GraphHeader>
           <InnerHeaderRow>
             <div>Total Hours Worked by Work Site</div>
-            <SmallSelectWrapper>
-              <Select
-                  onChange={onTimeFrameSelectChange}
-                  options={TIME_FRAME_OPTIONS}
-                  placeholder={TIME_FRAME_OPTIONS[2].label} />
-            </SmallSelectWrapper>
+            <HeaderActionsWrapper>
+              <SmallSelectWrapper>
+                <Select
+                    onChange={onTimeFrameSelectChange}
+                    options={TIME_FRAME_OPTIONS}
+                    placeholder={TIME_FRAME_OPTIONS[2].label} />
+              </SmallSelectWrapper>
+              <Button
+                  isLoading={requestIsPending(requestStates[DOWNLOAD_WORKSITE_STATS_DATA])}
+                  onClick={downloadHoursByWorksiteData}>
+                Download
+              </Button>
+            </HeaderActionsWrapper>
           </InnerHeaderRow>
           {
             (timeFrame.value === MONTHLY || timeFrame.value === YEARLY) && (
@@ -171,7 +189,14 @@ const WorksiteGraphs = ({
       </Card>
       <Card>
         <GraphHeader>
-          <div>Participants by Work Site, Monthly</div>
+          <InnerHeaderRow>
+            <div>Participants by Work Site, Monthly</div>
+            <Button
+                isLoading={requestIsPending(requestStates[DOWNLOAD_WORKSITE_STATS_DATA])}
+                onClick={downloadParticipantsByWorksite}>
+              Download
+            </Button>
+          </InnerHeaderRow>
           <ActionsWrapper>
             <SelectsWrapper>
               <Select
@@ -215,7 +240,7 @@ const WorksiteGraphs = ({
                     </StyledExpansionPanelSummary>
                     <ExpansionPanelDetails>
                       <CardSegment padding="0" vertical>
-                        { participants.map((name :string) => <div>{ name }</div>) }
+                        { participants.map((name :string) => <div key={name}>{ name }</div>) }
                       </CardSegment>
                     </ExpansionPanelDetails>
                   </ExpansionPanel>
@@ -234,6 +259,7 @@ const mapStateToProps = (state :Map) => {
     [HOURS_BY_WORKSITE]: stats.get(HOURS_BY_WORKSITE),
     [PARTICIPANTS_BY_WORKSITE]: stats.get(PARTICIPANTS_BY_WORKSITE),
     requestStates: {
+      [DOWNLOAD_WORKSITE_STATS_DATA]: stats.getIn([ACTIONS, DOWNLOAD_WORKSITE_STATS_DATA, REQUEST_STATE]),
       [GET_HOURS_WORKED_BY_WORKSITE]: stats.getIn([ACTIONS, GET_HOURS_WORKED_BY_WORKSITE, REQUEST_STATE]),
       [GET_MONTHLY_PARTICIPANTS_BY_WORKSITE]: stats
         .getIn([ACTIONS, GET_MONTHLY_PARTICIPANTS_BY_WORKSITE, REQUEST_STATE]),
@@ -243,6 +269,7 @@ const mapStateToProps = (state :Map) => {
 
 const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
+    downloadWorksiteStatsData,
     getHoursWorkedByWorksite,
     getMonthlyParticipantsByWorksite,
   }, dispatch)

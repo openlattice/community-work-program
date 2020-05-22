@@ -1,4 +1,7 @@
 // @flow
+import Papa from 'papaparse';
+import FS from 'file-saver';
+import isFunction from 'lodash/isFunction';
 import { List, Map, fromJS } from 'immutable';
 import { DateTime } from 'luxon';
 import {
@@ -29,11 +32,13 @@ import {
 import { isDefined, isEmptyString, isNonEmptyString } from '../../../utils/LangUtils';
 import { getPersonFullName } from '../../../utils/PeopleUtils';
 import {
+  DOWNLOAD_WORKSITE_STATS_DATA,
   GET_CHECK_IN_NEIGHBORS,
   GET_HOURS_WORKED_BY_WORKSITE,
   GET_MONTHLY_PARTICIPANTS_BY_WORKSITE,
   GET_WORKSITES_FOR_STATS,
   GET_WORKSITE_STATS_DATA,
+  downloadWorksiteStatsData,
   getCheckInNeighbors,
   getHoursWorkedByWorksite,
   getMonthlyParticipantsByWorksite,
@@ -44,6 +49,7 @@ import { STATE } from '../../../utils/constants/ReduxStateConsts';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../../utils/Errors';
 import { ALL_TIME, MONTHLY, YEARLY } from '../consts/TimeConsts';
+import { DOWNLOAD_CONSTS } from '../consts/StatsConsts';
 
 const { getEntitySetData } = DataApiActions;
 const { getEntitySetDataWorker } = DataApiSagas;
@@ -65,7 +71,72 @@ const {
 
 const getAppFromState = (state) => state.get(STATE.APP, Map());
 const getEdmFromState = (state) => state.get(STATE.EDM, Map());
-const LOG = new Logger('StatsSagas');
+const LOG = new Logger('WorksiteStatsSagas');
+
+/*
+ *
+ * WorksiteStatsActions.downloadWorksiteStatsData()
+ *
+ */
+
+function* downloadWorksiteStatsDataWorker(action :SequenceAction) :Generator<*, *, *> {
+  const { id, value } = action;
+  if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
+
+  try {
+    yield put(downloadWorksiteStatsData.request(id));
+
+    const { fileName, getBottomRow, worksiteData } = value;
+    let csvData :Object[] = worksiteData.map((row :Map) => {
+      const newCSVObject :Object = {};
+      newCSVObject['Work Site'] = row.get(DOWNLOAD_CONSTS.WORKSITE);
+      if (isDefined(row.get(DOWNLOAD_CONSTS.TOTAL))) newCSVObject.Total = row.get(DOWNLOAD_CONSTS.TOTAL);
+      if (isDefined(row.get(DOWNLOAD_CONSTS.PARTICIPANTS))) {
+        newCSVObject.Participants = row.get(DOWNLOAD_CONSTS.PARTICIPANTS);
+      }
+      return newCSVObject;
+    }).toJS();
+
+    csvData = csvData.sort((row1 :Object, row2 :Object) => {
+      if (row1.Total > row2.Total) return -1;
+      if (row1.Total < row2.Total) return 1;
+      return 0;
+    });
+
+    if (isFunction(getBottomRow)) {
+      const total = getBottomRow(csvData);
+      if (isDefined(total)) csvData.push(total);
+    }
+    else {
+      const countTotal :number = csvData.map((obj :Object) => obj.Total)
+        .reduce((sum :number, count :number) => sum + count);
+      const total = {
+        'Work Site': DOWNLOAD_CONSTS.TOTAL_FOR_ALL_WORK_SITES,
+        Total: countTotal,
+      };
+      csvData.push(total);
+    }
+
+    const csv = Papa.unparse(csvData);
+    const blob = new Blob([csv], {
+      type: 'application/json'
+    });
+    FS.saveAs(blob, fileName.concat('.csv'));
+    yield put(downloadWorksiteStatsData.success(id));
+  }
+  catch (error) {
+    LOG.error(action.type, error);
+    yield put(downloadWorksiteStatsData.failure(id, error));
+  }
+  finally {
+    yield put(downloadWorksiteStatsData.finally(id));
+  }
+}
+
+function* downloadWorksiteStatsDataWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(DOWNLOAD_WORKSITE_STATS_DATA, downloadWorksiteStatsDataWorker);
+}
 
 /*
  *
@@ -524,6 +595,8 @@ function* getWorksiteStatsDataWatcher() :Generator<*, *, *> {
 }
 
 export {
+  downloadWorksiteStatsDataWatcher,
+  downloadWorksiteStatsDataWorker,
   getCheckInNeighborsWatcher,
   getCheckInNeighborsWorker,
   getHoursWorkedByWorksiteWatcher,

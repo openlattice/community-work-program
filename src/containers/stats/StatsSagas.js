@@ -2,6 +2,7 @@
 import { List, Map, fromJS } from 'immutable';
 import { DateTime } from 'luxon';
 import {
+  all,
   call,
   put,
   select,
@@ -22,265 +23,33 @@ import {
   getEntitySetIdFromApp,
   getNeighborDetails,
   getNeighborESID,
-  getPropertyTypeIdFromEdm,
-  getUTCDateRangeSearchString,
 } from '../../utils/DataUtils';
-import { isDefined } from '../../utils/LangUtils';
-import {
-  GET_MONTHLY_COURT_TYPE_DATA,
-  GET_STATS_DATA,
-  getMonthlyCourtTypeData,
-  getStatsData,
-} from './StatsActions';
+import { GET_STATS_DATA, getStatsData } from './StatsActions';
+import { getMonthlyCourtTypeData, getMonthlyParticipantsByCourtType } from './courttype/CourtTypeActions';
+import { getMonthlyCourtTypeDataWorker, getMonthlyParticipantsByCourtTypeWorker } from './courttype/CourtTypeSagas';
 import { STATE } from '../../utils/constants/ReduxStateConsts';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
-import { COURT_TYPES_MAP, ENROLLMENT_STATUSES } from '../../core/edm/constants/DataModelConsts';
-import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../utils/Errors';
+import { ENROLLMENT_STATUSES } from '../../core/edm/constants/DataModelConsts';
+import { ACTIVE_STATUSES, courtTypeCountObj } from './consts/CourtTypeConsts';
 
 const { getEntitySetData } = DataApiActions;
 const { getEntitySetDataWorker } = DataApiSagas;
-const { executeSearch, searchEntityNeighborsWithFilter } = SearchApiActions;
-const { executeSearchWorker, searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
+const { searchEntityNeighborsWithFilter } = SearchApiActions;
+const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
 const {
-  APPOINTMENT,
-  CHECK_INS,
-  CHECK_IN_DETAILS,
   DIVERSION_PLAN,
   ENROLLMENT_STATUS,
   MANUAL_PRETRIAL_COURT_CASES,
   PEOPLE,
-  WORKSITE_PLAN,
 } = APP_TYPE_FQNS;
 const {
   COURT_CASE_TYPE,
-  DATETIME_START,
   EFFECTIVE_DATE,
-  HOURS_WORKED,
   STATUS,
 } = PROPERTY_TYPE_FQNS;
 
 const getAppFromState = (state) => state.get(STATE.APP, Map());
-const getEdmFromState = (state) => state.get(STATE.EDM, Map());
 const LOG = new Logger('StatsSagas');
-
-const courtTypeCountObj :Object = {
-  [COURT_TYPES_MAP.CHILD_SUPPORT]: 0,
-  [COURT_TYPES_MAP.DRUG_COURT]: 0,
-  [COURT_TYPES_MAP.DUI_COURT]: 0,
-  [COURT_TYPES_MAP.HOPE_PROBATION]: 0,
-  [COURT_TYPES_MAP.MENTAL_HEALTH]: 0,
-  [COURT_TYPES_MAP.PROBATION]: 0,
-  [COURT_TYPES_MAP.SENTENCED]: 0,
-  [COURT_TYPES_MAP.VETERANS_COURT]: 0,
-};
-const ACTIVE_STATUSES :string[] = [
-  ENROLLMENT_STATUSES.ACTIVE,
-  ENROLLMENT_STATUSES.ACTIVE_REOPENED,
-  ENROLLMENT_STATUSES.AWAITING_CHECKIN,
-  ENROLLMENT_STATUSES.AWAITING_ORIENTATION,
-  ENROLLMENT_STATUSES.JOB_SEARCH,
-];
-
-/*
- *
- * StatsActions.getMonthlyCourtTypeData()
- *
- */
-
-function* getMonthlyCourtTypeDataWorker(action :SequenceAction) :Generator<*, *, *> {
-  const { id, value } = action;
-  let response :Object = {};
-  if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
-  let monthlyHoursWorkedByCourtType :Map = fromJS(courtTypeCountObj).asMutable();
-  let monthlyTotalParticipantsByCourtType :Map = fromJS(courtTypeCountObj).asMutable();
-
-  try {
-    yield put(getMonthlyCourtTypeData.request(id));
-    const { month, year } = value;
-
-    const app = yield select(getAppFromState);
-    const edm = yield select(getEdmFromState);
-    const checkInsESID :UUID = getEntitySetIdFromApp(app, CHECK_INS);
-    const datetimeStartPTID :UUID = getPropertyTypeIdFromEdm(edm, DATETIME_START);
-
-    const searchOptions = {
-      entitySetIds: [checkInsESID],
-      start: 0,
-      maxHits: 10000,
-      constraints: []
-    };
-    const mmMonth :string = month < 10 ? `0${month}` : month;
-    const firstDateOfMonth = DateTime.fromISO(`${year}-${mmMonth}-01`);
-    const searchTerm = getUTCDateRangeSearchString(datetimeStartPTID, 'month', firstDateOfMonth);
-    searchOptions.constraints.push({
-      min: 1,
-      constraints: [{
-        searchTerm,
-        fuzzy: false
-      }]
-    });
-    response = yield call(executeSearchWorker, executeSearch({ searchOptions }));
-    if (response.error) throw response.error;
-    const checkInsWithinMonth :List = fromJS(response.data.hits);
-    const checkInEKIDs :UUID[] = [];
-    checkInsWithinMonth.forEach((checkIn :Map) => {
-      const checkInEKID :UUID = getEntityKeyId(checkIn);
-      checkInEKIDs.push(checkInEKID);
-    });
-    if (checkInEKIDs.length) {
-      const peopleESID :UUID = getEntitySetIdFromApp(app, PEOPLE);
-      const appointmentESID :UUID = getEntitySetIdFromApp(app, APPOINTMENT);
-      const checkInDetailsESID :UUID = getEntitySetIdFromApp(app, CHECK_IN_DETAILS);
-      let searchFilter :Object = {
-        entityKeyIds: checkInEKIDs,
-        destinationEntitySetIds: [appointmentESID, checkInDetailsESID],
-        sourceEntitySetIds: [peopleESID],
-      };
-      response = yield call(
-        searchEntityNeighborsWithFilterWorker,
-        searchEntityNeighborsWithFilter({ entitySetId: checkInsESID, filter: searchFilter })
-      );
-      if (response.error) throw response.error;
-      const appointmentAndPeopleNeighbors :Map = fromJS(response.data);
-      const appointmentEKIDs :UUID[] = [];
-
-      let appointmentEKIDsByCheckInEKIDs :Map = Map().asMutable();
-      let hoursByCheckInEKID :Map = Map().asMutable();
-
-      const checkInEKIDsByPersonEKID :Map = Map().withMutations((map :Map) => {
-        appointmentAndPeopleNeighbors.forEach((neighborsList :List, checkInEKID :UUID) => {
-          const appointmentNeighbor :Map = neighborsList
-            .find((neighbor :Map) => getNeighborESID(neighbor) === appointmentESID);
-          const appointmentEKID :UUID = getEntityKeyId(getNeighborDetails(appointmentNeighbor));
-          if (isDefined(appointmentEKID)) appointmentEKIDs.push(appointmentEKID);
-          appointmentEKIDsByCheckInEKIDs = appointmentEKIDsByCheckInEKIDs.set(checkInEKID, appointmentEKID);
-
-          const personNeighbor :Map = neighborsList
-            .find((neighbor :Map) => getNeighborESID(neighbor) === peopleESID);
-          const personEKID :UUID = getEntityKeyId(getNeighborDetails(personNeighbor));
-          map.update(personEKID, List(), (ekids) => ekids.concat(fromJS([checkInEKID])));
-
-          const checkInDetailsNeighbor :Map = neighborsList
-            .find((neighbor :Map) => getNeighborESID(neighbor) === checkInDetailsESID);
-          const checkInDetails :Map = getNeighborDetails(checkInDetailsNeighbor);
-          const { [HOURS_WORKED]: hoursWorked } = getEntityProperties(checkInDetails, [HOURS_WORKED]);
-          hoursByCheckInEKID = hoursByCheckInEKID.set(checkInEKID, hoursWorked);
-        });
-      }).asImmutable();
-
-      const worksitePlanESID :UUID = getEntitySetIdFromApp(app, WORKSITE_PLAN);
-      searchFilter = {
-        entityKeyIds: appointmentEKIDs,
-        destinationEntitySetIds: [worksitePlanESID],
-        sourceEntitySetIds: [],
-      };
-      response = yield call(
-        searchEntityNeighborsWithFilterWorker,
-        searchEntityNeighborsWithFilter({ entitySetId: appointmentESID, filter: searchFilter })
-      );
-      if (response.error) throw response.error;
-      const worksitePlanEKIDs :UUID[] = [];
-      const worksitePlanEKIDsByAppointmentEKIDs :Map = Map().withMutations((map :Map) => {
-        fromJS(response.data).forEach((neighborsList :List, appointmentEKID :UUID) => {
-          const worksitePlanEKID :UUID = getEntityKeyId(getNeighborDetails(neighborsList.get(0)));
-          worksitePlanEKIDs.push(worksitePlanEKID);
-          map.set(appointmentEKID, worksitePlanEKID);
-        });
-      }).asImmutable();
-
-      const diversionPlanESID :UUID = getEntitySetIdFromApp(app, DIVERSION_PLAN);
-      searchFilter = {
-        entityKeyIds: worksitePlanEKIDs,
-        destinationEntitySetIds: [diversionPlanESID],
-        sourceEntitySetIds: [],
-      };
-      response = yield call(
-        searchEntityNeighborsWithFilterWorker,
-        searchEntityNeighborsWithFilter({ entitySetId: worksitePlanESID, filter: searchFilter })
-      );
-      if (response.error) throw response.error;
-      const diversionPlanEKIDs :UUID[] = [];
-      const diversionPlanEKIDsByWorksitePlanEKIDs :Map = Map().withMutations((map :Map) => {
-        fromJS(response.data).forEach((neighborsList :List, worksitePlanEKID :UUID) => {
-          const diversionPlanEKID :UUID = getEntityKeyId(getNeighborDetails(neighborsList.get(0)));
-          diversionPlanEKIDs.push(diversionPlanEKID);
-          map.set(worksitePlanEKID, diversionPlanEKID);
-        });
-      }).asImmutable();
-
-      const courtCaseESID :UUID = getEntitySetIdFromApp(app, MANUAL_PRETRIAL_COURT_CASES);
-      searchFilter = {
-        entityKeyIds: diversionPlanEKIDs,
-        destinationEntitySetIds: [courtCaseESID],
-        sourceEntitySetIds: [],
-      };
-      response = yield call(
-        searchEntityNeighborsWithFilterWorker,
-        searchEntityNeighborsWithFilter({ entitySetId: diversionPlanESID, filter: searchFilter })
-      );
-      if (response.error) throw response.error;
-      const courtTypesByDiversionPlanEKIDs :Map = Map().withMutations((map :Map) => {
-        fromJS(response.data).forEach((neighborsList :List, diversionPlanEKID :UUID) => {
-          const courtCase :Map = getNeighborDetails(neighborsList.get(0));
-          const { [COURT_CASE_TYPE]: courtType } = getEntityProperties(courtCase, [COURT_CASE_TYPE]);
-          map.set(diversionPlanEKID, courtType);
-        });
-      }).asImmutable();
-
-      checkInEKIDsByPersonEKID.forEach((checkInEKIDsList :List) => {
-        let personCourtTypes :Map = fromJS(courtTypeCountObj).asMutable();
-        checkInEKIDsList.forEach((checkInEKID :UUID) => {
-          const appointmentEKID :UUID = appointmentEKIDsByCheckInEKIDs.get(checkInEKID, '');
-          const worksitePlanEKID :UUID = worksitePlanEKIDsByAppointmentEKIDs.get(appointmentEKID, '');
-          const diversionPlanEKID :UUID = diversionPlanEKIDsByWorksitePlanEKIDs.get(worksitePlanEKID, '');
-          const courtType :string = courtTypesByDiversionPlanEKIDs.get(diversionPlanEKID, '');
-          if (isDefined(personCourtTypes.get(courtType))) {
-            personCourtTypes = personCourtTypes.set(courtType, personCourtTypes.get(courtType) + 1);
-          }
-        });
-
-        personCourtTypes.forEach((total :number, courtType :string) => {
-          if (isDefined(monthlyTotalParticipantsByCourtType.get(courtType))) {
-            const participantCount :number = monthlyTotalParticipantsByCourtType
-              .get(courtType, 0);
-            monthlyTotalParticipantsByCourtType = monthlyTotalParticipantsByCourtType
-              .set(courtType, participantCount + total);
-          }
-        });
-      });
-
-      hoursByCheckInEKID.forEach((hoursTotal :number, checkInEKID :UUID) => {
-        const appointmentEKID :UUID = appointmentEKIDsByCheckInEKIDs.get(checkInEKID, '');
-        const worksitePlanEKID :UUID = worksitePlanEKIDsByAppointmentEKIDs.get(appointmentEKID, '');
-        const diversionPlanEKID :UUID = diversionPlanEKIDsByWorksitePlanEKIDs.get(worksitePlanEKID, '');
-        const courtType :string = courtTypesByDiversionPlanEKIDs.get(diversionPlanEKID, '');
-        if (isDefined(monthlyHoursWorkedByCourtType.get(courtType))) {
-          const hours :number = monthlyHoursWorkedByCourtType
-            .get(courtType, 0);
-          monthlyHoursWorkedByCourtType = monthlyHoursWorkedByCourtType
-            .set(courtType, hours + hoursTotal);
-        }
-      });
-    }
-
-    yield put(getMonthlyCourtTypeData.success(id, {
-      monthlyHoursWorkedByCourtType,
-      monthlyTotalParticipantsByCourtType
-    }));
-  }
-  catch (error) {
-    LOG.error(action.type, error);
-    yield put(getMonthlyCourtTypeData.failure(id, error));
-  }
-  finally {
-    yield put(getMonthlyCourtTypeData.finally(id));
-  }
-}
-
-function* getMonthlyCourtTypeDataWatcher() :Generator<*, *, *> {
-
-  yield takeEvery(GET_MONTHLY_COURT_TYPE_DATA, getMonthlyCourtTypeDataWorker);
-}
 
 /*
  *
@@ -293,6 +62,7 @@ function* getStatsDataWorker(action :SequenceAction) :Generator<*, *, *> {
   let response :Object = {};
   let referralsByCourtTypeGraphData :Map = fromJS(courtTypeCountObj).asMutable();
   let activeEnrollmentsByCourtType :Map = fromJS(courtTypeCountObj).asMutable();
+  let jobSearchEnrollmentsByCourtType :Map = fromJS(courtTypeCountObj).asMutable();
   let successfulEnrollmentsByCourtType :Map = fromJS(courtTypeCountObj).asMutable();
   let unsuccessfulEnrollmentsByCourtType :Map = fromJS(courtTypeCountObj).asMutable();
   let closedEnrollmentsByCourtType :Map = fromJS(courtTypeCountObj).asMutable();
@@ -360,6 +130,11 @@ function* getStatsDataWorker(action :SequenceAction) :Generator<*, *, *> {
           activeEnrollmentsByCourtType = activeEnrollmentsByCourtType.set(courtCaseType, count + 1);
           totalActiveEnrollmentCount += 1;
         }
+        if (status === ENROLLMENT_STATUSES.JOB_SEARCH) {
+          const count :number = jobSearchEnrollmentsByCourtType.get(courtCaseType, 0);
+          jobSearchEnrollmentsByCourtType = jobSearchEnrollmentsByCourtType
+            .set(courtCaseType, count + 1);
+        }
         if (status === ENROLLMENT_STATUSES.COMPLETED || status === ENROLLMENT_STATUSES.SUCCESSFUL) {
           const count :number = successfulEnrollmentsByCourtType.get(courtCaseType, 0);
           successfulEnrollmentsByCourtType = successfulEnrollmentsByCourtType
@@ -388,6 +163,7 @@ function* getStatsDataWorker(action :SequenceAction) :Generator<*, *, *> {
 
       activeEnrollmentsByCourtType = activeEnrollmentsByCourtType.asImmutable();
       closedEnrollmentsByCourtType = closedEnrollmentsByCourtType.asImmutable();
+      jobSearchEnrollmentsByCourtType = jobSearchEnrollmentsByCourtType.asImmutable();
       successfulEnrollmentsByCourtType = successfulEnrollmentsByCourtType.asImmutable();
       unsuccessfulEnrollmentsByCourtType = unsuccessfulEnrollmentsByCourtType.asImmutable();
 
@@ -418,11 +194,15 @@ function* getStatsDataWorker(action :SequenceAction) :Generator<*, *, *> {
 
     const now :DateTime = DateTime.local();
     const { month, year } = now;
-    yield call(getMonthlyCourtTypeDataWorker, getMonthlyCourtTypeData({ month, year }));
+    yield all([
+      call(getMonthlyCourtTypeDataWorker, getMonthlyCourtTypeData({ month, year })),
+      call(getMonthlyParticipantsByCourtTypeWorker, getMonthlyParticipantsByCourtType({ month, year })),
+    ]);
 
     yield put(getStatsData.success(id, {
       activeEnrollmentsByCourtType,
       closedEnrollmentsByCourtType,
+      jobSearchEnrollmentsByCourtType,
       referralsByCourtTypeGraphData,
       successfulEnrollmentsByCourtType,
       totalActiveEnrollmentCount,
@@ -449,8 +229,6 @@ function* getStatsDataWatcher() :Generator<*, *, *> {
 }
 
 export {
-  getMonthlyCourtTypeDataWatcher,
-  getMonthlyCourtTypeDataWorker,
   getStatsDataWatcher,
   getStatsDataWorker,
 };

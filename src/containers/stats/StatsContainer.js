@@ -28,14 +28,11 @@ import WorksiteGraphs from './worksite/WorksiteGraphs';
 import LogoLoader from '../../components/LogoLoader';
 import { ContainerInnerWrapper, ContainerOuterWrapper } from '../../components/Layout';
 import { reduceRequestStates, requestIsPending } from '../../utils/RequestStateUtils';
-import {
-  GET_MONTHLY_COURT_TYPE_DATA,
-  GET_STATS_DATA,
-  getMonthlyCourtTypeData,
-  getStatsData,
-} from './StatsActions';
+import { GET_STATS_DATA, getStatsData } from './StatsActions';
+import { getMonthlyCourtTypeData } from './courttype/CourtTypeActions';
 import { GET_WORKSITE_STATS_DATA, getWorksiteStatsData } from './worksite/WorksiteStatsActions';
 import { GET_PARTICIPANTS_DEMOGRAPHICS, getParticipantsDemographics } from './demographics/DemographicsActions';
+import { GET_CHARGES_STATS, getChargesStats } from './charges/ChargesStatsActions';
 import {
   APP,
   SHARED,
@@ -56,6 +53,7 @@ const {
 const {
   ACTIVE_ENROLLMENTS_BY_COURT_TYPE,
   CLOSED_ENROLLMENTS_BY_COURT_TYPE,
+  JOB_SEARCH_ENROLLMENTS_BY_COURT_TYPE,
   MONTHLY_HOURS_WORKED_BY_COURT_TYPE,
   MONTHLY_TOTAL_PARTICIPANTS_BY_COURT_TYPE,
   REFERRALS_BY_COURT_TYPE_GRAPH_DATA,
@@ -182,6 +180,7 @@ const StatsBoxSkeleton = () => (
 
 type Props = {
   actions :{
+    getChargesStats :RequestSequence;
     getMonthlyCourtTypeData :RequestSequence;
     getParticipantsDemographics :RequestSequence;
     getStatsData :RequestSequence;
@@ -190,11 +189,12 @@ type Props = {
   activeEnrollmentsByCourtType :Map;
   closedEnrollmentsByCourtType :Map;
   entitySetIds :Map;
+  jobSearchEnrollmentsByCourtType :Map;
   monthlyHoursWorkedByCourtType :Map;
   monthlyTotalParticipantsByCourtType :Map;
   referralsByCourtTypeGraphData :Map;
   requestStates :{
-    GET_MONTHLY_COURT_TYPE_DATA :RequestState;
+    GET_CHARGES_STATS :RequestState;
     GET_PARTICIPANTS_DEMOGRAPHICS :RequestState;
     GET_STATS_DATA :RequestState;
     GET_WORKSITE_STATS_DATA :RequestState;
@@ -214,6 +214,7 @@ const StatsContainer = ({
   activeEnrollmentsByCourtType,
   closedEnrollmentsByCourtType,
   entitySetIds,
+  jobSearchEnrollmentsByCourtType,
   monthlyHoursWorkedByCourtType,
   monthlyTotalParticipantsByCourtType,
   referralsByCourtTypeGraphData,
@@ -229,7 +230,7 @@ const StatsContainer = ({
 } :Props) => {
 
   const reducedFetchRequestStates = reduceRequestStates([
-    requestStates[GET_MONTHLY_COURT_TYPE_DATA],
+    requestStates[GET_CHARGES_STATS],
     requestStates[GET_PARTICIPANTS_DEMOGRAPHICS],
     requestStates[GET_STATS_DATA],
     requestStates[GET_WORKSITE_STATS_DATA]
@@ -247,6 +248,7 @@ const StatsContainer = ({
         activeEnrollmentsByCourtType={activeEnrollmentsByCourtType}
         closedEnrollmentsByCourtType={closedEnrollmentsByCourtType}
         dataIsLoading={dataIsLoading}
+        jobSearchEnrollmentsByCourtType={jobSearchEnrollmentsByCourtType}
         monthlyHoursWorkedByCourtType={monthlyHoursWorkedByCourtType}
         monthlyTotalParticipantsByCourtType={monthlyTotalParticipantsByCourtType}
         referralsByCourtTypeGraphData={referralsByCourtTypeGraphData}
@@ -279,6 +281,7 @@ const StatsContainer = ({
     [SCREEN_VIEWS.COURT_TYPE]: actions.getMonthlyCourtTypeData,
     [SCREEN_VIEWS.WORK_SITES]: actions.getWorksiteStatsData,
     [SCREEN_VIEWS.DEMOGRAPHICS]: actions.getParticipantsDemographics,
+    [SCREEN_VIEWS.CHARGES]: actions.getChargesStats,
   };
 
   const buttonOptions :Object[] = SCREEN_VIEWS_LIST.map((value :string) => ({
@@ -377,6 +380,7 @@ const mapStateToProps = (state :Map) => {
   return {
     [ACTIVE_ENROLLMENTS_BY_COURT_TYPE]: stats.get(ACTIVE_ENROLLMENTS_BY_COURT_TYPE),
     [CLOSED_ENROLLMENTS_BY_COURT_TYPE]: stats.get(CLOSED_ENROLLMENTS_BY_COURT_TYPE),
+    [JOB_SEARCH_ENROLLMENTS_BY_COURT_TYPE]: stats.get(JOB_SEARCH_ENROLLMENTS_BY_COURT_TYPE),
     [MONTHLY_HOURS_WORKED_BY_COURT_TYPE]: stats.get(MONTHLY_HOURS_WORKED_BY_COURT_TYPE),
     [MONTHLY_TOTAL_PARTICIPANTS_BY_COURT_TYPE]: stats.get(MONTHLY_TOTAL_PARTICIPANTS_BY_COURT_TYPE),
     [REFERRALS_BY_COURT_TYPE_GRAPH_DATA]: stats.get(REFERRALS_BY_COURT_TYPE_GRAPH_DATA),
@@ -390,7 +394,7 @@ const mapStateToProps = (state :Map) => {
     [UNSUCCESSFUL_ENROLLMENTS_BY_COURT_TYPE]: stats.get(UNSUCCESSFUL_ENROLLMENTS_BY_COURT_TYPE),
     entitySetIds: app.getIn([ENTITY_SET_IDS_BY_ORG, selectedOrgId], Map()),
     requestStates: {
-      [GET_MONTHLY_COURT_TYPE_DATA]: stats.getIn([ACTIONS, GET_MONTHLY_COURT_TYPE_DATA, REQUEST_STATE]),
+      [GET_CHARGES_STATS]: stats.getIn([ACTIONS, GET_CHARGES_STATS, REQUEST_STATE]),
       [GET_PARTICIPANTS_DEMOGRAPHICS]: stats.getIn([ACTIONS, GET_PARTICIPANTS_DEMOGRAPHICS, REQUEST_STATE]),
       [GET_STATS_DATA]: stats.getIn([ACTIONS, GET_STATS_DATA, REQUEST_STATE]),
       [GET_WORKSITE_STATS_DATA]: stats.getIn([ACTIONS, GET_WORKSITE_STATS_DATA, REQUEST_STATE]),
@@ -400,6 +404,7 @@ const mapStateToProps = (state :Map) => {
 
 const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
+    getChargesStats,
     getMonthlyCourtTypeData,
     getParticipantsDemographics,
     getStatsData,
