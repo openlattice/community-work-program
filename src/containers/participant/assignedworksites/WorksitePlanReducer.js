@@ -10,6 +10,8 @@ import type { FQN } from 'lattice';
 
 import {
   CLEAR_APPOINTMENTS_AND_PLANS,
+  RESET_CHECK_IN_REQUEST_STATE,
+  RESET_DELETE_CHECK_IN_REQUEST_STATE,
   addWorksitePlan,
   checkInForAppointment,
   createWorkAppointments,
@@ -123,6 +125,16 @@ export default function worksitePlanReducer(state :Map<*, *> = INITIAL_STATE, ac
         .set(WORKSITE_PLANS_LIST, List())
         .set(WORKSITE_PLAN_STATUSES, Map())
         .set(WORK_APPOINTMENTS_BY_WORKSITE_PLAN, Map());
+    }
+
+    case RESET_CHECK_IN_REQUEST_STATE: {
+      return state
+        .setIn([ACTIONS, CHECK_IN_FOR_APPOINTMENT, REQUEST_STATE], RequestStates.STANDBY);
+    }
+
+    case RESET_DELETE_CHECK_IN_REQUEST_STATE: {
+      return state
+        .setIn([ACTIONS, DELETE_CHECK_IN, REQUEST_STATE], RequestStates.STANDBY);
     }
 
     case checkInForAppointment.case(action.type): {
