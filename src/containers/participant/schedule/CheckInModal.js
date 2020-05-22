@@ -3,16 +3,21 @@ import React, { Component } from 'react';
 import { Map } from 'immutable';
 import { Modal } from 'lattice-ui-kit';
 import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
 import { RequestStates } from 'redux-reqseq';
 import type { RequestState } from 'redux-reqseq';
 
 import CheckInForm from './CheckInForm';
 
+import { resetCheckInRequestState } from '../assignedworksites/WorksitePlanActions';
 import { WORKSITE_PLANS, STATE } from '../../../utils/constants/ReduxStateConsts';
 
 const { ACTIONS, CHECK_IN_FOR_APPOINTMENT, REQUEST_STATE } = WORKSITE_PLANS;
 
 type Props = {
+  actions :{
+    resetCheckInRequestState :() => { type :string };
+  };
   appointment :Map;
   checkInForAppointmentState :RequestState;
   isOpen :boolean;
@@ -24,11 +29,12 @@ type Props = {
 class CheckInModal extends Component<Props> {
 
   componentDidUpdate(prevProps :Props) {
-    const { checkInForAppointmentState, onClose } = this.props;
+    const { actions, checkInForAppointmentState, onClose } = this.props;
     const { checkInForAppointmentState: prevSumbitState } = prevProps;
     if (checkInForAppointmentState === RequestStates.SUCCESS
       && prevSumbitState === RequestStates.PENDING) {
       onClose();
+      actions.resetCheckInRequestState();
     }
   }
 
@@ -64,5 +70,11 @@ const mapStateToProps = (state :Map) => ({
     .getIn([STATE.WORKSITE_PLANS, ACTIONS, CHECK_IN_FOR_APPOINTMENT, REQUEST_STATE]),
 });
 
+const mapDispatchToProps = (dispatch) => ({
+  actions: bindActionCreators({
+    resetCheckInRequestState,
+  }, dispatch)
+});
+
 // $FlowFixMe
-export default connect(mapStateToProps)(CheckInModal);
+export default connect(mapStateToProps, mapDispatchToProps)(CheckInModal);
