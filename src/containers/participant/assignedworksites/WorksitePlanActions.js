@@ -43,6 +43,17 @@ const getWorksitePlans :RequestSequence = newRequestSequence(GET_WORKSITE_PLANS)
 const GET_WORKSITE_PLAN_STATUSES :'GET_WORKSITE_PLAN_STATUSES' = 'GET_WORKSITE_PLAN_STATUSES';
 const getWorksitePlanStatuses :RequestSequence = newRequestSequence(GET_WORKSITE_PLAN_STATUSES);
 
+const RESET_CHECK_IN_REQUEST_STATE :'RESET_CHECK_IN_REQUEST_STATE' = 'RESET_CHECK_IN_REQUEST_STATE';
+const resetCheckInRequestState = () => ({
+  type: RESET_CHECK_IN_REQUEST_STATE
+});
+
+const RESET_DELETE_CHECK_IN_REQUEST_STATE
+  :'RESET_DELETE_CHECK_IN_REQUEST_STATE' = 'RESET_DELETE_CHECK_IN_REQUEST_STATE';
+const resetDeleteCheckInRequestState = () => ({
+  type: RESET_DELETE_CHECK_IN_REQUEST_STATE
+});
+
 const UPDATE_HOURS_WORKED :'UPDATE_HOURS_WORKED' = 'UPDATE_HOURS_WORKED';
 const updateHoursWorked :RequestSequence = newRequestSequence(UPDATE_HOURS_WORKED);
 
@@ -60,6 +71,8 @@ export {
   GET_WORKSITE_PLANS,
   GET_WORKSITE_PLAN_STATUSES,
   GET_WORK_APPOINTMENTS,
+  RESET_CHECK_IN_REQUEST_STATE,
+  RESET_DELETE_CHECK_IN_REQUEST_STATE,
   UPDATE_HOURS_WORKED,
   addWorksitePlan,
   checkInForAppointment,
@@ -74,5 +87,7 @@ export {
   getWorksiteByWorksitePlan,
   getWorksitePlanStatuses,
   getWorksitePlans,
+  resetCheckInRequestState,
+  resetDeleteCheckInRequestState,
   updateHoursWorked,
 };
