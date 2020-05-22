@@ -29,7 +29,6 @@ import LogoLoader from '../../components/LogoLoader';
 import { ContainerInnerWrapper, ContainerOuterWrapper } from '../../components/Layout';
 import { reduceRequestStates, requestIsPending } from '../../utils/RequestStateUtils';
 import {
-  GET_MONTHLY_COURT_TYPE_DATA,
   GET_STATS_DATA,
   getMonthlyCourtTypeData,
   getStatsData,
@@ -199,7 +198,6 @@ type Props = {
   referralsByCourtTypeGraphData :Map;
   requestStates :{
     GET_CHARGES_STATS :RequestState;
-    GET_MONTHLY_COURT_TYPE_DATA :RequestState;
     GET_PARTICIPANTS_DEMOGRAPHICS :RequestState;
     GET_STATS_DATA :RequestState;
     GET_WORKSITE_STATS_DATA :RequestState;
@@ -236,7 +234,6 @@ const StatsContainer = ({
 
   const reducedFetchRequestStates = reduceRequestStates([
     requestStates[GET_CHARGES_STATS],
-    requestStates[GET_MONTHLY_COURT_TYPE_DATA],
     requestStates[GET_PARTICIPANTS_DEMOGRAPHICS],
     requestStates[GET_STATS_DATA],
     requestStates[GET_WORKSITE_STATS_DATA]
@@ -401,7 +398,6 @@ const mapStateToProps = (state :Map) => {
     entitySetIds: app.getIn([ENTITY_SET_IDS_BY_ORG, selectedOrgId], Map()),
     requestStates: {
       [GET_CHARGES_STATS]: stats.getIn([ACTIONS, GET_CHARGES_STATS, REQUEST_STATE]),
-      [GET_MONTHLY_COURT_TYPE_DATA]: stats.getIn([ACTIONS, GET_MONTHLY_COURT_TYPE_DATA, REQUEST_STATE]),
       [GET_PARTICIPANTS_DEMOGRAPHICS]: stats.getIn([ACTIONS, GET_PARTICIPANTS_DEMOGRAPHICS, REQUEST_STATE]),
       [GET_STATS_DATA]: stats.getIn([ACTIONS, GET_STATS_DATA, REQUEST_STATE]),
       [GET_WORKSITE_STATS_DATA]: stats.getIn([ACTIONS, GET_WORKSITE_STATS_DATA, REQUEST_STATE]),

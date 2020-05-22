@@ -37,12 +37,25 @@ const ETHNICITY_ALIASES :Object = {
   [NOT_HISPANIC_OR_LATINO]: ['NH', 'nonhispanic']
 };
 
+const DOWNLOAD_CONSTS :Object = {
+  COUNT: 'count',
+  COURT_TYPE: 'courtType',
+  PARTICIPANTS: 'participants',
+  STATUS: 'status',
+  STATUSES: 'statuses',
+  TOTAL: 'total',
+  TOTAL_FOR_ALL_COURT_TYPES: 'Total for All Court Types',
+  TOTAL_FOR_ALL_WORK_SITES: 'Total for All Work Sites',
+  WORKSITE: 'worksite',
+};
+
 const ARREST_CHARGE_HEADERS :string[] = ['ARREST CHARGE', 'ENROLLMENTS', 'REFERRALS'];
 const COURT_CHARGE_HEADERS :string[] = ['COURT CHARGE', 'ENROLLMENTS', 'REFERRALS'];
 
 export {
   ARREST_CHARGE_HEADERS,
   COURT_CHARGE_HEADERS,
+  DOWNLOAD_CONSTS,
   ETHNICITY_ALIASES,
   RACE_ALIASES,
   SCREEN_VIEWS,

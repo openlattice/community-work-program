@@ -1,4 +1,7 @@
 // @flow
+import Papa from 'papaparse';
+import FS from 'file-saver';
+import isFunction from 'lodash/isFunction';
 import { List, Map, fromJS } from 'immutable';
 import { DateTime } from 'luxon';
 import {
@@ -27,13 +30,16 @@ import {
 } from '../../utils/DataUtils';
 import { isDefined } from '../../utils/LangUtils';
 import {
+  DOWNLOAD_COURT_TYPE_DATA,
   GET_ENROLLMENTS_BY_COURT_TYPE,
   GET_MONTHLY_COURT_TYPE_DATA,
   GET_STATS_DATA,
+  downloadCourtTypeData,
   getEnrollmentsByCourtType,
   getMonthlyCourtTypeData,
   getStatsData,
 } from './StatsActions';
+import { DOWNLOAD_CONSTS } from './consts/StatsConsts';
 import { STATE } from '../../utils/constants/ReduxStateConsts';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { COURT_TYPES_MAP, ENROLLMENT_STATUSES } from '../../core/edm/constants/DataModelConsts';
@@ -82,6 +88,78 @@ const ACTIVE_STATUSES :string[] = [
   ENROLLMENT_STATUSES.AWAITING_CHECKIN,
   ENROLLMENT_STATUSES.AWAITING_ORIENTATION,
 ];
+
+/*
+ *
+ * StatsActions.downloadCourtTypeData()
+ *
+ */
+
+function* downloadCourtTypeDataWorker(action :SequenceAction) :Generator<*, *, *> {
+  const { id, value } = action;
+  if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
+
+  try {
+    yield put(downloadCourtTypeData.request(id));
+
+    const { courtTypeData, fileName, getBottomRow } = value;
+    let csvData :Object[] = courtTypeData.map((row :Map) => {
+      const newCSVObject :Object = {};
+      newCSVObject['Court Type'] = row.get(DOWNLOAD_CONSTS.COURT_TYPE);
+
+      if (isDefined(row.get(DOWNLOAD_CONSTS.STATUSES))) {
+        row.get(DOWNLOAD_CONSTS.STATUSES).forEach((statusCount :Map) => {
+          newCSVObject[statusCount.get(DOWNLOAD_CONSTS.STATUS)] = statusCount.get(DOWNLOAD_CONSTS.COUNT);
+        });
+      }
+
+      if (isDefined(row.get('Participants'))) newCSVObject.Participants = row.get('Participants');
+      if (isDefined(row.get('Hours'))) newCSVObject.Hours = row.get('Hours');
+
+      if (isDefined(row.get(DOWNLOAD_CONSTS.TOTAL))) newCSVObject.Total = row.get(DOWNLOAD_CONSTS.TOTAL);
+      return newCSVObject;
+    }).toJS();
+
+    csvData = csvData.sort((row1 :Object, row2 :Object) => {
+      if (row1.Total > row2.Total) return -1;
+      if (row1.Total < row2.Total) return 1;
+      return 0;
+    });
+
+    if (isFunction(getBottomRow)) {
+      const total = getBottomRow(csvData);
+      csvData.push(total);
+    }
+    else {
+      const countTotal :number = csvData.map((obj :Object) => obj.Total)
+        .reduce((sum :number, count :number) => sum + count);
+      const total = {
+        'Court Type': DOWNLOAD_CONSTS.TOTAL_FOR_ALL_COURT_TYPES,
+        Total: countTotal,
+      };
+      csvData.push(total);
+    }
+
+    const csv = Papa.unparse(csvData);
+    const blob = new Blob([csv], {
+      type: 'application/json'
+    });
+    FS.saveAs(blob, fileName.concat('.csv'));
+    yield put(downloadCourtTypeData.success(id));
+  }
+  catch (error) {
+    LOG.error(action.type, error);
+    yield put(downloadCourtTypeData.failure(id, error));
+  }
+  finally {
+    yield put(downloadCourtTypeData.finally(id));
+  }
+}
+
+function* downloadCourtTypeDataWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(DOWNLOAD_COURT_TYPE_DATA, downloadCourtTypeDataWorker);
+}
 
 /*
  *
@@ -628,6 +706,8 @@ function* getStatsDataWatcher() :Generator<*, *, *> {
 }
 
 export {
+  downloadCourtTypeDataWatcher,
+  downloadCourtTypeDataWorker,
   getEnrollmentsByCourtTypeWatcher,
   getEnrollmentsByCourtTypeWorker,
   getMonthlyCourtTypeDataWatcher,
