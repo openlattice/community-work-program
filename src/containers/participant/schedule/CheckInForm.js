@@ -17,6 +17,7 @@ import type { RequestSequence } from 'redux-reqseq';
 
 import { checkInForAppointment } from '../assignedworksites/WorksitePlanActions';
 import { getCombinedDateTime } from '../../../utils/ScheduleUtils';
+import { get24HourTimeForCheckIn, getHoursScheduled } from '../utils/CheckInUtils';
 import {
   ButtonsRow,
   FormRow,
@@ -89,13 +90,19 @@ class CheckInForm extends Component<Props, State> {
   constructor(props :Props) {
     super(props);
 
+    const { appointment } = props;
+    const hours = appointment.get('hours');
+    const { timeIn, timeOut } = get24HourTimeForCheckIn(hours);
+    const hoursScheduled :number = getHoursScheduled(timeIn, timeOut);
     this.state = {
       checkedIn: '',
       newCheckInData: fromJS({
-        [getPageSectionKey(1, 1)]: {},
+        [getPageSectionKey(1, 1)]: {
+          [getEntityAddressKey(0, CHECK_IN_DETAILS, HOURS_WORKED)]: hoursScheduled
+        },
       }),
-      timeIn: '',
-      timeOut: '',
+      timeIn,
+      timeOut,
     };
   }
 
@@ -157,7 +164,12 @@ class CheckInForm extends Component<Props, State> {
 
   render() {
     const { isLoading, onDiscard, personName } = this.props;
-    const { checkedIn } = this.state;
+    const {
+      checkedIn,
+      newCheckInData,
+      timeIn,
+      timeOut,
+    } = this.state;
 
     const checkInQuestion = `Did ${personName} appear for this work appointment?`;
     return (
@@ -191,7 +203,8 @@ class CheckInForm extends Component<Props, State> {
             <Label>Time checked in</Label>
             <TimePicker
                 name={getEntityAddressKey(0, CHECK_INS, DATETIME_START)}
-                onChange={this.setRawTime(DATETIME_START)} />
+                onChange={this.setRawTime(DATETIME_START)}
+                value={timeIn} />
           </RowContent>
         </FormRow>
         <FormRow>
@@ -199,7 +212,8 @@ class CheckInForm extends Component<Props, State> {
             <Label>Time checked out</Label>
             <TimePicker
                 name={getEntityAddressKey(0, CHECK_INS, DATETIME_END)}
-                onChange={this.setRawTime(DATETIME_END)} />
+                onChange={this.setRawTime(DATETIME_END)}
+                value={timeOut} />
           </RowContent>
         </FormRow>
         <FormRow>
@@ -208,7 +222,11 @@ class CheckInForm extends Component<Props, State> {
             <Input
                 name={getEntityAddressKey(0, CHECK_IN_DETAILS, HOURS_WORKED)}
                 onChange={this.handleInputChange}
-                type="text" />
+                type="text"
+                value={newCheckInData.getIn([
+                  getPageSectionKey(1, 1),
+                  getEntityAddressKey(0, CHECK_IN_DETAILS, HOURS_WORKED)
+                ])} />
           </RowContent>
         </FormRow>
         <ButtonsRow>
