@@ -8,7 +8,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { RequestStates } from 'redux-reqseq';
 import type { RequestState } from 'redux-reqseq';
 
-import { deleteCheckIn } from '../assignedworksites/WorksitePlanActions';
+import { deleteCheckIn, resetDeleteCheckInRequestState } from '../assignedworksites/WorksitePlanActions';
 import { getEntityKeyId, getEntityProperties } from '../../../utils/DataUtils';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { EMPTY_FIELD } from '../../participants/ParticipantsConstants';
@@ -70,13 +70,14 @@ const CheckInDetailsModal = ({
     DELETE_CHECK_IN,
     REQUEST_STATE
   ]));
+  const dispatch = useDispatch();
   useEffect(() => {
     if (deleteCheckInRequestState === RequestStates.SUCCESS) {
       onClose();
+      dispatch(resetDeleteCheckInRequestState());
     }
-  }, [deleteCheckInRequestState, onClose]);
+  }, [deleteCheckInRequestState, dispatch, onClose]);
 
-  const dispatch = useDispatch();
   const checkInEKID :UUID = getEntityKeyId(checkIn);
   const orgId :UUID = useSelector((store :Map) => store.getIn([STATE.APP, SELECTED_ORG_ID], ''));
   const checkInESID :UUID = useSelector((store :Map) => store.getIn([
