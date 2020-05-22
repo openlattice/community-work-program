@@ -4,17 +4,21 @@ import { RequestStates } from 'redux-reqseq';
 import type { SequenceAction } from 'redux-reqseq';
 
 import {
+  DOWNLOAD_COURT_TYPE_DATA,
   GET_ENROLLMENTS_BY_COURT_TYPE,
   GET_MONTHLY_COURT_TYPE_DATA,
   GET_STATS_DATA,
+  downloadCourtTypeData,
   getEnrollmentsByCourtType,
   getMonthlyCourtTypeData,
   getStatsData,
 } from './StatsActions';
 import {
+  DOWNLOAD_WORKSITE_STATS_DATA,
   GET_HOURS_WORKED_BY_WORKSITE,
   GET_MONTHLY_PARTICIPANTS_BY_WORKSITE,
   GET_WORKSITE_STATS_DATA,
+  downloadWorksiteStatsData,
   getHoursWorkedByWorksite,
   getMonthlyParticipantsByWorksite,
   getWorksiteStatsData,
@@ -62,10 +66,16 @@ const {
 
 const INITIAL_STATE :Map<*, *> = fromJS({
   [ACTIONS]: {
+    [DOWNLOAD_COURT_TYPE_DATA]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
     [DOWNLOAD_CHARGES_STATS]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [DOWNLOAD_DEMOGRAPHICS_DATA]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [DOWNLOAD_WORKSITE_STATS_DATA]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [GET_CHARGES_STATS]: {
@@ -121,6 +131,21 @@ export default function statsReducer(state :Map<*, *> = INITIAL_STATE, action :O
 
   switch (action.type) {
 
+    case downloadCourtTypeData.case(action.type): {
+
+      return downloadCourtTypeData.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, DOWNLOAD_COURT_TYPE_DATA, action.id], action)
+          .setIn([ACTIONS, DOWNLOAD_COURT_TYPE_DATA, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => state
+          .setIn([ACTIONS, DOWNLOAD_COURT_TYPE_DATA, REQUEST_STATE], RequestStates.SUCCESS),
+        FAILURE: () => state
+          .setIn([ACTIONS, DOWNLOAD_COURT_TYPE_DATA, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, DOWNLOAD_COURT_TYPE_DATA, action.id]),
+      });
+    }
+
     case downloadChargesStats.case(action.type): {
 
       return downloadChargesStats.reducer(state, action, {
@@ -148,6 +173,21 @@ export default function statsReducer(state :Map<*, *> = INITIAL_STATE, action :O
         FAILURE: () => state
           .setIn([ACTIONS, DOWNLOAD_DEMOGRAPHICS_DATA, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, DOWNLOAD_DEMOGRAPHICS_DATA, action.id]),
+      });
+    }
+
+    case downloadWorksiteStatsData.case(action.type): {
+
+      return downloadWorksiteStatsData.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, DOWNLOAD_WORKSITE_STATS_DATA, action.id], action)
+          .setIn([ACTIONS, DOWNLOAD_WORKSITE_STATS_DATA, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => state
+          .setIn([ACTIONS, DOWNLOAD_WORKSITE_STATS_DATA, REQUEST_STATE], RequestStates.SUCCESS),
+        FAILURE: () => state
+          .setIn([ACTIONS, DOWNLOAD_WORKSITE_STATS_DATA, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, DOWNLOAD_WORKSITE_STATS_DATA, action.id]),
       });
     }
 
