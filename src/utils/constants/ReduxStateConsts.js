@@ -189,6 +189,7 @@ export const STATS = {
   HOURS_BY_WORKSITE: 'hoursByWorksite',
   JOB_SEARCH_ENROLLMENTS_BY_COURT_TYPE: 'jobSearchEnrollmentsByCourtType',
   MONTHLY_HOURS_WORKED_BY_COURT_TYPE: 'monthlyHoursWorkedByCourtType',
+  MONTHLY_PARTICIPANTS_BY_COURT_TYPE: 'monthlyParticipantsByCourtType',
   MONTHLY_TOTAL_PARTICIPANTS_BY_COURT_TYPE: 'monthlyTotalParticipantsByCourtType',
   PARTICIPANTS_BY_WORKSITE: 'participantsByWorksite',
   RACE_DEMOGRAPHICS: 'raceDemographics',

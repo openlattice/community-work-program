@@ -1,6 +1,5 @@
 // @flow
 import React, { useState } from 'react';
-import styled from 'styled-components';
 import { List, Map } from 'immutable';
 import { DateTime } from 'luxon';
 import {
@@ -10,7 +9,6 @@ import {
   CardStack,
   ExpansionPanel,
   ExpansionPanelDetails,
-  ExpansionPanelSummary,
   IconButton,
   Select,
   Spinner,
@@ -19,7 +17,6 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSearch } from '@fortawesome/pro-duotone-svg-icons';
-import { faChevronDown } from '@fortawesome/pro-light-svg-icons';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
 import HoursByWorksiteGraph from './HoursByWorksiteGraph';
@@ -31,6 +28,11 @@ import {
   SelectsWrapper,
   SmallSelectWrapper,
 } from '../styled/GraphStyles';
+import {
+  SpinnerWrapper,
+  StyledExpansionPanelSummary,
+  expandIcon,
+} from '../styled/ExpansionStyles';
 import {
   DOWNLOAD_WORKSITE_STATS_DATA,
   GET_HOURS_WORKED_BY_WORKSITE,
@@ -53,21 +55,6 @@ import {
 
 const { ACTIONS, REQUEST_STATE } = SHARED;
 const { HOURS_BY_WORKSITE, PARTICIPANTS_BY_WORKSITE } = STATS;
-
-const expandIcon = <FontAwesomeIcon icon={faChevronDown} size="xs" />;
-
-const StyledExpansionPanelSummary = styled(ExpansionPanelSummary)`
-  && {
-    background-color: white;
-  }
-`;
-
-const SpinnerWrapper = styled.div`
-  align-items: center;
-  display: flex;
-  justify-content: center;
-  width: 100%;
-`;
 
 type Props = {
   actions :{
@@ -138,7 +125,6 @@ const WorksiteGraphs = ({
     /* eslint-disable-next-line */
     let fileName :string = `CWP_Participant_Names_by_Worksite_${MONTHS_OPTIONS[participantsMonth.value - 1].label}_${participantsYear.value}`;
     actions.downloadWorksiteStatsData({
-      getBottomRow: () => {},
       fileName,
       worksiteData: formattedParticipantsData,
     });
@@ -254,7 +240,7 @@ const WorksiteGraphs = ({
                     </StyledExpansionPanelSummary>
                     <ExpansionPanelDetails>
                       <CardSegment padding="0" vertical>
-                        { participants.map((name :string) => <div>{ name }</div>) }
+                        { participants.map((name :string) => <div key={name}>{ name }</div>) }
                       </CardSegment>
                     </ExpansionPanelDetails>
                   </ExpansionPanel>
