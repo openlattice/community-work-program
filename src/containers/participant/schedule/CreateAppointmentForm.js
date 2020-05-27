@@ -279,12 +279,18 @@ class CreateWorkAppointmentForm extends Component<Props, State> {
           <RowContent>
             <Label>Start time</Label>
             <TimePicker
-                onChange={this.setRawTime(START)} />
+                format="H:mm"
+                mask="__:__"
+                onChange={this.setRawTime(START)}
+                placeholder="HH:MM" />
           </RowContent>
           <RowContent>
             <Label>End time</Label>
             <TimePicker
-                onChange={this.setRawTime(END)} />
+                format="H:mm"
+                mask="__:__"
+                onChange={this.setRawTime(END)}
+                placeholder="HH:MM" />
           </RowContent>
         </FormRow>
         <FormRow>
