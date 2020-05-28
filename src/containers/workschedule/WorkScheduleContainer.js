@@ -91,17 +91,6 @@ const FieldsWrapper = styled.div`
   margin-right: 15px;
 `;
 
-const ButtonsWrapper = styled.div`
-  display: grid;
-  grid-template-columns: minmax(min-content, 1fr) minmax(min-content, 1fr);
-  grid-gap: 0 15px;
-  margin-left: 15px;
-`;
-
-const IconButtonWrapper = styled.div`
-  margin-right: 15px;
-`;
-
 const SelectAndLabelWrapper = styled.div`
   align-items: center;
   align-self: flex-start;
@@ -273,20 +262,16 @@ class WorkScheduleContainer extends Component<Props, State> {
                 options={WORKSITES_OPTIONS} />
           </div>
         </FieldsWrapper>
-        <IconButtonWrapper>
-          <IconButton
-              disabled={appointments.isEmpty()}
-              icon={<FontAwesomeIcon icon={faFilter} />}
-              onClick={this.showFilters} />
-        </IconButtonWrapper>
+        <IconButton
+            disabled={appointments.isEmpty()}
+            icon={<FontAwesomeIcon icon={faFilter} />}
+            onClick={this.showFilters} />
         <IconButton
             disabled={appointments.isEmpty()}
             icon={<FontAwesomeIcon icon={faSortAlphaDown} />}
             onClick={() => this.setState({ sortedByPersonLastName: !sortedByPersonLastName })} />
-        <ButtonsWrapper>
-          <Button onClick={this.goToPrintSchedule}>Print</Button>
-          <Button mode="primary" onClick={this.getAppointments}>Display Appointments</Button>
-        </ButtonsWrapper>
+        <Button onClick={this.goToPrintSchedule}>Print</Button>
+        <Button mode="primary" onClick={this.getAppointments}>Display Appointments</Button>
       </FieldsRowWrapper>
     );
   }
