@@ -1,15 +1,22 @@
 // @flow
-import { List, setIn } from 'immutable';
+import { Map, setIn } from 'immutable';
 import { DataProcessingUtils } from 'lattice-fabricate';
 
-import { getValuesFromEntityList } from '../../../utils/DataUtils';
+import { getEntityProperties } from '../../../utils/DataUtils';
 import { PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 
 const { getPageSectionKey } = DataProcessingUtils;
+const { NAME } = PROPERTY_TYPE_FQNS;
 
 /* eslint-disable import/prefer-default-export */
-export const hydrateSchema = (schema :Object, worksitesList :List) => {
-  const [values, labels] = getValuesFromEntityList(worksitesList, [PROPERTY_TYPE_FQNS.NAME]);
+export const hydrateSchema = (schema :Object, worksitesByWorksitePlan :Map) => {
+  const values = [];
+  const labels = [];
+  worksitesByWorksitePlan.forEach((worksite :Map, worksitePlanEKID :UUID) => {
+    const { [NAME]: worksiteName } = getEntityProperties(worksite, [NAME]);
+    values.push(worksitePlanEKID);
+    labels.push(worksiteName);
+  });
 
   let newSchema = setIn(
     schema,
