@@ -1,6 +1,6 @@
 // @flow
 import React, { Component } from 'react';
-import { Map } from 'immutable';
+import { List, Map } from 'immutable';
 import { Modal } from 'lattice-ui-kit';
 import { connect } from 'react-redux';
 import { RequestStates } from 'redux-reqseq';
@@ -15,10 +15,12 @@ const { ACTIONS, EDIT_APPOINTMENT, REQUEST_STATE } = WORKSITE_PLANS;
 type Props = {
   appointment :Map;
   appointmentEKID :UUID;
+  assignedWorksites :List;
   editAppointmentRequestState :RequestState;
   isOpen :boolean;
   onClose :() => void;
   personName :string;
+  worksitesByWorksitePlan :Map;
 };
 
 class EditAppointmentModal extends Component<Props> {
@@ -36,10 +38,12 @@ class EditAppointmentModal extends Component<Props> {
     const {
       appointment,
       appointmentEKID,
+      assignedWorksites,
       editAppointmentRequestState,
       isOpen,
       onClose,
       personName,
+      worksitesByWorksitePlan,
     } = this.props;
     return (
       <Modal
@@ -50,9 +54,11 @@ class EditAppointmentModal extends Component<Props> {
         <EditAppointmentForm
             appointment={appointment}
             appointmentEKID={appointmentEKID}
+            assignedWorksites={assignedWorksites}
             isLoading={editAppointmentRequestState === RequestStates.PENDING}
             onDiscard={onClose}
-            personName={personName} />
+            personName={personName}
+            worksitesByWorksitePlan={worksitesByWorksitePlan} />
       </Modal>
     );
   }

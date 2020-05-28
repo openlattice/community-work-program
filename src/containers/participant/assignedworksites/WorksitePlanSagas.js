@@ -54,14 +54,21 @@ import {
   sortEntitiesByDateProperty,
 } from '../../../utils/DataUtils';
 import { isDefined } from '../../../utils/LangUtils';
-import { deleteEntities, submitDataGraph, submitPartialReplace } from '../../../core/sagas/data/DataActions';
 import {
+  createOrReplaceAssociation,
+  deleteEntities,
+  submitDataGraph,
+  submitPartialReplace
+} from '../../../core/sagas/data/DataActions';
+import {
+  createOrReplaceAssociationWorker,
   deleteEntitiesWorker,
   submitDataGraphWorker,
   submitPartialReplaceWorker
 } from '../../../core/sagas/data/DataSagas';
 import { STATE, WORKSITES } from '../../../utils/constants/ReduxStateConsts';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
+import { ASSOCIATION_DETAILS } from '../../../core/edm/constants/DataModelConsts';
 
 const { searchEntityNeighborsWithFilter } = SearchApiActions;
 const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
@@ -77,7 +84,12 @@ const {
   WORKSITE,
   WORKSITE_PLAN,
 } = APP_TYPE_FQNS;
-const { EFFECTIVE_DATE, HOURS_WORKED } = PROPERTY_TYPE_FQNS;
+const {
+  DATETIME_END,
+  EFFECTIVE_DATE,
+  INCIDENT_START_DATETIME,
+  HOURS_WORKED,
+} = PROPERTY_TYPE_FQNS;
 
 const getAppFromState = (state) => state.get(STATE.APP, Map());
 const getEdmFromState = (state) => state.get(STATE.EDM, Map());
@@ -268,21 +280,70 @@ function* deleteCheckInWatcher() :Generator<*, *, *> {
 function* editAppointmentWorker(action :SequenceAction) :Generator<*, *, *> {
 
   const { id, value } = action;
+  let response :Object = {};
 
   try {
     yield put(editAppointment.request(id, value));
 
-    const response = yield call(submitPartialReplaceWorker, submitPartialReplace(value));
-    if (response.error) {
-      throw response.error;
-    }
+    const { appointmentEKID, entityData, newWorksitePlanEKID } = value;
     const app = yield select(getAppFromState);
     const appointmentESID :UUID = getEntitySetIdFromApp(app, APPOINTMENT);
+    const worksitePlanESID :UUID = getEntitySetIdFromApp(app, WORKSITE_PLAN);
+
+    if (newWorksitePlanEKID.length) {
+      const searchFilter = {
+        entityKeyIds: [appointmentEKID],
+        destinationEntitySetIds: [worksitePlanESID],
+        sourceEntitySetIds: [],
+      };
+      response = yield call(
+        searchEntityNeighborsWithFilterWorker,
+        searchEntityNeighborsWithFilter({ entitySetId: appointmentESID, filter: searchFilter })
+      );
+      if (response.error) throw response.error;
+      const addressesAssociation :Map = fromJS(response.data).getIn([appointmentEKID, 0, ASSOCIATION_DETAILS]);
+      const addressesEKID :UUID = getEntityKeyId(addressesAssociation);
+      const addressesESID :UUID = getEntitySetIdFromApp(app, ADDRESSES);
+      const associationsToDelete :Object[] = [
+        { entitySetId: addressesESID, entityKeyIds: [addressesEKID] }
+      ];
+      const associations :{} = {
+        [addressesESID]: [
+          {
+            data: {},
+            dst: {
+              entitySetId: worksitePlanESID,
+              entityKeyId: newWorksitePlanEKID
+            },
+            src: {
+              entitySetId: appointmentESID,
+              entityKeyId: appointmentEKID
+            }
+          }
+        ]
+      };
+      response = yield call(
+        createOrReplaceAssociationWorker,
+        createOrReplaceAssociation({
+          associations,
+          associationsToDelete,
+        })
+      );
+      if (response.error) throw response.error;
+    }
+    response = yield call(submitPartialReplaceWorker, submitPartialReplace({ entityData }));
+    if (response.error) throw response.error;
+
     const edm = yield select(getEdmFromState);
+    const startDateTimePTID :UUID = getPropertyTypeIdFromEdm(edm, INCIDENT_START_DATETIME);
+    const endDateTimePTID :UUID = getPropertyTypeIdFromEdm(edm, DATETIME_END);
 
     yield put(editAppointment.success(id, {
+      appointmentEKID,
       appointmentESID,
-      edm,
+      endDateTimePTID,
+      newWorksitePlanEKID,
+      startDateTimePTID,
     }));
   }
   catch (error) {

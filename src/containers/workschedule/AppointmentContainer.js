@@ -1,7 +1,7 @@
 // @flow
 import React, { useEffect, useState } from 'react';
 import styled, { css } from 'styled-components';
-import { Map } from 'immutable';
+import { List, Map } from 'immutable';
 import {
   Button,
   Card,
@@ -35,7 +35,7 @@ import { OL } from '../../core/style/Colors';
 import { ButtonWrapper } from '../../components/Layout';
 
 const { getStyleVariation } = StyleUtils;
-const { CHECK_INS_BY_APPOINTMENT } = WORKSITE_PLANS;
+const { CHECK_INS_BY_APPOINTMENT, WORKSITES_BY_WORKSITE_PLAN } = WORKSITE_PLANS;
 const { PARTICIPANT } = PERSON;
 const { PERSON_BY_APPOINTMENT_EKID } = WORK_SCHEDULE;
 const { ENTITY_KEY_ID, FIRST_NAME, LAST_NAME } = PROPERTY_TYPE_FQNS;
@@ -96,6 +96,7 @@ type Props = {
   participant :Map;
   personByAppointmentEKID :Map;
   result :Map;
+  worksitesByWorksitePlan :Map;
 };
 
 const AppointmentContainer = ({
@@ -103,6 +104,7 @@ const AppointmentContainer = ({
   participant,
   personByAppointmentEKID,
   result,
+  worksitesByWorksitePlan,
 } :Props) => {
 
   const [isCheckInModalVisible, handleCheckInModalVisibility] = useState(false);
@@ -150,6 +152,7 @@ const AppointmentContainer = ({
     modalDisplayOfPersonName = `${firstName} ${lastName}`;
   }
   const columns = personName || courtType ? 'schedule' : 'profile';
+  const assignedWorksites :List = worksitesByWorksitePlan.valueSeq().toList();
   return (
     <OuterWrapper>
       <Card>
@@ -228,9 +231,11 @@ const AppointmentContainer = ({
       <EditAppointmentModal
           appointment={result}
           appointmentEKID={appointmentEKID}
+          assignedWorksites={assignedWorksites}
           isOpen={isEditAppointmentModalVisible}
           onClose={() => handleEditAppointmentModalVisibility(false)}
-          personName={modalDisplayOfPersonName} />
+          personName={modalDisplayOfPersonName}
+          worksitesByWorksitePlan={worksitesByWorksitePlan} />
     </OuterWrapper>
   );
 };
@@ -243,6 +248,7 @@ const mapStateToProps = (state :Map) => {
     [CHECK_INS_BY_APPOINTMENT]: worksitePlans.get(CHECK_INS_BY_APPOINTMENT),
     [PARTICIPANT]: person.get(PARTICIPANT),
     [PERSON_BY_APPOINTMENT_EKID]: workSchedule.get(PERSON_BY_APPOINTMENT_EKID),
+    [WORKSITES_BY_WORKSITE_PLAN]: worksitePlans.get(WORKSITES_BY_WORKSITE_PLAN),
   });
 };
 
