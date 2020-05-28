@@ -1,7 +1,7 @@
 // @flow
 import React, { useEffect, useState } from 'react';
 import styled, { css } from 'styled-components';
-import { Map } from 'immutable';
+import { List, Map } from 'immutable';
 import {
   Button,
   Card,
@@ -27,6 +27,7 @@ import { get24HourTimeForCheckIn, getHoursScheduled } from '../participant/utils
 import {
   PERSON,
   STATE,
+  WORKSITES,
   WORKSITE_PLANS,
   WORK_SCHEDULE,
 } from '../../utils/constants/ReduxStateConsts';
@@ -38,6 +39,7 @@ const { getStyleVariation } = StyleUtils;
 const { CHECK_INS_BY_APPOINTMENT } = WORKSITE_PLANS;
 const { PARTICIPANT } = PERSON;
 const { PERSON_BY_APPOINTMENT_EKID } = WORK_SCHEDULE;
+const { WORKSITES_LIST } = WORKSITES;
 const { ENTITY_KEY_ID, FIRST_NAME, LAST_NAME } = PROPERTY_TYPE_FQNS;
 
 const OuterWrapper = styled.div`
@@ -96,6 +98,7 @@ type Props = {
   participant :Map;
   personByAppointmentEKID :Map;
   result :Map;
+  worksitesList :List;
 };
 
 const AppointmentContainer = ({
@@ -103,6 +106,7 @@ const AppointmentContainer = ({
   participant,
   personByAppointmentEKID,
   result,
+  worksitesList,
 } :Props) => {
 
   const [isCheckInModalVisible, handleCheckInModalVisibility] = useState(false);
@@ -230,7 +234,8 @@ const AppointmentContainer = ({
           appointmentEKID={appointmentEKID}
           isOpen={isEditAppointmentModalVisible}
           onClose={() => handleEditAppointmentModalVisibility(false)}
-          personName={modalDisplayOfPersonName} />
+          personName={modalDisplayOfPersonName}
+          worksitesList={worksitesList} />
     </OuterWrapper>
   );
 };
@@ -239,10 +244,12 @@ const mapStateToProps = (state :Map) => {
   const person = state.get(STATE.PERSON);
   const worksitePlans = state.get(STATE.WORKSITE_PLANS);
   const workSchedule = state.get(STATE.WORK_SCHEDULE);
+  const worksites = state.get(STATE.WORKSITES);
   return ({
     [CHECK_INS_BY_APPOINTMENT]: worksitePlans.get(CHECK_INS_BY_APPOINTMENT),
     [PARTICIPANT]: person.get(PARTICIPANT),
     [PERSON_BY_APPOINTMENT_EKID]: workSchedule.get(PERSON_BY_APPOINTMENT_EKID),
+    [WORKSITES_LIST]: worksites.get(WORKSITES_LIST),
   });
 };
 

@@ -1,6 +1,6 @@
 // @flow
 import React, { Component } from 'react';
-import { Map } from 'immutable';
+import { List, Map } from 'immutable';
 import { Modal } from 'lattice-ui-kit';
 import { connect } from 'react-redux';
 import { RequestStates } from 'redux-reqseq';
@@ -19,6 +19,7 @@ type Props = {
   isOpen :boolean;
   onClose :() => void;
   personName :string;
+  worksitesList :List;
 };
 
 class EditAppointmentModal extends Component<Props> {
@@ -40,6 +41,7 @@ class EditAppointmentModal extends Component<Props> {
       isOpen,
       onClose,
       personName,
+      worksitesList,
     } = this.props;
     return (
       <Modal
@@ -52,7 +54,8 @@ class EditAppointmentModal extends Component<Props> {
             appointmentEKID={appointmentEKID}
             isLoading={editAppointmentRequestState === RequestStates.PENDING}
             onDiscard={onClose}
-            personName={personName} />
+            personName={personName}
+            worksitesList={worksitesList} />
       </Modal>
     );
   }
