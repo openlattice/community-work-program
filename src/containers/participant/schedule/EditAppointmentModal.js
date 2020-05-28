@@ -15,11 +15,11 @@ const { ACTIONS, EDIT_APPOINTMENT, REQUEST_STATE } = WORKSITE_PLANS;
 type Props = {
   appointment :Map;
   appointmentEKID :UUID;
+  assignedWorksites :List;
   editAppointmentRequestState :RequestState;
   isOpen :boolean;
   onClose :() => void;
   personName :string;
-  worksitesList :List;
 };
 
 class EditAppointmentModal extends Component<Props> {
@@ -37,11 +37,11 @@ class EditAppointmentModal extends Component<Props> {
     const {
       appointment,
       appointmentEKID,
+      assignedWorksites,
       editAppointmentRequestState,
       isOpen,
       onClose,
       personName,
-      worksitesList,
     } = this.props;
     return (
       <Modal
@@ -52,10 +52,10 @@ class EditAppointmentModal extends Component<Props> {
         <EditAppointmentForm
             appointment={appointment}
             appointmentEKID={appointmentEKID}
+            assignedWorksites={assignedWorksites}
             isLoading={editAppointmentRequestState === RequestStates.PENDING}
             onDiscard={onClose}
-            personName={personName}
-            worksitesList={worksitesList} />
+            personName={personName} />
       </Modal>
     );
   }

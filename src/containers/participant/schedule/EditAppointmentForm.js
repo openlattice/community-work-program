@@ -1,6 +1,6 @@
 // @flow
 import React, { Component } from 'react';
-import { fromJS, List, Map } from 'immutable';
+import { List, Map, fromJS } from 'immutable';
 import { Form, DataProcessingUtils } from 'lattice-fabricate';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
@@ -36,12 +36,12 @@ type Props = {
     editAppointment :RequestSequence;
   },
   app :Map;
+  assignedWorksites :List;
   entitySetIds :Map;
   appointment :Object;
   appointmentEKID :UUID;
   personName :string;
   propertyTypeIds :Map;
-  worksitesList :List;
 };
 
 type State = {
@@ -65,7 +65,7 @@ class EditAppointmentForm extends Component<Props, State> {
   }
 
   prepopulateFormData = () => {
-    const { appointment, personName, worksitesList } = this.props;
+    const { appointment, assignedWorksites, personName } = this.props;
 
     const rawDateString = appointment.get('day').split(' ')[1];
     const date = getDateInISOFormat(rawDateString);
@@ -74,7 +74,7 @@ class EditAppointmentForm extends Component<Props, State> {
     const startTime :string = get24HourTimeFromString(start);
     const endTime :string = get24HourTimeFromString(end);
 
-    const hydratedSchema = worksitesList ? hydrateSchema(schema, worksitesList) : schema;
+    const hydratedSchema = assignedWorksites ? hydrateSchema(schema, assignedWorksites) : schema;
 
     const formData :{} = {
       [getPageSectionKey(1, 1)]: {
