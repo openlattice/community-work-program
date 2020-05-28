@@ -234,7 +234,8 @@ const AppointmentContainer = ({
           assignedWorksites={assignedWorksites}
           isOpen={isEditAppointmentModalVisible}
           onClose={() => handleEditAppointmentModalVisibility(false)}
-          personName={modalDisplayOfPersonName} />
+          personName={modalDisplayOfPersonName}
+          worksitesByWorksitePlan={worksitesByWorksitePlan} />
     </OuterWrapper>
   );
 };
