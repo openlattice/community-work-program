@@ -15,7 +15,7 @@ import {
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFilter } from '@fortawesome/pro-light-svg-icons';
+import { faFilter, faSortAlphaDown } from '@fortawesome/pro-light-svg-icons';
 import { RequestStates } from 'redux-reqseq';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
@@ -91,13 +91,6 @@ const FieldsWrapper = styled.div`
   margin-right: 15px;
 `;
 
-const ButtonsWrapper = styled.div`
-  display: grid;
-  grid-template-columns: minmax(min-content, 1fr) minmax(min-content, 1fr);
-  grid-gap: 0 15px;
-  margin-left: 15px;
-`;
-
 const SelectAndLabelWrapper = styled.div`
   align-items: center;
   align-self: flex-start;
@@ -129,6 +122,7 @@ type State = {
   courtTypeToShow :string;
   filtersVisible :boolean;
   selectedDate :string;
+  sortedByPersonLastName :boolean;
   timePeriod :string;
   worksites :Map;
 };
@@ -143,6 +137,7 @@ class WorkScheduleContainer extends Component<Props, State> {
       courtTypeToShow: ALL,
       filtersVisible: false,
       selectedDate: today,
+      sortedByPersonLastName: false,
       timePeriod: timePeriods.DAY,
       worksites: Map(),
     };
@@ -231,6 +226,7 @@ class WorkScheduleContainer extends Component<Props, State> {
 
   renderFields = () => {
     const { appointments, worksitesList } = this.props;
+    const { sortedByPersonLastName } = this.state;
 
     const WORKSITES_OPTIONS :Object[] = [];
     worksitesList.forEach((worksite :Map) => {
@@ -270,10 +266,12 @@ class WorkScheduleContainer extends Component<Props, State> {
             disabled={appointments.isEmpty()}
             icon={<FontAwesomeIcon icon={faFilter} />}
             onClick={this.showFilters} />
-        <ButtonsWrapper>
-          <Button onClick={this.goToPrintSchedule}>Print Schedule</Button>
-          <Button mode="primary" onClick={this.getAppointments}>Display Appointments</Button>
-        </ButtonsWrapper>
+        <IconButton
+            disabled={appointments.isEmpty()}
+            icon={<FontAwesomeIcon icon={faSortAlphaDown} />}
+            onClick={() => this.setState({ sortedByPersonLastName: !sortedByPersonLastName })} />
+        <Button onClick={this.goToPrintSchedule}>Print</Button>
+        <Button mode="primary" onClick={this.getAppointments}>Display Appointments</Button>
       </FieldsRowWrapper>
     );
   }
@@ -286,7 +284,12 @@ class WorkScheduleContainer extends Component<Props, State> {
       personByAppointmentEKID,
       worksiteNamesByAppointmentEKID
     } = this.props;
-    const { filtersVisible, courtTypeToShow, worksites } = this.state;
+    const {
+      filtersVisible,
+      courtTypeToShow,
+      sortedByPersonLastName,
+      worksites
+    } = this.state;
     const isLoading :boolean = findAppointmentsRequestState === RequestStates.PENDING;
     const hasSearched :boolean = findAppointmentsRequestState === RequestStates.SUCCESS;
     const worksitesToInclude :Object[] | void = worksites.get('worksites');
@@ -317,6 +320,7 @@ class WorkScheduleContainer extends Component<Props, State> {
               hasSearched={hasSearched}
               isLoading={isLoading}
               personByAppointmentEKID={personByAppointmentEKID}
+              sortedByPersonLastName={sortedByPersonLastName}
               worksiteNamesByAppointmentEKID={worksiteNamesByAppointmentEKID}
               worksitesToInclude={worksitesToInclude} />
         </ScheduleInnerWrapper>

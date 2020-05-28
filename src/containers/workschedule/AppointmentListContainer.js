@@ -44,6 +44,7 @@ type Props = {
   hasSearched :boolean;
   isLoading :boolean;
   personByAppointmentEKID ?:Map;
+  sortedByPersonLastName :boolean;
   worksiteNamesByAppointmentEKID :Map;
   worksitesToInclude ?:Object[];
 };
@@ -162,8 +163,13 @@ class AppointmentListContainer extends Component<Props, State> {
   }
 
   render() {
-    const { hasSearched, isLoading } = this.props;
+    const { hasSearched, isLoading, sortedByPersonLastName } = this.props;
     const { fullWorkAppointments } = this.state;
+    let appointmentsToDisplay = fullWorkAppointments;
+    if (sortedByPersonLastName) {
+      appointmentsToDisplay = appointmentsToDisplay
+        .sortBy((appointment) => appointment.get('personName').split(' ')[1]);
+    }
     return (
       <OuterWrapper>
         <SearchResults
@@ -171,7 +177,7 @@ class AppointmentListContainer extends Component<Props, State> {
             isLoading={isLoading}
             noResults={NoAppointmentsScheduled}
             resultComponent={AppointmentContainer}
-            results={fullWorkAppointments} />
+            results={appointmentsToDisplay} />
       </OuterWrapper>
     );
   }
