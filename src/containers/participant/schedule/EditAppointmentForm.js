@@ -1,10 +1,10 @@
 // @flow
 import React, { Component } from 'react';
-import { List, Map, fromJS } from 'immutable';
+import { Map, fromJS } from 'immutable';
 import { Form, DataProcessingUtils } from 'lattice-fabricate';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import type { RequestSequence } from 'redux-reqseq';
+import type { RequestSequence, RequestState } from 'redux-reqseq';
 
 import { editAppointment } from '../assignedworksites/WorksitePlanActions';
 import { schema, uiSchema } from './schemas/EditAppointmentSchemas';
@@ -16,8 +16,15 @@ import {
   getInfoFromTimeRange,
 } from '../../../utils/ScheduleUtils';
 import { hydrateSchema } from '../utils/EditAppointmentUtils';
+import { requestIsPending } from '../../../utils/RequestStateUtils';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
-import { APP, EDM, STATE } from '../../../utils/constants/ReduxStateConsts';
+import {
+  APP,
+  EDM,
+  SHARED,
+  STATE,
+  WORKSITE_PLANS
+} from '../../../utils/constants/ReduxStateConsts';
 
 const {
   getPageSectionKey,
@@ -26,28 +33,32 @@ const {
 } = DataProcessingUtils;
 
 const { APPOINTMENT } = APP_TYPE_FQNS;
-const { DATETIME_END, INCIDENT_START_DATETIME } = PROPERTY_TYPE_FQNS;
+const { DATETIME_END, INCIDENT_START_DATETIME, NAME } = PROPERTY_TYPE_FQNS;
 
 const { ENTITY_SET_IDS_BY_ORG, SELECTED_ORG_ID } = APP;
 const { PROPERTY_TYPES, TYPE_IDS_BY_FQNS } = EDM;
+const { EDIT_APPOINTMENT } = WORKSITE_PLANS;
+const { ACTIONS, REQUEST_STATE } = SHARED;
 
 type Props = {
   actions:{
     editAppointment :RequestSequence;
   },
   app :Map;
-  assignedWorksites :List;
+  editAppointmentRequestState :RequestState;
   entitySetIds :Map;
   appointment :Object;
   appointmentEKID :UUID;
   personName :string;
   propertyTypeIds :Map;
+  worksitesByWorksitePlan :Map;
 };
 
 type State = {
   formData :Object;
+  originalWorksitePlanEKID :UUID;
   updatedSchema :Object;
-}
+};
 
 class EditAppointmentForm extends Component<Props, State> {
 
@@ -56,6 +67,7 @@ class EditAppointmentForm extends Component<Props, State> {
 
     this.state = {
       formData: {},
+      originalWorksitePlanEKID: '',
       updatedSchema: schema,
     };
   }
@@ -65,7 +77,7 @@ class EditAppointmentForm extends Component<Props, State> {
   }
 
   prepopulateFormData = () => {
-    const { appointment, assignedWorksites, personName } = this.props;
+    const { appointment, personName, worksitesByWorksitePlan } = this.props;
 
     const rawDateString = appointment.get('day').split(' ')[1];
     const date = getDateInISOFormat(rawDateString);
@@ -74,18 +86,26 @@ class EditAppointmentForm extends Component<Props, State> {
     const startTime :string = get24HourTimeFromString(start);
     const endTime :string = get24HourTimeFromString(end);
 
-    const hydratedSchema = assignedWorksites ? hydrateSchema(schema, assignedWorksites) : schema;
+    const hydratedSchema = hydrateSchema(schema, worksitesByWorksitePlan);
+    const worksitePlanEKID :UUID = worksitesByWorksitePlan.findKey((worksite :Map) => {
+      let worksiteName :string = '';
+      if (worksite.getIn([NAME, 0]) === appointment.get('worksiteName')) {
+        worksiteName = worksite.getIn([NAME, 0]);
+      }
+      if (worksiteName.length) return true;
+      return false;
+    });
 
     const formData :{} = {
       [getPageSectionKey(1, 1)]: {
         person: appointment.get('personName') || personName,
-        worksite: appointment.get('worksiteName'),
+        worksite: worksitePlanEKID,
         date,
         startTime,
         endTime,
       }
     };
-    this.setState({ formData, updatedSchema: hydratedSchema });
+    this.setState({ formData, originalWorksitePlanEKID: worksitePlanEKID, updatedSchema: hydratedSchema });
   }
 
   handleOnChange = ({ formData } :Object) => {
@@ -100,6 +120,7 @@ class EditAppointmentForm extends Component<Props, State> {
       appointmentEKID,
       propertyTypeIds,
     } = this.props;
+    const { originalWorksitePlanEKID } = this.state;
 
     let formDataToProcess :Map = fromJS({
       [getPageSectionKey(1, 1)]: {}
@@ -124,21 +145,28 @@ class EditAppointmentForm extends Component<Props, State> {
     ], endDateTime);
 
     const processedData = processEntityData(formDataToProcess, entitySetIds, propertyTypeIds);
-
     const appointmentESID :UUID = getEntitySetIdFromApp(app, APPOINTMENT);
+
     const entityData :{} = {
       [appointmentESID]: {
         [appointmentEKID]: processedData[appointmentESID][0],
       }
     };
-    actions.editAppointment({ entityData });
+
+    let newWorksitePlanEKID :UUID = '';
+    if (originalWorksitePlanEKID !== formData[getPageSectionKey(1, 1)].worksite) {
+      newWorksitePlanEKID = formData[getPageSectionKey(1, 1)].worksite;
+    }
+    actions.editAppointment({ appointmentEKID, entityData, newWorksitePlanEKID });
   }
 
   render() {
+    const { editAppointmentRequestState } = this.props;
     const { formData, updatedSchema } = this.state;
     return (
       <Form
           formData={formData}
+          isSubmitting={requestIsPending(editAppointmentRequestState)}
           onChange={this.handleOnChange}
           onSubmit={this.handleOnSubmit}
           schema={updatedSchema}
@@ -153,6 +181,8 @@ const mapStateToProps = (state :Map) => {
   const selectedOrgId :string = app.get(SELECTED_ORG_ID);
   return ({
     app,
+    editAppointmentRequestState: state
+      .getIn([STATE.WORKSITE_PLANS, ACTIONS, EDIT_APPOINTMENT, REQUEST_STATE]),
     entitySetIds: app.getIn([ENTITY_SET_IDS_BY_ORG, selectedOrgId], Map()),
     propertyTypeIds: edm.getIn([TYPE_IDS_BY_FQNS, PROPERTY_TYPES], Map()),
   });

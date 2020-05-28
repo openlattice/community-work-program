@@ -20,6 +20,7 @@ type Props = {
   isOpen :boolean;
   onClose :() => void;
   personName :string;
+  worksitesByWorksitePlan :Map;
 };
 
 class EditAppointmentModal extends Component<Props> {
@@ -42,6 +43,7 @@ class EditAppointmentModal extends Component<Props> {
       isOpen,
       onClose,
       personName,
+      worksitesByWorksitePlan,
     } = this.props;
     return (
       <Modal
@@ -55,7 +57,8 @@ class EditAppointmentModal extends Component<Props> {
             assignedWorksites={assignedWorksites}
             isLoading={editAppointmentRequestState === RequestStates.PENDING}
             onDiscard={onClose}
-            personName={personName} />
+            personName={personName}
+            worksitesByWorksitePlan={worksitesByWorksitePlan} />
       </Modal>
     );
   }
