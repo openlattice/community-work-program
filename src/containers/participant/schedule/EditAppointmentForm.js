@@ -1,6 +1,6 @@
 // @flow
 import React, { Component } from 'react';
-import { fromJS, Map } from 'immutable';
+import { fromJS, List, Map } from 'immutable';
 import { Form, DataProcessingUtils } from 'lattice-fabricate';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
@@ -15,6 +15,7 @@ import {
   getDateInISOFormat,
   getInfoFromTimeRange,
 } from '../../../utils/ScheduleUtils';
+import { hydrateSchema } from '../utils/EditAppointmentUtils';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { APP, EDM, STATE } from '../../../utils/constants/ReduxStateConsts';
 
@@ -40,10 +41,12 @@ type Props = {
   appointmentEKID :UUID;
   personName :string;
   propertyTypeIds :Map;
+  worksitesList :List;
 };
 
 type State = {
   formData :Object;
+  updatedSchema :Object;
 }
 
 class EditAppointmentForm extends Component<Props, State> {
@@ -53,6 +56,7 @@ class EditAppointmentForm extends Component<Props, State> {
 
     this.state = {
       formData: {},
+      updatedSchema: schema,
     };
   }
 
@@ -61,7 +65,7 @@ class EditAppointmentForm extends Component<Props, State> {
   }
 
   prepopulateFormData = () => {
-    const { appointment, personName } = this.props;
+    const { appointment, personName, worksitesList } = this.props;
 
     const rawDateString = appointment.get('day').split(' ')[1];
     const date = getDateInISOFormat(rawDateString);
@@ -69,6 +73,8 @@ class EditAppointmentForm extends Component<Props, State> {
     const { start, end } = getInfoFromTimeRange(hours);
     const startTime :string = get24HourTimeFromString(start);
     const endTime :string = get24HourTimeFromString(end);
+
+    const hydratedSchema = worksitesList ? hydrateSchema(schema, worksitesList) : schema;
 
     const formData :{} = {
       [getPageSectionKey(1, 1)]: {
@@ -79,7 +85,7 @@ class EditAppointmentForm extends Component<Props, State> {
         endTime,
       }
     };
-    this.setState({ formData });
+    this.setState({ formData, updatedSchema: hydratedSchema });
   }
 
   handleOnChange = ({ formData } :Object) => {
@@ -129,13 +135,13 @@ class EditAppointmentForm extends Component<Props, State> {
   }
 
   render() {
-    const { formData } = this.state;
+    const { formData, updatedSchema } = this.state;
     return (
       <Form
           formData={formData}
           onChange={this.handleOnChange}
           onSubmit={this.handleOnSubmit}
-          schema={schema}
+          schema={updatedSchema}
           uiSchema={uiSchema} />
     );
   }
