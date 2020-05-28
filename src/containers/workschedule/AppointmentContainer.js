@@ -1,7 +1,7 @@
 // @flow
 import React, { useEffect, useState } from 'react';
 import styled, { css } from 'styled-components';
-import { Map } from 'immutable';
+import { List, Map } from 'immutable';
 import {
   Button,
   Card,
