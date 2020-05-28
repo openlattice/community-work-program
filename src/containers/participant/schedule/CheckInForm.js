@@ -202,8 +202,11 @@ class CheckInForm extends Component<Props, State> {
           <RowContent>
             <Label>Time checked in</Label>
             <TimePicker
+                format="H:mm"
+                mask="__:__"
                 name={getEntityAddressKey(0, CHECK_INS, DATETIME_START)}
                 onChange={this.setRawTime(DATETIME_START)}
+                placeholder="HH:MM"
                 value={timeIn} />
           </RowContent>
         </FormRow>
@@ -211,8 +214,11 @@ class CheckInForm extends Component<Props, State> {
           <RowContent>
             <Label>Time checked out</Label>
             <TimePicker
+                format="H:mm"
+                mask="__:__"
                 name={getEntityAddressKey(0, CHECK_INS, DATETIME_END)}
                 onChange={this.setRawTime(DATETIME_END)}
+                placeholder="HH:MM"
                 value={timeOut} />
           </RowContent>
         </FormRow>

@@ -284,8 +284,11 @@ class AddInfractionForm extends Component<Props, State> {
           <RowContent>
             <Label>Time of infraction</Label>
             <TimePicker
+                format="H:mm"
+                mask="__:__"
                 name={getEntityAddressKey(0, INFRACTION_EVENT, DATETIME_COMPLETED)}
-                onChange={this.storeTime()} />
+                onChange={this.storeTime()}
+                placeholder="HH:MM" />
           </RowContent>
         </FormRow>
         <FormRow>
