@@ -340,36 +340,53 @@ export default function worksitePlanReducer(state :Map<*, *> = INITIAL_STATE, ac
           if (storedSeqAction) {
 
             const successValue :Object = seqAction.value;
-            const { appointmentESID, edm } = successValue;
+            const {
+              appointmentEKID,
+              appointmentESID,
+              endDateTimePTID,
+              newWorksitePlanEKID,
+              startDateTimePTID,
+            } = successValue;
 
             const requestValue :Object = storedSeqAction.value;
             const { entityData } :Object = requestValue;
-            const appointmentEKID = Object.keys(entityData[appointmentESID])[0];
 
             let workAppointmentsByWorksitePlan = state.get(WORK_APPOINTMENTS_BY_WORKSITE_PLAN);
             const [keyEKID, index] = findEntityPathInMap(workAppointmentsByWorksitePlan, appointmentEKID);
             if (index !== -1) {
 
               const newAppointmentData :Map = fromJS(entityData[appointmentESID][appointmentEKID]);
-              const startDateTimePTID :UUID = getPropertyTypeIdFromEdm(edm, INCIDENT_START_DATETIME);
               const newStartDateTime :string = newAppointmentData.getIn([startDateTimePTID, 0]);
-
-              const endDateTimePTID :UUID = getPropertyTypeIdFromEdm(edm, DATETIME_END);
               const newEndDateTime :string = newAppointmentData.getIn([endDateTimePTID, 0]);
 
-              if (newStartDateTime) {
-                workAppointmentsByWorksitePlan = workAppointmentsByWorksitePlan.setIn([
-                  keyEKID,
-                  index,
-                  INCIDENT_START_DATETIME,
-                ], List([newStartDateTime]));
+              if (!newWorksitePlanEKID.length || newWorksitePlanEKID === keyEKID) {
+                if (newStartDateTime) {
+                  workAppointmentsByWorksitePlan = workAppointmentsByWorksitePlan.setIn([
+                    keyEKID,
+                    index,
+                    INCIDENT_START_DATETIME,
+                  ], List([newStartDateTime]));
+                }
+                if (newEndDateTime) {
+                  workAppointmentsByWorksitePlan = workAppointmentsByWorksitePlan.setIn([
+                    keyEKID,
+                    index,
+                    DATETIME_END,
+                  ], List([newEndDateTime]));
+                }
               }
-              if (newEndDateTime) {
-                workAppointmentsByWorksitePlan = workAppointmentsByWorksitePlan.setIn([
-                  keyEKID,
-                  index,
-                  DATETIME_END,
-                ], List([newEndDateTime]));
+              else {
+                let workAppointment :Map = workAppointmentsByWorksitePlan.getIn([keyEKID, index]);
+                let appointmentsForNewWorksitePlan :List = workAppointmentsByWorksitePlan
+                  .get(newWorksitePlanEKID, List());
+
+                workAppointment = workAppointment.set(INCIDENT_START_DATETIME, List([newStartDateTime]));
+                workAppointment = workAppointment.set(DATETIME_END, List([newEndDateTime]));
+                appointmentsForNewWorksitePlan = appointmentsForNewWorksitePlan.push(workAppointment);
+
+                workAppointmentsByWorksitePlan = workAppointmentsByWorksitePlan
+                  .set(newWorksitePlanEKID, appointmentsForNewWorksitePlan);
+                workAppointmentsByWorksitePlan = workAppointmentsByWorksitePlan.deleteIn([keyEKID, index]);
               }
 
               return state
