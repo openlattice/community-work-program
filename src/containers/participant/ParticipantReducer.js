@@ -55,6 +55,7 @@ import { CONTACT_METHODS } from '../../core/edm/constants/DataModelConsts';
 const {
   CASE_NUMBER_TEXT,
   CHECK_IN_DATETIME,
+  CHECK_IN_DEADLINE,
   COMPLETED,
   COURT_CASE_TYPE,
   DATETIME_END,
@@ -545,6 +546,7 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
           if (!newDiversionPlanData.isEmpty()) {
 
             const checkInDateTime :UUID = getPropertyTypeIdFromEdm(edm, CHECK_IN_DATETIME);
+            const checkInDeadline :UUID = getPropertyTypeIdFromEdm(edm, CHECK_IN_DEADLINE);
             const orientationDateTime :UUID = getPropertyTypeIdFromEdm(edm, ORIENTATION_DATETIME);
             const sentenceDate :UUID = getPropertyTypeIdFromEdm(edm, DATETIME_RECEIVED);
             const sentenceEndDate :UUID = getPropertyTypeIdFromEdm(edm, DATETIME_END);
@@ -552,6 +554,9 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
             let diversionPlan = state.get(DIVERSION_PLAN);
             if (newDiversionPlanData.get(checkInDateTime)) {
               diversionPlan = diversionPlan.set(CHECK_IN_DATETIME, newDiversionPlanData.get(checkInDateTime));
+            }
+            if (newDiversionPlanData.get(checkInDeadline)) {
+              diversionPlan = diversionPlan.set(CHECK_IN_DEADLINE, newDiversionPlanData.get(checkInDeadline));
             }
             if (newDiversionPlanData.get(orientationDateTime)) {
               diversionPlan = diversionPlan.set(ORIENTATION_DATETIME, newDiversionPlanData.get(orientationDateTime));

@@ -7,11 +7,13 @@ import { RequestStates } from 'redux-reqseq';
 import type { RequestState } from 'redux-reqseq';
 
 import AppointmentListContainer from '../../workschedule/AppointmentListContainer';
+import WeeklyHoursBreakdown from './WeeklyHoursBreakdown';
 
-import { getEntityKeyId } from '../../../utils/DataUtils';
-import { PERSON, STATE } from '../../../utils/constants/ReduxStateConsts';
 import { ContainerOuterWrapper } from '../../../components/Layout';
+import { getEntityKeyId } from '../../../utils/DataUtils';
+import { PERSON, STATE, WORKSITE_PLANS } from '../../../utils/constants/ReduxStateConsts';
 
+const { CHECK_INS_BY_APPOINTMENT } = WORKSITE_PLANS;
 const { ACTIONS, GET_ALL_PARTICIPANT_INFO, REQUEST_STATE } = PERSON;
 
 const OuterWrapper = styled(ContainerOuterWrapper)`
@@ -19,6 +21,7 @@ const OuterWrapper = styled(ContainerOuterWrapper)`
 `;
 
 type Props = {
+  checkInsByAppointment :Map;
   getAllParticipantInfoRequestState :RequestState;
   workAppointmentsByWorksitePlan :Map;
   worksiteNamesByWorksitePlan :Map;
@@ -57,7 +60,7 @@ class ParticipantWorkScheduleContainer extends Component<Props, State> {
   }
 
   render() {
-    const { getAllParticipantInfoRequestState, workAppointmentsByWorksitePlan } = this.props;
+    const { checkInsByAppointment, getAllParticipantInfoRequestState, workAppointmentsByWorksitePlan } = this.props;
     const { isLoading } = this.state;
     const appointments :List = workAppointmentsByWorksitePlan
       .valueSeq()
@@ -67,6 +70,9 @@ class ParticipantWorkScheduleContainer extends Component<Props, State> {
     const hasSearched :boolean = getAllParticipantInfoRequestState === RequestStates.SUCCESS;
     return (
       <OuterWrapper>
+        { !checkInsByAppointment.isEmpty() && (
+          <WeeklyHoursBreakdown appointments={appointments} checkInsByAppointment={checkInsByAppointment} />
+        )}
         <AppointmentListContainer
             appointments={appointments}
             hasSearched={hasSearched}
@@ -79,7 +85,9 @@ class ParticipantWorkScheduleContainer extends Component<Props, State> {
 
 const mapStateToProps = (state :Map) => {
   const person = state.get(STATE.PERSON);
+  const worksitePlans = state.get(STATE.WORKSITE_PLANS);
   return ({
+    [CHECK_INS_BY_APPOINTMENT]: worksitePlans.get(CHECK_INS_BY_APPOINTMENT),
     getAllParticipantInfoRequestState: person.getIn([ACTIONS, GET_ALL_PARTICIPANT_INFO, REQUEST_STATE]),
   });
 };

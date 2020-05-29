@@ -34,6 +34,7 @@ const { getEntityAddressKey, getPageSectionKey } = DataProcessingUtils;
 const { DIVERSION_PLAN } = APP_TYPE_FQNS;
 const {
   CHECK_IN_DATETIME,
+  CHECK_IN_DEADLINE,
   DATETIME_END,
   DATETIME_RECEIVED,
   ORIENTATION_DATETIME,
@@ -129,19 +130,24 @@ class EditCaseInfoForm extends Component<Props, State> {
 
     const {
       [CHECK_IN_DATETIME]: checkInDateTime,
+      [CHECK_IN_DEADLINE]: checkInDeadline,
       [DATETIME_END]: sentenceEndDate,
       [DATETIME_RECEIVED]: sentenceDate,
       [ORIENTATION_DATETIME]: orientationDateTime,
     } = getEntityProperties(
       diversionPlan,
-      [CHECK_IN_DATETIME, DATETIME_END, DATETIME_RECEIVED, ORIENTATION_DATETIME]
+      [CHECK_IN_DATETIME, CHECK_IN_DEADLINE, DATETIME_END, DATETIME_RECEIVED, ORIENTATION_DATETIME]
     );
-
     formData[sectionOneKey] = {};
     if (checkInDateTime) {
       formData[sectionOneKey][getEntityAddressKey(
         0, DIVERSION_PLAN, CHECK_IN_DATETIME
       )] = DateTime.fromISO(checkInDateTime).toISODate();
+    }
+    if (checkInDeadline) {
+      formData[sectionOneKey][getEntityAddressKey(
+        0, DIVERSION_PLAN, CHECK_IN_DEADLINE
+      )] = DateTime.fromISO(checkInDeadline).toISODate();
     }
     if (orientationDateTime) {
       formData[sectionOneKey][getEntityAddressKey(

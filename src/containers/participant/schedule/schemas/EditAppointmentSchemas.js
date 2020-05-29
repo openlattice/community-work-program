@@ -18,6 +18,8 @@ export const schema = {
         worksite: {
           type: 'string',
           title: 'Work site',
+          enum: [],
+          enumNames: []
         },
         date: {
           type: 'string',
@@ -46,7 +48,6 @@ export const uiSchema = {
     },
     worksite: {
       classNames: 'column-span-6',
-      'ui:disabled': true,
     },
     date: {
       classNames: 'column-span-12',
@@ -54,10 +55,20 @@ export const uiSchema = {
     startTime: {
       classNames: 'column-span-12',
       'ui:widget': 'TimeWidget',
+      'ui:options': {
+        format: 'H:mm',
+        mask: '__:__',
+      },
+      'ui:placeholder': 'HH:MM'
     },
     endTime: {
       classNames: 'column-span-12',
       'ui:widget': 'TimeWidget',
+      'ui:options': {
+        format: 'H:mm',
+        mask: '__:__',
+      },
+      'ui:placeholder': 'HH:MM'
     },
   },
   'ui:options': { editable: true },

@@ -1,7 +1,7 @@
 // @flow
 import React, { useEffect, useState } from 'react';
 import styled, { css } from 'styled-components';
-import { Map } from 'immutable';
+import { List, Map } from 'immutable';
 import {
   Button,
   Card,
@@ -23,6 +23,7 @@ import EditAppointmentModal from '../participant/schedule/EditAppointmentModal';
 import * as Routes from '../../core/router/Routes';
 import { isDefined } from '../../utils/LangUtils';
 import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
+import { get24HourTimeForCheckIn, getHoursScheduled } from '../participant/utils/CheckInUtils';
 import {
   PERSON,
   STATE,
@@ -34,7 +35,7 @@ import { OL } from '../../core/style/Colors';
 import { ButtonWrapper } from '../../components/Layout';
 
 const { getStyleVariation } = StyleUtils;
-const { CHECK_INS_BY_APPOINTMENT } = WORKSITE_PLANS;
+const { CHECK_INS_BY_APPOINTMENT, WORKSITES_BY_WORKSITE_PLAN } = WORKSITE_PLANS;
 const { PARTICIPANT } = PERSON;
 const { PERSON_BY_APPOINTMENT_EKID } = WORK_SCHEDULE;
 const { ENTITY_KEY_ID, FIRST_NAME, LAST_NAME } = PROPERTY_TYPE_FQNS;
@@ -49,8 +50,8 @@ const AppointmentCardSegment = styled(CardSegment)`
 `;
 
 const getColumns = getStyleVariation('columns', {
-  profile: '50px 160px 160px 160px',
-  schedule: '15px 130px 130px 120px 140px 130px',
+  profile: '50px 130px 130px 130px 100px',
+  schedule: '15px 100px 130px 100px 140px 60px 100px',
 });
 
 const InnerWrapper = styled.div`
@@ -95,6 +96,7 @@ type Props = {
   participant :Map;
   personByAppointmentEKID :Map;
   result :Map;
+  worksitesByWorksitePlan :Map;
 };
 
 const AppointmentContainer = ({
@@ -102,6 +104,7 @@ const AppointmentContainer = ({
   participant,
   personByAppointmentEKID,
   result,
+  worksitesByWorksitePlan,
 } :Props) => {
 
   const [isCheckInModalVisible, handleCheckInModalVisibility] = useState(false);
@@ -111,13 +114,17 @@ const AppointmentContainer = ({
 
   const [day, setDay] = useState('');
   const [hours, setHours] = useState('');
+  const [numHours, setNumHours] = useState('');
 
   // use effect for editable properties
   useEffect(() => {
     const storedDay = result.get('day');
     const storedHours = result.get('hours');
+    const { timeIn, timeOut } = get24HourTimeForCheckIn(result.get('hours'));
+    const hoursScheduled = getHoursScheduled(timeIn, timeOut);
     setDay(storedDay);
     setHours(storedHours);
+    setNumHours(hoursScheduled);
   }, [result]);
 
   const personName = result.get('personName');
@@ -145,6 +152,7 @@ const AppointmentContainer = ({
     modalDisplayOfPersonName = `${firstName} ${lastName}`;
   }
   const columns = personName || courtType ? 'schedule' : 'profile';
+  const assignedWorksites :List = worksitesByWorksitePlan.valueSeq().toList();
   return (
     <OuterWrapper>
       <Card>
@@ -164,6 +172,7 @@ const AppointmentContainer = ({
             }
             <Text>{ worksiteName }</Text>
             <Text>{ hours }</Text>
+            <Text>{ `${numHours} hrs` }</Text>
             {
               courtType && (
                 <Text>{ courtType }</Text>
@@ -222,9 +231,11 @@ const AppointmentContainer = ({
       <EditAppointmentModal
           appointment={result}
           appointmentEKID={appointmentEKID}
+          assignedWorksites={assignedWorksites}
           isOpen={isEditAppointmentModalVisible}
           onClose={() => handleEditAppointmentModalVisibility(false)}
-          personName={modalDisplayOfPersonName} />
+          personName={modalDisplayOfPersonName}
+          worksitesByWorksitePlan={worksitesByWorksitePlan} />
     </OuterWrapper>
   );
 };
@@ -237,6 +248,7 @@ const mapStateToProps = (state :Map) => {
     [CHECK_INS_BY_APPOINTMENT]: worksitePlans.get(CHECK_INS_BY_APPOINTMENT),
     [PARTICIPANT]: person.get(PARTICIPANT),
     [PERSON_BY_APPOINTMENT_EKID]: workSchedule.get(PERSON_BY_APPOINTMENT_EKID),
+    [WORKSITES_BY_WORKSITE_PLAN]: worksitePlans.get(WORKSITES_BY_WORKSITE_PLAN),
   });
 };
 

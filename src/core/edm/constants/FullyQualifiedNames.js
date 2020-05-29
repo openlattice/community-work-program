@@ -78,6 +78,7 @@ export const PROPERTY_TYPE_FQNS :Object = {
   CELL_PHONE: new FullyQualifiedName('contact.cellphone'),
   CHECKED_IN: new FullyQualifiedName('ol.checkedin'),
   CHECK_IN_DATETIME: new FullyQualifiedName('ol.checkindatetime'),
+  CHECK_IN_DEADLINE: new FullyQualifiedName('ol.orientationdeadline'), // datetime
   CITY: new FullyQualifiedName('location.city'),
   COMPLETED: new FullyQualifiedName('ol.completed'),
   CONCURRENT: new FullyQualifiedName('ol.concurrent'),

@@ -211,10 +211,11 @@ class ParticipantsSearchContainer extends Component<Props, State> {
     const matches = peopleToFilter.filter((p) => {
       const { [FIRST_NAME]: firstName, [LAST_NAME]: lastName } = getEntityProperties(p, [FIRST_NAME, LAST_NAME]);
       const fullName = (`${firstName} ${lastName}`).trim().toLowerCase();
+      const reversedFullName = (`${lastName} ${firstName}`).trim().toLowerCase();
 
       const trimmedInput = input.trim().toLowerCase();
       const match = firstName.toLowerCase().includes(trimmedInput) || lastName.toLowerCase().includes(trimmedInput)
-        || fullName.includes(trimmedInput);
+        || fullName.includes(trimmedInput) || reversedFullName.includes(trimmedInput);
 
       return match;
     });
