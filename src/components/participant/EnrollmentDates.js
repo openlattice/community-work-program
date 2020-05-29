@@ -14,7 +14,7 @@ import { getCheckInDeadline, getSentenceEndDate } from '../../utils/ScheduleUtil
 
 const labelMap :OrderedMap = OrderedMap({
   sentenceDate: 'Sentence date',
-  checkInDeadline: 'Check-in deadline',
+  checkInDeadlineDate: 'Check-in deadline',
   checkedInDate: 'Date checked in',
   orientationDate: 'Orientation date',
   workStartDate: 'Started work',
@@ -23,6 +23,7 @@ const labelMap :OrderedMap = OrderedMap({
 
 type Props = {
   checkInDate :string;
+  checkInDeadline :string;
   edit :() => void;
   orientationDateTime :string;
   sentenceDateTime :string;
@@ -32,6 +33,7 @@ type Props = {
 
 const EnrollmentDates = ({
   checkInDate,
+  checkInDeadline,
   edit,
   orientationDateTime,
   sentenceDateTime,
@@ -40,7 +42,7 @@ const EnrollmentDates = ({
 } :Props) => {
 
   const sentenceDate = formatAsDate(sentenceDateTime);
-  const checkInDeadline = getCheckInDeadline(sentenceDateTime);
+  const checkInDeadlineDate = getCheckInDeadline(sentenceDateTime, checkInDeadline);
   const sentenceEndDate = getSentenceEndDate(sentenceEndDateTime, sentenceDateTime);
   const orientationDate = formatAsDate(orientationDateTime);
   const workStartDate = formatAsDate(workStartDateTime);
@@ -48,7 +50,7 @@ const EnrollmentDates = ({
 
   const data :Map = fromJS({
     sentenceDate,
-    checkInDeadline,
+    checkInDeadlineDate,
     checkedInDate,
     orientationDate,
     workStartDate,

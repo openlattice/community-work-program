@@ -47,7 +47,7 @@ import { OL } from '../../core/style/Colors';
 import type { GoToRoute } from '../../core/router/RoutingActions';
 
 /* constants */
-const { DATETIME_RECEIVED, STATUS } = PROPERTY_TYPE_FQNS;
+const { CHECK_IN_DEADLINE, DATETIME_RECEIVED, STATUS } = PROPERTY_TYPE_FQNS;
 const { REQUIRED, WORKED } = HOURS_CONSTS;
 const {
   CURRENT_DIVERSION_PLANS_BY_PARTICIPANT,
@@ -246,9 +246,12 @@ class DashboardContainer extends Component<Props, State> {
     const noShows :List = participants.filter((participant :Map) => {
       const personEKID :UUID = getEntityKeyId(participant);
       const diversionPlan = currentDiversionPlansByParticipant.get(personEKID);
-      const { [DATETIME_RECEIVED]: sentenceDate } = getEntityProperties(diversionPlan, [DATETIME_RECEIVED]);
+      const {
+        [CHECK_IN_DEADLINE]: checkInDeadlineDateTime,
+        [DATETIME_RECEIVED]: sentenceDate,
+      } = getEntityProperties(diversionPlan, [CHECK_IN_DEADLINE, DATETIME_RECEIVED]);
 
-      const checkInDeadline :string = getCheckInDeadline(sentenceDate);
+      const checkInDeadline :string = getCheckInDeadline(sentenceDate, checkInDeadlineDateTime);
       if (checkInDeadline === EMPTY_FIELD) {
         return false;
       }
@@ -284,9 +287,12 @@ class DashboardContainer extends Component<Props, State> {
 
         const personEKID :UUID = getEntityKeyId(person);
         const diversionPlan :Map = currentDiversionPlansByParticipant.get(personEKID);
-        const { [DATETIME_RECEIVED]: sentenceDateTime } = getEntityProperties(diversionPlan, [DATETIME_RECEIVED]);
+        const {
+          [CHECK_IN_DEADLINE]: checkInDeadlineDateTime,
+          [DATETIME_RECEIVED]: sentenceDateTime,
+        } = getEntityProperties(diversionPlan, [CHECK_IN_DEADLINE, DATETIME_RECEIVED]);
         const sentenceDate :string = formatAsDate(sentenceDateTime);
-        const checkInDeadline :string = getCheckInDeadline(sentenceDateTime);
+        const checkInDeadline :string = getCheckInDeadline(sentenceDateTime, checkInDeadlineDateTime);
         const personHours :Map = hoursWorked.get(personEKID);
         let requiredHours :number | string = personHours.get(REQUIRED, EMPTY_FIELD);
         requiredHours = toString(requiredHours);
