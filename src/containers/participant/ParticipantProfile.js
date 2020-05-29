@@ -56,6 +56,7 @@ import type { GoToRoute } from '../../core/router/RoutingActions';
 
 const {
   CHECK_IN_DATETIME,
+  CHECK_IN_DEADLINE,
   DATETIME_END,
   DATETIME_RECEIVED,
   DATETIME_START,
@@ -435,6 +436,7 @@ class ParticipantProfile extends Component<Props, State> {
     const diversionPlanEKID :UUID = getEntityKeyId(diversionPlan);
     const {
       [CHECK_IN_DATETIME]: checkInDate,
+      [CHECK_IN_DEADLINE]: checkInDeadline,
       [DATETIME_END]: sentenceEndDateTime,
       [DATETIME_RECEIVED]: sentenceDate,
       [ORIENTATION_DATETIME]: orientationDateTime,
@@ -442,6 +444,7 @@ class ParticipantProfile extends Component<Props, State> {
       [REQUIRED_HOURS]: requiredHours,
     } = getEntityProperties(diversionPlan, [
       CHECK_IN_DATETIME,
+      CHECK_IN_DEADLINE,
       DATETIME_END,
       DATETIME_RECEIVED,
       NOTES,
@@ -496,6 +499,7 @@ class ParticipantProfile extends Component<Props, State> {
                   warnings={warnings} />
               <EnrollmentDates
                   checkInDate={checkInDate}
+                  checkInDeadline={checkInDeadline}
                   edit={this.editEnrollmentDates}
                   orientationDateTime={orientationDateTime}
                   sentenceDateTime={sentenceDate}
