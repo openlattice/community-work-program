@@ -139,7 +139,9 @@ const get12HourTimeFrom24HourTime = (time :string) :string => {
   return timeInDateTime.toLocaleString(DateTime.TIME_SIMPLE);
 };
 
-const getCheckInDeadline = (sentenceDateTime :string) :string => {
+const getCheckInDeadline = (sentenceDateTime :string, checkInDeadline ? :string) :string => {
+
+  if (checkInDeadline) return DateTime.fromISO(checkInDeadline).toLocaleString(DateTime.DATE_SHORT);
 
   const sentenceDateObj :DateTime = DateTime.fromISO(sentenceDateTime);
   if (sentenceDateObj.isValid) {
