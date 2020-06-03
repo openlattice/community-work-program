@@ -107,6 +107,7 @@ export const PEOPLE = {
   INFRACTION_COUNTS_BY_PARTICIPANT: 'infractionCountsByParticipant',
   NEW_PARTICIPANT_EKID: 'newParticipantEKID',
   PARTICIPANTS: 'participants',
+  PEOPLE_ALREADY_IN_ENTITY_SET: 'peopleAlreadyInEntitySet',
   PARTICIPANT_PHOTOS_BY_PARTICIPANT_EKID: 'participantPhotosByParticipantEKID',
   REQUEST_STATE: 'requestState',
 };
