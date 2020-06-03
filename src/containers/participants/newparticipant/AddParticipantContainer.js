@@ -26,7 +26,9 @@ const ButtonWrapper = styled.div`
 
 const AddParticipantContainer = () => {
   const [page, setPage] = useState(0);
-  const componentToDisplay = page === 0 ? <SearchExistingPeople /> : <AddParticipantForm />;
+  const componentToDisplay = page === 0
+    ? <SearchExistingPeople setFormPage={setPage} />
+    : <AddParticipantForm />;
   return (
     <ContainerWrapper>
       <CardStack>

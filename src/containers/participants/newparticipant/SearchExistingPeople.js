@@ -21,7 +21,7 @@ import NoParticipantsFound from '../../dashboard/NoParticipantsFound';
 import { formatExistingPeopleData } from '../utils/NewParticipantUtils';
 import { isNonEmptyString } from '../../../utils/LangUtils';
 import { requestIsFailure, requestIsPending, requestIsSuccess } from '../../../utils/RequestStateUtils';
-import { SEARCH_EXISTING_PEOPLE, searchExistingPeople } from './NewParticipantActions';
+import { SEARCH_EXISTING_PEOPLE, searchExistingPeople, selectExistingPerson } from './NewParticipantActions';
 import { PEOPLE, SHARED, STATE } from '../../../utils/constants/ReduxStateConsts';
 
 const { PEOPLE_ALREADY_IN_ENTITY_SET } = PEOPLE;
@@ -55,11 +55,13 @@ const ButtonWrapper = styled.div`
 type Props = {
   actions :{
     searchExistingPeople :RequestSequence;
+    selectExistingPerson :(object :Object) => { type :string };
   };
   peopleAlreadyInEntitySet :List;
   requestStates :{
     SEARCH_EXISTING_PEOPLE :RequestState;
   };
+  setFormPage :(pageNumber :number) => void;
 };
 
 type State = {
@@ -114,6 +116,13 @@ class SearchExistingPeople extends Component<Props, State> {
   onPageChange = ({ page: newPage, start } :Object) => {
     this.searchExistingPeople(undefined, start);
     this.setPage(newPage);
+  }
+
+  goToNextPageWithExistingPersonData = (searchResult :Map) => {
+    const { actions, setFormPage } = this.props;
+    const entity :Map = searchResult.get('entity');
+    actions.selectExistingPerson({ existingPerson: entity });
+    setFormPage(1);
   }
 
   render() {
@@ -172,6 +181,7 @@ class SearchExistingPeople extends Component<Props, State> {
             hasSearched={hasSearched}
             isLoading={isSearching}
             noResults={NoParticipantsFound}
+            onResultClick={this.goToNextPageWithExistingPersonData}
             resultLabels={labels}
             results={existingPeopleData} />
       </CardStack>
@@ -192,6 +202,7 @@ const mapStateToProps = (state :Map) => {
 const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
     searchExistingPeople,
+    selectExistingPerson,
   }, dispatch)
 });
 
