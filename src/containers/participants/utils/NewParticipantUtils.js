@@ -12,6 +12,7 @@ const formatExistingPeopleData = (peopleAlreadyInEntitySet :List) => {
         const personDOB :string = getPersonDOB(person);
         map.set('name', personName);
         map.set('dob', personDOB);
+        map.set('entity', person);
       });
       list.push(personMap);
     });
