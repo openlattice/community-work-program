@@ -28,20 +28,20 @@ import { bindActionCreators } from 'redux';
 import { RequestStates } from 'redux-reqseq';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
-import LogoLoader from '../../components/LogoLoader';
+import LogoLoader from '../../../components/LogoLoader';
 
-import * as Routes from '../../core/router/Routes';
-import { addParticipant } from './ParticipantsActions';
-import { getInfoForAddParticipant } from '../participant/ParticipantActions';
-import { goToRoute } from '../../core/router/RoutingActions';
-import { hydrateSchema } from './utils/AddParticipantFormUtils';
-import { formatNewArrestChargeDataAndAssociations } from '../participant/charges/utils/ChargesUtils';
-import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
-import { CWP, ENROLLMENT_STATUSES } from '../../core/edm/constants/DataModelConsts';
-import { schema, uiSchema } from './schemas/AddParticipantFormSchemas';
-import { getCombinedDateTime } from '../../utils/ScheduleUtils';
-import { BackNavButton } from '../../components/controls/index';
-import { PARTICIPANT_PROFILE_WIDTH } from '../../core/style/Sizes';
+import * as Routes from '../../../core/router/Routes';
+import { addParticipant } from '../ParticipantsActions';
+import { getInfoForAddParticipant } from '../../participant/ParticipantActions';
+import { goToRoute } from '../../../core/router/RoutingActions';
+import { hydrateSchema } from '../utils/AddParticipantFormUtils';
+import { formatNewArrestChargeDataAndAssociations } from '../../participant/charges/utils/ChargesUtils';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
+import { CWP, ENROLLMENT_STATUSES } from '../../../core/edm/constants/DataModelConsts';
+import { schema, uiSchema } from '../schemas/AddParticipantFormSchemas';
+import { getCombinedDateTime } from '../../../utils/ScheduleUtils';
+import { BackNavButton } from '../../../components/controls/index';
+import { PARTICIPANT_PROFILE_WIDTH } from '../../../core/style/Sizes';
 import {
   APP,
   CHARGES,
@@ -49,9 +49,9 @@ import {
   PEOPLE,
   PERSON,
   STATE
-} from '../../utils/constants/ReduxStateConsts';
-import { OL } from '../../core/style/Colors';
-import type { GoToRoute } from '../../core/router/RoutingActions';
+} from '../../../utils/constants/ReduxStateConsts';
+import { OL } from '../../../core/style/Colors';
+import type { GoToRoute } from '../../../core/router/RoutingActions';
 
 const {
   getEntityAddressKey,
