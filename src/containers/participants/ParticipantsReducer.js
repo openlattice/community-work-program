@@ -17,7 +17,12 @@ import {
   getParticipants,
   RESET_REQUEST_STATE,
 } from './ParticipantsActions';
-import { SEARCH_EXISTING_PEOPLE, searchExistingPeople } from './newparticipant/NewParticipantActions';
+import {
+  SEARCH_EXISTING_PEOPLE,
+  SELECT_EXISTING_PERSON,
+  searchExistingPeople,
+  selectExistingPerson,
+} from './newparticipant/NewParticipantActions';
 import { PEOPLE } from '../../utils/constants/ReduxStateConsts';
 
 const {
@@ -26,7 +31,7 @@ const {
   COURT_TYPE_BY_PARTICIPANT,
   CURRENT_DIVERSION_PLANS_BY_PARTICIPANT,
   ENROLLMENT_BY_PARTICIPANT,
-  ERRORS,
+  EXISTING_PERSON,
   GET_COURT_TYPE,
   GET_DIVERSION_PLANS,
   GET_ENROLLMENT_STATUSES,
@@ -70,17 +75,14 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     [SEARCH_EXISTING_PEOPLE]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
+    [SELECT_EXISTING_PERSON]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
   },
   [COURT_TYPE_BY_PARTICIPANT]: Map(),
   [CURRENT_DIVERSION_PLANS_BY_PARTICIPANT]: Map(),
   [ENROLLMENT_BY_PARTICIPANT]: Map(),
-  [ERRORS]: {
-    [ADD_PARTICIPANT]: Map(),
-    [GET_ENROLLMENT_STATUSES]: Map(),
-    [GET_HOURS_WORKED]: Map(),
-    [GET_INFRACTIONS]: Map(),
-    [GET_PARTICIPANTS]: Map(),
-  },
+  [EXISTING_PERSON]: Map(),
   [HOURS_WORKED]: Map(),
   [INFRACTIONS_BY_PARTICIPANT]: Map(),
   [INFRACTION_COUNTS_BY_PARTICIPANT]: Map(),
@@ -321,6 +323,26 @@ export default function participantsReducer(state :Map<*, *> = INITIAL_STATE, ac
         FAILURE: () => state
           .setIn([ACTIONS, SEARCH_EXISTING_PEOPLE, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, SEARCH_EXISTING_PEOPLE, action.id]),
+      });
+    }
+
+    case selectExistingPerson.case(action.type): {
+
+      return selectExistingPerson.reducer(state, action, {
+
+        REQUEST: () => {
+          const seqAction :SequenceAction = (action :any);
+          const { value } = seqAction;
+          const { existingPerson } = value;
+          return state
+            .set(EXISTING_PERSON, existingPerson)
+            .setIn([ACTIONS, SELECT_EXISTING_PERSON, action.id], action)
+            .setIn([ACTIONS, SELECT_EXISTING_PERSON, REQUEST_STATE], RequestStates.PENDING);
+        },
+        SUCCESS: () => state.setIn([ACTIONS, SELECT_EXISTING_PERSON, REQUEST_STATE], RequestStates.SUCCESS),
+        FAILURE: () => state
+          .setIn([ACTIONS, SELECT_EXISTING_PERSON, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, SELECT_EXISTING_PERSON, action.id]),
       });
     }
 
