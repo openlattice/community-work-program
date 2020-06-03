@@ -14,6 +14,7 @@ import * as DataSagas from './data/DataSagas';
 import * as DemographicsSagas from '../../containers/stats/demographics/DemographicsSagas';
 import * as EDMSagas from '../edm/EDMSagas';
 import * as InfractionsSagas from '../../containers/participant/infractions/InfractionsSagas';
+import * as NewParticipantSagas from '../../containers/participants/newparticipant/NewParticipantSagas';
 import * as ParticipantSagas from '../../containers/participant/ParticipantSagas';
 import * as ParticipantsSagas from '../../containers/participants/ParticipantsSagas';
 import * as PrintParticipantSagas from '../../containers/participant/print/PrintParticipantSagas';
@@ -88,6 +89,9 @@ export default function* sagas() :Generator<*, *, *> {
     fork(InfractionsSagas.getInfractionWatcher),
     fork(InfractionsSagas.getInfractionTypesWatcher),
     fork(InfractionsSagas.getParticipantInfractionsWatcher),
+
+    // NewParticipantSagas
+    fork(NewParticipantSagas.searchExistingPeopleWatcher),
 
     // ParticipantSagas
     fork(ParticipantSagas.addNewDiversionPlanStatusWatcher),

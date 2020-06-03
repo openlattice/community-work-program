@@ -17,6 +17,7 @@ import {
   getParticipants,
   RESET_REQUEST_STATE,
 } from './ParticipantsActions';
+import { SEARCH_EXISTING_PEOPLE, searchExistingPeople } from './newparticipant/NewParticipantActions';
 import { PEOPLE } from '../../utils/constants/ReduxStateConsts';
 
 const {
@@ -37,6 +38,7 @@ const {
   INFRACTIONS_BY_PARTICIPANT,
   INFRACTION_COUNTS_BY_PARTICIPANT,
   NEW_PARTICIPANT_EKID,
+  PEOPLE_ALREADY_IN_ENTITY_SET,
   PARTICIPANT_PHOTOS_BY_PARTICIPANT_EKID,
   PARTICIPANTS,
   REQUEST_STATE,
@@ -65,6 +67,9 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     [GET_PARTICIPANTS]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
+    [SEARCH_EXISTING_PEOPLE]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
   },
   [COURT_TYPE_BY_PARTICIPANT]: Map(),
   [CURRENT_DIVERSION_PLANS_BY_PARTICIPANT]: Map(),
@@ -82,6 +87,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [NEW_PARTICIPANT_EKID]: '',
   [PARTICIPANT_PHOTOS_BY_PARTICIPANT_EKID]: Map(),
   [PARTICIPANTS]: List(),
+  [PEOPLE_ALREADY_IN_ENTITY_SET]: List(),
 });
 
 export default function participantsReducer(state :Map<*, *> = INITIAL_STATE, action :Object) :Map<*, *> {
@@ -295,6 +301,26 @@ export default function participantsReducer(state :Map<*, *> = INITIAL_STATE, ac
           .setIn([ACTIONS, GET_HOURS_WORKED, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state
           .deleteIn([ACTIONS, GET_HOURS_WORKED, seqAction.id]),
+      });
+    }
+
+    case searchExistingPeople.case(action.type): {
+
+      return searchExistingPeople.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, SEARCH_EXISTING_PEOPLE, action.id], action)
+          .setIn([ACTIONS, SEARCH_EXISTING_PEOPLE, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+          const seqAction :SequenceAction = (action :any);
+          const { value } = seqAction;
+          return state
+            .set(PEOPLE_ALREADY_IN_ENTITY_SET, value)
+            .setIn([ACTIONS, SEARCH_EXISTING_PEOPLE, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, SEARCH_EXISTING_PEOPLE, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, SEARCH_EXISTING_PEOPLE, action.id]),
       });
     }
 
