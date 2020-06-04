@@ -163,13 +163,14 @@ function* getPersonCourtTypeWatcher() :Generator<*, *, *> {
 
 function* getWorksitePlansByPersonWorker(action :SequenceAction) :Generator<*, *, *> {
 
-  const { id, value } = action;
-  if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
+  const { id } = action;
   const workerResponse = {};
   let response :Object = {};
 
   try {
     yield put(getWorksitePlansByPerson.request(id));
+    const { value } = action;
+    if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
     const { personEKIDs } = value;
 
     const app = yield select(getAppFromState);
@@ -187,7 +188,7 @@ function* getWorksitePlansByPersonWorker(action :SequenceAction) :Generator<*, *
     );
     if (response.error) throw response.error;
     const worksitePlanEKIDs :UUID[] = [];
-    let personEKIDByWorksitePlanEKID :Map = Map().asMutable();
+    const personEKIDByWorksitePlanEKID :Map = Map().asMutable();
 
     let worksitesByWorksitePlanEKIDByPersonEKID :Map = Map().withMutations((map :Map) => {
       fromJS(response.data).forEach((neighborsList :List, personEKID :UUID) => {
@@ -195,7 +196,7 @@ function* getWorksitePlansByPersonWorker(action :SequenceAction) :Generator<*, *
           const worksitePlanEKID :UUID = getEntityKeyId(getNeighborDetails(worksitePlanNeighbor));
           worksitePlanEKIDs.push(worksitePlanEKID);
 
-          personEKIDByWorksitePlanEKID = personEKIDByWorksitePlanEKID.set(worksitePlanEKID, personEKID);
+          personEKIDByWorksitePlanEKID.set(worksitePlanEKID, personEKID);
 
           let worksitesByWorksitePlanForCurrentPerson :Map = map.get(personEKID, Map());
 

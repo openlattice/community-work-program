@@ -42,7 +42,6 @@ class DeleteAppointmentModal extends Component<Props> {
       onClose,
       requestStates,
     } = this.props;
-    console.log('requestStates[DELETE_APPOINTMENT] ', requestStates[DELETE_APPOINTMENT]);
     return (
       <Modal
           isVisible={isOpen}
