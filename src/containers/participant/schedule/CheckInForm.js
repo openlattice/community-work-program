@@ -317,7 +317,7 @@ class CheckInForm extends Component<Props, State> {
         <ButtonsRow>
           <Button onClick={onDiscard}>Discard</Button>
           <Button
-              disabled={checkedInIsBlankOrNo || formHoursAndTimesConflict}
+              disabled={!checkedIn || formHoursAndTimesConflict}
               isLoading={isLoading}
               mode="primary"
               onClick={this.handleOnSubmit}>
