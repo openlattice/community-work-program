@@ -154,8 +154,29 @@ class CheckInForm extends Component<Props, State> {
   }
 
   setRawTime = (type :string) => (time :string) => {
-    if (type === DATETIME_START) this.setState({ timeIn: time });
-    if (type === DATETIME_END) this.setState({ timeOut: time });
+    const { newCheckInData, timeIn, timeOut } = this.state;
+
+    if (type === DATETIME_START) {
+      const hoursCalculatedFromFormTimes :number = getHoursScheduled(time, timeOut);
+      this.setState({
+        newCheckInData: newCheckInData.setIn([
+          getPageSectionKey(1, 1),
+          getEntityAddressKey(0, CHECK_IN_DETAILS, HOURS_WORKED)
+        ], hoursCalculatedFromFormTimes),
+        timeIn: time
+      });
+    }
+
+    if (type === DATETIME_END) {
+      const hoursCalculatedFromFormTimes :number = getHoursScheduled(timeIn, time);
+      this.setState({
+        newCheckInData: newCheckInData.setIn([
+          getPageSectionKey(1, 1),
+          getEntityAddressKey(0, CHECK_IN_DETAILS, HOURS_WORKED)
+        ], hoursCalculatedFromFormTimes),
+        timeOut: time
+      });
+    }
   }
 
   handleOnSubmit = () => {
