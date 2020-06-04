@@ -39,7 +39,7 @@ const { DATETIME_END, INCIDENT_START_DATETIME, NAME } = PROPERTY_TYPE_FQNS;
 
 const INITIAL_STATE :Map<*, *> = fromJS({
   [ACTIONS]: {
-    [WORK_SCHEDULE.DELETE_APPOINTMENT]: {
+    [DELETE_APPOINTMENT]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [FIND_APPOINTMENTS]: {
@@ -92,12 +92,12 @@ export default function workScheduleReducer(state :Map<*, *> = INITIAL_STATE, ac
           const seqAction :SequenceAction = action;
           const storedSeqAction :SequenceAction = state.getIn([ACTIONS, DELETE_APPOINTMENT, seqAction.id]);
 
+          let workScheduleAppointments = state.get(APPOINTMENTS);
           if (storedSeqAction) {
 
             const requestValue :Object = storedSeqAction.value;
-            const { entityKeyId } :Object = requestValue[0];
+            const [entityKeyId] :Object = requestValue[0].entityKeyIds;
 
-            let workScheduleAppointments = state.get(APPOINTMENTS);
             let indexToDeleteInWorkSchedule = -1;
 
             indexToDeleteInWorkSchedule = workScheduleAppointments.findIndex(
@@ -106,13 +106,11 @@ export default function workScheduleReducer(state :Map<*, *> = INITIAL_STATE, ac
 
             if (indexToDeleteInWorkSchedule !== -1) {
               workScheduleAppointments = workScheduleAppointments.delete(indexToDeleteInWorkSchedule);
-              return state
-                .set(APPOINTMENTS, workScheduleAppointments)
-                .setIn([ACTIONS, DELETE_APPOINTMENT, REQUEST_STATE], RequestStates.SUCCESS);
             }
           }
 
           return state
+            .set(APPOINTMENTS, workScheduleAppointments)
             .setIn([ACTIONS, DELETE_APPOINTMENT, REQUEST_STATE], RequestStates.SUCCESS);
         },
         FAILURE: () => state
