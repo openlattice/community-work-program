@@ -218,6 +218,7 @@ export const WORK_SCHEDULE = {
   GET_WORKSITE_AND_PERSON_NAMES: 'getWorksiteAndPersonNames',
   REQUEST_STATE: 'requestState',
   PERSON_BY_APPOINTMENT_EKID: 'personByAppointmentEKID',
+  WORKSITES_BY_WORKSITE_PLAN_BY_PERSON: 'worksitesByWorksitePlanByPerson',
   WORKSITE_NAMES_BY_APPOINTMENT_EKID: 'worksiteNamesByAppointmentEKID',
 };
 

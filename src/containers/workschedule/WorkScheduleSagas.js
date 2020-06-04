@@ -25,9 +25,11 @@ import {
   FIND_APPOINTMENTS,
   GET_PERSON_COURT_TYPE,
   GET_WORKSITE_AND_PERSON_NAMES,
+  GET_WORKSITE_PLANS_BY_PERSON,
   findAppointments,
   getPersonCourtType,
   getWorksiteAndPersonNames,
+  getWorksitePlansByPerson,
 } from './WorkScheduleActions';
 import { getAppointmentCheckIns } from '../participant/assignedworksites/WorksitePlanActions';
 import { getAppointmentCheckInsWorker } from '../participant/assignedworksites/WorksitePlanSagas';
@@ -155,6 +157,101 @@ function* getPersonCourtTypeWatcher() :Generator<*, *, *> {
 
 /*
  *
+ * WorkScheduleActions.getWorksitePlansByPerson()
+ *
+ */
+
+function* getWorksitePlansByPersonWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+  if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
+  const workerResponse = {};
+  let response :Object = {};
+
+  try {
+    yield put(getWorksitePlansByPerson.request(id));
+    const { personEKIDs } = value;
+
+    const app = yield select(getAppFromState);
+    const worksitePlanESID :UUID = getEntitySetIdFromApp(app, WORKSITE_PLAN);
+    const peopleESID :UUID = getEntitySetIdFromApp(app, PEOPLE);
+
+    let searchFilter :Object = {
+      entityKeyIds: personEKIDs,
+      destinationEntitySetIds: [worksitePlanESID],
+      sourceEntitySetIds: [],
+    };
+    response = yield call(
+      searchEntityNeighborsWithFilterWorker,
+      searchEntityNeighborsWithFilter({ entitySetId: peopleESID, filter: searchFilter })
+    );
+    if (response.error) throw response.error;
+    const worksitePlanEKIDs :UUID[] = [];
+    let personEKIDByWorksitePlanEKID :Map = Map().asMutable();
+
+    let worksitesByWorksitePlanEKIDByPersonEKID :Map = Map().withMutations((map :Map) => {
+      fromJS(response.data).forEach((neighborsList :List, personEKID :UUID) => {
+        neighborsList.forEach((worksitePlanNeighbor :Map) => {
+          const worksitePlanEKID :UUID = getEntityKeyId(getNeighborDetails(worksitePlanNeighbor));
+          worksitePlanEKIDs.push(worksitePlanEKID);
+
+          personEKIDByWorksitePlanEKID = personEKIDByWorksitePlanEKID.set(worksitePlanEKID, personEKID);
+
+          let worksitesByWorksitePlanForCurrentPerson :Map = map.get(personEKID, Map());
+
+          if (!isDefined(worksitesByWorksitePlanForCurrentPerson.get(worksitePlanEKID))) {
+            worksitesByWorksitePlanForCurrentPerson = worksitesByWorksitePlanForCurrentPerson
+              .set(worksitePlanEKID, Map());
+          }
+          map.set(personEKID, worksitesByWorksitePlanForCurrentPerson);
+        });
+      });
+    });
+
+    const worksiteESID :UUID = getEntitySetIdFromApp(app, WORKSITE);
+    searchFilter = {
+      entityKeyIds: worksitePlanEKIDs,
+      destinationEntitySetIds: [worksiteESID],
+      sourceEntitySetIds: [],
+    };
+    response = yield call(
+      searchEntityNeighborsWithFilterWorker,
+      searchEntityNeighborsWithFilter({ entitySetId: worksitePlanESID, filter: searchFilter })
+    );
+    if (response.error) throw response.error;
+
+    fromJS(response.data).forEach((neighborsList :List, worksitePlanEKID :UUID) => {
+      const worksite :Map = getNeighborDetails(neighborsList.get(0));
+      const personEKID :UUID = personEKIDByWorksitePlanEKID.get(worksitePlanEKID, '');
+      let worksitesByWorksitePlanEKID :Map = worksitesByWorksitePlanEKIDByPersonEKID.get(personEKID, Map());
+      if (isDefined(worksitesByWorksitePlanEKID.get(worksitePlanEKID))) {
+        worksitesByWorksitePlanEKID = worksitesByWorksitePlanEKID.set(worksitePlanEKID, worksite);
+      }
+      worksitesByWorksitePlanEKIDByPersonEKID = worksitesByWorksitePlanEKIDByPersonEKID
+        .set(personEKID, worksitesByWorksitePlanEKID);
+    });
+
+    yield put(getWorksitePlansByPerson.success(id, worksitesByWorksitePlanEKIDByPersonEKID));
+  }
+  catch (error) {
+    workerResponse.error = error;
+    LOG.error(action.type, error);
+    yield put(getWorksitePlansByPerson.failure(id, error));
+  }
+  finally {
+    yield put(getWorksitePlansByPerson.finally(id));
+  }
+  return workerResponse;
+}
+
+function* getWorksitePlansByPersonWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(GET_WORKSITE_PLANS_BY_PERSON, getWorksitePlansByPersonWorker);
+}
+
+
+/*
+ *
  * WorkScheduleActions.getWorksiteAndPersonNames()
  *
  */
@@ -162,15 +259,13 @@ function* getPersonCourtTypeWatcher() :Generator<*, *, *> {
 function* getWorksiteAndPersonNamesWorker(action :SequenceAction) :Generator<*, *, *> {
 
   const { id, value } = action;
+  if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
   let response :Object = {};
   let worksiteNamesByAppointmentEKID :Map = Map();
   let personByAppointmentEKID :Map = Map();
 
   try {
     yield put(getWorksiteAndPersonNames.request(id, value));
-    if (value === null || value === undefined) {
-      throw ERR_ACTION_VALUE_NOT_DEFINED;
-    }
     const { workAppointmentEKIDs } = value;
 
     const app = yield select(getAppFromState);
@@ -220,6 +315,7 @@ function* getWorksiteAndPersonNamesWorker(action :SequenceAction) :Generator<*, 
     }
     let worksitesByWorksitePlan :Map = Map();
     let peopleByWorksitePlan :Map = Map();
+    const personEKIDs :UUID[] = [];
 
     fromJS(response.data)
       .forEach((neighborsList :List, worksitePlanEKID :UUID) => {
@@ -229,10 +325,13 @@ function* getWorksiteAndPersonNamesWorker(action :SequenceAction) :Generator<*, 
             worksitesByWorksitePlan = worksitesByWorksitePlan.set(worksitePlanEKID, entity);
           }
           if (getNeighborESID(neighbor) === peopleESID) {
+            personEKIDs.push(getEntityKeyId(entity));
             peopleByWorksitePlan = peopleByWorksitePlan.set(worksitePlanEKID, entity);
           }
         });
       });
+
+    yield call(getWorksitePlansByPersonWorker, getWorksitePlansByPerson({ personEKIDs }));
 
     appointmentWorksitePlanEKIDMap.forEach((worksitePlanEKID :UUID, appointmentEKID :UUID) => {
       const worksite :Map = worksitesByWorksitePlan.get(worksitePlanEKID);
@@ -249,7 +348,7 @@ function* getWorksiteAndPersonNamesWorker(action :SequenceAction) :Generator<*, 
     }));
   }
   catch (error) {
-    LOG.error('caught exception in getWorksiteAndPersonNamesWorker()', error);
+    LOG.error(action.type, error);
     yield put(getWorksiteAndPersonNames.failure(id, error));
   }
   finally {
@@ -355,4 +454,6 @@ export {
   getPersonCourtTypeWorker,
   getWorksiteAndPersonNamesWatcher,
   getWorksiteAndPersonNamesWorker,
+  getWorksitePlansByPersonWatcher,
+  getWorksitePlansByPersonWorker,
 };

@@ -7,9 +7,11 @@ import { RequestStates } from 'redux-reqseq';
 import type { SequenceAction } from 'redux-reqseq';
 
 import {
+  GET_WORKSITE_PLANS_BY_PERSON,
   findAppointments,
   getPersonCourtType,
   getWorksiteAndPersonNames,
+  getWorksitePlansByPerson,
 } from './WorkScheduleActions';
 import {
   DELETE_APPOINTMENT,
@@ -28,8 +30,9 @@ const {
   FIND_APPOINTMENTS,
   GET_PERSON_COURT_TYPE,
   GET_WORKSITE_NAMES_FOR_APPOINTMENTS,
-  REQUEST_STATE,
   PERSON_BY_APPOINTMENT_EKID,
+  REQUEST_STATE,
+  WORKSITES_BY_WORKSITE_PLAN_BY_PERSON,
   WORKSITE_NAMES_BY_APPOINTMENT_EKID,
 } = WORK_SCHEDULE;
 const { DATETIME_END, INCIDENT_START_DATETIME } = PROPERTY_TYPE_FQNS;
@@ -238,6 +241,26 @@ export default function worksitesReducer(state :Map<*, *> = INITIAL_STATE, actio
           .set(WORKSITE_NAMES_BY_APPOINTMENT_EKID, Map())
           .setIn([ACTIONS, GET_WORKSITE_NAMES_FOR_APPOINTMENTS, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, GET_WORKSITE_NAMES_FOR_APPOINTMENTS, action.id]),
+      });
+    }
+
+    case getWorksitePlansByPerson.case(action.type): {
+
+      return getWorksitePlansByPerson.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, GET_WORKSITE_PLANS_BY_PERSON, action.id], action)
+          .setIn([ACTIONS, GET_WORKSITE_PLANS_BY_PERSON, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+          const seqAction :SequenceAction = (action :any);
+          const { value } = seqAction;
+          return state
+            .set(WORKSITES_BY_WORKSITE_PLAN_BY_PERSON, value)
+            .setIn([ACTIONS, GET_WORKSITE_PLANS_BY_PERSON, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, GET_WORKSITE_PLANS_BY_PERSON, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, GET_WORKSITE_PLANS_BY_PERSON, action.id]),
       });
     }
 
