@@ -17,13 +17,15 @@ import {
 } from '../../../utils/ScheduleUtils';
 import { hydrateSchema } from '../utils/EditAppointmentUtils';
 import { requestIsPending } from '../../../utils/RequestStateUtils';
+import { isDefined } from '../../../utils/LangUtils';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import {
   APP,
   EDM,
   SHARED,
   STATE,
-  WORKSITE_PLANS
+  WORKSITE_PLANS,
+  WORK_SCHEDULE,
 } from '../../../utils/constants/ReduxStateConsts';
 
 const {
@@ -39,18 +41,21 @@ const { ENTITY_SET_IDS_BY_ORG, SELECTED_ORG_ID } = APP;
 const { PROPERTY_TYPES, TYPE_IDS_BY_FQNS } = EDM;
 const { EDIT_APPOINTMENT } = WORKSITE_PLANS;
 const { ACTIONS, REQUEST_STATE } = SHARED;
+const { WORKSITES_BY_WORKSITE_PLAN_BY_PERSON } = WORK_SCHEDULE;
 
 type Props = {
-  actions:{
+  actions :{
     editAppointment :RequestSequence;
   },
   app :Map;
-  editAppointmentRequestState :RequestState;
-  entitySetIds :Map;
   appointment :Object;
   appointmentEKID :UUID;
+  editAppointmentRequestState :RequestState;
+  entitySetIds :Map;
+  personEKID :UUID;
   personName :string;
   propertyTypeIds :Map;
+  worksitesByWorksitePlanByPerson :Map;
   worksitesByWorksitePlan :Map;
 };
 
@@ -77,7 +82,19 @@ class EditAppointmentForm extends Component<Props, State> {
   }
 
   prepopulateFormData = () => {
-    const { appointment, personName, worksitesByWorksitePlan } = this.props;
+    const {
+      appointment,
+      personEKID,
+      personName,
+      worksitesByWorksitePlan,
+      worksitesByWorksitePlanByPerson,
+    } = this.props;
+
+    let worksiteByWorksitePlanEKID :Map = Map();
+    if (isDefined(worksitesByWorksitePlanByPerson)) {
+      worksiteByWorksitePlanEKID = worksitesByWorksitePlanByPerson.get(personEKID, Map());
+    }
+    else worksiteByWorksitePlanEKID = worksitesByWorksitePlan;
 
     const rawDateString = appointment.get('day').split(' ')[1];
     const date = getDateInISOFormat(rawDateString);
@@ -86,8 +103,8 @@ class EditAppointmentForm extends Component<Props, State> {
     const startTime :string = get24HourTimeFromString(start);
     const endTime :string = get24HourTimeFromString(end);
 
-    const hydratedSchema = hydrateSchema(schema, worksitesByWorksitePlan);
-    const worksitePlanEKID :UUID = worksitesByWorksitePlan.findKey((worksite :Map) => {
+    const hydratedSchema = hydrateSchema(schema, worksiteByWorksitePlanEKID);
+    const worksitePlanEKID :UUID = worksiteByWorksitePlanEKID.findKey((worksite :Map) => {
       let worksiteName :string = '';
       if (worksite.getIn([NAME, 0]) === appointment.get('worksiteName')) {
         worksiteName = worksite.getIn([NAME, 0]);
@@ -179,7 +196,9 @@ const mapStateToProps = (state :Map) => {
   const app = state.get(STATE.APP);
   const edm = state.get(STATE.EDM);
   const selectedOrgId :string = app.get(SELECTED_ORG_ID);
+  const workSchedule = state.get(STATE.WORK_SCHEDULE);
   return ({
+    [WORKSITES_BY_WORKSITE_PLAN_BY_PERSON]: workSchedule.get(WORKSITES_BY_WORKSITE_PLAN_BY_PERSON),
     app,
     editAppointmentRequestState: state
       .getIn([STATE.WORKSITE_PLANS, ACTIONS, EDIT_APPOINTMENT, REQUEST_STATE]),
