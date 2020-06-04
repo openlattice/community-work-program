@@ -133,8 +133,9 @@ class EditAppointmentForm extends Component<Props, State> {
     const {
       actions,
       app,
-      entitySetIds,
       appointmentEKID,
+      entitySetIds,
+      personEKID,
       propertyTypeIds,
     } = this.props;
     const { originalWorksitePlanEKID } = this.state;
@@ -174,7 +175,12 @@ class EditAppointmentForm extends Component<Props, State> {
     if (originalWorksitePlanEKID !== formData[getPageSectionKey(1, 1)].worksite) {
       newWorksitePlanEKID = formData[getPageSectionKey(1, 1)].worksite;
     }
-    actions.editAppointment({ appointmentEKID, entityData, newWorksitePlanEKID });
+    actions.editAppointment({
+      appointmentEKID,
+      entityData,
+      newWorksitePlanEKID,
+      personEKID,
+    });
   }
 
   render() {
