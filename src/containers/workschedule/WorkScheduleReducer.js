@@ -7,6 +7,7 @@ import { RequestStates } from 'redux-reqseq';
 import type { SequenceAction } from 'redux-reqseq';
 
 import {
+  FIND_APPOINTMENTS,
   GET_WORKSITE_PLANS_BY_PERSON,
   findAppointments,
   getPersonCourtType,
@@ -27,7 +28,6 @@ const {
   ACTIONS,
   APPOINTMENTS,
   COURT_TYPE_BY_APPOINTMENT_EKID,
-  FIND_APPOINTMENTS,
   GET_PERSON_COURT_TYPE,
   GET_WORKSITE_NAMES_FOR_APPOINTMENTS,
   PERSON_BY_APPOINTMENT_EKID,
@@ -212,16 +212,7 @@ export default function workScheduleReducer(state :Map<*, *> = INITIAL_STATE, ac
           .setIn([ACTIONS, FIND_APPOINTMENTS, action.id], action)
           .setIn([ACTIONS, FIND_APPOINTMENTS, REQUEST_STATE], RequestStates.PENDING),
         SUCCESS: () => {
-
-          if (!state.hasIn([ACTIONS, FIND_APPOINTMENTS, action.id])) {
-            return state;
-          }
-
           const { value } = action;
-          if (value === null || value === undefined) {
-            return state;
-          }
-
           return state
             .set(APPOINTMENTS, value)
             .setIn([ACTIONS, FIND_APPOINTMENTS, REQUEST_STATE], RequestStates.SUCCESS);
