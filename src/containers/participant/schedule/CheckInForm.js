@@ -197,6 +197,8 @@ class CheckInForm extends Component<Props, State> {
       timeIn,
       timeOut,
     } = this.state;
+    console.log('checkedIn ', checkedIn);
+    const checkedInIsBlankOrNo :boolean = !checkedIn || checkedIn === RADIO_OPTIONS[1];
 
     const checkInQuestion = `Did ${personName} appear for this work appointment?`;
     return (
@@ -229,6 +231,7 @@ class CheckInForm extends Component<Props, State> {
           <RowContent>
             <Label>Time checked in</Label>
             <TimePicker
+                disabled={checkedInIsBlankOrNo}
                 format="H:mm"
                 mask="__:__"
                 name={getEntityAddressKey(0, CHECK_INS, DATETIME_START)}
@@ -241,6 +244,7 @@ class CheckInForm extends Component<Props, State> {
           <RowContent>
             <Label>Time checked out</Label>
             <TimePicker
+                disabled={checkedInIsBlankOrNo}
                 format="H:mm"
                 mask="__:__"
                 name={getEntityAddressKey(0, CHECK_INS, DATETIME_END)}
@@ -253,6 +257,7 @@ class CheckInForm extends Component<Props, State> {
           <RowContent>
             <Label>Hours worked during appointment</Label>
             <Input
+                disabled={checkedInIsBlankOrNo}
                 name={getEntityAddressKey(0, CHECK_IN_DETAILS, HOURS_WORKED)}
                 onChange={this.handleInputChange}
                 type="text"
@@ -265,6 +270,7 @@ class CheckInForm extends Component<Props, State> {
         <ButtonsRow>
           <Button onClick={onDiscard}>Discard</Button>
           <Button
+              disabled={checkedInIsBlankOrNo}
               isLoading={isLoading}
               mode="primary"
               onClick={this.handleOnSubmit}>
