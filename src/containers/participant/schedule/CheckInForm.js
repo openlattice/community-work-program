@@ -109,15 +109,40 @@ class CheckInForm extends Component<Props, State> {
   handleInputChange = (e :SyntheticEvent<HTMLInputElement>) => {
     const { newCheckInData } = this.state;
     const { name, value } = e.currentTarget;
-    const valueToFloat = parseFloat(value);
+    const valueToFloat = value.length ? parseFloat(value) : '';
     this.setState({ newCheckInData: newCheckInData.setIn([getPageSectionKey(1, 1), name], valueToFloat) });
   }
 
   handleRadioChange = (option :Object) => {
+    const { appointment } = this.props;
+    const { newCheckInData } = this.state;
     const { name } = option.currentTarget;
-    this.setState({
-      checkedIn: name,
-    });
+
+    if (name === RADIO_OPTIONS[1]) {
+      this.setState({
+        checkedIn: name,
+        newCheckInData: newCheckInData.setIn([
+          getPageSectionKey(1, 1),
+          getEntityAddressKey(0, CHECK_IN_DETAILS, HOURS_WORKED)
+        ], 0),
+        timeIn: '',
+        timeOut: ''
+      });
+    }
+    else {
+      const hours = appointment.get('hours');
+      const { timeIn: originalTimeIn, timeOut: originalTimeOut } = get24HourTimeForCheckIn(hours);
+      const hoursScheduled :number = getHoursScheduled(originalTimeIn, originalTimeOut);
+      this.setState({
+        checkedIn: name,
+        newCheckInData: newCheckInData.setIn([
+          getPageSectionKey(1, 1),
+          getEntityAddressKey(0, CHECK_IN_DETAILS, HOURS_WORKED)
+        ], hoursScheduled),
+        timeIn: originalTimeIn,
+        timeOut: originalTimeOut
+      });
+    }
   }
 
   setRawTime = (type :string) => (time :string) => {
@@ -141,14 +166,16 @@ class CheckInForm extends Component<Props, State> {
     newCheckInData = newCheckInData
       .setIn([getPageSectionKey(1, 1), getEntityAddressKey(0, CHECK_INS, CHECKED_IN)], participantCheckedIn);
 
-    const appointmentDateToISO :string = new Date(appointment.get('day')).toISOString();
-    const appointmentDate :string = DateTime.fromISO(appointmentDateToISO).toISODate();
-    const dateTimeCheckedIn :string = getCombinedDateTime(appointmentDate, timeIn);
-    const dateTimeCheckedOut :string = getCombinedDateTime(appointmentDate, timeOut);
-    newCheckInData = newCheckInData
-      .setIn([getPageSectionKey(1, 1), getEntityAddressKey(0, CHECK_INS, DATETIME_START)], dateTimeCheckedIn);
-    newCheckInData = newCheckInData
-      .setIn([getPageSectionKey(1, 1), getEntityAddressKey(0, CHECK_INS, DATETIME_END)], dateTimeCheckedOut);
+    if (participantCheckedIn) {
+      const appointmentDateToISO :string = new Date(appointment.get('day')).toISOString();
+      const appointmentDate :string = DateTime.fromISO(appointmentDateToISO).toISODate();
+      const dateTimeCheckedIn :string = getCombinedDateTime(appointmentDate, timeIn);
+      const dateTimeCheckedOut :string = getCombinedDateTime(appointmentDate, timeOut);
+      newCheckInData = newCheckInData
+        .setIn([getPageSectionKey(1, 1), getEntityAddressKey(0, CHECK_INS, DATETIME_START)], dateTimeCheckedIn);
+      newCheckInData = newCheckInData
+        .setIn([getPageSectionKey(1, 1), getEntityAddressKey(0, CHECK_INS, DATETIME_END)], dateTimeCheckedOut);
+    }
 
     const appointmentEKID :UUID = appointment.get(ENTITY_KEY_ID);
     const associations = [];
