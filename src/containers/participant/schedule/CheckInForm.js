@@ -6,6 +6,7 @@ import { DateTime } from 'luxon';
 import { DataProcessingUtils } from 'lattice-fabricate';
 import {
   Button,
+  Colors,
   Input,
   Label,
   Radio,
@@ -31,6 +32,8 @@ import {
   PERSON,
   STATE
 } from '../../../utils/constants/ReduxStateConsts';
+
+const { RED_1 } = Colors;
 
 const {
   APPOINTMENT,
@@ -63,6 +66,11 @@ const RADIO_OPTIONS :string[] = ['Yes', 'No'];
 
 const RadioWrapper = styled.span`
   margin-right: 20px;
+`;
+
+const ErrorMessage = styled.div`
+  color: ${RED_1};
+  max-width: 351px;
 `;
 
 type Props = {
@@ -197,8 +205,15 @@ class CheckInForm extends Component<Props, State> {
       timeIn,
       timeOut,
     } = this.state;
-    console.log('checkedIn ', checkedIn);
+
     const checkedInIsBlankOrNo :boolean = !checkedIn || checkedIn === RADIO_OPTIONS[1];
+
+    const hoursCalculatedFromFormTimes = getHoursScheduled(timeIn, timeOut);
+    const hoursInFormData :number | string = newCheckInData.getIn([
+      getPageSectionKey(1, 1),
+      getEntityAddressKey(0, CHECK_IN_DETAILS, HOURS_WORKED)
+    ]);
+    const formHoursAndTimesConflict :boolean = hoursCalculatedFromFormTimes !== hoursInFormData;
 
     const checkInQuestion = `Did ${personName} appear for this work appointment?`;
     return (
@@ -267,10 +282,21 @@ class CheckInForm extends Component<Props, State> {
                 ])} />
           </RowContent>
         </FormRow>
+        {
+          formHoursAndTimesConflict && (
+            <FormRow>
+              <RowContent>
+                <ErrorMessage>
+                  There is a conflict between hours entered and times selected. Please fix before submitting.
+                </ErrorMessage>
+              </RowContent>
+            </FormRow>
+          )
+        }
         <ButtonsRow>
           <Button onClick={onDiscard}>Discard</Button>
           <Button
-              disabled={checkedInIsBlankOrNo}
+              disabled={checkedInIsBlankOrNo || formHoursAndTimesConflict}
               isLoading={isLoading}
               mode="primary"
               onClick={this.handleOnSubmit}>
