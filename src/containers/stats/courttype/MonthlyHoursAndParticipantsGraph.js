@@ -29,8 +29,10 @@ import type { RequestSequence, RequestState } from 'redux-reqseq';
 import {
   ActionsWrapper,
   GraphHeader,
+  HeaderActionsWrapper,
   InnerHeaderRow,
   SelectsWrapper,
+  SmallSelectWrapper,
   toolTipStyle,
 } from '../styled/GraphStyles';
 import {
@@ -47,7 +49,11 @@ import {
 } from './CourtTypeActions';
 import { getStatsData } from '../StatsActions';
 import {
+  ALL_TIME,
+  MONTHLY,
   MONTHS_OPTIONS,
+  TIME_FRAME_OPTIONS,
+  YEARLY,
   YEARS_OPTIONS,
 } from '../consts/TimeConsts';
 import { SHARED, STATE } from '../../../utils/constants/ReduxStateConsts';
@@ -83,11 +89,21 @@ const MonthlyHoursAndParticipantsGraphs = ({
 } :Props) => {
 
   const today :DateTime = DateTime.local();
+  const [timeFrame, setTimeFrame] = useState(TIME_FRAME_OPTIONS[2]);
   const [hoursMonth, setHoursMonth] = useState(MONTHS_OPTIONS[today.month - 1]);
   const currentYearOption :Object = YEARS_OPTIONS.find((obj) => obj.value === today.year);
   const [hoursYear, setHoursYear] = useState(currentYearOption);
+
+  const onTimeFrameSelectChange = (option :Object) => {
+    if (option.value === ALL_TIME) {
+      // actions.getStatsData();
+      setTimeFrame(option);
+    }
+    else setTimeFrame(option);
+  };
+
   const getNewHoursData = () => {
-    actions.getMonthlyCourtTypeData({ month: hoursMonth.value, year: hoursYear.value });
+    actions.getMonthlyCourtTypeData({ month: hoursMonth.value, year: hoursYear.value, timeFrame: timeFrame.value });
   };
 
   const downloadParticipantsAndHoursData = () => {
@@ -118,30 +134,45 @@ const MonthlyHoursAndParticipantsGraphs = ({
     <Card>
       <GraphHeader>
         <InnerHeaderRow>
-          <div>Number of Participants and Hours Worked by Court Type, Monthly</div>
-          <Button
-              isLoading={requestIsPending(requestStates[DOWNLOAD_COURT_TYPE_DATA])}
-              onClick={downloadParticipantsAndHoursData}>
-            Download
-          </Button>
+          <div>Number of Participants and Hours Worked by Court Type</div>
+          <HeaderActionsWrapper>
+            <SmallSelectWrapper>
+              <Select
+                  onChange={onTimeFrameSelectChange}
+                  options={TIME_FRAME_OPTIONS}
+                  placeholder={TIME_FRAME_OPTIONS[2].label} />
+            </SmallSelectWrapper>
+            <Button
+                isLoading={requestIsPending(requestStates[DOWNLOAD_COURT_TYPE_DATA])}
+                onClick={downloadParticipantsAndHoursData}>
+              Download
+            </Button>
+          </HeaderActionsWrapper>
         </InnerHeaderRow>
-        <ActionsWrapper>
-          <SelectsWrapper>
-            <Select
-                name="month"
-                onChange={setHoursMonth}
-                options={MONTHS_OPTIONS}
-                placeholder={MONTHS_OPTIONS[today.month - 1].label} />
-            <Select
-                name="year"
-                onChange={setHoursYear}
-                options={YEARS_OPTIONS}
-                placeholder={today.year} />
-          </SelectsWrapper>
-          <IconButton
-              icon={<FontAwesomeIcon icon={faSearch} />}
-              onClick={getNewHoursData} />
-        </ActionsWrapper>
+        {
+          (timeFrame.value === MONTHLY || timeFrame.value === YEARLY) && (
+            <InnerHeaderRow>
+              <ActionsWrapper>
+                <SelectsWrapper>
+                  <Select
+                      isDisabled={timeFrame.value === YEARLY}
+                      name="month"
+                      onChange={setHoursMonth}
+                      options={MONTHS_OPTIONS}
+                      placeholder={MONTHS_OPTIONS[today.month - 1].label} />
+                  <Select
+                      name="year"
+                      onChange={setHoursYear}
+                      options={YEARS_OPTIONS}
+                      placeholder={today.year} />
+                </SelectsWrapper>
+                <IconButton
+                    icon={<FontAwesomeIcon icon={faSearch} />}
+                    onClick={getNewHoursData} />
+              </ActionsWrapper>
+            </InnerHeaderRow>
+          )
+        }
       </GraphHeader>
       <CardSegment padding="30px" vertical>
         {
