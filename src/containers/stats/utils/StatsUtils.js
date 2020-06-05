@@ -25,14 +25,6 @@ const sortGraphData = (graphData :Object[]) => (
 
 // Court Type:
 
-const formatReferralsCourtTypeData = (referralsByCourtTypeGraphData :Map) :Object[] => {
-  const graphData :Object[] = [];
-  referralsByCourtTypeGraphData.forEach((numberOfReferrals :number, courtType :string) => {
-    graphData.push({ x: numberOfReferrals, y: courtType });
-  });
-  return graphData;
-};
-
 const formatEnrollmentStatusPeopleData = (enrollmentsByCourtType :Map) :Object[] => {
   const graphData :Object[] = [];
   enrollmentsByCourtType.forEach((numberOfParticipants :number, courtType :string) => {
@@ -289,7 +281,6 @@ export {
   formatParticipantsAndHoursDataForDownload,
   formatParticipantsByCourtTypeDataForDownload,
   formatRadialChartData,
-  formatReferralsCourtTypeData,
   formatWorksiteHoursDataForDownload,
   formatWorksiteParticipantsDataForDownload,
   getBottomRowForEnrollments,

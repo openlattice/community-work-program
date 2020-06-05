@@ -60,7 +60,6 @@ const LOG = new Logger('StatsSagas');
 function* getStatsDataWorker(action :SequenceAction) :Generator<*, *, *> {
   const { id } = action;
   let response :Object = {};
-  let referralsByCourtTypeGraphData :Map = fromJS(courtTypeCountObj).asMutable();
   let activeEnrollmentsByCourtType :Map = fromJS(courtTypeCountObj).asMutable();
   let jobSearchEnrollmentsByCourtType :Map = fromJS(courtTypeCountObj).asMutable();
   let successfulEnrollmentsByCourtType :Map = fromJS(courtTypeCountObj).asMutable();
@@ -160,36 +159,13 @@ function* getStatsDataWorker(action :SequenceAction) :Generator<*, *, *> {
         enrollments = enrollments.push(Map({ courtType: courtCaseType, enrollmentStatusDate: neighborDate }));
         allEnrollmentsByPersonEKID = allEnrollmentsByPersonEKID.set(personEKID, enrollments);
       });
+      totalParticipantCount = allEnrollmentsByPersonEKID.count();
 
       activeEnrollmentsByCourtType = activeEnrollmentsByCourtType.asImmutable();
       closedEnrollmentsByCourtType = closedEnrollmentsByCourtType.asImmutable();
       jobSearchEnrollmentsByCourtType = jobSearchEnrollmentsByCourtType.asImmutable();
       successfulEnrollmentsByCourtType = successfulEnrollmentsByCourtType.asImmutable();
       unsuccessfulEnrollmentsByCourtType = unsuccessfulEnrollmentsByCourtType.asImmutable();
-
-      allEnrollmentsByPersonEKID.forEach((enrollments :List) => {
-        totalParticipantCount += 1;
-        let currentCourtType :string = '';
-        let repeats :Map = Map();
-        const sortedEnrollments = enrollments.sortBy((enrollment :Map) => enrollment.get('enrollmentStatusDate'));
-
-        sortedEnrollments.forEach((enrollment :Map) => {
-          const courtType :string = enrollment.get('courtType');
-          if (courtType !== currentCourtType) currentCourtType = courtType;
-          else {
-            let courtTypeRepeatCount = repeats.get(currentCourtType, 0);
-            repeats = repeats.set(currentCourtType, courtTypeRepeatCount += 1);
-          }
-        });
-
-        repeats.forEach((referralCountToAdd :number, courtType :string) => {
-          const totalReferralsForCourtType :number = referralsByCourtTypeGraphData.get(courtType, 0);
-          referralsByCourtTypeGraphData = referralsByCourtTypeGraphData
-            .set(courtType, totalReferralsForCourtType + referralCountToAdd);
-        });
-      });
-
-      referralsByCourtTypeGraphData = referralsByCourtTypeGraphData.asImmutable();
     }
 
     const now :DateTime = DateTime.local();
@@ -203,7 +179,6 @@ function* getStatsDataWorker(action :SequenceAction) :Generator<*, *, *> {
       activeEnrollmentsByCourtType,
       closedEnrollmentsByCourtType,
       jobSearchEnrollmentsByCourtType,
-      referralsByCourtTypeGraphData,
       successfulEnrollmentsByCourtType,
       totalActiveEnrollmentCount,
       totalClosedEnrollmentsCount,

@@ -193,7 +193,6 @@ export const STATS = {
   MONTHLY_TOTAL_PARTICIPANTS_BY_COURT_TYPE: 'monthlyTotalParticipantsByCourtType',
   PARTICIPANTS_BY_WORKSITE: 'participantsByWorksite',
   RACE_DEMOGRAPHICS: 'raceDemographics',
-  REFERRALS_BY_COURT_TYPE_GRAPH_DATA: 'referralsByCourtTypeGraphData',
   SEX_DEMOGRAPHICS: 'sexDemographics',
   SUCCESSFUL_ENROLLMENTS_BY_COURT_TYPE: 'successfulEnrollmentsByCourtType',
   TOTAL_ACTIVE_ENROLLMENTS_COUNT: 'totalActiveEnrollmentsCount',

@@ -1,7 +1,7 @@
 // @flow
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import { List, Map, fromJS } from 'immutable';
+import { List, Map } from 'immutable';
 import { DateTime } from 'luxon';
 import {
   Button,
@@ -22,7 +22,6 @@ import type { RequestSequence, RequestState } from 'redux-reqseq';
 import EnrollmentsAndStatusByCourtType from './EnrollmentsAndStatusByCourtType';
 import MonthlyHoursAndParticipantsGraph from './MonthlyHoursAndParticipantsGraph';
 import MonthlyParticipantsByCourtType from './MonthlyParticipantsByCourtType';
-import ReferralsByCourtTypeGraph from './ReferralsByCourtTypeGraph';
 import {
   ActionsWrapper,
   GraphHeader,
@@ -40,7 +39,6 @@ import {
 import {
   formatEnrollmentsDataForDownload,
   formatParticipantsAndHoursDataForDownload,
-  formatReferralsCourtTypeData,
   getBottomRowForEnrollments,
   getBottomRowForParticipantsAndHours,
 } from '../utils/StatsUtils';
@@ -62,11 +60,9 @@ import {
   YEARLY,
   YEARS_OPTIONS,
 } from '../consts/TimeConsts';
-import { DOWNLOAD_CONSTS } from '../consts/StatsConsts';
 import { SHARED, STATE } from '../../../utils/constants/ReduxStateConsts';
 import { OL } from '../../../core/style/Colors';
 
-const { COURT_TYPE, TOTAL } = DOWNLOAD_CONSTS;
 const { ACTIONS, REQUEST_STATE } = SHARED;
 const { BLUE_2, PURPLES, YELLOW_1 } = Colors;
 const { PINK01 } = OL;
@@ -101,7 +97,6 @@ type Props = {
   jobSearchEnrollmentsByCourtType :Map;
   monthlyHoursWorkedByCourtType :Map;
   monthlyTotalParticipantsByCourtType :Map;
-  referralsByCourtTypeGraphData :Map;
   requestStates :{
     DOWNLOAD_COURT_TYPE_DATA :RequestState;
     GET_ENROLLMENTS_BY_COURT_TYPE :RequestState;
@@ -119,14 +114,12 @@ const CourtTypeGraphs = ({
   jobSearchEnrollmentsByCourtType,
   monthlyHoursWorkedByCourtType,
   monthlyTotalParticipantsByCourtType,
-  referralsByCourtTypeGraphData,
   requestStates,
   successfulEnrollmentsByCourtType,
   unsuccessfulEnrollmentsByCourtType,
 } :Props) => {
 
   const monthlyDataIsLoading = requestIsPending(requestStates[GET_MONTHLY_COURT_TYPE_DATA]);
-  const referralsGraphData :Object[] = formatReferralsCourtTypeData(referralsByCourtTypeGraphData);
 
   const today :DateTime = DateTime.local();
   // hours/participants by court type:
@@ -153,14 +146,6 @@ const CourtTypeGraphs = ({
       year: enrollmentsYear.value,
       timeFrame: timeFrame.value
     });
-  };
-
-  const downloadReferralData = () => {
-    const formattedReferralData = referralsGraphData.map((graphObj :Object) => ({
-      [COURT_TYPE]: graphObj.y,
-      [TOTAL]: graphObj.x,
-    }));
-    actions.downloadCourtTypeData({ courtTypeData: fromJS(formattedReferralData), fileName: 'CWP_Referrals' });
   };
 
   const downloadEnrollmentsData = () => {
@@ -273,30 +258,6 @@ const CourtTypeGraphs = ({
             Monthly and yearly graphs show all enrollment statuses recorded in that time period. Therefore,
             enrollments may be counted more than once if the status changed within the time period.
           </GraphDescription>
-        </CardSegment>
-      </Card>
-      <Card>
-        <GraphHeader>
-          <InnerHeaderRow>
-            <div>Number of Referrals (Repeat Enrollments) by Court Type</div>
-            <Button
-                isLoading={requestIsPending(requestStates[DOWNLOAD_COURT_TYPE_DATA])}
-                onClick={downloadReferralData}>
-              Download
-            </Button>
-          </InnerHeaderRow>
-        </GraphHeader>
-        <CardSegment padding="30px" vertical>
-          {
-            dataIsLoading
-              ? (
-                <Spinner size="2x" />
-              )
-              : (
-                <ReferralsByCourtTypeGraph
-                    referralsGraphData={referralsGraphData} />
-              )
-          }
         </CardSegment>
       </Card>
       <Card>

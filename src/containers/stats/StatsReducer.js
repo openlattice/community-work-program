@@ -54,7 +54,6 @@ const {
   MONTHLY_TOTAL_PARTICIPANTS_BY_COURT_TYPE,
   PARTICIPANTS_BY_WORKSITE,
   RACE_DEMOGRAPHICS,
-  REFERRALS_BY_COURT_TYPE_GRAPH_DATA,
   SEX_DEMOGRAPHICS,
   SUCCESSFUL_ENROLLMENTS_BY_COURT_TYPE,
   TOTAL_ACTIVE_ENROLLMENTS_COUNT,
@@ -121,7 +120,6 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [MONTHLY_PARTICIPANTS_BY_COURT_TYPE]: Map(),
   [MONTHLY_TOTAL_PARTICIPANTS_BY_COURT_TYPE]: Map(),
   [PARTICIPANTS_BY_WORKSITE]: Map(),
-  [REFERRALS_BY_COURT_TYPE_GRAPH_DATA]: Map(),
   [SEX_DEMOGRAPHICS]: Map(),
   [SUCCESSFUL_ENROLLMENTS_BY_COURT_TYPE]: Map(),
   [TOTAL_ACTIVE_ENROLLMENTS_COUNT]: 0,
@@ -385,7 +383,6 @@ export default function statsReducer(state :Map<*, *> = INITIAL_STATE, action :O
             activeEnrollmentsByCourtType,
             closedEnrollmentsByCourtType,
             jobSearchEnrollmentsByCourtType,
-            referralsByCourtTypeGraphData,
             successfulEnrollmentsByCourtType,
             totalActiveEnrollmentCount,
             totalClosedEnrollmentsCount,
@@ -399,7 +396,6 @@ export default function statsReducer(state :Map<*, *> = INITIAL_STATE, action :O
             .set(ACTIVE_ENROLLMENTS_BY_COURT_TYPE, activeEnrollmentsByCourtType)
             .set(CLOSED_ENROLLMENTS_BY_COURT_TYPE, closedEnrollmentsByCourtType)
             .set(JOB_SEARCH_ENROLLMENTS_BY_COURT_TYPE, jobSearchEnrollmentsByCourtType)
-            .set(REFERRALS_BY_COURT_TYPE_GRAPH_DATA, referralsByCourtTypeGraphData)
             .set(SUCCESSFUL_ENROLLMENTS_BY_COURT_TYPE, successfulEnrollmentsByCourtType)
             .set(UNSUCCESSFUL_ENROLLMENTS_BY_COURT_TYPE, unsuccessfulEnrollmentsByCourtType)
             .set(TOTAL_ACTIVE_ENROLLMENTS_COUNT, totalActiveEnrollmentCount)

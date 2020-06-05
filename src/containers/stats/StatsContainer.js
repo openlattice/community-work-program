@@ -56,7 +56,6 @@ const {
   JOB_SEARCH_ENROLLMENTS_BY_COURT_TYPE,
   MONTHLY_HOURS_WORKED_BY_COURT_TYPE,
   MONTHLY_TOTAL_PARTICIPANTS_BY_COURT_TYPE,
-  REFERRALS_BY_COURT_TYPE_GRAPH_DATA,
   SUCCESSFUL_ENROLLMENTS_BY_COURT_TYPE,
   TOTAL_ACTIVE_ENROLLMENTS_COUNT,
   TOTAL_CLOSED_ENROLLMENTS_COUNT,
@@ -192,7 +191,6 @@ type Props = {
   jobSearchEnrollmentsByCourtType :Map;
   monthlyHoursWorkedByCourtType :Map;
   monthlyTotalParticipantsByCourtType :Map;
-  referralsByCourtTypeGraphData :Map;
   requestStates :{
     GET_CHARGES_STATS :RequestState;
     GET_PARTICIPANTS_DEMOGRAPHICS :RequestState;
@@ -217,7 +215,6 @@ const StatsContainer = ({
   jobSearchEnrollmentsByCourtType,
   monthlyHoursWorkedByCourtType,
   monthlyTotalParticipantsByCourtType,
-  referralsByCourtTypeGraphData,
   requestStates,
   successfulEnrollmentsByCourtType,
   totalActiveEnrollmentsCount,
@@ -251,7 +248,6 @@ const StatsContainer = ({
         jobSearchEnrollmentsByCourtType={jobSearchEnrollmentsByCourtType}
         monthlyHoursWorkedByCourtType={monthlyHoursWorkedByCourtType}
         monthlyTotalParticipantsByCourtType={monthlyTotalParticipantsByCourtType}
-        referralsByCourtTypeGraphData={referralsByCourtTypeGraphData}
         successfulEnrollmentsByCourtType={successfulEnrollmentsByCourtType}
         unsuccessfulEnrollmentsByCourtType={unsuccessfulEnrollmentsByCourtType} />
   );
@@ -383,7 +379,6 @@ const mapStateToProps = (state :Map) => {
     [JOB_SEARCH_ENROLLMENTS_BY_COURT_TYPE]: stats.get(JOB_SEARCH_ENROLLMENTS_BY_COURT_TYPE),
     [MONTHLY_HOURS_WORKED_BY_COURT_TYPE]: stats.get(MONTHLY_HOURS_WORKED_BY_COURT_TYPE),
     [MONTHLY_TOTAL_PARTICIPANTS_BY_COURT_TYPE]: stats.get(MONTHLY_TOTAL_PARTICIPANTS_BY_COURT_TYPE),
-    [REFERRALS_BY_COURT_TYPE_GRAPH_DATA]: stats.get(REFERRALS_BY_COURT_TYPE_GRAPH_DATA),
     [SUCCESSFUL_ENROLLMENTS_BY_COURT_TYPE]: stats.get(SUCCESSFUL_ENROLLMENTS_BY_COURT_TYPE),
     [TOTAL_ACTIVE_ENROLLMENTS_COUNT]: stats.get(TOTAL_ACTIVE_ENROLLMENTS_COUNT),
     [TOTAL_CLOSED_ENROLLMENTS_COUNT]: stats.get(TOTAL_CLOSED_ENROLLMENTS_COUNT),
