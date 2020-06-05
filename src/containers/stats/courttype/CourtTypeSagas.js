@@ -159,7 +159,7 @@ function* getMonthlyCourtTypeDataWorker(action :SequenceAction) :Generator<*, *,
 
   try {
     yield put(getMonthlyCourtTypeData.request(id));
-    const { month, year } = value;
+    const { month, timeFrame, year } = value;
 
     const app = yield select(getAppFromState);
     const edm = yield select(getEdmFromState);
@@ -172,9 +172,17 @@ function* getMonthlyCourtTypeDataWorker(action :SequenceAction) :Generator<*, *,
       maxHits: 10000,
       constraints: []
     };
-    const mmMonth :string = month < 10 ? `0${month}` : month;
-    const firstDateOfMonth = DateTime.fromISO(`${year}-${mmMonth}-01`);
-    const searchTerm = getUTCDateRangeSearchString(datetimeStartPTID, 'month', firstDateOfMonth);
+
+    let searchTerm :string = '';
+    if (timeFrame === MONTHLY) {
+      const mmMonth :string = month < 10 ? `0${month}` : month;
+      const firstDateOfMonth :DateTime = DateTime.fromISO(`${year}-${mmMonth}-01`);
+      searchTerm = getUTCDateRangeSearchString(datetimeStartPTID, 'month', firstDateOfMonth);
+    }
+    else if (timeFrame === YEARLY) {
+      const firstDateOfYear :DateTime = DateTime.fromISO(`${year}-01-01`);
+      searchTerm = getUTCDateRangeSearchString(datetimeStartPTID, 'year', firstDateOfYear);
+    }
     searchOptions.constraints.push({
       min: 1,
       constraints: [{
@@ -182,6 +190,7 @@ function* getMonthlyCourtTypeDataWorker(action :SequenceAction) :Generator<*, *,
         fuzzy: false
       }]
     });
+
     response = yield call(executeSearchWorker, executeSearch({ searchOptions }));
     if (response.error) throw response.error;
     const checkInsWithinMonth :List = fromJS(response.data.hits);
