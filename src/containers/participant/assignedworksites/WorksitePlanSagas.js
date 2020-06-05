@@ -285,7 +285,12 @@ function* editAppointmentWorker(action :SequenceAction) :Generator<*, *, *> {
   try {
     yield put(editAppointment.request(id, value));
 
-    const { appointmentEKID, entityData, newWorksitePlanEKID } = value;
+    const {
+      appointmentEKID,
+      entityData,
+      newWorksitePlanEKID,
+      personEKID,
+    } = value;
     const app = yield select(getAppFromState);
     const appointmentESID :UUID = getEntitySetIdFromApp(app, APPOINTMENT);
     const worksitePlanESID :UUID = getEntitySetIdFromApp(app, WORKSITE_PLAN);
@@ -343,6 +348,7 @@ function* editAppointmentWorker(action :SequenceAction) :Generator<*, *, *> {
       appointmentESID,
       endDateTimePTID,
       newWorksitePlanEKID,
+      personEKID,
       startDateTimePTID,
     }));
   }

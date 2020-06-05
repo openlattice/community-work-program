@@ -16,17 +16,17 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFilter, faSortAlphaDown } from '@fortawesome/pro-light-svg-icons';
-import { RequestStates } from 'redux-reqseq';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
 import AppointmentListContainer from './AppointmentListContainer';
 import * as Routes from '../../core/router/Routes';
 
-import { findAppointments } from './WorkScheduleActions';
+import { FIND_APPOINTMENTS, findAppointments } from './WorkScheduleActions';
 import { getWorksites } from '../worksites/WorksitesActions';
 import { goToRoute } from '../../core/router/RoutingActions';
 import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
 import { formatClickedProperty } from '../participants/utils/SearchContainerUtils';
+import { requestIsPending, requestIsSuccess } from '../../utils/RequestStateUtils';
 import { ContainerHeader } from '../../components/Layout';
 import { SEARCH_CONTAINER_WIDTH } from '../../core/style/Sizes';
 import {
@@ -46,7 +46,6 @@ const {
   ACTIONS,
   APPOINTMENTS,
   COURT_TYPE_BY_APPOINTMENT_EKID,
-  FIND_APPOINTMENTS,
   PERSON_BY_APPOINTMENT_EKID,
   REQUEST_STATE,
   WORKSITE_NAMES_BY_APPOINTMENT_EKID,
@@ -112,8 +111,10 @@ type Props = {
   appointments :List;
   courtTypeByAppointmentEKID :Map;
   entitySetIds :Map;
-  findAppointmentsRequestState :RequestState;
   personByAppointmentEKID :Map;
+  requestStates :{
+    FIND_APPOINTMENTS :RequestState;
+  };
   worksiteNamesByAppointmentEKID :Map;
   worksitesList :List;
 };
@@ -280,7 +281,7 @@ class WorkScheduleContainer extends Component<Props, State> {
     const {
       appointments,
       courtTypeByAppointmentEKID,
-      findAppointmentsRequestState,
+      requestStates,
       personByAppointmentEKID,
       worksiteNamesByAppointmentEKID
     } = this.props;
@@ -290,8 +291,8 @@ class WorkScheduleContainer extends Component<Props, State> {
       sortedByPersonLastName,
       worksites
     } = this.state;
-    const isLoading :boolean = findAppointmentsRequestState === RequestStates.PENDING;
-    const hasSearched :boolean = findAppointmentsRequestState === RequestStates.SUCCESS;
+    const isLoading :boolean = requestIsPending(requestStates[FIND_APPOINTMENTS]);
+    const hasSearched :boolean = requestIsSuccess(requestStates[FIND_APPOINTMENTS]);
     const worksitesToInclude :Object[] | void = worksites.get('worksites');
     return (
       <ScheduleOuterWrapper>
@@ -340,7 +341,9 @@ const mapStateToProps = (state :Map) => {
     [WORKSITES_LIST]: state.getIn([STATE.WORKSITES, WORKSITES_LIST]),
     [WORKSITE_NAMES_BY_APPOINTMENT_EKID]: workSchedule.get(WORKSITE_NAMES_BY_APPOINTMENT_EKID),
     entitySetIds: app.getIn([ENTITY_SET_IDS_BY_ORG, selectedOrgId], Map()),
-    findAppointmentsRequestState: workSchedule.getIn([ACTIONS, FIND_APPOINTMENTS, REQUEST_STATE]),
+    requestStates: {
+      [FIND_APPOINTMENTS]: workSchedule.getIn([ACTIONS, FIND_APPOINTMENTS, REQUEST_STATE]),
+    }
   });
 };
 

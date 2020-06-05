@@ -15,11 +15,16 @@ const GET_WORKSITE_AND_PERSON_NAMES
   :'GET_WORKSITE_AND_PERSON_NAMES' = 'GET_WORKSITE_AND_PERSON_NAMES';
 const getWorksiteAndPersonNames :RequestSequence = newRequestSequence(GET_WORKSITE_AND_PERSON_NAMES);
 
+const GET_WORKSITE_PLANS_BY_PERSON :'GET_WORKSITE_PLANS_BY_PERSON' = 'GET_WORKSITE_PLANS_BY_PERSON';
+const getWorksitePlansByPerson :RequestSequence = newRequestSequence(GET_WORKSITE_PLANS_BY_PERSON);
+
 export {
   FIND_APPOINTMENTS,
   GET_PERSON_COURT_TYPE,
   GET_WORKSITE_AND_PERSON_NAMES,
+  GET_WORKSITE_PLANS_BY_PERSON,
   findAppointments,
   getPersonCourtType,
   getWorksiteAndPersonNames,
+  getWorksitePlansByPerson,
 };
