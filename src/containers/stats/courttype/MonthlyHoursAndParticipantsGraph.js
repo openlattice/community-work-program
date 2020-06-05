@@ -89,7 +89,7 @@ const MonthlyHoursAndParticipantsGraphs = ({
 } :Props) => {
 
   const today :DateTime = DateTime.local();
-  const [timeFrame, setTimeFrame] = useState(TIME_FRAME_OPTIONS[2]);
+  const [timeFrame, setTimeFrame] = useState(TIME_FRAME_OPTIONS[0]);
   const [hoursMonth, setHoursMonth] = useState(MONTHS_OPTIONS[today.month - 1]);
   const currentYearOption :Object = YEARS_OPTIONS.find((obj) => obj.value === today.year);
   const [hoursYear, setHoursYear] = useState(currentYearOption);
@@ -140,7 +140,7 @@ const MonthlyHoursAndParticipantsGraphs = ({
               <Select
                   onChange={onTimeFrameSelectChange}
                   options={TIME_FRAME_OPTIONS}
-                  placeholder={TIME_FRAME_OPTIONS[2].label} />
+                  placeholder={TIME_FRAME_OPTIONS[0].label} />
             </SmallSelectWrapper>
             <Button
                 isLoading={requestIsPending(requestStates[DOWNLOAD_COURT_TYPE_DATA])}
@@ -183,8 +183,8 @@ const MonthlyHoursAndParticipantsGraphs = ({
             : (
               <XYPlot
                   yType="ordinal"
-                  width={600}
-                  height={600}
+                  width={800}
+                  height={800}
                   margin={{
                     left: 200,
                     right: 10,
