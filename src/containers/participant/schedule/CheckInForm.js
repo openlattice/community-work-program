@@ -6,6 +6,7 @@ import { DateTime } from 'luxon';
 import { DataProcessingUtils } from 'lattice-fabricate';
 import {
   Button,
+  Colors,
   Input,
   Label,
   Radio,
@@ -31,6 +32,8 @@ import {
   PERSON,
   STATE
 } from '../../../utils/constants/ReduxStateConsts';
+
+const { RED_1 } = Colors;
 
 const {
   APPOINTMENT,
@@ -63,6 +66,11 @@ const RADIO_OPTIONS :string[] = ['Yes', 'No'];
 
 const RadioWrapper = styled.span`
   margin-right: 20px;
+`;
+
+const ErrorMessage = styled.div`
+  color: ${RED_1};
+  max-width: 351px;
 `;
 
 type Props = {
@@ -109,20 +117,66 @@ class CheckInForm extends Component<Props, State> {
   handleInputChange = (e :SyntheticEvent<HTMLInputElement>) => {
     const { newCheckInData } = this.state;
     const { name, value } = e.currentTarget;
-    const valueToFloat = parseFloat(value);
+    const valueToFloat = value.length ? parseFloat(value) : '';
     this.setState({ newCheckInData: newCheckInData.setIn([getPageSectionKey(1, 1), name], valueToFloat) });
   }
 
   handleRadioChange = (option :Object) => {
+    const { appointment } = this.props;
+    const { newCheckInData } = this.state;
     const { name } = option.currentTarget;
-    this.setState({
-      checkedIn: name,
-    });
+
+    if (name === RADIO_OPTIONS[1]) {
+      this.setState({
+        checkedIn: name,
+        newCheckInData: newCheckInData.setIn([
+          getPageSectionKey(1, 1),
+          getEntityAddressKey(0, CHECK_IN_DETAILS, HOURS_WORKED)
+        ], 0),
+        timeIn: '',
+        timeOut: ''
+      });
+    }
+    else {
+      const hours = appointment.get('hours');
+      const { timeIn: originalTimeIn, timeOut: originalTimeOut } = get24HourTimeForCheckIn(hours);
+      const hoursScheduled :number = getHoursScheduled(originalTimeIn, originalTimeOut);
+      this.setState({
+        checkedIn: name,
+        newCheckInData: newCheckInData.setIn([
+          getPageSectionKey(1, 1),
+          getEntityAddressKey(0, CHECK_IN_DETAILS, HOURS_WORKED)
+        ], hoursScheduled),
+        timeIn: originalTimeIn,
+        timeOut: originalTimeOut
+      });
+    }
   }
 
   setRawTime = (type :string) => (time :string) => {
-    if (type === DATETIME_START) this.setState({ timeIn: time });
-    if (type === DATETIME_END) this.setState({ timeOut: time });
+    const { newCheckInData, timeIn, timeOut } = this.state;
+
+    if (type === DATETIME_START) {
+      const hoursCalculatedFromFormTimes :number = getHoursScheduled(time, timeOut);
+      this.setState({
+        newCheckInData: newCheckInData.setIn([
+          getPageSectionKey(1, 1),
+          getEntityAddressKey(0, CHECK_IN_DETAILS, HOURS_WORKED)
+        ], hoursCalculatedFromFormTimes),
+        timeIn: time
+      });
+    }
+
+    if (type === DATETIME_END) {
+      const hoursCalculatedFromFormTimes :number = getHoursScheduled(timeIn, time);
+      this.setState({
+        newCheckInData: newCheckInData.setIn([
+          getPageSectionKey(1, 1),
+          getEntityAddressKey(0, CHECK_IN_DETAILS, HOURS_WORKED)
+        ], hoursCalculatedFromFormTimes),
+        timeOut: time
+      });
+    }
   }
 
   handleOnSubmit = () => {
@@ -141,14 +195,16 @@ class CheckInForm extends Component<Props, State> {
     newCheckInData = newCheckInData
       .setIn([getPageSectionKey(1, 1), getEntityAddressKey(0, CHECK_INS, CHECKED_IN)], participantCheckedIn);
 
-    const appointmentDateToISO :string = new Date(appointment.get('day')).toISOString();
-    const appointmentDate :string = DateTime.fromISO(appointmentDateToISO).toISODate();
-    const dateTimeCheckedIn :string = getCombinedDateTime(appointmentDate, timeIn);
-    const dateTimeCheckedOut :string = getCombinedDateTime(appointmentDate, timeOut);
-    newCheckInData = newCheckInData
-      .setIn([getPageSectionKey(1, 1), getEntityAddressKey(0, CHECK_INS, DATETIME_START)], dateTimeCheckedIn);
-    newCheckInData = newCheckInData
-      .setIn([getPageSectionKey(1, 1), getEntityAddressKey(0, CHECK_INS, DATETIME_END)], dateTimeCheckedOut);
+    if (participantCheckedIn) {
+      const appointmentDateToISO :string = new Date(appointment.get('day')).toISOString();
+      const appointmentDate :string = DateTime.fromISO(appointmentDateToISO).toISODate();
+      const dateTimeCheckedIn :string = getCombinedDateTime(appointmentDate, timeIn);
+      const dateTimeCheckedOut :string = getCombinedDateTime(appointmentDate, timeOut);
+      newCheckInData = newCheckInData
+        .setIn([getPageSectionKey(1, 1), getEntityAddressKey(0, CHECK_INS, DATETIME_START)], dateTimeCheckedIn);
+      newCheckInData = newCheckInData
+        .setIn([getPageSectionKey(1, 1), getEntityAddressKey(0, CHECK_INS, DATETIME_END)], dateTimeCheckedOut);
+    }
 
     const appointmentEKID :UUID = appointment.get(ENTITY_KEY_ID);
     const associations = [];
@@ -170,6 +226,15 @@ class CheckInForm extends Component<Props, State> {
       timeIn,
       timeOut,
     } = this.state;
+
+    const checkedInIsBlankOrNo :boolean = !checkedIn || checkedIn === RADIO_OPTIONS[1];
+
+    const hoursCalculatedFromFormTimes = getHoursScheduled(timeIn, timeOut);
+    const hoursInFormData :number | string = newCheckInData.getIn([
+      getPageSectionKey(1, 1),
+      getEntityAddressKey(0, CHECK_IN_DETAILS, HOURS_WORKED)
+    ]);
+    const formHoursAndTimesConflict :boolean = hoursCalculatedFromFormTimes !== hoursInFormData;
 
     const checkInQuestion = `Did ${personName} appear for this work appointment?`;
     return (
@@ -202,6 +267,7 @@ class CheckInForm extends Component<Props, State> {
           <RowContent>
             <Label>Time checked in</Label>
             <TimePicker
+                disabled={checkedInIsBlankOrNo}
                 format="H:mm"
                 mask="__:__"
                 name={getEntityAddressKey(0, CHECK_INS, DATETIME_START)}
@@ -214,6 +280,7 @@ class CheckInForm extends Component<Props, State> {
           <RowContent>
             <Label>Time checked out</Label>
             <TimePicker
+                disabled={checkedInIsBlankOrNo}
                 format="H:mm"
                 mask="__:__"
                 name={getEntityAddressKey(0, CHECK_INS, DATETIME_END)}
@@ -226,6 +293,7 @@ class CheckInForm extends Component<Props, State> {
           <RowContent>
             <Label>Hours worked during appointment</Label>
             <Input
+                disabled={checkedInIsBlankOrNo}
                 name={getEntityAddressKey(0, CHECK_IN_DETAILS, HOURS_WORKED)}
                 onChange={this.handleInputChange}
                 type="text"
@@ -235,9 +303,21 @@ class CheckInForm extends Component<Props, State> {
                 ])} />
           </RowContent>
         </FormRow>
+        {
+          formHoursAndTimesConflict && (
+            <FormRow>
+              <RowContent>
+                <ErrorMessage>
+                  There is a conflict between hours entered and times selected. Please fix before submitting.
+                </ErrorMessage>
+              </RowContent>
+            </FormRow>
+          )
+        }
         <ButtonsRow>
           <Button onClick={onDiscard}>Discard</Button>
           <Button
+              disabled={!checkedIn || formHoursAndTimesConflict}
               isLoading={isLoading}
               mode="primary"
               onClick={this.handleOnSubmit}>

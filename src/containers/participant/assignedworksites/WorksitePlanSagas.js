@@ -50,6 +50,7 @@ import {
   getEntityProperties,
   getEntitySetIdFromApp,
   getNeighborDetails,
+  getPropertyFqnFromEdm,
   getPropertyTypeIdFromEdm,
   sortEntitiesByDateProperty,
 } from '../../../utils/DataUtils';
@@ -87,6 +88,7 @@ const {
 const {
   DATETIME_END,
   EFFECTIVE_DATE,
+  ENTITY_KEY_ID,
   INCIDENT_START_DATETIME,
   HOURS_WORKED,
 } = PROPERTY_TYPE_FQNS;
@@ -898,9 +900,7 @@ function* checkInForAppointmentWorker(action :SequenceAction) :Generator<*, *, *
     yield put(checkInForAppointment.request(id, value));
 
     response = yield call(submitDataGraphWorker, submitDataGraph(value));
-    if (response.error) {
-      throw response.error;
-    }
+    if (response.error) throw response.error;
     const { data } = response;
     const { entityKeyIds } = data;
     const app = yield select(getAppFromState);
@@ -920,17 +920,24 @@ function* checkInForAppointmentWorker(action :SequenceAction) :Generator<*, *, *
       const appointmentEKID :UUID = associationEntityData[fulfillsESID][0].dstEntityKeyId;
 
       response = yield call(updateHoursWorkedWorker, updateHoursWorked({ appointmentEKID, numberHoursWorked }));
-      if (response.error) {
-        throw response.error;
-      }
+      if (response.error) throw response.error;
 
-      response = {
-        appointmentEKID,
-        checkInDetailsESID,
-        checkInEKID,
-        checkInESID,
-        edm,
-      };
+      const storedCheckInEntity :Map = fromJS(entityData[checkInESID][0]);
+      const storedCheckInDetailsEntity :Map = fromJS(entityData[checkInDetailsESID][0]);
+
+      const newCheckIn :Map = Map().withMutations((map :Map) => {
+        map.set(ENTITY_KEY_ID, checkInEKID);
+
+        storedCheckInEntity.forEach((propertyValue, propertyId) => {
+          const propertyTypeFqn = getPropertyFqnFromEdm(edm, propertyId);
+          map.set(propertyTypeFqn, propertyValue);
+        });
+
+        const hoursWorked :number = storedCheckInDetailsEntity.getIn([hoursWorkedPTID, 0]);
+        map.set(HOURS_WORKED, hoursWorked);
+      });
+
+      response = { appointmentEKID, newCheckIn };
     }
 
     yield put(checkInForAppointment.success(id, response));
