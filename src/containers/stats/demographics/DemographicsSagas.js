@@ -2,6 +2,7 @@
 import Papa from 'papaparse';
 import FS from 'file-saver';
 import { List, Map, fromJS } from 'immutable';
+import { DateTime } from 'luxon';
 import {
   call,
   put,
@@ -17,33 +18,38 @@ import {
 import type { SequenceAction } from 'redux-reqseq';
 
 import Logger from '../../../utils/Logger';
+import { getDemographicsFromPersonData } from '../utils/DemographicsUtils';
 import {
   getEntityKeyId,
   getEntityProperties,
   getEntitySetIdFromApp,
   getNeighborDetails,
+  getPropertyTypeIdFromEdm,
+  getUTCDateRangeSearchString,
 } from '../../../utils/DataUtils';
 import { isDefined } from '../../../utils/LangUtils';
 import {
   DOWNLOAD_DEMOGRAPHICS_DATA,
+  GET_MONTHLY_DEMOGRAPHICS,
   GET_PARTICIPANTS_DEMOGRAPHICS,
   downloadDemographicsData,
+  getMonthlyDemographics,
   getParticipantsDemographics,
 } from './DemographicsActions';
 import { STATE } from '../../../utils/constants/ReduxStateConsts';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
-import { ETHNICITY_VALUES, RACE_VALUES, SEX_VALUES } from '../../../core/edm/constants/DataModelConsts';
-import { ETHNICITY_ALIASES, RACE_ALIASES } from '../consts/StatsConsts';
 import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../../utils/Errors';
+import { ACTIVE_STATUSES } from '../consts/CourtTypeConsts';
 
 const { getEntitySetData } = DataApiActions;
 const { getEntitySetDataWorker } = DataApiSagas;
-const { searchEntityNeighborsWithFilter } = SearchApiActions;
-const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
+const { executeSearch, searchEntityNeighborsWithFilter } = SearchApiActions;
+const { executeSearchWorker, searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
 
-const { DIVERSION_PLAN, PEOPLE } = APP_TYPE_FQNS;
-const { ETHNICITY, RACE, SEX } = PROPERTY_TYPE_FQNS;
+const { DIVERSION_PLAN, ENROLLMENT_STATUS, PEOPLE } = APP_TYPE_FQNS;
+const { EFFECTIVE_DATE, STATUS } = PROPERTY_TYPE_FQNS;
 const getAppFromState = (state) => state.get(STATE.APP, Map());
+const getEdmFromState = (state) => state.get(STATE.EDM, Map());
 const LOG = new Logger('DemographicsSagas');
 
 /*
@@ -111,6 +117,130 @@ function* downloadDemographicsDataWatcher() :Generator<*, *, *> {
 
 /*
  *
+ * DemographicsSagas.getMonthlyDemographics()
+ *
+ */
+
+function* getMonthlyDemographicsWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id } = action;
+  let response :Object = {};
+  let nonDuplicatedPersonMap :Map = Map();
+
+  try {
+    yield put(getMonthlyDemographics.request(id));
+    const { value } = action;
+    if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
+    const { month, year } = value;
+
+    /*
+      Get all active participants for a given month. Return their demographics.
+      1. Search for enrollment statuses with effective dates within that month.
+      2. Filter out non-active statuses.
+      3. Find diversion plan neighbors, and then person neighbors.
+    */
+
+    const app = yield select(getAppFromState);
+    const edm = yield select(getEdmFromState);
+    const enrollmentStatusESID :UUID = getEntitySetIdFromApp(app, ENROLLMENT_STATUS);
+    const effectiveDatePTID :UUID = getPropertyTypeIdFromEdm(edm, EFFECTIVE_DATE);
+    const searchOptions = {
+      entitySetIds: [enrollmentStatusESID],
+      start: 0,
+      maxHits: 10000,
+      constraints: []
+    };
+
+    let searchTerm :string = '';
+
+    const mmMonth :string = month < 10 ? `0${month}` : month;
+    const firstDateOfMonth :DateTime = DateTime.fromISO(`${year}-${mmMonth}-01`);
+    searchTerm = getUTCDateRangeSearchString(effectiveDatePTID, 'month', firstDateOfMonth);
+    searchOptions.constraints.push({
+      min: 1,
+      constraints: [{
+        searchTerm,
+        fuzzy: false
+      }]
+    });
+    response = yield call(executeSearchWorker, executeSearch({ searchOptions }));
+    if (response.error) throw response.error;
+    const enrollmentStatuses :List = fromJS(response.data.hits)
+      .filter((enrollmentStatus :Map) => {
+        const { [STATUS]: status } = getEntityProperties(enrollmentStatus, [STATUS]);
+        return ACTIVE_STATUSES.includes(status);
+      });
+    const enrollmentStatusEKIDs :UUID[] = [];
+    enrollmentStatuses.forEach((enrollmentStatus :Map) => enrollmentStatusEKIDs.push(getEntityKeyId(enrollmentStatus)));
+
+    if (enrollmentStatusEKIDs.length) {
+      const diversionPlanESID :UUID = getEntitySetIdFromApp(app, DIVERSION_PLAN);
+      let searchFilter :Object = {
+        entityKeyIds: enrollmentStatusEKIDs,
+        destinationEntitySetIds: [diversionPlanESID],
+        sourceEntitySetIds: [diversionPlanESID],
+      };
+      response = yield call(
+        searchEntityNeighborsWithFilterWorker,
+        searchEntityNeighborsWithFilter({ entitySetId: enrollmentStatusESID, filter: searchFilter })
+      );
+      if (response.error) throw response.error;
+      const diversionPlanNeighbors :Map = fromJS(response.data);
+      const diversionPlanEKIDs :UUID[] = [];
+      diversionPlanNeighbors.forEach((neighborsList :List) => {
+        const diversionPlanEKID :UUID = getEntityKeyId(getNeighborDetails(neighborsList.get(0)));
+        diversionPlanEKIDs.push(diversionPlanEKID);
+      });
+
+      if (diversionPlanEKIDs.length) {
+        const peopleESID :UUID = getEntitySetIdFromApp(app, PEOPLE);
+        searchFilter = {
+          entityKeyIds: diversionPlanEKIDs,
+          destinationEntitySetIds: [],
+          sourceEntitySetIds: [peopleESID],
+        };
+        response = yield call(
+          searchEntityNeighborsWithFilterWorker,
+          searchEntityNeighborsWithFilter({ entitySetId: diversionPlanESID, filter: searchFilter })
+        );
+        if (response.error) throw response.error;
+        const participantNeighbors :Map = fromJS(response.data)
+          .map((neighborsList) => getNeighborDetails(neighborsList.get(0)))
+          .valueSeq()
+          .toList();
+        nonDuplicatedPersonMap = Map().withMutations((map :Map) => {
+          participantNeighbors.forEach((person :Map) => {
+            const personEKID = getEntityKeyId(person);
+            if (!isDefined(map.get(personEKID))) map.set(personEKID, person);
+          });
+        });
+      }
+    }
+
+    const {
+      ethnicityDemographics,
+      raceDemographics,
+      sexDemographics,
+    } = getDemographicsFromPersonData(nonDuplicatedPersonMap);
+
+    yield put(getMonthlyDemographics.success(id, { ethnicityDemographics, raceDemographics, sexDemographics }));
+  }
+  catch (error) {
+    LOG.error(action.type, error);
+    yield put(getMonthlyDemographics.failure(id, error));
+  }
+  finally {
+    yield put(getMonthlyDemographics.finally(id));
+  }
+}
+
+function* getMonthlyDemographicsWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(GET_MONTHLY_DEMOGRAPHICS, getMonthlyDemographicsWorker);
+}
+
+/*
+ *
  * DemographicsSagas.getParticipantsDemographics()
  *
  */
@@ -119,15 +249,6 @@ function* getParticipantsDemographicsWorker(action :SequenceAction) :Generator<*
 
   const { id } = action;
   let response :Object = {};
-  let raceDemographics :Map = Map().withMutations((map :Map) => {
-    RACE_VALUES.forEach((race :string) => map.set(race, 0));
-  });
-  let ethnicityDemographics :Map = Map().withMutations((map :Map) => {
-    ETHNICITY_VALUES.concat([RACE_VALUES[5], RACE_VALUES[6]]).forEach((ethnicity :string) => map.set(ethnicity, 0));
-  });
-  let sexDemographics :Map = Map().withMutations((map :Map) => {
-    SEX_VALUES.forEach((sex :string) => map.set(sex, 0));
-  });
 
   try {
     yield put(getParticipantsDemographics.request(id));
@@ -163,83 +284,12 @@ function* getParticipantsDemographicsWorker(action :SequenceAction) :Generator<*
       });
     });
 
-    nonDuplicatedPersonMap.forEach((person :Map) => {
+    const {
+      ethnicityDemographics,
+      raceDemographics,
+      sexDemographics,
+    } = getDemographicsFromPersonData(nonDuplicatedPersonMap);
 
-      const { [ETHNICITY]: ethnicity, [RACE]: race, [SEX]: sex } = getEntityProperties(person, [ETHNICITY, RACE, SEX]);
-
-      const currentTotalForRace :any = raceDemographics.get(race);
-      if (race.length && isDefined(currentTotalForRace)) {
-        raceDemographics = raceDemographics.set(race, currentTotalForRace + 1);
-      }
-      else if (race.length && !isDefined(currentTotalForRace)) {
-        let alternateFound :boolean = false;
-        fromJS(RACE_ALIASES).forEach((listOfAlternates :List, standardName :string) => {
-          listOfAlternates.forEach((alternate :string) => {
-            if (race === alternate.trim()) {
-              const currentTotal :number = raceDemographics.get(standardName, 0);
-              raceDemographics = raceDemographics.set(standardName, currentTotal + 1);
-              alternateFound = true;
-            }
-          });
-        });
-        if (!alternateFound) {
-          const otherNotSpecifiedTotal = raceDemographics.get(RACE_VALUES[5], 0);
-          raceDemographics = raceDemographics.set(RACE_VALUES[5], otherNotSpecifiedTotal + 1);
-        }
-      }
-      else if (!race.length) {
-        const unknownTotal = raceDemographics.get(RACE_VALUES[6], 0);
-        raceDemographics = raceDemographics.set(RACE_VALUES[6], unknownTotal + 1);
-      }
-
-      const currentTotalForEthnicity = ethnicityDemographics.get(ethnicity);
-      if (ethnicity.length && isDefined(currentTotalForEthnicity)) {
-        ethnicityDemographics = ethnicityDemographics.set(ethnicity, currentTotalForEthnicity + 1);
-      }
-      else if (ethnicity.length && !isDefined(currentTotalForEthnicity)) {
-        let aliasFound :boolean = false;
-        fromJS(ETHNICITY_ALIASES).forEach((ethnicityAliases :List, standardName :string) => {
-          ethnicityAliases.forEach((alias :string) => {
-            if (alias === ethnicity.trim()) {
-              const currentTotal :number = ethnicityDemographics.get(standardName, 0);
-              ethnicityDemographics = ethnicityDemographics.set(standardName, currentTotal + 1);
-              aliasFound = true;
-            }
-          });
-        });
-        if (!aliasFound) {
-          const otherNotSpecifiedTotal = ethnicityDemographics.get(RACE_VALUES[5], 0);
-          ethnicityDemographics = ethnicityDemographics.set(RACE_VALUES[5], otherNotSpecifiedTotal + 1);
-        }
-      }
-      else if (!ethnicity.length) {
-        const unknownTotal = ethnicityDemographics.get(RACE_VALUES[6], 0);
-        ethnicityDemographics = ethnicityDemographics.set(RACE_VALUES[6], unknownTotal + 1);
-      }
-
-      const currentTotalForSex :any = sexDemographics.get(sex);
-      if (sex.length && isDefined(currentTotalForSex)) {
-        sexDemographics = sexDemographics.set(sex, currentTotalForSex + 1);
-      }
-      else if (sex.length && !isDefined(currentTotalForSex)) {
-        if (sex.trim() === 'M') {
-          const currentTotalForMale :any = sexDemographics.get(SEX_VALUES[1]);
-          sexDemographics = sexDemographics.set(SEX_VALUES[1], currentTotalForMale + 1);
-        }
-        if (sex.trim() === 'F') {
-          const currentTotalForFemale :any = sexDemographics.get(SEX_VALUES[0]);
-          sexDemographics = sexDemographics.set(SEX_VALUES[0], currentTotalForFemale + 1);
-        }
-      }
-      else if (!sex.length) {
-        const unknownTotal = sexDemographics.get(SEX_VALUES[2], 0);
-        sexDemographics = sexDemographics.set(SEX_VALUES[2], unknownTotal + 1);
-      }
-    });
-
-    raceDemographics = raceDemographics.asImmutable();
-    ethnicityDemographics = ethnicityDemographics.asImmutable();
-    sexDemographics = sexDemographics.asImmutable();
     yield put(getParticipantsDemographics.success(id, { ethnicityDemographics, raceDemographics, sexDemographics }));
   }
   catch (error) {
@@ -259,6 +309,8 @@ function* getParticipantsDemographicsWatcher() :Generator<*, *, *> {
 export {
   downloadDemographicsDataWatcher,
   downloadDemographicsDataWorker,
+  getMonthlyDemographicsWatcher,
+  getMonthlyDemographicsWorker,
   getParticipantsDemographicsWatcher,
   getParticipantsDemographicsWorker,
 };
