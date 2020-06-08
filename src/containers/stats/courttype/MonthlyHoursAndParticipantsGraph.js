@@ -96,7 +96,7 @@ const MonthlyHoursAndParticipantsGraphs = ({
 
   const onTimeFrameSelectChange = (option :Object) => {
     if (option.value === ALL_TIME) {
-      // actions.getStatsData();
+      actions.getMonthlyCourtTypeData({ month: hoursMonth.value, year: hoursYear.value, timeFrame: ALL_TIME });
       setTimeFrame(option);
     }
     else setTimeFrame(option);
