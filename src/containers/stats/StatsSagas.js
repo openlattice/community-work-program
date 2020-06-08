@@ -25,12 +25,21 @@ import {
   getNeighborESID,
 } from '../../utils/DataUtils';
 import { GET_STATS_DATA, getStatsData } from './StatsActions';
-import { getMonthlyCourtTypeData, getMonthlyParticipantsByCourtType } from './courttype/CourtTypeActions';
-import { getMonthlyCourtTypeDataWorker, getMonthlyParticipantsByCourtTypeWorker } from './courttype/CourtTypeSagas';
+import {
+  getHoursByCourtType,
+  getMonthlyParticipantsByCourtType,
+  getTotalParticipantsByCourtType
+} from './courttype/CourtTypeActions';
+import {
+  getHoursByCourtTypeWorker,
+  getMonthlyParticipantsByCourtTypeWorker,
+  getTotalParticipantsByCourtTypeWorker
+} from './courttype/CourtTypeSagas';
 import { STATE } from '../../utils/constants/ReduxStateConsts';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { ENROLLMENT_STATUSES } from '../../core/edm/constants/DataModelConsts';
 import { ACTIVE_STATUSES, courtTypeCountObj } from './consts/CourtTypeConsts';
+import { MONTHLY } from './consts/TimeConsts';
 
 const { getEntitySetData } = DataApiActions;
 const { getEntitySetDataWorker } = DataApiSagas;
@@ -60,7 +69,6 @@ const LOG = new Logger('StatsSagas');
 function* getStatsDataWorker(action :SequenceAction) :Generator<*, *, *> {
   const { id } = action;
   let response :Object = {};
-  let referralsByCourtTypeGraphData :Map = fromJS(courtTypeCountObj).asMutable();
   let activeEnrollmentsByCourtType :Map = fromJS(courtTypeCountObj).asMutable();
   let jobSearchEnrollmentsByCourtType :Map = fromJS(courtTypeCountObj).asMutable();
   let successfulEnrollmentsByCourtType :Map = fromJS(courtTypeCountObj).asMutable();
@@ -160,50 +168,27 @@ function* getStatsDataWorker(action :SequenceAction) :Generator<*, *, *> {
         enrollments = enrollments.push(Map({ courtType: courtCaseType, enrollmentStatusDate: neighborDate }));
         allEnrollmentsByPersonEKID = allEnrollmentsByPersonEKID.set(personEKID, enrollments);
       });
+      totalParticipantCount = allEnrollmentsByPersonEKID.count();
 
       activeEnrollmentsByCourtType = activeEnrollmentsByCourtType.asImmutable();
       closedEnrollmentsByCourtType = closedEnrollmentsByCourtType.asImmutable();
       jobSearchEnrollmentsByCourtType = jobSearchEnrollmentsByCourtType.asImmutable();
       successfulEnrollmentsByCourtType = successfulEnrollmentsByCourtType.asImmutable();
       unsuccessfulEnrollmentsByCourtType = unsuccessfulEnrollmentsByCourtType.asImmutable();
-
-      allEnrollmentsByPersonEKID.forEach((enrollments :List) => {
-        totalParticipantCount += 1;
-        let currentCourtType :string = '';
-        let repeats :Map = Map();
-        const sortedEnrollments = enrollments.sortBy((enrollment :Map) => enrollment.get('enrollmentStatusDate'));
-
-        sortedEnrollments.forEach((enrollment :Map) => {
-          const courtType :string = enrollment.get('courtType');
-          if (courtType !== currentCourtType) currentCourtType = courtType;
-          else {
-            let courtTypeRepeatCount = repeats.get(currentCourtType, 0);
-            repeats = repeats.set(currentCourtType, courtTypeRepeatCount += 1);
-          }
-        });
-
-        repeats.forEach((referralCountToAdd :number, courtType :string) => {
-          const totalReferralsForCourtType :number = referralsByCourtTypeGraphData.get(courtType, 0);
-          referralsByCourtTypeGraphData = referralsByCourtTypeGraphData
-            .set(courtType, totalReferralsForCourtType + referralCountToAdd);
-        });
-      });
-
-      referralsByCourtTypeGraphData = referralsByCourtTypeGraphData.asImmutable();
     }
 
     const now :DateTime = DateTime.local();
     const { month, year } = now;
     yield all([
-      call(getMonthlyCourtTypeDataWorker, getMonthlyCourtTypeData({ month, year })),
+      call(getHoursByCourtTypeWorker, getHoursByCourtType({ month, year, timeFrame: MONTHLY })),
       call(getMonthlyParticipantsByCourtTypeWorker, getMonthlyParticipantsByCourtType({ month, year })),
+      call(getTotalParticipantsByCourtTypeWorker, getTotalParticipantsByCourtType()),
     ]);
 
     yield put(getStatsData.success(id, {
       activeEnrollmentsByCourtType,
       closedEnrollmentsByCourtType,
       jobSearchEnrollmentsByCourtType,
-      referralsByCourtTypeGraphData,
       successfulEnrollmentsByCourtType,
       totalActiveEnrollmentCount,
       totalClosedEnrollmentsCount,
