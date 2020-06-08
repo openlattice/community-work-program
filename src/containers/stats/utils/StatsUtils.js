@@ -35,6 +35,16 @@ const formatEnrollmentStatusPeopleData = (enrollmentsByCourtType :Map) :Object[]
   return sortGraphData(graphData);
 };
 
+const formatParticipantsByCourtTypeData = (totalParticipantsByCourtType :Map) :Object[] => {
+  const graphData :Object[] = [];
+  totalParticipantsByCourtType.forEach((numberOfParticipants :number, courtType :string) => {
+    if (isDefined(numberOfParticipants) && isDefined(courtType)) {
+      graphData.push({ y: courtType, x: numberOfParticipants });
+    }
+  });
+  return sortGraphData(graphData);
+};
+
 const formatMonthlyHoursAndParticipantsData = (
   monthlyHoursWorkedByCourtType :Map,
   monthlyTotalParticipantsByCourtType :Map
@@ -148,6 +158,19 @@ const getBottomRowForParticipantsAndHours = (csvData :Object[]) => {
     Participants: participantsTotal,
     Hours: hoursTotal,
   };
+};
+
+const formatTotalParticipantsDataForDownload = (totalParticipantsByCourtType :Map) :List => {
+
+  const formattedData :List = List().withMutations((list :List) => {
+    totalParticipantsByCourtType.forEach((participantsCount :number, courtType :string) => {
+      list.push(fromJS({
+        [COURT_TYPE]: courtType,
+        [TOTAL]: participantsCount,
+      }));
+    });
+  });
+  return formattedData;
 };
 
 const formatParticipantsByCourtTypeDataForDownload = (monthlyParticipantsByCourtType :Map) :List => {
@@ -279,8 +302,10 @@ export {
   formatHoursByWorksiteData,
   formatMonthlyHoursAndParticipantsData,
   formatParticipantsAndHoursDataForDownload,
+  formatParticipantsByCourtTypeData,
   formatParticipantsByCourtTypeDataForDownload,
   formatRadialChartData,
+  formatTotalParticipantsDataForDownload,
   formatWorksiteHoursDataForDownload,
   formatWorksiteParticipantsDataForDownload,
   getBottomRowForEnrollments,
