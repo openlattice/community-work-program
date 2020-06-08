@@ -9,10 +9,12 @@ import {
   GET_ENROLLMENTS_BY_COURT_TYPE,
   GET_MONTHLY_COURT_TYPE_DATA,
   GET_MONTHLY_PARTICIPANTS_BY_COURT_TYPE,
+  GET_TOTAL_PARTICIPANTS_BY_COURT_TYPE,
   downloadCourtTypeData,
   getEnrollmentsByCourtType,
   getMonthlyCourtTypeData,
   getMonthlyParticipantsByCourtType,
+  getTotalParticipantsByCourtType,
 } from './courttype/CourtTypeActions';
 import {
   DOWNLOAD_WORKSITE_STATS_DATA,
@@ -59,6 +61,7 @@ const {
   TOTAL_ACTIVE_ENROLLMENTS_COUNT,
   TOTAL_CLOSED_ENROLLMENTS_COUNT,
   TOTAL_DIVERSION_PLAN_COUNT,
+  TOTAL_PARTICIPANTS_BY_COURT_TYPE,
   TOTAL_PARTICIPANT_COUNT,
   TOTAL_SUCCESSFUL_ENROLLMENTS_COUNT,
   TOTAL_UNSUCCESSFUL_ENROLLMENTS_COUNT,
@@ -125,6 +128,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [TOTAL_ACTIVE_ENROLLMENTS_COUNT]: 0,
   [TOTAL_CLOSED_ENROLLMENTS_COUNT]: 0,
   [TOTAL_DIVERSION_PLAN_COUNT]: 0,
+  [TOTAL_PARTICIPANTS_BY_COURT_TYPE]: Map(),
   [TOTAL_PARTICIPANT_COUNT]: 0,
   [TOTAL_SUCCESSFUL_ENROLLMENTS_COUNT]: 0,
   [TOTAL_UNSUCCESSFUL_ENROLLMENTS_COUNT]: 0,
@@ -344,6 +348,26 @@ export default function statsReducer(state :Map<*, *> = INITIAL_STATE, action :O
         FAILURE: () => state
           .setIn([ACTIONS, GET_MONTHLY_PARTICIPANTS_BY_WORKSITE, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, GET_MONTHLY_PARTICIPANTS_BY_WORKSITE, action.id]),
+      });
+    }
+
+    case getTotalParticipantsByCourtType.case(action.type): {
+
+      return getTotalParticipantsByCourtType.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, GET_TOTAL_PARTICIPANTS_BY_COURT_TYPE, action.id], action)
+          .setIn([ACTIONS, GET_TOTAL_PARTICIPANTS_BY_COURT_TYPE, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+          const seqAction :SequenceAction = (action :any);
+          const totalParticipantsByCourtType = seqAction.value;
+          return state
+            .set(TOTAL_PARTICIPANTS_BY_COURT_TYPE, totalParticipantsByCourtType)
+            .setIn([ACTIONS, GET_TOTAL_PARTICIPANTS_BY_COURT_TYPE, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, GET_TOTAL_PARTICIPANTS_BY_COURT_TYPE, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, GET_TOTAL_PARTICIPANTS_BY_COURT_TYPE, action.id]),
       });
     }
 

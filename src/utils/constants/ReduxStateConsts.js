@@ -199,6 +199,7 @@ export const STATS = {
   TOTAL_CLOSED_ENROLLMENTS_COUNT: 'totalClosedEnrollmentsCount',
   TOTAL_DIVERSION_PLAN_COUNT: 'totalDiversionPlanCount',
   TOTAL_ENROLLMENTS_COUNT: 'totalEnrollmentsCount',
+  TOTAL_PARTICIPANTS_BY_COURT_TYPE: 'totalParticipantsByCourtType',
   TOTAL_PARTICIPANT_COUNT: 'totalParticipantCount',
   TOTAL_SUCCESSFUL_ENROLLMENTS_COUNT: 'totalSuccessfulEnrollmentsCount',
   TOTAL_UNSUCCESSFUL_ENROLLMENTS_COUNT: 'totalUnsuccessfulEnrollmentsCount',
