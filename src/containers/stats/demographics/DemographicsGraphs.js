@@ -10,6 +10,7 @@ import {
   CardStack,
   IconButton,
   Select,
+  Spinner,
 } from 'lattice-ui-kit';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSearch } from '@fortawesome/pro-duotone-svg-icons';
@@ -31,14 +32,20 @@ import {
 } from '../styled/GraphStyles';
 import { formatRadialChartData } from '../utils/StatsUtils';
 import { requestIsPending } from '../../../utils/RequestStateUtils';
-import { DOWNLOAD_DEMOGRAPHICS_DATA, downloadDemographicsData } from './DemographicsActions';
+import {
+  DOWNLOAD_DEMOGRAPHICS_DATA,
+  GET_MONTHLY_DEMOGRAPHICS,
+  GET_PARTICIPANTS_DEMOGRAPHICS,
+  downloadDemographicsData,
+  getMonthlyDemographics,
+  getParticipantsDemographics,
+} from './DemographicsActions';
 import { SHARED, STATE, STATS } from '../../../utils/constants/ReduxStateConsts';
 import {
   ALL_TIME,
   MONTHLY,
   MONTHS_OPTIONS,
   TIME_FRAME_OPTIONS,
-  YEARLY,
   YEARS_OPTIONS,
 } from '../consts/TimeConsts';
 
@@ -55,12 +62,15 @@ const DemographicsCardHeader = styled(GraphHeader)`
 type Props = {
   actions :{
     downloadDemographicsData :RequestSequence;
-    getMonthlyDemographicsData :RequestSequence;
+    getMonthlyDemographics :RequestSequence;
+    getParticipantsDemographics :RequestSequence;
   };
   ethnicityDemographics :Map;
   raceDemographics :Map;
   requestStates :{
     DOWNLOAD_DEMOGRAPHICS_DATA :RequestState;
+    GET_MONTHLY_DEMOGRAPHICS :RequestState;
+    GET_PARTICIPANTS_DEMOGRAPHICS :RequestState;
   };
   sexDemographics :Map;
 };
@@ -78,18 +88,17 @@ const DemographicsGraphs = ({
   const [month, setMonth] = useState(MONTHS_OPTIONS[today.month - 1]);
   const currentYearOption :Object = YEARS_OPTIONS.find((obj) => obj.value === today.year);
   const [year, setYear] = useState(currentYearOption);
-  console.log(DEMOGRAPHICS_TIME_FRAME_OPTIONS);
-  console.log(timeFrame);
+
   const onTimeFrameSelectChange = (option :Object) => {
     if (option.value === ALL_TIME) {
-      // actions.getMonthlyDemographicsData();
+      actions.getParticipantsDemographics();
       setTimeFrame(option);
     }
     else setTimeFrame(option);
   };
 
   const getMonthlyDemographicsData = () => {
-    actions.getMonthlyDemographicsData({ month, year });
+    actions.getMonthlyDemographics({ month: month.value, year: year.value });
   };
 
   return (
@@ -129,41 +138,49 @@ const DemographicsGraphs = ({
           )
         }
       </CardSegment>
-      <CardStack>
-        <Card>
-          <DemographicsCardHeader>
-            <div>Race</div>
-            <Button
-                isLoading={requestIsPending(requestStates[DOWNLOAD_DEMOGRAPHICS_DATA])}
-                onClick={() => actions.downloadDemographicsData(formatRadialChartData(raceDemographics))}>
-              Download
-            </Button>
-          </DemographicsCardHeader>
-          <RaceChart raceDemographics={raceDemographics} />
-        </Card>
-        <Card>
-          <DemographicsCardHeader>
-            <div>Ethnicity</div>
-            <Button
-                isLoading={requestIsPending(requestStates[DOWNLOAD_DEMOGRAPHICS_DATA])}
-                onClick={() => actions.downloadDemographicsData(formatRadialChartData(ethnicityDemographics))}>
-              Download
-            </Button>
-          </DemographicsCardHeader>
-          <EthnicityChart ethnicityDemographics={ethnicityDemographics} />
-        </Card>
-        <Card>
-          <DemographicsCardHeader>
-            <div>Sex</div>
-            <Button
-                isLoading={requestIsPending(requestStates[DOWNLOAD_DEMOGRAPHICS_DATA])}
-                onClick={() => actions.downloadDemographicsData(formatRadialChartData(sexDemographics))}>
-              Download
-            </Button>
-          </DemographicsCardHeader>
-          <SexChart sexDemographics={sexDemographics} />
-        </Card>
-      </CardStack>
+      {
+        requestIsPending(requestStates[GET_MONTHLY_DEMOGRAPHICS])
+            || requestIsPending(requestStates[GET_PARTICIPANTS_DEMOGRAPHICS])
+          ? (
+            <Spinner size="2x" />
+          ) : (
+            <CardStack>
+              <Card>
+                <DemographicsCardHeader>
+                  <div>Race</div>
+                  <Button
+                      isLoading={requestIsPending(requestStates[DOWNLOAD_DEMOGRAPHICS_DATA])}
+                      onClick={() => actions.downloadDemographicsData(formatRadialChartData(raceDemographics))}>
+                    Download
+                  </Button>
+                </DemographicsCardHeader>
+                <RaceChart raceDemographics={raceDemographics} />
+              </Card>
+              <Card>
+                <DemographicsCardHeader>
+                  <div>Ethnicity</div>
+                  <Button
+                      isLoading={requestIsPending(requestStates[DOWNLOAD_DEMOGRAPHICS_DATA])}
+                      onClick={() => actions.downloadDemographicsData(formatRadialChartData(ethnicityDemographics))}>
+                    Download
+                  </Button>
+                </DemographicsCardHeader>
+                <EthnicityChart ethnicityDemographics={ethnicityDemographics} />
+              </Card>
+              <Card>
+                <DemographicsCardHeader>
+                  <div>Sex</div>
+                  <Button
+                      isLoading={requestIsPending(requestStates[DOWNLOAD_DEMOGRAPHICS_DATA])}
+                      onClick={() => actions.downloadDemographicsData(formatRadialChartData(sexDemographics))}>
+                    Download
+                  </Button>
+                </DemographicsCardHeader>
+                <SexChart sexDemographics={sexDemographics} />
+              </Card>
+            </CardStack>
+          )
+      }
     </>
   );
 };
@@ -175,6 +192,8 @@ const mapStateToProps = (state :Map) => {
     [RACE_DEMOGRAPHICS]: stats.get(RACE_DEMOGRAPHICS),
     requestStates: {
       [DOWNLOAD_DEMOGRAPHICS_DATA]: stats.getIn([ACTIONS, DOWNLOAD_DEMOGRAPHICS_DATA, REQUEST_STATE]),
+      [GET_MONTHLY_DEMOGRAPHICS]: stats.getIn([ACTIONS, GET_MONTHLY_DEMOGRAPHICS, REQUEST_STATE]),
+      [GET_PARTICIPANTS_DEMOGRAPHICS]: stats.getIn([ACTIONS, GET_PARTICIPANTS_DEMOGRAPHICS, REQUEST_STATE]),
     },
     [SEX_DEMOGRAPHICS]: stats.get(SEX_DEMOGRAPHICS),
   };
@@ -183,6 +202,8 @@ const mapStateToProps = (state :Map) => {
 const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
     downloadDemographicsData,
+    getMonthlyDemographics,
+    getParticipantsDemographics,
   }, dispatch)
 });
 
