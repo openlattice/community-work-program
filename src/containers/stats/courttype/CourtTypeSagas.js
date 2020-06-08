@@ -388,7 +388,6 @@ function* getMonthlyCourtTypeDataWorker(action :SequenceAction) :Generator<*, *,
         personEKIDByWorksitePlanEKID.forEach((personEKID :UUID) => {
           if (!personEKIDs.includes(personEKID)) personEKIDs.push(personEKID);
         });
-        console.log('personEKIDs ', personEKIDs.length);
         const courtTypesByPersonEKID :Map = Map().withMutations((map :Map) => {
           personEKIDByWorksitePlanEKID.forEach((personEKID :UUID, worksitePlanEKID :UUID) => {
             const diversionPlanEKID :UUID = diversionPlanEKIDsByWorksitePlanEKIDs.get(worksitePlanEKID, '');
@@ -406,13 +405,10 @@ function* getMonthlyCourtTypeDataWorker(action :SequenceAction) :Generator<*, *,
             if (isDefined(courtType) && !personCourtTypes.includes(courtType)) {
               personCourtTypes = personCourtTypes.push(courtType);
             }
-            else {
-              console.log('courtType ', courtType);
-            }
             map.set(personEKID, personCourtTypes);
           });
         });
-        console.log('courtTypesByPersonEKID ', courtTypesByPersonEKID.count());
+
         courtTypesByPersonEKID.forEach((courtTypesList :List) => {
           courtTypesList.forEach((courtType :string) => {
             if (isDefined(monthlyTotalParticipantsByCourtType.get(courtType))) {

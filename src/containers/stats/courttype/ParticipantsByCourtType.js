@@ -67,7 +67,6 @@ const ParticipantsByCourtTypeGraph = ({
 } :Props) => {
   const downloadParticipantsData = () => {
     const formattedData :List = formatTotalParticipantsDataForDownload(totalParticipantsByCourtType);
-    console.log(formattedData);
     actions.downloadCourtTypeData({
       courtTypeData: formattedData,
       fileName: 'CWP_Total_Participants_by_Court_Type',
