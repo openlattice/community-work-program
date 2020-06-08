@@ -165,13 +165,14 @@ function* getMonthlyDemographicsWorker(action :SequenceAction) :Generator<*, *, 
     });
     response = yield call(executeSearchWorker, executeSearch({ searchOptions }));
     if (response.error) throw response.error;
-    const enrollmentStatuses :List = fromJS(response.data.hits)
-      .filter((enrollmentStatus :Map) => {
-        const { [STATUS]: status } = getEntityProperties(enrollmentStatus, [STATUS]);
-        return ACTIVE_STATUSES.includes(status);
-      });
     const enrollmentStatusEKIDs :UUID[] = [];
-    enrollmentStatuses.forEach((enrollmentStatus :Map) => enrollmentStatusEKIDs.push(getEntityKeyId(enrollmentStatus)));
+    fromJS(response.data.hits)
+      .forEach((enrollmentStatus :Map) => {
+        const { [STATUS]: status } = getEntityProperties(enrollmentStatus, [STATUS]);
+        if (ACTIVE_STATUSES.includes(status)) {
+          enrollmentStatusEKIDs.push(getEntityKeyId(enrollmentStatus));
+        }
+      });
 
     if (enrollmentStatusEKIDs.length) {
       const diversionPlanESID :UUID = getEntitySetIdFromApp(app, DIVERSION_PLAN);
