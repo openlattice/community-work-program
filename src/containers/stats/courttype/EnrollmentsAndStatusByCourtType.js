@@ -52,10 +52,10 @@ import { requestIsPending } from '../../../utils/RequestStateUtils';
 import {
   DOWNLOAD_COURT_TYPE_DATA,
   GET_ENROLLMENTS_BY_COURT_TYPE,
-  GET_MONTHLY_COURT_TYPE_DATA,
+  GET_HOURS_BY_COURT_TYPE,
   downloadCourtTypeData,
   getEnrollmentsByCourtType,
-  getMonthlyCourtTypeData,
+  getHoursByCourtType,
 } from './CourtTypeActions';
 import { GET_STATS_DATA } from '../StatsActions';
 import { OL } from '../../../core/style/Colors';
@@ -116,7 +116,7 @@ type Props = {
   requestStates :{
     DOWNLOAD_COURT_TYPE_DATA :RequestState;
     GET_ENROLLMENTS_BY_COURT_TYPE :RequestState;
-    GET_MONTHLY_COURT_TYPE_DATA :RequestState;
+    GET_HOURS_BY_COURT_TYPE :RequestState;
     GET_STATS_DATA :RequestState;
   };
   successfulEnrollmentsByCourtType :Map;
@@ -337,7 +337,7 @@ const mapStateToProps = (state :Map) => {
     requestStates: {
       [DOWNLOAD_COURT_TYPE_DATA]: stats.getIn([ACTIONS, DOWNLOAD_COURT_TYPE_DATA, REQUEST_STATE]),
       [GET_ENROLLMENTS_BY_COURT_TYPE]: stats.getIn([ACTIONS, GET_ENROLLMENTS_BY_COURT_TYPE, REQUEST_STATE]),
-      [GET_MONTHLY_COURT_TYPE_DATA]: stats.getIn([ACTIONS, GET_MONTHLY_COURT_TYPE_DATA, REQUEST_STATE]),
+      [GET_HOURS_BY_COURT_TYPE]: stats.getIn([ACTIONS, GET_HOURS_BY_COURT_TYPE, REQUEST_STATE]),
       [GET_STATS_DATA]: stats.getIn([ACTIONS, GET_STATS_DATA, REQUEST_STATE]),
     }
   };
@@ -347,7 +347,7 @@ const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
     downloadCourtTypeData,
     getEnrollmentsByCourtType,
-    getMonthlyCourtTypeData,
+    getHoursByCourtType,
   }, dispatch)
 });
 

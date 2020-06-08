@@ -32,7 +32,7 @@ import {
   DOWNLOAD_COURT_TYPE_DATA,
   GET_TOTAL_PARTICIPANTS_BY_COURT_TYPE,
   downloadCourtTypeData,
-  getMonthlyCourtTypeData,
+  getHoursByCourtType,
 } from './CourtTypeActions';
 import { getStatsData } from '../StatsActions';
 import { SHARED, STATE, STATS } from '../../../utils/constants/ReduxStateConsts';
@@ -50,7 +50,7 @@ const defaultToolTipValues :Object = {
 type Props = {
   actions :{
     downloadCourtTypeData :RequestSequence;
-    getMonthlyCourtTypeData :RequestSequence;
+    getHoursByCourtType :RequestSequence;
     getStatsData :RequestSequence;
   };
   totalParticipantsByCourtType :Map;
@@ -153,7 +153,7 @@ const mapStateToProps = (state :Map) => {
 const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
     downloadCourtTypeData,
-    getMonthlyCourtTypeData,
+    getHoursByCourtType,
     getStatsData,
   }, dispatch)
 });

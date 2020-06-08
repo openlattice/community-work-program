@@ -34,12 +34,12 @@ import { getPersonFullName } from '../../../utils/PeopleUtils';
 import {
   DOWNLOAD_COURT_TYPE_DATA,
   GET_ENROLLMENTS_BY_COURT_TYPE,
-  GET_MONTHLY_COURT_TYPE_DATA,
+  GET_HOURS_BY_COURT_TYPE,
   GET_MONTHLY_PARTICIPANTS_BY_COURT_TYPE,
   GET_TOTAL_PARTICIPANTS_BY_COURT_TYPE,
   downloadCourtTypeData,
   getEnrollmentsByCourtType,
-  getMonthlyCourtTypeData,
+  getHoursByCourtType,
   getMonthlyParticipantsByCourtType,
   getTotalParticipantsByCourtType,
 } from './CourtTypeActions';
@@ -152,18 +152,17 @@ function* downloadCourtTypeDataWatcher() :Generator<*, *, *> {
 
 /*
  *
- * CourtTypeActions.getMonthlyCourtTypeData()
+ * CourtTypeActions.getHoursByCourtType()
  *
  */
 
-function* getMonthlyCourtTypeDataWorker(action :SequenceAction) :Generator<*, *, *> {
+function* getHoursByCourtTypeWorker(action :SequenceAction) :Generator<*, *, *> {
   const { id, value } = action;
   let response :Object = {};
-  let monthlyHoursWorkedByCourtType :Map = fromJS(courtTypeCountObj).asMutable();
-  let monthlyTotalParticipantsByCourtType :Map = fromJS(courtTypeCountObj).asMutable();
+  let hoursByCourtType :Map = fromJS(courtTypeCountObj).asMutable();
 
   try {
-    yield put(getMonthlyCourtTypeData.request(id));
+    yield put(getHoursByCourtType.request(id));
     const { month, timeFrame, year } = value;
     if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
 
@@ -173,18 +172,15 @@ function* getMonthlyCourtTypeDataWorker(action :SequenceAction) :Generator<*, *,
     const datetimeStartPTID :UUID = getPropertyTypeIdFromEdm(edm, DATETIME_START);
     const worksitePlanESID :UUID = getEntitySetIdFromApp(app, WORKSITE_PLAN);
     const diversionPlanESID :UUID = getEntitySetIdFromApp(app, DIVERSION_PLAN);
-    const peopleESID :UUID = getEntitySetIdFromApp(app, PEOPLE);
 
     let searchFilter :Object = {};
     const worksitePlanEKIDs :UUID[] = [];
 
     let worksitePlanEKIDsByAppointmentEKIDs :Map = Map().asMutable();
-    let checkInEKIDsByPersonEKID :Map = Map().asMutable();
     let appointmentEKIDsByCheckInEKIDs :Map = Map().asMutable();
     let hoursByCheckInEKID :Map = Map().asMutable();
 
     let hoursByWorksitePlanEKID :Map = Map().asMutable();
-    let personEKIDByWorksitePlanEKID :Map = Map().asMutable();
 
     if (timeFrame !== ALL_TIME) {
       const searchOptions = {
@@ -228,7 +224,7 @@ function* getMonthlyCourtTypeDataWorker(action :SequenceAction) :Generator<*, *,
         searchFilter = {
           entityKeyIds: checkInEKIDs,
           destinationEntitySetIds: [appointmentESID, checkInDetailsESID],
-          sourceEntitySetIds: [peopleESID],
+          sourceEntitySetIds: [],
         };
         response = yield call(
           searchEntityNeighborsWithFilterWorker,
@@ -245,11 +241,6 @@ function* getMonthlyCourtTypeDataWorker(action :SequenceAction) :Generator<*, *,
           if (isDefined(appointmentEKID)) appointmentEKIDs.push(appointmentEKID);
           appointmentEKIDsByCheckInEKIDs.set(checkInEKID, appointmentEKID);
 
-          const personNeighbor :Map = neighborsList
-            .find((neighbor :Map) => getNeighborESID(neighbor) === peopleESID);
-          const personEKID :UUID = getEntityKeyId(getNeighborDetails(personNeighbor));
-          checkInEKIDsByPersonEKID.update(personEKID, List(), (ekids) => ekids.concat(fromJS([checkInEKID])));
-
           const checkInDetailsNeighbor :Map = neighborsList
             .find((neighbor :Map) => getNeighborESID(neighbor) === checkInDetailsESID);
           const checkInDetails :Map = getNeighborDetails(checkInDetailsNeighbor);
@@ -257,7 +248,6 @@ function* getMonthlyCourtTypeDataWorker(action :SequenceAction) :Generator<*, *,
           hoursByCheckInEKID.set(checkInEKID, hoursWorked);
         });
         appointmentEKIDsByCheckInEKIDs = appointmentEKIDsByCheckInEKIDs.asImmutable();
-        checkInEKIDsByPersonEKID = checkInEKIDsByPersonEKID.asImmutable();
         hoursByCheckInEKID = hoursByCheckInEKID.asImmutable();
 
         searchFilter = {
@@ -290,22 +280,6 @@ function* getMonthlyCourtTypeDataWorker(action :SequenceAction) :Generator<*, *,
         hoursByWorksitePlanEKID.set(worksitePlanEKID, hoursToSet);
       });
       hoursByWorksitePlanEKID = hoursByWorksitePlanEKID.asImmutable();
-
-      searchFilter = {
-        entityKeyIds: worksitePlanEKIDs,
-        destinationEntitySetIds: [],
-        sourceEntitySetIds: [peopleESID],
-      };
-      response = yield call(
-        searchEntityNeighborsWithFilterWorker,
-        searchEntityNeighborsWithFilter({ entitySetId: worksitePlanESID, filter: searchFilter })
-      );
-      if (response.error) throw response.error;
-      fromJS(response.data).forEach((personNeighborsList :List, worksitePlanEKID :UUID) => {
-        const personEKID :UUID = getEntityKeyId(getNeighborDetails(personNeighborsList.get(0)));
-        personEKIDByWorksitePlanEKID.set(worksitePlanEKID, personEKID);
-      });
-      personEKIDByWorksitePlanEKID = personEKIDByWorksitePlanEKID.asImmutable();
     }
 
     if (worksitePlanEKIDs.length) {
@@ -348,97 +322,48 @@ function* getMonthlyCourtTypeDataWorker(action :SequenceAction) :Generator<*, *,
       }).asImmutable();
 
       if (timeFrame === MONTHLY || timeFrame === YEARLY) {
-        checkInEKIDsByPersonEKID.forEach((checkInEKIDsList :List) => {
-          let personCourtTypes :Map = fromJS(courtTypeCountObj).asMutable();
-          checkInEKIDsList.forEach((checkInEKID :UUID) => {
-            const appointmentEKID :UUID = appointmentEKIDsByCheckInEKIDs.get(checkInEKID, '');
-            const worksitePlanEKID :UUID = worksitePlanEKIDsByAppointmentEKIDs.get(appointmentEKID, '');
-            const diversionPlanEKID :UUID = diversionPlanEKIDsByWorksitePlanEKIDs.get(worksitePlanEKID, '');
-            const courtType :string = courtTypesByDiversionPlanEKIDs.get(diversionPlanEKID, '');
-            if (isDefined(personCourtTypes.get(courtType))) {
-              personCourtTypes = personCourtTypes.set(courtType, personCourtTypes.get(courtType) + 1);
-            }
-          });
-
-          personCourtTypes.forEach((total :number, courtType :string) => {
-            if (isDefined(monthlyTotalParticipantsByCourtType.get(courtType))) {
-              const participantCount :number = monthlyTotalParticipantsByCourtType
-                .get(courtType, 0);
-              monthlyTotalParticipantsByCourtType = monthlyTotalParticipantsByCourtType
-                .set(courtType, participantCount + total);
-            }
-          });
-        });
-
         hoursByCheckInEKID.forEach((hoursTotal :number, checkInEKID :UUID) => {
           const appointmentEKID :UUID = appointmentEKIDsByCheckInEKIDs.get(checkInEKID, '');
           const worksitePlanEKID :UUID = worksitePlanEKIDsByAppointmentEKIDs.get(appointmentEKID, '');
           const diversionPlanEKID :UUID = diversionPlanEKIDsByWorksitePlanEKIDs.get(worksitePlanEKID, '');
           const courtType :string = courtTypesByDiversionPlanEKIDs.get(diversionPlanEKID, '');
-          if (isDefined(monthlyHoursWorkedByCourtType.get(courtType))) {
-            const hours :number = monthlyHoursWorkedByCourtType
+          if (isDefined(hoursByCourtType.get(courtType))) {
+            const hours :number = hoursByCourtType
               .get(courtType, 0);
-            monthlyHoursWorkedByCourtType = monthlyHoursWorkedByCourtType
+            hoursByCourtType = hoursByCourtType
               .set(courtType, hours + hoursTotal);
           }
         });
       }
       else {
-        const personEKIDs :UUID[] = [];
-        personEKIDByWorksitePlanEKID.forEach((personEKID :UUID) => {
-          if (!personEKIDs.includes(personEKID)) personEKIDs.push(personEKID);
-        });
-        const courtTypesByPersonEKID :Map = Map().withMutations((map :Map) => {
-          personEKIDByWorksitePlanEKID.forEach((personEKID :UUID, worksitePlanEKID :UUID) => {
-            const diversionPlanEKID :UUID = diversionPlanEKIDsByWorksitePlanEKIDs.get(worksitePlanEKID, '');
-            const courtType :string = courtTypesByDiversionPlanEKIDs.get(diversionPlanEKID, '');
+        hoursByWorksitePlanEKID.forEach((hoursForWorksitePlan :number, worksitePlanEKID :UUID) => {
+          const diversionPlanEKID :UUID = diversionPlanEKIDsByWorksitePlanEKIDs.get(worksitePlanEKID, '');
+          const courtType :string = courtTypesByDiversionPlanEKIDs.get(diversionPlanEKID, '');
 
-            const hoursForWorksitePlan :number = hoursByWorksitePlanEKID.get(worksitePlanEKID, 0);
-            if (isDefined(monthlyHoursWorkedByCourtType.get(courtType))) {
-              const hoursTotalForCourtType :number = monthlyHoursWorkedByCourtType
-                .get(courtType, 0);
-              monthlyHoursWorkedByCourtType = monthlyHoursWorkedByCourtType
-                .set(courtType, hoursTotalForCourtType + hoursForWorksitePlan);
-            }
-
-            let personCourtTypes :List = map.get(personEKID, List());
-            if (isDefined(courtType) && !personCourtTypes.includes(courtType)) {
-              personCourtTypes = personCourtTypes.push(courtType);
-            }
-            map.set(personEKID, personCourtTypes);
-          });
-        });
-
-        courtTypesByPersonEKID.forEach((courtTypesList :List) => {
-          courtTypesList.forEach((courtType :string) => {
-            if (isDefined(monthlyTotalParticipantsByCourtType.get(courtType))) {
-              const participantCount :number = monthlyTotalParticipantsByCourtType
-                .get(courtType, 0);
-              monthlyTotalParticipantsByCourtType = monthlyTotalParticipantsByCourtType
-                .set(courtType, participantCount + 1);
-            }
-          });
+          if (isDefined(hoursByCourtType.get(courtType))) {
+            const hoursTotalForCourtType :number = hoursByCourtType
+              .get(courtType, 0);
+            hoursByCourtType = hoursByCourtType
+              .set(courtType, hoursTotalForCourtType + hoursForWorksitePlan);
+          }
         });
       }
     }
 
-    yield put(getMonthlyCourtTypeData.success(id, {
-      monthlyHoursWorkedByCourtType,
-      monthlyTotalParticipantsByCourtType
-    }));
+    yield put(getHoursByCourtType.success(id, hoursByCourtType));
   }
   catch (error) {
     LOG.error(action.type, error);
-    yield put(getMonthlyCourtTypeData.failure(id, error));
+    yield put(getHoursByCourtType.failure(id, error));
   }
   finally {
-    yield put(getMonthlyCourtTypeData.finally(id));
+    yield put(getHoursByCourtType.finally(id));
   }
 }
 
-function* getMonthlyCourtTypeDataWatcher() :Generator<*, *, *> {
+function* getHoursByCourtTypeWatcher() :Generator<*, *, *> {
 
-  yield takeEvery(GET_MONTHLY_COURT_TYPE_DATA, getMonthlyCourtTypeDataWorker);
+  yield takeEvery(GET_HOURS_BY_COURT_TYPE, getHoursByCourtTypeWorker);
 }
 
 /*
@@ -889,8 +814,8 @@ export {
   downloadCourtTypeDataWorker,
   getEnrollmentsByCourtTypeWatcher,
   getEnrollmentsByCourtTypeWorker,
-  getMonthlyCourtTypeDataWatcher,
-  getMonthlyCourtTypeDataWorker,
+  getHoursByCourtTypeWatcher,
+  getHoursByCourtTypeWorker,
   getMonthlyParticipantsByCourtTypeWatcher,
   getMonthlyParticipantsByCourtTypeWorker,
   getTotalParticipantsByCourtTypeWatcher,

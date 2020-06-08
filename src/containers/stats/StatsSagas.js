@@ -26,12 +26,12 @@ import {
 } from '../../utils/DataUtils';
 import { GET_STATS_DATA, getStatsData } from './StatsActions';
 import {
-  getMonthlyCourtTypeData,
+  getHoursByCourtType,
   getMonthlyParticipantsByCourtType,
   getTotalParticipantsByCourtType
 } from './courttype/CourtTypeActions';
 import {
-  getMonthlyCourtTypeDataWorker,
+  getHoursByCourtTypeWorker,
   getMonthlyParticipantsByCourtTypeWorker,
   getTotalParticipantsByCourtTypeWorker
 } from './courttype/CourtTypeSagas';
@@ -180,7 +180,7 @@ function* getStatsDataWorker(action :SequenceAction) :Generator<*, *, *> {
     const now :DateTime = DateTime.local();
     const { month, year } = now;
     yield all([
-      call(getMonthlyCourtTypeDataWorker, getMonthlyCourtTypeData({ month, year, timeFrame: MONTHLY })),
+      call(getHoursByCourtTypeWorker, getHoursByCourtType({ month, year, timeFrame: MONTHLY })),
       call(getMonthlyParticipantsByCourtTypeWorker, getMonthlyParticipantsByCourtType({ month, year })),
       call(getTotalParticipantsByCourtTypeWorker, getTotalParticipantsByCourtType()),
     ]);

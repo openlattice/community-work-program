@@ -45,24 +45,15 @@ const formatParticipantsByCourtTypeData = (totalParticipantsByCourtType :Map) :O
   return sortGraphData(graphData);
 };
 
-const formatMonthlyHoursAndParticipantsData = (
-  monthlyHoursWorkedByCourtType :Map,
-  monthlyTotalParticipantsByCourtType :Map
-) :Object => {
+const formatHoursByCourtTypeData = (monthlyHoursWorkedByCourtType :Map) :Object => {
 
   const hoursGraphData :Object[] = [];
-  const participantsGraphData :Object[] = [];
   monthlyHoursWorkedByCourtType.forEach((hoursTotal :number, courtType :string) => {
     if (isDefined(hoursTotal) && isDefined(courtType)) {
       hoursGraphData.push({ y: courtType, x: hoursTotal });
     }
   });
-  monthlyTotalParticipantsByCourtType.forEach((participantsTotal :number, courtType :string) => {
-    if (isDefined(participantsTotal) && isDefined(courtType)) {
-      participantsGraphData.push({ y: courtType, x: participantsTotal });
-    }
-  });
-  return { hoursGraphData, participantsGraphData };
+  return hoursGraphData;
 };
 
 const formatEnrollmentsDataForDownload = (
@@ -130,34 +121,17 @@ const getBottomRowForEnrollments = (csvData :Object[]) => {
   };
 };
 
-const formatParticipantsAndHoursDataForDownload = (
-  monthlyHoursWorkedByCourtType :Map,
-  monthlyTotalParticipantsByCourtType :Map,
-) :List => {
+const formatHoursByCourtTypeDataForDownload = (monthlyHoursWorkedByCourtType :Map) :List => {
 
   const formattedData :List = List().withMutations((list :List) => {
-    monthlyTotalParticipantsByCourtType.forEach((participantsCount :number, courtType :string) => {
-      const hoursCount :number = monthlyHoursWorkedByCourtType.get(courtType);
+    monthlyHoursWorkedByCourtType.forEach((hoursCount :number, courtType :string) => {
       list.push(fromJS({
         [COURT_TYPE]: courtType,
-        Participants: participantsCount,
-        Hours: hoursCount,
+        [TOTAL]: hoursCount,
       }));
     });
   });
   return formattedData;
-};
-
-const getBottomRowForParticipantsAndHours = (csvData :Object[]) => {
-  const participantsTotal :number = csvData.map((row :Object) => row.Participants)
-    .reduce((sum :number, count :number) => sum + count);
-  const hoursTotal :number = csvData.map((row :Object) => row.Hours)
-    .reduce((sum :number, count :number) => sum + count);
-  return {
-    'Court Type': TOTAL_FOR_ALL_COURT_TYPES,
-    Participants: participantsTotal,
-    Hours: hoursTotal,
-  };
 };
 
 const formatTotalParticipantsDataForDownload = (totalParticipantsByCourtType :Map) :List => {
@@ -299,9 +273,9 @@ const getListForRadialChartKey = (chartData :Object[], valuesNotFound :string[])
 export {
   formatEnrollmentStatusPeopleData,
   formatEnrollmentsDataForDownload,
+  formatHoursByCourtTypeData,
+  formatHoursByCourtTypeDataForDownload,
   formatHoursByWorksiteData,
-  formatMonthlyHoursAndParticipantsData,
-  formatParticipantsAndHoursDataForDownload,
   formatParticipantsByCourtTypeData,
   formatParticipantsByCourtTypeDataForDownload,
   formatRadialChartData,
@@ -309,6 +283,5 @@ export {
   formatWorksiteHoursDataForDownload,
   formatWorksiteParticipantsDataForDownload,
   getBottomRowForEnrollments,
-  getBottomRowForParticipantsAndHours,
   getListForRadialChartKey,
 };

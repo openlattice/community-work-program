@@ -35,17 +35,13 @@ import {
   SmallSelectWrapper,
   toolTipStyle,
 } from '../styled/GraphStyles';
-import {
-  formatMonthlyHoursAndParticipantsData,
-  formatParticipantsAndHoursDataForDownload,
-  getBottomRowForParticipantsAndHours,
-} from '../utils/StatsUtils';
+import { formatHoursByCourtTypeData, formatHoursByCourtTypeDataForDownload } from '../utils/StatsUtils';
 import { requestIsPending } from '../../../utils/RequestStateUtils';
 import {
   DOWNLOAD_COURT_TYPE_DATA,
-  GET_MONTHLY_COURT_TYPE_DATA,
+  GET_HOURS_BY_COURT_TYPE,
   downloadCourtTypeData,
-  getMonthlyCourtTypeData,
+  getHoursByCourtType,
 } from './CourtTypeActions';
 import { getStatsData } from '../StatsActions';
 import {
@@ -56,11 +52,12 @@ import {
   YEARLY,
   YEARS_OPTIONS,
 } from '../consts/TimeConsts';
-import { SHARED, STATE } from '../../../utils/constants/ReduxStateConsts';
+import { SHARED, STATE, STATS } from '../../../utils/constants/ReduxStateConsts';
 
 const { ACTIONS, REQUEST_STATE } = SHARED;
+const { HOURS_BY_COURT_TYPE } = STATS;
 
-const { BLUE_1, BLUE_2, PURPLES } = Colors;
+const { BLUE_2, PURPLES } = Colors;
 const defaultToolTipValues :Object = {
   background: 'rgba(0, 0, 0, 0.0)',
   hoveredBar: {},
@@ -70,21 +67,19 @@ const defaultToolTipValues :Object = {
 type Props = {
   actions :{
     downloadCourtTypeData :RequestSequence;
-    getMonthlyCourtTypeData :RequestSequence;
+    getHoursByCourtType :RequestSequence;
     getStatsData :RequestSequence;
   };
-  monthlyHoursWorkedByCourtType :Map;
-  monthlyTotalParticipantsByCourtType :Map;
+  hoursByCourtType :Map;
   requestStates :{
     DOWNLOAD_COURT_TYPE_DATA :RequestState;
-    GET_MONTHLY_COURT_TYPE_DATA :RequestState;
+    GET_HOURS_BY_COURT_TYPE :RequestState;
   };
 };
 
-const MonthlyHoursAndParticipantsGraphs = ({
+const HoursByCourtType = ({
   actions,
-  monthlyHoursWorkedByCourtType,
-  monthlyTotalParticipantsByCourtType,
+  hoursByCourtType,
   requestStates,
 } :Props) => {
 
@@ -96,34 +91,29 @@ const MonthlyHoursAndParticipantsGraphs = ({
 
   const onTimeFrameSelectChange = (option :Object) => {
     if (option.value === ALL_TIME) {
-      actions.getMonthlyCourtTypeData({ month: hoursMonth.value, year: hoursYear.value, timeFrame: ALL_TIME });
+      actions.getHoursByCourtType({ month: hoursMonth.value, year: hoursYear.value, timeFrame: ALL_TIME });
       setTimeFrame(option);
     }
     else setTimeFrame(option);
   };
 
   const getNewHoursData = () => {
-    actions.getMonthlyCourtTypeData({ month: hoursMonth.value, year: hoursYear.value, timeFrame: timeFrame.value });
+    actions.getHoursByCourtType({ month: hoursMonth.value, year: hoursYear.value, timeFrame: timeFrame.value });
   };
 
   const downloadParticipantsAndHoursData = () => {
-    const formattedParticipantsAndHoursData :List = formatParticipantsAndHoursDataForDownload(
-      monthlyHoursWorkedByCourtType,
-      monthlyTotalParticipantsByCourtType,
+    const formattedParticipantsAndHoursData :List = formatHoursByCourtTypeDataForDownload(
+      hoursByCourtType,
     );
     /* eslint-disable-next-line */
-    const fileName :string = `CWP_Participants_and_Hours_by_Court_Type_${MONTHS_OPTIONS[hoursMonth.value - 1].label}_${hoursYear.value}`;
+    const fileName :string = `CWP_Hours_by_Court_Type_${MONTHS_OPTIONS[hoursMonth.value - 1].label}_${hoursYear.value}`;
     actions.downloadCourtTypeData({
       courtTypeData: formattedParticipantsAndHoursData,
       fileName,
-      getBottomRow: getBottomRowForParticipantsAndHours,
     });
   };
 
-  const { hoursGraphData, participantsGraphData } = formatMonthlyHoursAndParticipantsData(
-    monthlyHoursWorkedByCourtType,
-    monthlyTotalParticipantsByCourtType
-  );
+  const hoursGraphData = formatHoursByCourtTypeData(hoursByCourtType);
   const [toolTipValues, setToolTipValues] = useState(defaultToolTipValues);
   const toolTipStyleWithBackground :Object = {
     background: toolTipValues.background,
@@ -134,7 +124,7 @@ const MonthlyHoursAndParticipantsGraphs = ({
     <Card>
       <GraphHeader>
         <InnerHeaderRow>
-          <div>Number of Participants and Hours Worked by Court Type</div>
+          <div>Number of Hours Worked by Court Type</div>
           <HeaderActionsWrapper>
             <SmallSelectWrapper>
               <Select
@@ -176,7 +166,7 @@ const MonthlyHoursAndParticipantsGraphs = ({
       </GraphHeader>
       <CardSegment padding="30px" vertical>
         {
-          requestIsPending(requestStates[GET_MONTHLY_COURT_TYPE_DATA])
+          requestIsPending(requestStates[GET_HOURS_BY_COURT_TYPE])
             ? (
               <Spinner size="2x" />
             )
@@ -203,13 +193,6 @@ const MonthlyHoursAndParticipantsGraphs = ({
                       { background: PURPLES[1], hoveredBar: v, toolTipText: `${v.x} hours` }
                     )}
                     onValueMouseOut={() => setToolTipValues(defaultToolTipValues)} />
-                <HorizontalBarSeries
-                    color={BLUE_1}
-                    data={participantsGraphData}
-                    onValueMouseOver={(v :Object) => setToolTipValues(
-                      { background: PURPLES[1], hoveredBar: v, toolTipText: `${v.x} participants` }
-                    )}
-                    onValueMouseOut={() => setToolTipValues(defaultToolTipValues)} />
                 {
                   toolTipValues.hoveredBar && (
                     <Hint
@@ -230,9 +213,10 @@ const MonthlyHoursAndParticipantsGraphs = ({
 const mapStateToProps = (state :Map) => {
   const stats = state.get(STATE.STATS);
   return {
+    [HOURS_BY_COURT_TYPE]: stats.get(HOURS_BY_COURT_TYPE),
     requestStates: {
       [DOWNLOAD_COURT_TYPE_DATA]: stats.getIn([ACTIONS, DOWNLOAD_COURT_TYPE_DATA, REQUEST_STATE]),
-      [GET_MONTHLY_COURT_TYPE_DATA]: stats.getIn([ACTIONS, GET_MONTHLY_COURT_TYPE_DATA, REQUEST_STATE]),
+      [GET_HOURS_BY_COURT_TYPE]: stats.getIn([ACTIONS, GET_HOURS_BY_COURT_TYPE, REQUEST_STATE]),
     }
   };
 };
@@ -240,10 +224,10 @@ const mapStateToProps = (state :Map) => {
 const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
     downloadCourtTypeData,
-    getMonthlyCourtTypeData,
+    getHoursByCourtType,
     getStatsData,
   }, dispatch)
 });
 
 // $FlowFixMe
-export default connect(mapStateToProps, mapDispatchToProps)(MonthlyHoursAndParticipantsGraphs);
+export default connect(mapStateToProps, mapDispatchToProps)(HoursByCourtType);

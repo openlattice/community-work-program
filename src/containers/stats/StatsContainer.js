@@ -29,7 +29,7 @@ import LogoLoader from '../../components/LogoLoader';
 import { ContainerInnerWrapper, ContainerOuterWrapper } from '../../components/Layout';
 import { reduceRequestStates, requestIsPending } from '../../utils/RequestStateUtils';
 import { GET_STATS_DATA, getStatsData } from './StatsActions';
-import { getMonthlyCourtTypeData } from './courttype/CourtTypeActions';
+import { getHoursByCourtType } from './courttype/CourtTypeActions';
 import { GET_WORKSITE_STATS_DATA, getWorksiteStatsData } from './worksite/WorksiteStatsActions';
 import { GET_PARTICIPANTS_DEMOGRAPHICS, getParticipantsDemographics } from './demographics/DemographicsActions';
 import { GET_CHARGES_STATS, getChargesStats } from './charges/ChargesStatsActions';
@@ -54,8 +54,6 @@ const {
   ACTIVE_ENROLLMENTS_BY_COURT_TYPE,
   CLOSED_ENROLLMENTS_BY_COURT_TYPE,
   JOB_SEARCH_ENROLLMENTS_BY_COURT_TYPE,
-  MONTHLY_HOURS_WORKED_BY_COURT_TYPE,
-  MONTHLY_TOTAL_PARTICIPANTS_BY_COURT_TYPE,
   SUCCESSFUL_ENROLLMENTS_BY_COURT_TYPE,
   TOTAL_ACTIVE_ENROLLMENTS_COUNT,
   TOTAL_CLOSED_ENROLLMENTS_COUNT,
@@ -180,7 +178,7 @@ const StatsBoxSkeleton = () => (
 type Props = {
   actions :{
     getChargesStats :RequestSequence;
-    getMonthlyCourtTypeData :RequestSequence;
+    getHoursByCourtType :RequestSequence;
     getParticipantsDemographics :RequestSequence;
     getStatsData :RequestSequence;
     getWorksiteStatsData :RequestSequence;
@@ -189,8 +187,6 @@ type Props = {
   closedEnrollmentsByCourtType :Map;
   entitySetIds :Map;
   jobSearchEnrollmentsByCourtType :Map;
-  monthlyHoursWorkedByCourtType :Map;
-  monthlyTotalParticipantsByCourtType :Map;
   requestStates :{
     GET_CHARGES_STATS :RequestState;
     GET_PARTICIPANTS_DEMOGRAPHICS :RequestState;
@@ -213,8 +209,6 @@ const StatsContainer = ({
   closedEnrollmentsByCourtType,
   entitySetIds,
   jobSearchEnrollmentsByCourtType,
-  monthlyHoursWorkedByCourtType,
-  monthlyTotalParticipantsByCourtType,
   requestStates,
   successfulEnrollmentsByCourtType,
   totalActiveEnrollmentsCount,
@@ -246,8 +240,6 @@ const StatsContainer = ({
         closedEnrollmentsByCourtType={closedEnrollmentsByCourtType}
         dataIsLoading={dataIsLoading}
         jobSearchEnrollmentsByCourtType={jobSearchEnrollmentsByCourtType}
-        monthlyHoursWorkedByCourtType={monthlyHoursWorkedByCourtType}
-        monthlyTotalParticipantsByCourtType={monthlyTotalParticipantsByCourtType}
         successfulEnrollmentsByCourtType={successfulEnrollmentsByCourtType}
         unsuccessfulEnrollmentsByCourtType={unsuccessfulEnrollmentsByCourtType} />
   );
@@ -274,7 +266,7 @@ const StatsContainer = ({
   }
 
   const SCREEN_VIEW_ACTIONS = {
-    [SCREEN_VIEWS.COURT_TYPE]: actions.getMonthlyCourtTypeData,
+    [SCREEN_VIEWS.COURT_TYPE]: actions.getHoursByCourtType,
     [SCREEN_VIEWS.WORK_SITES]: actions.getWorksiteStatsData,
     [SCREEN_VIEWS.DEMOGRAPHICS]: actions.getParticipantsDemographics,
     [SCREEN_VIEWS.CHARGES]: actions.getChargesStats,
@@ -377,8 +369,6 @@ const mapStateToProps = (state :Map) => {
     [ACTIVE_ENROLLMENTS_BY_COURT_TYPE]: stats.get(ACTIVE_ENROLLMENTS_BY_COURT_TYPE),
     [CLOSED_ENROLLMENTS_BY_COURT_TYPE]: stats.get(CLOSED_ENROLLMENTS_BY_COURT_TYPE),
     [JOB_SEARCH_ENROLLMENTS_BY_COURT_TYPE]: stats.get(JOB_SEARCH_ENROLLMENTS_BY_COURT_TYPE),
-    [MONTHLY_HOURS_WORKED_BY_COURT_TYPE]: stats.get(MONTHLY_HOURS_WORKED_BY_COURT_TYPE),
-    [MONTHLY_TOTAL_PARTICIPANTS_BY_COURT_TYPE]: stats.get(MONTHLY_TOTAL_PARTICIPANTS_BY_COURT_TYPE),
     [SUCCESSFUL_ENROLLMENTS_BY_COURT_TYPE]: stats.get(SUCCESSFUL_ENROLLMENTS_BY_COURT_TYPE),
     [TOTAL_ACTIVE_ENROLLMENTS_COUNT]: stats.get(TOTAL_ACTIVE_ENROLLMENTS_COUNT),
     [TOTAL_CLOSED_ENROLLMENTS_COUNT]: stats.get(TOTAL_CLOSED_ENROLLMENTS_COUNT),
@@ -400,7 +390,7 @@ const mapStateToProps = (state :Map) => {
 const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
     getChargesStats,
-    getMonthlyCourtTypeData,
+    getHoursByCourtType,
     getParticipantsDemographics,
     getStatsData,
     getWorksiteStatsData,
