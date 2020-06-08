@@ -25,7 +25,6 @@ import { faCheckCircle } from '@fortawesome/pro-solid-svg-icons';
 import { Form, DataProcessingUtils } from 'lattice-fabricate';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import { RequestStates } from 'redux-reqseq';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
 import LogoLoader from '../../../components/LogoLoader';
@@ -36,6 +35,7 @@ import { getInfoForAddParticipant } from '../../participant/ParticipantActions';
 import { goToRoute } from '../../../core/router/RoutingActions';
 import { hydrateSchema } from '../utils/AddParticipantFormUtils';
 import { formatNewArrestChargeDataAndAssociations } from '../../participant/charges/utils/ChargesUtils';
+import { requestIsPending, requestIsSuccess } from '../../../utils/RequestStateUtils';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { CWP, ENROLLMENT_STATUSES } from '../../../core/edm/constants/DataModelConsts';
 import { schema, uiSchema } from '../schemas/AddParticipantFormSchemas';
@@ -94,7 +94,7 @@ const {
   GET_INFO_FOR_ADD_PARTICIPANT,
   REQUEST_STATE,
 } = PERSON;
-const { ADD_PARTICIPANT, NEW_PARTICIPANT_EKID } = PEOPLE;
+const { ADD_PARTICIPANT, EXISTING_PERSON, NEW_PARTICIPANT_EKID } = PEOPLE;
 const { ENTITY_SET_IDS_BY_ORG, SELECTED_ORG_ID } = APP;
 const { PROPERTY_TYPES, TYPE_IDS_BY_FQNS } = EDM;
 const { ARREST_CHARGES } = CHARGES;
@@ -148,13 +148,15 @@ type Props = {
     getInfoForAddParticipant :RequestSequence;
     goToRoute :GoToRoute;
   };
-  addParticipantRequestState :RequestState;
   arrestCharges :List;
   entitySetIds :Map;
-  getInfoRequestState :RequestState;
   judges :List;
   newParticipantEKID :UUID;
   propertyTypeIds :Map;
+  requestStates :{
+    ADD_PARTICIPANT :RequestState;
+    GET_INFO_FOR_ADD_PARTICIPANT :RequestState;
+  };
 };
 
 type State = {
@@ -179,12 +181,12 @@ class AddParticipantForm extends Component<Props, State> {
   }
 
   componentDidUpdate(prevProps :Props) {
-    const { actions, addParticipantRequestState, entitySetIds } = this.props;
+    const { actions, entitySetIds, requestStates } = this.props;
     if (!prevProps.entitySetIds.has(JUDGES) && entitySetIds.has(JUDGES)) {
       actions.getInfoForAddParticipant();
     }
-    if (prevProps.addParticipantRequestState === RequestStates.PENDING
-      && addParticipantRequestState === RequestStates.SUCCESS) {
+    if (requestIsPending(prevProps.requestStates[ADD_PARTICIPANT])
+      && requestIsSuccess(requestStates[ADD_PARTICIPANT])) {
       this.hideForm();
     }
   }
@@ -327,14 +329,13 @@ class AddParticipantForm extends Component<Props, State> {
 
   render() {
     const {
-      addParticipantRequestState,
       arrestCharges,
-      getInfoRequestState,
       judges,
+      requestStates,
     } = this.props;
     const { formIsVisible } = this.state;
 
-    if (getInfoRequestState === RequestStates.PENDING) {
+    if (requestIsSuccess(requestStates[GET_INFO_FOR_ADD_PARTICIPANT])) {
       return (
         <LogoLoader
             loadingText="Please wait..."
@@ -356,7 +357,7 @@ class AddParticipantForm extends Component<Props, State> {
           <Card>
             <CardHeader mode="primary" padding="md">Add New Participant</CardHeader>
             {
-              (formIsVisible && addParticipantRequestState !== RequestStates.PENDING) && (
+              (formIsVisible && !requestIsPending(requestStates[ADD_PARTICIPANT])) && (
                 <Form
                     onSubmit={this.handleOnSubmit}
                     schema={formSchema}
@@ -364,7 +365,7 @@ class AddParticipantForm extends Component<Props, State> {
               )
             }
             {
-              addParticipantRequestState === RequestStates.PENDING && (
+              requestIsPending(requestStates[ADD_PARTICIPANT]) && (
                 <CardSegment padding="md">
                   <SpinnerWrapper>
                     <Spinner size="2x" />
@@ -410,12 +411,15 @@ const mapStateToProps = (state :Map) => {
   const selectedOrgId :string = app.get(SELECTED_ORG_ID);
   return ({
     [ARREST_CHARGES]: charges.get(ARREST_CHARGES),
+    [EXISTING_PERSON]: charges.get(EXISTING_PERSON),
     [NEW_PARTICIPANT_EKID]: people.get(NEW_PARTICIPANT_EKID),
     [PERSON.JUDGES]: person.get(PERSON.JUDGES),
-    addParticipantRequestState: people.getIn([ACTIONS, ADD_PARTICIPANT, REQUEST_STATE]),
     entitySetIds: app.getIn([ENTITY_SET_IDS_BY_ORG, selectedOrgId], Map()),
-    getInfoRequestState: person.getIn([ACTIONS, GET_INFO_FOR_ADD_PARTICIPANT, REQUEST_STATE]),
     propertyTypeIds: edm.getIn([TYPE_IDS_BY_FQNS, PROPERTY_TYPES], Map()),
+    requestStates: {
+      [ADD_PARTICIPANT]: people.getIn([ACTIONS, ADD_PARTICIPANT, REQUEST_STATE]),
+      [GET_INFO_FOR_ADD_PARTICIPANT]: person.getIn([ACTIONS, GET_INFO_FOR_ADD_PARTICIPANT, REQUEST_STATE]),
+    },
   });
 };
 
