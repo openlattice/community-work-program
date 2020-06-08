@@ -36,10 +36,12 @@ import {
   GET_ENROLLMENTS_BY_COURT_TYPE,
   GET_MONTHLY_COURT_TYPE_DATA,
   GET_MONTHLY_PARTICIPANTS_BY_COURT_TYPE,
+  GET_TOTAL_PARTICIPANTS_BY_COURT_TYPE,
   downloadCourtTypeData,
   getEnrollmentsByCourtType,
   getMonthlyCourtTypeData,
   getMonthlyParticipantsByCourtType,
+  getTotalParticipantsByCourtType,
 } from './CourtTypeActions';
 import { DOWNLOAD_CONSTS } from '../consts/StatsConsts';
 import { STATE } from '../../../utils/constants/ReduxStateConsts';
@@ -382,6 +384,11 @@ function* getMonthlyCourtTypeDataWorker(action :SequenceAction) :Generator<*, *,
         });
       }
       else {
+        const personEKIDs :UUID[] = [];
+        personEKIDByWorksitePlanEKID.forEach((personEKID :UUID) => {
+          if (!personEKIDs.includes(personEKID)) personEKIDs.push(personEKID);
+        });
+        console.log('personEKIDs ', personEKIDs.length);
         const courtTypesByPersonEKID :Map = Map().withMutations((map :Map) => {
           personEKIDByWorksitePlanEKID.forEach((personEKID :UUID, worksitePlanEKID :UUID) => {
             const diversionPlanEKID :UUID = diversionPlanEKIDsByWorksitePlanEKIDs.get(worksitePlanEKID, '');
@@ -399,9 +406,13 @@ function* getMonthlyCourtTypeDataWorker(action :SequenceAction) :Generator<*, *,
             if (isDefined(courtType) && !personCourtTypes.includes(courtType)) {
               personCourtTypes = personCourtTypes.push(courtType);
             }
+            else {
+              console.log('courtType ', courtType);
+            }
             map.set(personEKID, personCourtTypes);
           });
         });
+        console.log('courtTypesByPersonEKID ', courtTypesByPersonEKID.count());
         courtTypesByPersonEKID.forEach((courtTypesList :List) => {
           courtTypesList.forEach((courtType :string) => {
             if (isDefined(monthlyTotalParticipantsByCourtType.get(courtType))) {
@@ -432,6 +443,87 @@ function* getMonthlyCourtTypeDataWorker(action :SequenceAction) :Generator<*, *,
 function* getMonthlyCourtTypeDataWatcher() :Generator<*, *, *> {
 
   yield takeEvery(GET_MONTHLY_COURT_TYPE_DATA, getMonthlyCourtTypeDataWorker);
+}
+
+/*
+ *
+ * CourtTypeActions.getTotalParticipantsByCourtType()
+ *
+ */
+
+function* getTotalParticipantsByCourtTypeWorker(action :SequenceAction) :Generator<*, *, *> {
+  const { id } = action;
+  let response :Object = {};
+  let totalParticipantsByCourtType :Map = fromJS(courtTypeCountObj).asMutable();
+
+  try {
+    yield put(getTotalParticipantsByCourtType.request(id));
+
+    const app = yield select(getAppFromState);
+    const diversionPlanESID :UUID = getEntitySetIdFromApp(app, DIVERSION_PLAN);
+    response = yield call(getEntitySetDataWorker, getEntitySetData({ entitySetId: diversionPlanESID }));
+    if (response.error) throw response.error;
+
+    const diversionPlanEKIDs :UUID[] = [];
+    fromJS(response.data).forEach((plan :Map) => diversionPlanEKIDs.push(getEntityKeyId(plan)));
+
+    const peopleESID :UUID = getEntitySetIdFromApp(app, PEOPLE);
+    const courtCaseESID :UUID = getEntitySetIdFromApp(app, MANUAL_PRETRIAL_COURT_CASES);
+    const searchFilter :Object = {
+      entityKeyIds: diversionPlanEKIDs,
+      destinationEntitySetIds: [courtCaseESID],
+      sourceEntitySetIds: [peopleESID],
+    };
+    response = yield call(
+      searchEntityNeighborsWithFilterWorker,
+      searchEntityNeighborsWithFilter({ entitySetId: diversionPlanESID, filter: searchFilter })
+    );
+    if (response.error) throw response.error;
+    const diversionPlanNeighbors :Map = fromJS(response.data);
+
+    Map().withMutations((map :Map) => {
+
+      diversionPlanNeighbors.forEach((neighborsList :List) => {
+        const personNeighbor :Map = neighborsList.find((neighbor :Map) => getNeighborESID(neighbor) === peopleESID);
+        const courtCaseNeighbor :Map = neighborsList
+          .find((neighbor :Map) => getNeighborESID(neighbor) === courtCaseESID);
+
+        if (isDefined(courtCaseNeighbor)) {
+          const { [COURT_CASE_TYPE]: courtType } = getEntityProperties(
+            getNeighborDetails(courtCaseNeighbor),
+            [COURT_CASE_TYPE]
+          );
+
+          const personEKID :UUID = getEntityKeyId(getNeighborDetails(personNeighbor));
+          let personCourtTypes :List = map.get(personEKID, List());
+
+          if (!personCourtTypes.includes(courtType) && isDefined(totalParticipantsByCourtType.get(courtType))) {
+            const totalForCourtType :number = totalParticipantsByCourtType.get(courtType);
+            totalParticipantsByCourtType.set(courtType, totalForCourtType + 1);
+            personCourtTypes = personCourtTypes.push(courtType);
+          }
+
+          map.set(personEKID, personCourtTypes);
+        }
+      });
+
+    });
+
+    totalParticipantsByCourtType = totalParticipantsByCourtType.asImmutable();
+    yield put(getTotalParticipantsByCourtType.success(id, totalParticipantsByCourtType));
+  }
+  catch (error) {
+    LOG.error(action.type, error);
+    yield put(getTotalParticipantsByCourtType.failure(id, error));
+  }
+  finally {
+    yield put(getTotalParticipantsByCourtType.finally(id));
+  }
+}
+
+function* getTotalParticipantsByCourtTypeWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(GET_MONTHLY_PARTICIPANTS_BY_COURT_TYPE, getTotalParticipantsByCourtTypeWorker);
 }
 
 /*
@@ -805,4 +897,6 @@ export {
   getMonthlyCourtTypeDataWorker,
   getMonthlyParticipantsByCourtTypeWatcher,
   getMonthlyParticipantsByCourtTypeWorker,
+  getTotalParticipantsByCourtTypeWatcher,
+  getTotalParticipantsByCourtTypeWorker,
 };

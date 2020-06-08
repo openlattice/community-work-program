@@ -25,8 +25,16 @@ import {
   getNeighborESID,
 } from '../../utils/DataUtils';
 import { GET_STATS_DATA, getStatsData } from './StatsActions';
-import { getMonthlyCourtTypeData, getMonthlyParticipantsByCourtType } from './courttype/CourtTypeActions';
-import { getMonthlyCourtTypeDataWorker, getMonthlyParticipantsByCourtTypeWorker } from './courttype/CourtTypeSagas';
+import {
+  getMonthlyCourtTypeData,
+  getMonthlyParticipantsByCourtType,
+  getTotalParticipantsByCourtType
+} from './courttype/CourtTypeActions';
+import {
+  getMonthlyCourtTypeDataWorker,
+  getMonthlyParticipantsByCourtTypeWorker,
+  getTotalParticipantsByCourtTypeWorker
+} from './courttype/CourtTypeSagas';
 import { STATE } from '../../utils/constants/ReduxStateConsts';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { ENROLLMENT_STATUSES } from '../../core/edm/constants/DataModelConsts';
@@ -174,6 +182,7 @@ function* getStatsDataWorker(action :SequenceAction) :Generator<*, *, *> {
     yield all([
       call(getMonthlyCourtTypeDataWorker, getMonthlyCourtTypeData({ month, year, timeFrame: MONTHLY })),
       call(getMonthlyParticipantsByCourtTypeWorker, getMonthlyParticipantsByCourtType({ month, year })),
+      call(getTotalParticipantsByCourtTypeWorker, getTotalParticipantsByCourtType()),
     ]);
 
     yield put(getStatsData.success(id, {
