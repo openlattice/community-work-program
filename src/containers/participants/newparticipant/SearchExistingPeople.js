@@ -29,8 +29,12 @@ const { ACTIONS, REQUEST_STATE } = SHARED;
 
 const MAX_HITS :number = 10;
 const labels = Map({
-  name: 'Name',
-  dob: 'Date of birth'
+  lastName: 'Last name',
+  firstName: 'First name',
+  dob: 'Date of birth',
+  race: 'Race',
+  ethnicity: 'Ethnicity',
+  sex: 'Sex'
 });
 
 const FieldsGrid = styled.div`
