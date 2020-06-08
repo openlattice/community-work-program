@@ -19,6 +19,7 @@ type Props = {
   editAppointmentRequestState :RequestState;
   isOpen :boolean;
   onClose :() => void;
+  personEKID :UUID;
   personName :string;
   worksitesByWorksitePlan :Map;
 };
@@ -42,6 +43,7 @@ class EditAppointmentModal extends Component<Props> {
       editAppointmentRequestState,
       isOpen,
       onClose,
+      personEKID,
       personName,
       worksitesByWorksitePlan,
     } = this.props;
@@ -57,6 +59,7 @@ class EditAppointmentModal extends Component<Props> {
             assignedWorksites={assignedWorksites}
             isLoading={editAppointmentRequestState === RequestStates.PENDING}
             onDiscard={onClose}
+            personEKID={personEKID}
             personName={personName}
             worksitesByWorksitePlan={worksitesByWorksitePlan} />
       </Modal>

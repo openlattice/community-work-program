@@ -7,12 +7,14 @@ import { GET_STATS_DATA, getStatsData } from './StatsActions';
 import {
   DOWNLOAD_COURT_TYPE_DATA,
   GET_ENROLLMENTS_BY_COURT_TYPE,
-  GET_MONTHLY_COURT_TYPE_DATA,
+  GET_HOURS_BY_COURT_TYPE,
   GET_MONTHLY_PARTICIPANTS_BY_COURT_TYPE,
+  GET_TOTAL_PARTICIPANTS_BY_COURT_TYPE,
   downloadCourtTypeData,
   getEnrollmentsByCourtType,
-  getMonthlyCourtTypeData,
+  getHoursByCourtType,
   getMonthlyParticipantsByCourtType,
+  getTotalParticipantsByCourtType,
 } from './courttype/CourtTypeActions';
 import {
   DOWNLOAD_WORKSITE_STATS_DATA,
@@ -26,8 +28,10 @@ import {
 } from './worksite/WorksiteStatsActions';
 import {
   DOWNLOAD_DEMOGRAPHICS_DATA,
+  GET_MONTHLY_DEMOGRAPHICS,
   GET_PARTICIPANTS_DEMOGRAPHICS,
   downloadDemographicsData,
+  getMonthlyDemographics,
   getParticipantsDemographics,
 } from './demographics/DemographicsActions';
 import {
@@ -47,19 +51,18 @@ const {
   CLOSED_ENROLLMENTS_BY_COURT_TYPE,
   COURT_CHARGE_TABLE_DATA,
   ETHNICITY_DEMOGRAPHICS,
+  HOURS_BY_COURT_TYPE,
   HOURS_BY_WORKSITE,
   JOB_SEARCH_ENROLLMENTS_BY_COURT_TYPE,
-  MONTHLY_HOURS_WORKED_BY_COURT_TYPE,
   MONTHLY_PARTICIPANTS_BY_COURT_TYPE,
-  MONTHLY_TOTAL_PARTICIPANTS_BY_COURT_TYPE,
   PARTICIPANTS_BY_WORKSITE,
   RACE_DEMOGRAPHICS,
-  REFERRALS_BY_COURT_TYPE_GRAPH_DATA,
   SEX_DEMOGRAPHICS,
   SUCCESSFUL_ENROLLMENTS_BY_COURT_TYPE,
   TOTAL_ACTIVE_ENROLLMENTS_COUNT,
   TOTAL_CLOSED_ENROLLMENTS_COUNT,
   TOTAL_DIVERSION_PLAN_COUNT,
+  TOTAL_PARTICIPANTS_BY_COURT_TYPE,
   TOTAL_PARTICIPANT_COUNT,
   TOTAL_SUCCESSFUL_ENROLLMENTS_COUNT,
   TOTAL_UNSUCCESSFUL_ENROLLMENTS_COUNT,
@@ -92,7 +95,10 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     [GET_HOURS_WORKED_BY_WORKSITE]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
-    [GET_MONTHLY_COURT_TYPE_DATA]: {
+    [GET_HOURS_BY_COURT_TYPE]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [GET_MONTHLY_DEMOGRAPHICS]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [GET_MONTHLY_PARTICIPANTS_BY_COURT_TYPE]: {
@@ -107,6 +113,9 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     [GET_STATS_DATA]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
+    [GET_TOTAL_PARTICIPANTS_BY_COURT_TYPE]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
     [GET_WORKSITE_STATS_DATA]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
@@ -115,18 +124,17 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [ARREST_CHARGE_TABLE_DATA]: List(),
   [CLOSED_ENROLLMENTS_BY_COURT_TYPE]: Map(),
   [COURT_CHARGE_TABLE_DATA]: List(),
+  [HOURS_BY_COURT_TYPE]: Map(),
   [HOURS_BY_WORKSITE]: Map(),
   [JOB_SEARCH_ENROLLMENTS_BY_COURT_TYPE]: Map(),
-  [MONTHLY_HOURS_WORKED_BY_COURT_TYPE]: Map(),
   [MONTHLY_PARTICIPANTS_BY_COURT_TYPE]: Map(),
-  [MONTHLY_TOTAL_PARTICIPANTS_BY_COURT_TYPE]: Map(),
   [PARTICIPANTS_BY_WORKSITE]: Map(),
-  [REFERRALS_BY_COURT_TYPE_GRAPH_DATA]: Map(),
   [SEX_DEMOGRAPHICS]: Map(),
   [SUCCESSFUL_ENROLLMENTS_BY_COURT_TYPE]: Map(),
   [TOTAL_ACTIVE_ENROLLMENTS_COUNT]: 0,
   [TOTAL_CLOSED_ENROLLMENTS_COUNT]: 0,
   [TOTAL_DIVERSION_PLAN_COUNT]: 0,
+  [TOTAL_PARTICIPANTS_BY_COURT_TYPE]: Map(),
   [TOTAL_PARTICIPANT_COUNT]: 0,
   [TOTAL_SUCCESSFUL_ENROLLMENTS_COUNT]: 0,
   [TOTAL_UNSUCCESSFUL_ENROLLMENTS_COUNT]: 0,
@@ -284,28 +292,24 @@ export default function statsReducer(state :Map<*, *> = INITIAL_STATE, action :O
       });
     }
 
-    case getMonthlyCourtTypeData.case(action.type): {
+    case getHoursByCourtType.case(action.type): {
 
-      return getMonthlyCourtTypeData.reducer(state, action, {
+      return getHoursByCourtType.reducer(state, action, {
 
         REQUEST: () => state
-          .setIn([ACTIONS, GET_MONTHLY_COURT_TYPE_DATA, action.id], action)
-          .setIn([ACTIONS, GET_MONTHLY_COURT_TYPE_DATA, REQUEST_STATE], RequestStates.PENDING),
+          .setIn([ACTIONS, GET_HOURS_BY_COURT_TYPE, action.id], action)
+          .setIn([ACTIONS, GET_HOURS_BY_COURT_TYPE, REQUEST_STATE], RequestStates.PENDING),
         SUCCESS: () => {
           const seqAction :SequenceAction = (action :any);
           const { value } = seqAction;
-          const {
-            monthlyHoursWorkedByCourtType,
-            monthlyTotalParticipantsByCourtType
-          } = value;
+          const hoursByCourtType = value;
           return state
-            .set(MONTHLY_HOURS_WORKED_BY_COURT_TYPE, monthlyHoursWorkedByCourtType)
-            .set(MONTHLY_TOTAL_PARTICIPANTS_BY_COURT_TYPE, monthlyTotalParticipantsByCourtType)
-            .setIn([ACTIONS, GET_MONTHLY_COURT_TYPE_DATA, REQUEST_STATE], RequestStates.SUCCESS);
+            .set(HOURS_BY_COURT_TYPE, hoursByCourtType)
+            .setIn([ACTIONS, GET_HOURS_BY_COURT_TYPE, REQUEST_STATE], RequestStates.SUCCESS);
         },
         FAILURE: () => state
-          .setIn([ACTIONS, GET_MONTHLY_COURT_TYPE_DATA, REQUEST_STATE], RequestStates.FAILURE),
-        FINALLY: () => state.deleteIn([ACTIONS, GET_MONTHLY_COURT_TYPE_DATA, action.id]),
+          .setIn([ACTIONS, GET_HOURS_BY_COURT_TYPE, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, GET_HOURS_BY_COURT_TYPE, action.id]),
       });
     }
 
@@ -349,6 +353,48 @@ export default function statsReducer(state :Map<*, *> = INITIAL_STATE, action :O
       });
     }
 
+    case getMonthlyDemographics.case(action.type): {
+
+      return getMonthlyDemographics.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, GET_MONTHLY_DEMOGRAPHICS, action.id], action)
+          .setIn([ACTIONS, GET_MONTHLY_DEMOGRAPHICS, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+          const seqAction :SequenceAction = (action :any);
+          const { ethnicityDemographics, raceDemographics, sexDemographics } = seqAction.value;
+          return state
+            .set(ETHNICITY_DEMOGRAPHICS, ethnicityDemographics)
+            .set(RACE_DEMOGRAPHICS, raceDemographics)
+            .set(SEX_DEMOGRAPHICS, sexDemographics)
+            .setIn([ACTIONS, GET_MONTHLY_DEMOGRAPHICS, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, GET_MONTHLY_DEMOGRAPHICS, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, GET_MONTHLY_DEMOGRAPHICS, action.id]),
+      });
+    }
+
+    case getTotalParticipantsByCourtType.case(action.type): {
+
+      return getTotalParticipantsByCourtType.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, GET_TOTAL_PARTICIPANTS_BY_COURT_TYPE, action.id], action)
+          .setIn([ACTIONS, GET_TOTAL_PARTICIPANTS_BY_COURT_TYPE, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+          const seqAction :SequenceAction = (action :any);
+          const totalParticipantsByCourtType = seqAction.value;
+          return state
+            .set(TOTAL_PARTICIPANTS_BY_COURT_TYPE, totalParticipantsByCourtType)
+            .setIn([ACTIONS, GET_TOTAL_PARTICIPANTS_BY_COURT_TYPE, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, GET_TOTAL_PARTICIPANTS_BY_COURT_TYPE, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, GET_TOTAL_PARTICIPANTS_BY_COURT_TYPE, action.id]),
+      });
+    }
+
     case getParticipantsDemographics.case(action.type): {
 
       return getParticipantsDemographics.reducer(state, action, {
@@ -385,7 +431,6 @@ export default function statsReducer(state :Map<*, *> = INITIAL_STATE, action :O
             activeEnrollmentsByCourtType,
             closedEnrollmentsByCourtType,
             jobSearchEnrollmentsByCourtType,
-            referralsByCourtTypeGraphData,
             successfulEnrollmentsByCourtType,
             totalActiveEnrollmentCount,
             totalClosedEnrollmentsCount,
@@ -399,7 +444,6 @@ export default function statsReducer(state :Map<*, *> = INITIAL_STATE, action :O
             .set(ACTIVE_ENROLLMENTS_BY_COURT_TYPE, activeEnrollmentsByCourtType)
             .set(CLOSED_ENROLLMENTS_BY_COURT_TYPE, closedEnrollmentsByCourtType)
             .set(JOB_SEARCH_ENROLLMENTS_BY_COURT_TYPE, jobSearchEnrollmentsByCourtType)
-            .set(REFERRALS_BY_COURT_TYPE_GRAPH_DATA, referralsByCourtTypeGraphData)
             .set(SUCCESSFUL_ENROLLMENTS_BY_COURT_TYPE, successfulEnrollmentsByCourtType)
             .set(UNSUCCESSFUL_ENROLLMENTS_BY_COURT_TYPE, unsuccessfulEnrollmentsByCourtType)
             .set(TOTAL_ACTIVE_ENROLLMENTS_COUNT, totalActiveEnrollmentCount)

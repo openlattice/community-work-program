@@ -1,4 +1,5 @@
 // @flow
+import round from 'lodash/round';
 import { DateTime, Duration } from 'luxon';
 import { List, Map, fromJS } from 'immutable';
 
@@ -23,8 +24,8 @@ const getHoursScheduled = (timeIn :string, timeOut :string) :number => {
   const timeOutAsDateTime = DateTime.fromSQL(`${now.toISODate()} ${timeOut}`);
   const duration = timeOutAsDateTime.diff(timeInAsDateTime, 'hours');
   const { hours } = duration.toObject();
-  if (hours) return hours;
-  return 0;
+  const roundedHours = hours ? round(hours, 2) : 0;
+  return roundedHours;
 };
 
 const getWeeklyBreakdownOfHoursPerWeek = (checkIns :List) => {

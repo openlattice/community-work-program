@@ -10,6 +10,7 @@ import type { FQN } from 'lattice';
 
 import {
   CLEAR_APPOINTMENTS_AND_PLANS,
+  DELETE_APPOINTMENT,
   RESET_CHECK_IN_REQUEST_STATE,
   RESET_DELETE_CHECK_IN_REQUEST_STATE,
   addWorksitePlan,
@@ -41,7 +42,6 @@ const {
   CHECK_INS_BY_APPOINTMENT,
   CHECK_IN_FOR_APPOINTMENT,
   CREATE_WORK_APPOINTMENTS,
-  DELETE_APPOINTMENT,
   DELETE_CHECK_IN,
   EDIT_APPOINTMENT,
   EDIT_WORKSITE_PLAN,
@@ -145,45 +145,15 @@ export default function worksitePlanReducer(state :Map<*, *> = INITIAL_STATE, ac
           .setIn([ACTIONS, CHECK_IN_FOR_APPOINTMENT, action.id], action)
           .setIn([ACTIONS, CHECK_IN_FOR_APPOINTMENT, REQUEST_STATE], RequestStates.PENDING),
         SUCCESS: () => {
+          const seqAction :SequenceAction = (action :any);
+          const { value } = seqAction;
+          const { appointmentEKID, newCheckIn } = value;
 
-          const seqAction :SequenceAction = action;
-          const storedSeqAction :SequenceAction = state.getIn([ACTIONS, CHECK_IN_FOR_APPOINTMENT, seqAction.id]);
-
-          if (storedSeqAction) {
-
-            const successValue :Object = seqAction.value;
-            const {
-              appointmentEKID,
-              checkInDetailsESID,
-              checkInEKID,
-              checkInESID,
-              edm,
-            } = successValue;
-            const requestValue :Object = storedSeqAction.value;
-            const { entityData } = requestValue;
-
-            const storedCheckInEntity :Map = fromJS(entityData[checkInESID][0]);
-            const storedCheckInDetailsEntity :Map = fromJS(entityData[checkInDetailsESID][0]);
-
-            let newCheckIn :Map = Map();
-            storedCheckInEntity.forEach((value, id) => {
-              const propertyTypeFqn :FQN = getPropertyFqnFromEdm(edm, id);
-              newCheckIn = newCheckIn.set(propertyTypeFqn, value);
-            });
-            newCheckIn = newCheckIn.set(ENTITY_KEY_ID, checkInEKID);
-            const hoursWorkedPTID :UUID = getPropertyTypeIdFromEdm(edm, HOURS_WORKED);
-            const hoursWorked :number = storedCheckInDetailsEntity.getIn([hoursWorkedPTID, 0]);
-            newCheckIn = newCheckIn.set(HOURS_WORKED, hoursWorked);
-
-            let checkInsByAppointment :Map = state.get(CHECK_INS_BY_APPOINTMENT);
-            checkInsByAppointment = checkInsByAppointment.set(appointmentEKID, newCheckIn);
-
-            return state
-              .set(CHECK_INS_BY_APPOINTMENT, checkInsByAppointment)
-              .setIn([ACTIONS, CHECK_IN_FOR_APPOINTMENT, REQUEST_STATE], RequestStates.SUCCESS);
-          }
+          let checkInsByAppointment :Map = state.get(CHECK_INS_BY_APPOINTMENT);
+          checkInsByAppointment = checkInsByAppointment.set(appointmentEKID, newCheckIn);
 
           return state
+            .set(CHECK_INS_BY_APPOINTMENT, checkInsByAppointment)
             .setIn([ACTIONS, CHECK_IN_FOR_APPOINTMENT, REQUEST_STATE], RequestStates.SUCCESS);
         },
         FAILURE: () => state

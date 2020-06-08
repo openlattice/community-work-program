@@ -190,9 +190,7 @@ function* getIndividualChargeTypeStatsWorker(action :SequenceAction) :Generator<
       if (response.error) throw response.error;
       const arrestChargeNeighbors :Map = fromJS(response.data);
 
-      let arrestChargeCounts :Map = Map().asMutable();
-
-      const chargeNamesByPersonDiversionPlan :Map = Map().withMutations((map :Map) => {
+      Map().withMutations((map :Map) => {
 
         arrestChargeNeighbors.forEach((neighborsList :List, chargeEventEKID :UUID) => {
           const arrestCharge :Map = getNeighborDetails(neighborsList.get(0));
@@ -201,7 +199,7 @@ function* getIndividualChargeTypeStatsWorker(action :SequenceAction) :Generator<
             [OL_ID, NAME, LEVEL_STATE]
           );
           const fullChargeString :string = `${statuteNumber} ${chargeName} ${level}`;
-          const arrestChargeCount :number = arrestChargeCounts.get(fullChargeString, 0);
+          const arrestChargeCount :number = map.get(fullChargeString, 0);
 
           const diversionPlanEKID :UUID = diversionPlanEKIDByChargeEventEKID.get(chargeEventEKID, '');
           const personEKID :UUID = personEKIDByDiversionPlanEKID.get(diversionPlanEKID, '');
@@ -221,51 +219,8 @@ function* getIndividualChargeTypeStatsWorker(action :SequenceAction) :Generator<
             }));
           }
 
-          arrestChargeCounts = arrestChargeCounts.set(fullChargeString, arrestChargeCount + 1);
+          map.set(fullChargeString, arrestChargeCount + 1);
         });
-      });
-
-      let arrestChargeReferralCounts :Map = Map().asMutable();
-
-      chargeNamesByPersonDiversionPlan.forEach((diversionPlanChargesMap :Map) => {
-        let chargeCountsAcrossDiversionPlans :Map = Map().asMutable();
-
-        diversionPlanChargesMap.forEach((chargesList :List) => {
-          let chargeCountsWithinDiversionPlan :Map = Map().asMutable();
-          // some div plans have multiple of the same charge but we only want to count it as 1:
-          chargesList.forEach((charge :string) => {
-            const count = chargeCountsWithinDiversionPlan.get(charge, 0);
-            if (count === 0) {
-              chargeCountsWithinDiversionPlan = chargeCountsWithinDiversionPlan.set(charge, 1);
-            }
-          });
-
-          chargeCountsWithinDiversionPlan.forEach((planCount :number, charge :string) => {
-            const chargeCountAcrossPlans :number = chargeCountsAcrossDiversionPlans.get(charge, 0);
-            chargeCountsAcrossDiversionPlans = chargeCountsAcrossDiversionPlans
-              .set(charge, planCount + chargeCountAcrossPlans);
-          });
-        });
-
-        chargeCountsAcrossDiversionPlans.forEach((totalCountForCharge :number, charge :string) => {
-          if (totalCountForCharge > 1) {
-            const totalReferralCountForCharge :number = arrestChargeReferralCounts.get(charge, 0);
-            arrestChargeReferralCounts = arrestChargeReferralCounts
-              .set(charge, (totalCountForCharge - 1) + totalReferralCountForCharge);
-          }
-        });
-      });
-
-      arrestChargeTableData = arrestChargeTableData.map((tableRow :Map) => {
-        let newTableRow :Map = tableRow;
-        const rowCharge :string = newTableRow.get(tableHeaders[0]);
-
-        if (isDefined(arrestChargeReferralCounts.get(rowCharge))) {
-          const referralCount :number = arrestChargeReferralCounts.get(rowCharge);
-          newTableRow = newTableRow.set(tableHeaders[2], referralCount);
-        }
-        else newTableRow = newTableRow.set(tableHeaders[2], 0);
-        return newTableRow;
       });
     }
 

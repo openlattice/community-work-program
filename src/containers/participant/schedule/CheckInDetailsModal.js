@@ -102,9 +102,15 @@ const CheckInDetailsModal = ({
   } = getEntityProperties(checkIn, [CHECKED_IN, DATETIME_END, DATETIME_START, HOURS_WORKED]);
 
   const checkedIn :string = checkedInBoolean ? 'Yes' : 'No';
-  const date :string = DateTime.fromISO(dateTimeStart).toLocaleString(DateTime.DATE_SHORT);
-  const timeIn :string = DateTime.fromISO(dateTimeStart).toLocaleString(DateTime.TIME_SIMPLE) || EMPTY_FIELD;
-  const timeOut :string = DateTime.fromISO(dateTimeEnd).toLocaleString(DateTime.TIME_SIMPLE) || EMPTY_FIELD;
+
+  const dateTimeStartAsDT :DateTime = DateTime.fromISO(dateTimeStart);
+  const dateTimeEndAsDT :DateTime = DateTime.fromISO(dateTimeEnd);
+  let timeIn :string = EMPTY_FIELD;
+  let timeOut :string = EMPTY_FIELD;
+  if (dateTimeStartAsDT.isValid) timeIn = dateTimeStartAsDT.toLocaleString(DateTime.TIME_SIMPLE);
+  if (dateTimeEndAsDT.isValid) timeOut = dateTimeEndAsDT.toLocaleString(DateTime.TIME_SIMPLE);
+
+  const date :string = dateTimeStartAsDT.isValid ? dateTimeStartAsDT.toLocaleString(DateTime.DATE_SHORT) : EMPTY_FIELD;
   const data :Map = fromJS({
     checkedIn,
     date,
