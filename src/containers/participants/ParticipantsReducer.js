@@ -104,6 +104,13 @@ export default function participantsReducer(state :Map<*, *> = INITIAL_STATE, ac
       return state;
     }
 
+    case selectExistingPerson.case(action.type): {
+      const { value } = action;
+      const { existingPerson } = value;
+      return state
+        .set(EXISTING_PERSON, existingPerson);
+    }
+
     case addParticipant.case(action.type): {
 
       return addParticipant.reducer(state, action, {
@@ -323,26 +330,6 @@ export default function participantsReducer(state :Map<*, *> = INITIAL_STATE, ac
         FAILURE: () => state
           .setIn([ACTIONS, SEARCH_EXISTING_PEOPLE, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, SEARCH_EXISTING_PEOPLE, action.id]),
-      });
-    }
-
-    case selectExistingPerson.case(action.type): {
-
-      return selectExistingPerson.reducer(state, action, {
-
-        REQUEST: () => {
-          const seqAction :SequenceAction = (action :any);
-          const { value } = seqAction;
-          const { existingPerson } = value;
-          return state
-            .set(EXISTING_PERSON, existingPerson)
-            .setIn([ACTIONS, SELECT_EXISTING_PERSON, action.id], action)
-            .setIn([ACTIONS, SELECT_EXISTING_PERSON, REQUEST_STATE], RequestStates.PENDING);
-        },
-        SUCCESS: () => state.setIn([ACTIONS, SELECT_EXISTING_PERSON, REQUEST_STATE], RequestStates.SUCCESS),
-        FAILURE: () => state
-          .setIn([ACTIONS, SELECT_EXISTING_PERSON, REQUEST_STATE], RequestStates.FAILURE),
-        FINALLY: () => state.deleteIn([ACTIONS, SELECT_EXISTING_PERSON, action.id]),
       });
     }
 
