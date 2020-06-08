@@ -77,6 +77,7 @@ export default function* sagas() :Generator<*, *, *> {
 
     // DemographicsSagas
     fork(DemographicsSagas.downloadDemographicsDataWatcher),
+    fork(DemographicsSagas.getMonthlyDemographicsWatcher),
     fork(DemographicsSagas.getParticipantsDemographicsWatcher),
 
     // EDMSagas

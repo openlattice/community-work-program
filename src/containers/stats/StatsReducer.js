@@ -28,8 +28,10 @@ import {
 } from './worksite/WorksiteStatsActions';
 import {
   DOWNLOAD_DEMOGRAPHICS_DATA,
+  GET_MONTHLY_DEMOGRAPHICS,
   GET_PARTICIPANTS_DEMOGRAPHICS,
   downloadDemographicsData,
+  getMonthlyDemographics,
   getParticipantsDemographics,
 } from './demographics/DemographicsActions';
 import {
@@ -94,6 +96,9 @@ const INITIAL_STATE :Map<*, *> = fromJS({
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [GET_HOURS_BY_COURT_TYPE]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [GET_MONTHLY_DEMOGRAPHICS]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [GET_MONTHLY_PARTICIPANTS_BY_COURT_TYPE]: {
@@ -345,6 +350,28 @@ export default function statsReducer(state :Map<*, *> = INITIAL_STATE, action :O
         FAILURE: () => state
           .setIn([ACTIONS, GET_MONTHLY_PARTICIPANTS_BY_WORKSITE, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, GET_MONTHLY_PARTICIPANTS_BY_WORKSITE, action.id]),
+      });
+    }
+
+    case getMonthlyDemographics.case(action.type): {
+
+      return getMonthlyDemographics.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, GET_MONTHLY_DEMOGRAPHICS, action.id], action)
+          .setIn([ACTIONS, GET_MONTHLY_DEMOGRAPHICS, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+          const seqAction :SequenceAction = (action :any);
+          const { ethnicityDemographics, raceDemographics, sexDemographics } = seqAction.value;
+          return state
+            .set(ETHNICITY_DEMOGRAPHICS, ethnicityDemographics)
+            .set(RACE_DEMOGRAPHICS, raceDemographics)
+            .set(SEX_DEMOGRAPHICS, sexDemographics)
+            .setIn([ACTIONS, GET_MONTHLY_DEMOGRAPHICS, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, GET_MONTHLY_DEMOGRAPHICS, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, GET_MONTHLY_DEMOGRAPHICS, action.id]),
       });
     }
 
