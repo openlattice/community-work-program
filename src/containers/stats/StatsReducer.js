@@ -109,6 +109,9 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     [GET_STATS_DATA]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
+    [GET_TOTAL_PARTICIPANTS_BY_COURT_TYPE]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
     [GET_WORKSITE_STATS_DATA]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
