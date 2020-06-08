@@ -523,7 +523,7 @@ function* getTotalParticipantsByCourtTypeWorker(action :SequenceAction) :Generat
 
 function* getTotalParticipantsByCourtTypeWatcher() :Generator<*, *, *> {
 
-  yield takeEvery(GET_MONTHLY_PARTICIPANTS_BY_COURT_TYPE, getTotalParticipantsByCourtTypeWorker);
+  yield takeEvery(GET_TOTAL_PARTICIPANTS_BY_COURT_TYPE, getTotalParticipantsByCourtTypeWorker);
 }
 
 /*
