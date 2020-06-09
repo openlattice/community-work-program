@@ -50,6 +50,7 @@ import {
   sortEntitiesByDateProperty,
 } from '../../utils/DataUtils';
 import { isDefined } from '../../utils/LangUtils';
+import { isValidUUID } from '../../utils/ValidationUtils';
 import { STATE } from '../../utils/constants/ReduxStateConsts';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { INFRACTIONS_CONSTS } from '../../core/edm/constants/DataModelConsts';
@@ -96,15 +97,20 @@ function* addParticipantWorker(action :SequenceAction) :Generator<*, *, *> {
 
   try {
     yield put(addParticipant.request(id, value));
+    if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
+    const { associationEntityData, entityData, personIndexOrEKID } = value;
 
-    response = yield call(submitDataGraphWorker, submitDataGraph(value));
-    if (response.error) {
-      throw response.error;
+    response = yield call(submitDataGraphWorker, submitDataGraph({ associationEntityData, entityData }));
+    if (response.error) throw response.error;
+
+    let newParticipantEKID :UUID = '';
+    if (isValidUUID(personIndexOrEKID)) newParticipantEKID = personIndexOrEKID;
+    else {
+      const { entityKeyIds } = response.data;
+      const app = yield select(getAppFromState);
+      const peopleESID :UUID = getEntitySetIdFromApp(app, PEOPLE);
+      [newParticipantEKID] = entityKeyIds[peopleESID];
     }
-    const { entityKeyIds } = response.data;
-    const app = yield select(getAppFromState);
-    const peopleESID :UUID = getEntitySetIdFromApp(app, PEOPLE);
-    const newParticipantEKID :UUID = entityKeyIds[peopleESID][0];
 
     yield put(addParticipant.success(id, newParticipantEKID));
   }

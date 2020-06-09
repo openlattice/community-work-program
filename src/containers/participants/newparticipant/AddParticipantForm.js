@@ -25,23 +25,27 @@ import { faCheckCircle } from '@fortawesome/pro-solid-svg-icons';
 import { Form, DataProcessingUtils } from 'lattice-fabricate';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import { RequestStates } from 'redux-reqseq';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
-import LogoLoader from '../../components/LogoLoader';
+import LogoLoader from '../../../components/LogoLoader';
 
-import * as Routes from '../../core/router/Routes';
-import { addParticipant } from './ParticipantsActions';
-import { getInfoForAddParticipant } from '../participant/ParticipantActions';
-import { goToRoute } from '../../core/router/RoutingActions';
-import { hydrateSchema } from './utils/AddParticipantFormUtils';
-import { formatNewArrestChargeDataAndAssociations } from '../participant/charges/utils/ChargesUtils';
-import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
-import { CWP, ENROLLMENT_STATUSES } from '../../core/edm/constants/DataModelConsts';
-import { schema, uiSchema } from './schemas/AddParticipantFormSchemas';
-import { getCombinedDateTime } from '../../utils/ScheduleUtils';
-import { BackNavButton } from '../../components/controls/index';
-import { PARTICIPANT_PROFILE_WIDTH } from '../../core/style/Sizes';
+import * as Routes from '../../../core/router/Routes';
+import { BackNavButton } from '../../../components/controls/index';
+import { addParticipant } from '../ParticipantsActions';
+import { getInfoForAddParticipant } from '../../participant/ParticipantActions';
+import { goToRoute } from '../../../core/router/RoutingActions';
+import { hydrateSchema, setPersonValues } from '../utils/AddParticipantFormUtils';
+import { formatNewArrestChargeDataAndAssociations } from '../../participant/charges/utils/ChargesUtils';
+import { requestIsPending, requestIsSuccess } from '../../../utils/RequestStateUtils';
+import { isDefined } from '../../../utils/LangUtils';
+import { getEntityKeyId } from '../../../utils/DataUtils';
+import { schema, uiSchema } from '../schemas/AddParticipantFormSchemas';
+import { getCombinedDateTime } from '../../../utils/ScheduleUtils';
+import { isValidUUID } from '../../../utils/ValidationUtils';
+import { resetSearchedParticipants } from './NewParticipantActions';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
+import { CWP, ENROLLMENT_STATUSES } from '../../../core/edm/constants/DataModelConsts';
+import { PARTICIPANT_PROFILE_WIDTH } from '../../../core/style/Sizes';
 import {
   APP,
   CHARGES,
@@ -49,9 +53,9 @@ import {
   PEOPLE,
   PERSON,
   STATE
-} from '../../utils/constants/ReduxStateConsts';
-import { OL } from '../../core/style/Colors';
-import type { GoToRoute } from '../../core/router/RoutingActions';
+} from '../../../utils/constants/ReduxStateConsts';
+import { OL } from '../../../core/style/Colors';
+import type { GoToRoute } from '../../../core/router/RoutingActions';
 
 const {
   getEntityAddressKey,
@@ -94,7 +98,7 @@ const {
   GET_INFO_FOR_ADD_PARTICIPANT,
   REQUEST_STATE,
 } = PERSON;
-const { ADD_PARTICIPANT, NEW_PARTICIPANT_EKID } = PEOPLE;
+const { ADD_PARTICIPANT, EXISTING_PERSON, NEW_PARTICIPANT_EKID } = PEOPLE;
 const { ENTITY_SET_IDS_BY_ORG, SELECTED_ORG_ID } = APP;
 const { PROPERTY_TYPES, TYPE_IDS_BY_FQNS } = EDM;
 const { ARREST_CHARGES } = CHARGES;
@@ -147,17 +151,22 @@ type Props = {
     addParticipant :RequestSequence;
     getInfoForAddParticipant :RequestSequence;
     goToRoute :GoToRoute;
+    resetSearchedParticipants :() => { type :string };
   };
-  addParticipantRequestState :RequestState;
   arrestCharges :List;
   entitySetIds :Map;
-  getInfoRequestState :RequestState;
+  existingPerson :Map;
   judges :List;
   newParticipantEKID :UUID;
   propertyTypeIds :Map;
+  requestStates :{
+    ADD_PARTICIPANT :RequestState;
+    GET_INFO_FOR_ADD_PARTICIPANT :RequestState;
+  };
 };
 
 type State = {
+  formData :Object;
   formIsVisible :boolean;
 };
 
@@ -167,6 +176,7 @@ class AddParticipantForm extends Component<Props, State> {
     super(props);
 
     this.state = {
+      formData: {},
       formIsVisible: true,
     };
   }
@@ -175,18 +185,33 @@ class AddParticipantForm extends Component<Props, State> {
     const { actions, entitySetIds } = this.props;
     if (entitySetIds.has(JUDGES)) {
       actions.getInfoForAddParticipant();
+      this.prepopulateFormData();
     }
   }
 
   componentDidUpdate(prevProps :Props) {
-    const { actions, addParticipantRequestState, entitySetIds } = this.props;
+    const { actions, entitySetIds, requestStates } = this.props;
     if (!prevProps.entitySetIds.has(JUDGES) && entitySetIds.has(JUDGES)) {
       actions.getInfoForAddParticipant();
+      this.prepopulateFormData();
     }
-    if (prevProps.addParticipantRequestState === RequestStates.PENDING
-      && addParticipantRequestState === RequestStates.SUCCESS) {
+    if (requestIsPending(prevProps.requestStates[ADD_PARTICIPANT])
+      && requestIsSuccess(requestStates[ADD_PARTICIPANT])) {
       this.hideForm();
     }
+  }
+
+  prepopulateFormData = () => {
+    const { existingPerson } = this.props;
+    const { formData } = this.state;
+    if (isDefined(existingPerson) && !existingPerson.isEmpty()) {
+      const prepopulatedFormData = setPersonValues(existingPerson, formData, getPageSectionKey(1, 1));
+      this.setState({ formData: prepopulatedFormData });
+    }
+  }
+
+  onFormChange = ({ formData } :Object) => {
+    this.setState({ formData });
   }
 
   hideForm = () => {
@@ -199,11 +224,17 @@ class AddParticipantForm extends Component<Props, State> {
 
   goToParticipantProfile = () => {
     const { actions, newParticipantEKID } = this.props;
+    actions.resetSearchedParticipants();
     actions.goToRoute(Routes.PARTICIPANT_PROFILE.replace(':participantId', newParticipantEKID));
   }
 
   handleOnSubmit = ({ formData } :Object) => {
-    const { actions, entitySetIds, propertyTypeIds } = this.props;
+    const {
+      actions,
+      entitySetIds,
+      existingPerson,
+      propertyTypeIds,
+    } = this.props;
 
     let dataToSubmit :Object = formData;
 
@@ -261,12 +292,15 @@ class AddParticipantForm extends Component<Props, State> {
       dataToSubmit = setIn(dataToSubmit, docketNumberKey, getIn(dataToSubmit, docketNumberKey) || '');
     }
 
+    const personIndexOrEKID :number | string = !existingPerson.isEmpty()
+      ? getEntityKeyId(existingPerson)
+      : 0;
     /* required associations */
     let associations = [];
-    associations.push([MANUAL_SENTENCED_WITH, 0, APP_TYPE_FQNS.PEOPLE, 0, DIVERSION_PLAN, {}]);
+    associations.push([MANUAL_SENTENCED_WITH, personIndexOrEKID, APP_TYPE_FQNS.PEOPLE, 0, DIVERSION_PLAN, {}]);
     associations.push([RELATED_TO, 0, ENROLLMENT_STATUS, 0, DIVERSION_PLAN, {}]);
     associations.push([RELATED_TO, 0, DIVERSION_PLAN, 0, MANUAL_PRETRIAL_COURT_CASES, {}]);
-    associations.push([APPEARS_IN, 0, APP_TYPE_FQNS.PEOPLE, 0, MANUAL_PRETRIAL_COURT_CASES, {}]);
+    associations.push([APPEARS_IN, personIndexOrEKID, APP_TYPE_FQNS.PEOPLE, 0, MANUAL_PRETRIAL_COURT_CASES, {}]);
 
     /* should only submit contacts/address if there's at least one of those in the form */
     const sectionTwo :string = getPageSectionKey(1, 2);
@@ -288,9 +322,9 @@ class AddParticipantForm extends Component<Props, State> {
         true
       );
 
-      associations.push([CONTACT_INFO_GIVEN, 0, CONTACT_INFORMATION, 0, APP_TYPE_FQNS.PEOPLE, {}]);
-      associations.push([CONTACT_INFO_GIVEN, 1, CONTACT_INFORMATION, 0, APP_TYPE_FQNS.PEOPLE, {}]);
-      associations.push([LOCATED_AT, 0, APP_TYPE_FQNS.PEOPLE, 0, ADDRESS, {}]);
+      associations.push([CONTACT_INFO_GIVEN, 0, CONTACT_INFORMATION, personIndexOrEKID, APP_TYPE_FQNS.PEOPLE, {}]);
+      associations.push([CONTACT_INFO_GIVEN, 1, CONTACT_INFORMATION, personIndexOrEKID, APP_TYPE_FQNS.PEOPLE, {}]);
+      associations.push([LOCATED_AT, personIndexOrEKID, APP_TYPE_FQNS.PEOPLE, 0, ADDRESS, {}]);
     }
 
     /* should only submit judge entity if there's judge data in the form */
@@ -311,30 +345,33 @@ class AddParticipantForm extends Component<Props, State> {
     dataToSubmit[getPageSectionKey(1, 4)] = newChargeEntities;
     associations = associations.concat(newChargeAssociations);
 
+    if (isValidUUID(personIndexOrEKID)) delete dataToSubmit[getPageSectionKey(1, 1)];
+
     const entityData :Object = processEntityData(dataToSubmit, entitySetIds, propertyTypeIds);
     const associationEntityData :Object = processAssociationEntityData(
       fromJS(associations),
       entitySetIds,
       propertyTypeIds
     );
-    actions.addParticipant({ associationEntityData, entityData });
+    actions.addParticipant({ associationEntityData, entityData, personIndexOrEKID });
   }
 
   handleOnClickBackButton = () => {
     const { actions } = this.props;
+    actions.resetSearchedParticipants();
     actions.goToRoute(Routes.PARTICIPANTS);
   }
 
   render() {
     const {
-      addParticipantRequestState,
       arrestCharges,
-      getInfoRequestState,
+      existingPerson,
       judges,
+      requestStates,
     } = this.props;
-    const { formIsVisible } = this.state;
+    const { formData, formIsVisible } = this.state;
 
-    if (getInfoRequestState === RequestStates.PENDING) {
+    if (requestIsPending(requestStates[GET_INFO_FOR_ADD_PARTICIPANT])) {
       return (
         <LogoLoader
             loadingText="Please wait..."
@@ -342,8 +379,7 @@ class AddParticipantForm extends Component<Props, State> {
       );
     }
 
-    const formSchema = hydrateSchema(schema, judges, arrestCharges);
-
+    const { newSchema, newUiSchema } = hydrateSchema(schema, uiSchema, judges, arrestCharges, existingPerson);
     return (
       <FormWrapper>
         <ButtonWrapper>
@@ -356,15 +392,17 @@ class AddParticipantForm extends Component<Props, State> {
           <Card>
             <CardHeader mode="primary" padding="md">Add New Participant</CardHeader>
             {
-              (formIsVisible && addParticipantRequestState !== RequestStates.PENDING) && (
+              (formIsVisible && !requestIsPending(requestStates[ADD_PARTICIPANT])) && (
                 <Form
+                    formData={formData}
+                    onChange={this.onFormChange}
                     onSubmit={this.handleOnSubmit}
-                    schema={formSchema}
-                    uiSchema={uiSchema} />
+                    schema={newSchema}
+                    uiSchema={newUiSchema} />
               )
             }
             {
-              addParticipantRequestState === RequestStates.PENDING && (
+              requestIsPending(requestStates[ADD_PARTICIPANT]) && (
                 <CardSegment padding="md">
                   <SpinnerWrapper>
                     <Spinner size="2x" />
@@ -410,12 +448,15 @@ const mapStateToProps = (state :Map) => {
   const selectedOrgId :string = app.get(SELECTED_ORG_ID);
   return ({
     [ARREST_CHARGES]: charges.get(ARREST_CHARGES),
+    [EXISTING_PERSON]: people.get(EXISTING_PERSON),
     [NEW_PARTICIPANT_EKID]: people.get(NEW_PARTICIPANT_EKID),
     [PERSON.JUDGES]: person.get(PERSON.JUDGES),
-    addParticipantRequestState: people.getIn([ACTIONS, ADD_PARTICIPANT, REQUEST_STATE]),
     entitySetIds: app.getIn([ENTITY_SET_IDS_BY_ORG, selectedOrgId], Map()),
-    getInfoRequestState: person.getIn([ACTIONS, GET_INFO_FOR_ADD_PARTICIPANT, REQUEST_STATE]),
     propertyTypeIds: edm.getIn([TYPE_IDS_BY_FQNS, PROPERTY_TYPES], Map()),
+    requestStates: {
+      [ADD_PARTICIPANT]: people.getIn([ACTIONS, ADD_PARTICIPANT, REQUEST_STATE]),
+      [GET_INFO_FOR_ADD_PARTICIPANT]: person.getIn([ACTIONS, GET_INFO_FOR_ADD_PARTICIPANT, REQUEST_STATE]),
+    },
   });
 };
 
@@ -424,6 +465,7 @@ const mapDispatchToProps = (dispatch) => ({
     addParticipant,
     getInfoForAddParticipant,
     goToRoute,
+    resetSearchedParticipants,
   }, dispatch)
 });
 

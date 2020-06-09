@@ -95,6 +95,7 @@ export const PEOPLE = {
   CURRENT_DIVERSION_PLANS_BY_PARTICIPANT: 'currentDiversionPlansByParticipant',
   ENROLLMENT_BY_PARTICIPANT: 'enrollmentByParticipant',
   ERRORS: 'errors',
+  EXISTING_PERSON: 'existingPerson',
   GET_COURT_TYPE: 'getCourtType',
   GET_DIVERSION_PLANS: 'getDiversionPlans',
   GET_ENROLLMENT_STATUSES: 'getEnrollmentStatuses',
@@ -107,6 +108,7 @@ export const PEOPLE = {
   INFRACTION_COUNTS_BY_PARTICIPANT: 'infractionCountsByParticipant',
   NEW_PARTICIPANT_EKID: 'newParticipantEKID',
   PARTICIPANTS: 'participants',
+  PEOPLE_ALREADY_IN_ENTITY_SET: 'peopleAlreadyInEntitySet',
   PARTICIPANT_PHOTOS_BY_PARTICIPANT_EKID: 'participantPhotosByParticipantEKID',
   REQUEST_STATE: 'requestState',
 };

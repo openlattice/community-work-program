@@ -2,6 +2,7 @@
 import React from 'react';
 import toString from 'lodash/toString';
 import { Map } from 'immutable';
+import { DateTime } from 'luxon';
 import { faUser, faUserCircle } from '@fortawesome/pro-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import type { Element } from 'react';
@@ -15,6 +16,7 @@ import { getImageDataFromEntity } from './BinaryUtils';
 
 const {
   CITY,
+  DOB,
   FIRST_NAME,
   FULL_ADDRESS,
   LAST_NAME,
@@ -32,6 +34,16 @@ const getPersonFullName = (personEntity :Map) :string => {
 
   fullName = `${firstName} ${lastName}`;
   return fullName;
+};
+
+const getPersonDOB = (personEntity :Map) :string => {
+  let personDOB :string = EMPTY_FIELD;
+  const { [DOB]: dob } = getEntityProperties(personEntity, [DOB]);
+  if (dob.length) {
+    const dobDateTime = DateTime.fromISO(dob);
+    if (dobDateTime.isValid) personDOB = dobDateTime.toLocaleString(DateTime.DATE_SHORT);
+  }
+  return personDOB;
 };
 
 const getPersonProfilePicture = (person :Map, image :Map) :Element<*> => {
@@ -108,6 +120,7 @@ const getPersonAddress = (address :Map) :string => {
 export {
   getHoursServed,
   getPersonAddress,
+  getPersonDOB,
   getPersonFullName,
   getPersonPictureForTable,
   getPersonProfilePicture,
