@@ -33,9 +33,10 @@ import * as Routes from '../../../core/router/Routes';
 import { addParticipant } from '../ParticipantsActions';
 import { getInfoForAddParticipant } from '../../participant/ParticipantActions';
 import { goToRoute } from '../../../core/router/RoutingActions';
-import { hydrateSchema } from '../utils/AddParticipantFormUtils';
+import { hydrateSchema, setPersonValues } from '../utils/AddParticipantFormUtils';
 import { formatNewArrestChargeDataAndAssociations } from '../../participant/charges/utils/ChargesUtils';
 import { requestIsPending, requestIsSuccess } from '../../../utils/RequestStateUtils';
+import { isDefined } from '../../../utils/LangUtils';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { CWP, ENROLLMENT_STATUSES } from '../../../core/edm/constants/DataModelConsts';
 import { schema, uiSchema } from '../schemas/AddParticipantFormSchemas';
@@ -150,6 +151,7 @@ type Props = {
   };
   arrestCharges :List;
   entitySetIds :Map;
+  existingPerson :Map;
   judges :List;
   newParticipantEKID :UUID;
   propertyTypeIds :Map;
@@ -160,6 +162,7 @@ type Props = {
 };
 
 type State = {
+  formData :Object;
   formIsVisible :boolean;
 };
 
@@ -169,6 +172,7 @@ class AddParticipantForm extends Component<Props, State> {
     super(props);
 
     this.state = {
+      formData: {},
       formIsVisible: true,
     };
   }
@@ -177,6 +181,7 @@ class AddParticipantForm extends Component<Props, State> {
     const { actions, entitySetIds } = this.props;
     if (entitySetIds.has(JUDGES)) {
       actions.getInfoForAddParticipant();
+      this.prepopulateFormData();
     }
   }
 
@@ -184,11 +189,25 @@ class AddParticipantForm extends Component<Props, State> {
     const { actions, entitySetIds, requestStates } = this.props;
     if (!prevProps.entitySetIds.has(JUDGES) && entitySetIds.has(JUDGES)) {
       actions.getInfoForAddParticipant();
+      this.prepopulateFormData();
     }
     if (requestIsPending(prevProps.requestStates[ADD_PARTICIPANT])
       && requestIsSuccess(requestStates[ADD_PARTICIPANT])) {
       this.hideForm();
     }
+  }
+
+  prepopulateFormData = () => {
+    const { existingPerson } = this.props;
+    const { formData } = this.state;
+    if (isDefined(existingPerson) && !existingPerson.isEmpty()) {
+      const prepopulatedFormData = setPersonValues(existingPerson, formData, getPageSectionKey(1, 1));
+      this.setState({ formData: prepopulatedFormData });
+    }
+  }
+
+  onFormChange = ({ formData } :Object) => {
+    this.setState({ formData });
   }
 
   hideForm = () => {
@@ -330,12 +349,13 @@ class AddParticipantForm extends Component<Props, State> {
   render() {
     const {
       arrestCharges,
+      existingPerson,
       judges,
       requestStates,
     } = this.props;
-    const { formIsVisible } = this.state;
+    const { formData, formIsVisible } = this.state;
 
-    if (requestIsSuccess(requestStates[GET_INFO_FOR_ADD_PARTICIPANT])) {
+    if (requestIsPending(requestStates[GET_INFO_FOR_ADD_PARTICIPANT])) {
       return (
         <LogoLoader
             loadingText="Please wait..."
@@ -343,8 +363,7 @@ class AddParticipantForm extends Component<Props, State> {
       );
     }
 
-    const formSchema = hydrateSchema(schema, judges, arrestCharges);
-
+    const { newSchema, newUiSchema } = hydrateSchema(schema, uiSchema, judges, arrestCharges, existingPerson);
     return (
       <FormWrapper>
         <ButtonWrapper>
@@ -359,9 +378,11 @@ class AddParticipantForm extends Component<Props, State> {
             {
               (formIsVisible && !requestIsPending(requestStates[ADD_PARTICIPANT])) && (
                 <Form
+                    formData={formData}
+                    onChange={this.onFormChange}
                     onSubmit={this.handleOnSubmit}
-                    schema={formSchema}
-                    uiSchema={uiSchema} />
+                    schema={newSchema}
+                    uiSchema={newUiSchema} />
               )
             }
             {
@@ -411,7 +432,7 @@ const mapStateToProps = (state :Map) => {
   const selectedOrgId :string = app.get(SELECTED_ORG_ID);
   return ({
     [ARREST_CHARGES]: charges.get(ARREST_CHARGES),
-    [EXISTING_PERSON]: charges.get(EXISTING_PERSON),
+    [EXISTING_PERSON]: people.get(EXISTING_PERSON),
     [NEW_PARTICIPANT_EKID]: people.get(NEW_PARTICIPANT_EKID),
     [PERSON.JUDGES]: person.get(PERSON.JUDGES),
     entitySetIds: app.getIn([ENTITY_SET_IDS_BY_ORG, selectedOrgId], Map()),
