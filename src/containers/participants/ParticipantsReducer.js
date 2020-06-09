@@ -329,8 +329,7 @@ export default function participantsReducer(state :Map<*, *> = INITIAL_STATE, ac
           .setIn([ACTIONS, SEARCH_EXISTING_PEOPLE, action.id], action)
           .setIn([ACTIONS, SEARCH_EXISTING_PEOPLE, REQUEST_STATE], RequestStates.PENDING),
         SUCCESS: () => {
-          const seqAction :SequenceAction = (action :any);
-          const { value } = seqAction;
+          const { value } = action;
           return state
             .set(PEOPLE_ALREADY_IN_ENTITY_SET, value)
             .setIn([ACTIONS, SEARCH_EXISTING_PEOPLE, REQUEST_STATE], RequestStates.SUCCESS);
