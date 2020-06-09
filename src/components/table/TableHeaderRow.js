@@ -36,7 +36,7 @@ const TableHeader = (props :Props) => {
 
   const createSortHandler = (property :string) => (event :SyntheticEvent<HTMLElement>) => {
     if (isFunction(onSort)) {
-      onSort(event, property);
+      onSort(property, event);
     }
   };
 

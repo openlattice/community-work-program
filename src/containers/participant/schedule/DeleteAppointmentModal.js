@@ -3,30 +3,33 @@ import React, { Component } from 'react';
 import { Map } from 'immutable';
 import { Modal } from 'lattice-ui-kit';
 import { connect } from 'react-redux';
-import { RequestStates } from 'redux-reqseq';
 import type { RequestState } from 'redux-reqseq';
 
 import DeleteAppointmentForm from './DeleteAppointmentForm';
 
-import { WORKSITE_PLANS, STATE } from '../../../utils/constants/ReduxStateConsts';
+import { requestIsPending, requestIsSuccess } from '../../../utils/RequestStateUtils';
+import { DELETE_APPOINTMENT } from '../assignedworksites/WorksitePlanActions';
+import { SHARED, STATE } from '../../../utils/constants/ReduxStateConsts';
 
-const { ACTIONS, DELETE_APPOINTMENT, REQUEST_STATE } = WORKSITE_PLANS;
+const { ACTIONS, REQUEST_STATE } = SHARED;
 
 type Props = {
   appointment :Object;
   appointmentEKID :UUID;
-  deleteAppointmentRequestState :RequestState;
   isOpen :boolean;
   onClose :() => void;
+  requestStates :{
+    DELETE_APPOINTMENT :RequestState;
+  };
 };
 
 class DeleteAppointmentModal extends Component<Props> {
 
   componentDidUpdate(prevProps :Props) {
-    const { deleteAppointmentRequestState, onClose } = this.props;
-    const { deleteAppointmentRequestState: prevSumbitState } = prevProps;
-    if (deleteAppointmentRequestState === RequestStates.SUCCESS
-      && prevSumbitState === RequestStates.PENDING) {
+    const { requestStates, onClose } = this.props;
+    const { requestStates: prevRequestStates } = prevProps;
+    if (requestIsSuccess(requestStates[DELETE_APPOINTMENT])
+      && requestIsPending(prevRequestStates[DELETE_APPOINTMENT])) {
       onClose();
     }
   }
@@ -35,9 +38,9 @@ class DeleteAppointmentModal extends Component<Props> {
     const {
       appointment,
       appointmentEKID,
-      deleteAppointmentRequestState,
       isOpen,
       onClose,
+      requestStates,
     } = this.props;
     return (
       <Modal
@@ -48,7 +51,7 @@ class DeleteAppointmentModal extends Component<Props> {
         <DeleteAppointmentForm
             appointment={appointment}
             appointmentEKID={appointmentEKID}
-            isLoading={deleteAppointmentRequestState === RequestStates.PENDING}
+            isLoading={requestIsPending(requestStates[DELETE_APPOINTMENT])}
             onDiscard={onClose} />
       </Modal>
     );
@@ -56,7 +59,9 @@ class DeleteAppointmentModal extends Component<Props> {
 }
 
 const mapStateToProps = (state :Map) => ({
-  deleteAppointmentRequestState: state.getIn([STATE.WORKSITE_PLANS, ACTIONS, DELETE_APPOINTMENT, REQUEST_STATE]),
+  requestStates: {
+    [DELETE_APPOINTMENT]: state.getIn([STATE.WORKSITE_PLANS, ACTIONS, DELETE_APPOINTMENT, REQUEST_STATE]),
+  }
 });
 
 // $FlowFixMe
