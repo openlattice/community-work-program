@@ -1,9 +1,8 @@
 // @flow
-import { Models } from 'lattice';
 import {
   List,
   Map,
-  fromJS,
+  removeIn,
   setIn,
 } from 'immutable';
 import { DataProcessingUtils } from 'lattice-fabricate';
@@ -12,7 +11,6 @@ import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/F
 import { getEntityProperties, getValuesFromEntityList } from '../../../utils/DataUtils';
 import { isDefined } from '../../../utils/LangUtils';
 
-const { FullyQualifiedName } = Models;
 const { getEntityAddressKey, getPageSectionKey } = DataProcessingUtils;
 const { ARREST_CHARGE_LIST, JUDGES, PEOPLE } = APP_TYPE_FQNS;
 const {
@@ -24,6 +22,7 @@ const {
   LEVEL_STATE,
   NAME,
   OL_ID,
+  PERSON_NOTES,
   RACE,
   SEX,
 } = PROPERTY_TYPE_FQNS;
@@ -116,6 +115,17 @@ const hydrateSchema = (
       newUiSchema,
       [getPageSectionKey(1, 1), getEntityAddressKey(0, PEOPLE, SEX), 'ui:disabled'],
       true
+    );
+    newUiSchema = removeIn(newUiSchema, [getPageSectionKey(1, 1), getEntityAddressKey(0, PEOPLE, PERSON_NOTES)]);
+
+    newSchema = removeIn(
+      newSchema,
+      [
+        'properties',
+        getPageSectionKey(1, 1),
+        'properties',
+        getEntityAddressKey(0, PEOPLE, PERSON_NOTES)
+      ],
     );
   }
 
