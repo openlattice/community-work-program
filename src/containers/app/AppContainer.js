@@ -19,7 +19,7 @@ import { Redirect, Route, Switch } from 'react-router-dom';
 import { RequestStates } from 'redux-reqseq';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
-import AddParticipantForm from '../participants/AddParticipantForm';
+import AddParticipantContainer from '../participants/newparticipant/AddParticipantContainer';
 import AppHeaderContainer from './AppHeaderContainer';
 import DashboardContainer from '../dashboard/DashboardContainer';
 import EditWorksiteHoursForm from '../worksites/EditWorksiteHoursForm';
@@ -109,7 +109,7 @@ class AppContainer extends Component<Props> {
       <Route path={Routes.PRINT_WORK_SCHEDULE} component={PrintWorkScheduleContainer} />
       <Route path={Routes.WORK_SCHEDULE} component={WorkScheduleContainer} />
       <Route path={Routes.WORKSITES} component={WorksitesContainer} />
-      <Route exact strict path={Routes.ADD_PARTICIPANT} component={AddParticipantForm} />
+      <Route exact strict path={Routes.ADD_PARTICIPANT} component={AddParticipantContainer} />
       <Route path={Routes.PARTICIPANT_PROFILE} component={ParticipantProfileContainer} />
       <Route path={Routes.PARTICIPANTS} component={ParticipantsSearchContainer} />
       <Route path={Routes.STATS} component={StatsContainer} />

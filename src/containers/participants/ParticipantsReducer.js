@@ -17,6 +17,13 @@ import {
   getParticipants,
   RESET_REQUEST_STATE,
 } from './ParticipantsActions';
+import {
+  RESET_SEARCHED_PARTICIPANTS,
+  SEARCH_EXISTING_PEOPLE,
+  SELECT_EXISTING_PERSON,
+  searchExistingPeople,
+  selectExistingPerson,
+} from './newparticipant/NewParticipantActions';
 import { PEOPLE } from '../../utils/constants/ReduxStateConsts';
 
 const {
@@ -25,7 +32,7 @@ const {
   COURT_TYPE_BY_PARTICIPANT,
   CURRENT_DIVERSION_PLANS_BY_PARTICIPANT,
   ENROLLMENT_BY_PARTICIPANT,
-  ERRORS,
+  EXISTING_PERSON,
   GET_COURT_TYPE,
   GET_DIVERSION_PLANS,
   GET_ENROLLMENT_STATUSES,
@@ -37,6 +44,7 @@ const {
   INFRACTIONS_BY_PARTICIPANT,
   INFRACTION_COUNTS_BY_PARTICIPANT,
   NEW_PARTICIPANT_EKID,
+  PEOPLE_ALREADY_IN_ENTITY_SET,
   PARTICIPANT_PHOTOS_BY_PARTICIPANT_EKID,
   PARTICIPANTS,
   REQUEST_STATE,
@@ -65,23 +73,24 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     [GET_PARTICIPANTS]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
+    [SEARCH_EXISTING_PEOPLE]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [SELECT_EXISTING_PERSON]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
   },
   [COURT_TYPE_BY_PARTICIPANT]: Map(),
   [CURRENT_DIVERSION_PLANS_BY_PARTICIPANT]: Map(),
   [ENROLLMENT_BY_PARTICIPANT]: Map(),
-  [ERRORS]: {
-    [ADD_PARTICIPANT]: Map(),
-    [GET_ENROLLMENT_STATUSES]: Map(),
-    [GET_HOURS_WORKED]: Map(),
-    [GET_INFRACTIONS]: Map(),
-    [GET_PARTICIPANTS]: Map(),
-  },
+  [EXISTING_PERSON]: Map(),
   [HOURS_WORKED]: Map(),
   [INFRACTIONS_BY_PARTICIPANT]: Map(),
   [INFRACTION_COUNTS_BY_PARTICIPANT]: Map(),
   [NEW_PARTICIPANT_EKID]: '',
   [PARTICIPANT_PHOTOS_BY_PARTICIPANT_EKID]: Map(),
   [PARTICIPANTS]: List(),
+  [PEOPLE_ALREADY_IN_ENTITY_SET]: List(),
 });
 
 export default function participantsReducer(state :Map<*, *> = INITIAL_STATE, action :Object) :Map<*, *> {
@@ -94,6 +103,20 @@ export default function participantsReducer(state :Map<*, *> = INITIAL_STATE, ac
         return state.setIn([actionType, REQUEST_STATE], RequestStates.STANDBY);
       }
       return state;
+    }
+
+    case selectExistingPerson.case(action.type): {
+      const { value } = action;
+      const { existingPerson } = value;
+      return state
+        .set(EXISTING_PERSON, existingPerson);
+    }
+
+    case RESET_SEARCHED_PARTICIPANTS: {
+      return state
+        .set(EXISTING_PERSON, Map())
+        .set(PEOPLE_ALREADY_IN_ENTITY_SET, List())
+        .setIn([ACTIONS, SEARCH_EXISTING_PEOPLE, REQUEST_STATE], RequestStates.STANDBY);
     }
 
     case addParticipant.case(action.type): {
@@ -295,6 +318,25 @@ export default function participantsReducer(state :Map<*, *> = INITIAL_STATE, ac
           .setIn([ACTIONS, GET_HOURS_WORKED, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state
           .deleteIn([ACTIONS, GET_HOURS_WORKED, seqAction.id]),
+      });
+    }
+
+    case searchExistingPeople.case(action.type): {
+
+      return searchExistingPeople.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, SEARCH_EXISTING_PEOPLE, action.id], action)
+          .setIn([ACTIONS, SEARCH_EXISTING_PEOPLE, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+          const { value } = action;
+          return state
+            .set(PEOPLE_ALREADY_IN_ENTITY_SET, value)
+            .setIn([ACTIONS, SEARCH_EXISTING_PEOPLE, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, SEARCH_EXISTING_PEOPLE, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, SEARCH_EXISTING_PEOPLE, action.id]),
       });
     }
 
