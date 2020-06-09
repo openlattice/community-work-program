@@ -30,6 +30,7 @@ import type { RequestSequence, RequestState } from 'redux-reqseq';
 import LogoLoader from '../../../components/LogoLoader';
 
 import * as Routes from '../../../core/router/Routes';
+import { BackNavButton } from '../../../components/controls/index';
 import { addParticipant } from '../ParticipantsActions';
 import { getInfoForAddParticipant } from '../../participant/ParticipantActions';
 import { goToRoute } from '../../../core/router/RoutingActions';
@@ -37,11 +38,12 @@ import { hydrateSchema, setPersonValues } from '../utils/AddParticipantFormUtils
 import { formatNewArrestChargeDataAndAssociations } from '../../participant/charges/utils/ChargesUtils';
 import { requestIsPending, requestIsSuccess } from '../../../utils/RequestStateUtils';
 import { isDefined } from '../../../utils/LangUtils';
-import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
-import { CWP, ENROLLMENT_STATUSES } from '../../../core/edm/constants/DataModelConsts';
+import { getEntityKeyId } from '../../../utils/DataUtils';
 import { schema, uiSchema } from '../schemas/AddParticipantFormSchemas';
 import { getCombinedDateTime } from '../../../utils/ScheduleUtils';
-import { BackNavButton } from '../../../components/controls/index';
+import { isValidUUID } from '../../../utils/ValidationUtils';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
+import { CWP, ENROLLMENT_STATUSES } from '../../../core/edm/constants/DataModelConsts';
 import { PARTICIPANT_PROFILE_WIDTH } from '../../../core/style/Sizes';
 import {
   APP,
@@ -224,7 +226,12 @@ class AddParticipantForm extends Component<Props, State> {
   }
 
   handleOnSubmit = ({ formData } :Object) => {
-    const { actions, entitySetIds, propertyTypeIds } = this.props;
+    const {
+      actions,
+      entitySetIds,
+      existingPerson,
+      propertyTypeIds,
+    } = this.props;
 
     let dataToSubmit :Object = formData;
 
@@ -282,12 +289,15 @@ class AddParticipantForm extends Component<Props, State> {
       dataToSubmit = setIn(dataToSubmit, docketNumberKey, getIn(dataToSubmit, docketNumberKey) || '');
     }
 
+    const personIndexOrEKID :number | string = !existingPerson.isEmpty()
+      ? getEntityKeyId(existingPerson)
+      : 0;
     /* required associations */
     let associations = [];
-    associations.push([MANUAL_SENTENCED_WITH, 0, APP_TYPE_FQNS.PEOPLE, 0, DIVERSION_PLAN, {}]);
+    associations.push([MANUAL_SENTENCED_WITH, personIndexOrEKID, APP_TYPE_FQNS.PEOPLE, 0, DIVERSION_PLAN, {}]);
     associations.push([RELATED_TO, 0, ENROLLMENT_STATUS, 0, DIVERSION_PLAN, {}]);
     associations.push([RELATED_TO, 0, DIVERSION_PLAN, 0, MANUAL_PRETRIAL_COURT_CASES, {}]);
-    associations.push([APPEARS_IN, 0, APP_TYPE_FQNS.PEOPLE, 0, MANUAL_PRETRIAL_COURT_CASES, {}]);
+    associations.push([APPEARS_IN, personIndexOrEKID, APP_TYPE_FQNS.PEOPLE, 0, MANUAL_PRETRIAL_COURT_CASES, {}]);
 
     /* should only submit contacts/address if there's at least one of those in the form */
     const sectionTwo :string = getPageSectionKey(1, 2);
@@ -309,9 +319,9 @@ class AddParticipantForm extends Component<Props, State> {
         true
       );
 
-      associations.push([CONTACT_INFO_GIVEN, 0, CONTACT_INFORMATION, 0, APP_TYPE_FQNS.PEOPLE, {}]);
-      associations.push([CONTACT_INFO_GIVEN, 1, CONTACT_INFORMATION, 0, APP_TYPE_FQNS.PEOPLE, {}]);
-      associations.push([LOCATED_AT, 0, APP_TYPE_FQNS.PEOPLE, 0, ADDRESS, {}]);
+      associations.push([CONTACT_INFO_GIVEN, 0, CONTACT_INFORMATION, personIndexOrEKID, APP_TYPE_FQNS.PEOPLE, {}]);
+      associations.push([CONTACT_INFO_GIVEN, 1, CONTACT_INFORMATION, personIndexOrEKID, APP_TYPE_FQNS.PEOPLE, {}]);
+      associations.push([LOCATED_AT, personIndexOrEKID, APP_TYPE_FQNS.PEOPLE, 0, ADDRESS, {}]);
     }
 
     /* should only submit judge entity if there's judge data in the form */
@@ -332,13 +342,15 @@ class AddParticipantForm extends Component<Props, State> {
     dataToSubmit[getPageSectionKey(1, 4)] = newChargeEntities;
     associations = associations.concat(newChargeAssociations);
 
+    if (isValidUUID(personIndexOrEKID)) delete dataToSubmit[getPageSectionKey(1, 1)];
+
     const entityData :Object = processEntityData(dataToSubmit, entitySetIds, propertyTypeIds);
     const associationEntityData :Object = processAssociationEntityData(
       fromJS(associations),
       entitySetIds,
       propertyTypeIds
     );
-    actions.addParticipant({ associationEntityData, entityData });
+    actions.addParticipant({ associationEntityData, entityData, personIndexOrEKID });
   }
 
   handleOnClickBackButton = () => {
