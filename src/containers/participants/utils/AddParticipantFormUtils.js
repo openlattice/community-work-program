@@ -1,23 +1,41 @@
 // @flow
-import { List, setIn } from 'immutable';
+import { Models } from 'lattice';
+import {
+  List,
+  Map,
+  fromJS,
+  setIn,
+} from 'immutable';
 import { DataProcessingUtils } from 'lattice-fabricate';
 
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
-import { getValuesFromEntityList } from '../../../utils/DataUtils';
+import { getEntityProperties, getValuesFromEntityList } from '../../../utils/DataUtils';
+import { isDefined } from '../../../utils/LangUtils';
 
+const { FullyQualifiedName } = Models;
 const { getEntityAddressKey, getPageSectionKey } = DataProcessingUtils;
-const { ARREST_CHARGE_LIST, JUDGES } = APP_TYPE_FQNS;
+const { ARREST_CHARGE_LIST, JUDGES, PEOPLE } = APP_TYPE_FQNS;
 const {
+  DOB,
   ENTITY_KEY_ID,
+  ETHNICITY,
   FIRST_NAME,
   LAST_NAME,
   LEVEL_STATE,
   NAME,
   OL_ID,
+  RACE,
+  SEX,
 } = PROPERTY_TYPE_FQNS;
 
-/* eslint-disable import/prefer-default-export */
-export const hydrateSchema = (schema :Object, judges :List, charges :List) => {
+const hydrateSchema = (
+  schema :Object,
+  uiSchema :Object,
+  judges :List,
+  charges :List,
+  existingPerson :Map,
+) => {
+
   const [judgesValues, judgesLabels] = getValuesFromEntityList(judges, [FIRST_NAME, LAST_NAME]);
   const [chargesValues, chargesLabels] = getValuesFromEntityList(charges, [OL_ID, NAME, LEVEL_STATE]);
   let newSchema = setIn(
@@ -67,5 +85,64 @@ export const hydrateSchema = (schema :Object, judges :List, charges :List) => {
     chargesLabels
   );
 
-  return newSchema;
+  let newUiSchema = uiSchema;
+  if (isDefined(existingPerson) && !existingPerson.isEmpty()) {
+    newUiSchema = setIn(
+      newUiSchema,
+      [getPageSectionKey(1, 1), getEntityAddressKey(0, PEOPLE, LAST_NAME), 'ui:disabled'],
+      true
+    );
+    newUiSchema = setIn(
+      newUiSchema,
+      [getPageSectionKey(1, 1), getEntityAddressKey(0, PEOPLE, FIRST_NAME), 'ui:disabled'],
+      true
+    );
+    newUiSchema = setIn(
+      newUiSchema,
+      [getPageSectionKey(1, 1), getEntityAddressKey(0, PEOPLE, DOB), 'ui:disabled'],
+      true
+    );
+    newUiSchema = setIn(
+      newUiSchema,
+      [getPageSectionKey(1, 1), getEntityAddressKey(0, PEOPLE, RACE), 'ui:disabled'],
+      true
+    );
+    newUiSchema = setIn(
+      newUiSchema,
+      [getPageSectionKey(1, 1), getEntityAddressKey(0, PEOPLE, ETHNICITY), 'ui:disabled'],
+      true
+    );
+    newUiSchema = setIn(
+      newUiSchema,
+      [getPageSectionKey(1, 1), getEntityAddressKey(0, PEOPLE, SEX), 'ui:disabled'],
+      true
+    );
+  }
+
+  return { newSchema, newUiSchema };
+};
+
+const setPersonValues = (existingPerson :Map, formData :Object, section :string) :Object => {
+  const {
+    [DOB]: dob, [ETHNICITY]: ethnicity, [FIRST_NAME]: firstName, [LAST_NAME]: lastName, [RACE]: race, [SEX]: sex
+  } = getEntityProperties(existingPerson, [
+    DOB,
+    ETHNICITY,
+    FIRST_NAME,
+    LAST_NAME,
+    RACE,
+    SEX,
+  ]);
+  let newFormData = setIn(formData, [section, getEntityAddressKey(0, PEOPLE, LAST_NAME)], lastName);
+  newFormData = setIn(newFormData, [section, getEntityAddressKey(0, PEOPLE, FIRST_NAME)], firstName);
+  newFormData = setIn(newFormData, [section, getEntityAddressKey(0, PEOPLE, DOB)], dob);
+  newFormData = setIn(newFormData, [section, getEntityAddressKey(0, PEOPLE, RACE)], race);
+  newFormData = setIn(newFormData, [section, getEntityAddressKey(0, PEOPLE, ETHNICITY)], ethnicity);
+  newFormData = setIn(newFormData, [section, getEntityAddressKey(0, PEOPLE, SEX)], sex);
+  return newFormData;
+};
+
+export {
+  hydrateSchema,
+  setPersonValues,
 };
