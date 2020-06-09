@@ -42,6 +42,7 @@ import { getEntityKeyId } from '../../../utils/DataUtils';
 import { schema, uiSchema } from '../schemas/AddParticipantFormSchemas';
 import { getCombinedDateTime } from '../../../utils/ScheduleUtils';
 import { isValidUUID } from '../../../utils/ValidationUtils';
+import { resetSearchedParticipants } from './NewParticipantActions';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { CWP, ENROLLMENT_STATUSES } from '../../../core/edm/constants/DataModelConsts';
 import { PARTICIPANT_PROFILE_WIDTH } from '../../../core/style/Sizes';
@@ -150,6 +151,7 @@ type Props = {
     addParticipant :RequestSequence;
     getInfoForAddParticipant :RequestSequence;
     goToRoute :GoToRoute;
+    resetSearchedParticipants :() => { type :string };
   };
   arrestCharges :List;
   entitySetIds :Map;
@@ -222,6 +224,7 @@ class AddParticipantForm extends Component<Props, State> {
 
   goToParticipantProfile = () => {
     const { actions, newParticipantEKID } = this.props;
+    actions.resetSearchedParticipants();
     actions.goToRoute(Routes.PARTICIPANT_PROFILE.replace(':participantId', newParticipantEKID));
   }
 
@@ -355,6 +358,7 @@ class AddParticipantForm extends Component<Props, State> {
 
   handleOnClickBackButton = () => {
     const { actions } = this.props;
+    actions.resetSearchedParticipants();
     actions.goToRoute(Routes.PARTICIPANTS);
   }
 
@@ -461,6 +465,7 @@ const mapDispatchToProps = (dispatch) => ({
     addParticipant,
     getInfoForAddParticipant,
     goToRoute,
+    resetSearchedParticipants,
   }, dispatch)
 });
 

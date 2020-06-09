@@ -18,6 +18,7 @@ import {
   RESET_REQUEST_STATE,
 } from './ParticipantsActions';
 import {
+  RESET_SEARCHED_PARTICIPANTS,
   SEARCH_EXISTING_PEOPLE,
   SELECT_EXISTING_PERSON,
   searchExistingPeople,
@@ -109,6 +110,13 @@ export default function participantsReducer(state :Map<*, *> = INITIAL_STATE, ac
       const { existingPerson } = value;
       return state
         .set(EXISTING_PERSON, existingPerson);
+    }
+
+    case RESET_SEARCHED_PARTICIPANTS: {
+      return state
+        .set(EXISTING_PERSON, Map())
+        .set(PEOPLE_ALREADY_IN_ENTITY_SET, List())
+        .setIn([ACTIONS, SEARCH_EXISTING_PEOPLE, REQUEST_STATE], RequestStates.STANDBY);
     }
 
     case addParticipant.case(action.type): {
