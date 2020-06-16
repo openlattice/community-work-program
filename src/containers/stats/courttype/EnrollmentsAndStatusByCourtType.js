@@ -57,7 +57,7 @@ import {
   getEnrollmentsByCourtType,
   getHoursByCourtType,
 } from './CourtTypeActions';
-import { GET_STATS_DATA } from '../StatsActions';
+import { GET_STATS_DATA, getStatsData } from '../StatsActions';
 import { OL } from '../../../core/style/Colors';
 import {
   ALL_TIME,
@@ -348,6 +348,7 @@ const mapDispatchToProps = (dispatch) => ({
     downloadCourtTypeData,
     getEnrollmentsByCourtType,
     getHoursByCourtType,
+    getStatsData,
   }, dispatch)
 });
 

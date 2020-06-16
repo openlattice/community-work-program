@@ -376,9 +376,7 @@ function* findAppointmentsWorker(action :SequenceAction) :Generator<*, *, *> {
 
   try {
     yield put(findAppointments.request(id, value));
-    if (value === null || value === undefined) {
-      throw ERR_ACTION_VALUE_NOT_DEFINED;
-    }
+    if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
     const { selectedDate, timePeriod } = value;
 
     const app = yield select(getAppFromState);
@@ -395,28 +393,16 @@ function* findAppointmentsWorker(action :SequenceAction) :Generator<*, *, *> {
         constraints: []
       }]
     };
-    let searchTerm :string = '';
 
-    if (timePeriod === timePeriods.DAY) {
-      searchTerm = getSearchTerm(startDatetimePTID, selectedDate);
-      searchOptions.constraints[0].constraints.push({
-        searchTerm,
-        fuzzy: false
-      });
-    }
-    if (timePeriod === timePeriods.WEEK || timePeriod === timePeriods.MONTH) {
-      const selectedDateAsDateTime :DateTime = DateTime.fromISO(selectedDate);
-      searchTerm = getUTCDateRangeSearchString(startDatetimePTID, timePeriod, selectedDateAsDateTime);
-      searchOptions.constraints[0].constraints.push({
-        searchTerm,
-        fuzzy: false
-      });
-    }
+    const selectedDateAsDateTime :DateTime = DateTime.fromISO(selectedDate);
+    const searchTerm :string = getUTCDateRangeSearchString(startDatetimePTID, timePeriod, selectedDateAsDateTime);
+    searchOptions.constraints[0].constraints.push({
+      searchTerm,
+      fuzzy: false
+    });
 
     response = yield call(executeSearchWorker, executeSearch({ searchOptions }));
-    if (response.error) {
-      throw response.error;
-    }
+    if (response.error) throw response.error;
     appointments = fromJS(response.data.hits);
 
     if (!appointments.isEmpty()) {
