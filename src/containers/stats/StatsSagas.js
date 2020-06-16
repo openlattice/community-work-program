@@ -122,7 +122,6 @@ function* getStatsDataWorker(action :SequenceAction) :Generator<*, *, *> {
         const courtCase :Map = getNeighborDetails(courtCaseObj);
         const { [COURT_CASE_TYPE]: courtCaseType } = getEntityProperties(courtCase, [COURT_CASE_TYPE]);
 
-
         const mostRecentEnrollmentStatus :Map = caseAndPersonNeighbors
           .filter((neighbor :Map) => getNeighborESID(neighbor) === enrollmentStatusESID)
           .map((neighbor :Map) => getNeighborDetails(neighbor))
@@ -133,33 +132,35 @@ function* getStatsDataWorker(action :SequenceAction) :Generator<*, *, *> {
           [EFFECTIVE_DATE, STATUS]
         );
 
-        if (ACTIVE_STATUSES.includes(status)) {
-          const count :number = activeEnrollmentsByCourtType.get(courtCaseType, 0);
-          activeEnrollmentsByCourtType = activeEnrollmentsByCourtType.set(courtCaseType, count + 1);
-          totalActiveEnrollmentCount += 1;
-        }
-        if (status === ENROLLMENT_STATUSES.JOB_SEARCH) {
-          const count :number = jobSearchEnrollmentsByCourtType.get(courtCaseType, 0);
-          jobSearchEnrollmentsByCourtType = jobSearchEnrollmentsByCourtType
-            .set(courtCaseType, count + 1);
-        }
-        if (status === ENROLLMENT_STATUSES.COMPLETED || status === ENROLLMENT_STATUSES.SUCCESSFUL) {
-          const count :number = successfulEnrollmentsByCourtType.get(courtCaseType, 0);
-          successfulEnrollmentsByCourtType = successfulEnrollmentsByCourtType
-            .set(courtCaseType, count + 1);
-          totalSuccessfulEnrollmentCount += 1;
-        }
-        if (status === ENROLLMENT_STATUSES.REMOVED_NONCOMPLIANT || status === ENROLLMENT_STATUSES.UNSUCCESSFUL) {
-          const count :number = unsuccessfulEnrollmentsByCourtType.get(courtCaseType, 0);
-          unsuccessfulEnrollmentsByCourtType = unsuccessfulEnrollmentsByCourtType
-            .set(courtCaseType, count + 1);
-          totalUnsuccessfulEnrollmentCount += 1;
-        }
-        if (status === ENROLLMENT_STATUSES.CLOSED) {
-          const count :number = closedEnrollmentsByCourtType.get(courtCaseType, 0);
-          closedEnrollmentsByCourtType = closedEnrollmentsByCourtType
-            .set(courtCaseType, count + 1);
-          totalClosedEnrollmentsCount += 1;
+        if (courtCaseType) {
+          if (ACTIVE_STATUSES.includes(status)) {
+            const count :number = activeEnrollmentsByCourtType.get(courtCaseType, 0);
+            activeEnrollmentsByCourtType = activeEnrollmentsByCourtType.set(courtCaseType, count + 1);
+            totalActiveEnrollmentCount += 1;
+          }
+          if (status === ENROLLMENT_STATUSES.JOB_SEARCH) {
+            const count :number = jobSearchEnrollmentsByCourtType.get(courtCaseType, 0);
+            jobSearchEnrollmentsByCourtType = jobSearchEnrollmentsByCourtType
+              .set(courtCaseType, count + 1);
+          }
+          if (status === ENROLLMENT_STATUSES.COMPLETED || status === ENROLLMENT_STATUSES.SUCCESSFUL) {
+            const count :number = successfulEnrollmentsByCourtType.get(courtCaseType, 0);
+            successfulEnrollmentsByCourtType = successfulEnrollmentsByCourtType
+              .set(courtCaseType, count + 1);
+            totalSuccessfulEnrollmentCount += 1;
+          }
+          if (status === ENROLLMENT_STATUSES.REMOVED_NONCOMPLIANT || status === ENROLLMENT_STATUSES.UNSUCCESSFUL) {
+            const count :number = unsuccessfulEnrollmentsByCourtType.get(courtCaseType, 0);
+            unsuccessfulEnrollmentsByCourtType = unsuccessfulEnrollmentsByCourtType
+              .set(courtCaseType, count + 1);
+            totalUnsuccessfulEnrollmentCount += 1;
+          }
+          if (status === ENROLLMENT_STATUSES.CLOSED) {
+            const count :number = closedEnrollmentsByCourtType.get(courtCaseType, 0);
+            closedEnrollmentsByCourtType = closedEnrollmentsByCourtType
+              .set(courtCaseType, count + 1);
+            totalClosedEnrollmentsCount += 1;
+          }
         }
 
         const person :Map = caseAndPersonNeighbors.find((neighbor :Map) => getNeighborESID(neighbor) === peopleESID);
