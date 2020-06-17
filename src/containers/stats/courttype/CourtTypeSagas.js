@@ -616,6 +616,15 @@ function* getMonthlyParticipantsByCourtTypeWorker(action :SequenceAction) :Gener
               .find((participantMap :Map) => participantMap.get('personName') === personName)) {
               listOfParticipantsAndTheirHours = listOfParticipantsAndTheirHours.push(fromJS({ personName, hours }));
             }
+            else {
+              const participantIndex :number = listOfParticipantsAndTheirHours
+                .findIndex((participantMap :Map) => participantMap.get('personName') === personName);
+              listOfParticipantsAndTheirHours = listOfParticipantsAndTheirHours
+                .setIn(
+                  [participantIndex, 'hours'],
+                  listOfParticipantsAndTheirHours.getIn([participantIndex, 'hours']) + hours
+                );
+            }
             monthlyParticipantsByCourtType = monthlyParticipantsByCourtType
               .set(courtType, listOfParticipantsAndTheirHours);
           }
