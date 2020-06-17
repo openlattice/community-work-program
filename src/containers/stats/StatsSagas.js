@@ -39,7 +39,7 @@ import { STATE } from '../../utils/constants/ReduxStateConsts';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { ENROLLMENT_STATUSES } from '../../core/edm/constants/DataModelConsts';
 import { ACTIVE_STATUSES, courtTypeCountObj } from './consts/CourtTypeConsts';
-import { MONTHLY } from './consts/TimeConsts';
+import { ALL_TIME, MONTHLY } from './consts/TimeConsts';
 
 const { getEntitySetData } = DataApiActions;
 const { getEntitySetDataWorker } = DataApiSagas;
@@ -183,7 +183,7 @@ function* getStatsDataWorker(action :SequenceAction) :Generator<*, *, *> {
     yield all([
       call(getHoursByCourtTypeWorker, getHoursByCourtType({ month, year, timeFrame: MONTHLY })),
       call(getMonthlyParticipantsByCourtTypeWorker, getMonthlyParticipantsByCourtType({ month, year })),
-      call(getTotalParticipantsByCourtTypeWorker, getTotalParticipantsByCourtType()),
+      call(getTotalParticipantsByCourtTypeWorker, getTotalParticipantsByCourtType({ month, year, timeFrame: ALL_TIME })),
     ]);
 
     yield put(getStatsData.success(id, {
