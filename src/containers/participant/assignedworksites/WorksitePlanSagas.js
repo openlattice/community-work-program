@@ -1,9 +1,3 @@
-// @flow
-import {
-  List,
-  Map,
-  fromJS,
-} from 'immutable';
 import {
   all,
   call,
@@ -11,11 +5,14 @@ import {
   select,
   takeEvery,
 } from '@redux-saga/core/effects';
+// @flow
+import {
+  List,
+  Map,
+  fromJS,
+} from 'immutable';
 import { SearchApiActions, SearchApiSagas } from 'lattice-sagas';
 import type { SequenceAction } from 'redux-reqseq';
-
-import Logger from '../../../utils/Logger';
-import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../../utils/Errors';
 
 import {
   ADD_WORKSITE_PLAN,
@@ -45,16 +42,10 @@ import {
   getWorksitePlans,
   updateHoursWorked,
 } from './WorksitePlanActions';
-import {
-  getEntityKeyId,
-  getEntityProperties,
-  getEntitySetIdFromApp,
-  getNeighborDetails,
-  getPropertyFqnFromEdm,
-  getPropertyTypeIdFromEdm,
-  sortEntitiesByDateProperty,
-} from '../../../utils/DataUtils';
-import { isDefined } from '../../../utils/LangUtils';
+
+import Logger from '../../../utils/Logger';
+import { ASSOCIATION_DETAILS } from '../../../core/edm/constants/DataModelConsts';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import {
   createOrReplaceAssociation,
   deleteEntities,
@@ -67,9 +58,18 @@ import {
   submitDataGraphWorker,
   submitPartialReplaceWorker
 } from '../../../core/sagas/data/DataSagas';
+import {
+  getEntityKeyId,
+  getEntityProperties,
+  getEntitySetIdFromApp,
+  getNeighborDetails,
+  getPropertyFqnFromEdm,
+  getPropertyTypeIdFromEdm,
+  sortEntitiesByDateProperty,
+} from '../../../utils/DataUtils';
+import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../../utils/Errors';
+import { isDefined } from '../../../utils/LangUtils';
 import { STATE, WORKSITES } from '../../../utils/constants/ReduxStateConsts';
-import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
-import { ASSOCIATION_DETAILS } from '../../../core/edm/constants/DataModelConsts';
 
 const { searchEntityNeighborsWithFilter } = SearchApiActions;
 const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
@@ -235,42 +235,6 @@ function* deleteAppointmentWorker(action :SequenceAction) :Generator<*, *, *> {
 function* deleteAppointmentWatcher() :Generator<*, *, *> {
 
   yield takeEvery(DELETE_APPOINTMENT, deleteAppointmentWorker);
-}
-
-/*
- *
- * WorksitePlanActions.deleteCheckIn()
- *
- */
-
-function* deleteCheckInWorker(action :SequenceAction) :Generator<*, *, *> {
-  const { id } = action;
-
-  try {
-    const { value } = action;
-    yield put(deleteCheckIn.request(id, value));
-
-    const { checkInToDelete } = value;
-
-    const response :Object = yield call(deleteEntitiesWorker, deleteEntities(checkInToDelete));
-    if (response.error) {
-      throw response.error;
-    }
-
-    yield put(deleteCheckIn.success(id));
-  }
-  catch (error) {
-    LOG.error('caught exception in deleteCheckInWorker()', error);
-    yield put(deleteCheckIn.failure(id, error));
-  }
-  finally {
-    yield put(deleteCheckIn.finally(id));
-  }
-}
-
-function* deleteCheckInWatcher() :Generator<*, *, *> {
-
-  yield takeEvery(DELETE_CHECK_IN, deleteCheckInWorker);
 }
 
 /*
@@ -954,6 +918,43 @@ function* checkInForAppointmentWorker(action :SequenceAction) :Generator<*, *, *
 function* checkInForAppointmentWatcher() :Generator<*, *, *> {
 
   yield takeEvery(CHECK_IN_FOR_APPOINTMENT, checkInForAppointmentWorker);
+}
+
+
+/*
+ *
+ * WorksitePlanActions.deleteCheckIn()
+ *
+ */
+
+function* deleteCheckInWorker(action :SequenceAction) :Generator<*, *, *> {
+  const { id, value } = action;
+
+  try {
+    yield put(deleteCheckIn.request(id, value));
+
+    const { appointmentEKID, checkInToDelete, numberHoursWorked } = value;
+
+    let response :Object = yield call(deleteEntitiesWorker, deleteEntities(checkInToDelete));
+    if (response.error) throw response.error;
+
+    response = yield call(updateHoursWorkedWorker, updateHoursWorked({ appointmentEKID, numberHoursWorked }));
+    if (response.error) throw response.error;
+
+    yield put(deleteCheckIn.success(id));
+  }
+  catch (error) {
+    LOG.error(action.type);
+    yield put(deleteCheckIn.failure(id, error));
+  }
+  finally {
+    yield put(deleteCheckIn.finally(id));
+  }
+}
+
+function* deleteCheckInWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(DELETE_CHECK_IN, deleteCheckInWorker);
 }
 
 export {

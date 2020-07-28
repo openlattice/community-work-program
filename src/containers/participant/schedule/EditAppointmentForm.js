@@ -1,24 +1,24 @@
 // @flow
 import React, { Component } from 'react';
+
 import { Map, fromJS } from 'immutable';
-import { Form, DataProcessingUtils } from 'lattice-fabricate';
+import { DataProcessingUtils, Form } from 'lattice-fabricate';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
-import { editAppointment } from '../assignedworksites/WorksitePlanActions';
 import { schema, uiSchema } from './schemas/EditAppointmentSchemas';
+
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { getEntitySetIdFromApp } from '../../../utils/DataUtils';
+import { isDefined } from '../../../utils/LangUtils';
+import { requestIsPending } from '../../../utils/RequestStateUtils';
 import {
   get24HourTimeFromString,
   getCombinedDateTime,
   getDateInISOFormat,
   getInfoFromTimeRange,
 } from '../../../utils/ScheduleUtils';
-import { hydrateSchema } from '../utils/EditAppointmentUtils';
-import { requestIsPending } from '../../../utils/RequestStateUtils';
-import { isDefined } from '../../../utils/LangUtils';
-import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import {
   APP,
   EDM,
@@ -27,6 +27,8 @@ import {
   WORKSITE_PLANS,
   WORK_SCHEDULE,
 } from '../../../utils/constants/ReduxStateConsts';
+import { editAppointment } from '../assignedworksites/WorksitePlanActions';
+import { hydrateSchema } from '../utils/EditAppointmentUtils';
 
 const {
   getPageSectionKey,
@@ -91,7 +93,7 @@ class EditAppointmentForm extends Component<Props, State> {
     } = this.props;
 
     let worksiteByWorksitePlanEKID :Map = Map();
-    if (isDefined(worksitesByWorksitePlanByPerson)) {
+    if (isDefined(worksitesByWorksitePlanByPerson) && !worksitesByWorksitePlanByPerson.isEmpty()) {
       worksiteByWorksitePlanEKID = worksitesByWorksitePlanByPerson.get(personEKID, Map());
     }
     else worksiteByWorksitePlanEKID = worksitesByWorksitePlan;
