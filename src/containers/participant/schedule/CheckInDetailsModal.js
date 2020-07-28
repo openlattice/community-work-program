@@ -10,12 +10,17 @@ import {
 import { DataGrid, Modal, Spinner } from 'lattice-ui-kit';
 import { DateTime } from 'luxon';
 import { useDispatch, useSelector } from 'react-redux';
-import { RequestStates } from 'redux-reqseq';
 import type { RequestState } from 'redux-reqseq';
 
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { OL } from '../../../core/style/Colors';
 import { getEntityKeyId, getEntityProperties } from '../../../utils/DataUtils';
+import {
+  requestIsFailure,
+  requestIsPending,
+  requestIsStandby,
+  requestIsSuccess,
+} from '../../../utils/RequestStateUtils';
 import {
   APP,
   SHARED,
@@ -83,7 +88,7 @@ const CheckInDetailsModal = ({
   ]));
   const dispatch = useDispatch();
   useEffect(() => {
-    if (deleteCheckInRequestState === RequestStates.SUCCESS) {
+    if (requestIsSuccess(deleteCheckInRequestState)) {
       onClose();
       dispatch(resetDeleteCheckInRequestState());
     }
@@ -143,7 +148,7 @@ const CheckInDetailsModal = ({
         viewportScrolling>
       <ModalWrapper>
         {
-          (deleteCheckInRequestState === RequestStates.PENDING)
+          (requestIsPending(deleteCheckInRequestState))
             && (
               <SpinnerWrapper>
                 <Spinner />
@@ -151,7 +156,7 @@ const CheckInDetailsModal = ({
             )
         }
         {
-          (deleteCheckInRequestState === RequestStates.STANDBY || deleteCheckInRequestState === RequestStates.FAILURE)
+          (requestIsStandby(deleteCheckInRequestState) || requestIsFailure(deleteCheckInRequestState))
             && (
               <DataGrid
                   columns={2}
@@ -160,7 +165,7 @@ const CheckInDetailsModal = ({
             )
         }
         {
-          (deleteCheckInRequestState === RequestStates.FAILURE)
+          (requestIsFailure(deleteCheckInRequestState))
             && (<FailureMessage>Delete failed. Please try again.</FailureMessage>)
         }
       </ModalWrapper>
