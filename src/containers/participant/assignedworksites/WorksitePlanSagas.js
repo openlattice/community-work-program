@@ -928,10 +928,9 @@ function* checkInForAppointmentWatcher() :Generator<*, *, *> {
  */
 
 function* deleteCheckInWorker(action :SequenceAction) :Generator<*, *, *> {
-  const { id } = action;
+  const { id, value } = action;
 
   try {
-    const { value } = action;
     yield put(deleteCheckIn.request(id, value));
 
     const { appointmentEKID, checkInToDelete, numberHoursWorked } = value;
@@ -945,7 +944,7 @@ function* deleteCheckInWorker(action :SequenceAction) :Generator<*, *, *> {
     yield put(deleteCheckIn.success(id));
   }
   catch (error) {
-    LOG.error('caught exception in deleteCheckInWorker()', error);
+    LOG.error(action.type);
     yield put(deleteCheckIn.failure(id, error));
   }
   finally {
