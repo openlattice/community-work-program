@@ -5,8 +5,8 @@ import {
   fromJS,
 } from 'immutable';
 import { RequestStates } from 'redux-reqseq';
-import type { SequenceAction } from 'redux-reqseq';
 import type { FQN } from 'lattice';
+import type { SequenceAction } from 'redux-reqseq';
 
 import {
   CLEAR_APPOINTMENTS_AND_PLANS,
@@ -27,14 +27,14 @@ import {
   getWorksitePlans,
   updateHoursWorked,
 } from './WorksitePlanActions';
+
+import { PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import {
   findEntityPathInMap,
   getEntityKeyId,
   getPropertyFqnFromEdm,
-  getPropertyTypeIdFromEdm,
 } from '../../../utils/DataUtils';
 import { WORKSITE_PLANS } from '../../../utils/constants/ReduxStateConsts';
-import { PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 
 const {
   ACTIONS,
@@ -62,7 +62,6 @@ const {
   DATETIME_END,
   ENTITY_KEY_ID,
   INCIDENT_START_DATETIME,
-  HOURS_WORKED,
 } = PROPERTY_TYPE_FQNS;
 
 const INITIAL_STATE :Map<*, *> = fromJS({
