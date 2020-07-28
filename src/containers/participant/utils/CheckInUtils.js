@@ -1,11 +1,12 @@
 // @flow
 import round from 'lodash/round';
-import { DateTime, Duration } from 'luxon';
 import { List, Map, fromJS } from 'immutable';
+import { DateTime, Duration } from 'luxon';
 
-import { get24HourTimeFromString } from '../../../utils/ScheduleUtils';
-import { getEntityProperties, sortEntitiesByDateProperty } from '../../../utils/DataUtils';
 import { PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
+import { getEntityProperties, sortEntitiesByDateProperty } from '../../../utils/DataUtils';
+import { isDefined } from '../../../utils/LangUtils';
+import { get24HourTimeFromString } from '../../../utils/ScheduleUtils';
 
 const { DATETIME_START, HOURS_WORKED } = PROPERTY_TYPE_FQNS;
 
@@ -81,8 +82,31 @@ const getWeeklyBreakdownOfHoursPerWeek = (checkIns :List) => {
   return hoursByWeek;
 };
 
+const doesCheckInMatchAppointment = (numHoursScheduled :number | string, checkIn :?Map) :boolean => {
+  if (!numHoursScheduled) return false;
+  if (isDefined(checkIn) && !checkIn.isEmpty()) {
+    const { [HOURS_WORKED]: hoursActuallyWorked } = getEntityProperties(checkIn, [HOURS_WORKED]);
+    return (numHoursScheduled).toString() === (hoursActuallyWorked).toString();
+  }
+  return true;
+};
+
+const getHoursForDisplay = (numHoursScheduled :number | string, checkIn :?Map) :string => {
+  let hoursToDisplay = numHoursScheduled.toString();
+  if (isDefined(checkIn) && !checkIn.isEmpty()) {
+    const { [HOURS_WORKED]: hoursActuallyWorked } = getEntityProperties(checkIn, [HOURS_WORKED]);
+    const hoursActuallyWorkedAsString = (hoursActuallyWorked).toString();
+    if (hoursActuallyWorkedAsString !== hoursToDisplay) {
+      hoursToDisplay = `${(hoursActuallyWorked).toString()} of ${hoursToDisplay}`;
+    }
+  }
+  return hoursToDisplay;
+};
+
 export {
+  doesCheckInMatchAppointment,
   get24HourTimeForCheckIn,
+  getHoursForDisplay,
   getHoursScheduled,
   getWeeklyBreakdownOfHoursPerWeek,
 };
