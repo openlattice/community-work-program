@@ -1,19 +1,29 @@
 // @flow
 import React, { useCallback, useEffect } from 'react';
+
 import styled from 'styled-components';
-import { fromJS, OrderedMap, Map } from 'immutable';
+import {
+  Map,
+  OrderedMap,
+  fromJS,
+} from 'immutable';
 import { DataGrid, Modal, Spinner } from 'lattice-ui-kit';
 import { DateTime } from 'luxon';
 import { useDispatch, useSelector } from 'react-redux';
 import { RequestStates } from 'redux-reqseq';
 import type { RequestState } from 'redux-reqseq';
 
-import { deleteCheckIn, resetDeleteCheckInRequestState } from '../assignedworksites/WorksitePlanActions';
-import { getEntityKeyId, getEntityProperties } from '../../../utils/DataUtils';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
-import { EMPTY_FIELD } from '../../participants/ParticipantsConstants';
-import { APP, STATE, WORKSITE_PLANS } from '../../../utils/constants/ReduxStateConsts';
 import { OL } from '../../../core/style/Colors';
+import { getEntityKeyId, getEntityProperties } from '../../../utils/DataUtils';
+import {
+  APP,
+  SHARED,
+  STATE,
+  WORKSITE_PLANS,
+} from '../../../utils/constants/ReduxStateConsts';
+import { EMPTY_FIELD } from '../../participants/ParticipantsConstants';
+import { deleteCheckIn, resetDeleteCheckInRequestState } from '../assignedworksites/WorksitePlanActions';
 
 const { CHECK_INS } = APP_TYPE_FQNS;
 const {
@@ -23,7 +33,8 @@ const {
   HOURS_WORKED,
 } = PROPERTY_TYPE_FQNS;
 const { SELECTED_ORG_ID } = APP;
-const { ACTIONS, DELETE_CHECK_IN, REQUEST_STATE } = WORKSITE_PLANS;
+const { ACTIONS, REQUEST_STATE } = SHARED;
+const { DELETE_CHECK_IN } = WORKSITE_PLANS;
 
 const labelMap :OrderedMap = OrderedMap({
   checkedIn: 'Checked in?',
@@ -86,13 +97,6 @@ const CheckInDetailsModal = ({
     orgId,
     CHECK_INS
   ]));
-  const removeCheckIn = useCallback(
-    () => dispatch(deleteCheckIn({
-      checkInToDelete: [{ entitySetId: checkInESID, entityKeyIds: [checkInEKID] }],
-      appointmentEKID
-    })),
-    [appointmentEKID, checkInEKID, checkInESID, dispatch]
-  );
 
   const {
     [CHECKED_IN]: checkedInBoolean,
@@ -118,6 +122,15 @@ const CheckInDetailsModal = ({
     timeIn,
     timeOut,
   });
+
+  const removeCheckIn = useCallback(
+    () => dispatch(deleteCheckIn({
+      appointmentEKID,
+      checkInToDelete: [{ entitySetId: checkInESID, entityKeyIds: [checkInEKID] }],
+      numberHoursWorked: -hoursWorked,
+    })),
+    [appointmentEKID, checkInEKID, checkInESID, dispatch, hoursWorked]
+  );
 
   return (
     <Modal
