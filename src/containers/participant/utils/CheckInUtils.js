@@ -40,22 +40,11 @@ const getValidFirstCheckInDateTime = (sortedCheckIns :List) :string => {
   return firstValidDateTime;
 };
 
-const getValidLastCheckInDateTime = (sortedCheckIns :List) :string => {
-  const { [DATETIME_START]: lastDateTime } = getEntityProperties(sortedCheckIns.last(), [DATETIME_START]);
-  if (lastDateTime) return lastDateTime;
-  const lastCheckInWithValidDateTime = sortedCheckIns.reverse().find((checkIn :Map) => {
-    const { [DATETIME_START]: dateTimeStart } = getEntityProperties(checkIn, [DATETIME_START]);
-    return DateTime.fromISO(dateTimeStart).isValid;
-  });
-  const { [DATETIME_START]: lastValidDateTime } = getEntityProperties(lastCheckInWithValidDateTime, [DATETIME_START]);
-  return lastValidDateTime;
-};
-
 const getWeeklyBreakdownOfHoursPerWeek = (checkIns :List) => {
   if (checkIns.isEmpty()) return List();
   const sortedCheckIns :List = sortEntitiesByDateProperty(checkIns, [DATETIME_START]);
   const firstDateTime = getValidFirstCheckInDateTime(sortedCheckIns);
-  const lastDateTime = getValidLastCheckInDateTime(sortedCheckIns);
+  const lastDateTime = getValidFirstCheckInDateTime(sortedCheckIns.reverse());
 
   const hoursByWeek :List = List().withMutations((list :List) => {
 
