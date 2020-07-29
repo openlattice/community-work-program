@@ -134,7 +134,7 @@ const AppointmentContainer = ({
 
   const [day, setDay] = useState('');
   const [hours, setHours] = useState('');
-  const [numHours, setNumHours] = useState('');
+  const [numHours, setNumHours] = useState(0);
 
   // use effect for editable properties
   useEffect(() => {

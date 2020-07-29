@@ -82,7 +82,7 @@ const getWeeklyBreakdownOfHoursPerWeek = (checkIns :List) => {
   return hoursByWeek;
 };
 
-const doesCheckInMatchAppointment = (numHoursScheduled :number | string, checkIn :?Map) :boolean => {
+const doesCheckInMatchAppointment = (numHoursScheduled :number, checkIn :?Map) :boolean => {
   if (!numHoursScheduled) return false;
   if (isDefined(checkIn) && !checkIn.isEmpty()) {
     const { [HOURS_WORKED]: hoursActuallyWorked } = getEntityProperties(checkIn, [HOURS_WORKED]);
@@ -91,7 +91,7 @@ const doesCheckInMatchAppointment = (numHoursScheduled :number | string, checkIn
   return true;
 };
 
-const getHoursForDisplay = (numHoursScheduled :number | string, checkIn :?Map) :string => {
+const getHoursForDisplay = (numHoursScheduled :number, checkIn :?Map) :string => {
   let hoursToDisplay = numHoursScheduled.toString();
   if (isDefined(checkIn) && !checkIn.isEmpty()) {
     const { [HOURS_WORKED]: hoursActuallyWorked } = getEntityProperties(checkIn, [HOURS_WORKED]);
