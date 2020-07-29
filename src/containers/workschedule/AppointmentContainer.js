@@ -52,6 +52,14 @@ const { PARTICIPANT } = PERSON;
 const { PERSON_BY_APPOINTMENT_EKID } = WORK_SCHEDULE;
 const { ENTITY_KEY_ID, FIRST_NAME, LAST_NAME } = PROPERTY_TYPE_FQNS;
 
+const CheckedInIcon = (
+  <FontAwesomeIcon icon={faCheckCircle} color={OL.PURPLE02} size="lg" />
+);
+
+const ExclamationIcon = (
+  <FontAwesomeIcon icon={faExclamationCircle} color={YELLOW_1} size="lg" />
+);
+
 const OuterWrapper = styled.div`
   width: 100%;
 `;
@@ -166,10 +174,10 @@ const AppointmentContainer = ({
   const columns = personName || courtType ? 'schedule' : 'profile';
   const assignedWorksites :List = worksitesByWorksitePlan.valueSeq().toList();
 
-  let checkedInSymbol = <FontAwesomeIcon icon={faCheckCircle} color={OL.PURPLE02} size="lg" />;
+  let checkedInSymbol = CheckedInIcon;
   const checkInHoursEqualAppointmentHours = doesCheckInMatchAppointment(numHours, checkIn);
   if (!checkInHoursEqualAppointmentHours) {
-    checkedInSymbol = <FontAwesomeIcon icon={faExclamationCircle} color={YELLOW_1} size="lg" />;
+    checkedInSymbol = ExclamationIcon;
   }
   const hoursToDisplay = getHoursForDisplay(numHours, checkIn);
   return (
