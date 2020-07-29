@@ -1,11 +1,12 @@
 // @flow
 import round from 'lodash/round';
-import { DateTime, Duration } from 'luxon';
 import { List, Map, fromJS } from 'immutable';
+import { DateTime, Duration } from 'luxon';
 
-import { get24HourTimeFromString } from '../../../utils/ScheduleUtils';
-import { getEntityProperties, sortEntitiesByDateProperty } from '../../../utils/DataUtils';
 import { PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
+import { getEntityProperties, sortEntitiesByDateProperty } from '../../../utils/DataUtils';
+import { isDefined } from '../../../utils/LangUtils';
+import { get24HourTimeFromString } from '../../../utils/ScheduleUtils';
 
 const { DATETIME_START, HOURS_WORKED } = PROPERTY_TYPE_FQNS;
 
@@ -28,11 +29,22 @@ const getHoursScheduled = (timeIn :string, timeOut :string) :number => {
   return roundedHours;
 };
 
+const getValidFirstCheckInDateTime = (sortedCheckIns :List) :string => {
+  const { [DATETIME_START]: firstDateTime } = getEntityProperties(sortedCheckIns.first(), [DATETIME_START]);
+  if (firstDateTime) return firstDateTime;
+  const firstCheckInWithValidDateTime = sortedCheckIns.find((checkIn :Map) => {
+    const { [DATETIME_START]: dateTimeStart } = getEntityProperties(checkIn, [DATETIME_START]);
+    return DateTime.fromISO(dateTimeStart).isValid;
+  });
+  const { [DATETIME_START]: firstValidDateTime } = getEntityProperties(firstCheckInWithValidDateTime, [DATETIME_START]);
+  return firstValidDateTime;
+};
+
 const getWeeklyBreakdownOfHoursPerWeek = (checkIns :List) => {
   if (checkIns.isEmpty()) return List();
   const sortedCheckIns :List = sortEntitiesByDateProperty(checkIns, [DATETIME_START]);
-  const { [DATETIME_START]: firstDateTime } = getEntityProperties(sortedCheckIns.first(), [DATETIME_START]);
-  const { [DATETIME_START]: lastDateTime } = getEntityProperties(sortedCheckIns.last(), [DATETIME_START]);
+  const firstDateTime = getValidFirstCheckInDateTime(sortedCheckIns);
+  const lastDateTime = getValidFirstCheckInDateTime(sortedCheckIns.reverse());
 
   const hoursByWeek :List = List().withMutations((list :List) => {
 
@@ -81,8 +93,30 @@ const getWeeklyBreakdownOfHoursPerWeek = (checkIns :List) => {
   return hoursByWeek;
 };
 
+const doesCheckInMatchAppointment = (numHoursScheduled :number, checkIn :?Map) :boolean => {
+  if (!numHoursScheduled) return true;
+  if (isDefined(checkIn) && !checkIn.isEmpty()) {
+    const { [HOURS_WORKED]: hoursActuallyWorked } = getEntityProperties(checkIn, [HOURS_WORKED]);
+    return numHoursScheduled === hoursActuallyWorked;
+  }
+  return true;
+};
+
+const getHoursForDisplay = (numHoursScheduled :number, checkIn :?Map) :string => {
+  let hoursToDisplay = numHoursScheduled.toString();
+  if (isDefined(checkIn) && !checkIn.isEmpty()) {
+    const { [HOURS_WORKED]: hoursActuallyWorked } = getEntityProperties(checkIn, [HOURS_WORKED]);
+    if (hoursActuallyWorked !== numHoursScheduled) {
+      hoursToDisplay = `${hoursActuallyWorked} of ${hoursToDisplay}`;
+    }
+  }
+  return hoursToDisplay;
+};
+
 export {
+  doesCheckInMatchAppointment,
   get24HourTimeForCheckIn,
+  getHoursForDisplay,
   getHoursScheduled,
   getWeeklyBreakdownOfHoursPerWeek,
 };
