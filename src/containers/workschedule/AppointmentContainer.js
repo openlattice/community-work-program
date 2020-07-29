@@ -1,44 +1,64 @@
 // @flow
 import React, { useEffect, useState } from 'react';
+
 import styled, { css } from 'styled-components';
+import { faCalendarAlt } from '@fortawesome/pro-light-svg-icons';
+import {
+  faCheckCircle,
+  faExclamationCircle,
+  faPen,
+  faTrash,
+} from '@fortawesome/pro-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { List, Map } from 'immutable';
 import {
   Button,
   Card,
   CardSegment,
+  Colors,
   IconButton,
   StyleUtils
 } from 'lattice-ui-kit';
-import { NavLink } from 'react-router-dom';
 import { connect } from 'react-redux';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCheckCircle, faPen, faTrash } from '@fortawesome/pro-solid-svg-icons';
-import { faCalendarAlt } from '@fortawesome/pro-light-svg-icons';
+import { NavLink } from 'react-router-dom';
 
-import CheckInModal from '../participant/schedule/CheckInModal';
 import CheckInDetailsModal from '../participant/schedule/CheckInDetailsModal';
+import CheckInModal from '../participant/schedule/CheckInModal';
 import DeleteAppointmentModal from '../participant/schedule/DeleteAppointmentModal';
 import EditAppointmentModal from '../participant/schedule/EditAppointmentModal';
-
 import * as Routes from '../../core/router/Routes';
-import { isDefined } from '../../utils/LangUtils';
+import { ButtonWrapper } from '../../components/Layout';
+import { PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { OL } from '../../core/style/Colors';
 import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
-import { get24HourTimeForCheckIn, getHoursScheduled } from '../participant/utils/CheckInUtils';
+import { isDefined } from '../../utils/LangUtils';
 import {
   PERSON,
   STATE,
   WORKSITE_PLANS,
   WORK_SCHEDULE,
 } from '../../utils/constants/ReduxStateConsts';
-import { PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
-import { OL } from '../../core/style/Colors';
-import { ButtonWrapper } from '../../components/Layout';
+import {
+  doesCheckInMatchAppointment,
+  get24HourTimeForCheckIn,
+  getHoursForDisplay,
+  getHoursScheduled,
+} from '../participant/utils/CheckInUtils';
 
 const { getStyleVariation } = StyleUtils;
+const { YELLOW_1 } = Colors;
 const { CHECK_INS_BY_APPOINTMENT, WORKSITES_BY_WORKSITE_PLAN } = WORKSITE_PLANS;
 const { PARTICIPANT } = PERSON;
 const { PERSON_BY_APPOINTMENT_EKID } = WORK_SCHEDULE;
 const { ENTITY_KEY_ID, FIRST_NAME, LAST_NAME } = PROPERTY_TYPE_FQNS;
+
+const CheckedInIcon = (
+  <FontAwesomeIcon icon={faCheckCircle} color={OL.PURPLE02} size="lg" />
+);
+
+const ExclamationIcon = (
+  <FontAwesomeIcon icon={faExclamationCircle} color={YELLOW_1} size="lg" />
+);
 
 const OuterWrapper = styled.div`
   width: 100%;
@@ -114,7 +134,7 @@ const AppointmentContainer = ({
 
   const [day, setDay] = useState('');
   const [hours, setHours] = useState('');
-  const [numHours, setNumHours] = useState('');
+  const [numHours, setNumHours] = useState(0);
 
   // use effect for editable properties
   useEffect(() => {
@@ -153,6 +173,13 @@ const AppointmentContainer = ({
   }
   const columns = personName || courtType ? 'schedule' : 'profile';
   const assignedWorksites :List = worksitesByWorksitePlan.valueSeq().toList();
+
+  let checkedInSymbol = CheckedInIcon;
+  const checkInHoursEqualAppointmentHours = doesCheckInMatchAppointment(numHours, checkIn);
+  if (!checkInHoursEqualAppointmentHours) {
+    checkedInSymbol = ExclamationIcon;
+  }
+  const hoursToDisplay = getHoursForDisplay(numHours, checkIn);
   return (
     <OuterWrapper>
       <Card>
@@ -172,7 +199,7 @@ const AppointmentContainer = ({
             }
             <Text>{ worksiteName }</Text>
             <Text>{ hours }</Text>
-            <Text>{ `${numHours} hrs` }</Text>
+            <Text>{ `${hoursToDisplay} hrs` }</Text>
             {
               courtType && (
                 <Text>{ courtType }</Text>
@@ -184,7 +211,7 @@ const AppointmentContainer = ({
               checkedIn
                 ? (
                   <CheckWrapper onClick={() => handleCheckInDetailsModalVisibility(true)}>
-                    <FontAwesomeIcon icon={faCheckCircle} color={OL.PURPLE02} size="lg" />
+                    { checkedInSymbol }
                   </CheckWrapper>
                 )
                 : (
