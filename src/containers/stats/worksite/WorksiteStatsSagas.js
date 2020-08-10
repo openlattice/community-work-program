@@ -1,5 +1,5 @@
-import FS from 'file-saver';
 // @flow
+import FS from 'file-saver';
 import Papa from 'papaparse';
 import isFunction from 'lodash/isFunction';
 import {
