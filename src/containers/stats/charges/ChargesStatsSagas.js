@@ -1,7 +1,6 @@
+import FS from 'file-saver';
 // @flow
 import Papa from 'papaparse';
-import FS from 'file-saver';
-import { List, Map, fromJS } from 'immutable';
 import {
   all,
   call,
@@ -9,6 +8,7 @@ import {
   select,
   takeEvery,
 } from '@redux-saga/core/effects';
+import { List, Map, fromJS } from 'immutable';
 import {
   DataApiActions,
   DataApiSagas,
@@ -17,15 +17,6 @@ import {
 } from 'lattice-sagas';
 import type { SequenceAction } from 'redux-reqseq';
 
-import Logger from '../../../utils/Logger';
-import {
-  getEntityKeyId,
-  getEntityProperties,
-  getEntitySetIdFromApp,
-  getNeighborDetails,
-  getNeighborESID,
-} from '../../../utils/DataUtils';
-import { isDefined } from '../../../utils/LangUtils';
 import {
   DOWNLOAD_CHARGES_STATS,
   GET_CHARGES_STATS,
@@ -34,9 +25,19 @@ import {
   getChargesStats,
   getIndividualChargeTypeStats,
 } from './ChargesStatsActions';
-import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../../utils/Errors';
-import { STATE, STATS } from '../../../utils/constants/ReduxStateConsts';
+
+import Logger from '../../../utils/Logger';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
+import {
+  getEntityKeyId,
+  getEntityProperties,
+  getEntitySetIdFromApp,
+  getNeighborDetails,
+  getNeighborESID,
+} from '../../../utils/DataUtils';
+import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../../utils/Errors';
+import { isDefined } from '../../../utils/LangUtils';
+import { STATE, STATS } from '../../../utils/constants/ReduxStateConsts';
 import { ARREST_CHARGE_HEADERS, COURT_CHARGE_HEADERS } from '../consts/StatsConsts';
 
 const { getEntitySetData } = DataApiActions;
@@ -274,7 +275,6 @@ function* getChargesStatsWorker(action :SequenceAction) :Generator<*, *, *> {
     ]);
     if (arrestResponse.error) throw arrestResponse.error;
     if (courtResponse.error) throw courtResponse.error;
-
 
     yield put(getChargesStats.success(id));
   }

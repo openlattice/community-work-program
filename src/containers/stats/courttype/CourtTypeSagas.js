@@ -1,36 +1,23 @@
+import FS from 'file-saver';
 // @flow
 import Papa from 'papaparse';
-import FS from 'file-saver';
 import isFunction from 'lodash/isFunction';
-import { List, Map, fromJS } from 'immutable';
-import { DateTime } from 'luxon';
 import {
   call,
   put,
   select,
   takeEvery,
 } from '@redux-saga/core/effects';
+import { List, Map, fromJS } from 'immutable';
 import {
   DataApiActions,
   DataApiSagas,
   SearchApiActions,
   SearchApiSagas,
 } from 'lattice-sagas';
+import { DateTime } from 'luxon';
 import type { SequenceAction } from 'redux-reqseq';
 
-
-import Logger from '../../../utils/Logger';
-import {
-  getEntityKeyId,
-  getEntityProperties,
-  getEntitySetIdFromApp,
-  getNeighborDetails,
-  getNeighborESID,
-  getPropertyTypeIdFromEdm,
-  getUTCDateRangeSearchString,
-} from '../../../utils/DataUtils';
-import { isDefined, isEmptyString } from '../../../utils/LangUtils';
-import { getPersonFullName } from '../../../utils/PeopleUtils';
 import {
   DOWNLOAD_COURT_TYPE_DATA,
   GET_ENROLLMENTS_BY_COURT_TYPE,
@@ -43,13 +30,26 @@ import {
   getMonthlyParticipantsByCourtType,
   getTotalParticipantsByCourtType,
 } from './CourtTypeActions';
-import { DOWNLOAD_CONSTS } from '../consts/StatsConsts';
-import { STATE } from '../../../utils/constants/ReduxStateConsts';
-import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
+
+import Logger from '../../../utils/Logger';
 import { ENROLLMENT_STATUSES } from '../../../core/edm/constants/DataModelConsts';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
+import {
+  getEntityKeyId,
+  getEntityProperties,
+  getEntitySetIdFromApp,
+  getNeighborDetails,
+  getNeighborESID,
+  getPropertyTypeIdFromEdm,
+  getUTCDateRangeSearchString,
+} from '../../../utils/DataUtils';
 import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../../utils/Errors';
-import { ALL_TIME, MONTHLY, YEARLY } from '../consts/TimeConsts';
+import { isDefined, isEmptyString } from '../../../utils/LangUtils';
+import { getPersonFullName } from '../../../utils/PeopleUtils';
+import { STATE } from '../../../utils/constants/ReduxStateConsts';
 import { ACTIVE_STATUSES, courtTypeCountObj } from '../consts/CourtTypeConsts';
+import { DOWNLOAD_CONSTS } from '../consts/StatsConsts';
+import { ALL_TIME, MONTHLY, YEARLY } from '../consts/TimeConsts';
 
 const { getEntitySetData } = DataApiActions;
 const { getEntitySetDataWorker } = DataApiSagas;

@@ -2,14 +2,6 @@
  * @flow
  */
 
-import {
-  List,
-  Map,
-  fromJS,
-  getIn,
-  setIn,
-} from 'immutable';
-import { DateTime } from 'luxon';
 import toString from 'lodash/toString';
 import {
   all,
@@ -19,16 +11,22 @@ import {
   takeEvery,
 } from '@redux-saga/core/effects';
 import {
+  List,
+  Map,
+  fromJS,
+  getIn,
+  setIn,
+} from 'immutable';
+import {
   DataApiActions,
   DataApiSagas,
   SearchApiActions,
   SearchApiSagas,
 } from 'lattice-sagas';
-import type { SequenceAction } from 'redux-reqseq';
+import { DateTime } from 'luxon';
 import type { FQN } from 'lattice';
+import type { SequenceAction } from 'redux-reqseq';
 
-import Logger from '../../utils/Logger';
-import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../utils/Errors';
 import {
   ADD_NEW_DIVERSION_PLAN_STATUS,
   ADD_NEW_PARTICIPANT_CONTACTS,
@@ -46,8 +44,8 @@ import {
   GET_CASE_INFO,
   GET_CONTACT_INFO,
   GET_DIVERSION_PLAN,
-  GET_ENROLLMENT_HISTORY,
   GET_ENROLLMENT_FROM_DIVERSION_PLAN,
+  GET_ENROLLMENT_HISTORY,
   GET_ENROLLMENT_STATUS,
   GET_INFO_FOR_ADD_PARTICIPANT,
   GET_INFO_FOR_EDIT_CASE,
@@ -78,8 +76,8 @@ import {
   getCaseInfo,
   getContactInfo,
   getDiversionPlan,
-  getEnrollmentHistory,
   getEnrollmentFromDiversionPlan,
+  getEnrollmentHistory,
   getEnrollmentStatus,
   getInfoForAddParticipant,
   getInfoForEditCase,
@@ -95,20 +93,7 @@ import {
   reassignJudge,
   updatePersonPhoto,
 } from './ParticipantActions';
-import {
-  createOrReplaceAssociation,
-  submitDataGraph,
-  submitPartialReplace
-} from '../../core/sagas/data/DataActions';
-import {
-  createOrReplaceAssociationWorker,
-  submitDataGraphWorker,
-  submitPartialReplaceWorker
-} from '../../core/sagas/data/DataSagas';
-import { getWorksites } from '../worksites/WorksitesActions';
-import { getWorksitesWorker } from '../worksites/WorksitesSagas';
-import { getInfractionTypes, getParticipantInfractions } from './infractions/InfractionsActions';
-import { getInfractionTypesWorker, getParticipantInfractionsWorker } from './infractions/InfractionsSagas';
+import { enrollmentHeaderNames } from './ParticipantProfile';
 import { getWorksitePlans } from './assignedworksites/WorksitePlanActions';
 import { getWorksitePlansWorker } from './assignedworksites/WorksitePlanSagas';
 import {
@@ -125,6 +110,22 @@ import {
   getCourtChargesForCaseWorker,
   getCourtChargesWorker,
 } from './charges/ChargesSagas';
+import { getInfractionTypes, getParticipantInfractions } from './infractions/InfractionsActions';
+import { getInfractionTypesWorker, getParticipantInfractionsWorker } from './infractions/InfractionsSagas';
+
+import Logger from '../../utils/Logger';
+import { ASSOCIATION_DETAILS, CONTACT_METHODS } from '../../core/edm/constants/DataModelConsts';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import {
+  createOrReplaceAssociation,
+  submitDataGraph,
+  submitPartialReplace
+} from '../../core/sagas/data/DataActions';
+import {
+  createOrReplaceAssociationWorker,
+  submitDataGraphWorker,
+  submitPartialReplaceWorker
+} from '../../core/sagas/data/DataSagas';
 import {
   getEntityKeyId,
   getEntityProperties,
@@ -134,15 +135,15 @@ import {
   getPropertyTypeIdFromEdm,
   sortEntitiesByDateProperty,
 } from '../../utils/DataUtils';
-import { isDefined } from '../../utils/LangUtils';
-import { isValidUUID } from '../../utils/ValidationUtils';
 import { formatAsDate } from '../../utils/DateTimeUtils';
+import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../utils/Errors';
+import { isDefined } from '../../utils/LangUtils';
 import { getCombinedDateTime } from '../../utils/ScheduleUtils';
-import { enrollmentHeaderNames } from './ParticipantProfile';
-import { EMPTY_FIELD } from '../participants/ParticipantsConstants';
+import { isValidUUID } from '../../utils/ValidationUtils';
 import { STATE } from '../../utils/constants/ReduxStateConsts';
-import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
-import { ASSOCIATION_DETAILS, CONTACT_METHODS } from '../../core/edm/constants/DataModelConsts';
+import { EMPTY_FIELD } from '../participants/ParticipantsConstants';
+import { getWorksites } from '../worksites/WorksitesActions';
+import { getWorksitesWorker } from '../worksites/WorksitesSagas';
 
 const { getEntityData, getEntitySetData } = DataApiActions;
 const { getEntityDataWorker, getEntitySetDataWorker } = DataApiSagas;
@@ -1648,7 +1649,6 @@ function* getJudgesWorker(action :SequenceAction) :Generator<*, *, *> {
   return workerResponse;
 }
 
-
 function* getJudgesWatcher() :Generator<*, *, *> {
 
   yield takeEvery(GET_JUDGES, getJudgesWorker);
@@ -1706,7 +1706,6 @@ function* getParticipantCasesWorker(action :SequenceAction) :Generator<*, *, *> 
   }
   return workerResponse;
 }
-
 
 function* getParticipantCasesWatcher() :Generator<*, *, *> {
 

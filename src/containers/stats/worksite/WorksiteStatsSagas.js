@@ -1,9 +1,7 @@
+import FS from 'file-saver';
 // @flow
 import Papa from 'papaparse';
-import FS from 'file-saver';
 import isFunction from 'lodash/isFunction';
-import { List, Map, fromJS } from 'immutable';
-import { DateTime } from 'luxon';
 import {
   all,
   call,
@@ -11,26 +9,16 @@ import {
   select,
   takeEvery,
 } from '@redux-saga/core/effects';
+import { List, Map, fromJS } from 'immutable';
 import {
   DataApiActions,
   DataApiSagas,
   SearchApiActions,
   SearchApiSagas,
 } from 'lattice-sagas';
+import { DateTime } from 'luxon';
 import type { SequenceAction } from 'redux-reqseq';
 
-import Logger from '../../../utils/Logger';
-import {
-  getEntityKeyId,
-  getEntityProperties,
-  getEntitySetIdFromApp,
-  getNeighborDetails,
-  getNeighborESID,
-  getPropertyTypeIdFromEdm,
-  getUTCDateRangeSearchString,
-} from '../../../utils/DataUtils';
-import { isDefined, isEmptyString, isNonEmptyString } from '../../../utils/LangUtils';
-import { getPersonFullName } from '../../../utils/PeopleUtils';
 import {
   DOWNLOAD_WORKSITE_STATS_DATA,
   GET_CHECK_IN_NEIGHBORS,
@@ -45,11 +33,24 @@ import {
   getWorksiteStatsData,
   getWorksitesForStats,
 } from './WorksiteStatsActions';
-import { STATE } from '../../../utils/constants/ReduxStateConsts';
+
+import Logger from '../../../utils/Logger';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
+import {
+  getEntityKeyId,
+  getEntityProperties,
+  getEntitySetIdFromApp,
+  getNeighborDetails,
+  getNeighborESID,
+  getPropertyTypeIdFromEdm,
+  getUTCDateRangeSearchString,
+} from '../../../utils/DataUtils';
 import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../../utils/Errors';
-import { ALL_TIME, MONTHLY, YEARLY } from '../consts/TimeConsts';
+import { isDefined, isEmptyString, isNonEmptyString } from '../../../utils/LangUtils';
+import { getPersonFullName } from '../../../utils/PeopleUtils';
+import { STATE } from '../../../utils/constants/ReduxStateConsts';
 import { DOWNLOAD_CONSTS } from '../consts/StatsConsts';
+import { ALL_TIME, MONTHLY, YEARLY } from '../consts/TimeConsts';
 
 const { getEntitySetData } = DataApiActions;
 const { getEntitySetDataWorker } = DataApiSagas;
@@ -276,7 +277,6 @@ function* getCheckInNeighborsWorker(action :SequenceAction) :Generator<*, *, *> 
         const worksite :Map = getNeighborDetails(worksiteNeighbor);
         const { [NAME]: worksiteName } = getEntityProperties(worksite, [NAME]);
         map.set(worksitePlanEKID, worksiteName);
-
 
         const personNeighbor :Map = neighborsList.find((neighbor :Map) => getNeighborESID(neighbor) === peopleESID);
         const person :Map = getNeighborDetails(personNeighbor);

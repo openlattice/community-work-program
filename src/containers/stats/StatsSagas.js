@@ -1,6 +1,3 @@
-// @flow
-import { List, Map, fromJS } from 'immutable';
-import { DateTime } from 'luxon';
 import {
   all,
   call,
@@ -8,23 +5,20 @@ import {
   select,
   takeEvery,
 } from '@redux-saga/core/effects';
+// @flow
+import { List, Map, fromJS } from 'immutable';
 import {
   DataApiActions,
   DataApiSagas,
   SearchApiActions,
   SearchApiSagas,
 } from 'lattice-sagas';
+import { DateTime } from 'luxon';
 import type { SequenceAction } from 'redux-reqseq';
 
-import Logger from '../../utils/Logger';
-import {
-  getEntityKeyId,
-  getEntityProperties,
-  getEntitySetIdFromApp,
-  getNeighborDetails,
-  getNeighborESID,
-} from '../../utils/DataUtils';
 import { GET_STATS_DATA, getStatsData } from './StatsActions';
+import { ACTIVE_STATUSES, courtTypeCountObj } from './consts/CourtTypeConsts';
+import { ALL_TIME, MONTHLY } from './consts/TimeConsts';
 import {
   getHoursByCourtType,
   getMonthlyParticipantsByCourtType,
@@ -35,11 +29,18 @@ import {
   getMonthlyParticipantsByCourtTypeWorker,
   getTotalParticipantsByCourtTypeWorker
 } from './courttype/CourtTypeSagas';
-import { STATE } from '../../utils/constants/ReduxStateConsts';
-import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+
+import Logger from '../../utils/Logger';
 import { ENROLLMENT_STATUSES } from '../../core/edm/constants/DataModelConsts';
-import { ACTIVE_STATUSES, courtTypeCountObj } from './consts/CourtTypeConsts';
-import { ALL_TIME, MONTHLY } from './consts/TimeConsts';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import {
+  getEntityKeyId,
+  getEntityProperties,
+  getEntitySetIdFromApp,
+  getNeighborDetails,
+  getNeighborESID,
+} from '../../utils/DataUtils';
+import { STATE } from '../../utils/constants/ReduxStateConsts';
 
 const { getEntitySetData } = DataApiActions;
 const { getEntitySetDataWorker } = DataApiSagas;
@@ -183,7 +184,10 @@ function* getStatsDataWorker(action :SequenceAction) :Generator<*, *, *> {
     yield all([
       call(getHoursByCourtTypeWorker, getHoursByCourtType({ month, year, timeFrame: MONTHLY })),
       call(getMonthlyParticipantsByCourtTypeWorker, getMonthlyParticipantsByCourtType({ month, year })),
-      call(getTotalParticipantsByCourtTypeWorker, getTotalParticipantsByCourtType({ month, year, timeFrame: ALL_TIME })),
+      call(
+        getTotalParticipantsByCourtTypeWorker,
+        getTotalParticipantsByCourtType({ month, year, timeFrame: ALL_TIME })
+      ),
     ]);
 
     yield put(getStatsData.success(id, {

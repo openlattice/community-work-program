@@ -2,6 +2,7 @@
 import { Map } from 'immutable';
 
 import { isNonEmptyStringArray } from './LangUtils';
+
 import { PROPERTY_TYPE_FQNS } from '../core/edm/constants/FullyQualifiedNames';
 
 const { IMAGE_DATA } = PROPERTY_TYPE_FQNS;
@@ -46,7 +47,6 @@ const getImageDataFromEntity = (imageEntity :Map) :?string => {
   const imageDataValue = imageEntity.getIn([IMAGE_DATA, 0]);
   return formatFileSource(imageDataValue, 'image/jpg');
 };
-
 
 export {
   DATA_URL_PREFIX_REGEX,
