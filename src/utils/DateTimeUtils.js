@@ -10,7 +10,6 @@ const ISO_DATE_FORMAT :string = 'YYYY-MM-DD';
 const ISO_TIME_HMS_FORMAT :string = 'HH:mm:ss';
 const TIME_HM_FORMAT :string = 'HH:mm';
 
-
 function formatAsDate(value :string) :string {
 
   const valueAsDate = DateTime.fromISO(value);

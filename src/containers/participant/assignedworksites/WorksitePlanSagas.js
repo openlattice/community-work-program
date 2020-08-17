@@ -405,7 +405,6 @@ function* editWorksitePlanWatcher() :Generator<*, *, *> {
   yield takeEvery(EDIT_WORKSITE_PLAN, editWorksitePlanWorker);
 }
 
-
 /*
  *
  * WorksitePlanActions.getAppointmentCheckIns()
@@ -501,7 +500,6 @@ function* getAppointmentCheckInsWatcher() :Generator<*, *, *> {
 
   yield takeEvery(GET_APPOINTMENT_CHECK_INS, getAppointmentCheckInsWorker);
 }
-
 
 /*
  *
@@ -919,7 +917,6 @@ function* checkInForAppointmentWatcher() :Generator<*, *, *> {
 
   yield takeEvery(CHECK_IN_FOR_APPOINTMENT, checkInForAppointmentWorker);
 }
-
 
 /*
  *

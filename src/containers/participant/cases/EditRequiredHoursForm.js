@@ -1,21 +1,23 @@
 // @flow
 import React, { Component } from 'react';
+
 import { Map } from 'immutable';
+import { DataProcessingUtils, Form } from 'lattice-fabricate';
 import { Card, CardHeader } from 'lattice-ui-kit';
-import { Form, DataProcessingUtils } from 'lattice-fabricate';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import type { RequestSequence } from 'redux-reqseq';
 
-import { editRequiredHours } from '../ParticipantActions';
-import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import {
   requiredHoursSchema,
   requiredHoursUiSchema,
 } from './schemas/EditCaseInfoSchemas';
+
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import {
   getEntityProperties,
 } from '../../../utils/DataUtils';
+import { editRequiredHours } from '../ParticipantActions';
 
 const {
   getEntityAddressKey,
@@ -91,7 +93,6 @@ class EditRequiredHoursForm extends Component<Props, State> {
       entitySetIds,
       propertyTypeIds,
     };
-
 
     return (
       <Card>

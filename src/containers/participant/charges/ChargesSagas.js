@@ -1,15 +1,15 @@
-// @flow
-import {
-  List,
-  Map,
-  fromJS,
-} from 'immutable';
 import {
   call,
   put,
   select,
   takeEvery,
 } from '@redux-saga/core/effects';
+// @flow
+import {
+  List,
+  Map,
+  fromJS,
+} from 'immutable';
 import { Models } from 'lattice';
 import {
   DataApiActions,
@@ -19,19 +19,6 @@ import {
 } from 'lattice-sagas';
 import type { SequenceAction } from 'redux-reqseq';
 
-import Logger from '../../../utils/Logger';
-
-import { isDefined } from '../../../utils/LangUtils';
-import {
-  getAssociationNeighborESID,
-  getEntityKeyId,
-  getEntitySetIdFromApp,
-  getNeighborDetails,
-  getNeighborESID,
-  getPropertyFqnFromEdm,
-} from '../../../utils/DataUtils';
-import { deleteEntities, submitDataGraph } from '../../../core/sagas/data/DataActions';
-import { deleteEntitiesWorker, submitDataGraphWorker } from '../../../core/sagas/data/DataSagas';
 import {
   ADD_ARREST_CHARGES,
   ADD_COURT_CHARGES_TO_CASE,
@@ -56,10 +43,23 @@ import {
   removeArrestCharge,
   removeCourtChargeFromCase,
 } from './ChargesActions';
-import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
-import { CHARGES, STATE } from '../../../utils/constants/ReduxStateConsts';
-import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../../utils/Errors';
+
+import Logger from '../../../utils/Logger';
 import { ASSOCIATION_DETAILS } from '../../../core/edm/constants/DataModelConsts';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
+import { deleteEntities, submitDataGraph } from '../../../core/sagas/data/DataActions';
+import { deleteEntitiesWorker, submitDataGraphWorker } from '../../../core/sagas/data/DataSagas';
+import {
+  getAssociationNeighborESID,
+  getEntityKeyId,
+  getEntitySetIdFromApp,
+  getNeighborDetails,
+  getNeighborESID,
+  getPropertyFqnFromEdm,
+} from '../../../utils/DataUtils';
+import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../../utils/Errors';
+import { isDefined } from '../../../utils/LangUtils';
+import { CHARGES, STATE } from '../../../utils/constants/ReduxStateConsts';
 
 const { FullyQualifiedName } = Models;
 const { getEntitySetData } = DataApiActions;
@@ -627,7 +627,6 @@ function* getCourtChargesWatcher() :Generator<*, *, *> {
  *
  */
 
-
 function* getCourtChargesForCaseWorker(action :SequenceAction) :Generator<*, *, *> {
 
   /*
@@ -669,7 +668,6 @@ function* getCourtChargesForCaseWorker(action :SequenceAction) :Generator<*, *, 
         chargeEventEKIDs.push(chargeEventEKID);
         chargeEventByEKID = chargeEventByEKID.set(chargeEventEKID, chargeEventEntity);
       });
-
 
       searchFilter = {
         entityKeyIds: chargeEventEKIDs,

@@ -2,7 +2,6 @@
  * @flow
  */
 
-import { List, Map, fromJS } from 'immutable';
 import {
   all,
   call,
@@ -10,6 +9,7 @@ import {
   select,
   takeEvery,
 } from '@redux-saga/core/effects';
+import { List, Map, fromJS } from 'immutable';
 import {
   SearchApiActions,
   SearchApiSagas
@@ -17,10 +17,6 @@ import {
 import { DateTime } from 'luxon';
 import type { SequenceAction } from 'redux-reqseq';
 
-import Logger from '../../utils/Logger';
-import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../utils/Errors';
-import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
-import { STATE } from '../../utils/constants/ReduxStateConsts';
 import {
   FIND_APPOINTMENTS,
   GET_PERSON_COURT_TYPE,
@@ -31,8 +27,9 @@ import {
   getWorksiteAndPersonNames,
   getWorksitePlansByPerson,
 } from './WorkScheduleActions';
-import { getAppointmentCheckIns } from '../participant/assignedworksites/WorksitePlanActions';
-import { getAppointmentCheckInsWorker } from '../participant/assignedworksites/WorksitePlanSagas';
+
+import Logger from '../../utils/Logger';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import {
   getEntityKeyId,
   getEntityProperties,
@@ -40,11 +37,13 @@ import {
   getNeighborDetails,
   getNeighborESID,
   getPropertyTypeIdFromEdm,
-  getSearchTerm,
   getUTCDateRangeSearchString
 } from '../../utils/DataUtils';
+import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../utils/Errors';
 import { isDefined } from '../../utils/LangUtils';
-import { timePeriods } from './WorkScheduleConstants';
+import { STATE } from '../../utils/constants/ReduxStateConsts';
+import { getAppointmentCheckIns } from '../participant/assignedworksites/WorksitePlanActions';
+import { getAppointmentCheckInsWorker } from '../participant/assignedworksites/WorksitePlanSagas';
 
 const LOG = new Logger('WorkScheduleSagas');
 const { executeSearch, searchEntityNeighborsWithFilter } = SearchApiActions;
@@ -154,7 +153,6 @@ function* getPersonCourtTypeWatcher() :Generator<*, *, *> {
   yield takeEvery(GET_PERSON_COURT_TYPE, getPersonCourtTypeWorker);
 }
 
-
 /*
  *
  * WorkScheduleActions.getWorksitePlansByPerson()
@@ -249,7 +247,6 @@ function* getWorksitePlansByPersonWatcher() :Generator<*, *, *> {
 
   yield takeEvery(GET_WORKSITE_PLANS_BY_PERSON, getWorksitePlansByPersonWorker);
 }
-
 
 /*
  *

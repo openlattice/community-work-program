@@ -1,5 +1,6 @@
 // @flow
 import React, { Component } from 'react';
+
 import { Map } from 'immutable';
 import { Modal } from 'lattice-ui-kit';
 import { connect } from 'react-redux';
@@ -8,13 +9,12 @@ import type { RequestState } from 'redux-reqseq';
 
 import AddWorksiteForm from './AddWorksiteForm';
 
-import { getEntityProperties } from '../../utils/DataUtils';
 import { PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
-import { WORKSITES, STATE } from '../../utils/constants/ReduxStateConsts';
+import { getEntityProperties } from '../../utils/DataUtils';
+import { STATE, WORKSITES } from '../../utils/constants/ReduxStateConsts';
 
 const { ORGANIZATION_NAME } = PROPERTY_TYPE_FQNS;
 const { ACTIONS, ADD_WORKSITE, REQUEST_STATE } = WORKSITES;
-
 
 type Props = {
   isOpen :boolean;
