@@ -233,32 +233,43 @@ function* addWorksiteContactsWorker(action :SequenceAction) :Generator<*, *, *> 
     const { associationEntityData, entityData } :Object = value;
 
     response = yield call(submitDataGraphWorker, submitDataGraph({ associationEntityData, entityData }));
-    if (response.error) {
-      throw response.error;
-    }
+    if (response.error) throw response.error;
+
+    const { entityKeyIds } = response.data;
+    const app = yield select(getAppFromState);
+    const staffESID :UUID = getEntitySetIdFromApp(app, STAFF);
+    const contactInfoESID :UUID = getEntitySetIdFromApp(app, CONTACT_INFORMATION);
+    const staffEKID :UUID = entityKeyIds[staffESID][0];
+    const phoneEKID :UUID = entityKeyIds[contactInfoESID][0];
+    const emailEKID :UUID = entityKeyIds[contactInfoESID][1];
 
     const { editedContactData } = value;
     const newContactData :Object = editedContactData[getPageSectionKey(1, 1)][0];
-    let newContact :Map = Map();
-    fromJS(newContactData).forEach((contactValue :string, entityAddressKey :string) => {
-      const { entityIndex, entitySetName, propertyTypeFQN } = parseEntityAddressKey(entityAddressKey);
-      if (entitySetName === STAFF.toString()) {
-        let staffMember :Map = newContact.get(STAFF, Map());
-        staffMember = staffMember.set(propertyTypeFQN, contactValue);
-        newContact = newContact.set(STAFF, staffMember);
-      }
-      if (entitySetName === CONTACT_INFORMATION.toString()) {
-        if (entityIndex === 0) {
-          let contactMethod :Map = newContact.get(PHONE_NUMBER, Map());
-          contactMethod = contactMethod.set(propertyTypeFQN, contactValue);
-          newContact = newContact.set(PHONE_NUMBER, contactMethod);
+
+    const newContact :Map = Map().withMutations((mutator :Map) => {
+      fromJS(newContactData).forEach((contactValue :string, entityAddressKey :string) => {
+        const { entityIndex, entitySetName, propertyTypeFQN } = parseEntityAddressKey(entityAddressKey);
+        if (entitySetName === STAFF.toString()) {
+          let staffMember :Map = mutator.get(STAFF, Map());
+          staffMember = staffMember.set(propertyTypeFQN, List([contactValue]));
+          mutator.set(STAFF, staffMember);
         }
-        if (entityIndex === 1) {
-          let contactMethod :Map = newContact.get(EMAIL, Map());
-          contactMethod = contactMethod.set(propertyTypeFQN, contactValue);
-          newContact = newContact.set(EMAIL, contactMethod);
+        if (entitySetName === CONTACT_INFORMATION.toString()) {
+          if (entityIndex === 0) {
+            let contactMethod :Map = mutator.get(PHONE_NUMBER, Map());
+            contactMethod = contactMethod.set(propertyTypeFQN, List([contactValue]));
+            mutator.set(PHONE_NUMBER, contactMethod);
+          }
+          if (entityIndex === 1) {
+            let contactMethod :Map = mutator.get(EMAIL, Map());
+            contactMethod = contactMethod.set(propertyTypeFQN, List([contactValue]));
+            mutator.set(EMAIL, contactMethod);
+          }
         }
-      }
+      });
+      mutator.setIn([STAFF, ENTITY_KEY_ID], List([staffEKID]));
+      mutator.setIn([PHONE_NUMBER, ENTITY_KEY_ID], List([phoneEKID]));
+      mutator.setIn([EMAIL, ENTITY_KEY_ID], List([emailEKID]));
     });
     newWorksiteContacts = newWorksiteContacts.push(newContact);
 
@@ -392,6 +403,10 @@ function* deleteWorksiteContactWorker(action :SequenceAction) :Generator<*, *, *
 
     const { entityData } = value;
 
+    const app = yield select(getAppFromState);
+    const staffESID :UUID = getEntitySetIdFromApp(app, STAFF);
+    let deletedStaffContactEKID = '';
+
     const entitiesToDelete :Object[] = [];
     fromJS(entityData).forEach((setOfEKIDs :Set<UUID>, entitySetId :UUID) => {
       setOfEKIDs.forEach((entityKeyId :UUID) => {
@@ -400,12 +415,15 @@ function* deleteWorksiteContactWorker(action :SequenceAction) :Generator<*, *, *
           entityKeyIds: [entityKeyId]
         });
       });
+      if (entitySetId === staffESID) {
+        deletedStaffContactEKID = setOfEKIDs.values().next().value;
+      }
     });
 
     response = yield call(deleteEntitiesWorker, deleteEntities(entitiesToDelete));
     if (response.error) throw response.error;
 
-    yield put(deleteWorksiteContact.success(id));
+    yield put(deleteWorksiteContact.success(id, deletedStaffContactEKID));
   }
   catch (error) {
     LOG.error(action.type, error);
