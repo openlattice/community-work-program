@@ -3,20 +3,35 @@ import React, { useEffect, useState } from 'react';
 
 import { List, Map } from 'immutable';
 import { DataProcessingUtils, Form } from 'lattice-fabricate';
-import { Card, CardHeader } from 'lattice-ui-kit';
+import {
+  Card,
+  CardHeader,
+  CardSegment,
+  Spinner,
+} from 'lattice-ui-kit';
+import { ReduxUtils, useRequestState } from 'lattice-utils';
 import { useDispatch } from 'react-redux';
 
-import { addWorksiteContacts, deleteWorksiteContact, editWorksiteContact } from './WorksitesActions';
+import {
+  addWorksiteContacts,
+  deleteWorksiteContact,
+  editWorksiteContact,
+} from './WorksitesActions';
 import { contactsSchema, contactsUiSchema } from './schemas/EditWorksiteInfoSchemas';
 import { getAssociations, getOriginalFormData, updateSubmittedFormData } from './utils/EditContactsUtils';
 
 import { getEntityKeyId } from '../../utils/DataUtils';
+import { requestIsPending } from '../../utils/RequestStateUtils';
+import { SHARED, STATE, WORKSITES } from '../../utils/constants/ReduxStateConsts';
 
 const {
   getPageSectionKey,
   processEntityData,
   processAssociationEntityData,
 } = DataProcessingUtils;
+const { reduceRequestStates } = ReduxUtils;
+const { ACTIONS } = SHARED;
+const { ADD_WORKSITE_CONTACTS, DELETE_WORKSITE_CONTACT, EDIT_WORKSITE_CONTACT } = WORKSITES;
 
 type Props = {
   entityIndexToIdMap :Map;
@@ -77,6 +92,23 @@ const EditContactsForm = ({
     propertyTypeIds,
   };
 
+  const addRequestState = useRequestState([
+    STATE.WORKSITES,
+    ACTIONS,
+    ADD_WORKSITE_CONTACTS,
+  ]);
+  const deleteRequestState = useRequestState([
+    STATE.WORKSITES,
+    ACTIONS,
+    DELETE_WORKSITE_CONTACT,
+  ]);
+  const editRequestState = useRequestState([
+    STATE.WORKSITES,
+    ACTIONS,
+    EDIT_WORKSITE_CONTACT,
+  ]);
+  const reducedReqState = reduceRequestStates([addRequestState, deleteRequestState, editRequestState]);
+
   return (
     <Card>
       <CardHeader mode="primary" padding="sm">Edit Work Site Contacts</CardHeader>
@@ -88,6 +120,7 @@ const EditContactsForm = ({
           onSubmit={onSubmit}
           schema={contactsSchema}
           uiSchema={contactsUiSchema} />
+      { requestIsPending(reducedReqState) && <CardSegment><Spinner size="2x" /></CardSegment> }
     </Card>
   );
 };
