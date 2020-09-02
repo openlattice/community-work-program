@@ -3,6 +3,7 @@
  */
 
 import { List, Map, fromJS } from 'immutable';
+import { DataUtils } from 'lattice-utils';
 import { RequestStates } from 'redux-reqseq';
 import type { FQN } from 'lattice';
 import type { SequenceAction } from 'redux-reqseq';
@@ -28,11 +29,12 @@ import {
 } from './WorksitesActions';
 import { WORKSITE_STATUSES } from './WorksitesConstants';
 
-import { PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { getEntityProperties, getPropertyFqnFromEdm } from '../../utils/DataUtils';
 import { isDefined } from '../../utils/LangUtils';
 import { WORKSITES } from '../../utils/constants/ReduxStateConsts';
 
+const { getEntityKeyId } = DataUtils;
 const {
   ACTIONS,
   ADD_ORGANIZATION,
@@ -64,6 +66,7 @@ const {
   WORKSITES_INFO,
   WORKSITES_LIST,
 } = WORKSITES;
+const { STAFF } = APP_TYPE_FQNS;
 const { DATETIME_END, DATETIME_START, ENTITY_KEY_ID } = PROPERTY_TYPE_FQNS;
 
 const INITIAL_STATE :Map<*, *> = fromJS({
@@ -280,8 +283,20 @@ export default function worksitesReducer(state :Map<*, *> = INITIAL_STATE, actio
         REQUEST: () => state
           .setIn([ACTIONS, DELETE_WORKSITE_CONTACT, action.id], action)
           .setIn([ACTIONS, DELETE_WORKSITE_CONTACT, REQUEST_STATE], RequestStates.PENDING),
-        SUCCESS: () => state
-          .setIn([ACTIONS, DELETE_WORKSITE_CONTACT, REQUEST_STATE], RequestStates.SUCCESS),
+        SUCCESS: () => {
+          const deletedStaffContactEKID :UUID = action.value;
+          let worksiteContacts :List = state.get(WORKSITE_CONTACTS);
+          const contactIndexToDelete = worksiteContacts.findIndex((contact :Map) => {
+            const staffMember :Map = contact.get(STAFF, Map());
+            return getEntityKeyId(staffMember) === deletedStaffContactEKID;
+          });
+          if (contactIndexToDelete !== -1) {
+            worksiteContacts = worksiteContacts.delete(contactIndexToDelete);
+          }
+          return state
+            .set(WORKSITE_CONTACTS, worksiteContacts)
+            .setIn([ACTIONS, DELETE_WORKSITE_CONTACT, REQUEST_STATE], RequestStates.SUCCESS);
+        },
         FAILURE: () => state
           .setIn([ACTIONS, DELETE_WORKSITE_CONTACT, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, DELETE_WORKSITE_CONTACT, action.id]),
