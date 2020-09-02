@@ -3,50 +3,29 @@
  */
 
 import {
-  List,
-  Map,
-  fromJS,
-  getIn,
-  has,
-} from 'immutable';
-import {
   all,
   call,
   put,
   select,
   takeEvery,
 } from '@redux-saga/core/effects';
-import { DateTime } from 'luxon';
+import {
+  List,
+  Map,
+  fromJS,
+  getIn,
+  has,
+} from 'immutable';
+import { DataProcessingUtils } from 'lattice-fabricate';
 import {
   DataApiActions,
   DataApiSagas,
   SearchApiActions,
   SearchApiSagas
 } from 'lattice-sagas';
-import { DataProcessingUtils } from 'lattice-fabricate';
+import { DateTime } from 'luxon';
 import type { SequenceAction } from 'redux-reqseq';
 
-import Logger from '../../utils/Logger';
-import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../utils/Errors';
-import { WORKSITE_INFO_CONSTS } from './WorksitesConstants';
-import {
-  getEntityKeyId,
-  getEntityProperties,
-  getEntitySetIdFromApp,
-  getNeighborDetails,
-  getNeighborESID,
-  getPropertyFqnFromEdm,
-  getPropertyTypeIdFromEdm,
-  sortEntitiesByDateProperty,
-} from '../../utils/DataUtils';
-import {
-  getCombinedDateTime,
-  getWorksiteScheduleFromFormData,
-  getWorksiteScheduleFromEntities
-} from '../../utils/ScheduleUtils';
-import { isDefined } from '../../utils/LangUtils';
-import { STATE } from '../../utils/constants/ReduxStateConsts';
-import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import {
   ADD_ORGANIZATION,
   ADD_WORKSITE,
@@ -83,12 +62,34 @@ import {
   getWorksites,
   getWorksitesByOrg,
 } from './WorksitesActions';
+import { WORKSITE_INFO_CONSTS } from './WorksitesConstants';
+
+import Logger from '../../utils/Logger';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { deleteEntities, submitDataGraph, submitPartialReplace } from '../../core/sagas/data/DataActions';
 import {
   deleteEntitiesWorker,
   submitDataGraphWorker,
   submitPartialReplaceWorker
 } from '../../core/sagas/data/DataSagas';
+import {
+  getEntityKeyId,
+  getEntityProperties,
+  getEntitySetIdFromApp,
+  getNeighborDetails,
+  getNeighborESID,
+  getPropertyFqnFromEdm,
+  getPropertyTypeIdFromEdm,
+  sortEntitiesByDateProperty,
+} from '../../utils/DataUtils';
+import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../utils/Errors';
+import { isDefined } from '../../utils/LangUtils';
+import {
+  getCombinedDateTime,
+  getWorksiteScheduleFromEntities,
+  getWorksiteScheduleFromFormData
+} from '../../utils/ScheduleUtils';
+import { STATE } from '../../utils/constants/ReduxStateConsts';
 
 const { PAST, SCHEDULED, TOTAL_HOURS } = WORKSITE_INFO_CONSTS;
 const {
@@ -236,8 +237,8 @@ function* addWorksiteContactsWorker(action :SequenceAction) :Generator<*, *, *> 
       throw response.error;
     }
 
-    const { contacts } = value;
-    const newContactData :Object = contacts[getPageSectionKey(1, 1)][0];
+    const { editedContactData } = value;
+    const newContactData :Object = editedContactData[getPageSectionKey(1, 1)][0];
     let newContact :Map = Map();
     fromJS(newContactData).forEach((contactValue :string, entityAddressKey :string) => {
       const { entityIndex, entitySetName, propertyTypeFQN } = parseEntityAddressKey(entityAddressKey);
