@@ -1,11 +1,10 @@
 // @flow
 import React, { useEffect, useState } from 'react';
 
-import { List, Map, getIn } from 'immutable';
+import { List, Map } from 'immutable';
 import { DataProcessingUtils, Form } from 'lattice-fabricate';
 import { Card, CardHeader } from 'lattice-ui-kit';
-import { useDispatch, useSelector } from 'react-redux';
-import type { RequestSequence } from 'redux-reqseq';
+import { useDispatch } from 'react-redux';
 
 import { addWorksiteContacts, deleteWorksiteContact, editWorksiteContact } from './WorksitesActions';
 import { contactsSchema, contactsUiSchema } from './schemas/EditWorksiteInfoSchemas';
@@ -14,7 +13,6 @@ import { getAssociations, getOriginalFormData, updateSubmittedFormData } from '.
 import { getEntityKeyId } from '../../utils/DataUtils';
 
 const {
-  getEntityAddressKey,
   getPageSectionKey,
   processEntityData,
   processAssociationEntityData,
