@@ -394,12 +394,12 @@ function* createWorksiteScheduleWatcher() :Generator<*, *, *> {
 
 function* deleteWorksiteContactWorker(action :SequenceAction) :Generator<*, *, *> {
 
-  const { id, value } = action;
-  if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
-  let response :Object = {};
+  const { id } = action;
 
   try {
-    yield put(deleteWorksiteContact.request(id, value));
+    yield put(deleteWorksiteContact.request(id));
+    const { value } = action;
+    if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
 
     const { entityData } = value;
 
@@ -410,18 +410,42 @@ function* deleteWorksiteContactWorker(action :SequenceAction) :Generator<*, *, *
     const entitiesToDelete :Object[] = [];
     fromJS(entityData).forEach((setOfEKIDs :Set<UUID>, entitySetId :UUID) => {
       setOfEKIDs.forEach((entityKeyId :UUID) => {
-        entitiesToDelete.push({
-          entitySetId,
-          entityKeyIds: [entityKeyId]
-        });
+        if (isDefined(entityKeyId)) {
+          entitiesToDelete.push({
+            entitySetId,
+            entityKeyIds: [entityKeyId]
+          });
+        }
       });
       if (entitySetId === staffESID) {
         deletedStaffContactEKID = setOfEKIDs.values().next().value;
       }
     });
 
-    response = yield call(deleteEntitiesWorker, deleteEntities(entitiesToDelete));
-    if (response.error) throw response.error;
+    if (deletedStaffContactEKID.length) {
+      const employeeESID :UUID = getEntitySetIdFromApp(app, EMPLOYEE);
+      const filter = {
+        entityKeyIds: [deletedStaffContactEKID],
+        destinationEntitySetIds: [employeeESID],
+        sourceEntitySetIds: [],
+      };
+      const response = yield call(
+        searchEntityNeighborsWithFilterWorker,
+        searchEntityNeighborsWithFilter({ entitySetId: staffESID, filter })
+      );
+      if (response.error) throw response.error;
+      const data = fromJS(response.data);
+      if (!data.isEmpty()) {
+        const employee = getNeighborDetails(data.getIn([deletedStaffContactEKID, 0]));
+        const employeeEKID :UUID = getEntityKeyId(employee);
+        entitiesToDelete.push({ entitySetId: employeeESID, entityKeyIds: [employeeEKID] });
+      }
+    }
+
+    if (entitiesToDelete.length) {
+      const response = yield call(deleteEntitiesWorker, deleteEntities(entitiesToDelete));
+      if (response.error) throw response.error;
+    }
 
     yield put(deleteWorksiteContact.success(id, deletedStaffContactEKID));
   }
