@@ -16,6 +16,7 @@ import {
   getIn,
   has,
 } from 'immutable';
+import { Models } from 'lattice';
 import { DataProcessingUtils } from 'lattice-fabricate';
 import {
   DataApiActions,
@@ -89,7 +90,7 @@ import {
   getWorksiteScheduleFromEntities,
   getWorksiteScheduleFromFormData
 } from '../../utils/ScheduleUtils';
-import { STATE } from '../../utils/constants/ReduxStateConsts';
+import { STATE, WORKSITES } from '../../utils/constants/ReduxStateConsts';
 
 const { PAST, SCHEDULED, TOTAL_HOURS } = WORKSITE_INFO_CONSTS;
 const {
@@ -112,8 +113,9 @@ const {
   PHONE_NUMBER,
   REQUIRED_HOURS,
 } = PROPERTY_TYPE_FQNS;
+const { WORKSITE_CONTACTS } = WORKSITES;
 
-const LOG = new Logger('WorksitesSagas');
+const { FullyQualifiedName } = Models;
 const { searchEntityNeighborsWithFilter } = SearchApiActions;
 const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
 const { getEntityData, getEntitySetData } = DataApiActions;
@@ -122,6 +124,8 @@ const { getPageSectionKey, parseEntityAddressKey } = DataProcessingUtils;
 
 const getAppFromState = (state) => state.get(STATE.APP, Map());
 const getEdmFromState = (state) => state.get(STATE.EDM, Map());
+
+const LOG = new Logger('WorksitesSagas');
 
 /*
  *
@@ -531,41 +535,66 @@ function* editWorksiteWatcher() :Generator<*, *, *> {
 function* editWorksiteContactWorker(action :SequenceAction) :Generator<*, *, *> {
 
   const { id, value } = action;
-  let response :Object = {};
-  let newlyEditedContact :Map = Map();
 
   try {
     yield put(editWorksiteContact.request(id, value));
 
-    response = yield call(submitPartialReplaceWorker, submitPartialReplace(value));
-    if (response.error) {
-      throw response.error;
-    }
+    const response = yield call(submitPartialReplaceWorker, submitPartialReplace(value));
+    if (response.error) throw response.error;
 
-    const { properties } = value;
+    const { entityData, path } = value;
 
-    fromJS(properties).forEach((contactValue :string, entityAddressKey :string) => {
+    const app = yield select(getAppFromState);
+    const edm = yield select(getEdmFromState);
 
-      const { entityIndex, entitySetName, propertyTypeFQN } = parseEntityAddressKey(entityAddressKey);
-      if (entitySetName === STAFF.toString()) {
-        let staffMember :Map = newlyEditedContact.get(STAFF, Map());
-        staffMember = staffMember.set(propertyTypeFQN, contactValue);
-        newlyEditedContact = newlyEditedContact.set(STAFF, staffMember);
+    const worksiteContacts :List = yield select((state) => state.getIn([
+      STATE.WORKSITES,
+      WORKSITE_CONTACTS
+    ], List()));
+    const contactIndex = parseInt(path[1], 0);
+    let editedWorksiteContact :Map = worksiteContacts.get(contactIndex);
+
+    fromJS(entityData).forEach((editedEntityData :Map, entitySetId :UUID) => {
+      const editedEntityKeyId = editedEntityData.keySeq().toList().get(0);
+      const valueMap = editedEntityData.get(editedEntityKeyId);
+
+      let relevantFqnOnEditedEntity;
+      const staffESID :UUID = getEntitySetIdFromApp(app, STAFF);
+      if (entitySetId === staffESID) {
+        relevantFqnOnEditedEntity = STAFF;
       }
-      if (entitySetName === CONTACT_INFORMATION.toString()) {
-        if (entityIndex === -1) {
-          let contactMethod :Map = newlyEditedContact.get(PHONE_NUMBER, Map());
-          contactMethod = contactMethod.set(propertyTypeFQN, contactValue);
-          newlyEditedContact = newlyEditedContact.set(PHONE_NUMBER, contactMethod);
-        }
-        if (entityIndex === -2) {
-          let contactMethod :Map = newlyEditedContact.get(EMAIL, Map());
-          contactMethod = contactMethod.set(propertyTypeFQN, contactValue);
-          newlyEditedContact = newlyEditedContact.set(EMAIL, contactMethod);
-        }
+      const firstPropertyTypeId = valueMap.keySeq().toList().get(0);
+      const propertyFqn = getPropertyFqnFromEdm(edm, firstPropertyTypeId);
+      if (propertyFqn.toString() === PHONE_NUMBER.toString()
+        || propertyFqn.toString() === EMAIL.toString()) {
+        relevantFqnOnEditedEntity = propertyFqn;
       }
+
+      editedWorksiteContact.forEach((contactEntity :Map, contactFqn :FullyQualifiedName) => {
+
+        let contactFqnToUpdate;
+        if (contactFqn.toString() === STAFF.toString()) {
+          contactFqnToUpdate = STAFF;
+        }
+        if (contactFqn.toString() === PHONE_NUMBER.toString()) {
+          contactFqnToUpdate = PHONE_NUMBER;
+        }
+        if (contactFqn.toString() === EMAIL.toString()) {
+          contactFqnToUpdate = EMAIL;
+        }
+
+        if (contactFqnToUpdate && contactFqnToUpdate.toString() === relevantFqnOnEditedEntity.toString()) {
+          valueMap.forEach((editedValue :any, propertyTypeId :UUID) => {
+            const fqn = getPropertyFqnFromEdm(edm, propertyTypeId);
+            editedWorksiteContact = editedWorksiteContact.setIn([contactFqnToUpdate, fqn], editedValue);
+          });
+        }
+      });
     });
-    yield put(editWorksiteContact.success(id, { newlyEditedContact }));
+
+    const newlyEditedWorksiteContacts = worksiteContacts.set(contactIndex, editedWorksiteContact);
+
+    yield put(editWorksiteContact.success(id, newlyEditedWorksiteContacts));
   }
   catch (error) {
     LOG.error(action.type, error);
