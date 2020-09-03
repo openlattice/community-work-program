@@ -369,24 +369,9 @@ export default function worksitesReducer(state :Map<*, *> = INITIAL_STATE, actio
           .setIn([ACTIONS, EDIT_WORKSITE_CONTACT, action.id], action)
           .setIn([ACTIONS, EDIT_WORKSITE_CONTACT, REQUEST_STATE], RequestStates.PENDING),
         SUCCESS: () => {
-
-          const seqAction :SequenceAction = action;
-          const storedSeqAction :SequenceAction = state.getIn([ACTIONS, EDIT_WORKSITE_CONTACT, seqAction.id]);
-
-          let worksiteContacts :List = state.get(WORKSITE_CONTACTS);
-          if (storedSeqAction) {
-
-            const { value } :Object = seqAction;
-            const { newlyEditedContact } = value;
-
-            const storedValue :Object = storedSeqAction.value;
-            const { path } = storedValue;
-            const arrayIndex = path[1];
-            worksiteContacts = worksiteContacts.set(arrayIndex, newlyEditedContact);
-          }
-
+          const newlyEditedWorksiteContacts = action.value;
           return state
-            .set(WORKSITE_CONTACTS, worksiteContacts)
+            .set(WORKSITE_CONTACTS, newlyEditedWorksiteContacts)
             .setIn([ACTIONS, EDIT_WORKSITE_CONTACT, REQUEST_STATE], RequestStates.SUCCESS);
         },
         FAILURE: () => state
