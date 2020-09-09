@@ -1,5 +1,6 @@
 // @flow
 import React, { Component } from 'react';
+
 import styled from 'styled-components';
 import { Map, OrderedMap } from 'immutable';
 import {
@@ -13,26 +14,26 @@ import {
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { RequestStates } from 'redux-reqseq';
-import type { RequestSequence, RequestState } from 'redux-reqseq';
 import type { Match } from 'react-router';
+import type { RequestSequence, RequestState } from 'redux-reqseq';
+
+import { getWorksite } from './WorksitesActions';
+import { getWeekdayTableData, getWeekdayTableHeaders, getWorksiteStatus } from './utils/WorksitesUtils';
 
 import LogoLoader from '../../components/LogoLoader';
-
 import * as Routes from '../../core/router/Routes';
-import { getWorksite } from './WorksitesActions';
-import { goToRoute } from '../../core/router/RoutingActions';
-import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
-import { APP, STATE, WORKSITES } from '../../utils/constants/ReduxStateConsts';
-import { getEntityProperties } from '../../utils/DataUtils';
-import { getPersonAddress, getPersonFullName } from '../../utils/PeopleUtils';
-import { formatAsDate } from '../../utils/DateTimeUtils';
-import { getWeekdayTableData, getWeekdayTableHeaders, getWorksiteStatus } from './WorksitesUtils';
 import {
   ContainerHeader,
   ContainerInnerWrapper,
   ContainerOuterWrapper,
 } from '../../components/Layout';
 import { BackNavButton } from '../../components/controls/index';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { goToRoute } from '../../core/router/RoutingActions';
+import { getEntityProperties } from '../../utils/DataUtils';
+import { formatAsDate } from '../../utils/DateTimeUtils';
+import { getPersonAddress, getPersonFullName } from '../../utils/PeopleUtils';
+import { APP, STATE, WORKSITES } from '../../utils/constants/ReduxStateConsts';
 import { EMPTY_FIELD } from '../participants/ParticipantsConstants';
 import type { GoToRoute } from '../../core/router/RoutingActions';
 

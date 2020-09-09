@@ -1,8 +1,8 @@
 // @flow
 import { Map } from 'immutable';
 
-import { isDefined } from '../../utils/LangUtils';
-import { EMPTY_FIELD } from '../participants/ParticipantsConstants';
+import { isDefined } from '../../../utils/LangUtils';
+import { EMPTY_FIELD } from '../../participants/ParticipantsConstants';
 
 const getWorksiteStatus = (dateActive :string, dateInactive :string) :string => {
 

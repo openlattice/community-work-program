@@ -1,25 +1,26 @@
 // @flow
 import React, { Component } from 'react';
+
 import styled from 'styled-components';
 import { List, Map } from 'immutable';
 import { CardStack } from 'lattice-ui-kit';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { RequestStates } from 'redux-reqseq';
-import type { RequestSequence, RequestState } from 'redux-reqseq';
 import type { Match } from 'react-router';
+import type { RequestSequence, RequestState } from 'redux-reqseq';
 
-import EditWorksiteForm from './EditWorksiteForm';
 import EditContactsForm from './EditContactsForm';
 import EditWorksiteAddressForm from './EditWorksiteAddressForm';
-import LogoLoader from '../../components/LogoLoader';
-
-import * as Routes from '../../core/router/Routes';
+import EditWorksiteForm from './EditWorksiteForm';
 import { getWorksite } from './WorksitesActions';
-import { goToRoute } from '../../core/router/RoutingActions';
+
+import LogoLoader from '../../components/LogoLoader';
+import * as Routes from '../../core/router/Routes';
 import { BackNavButton } from '../../components/controls/index';
-import { getEntityKeyId } from '../../utils/DataUtils';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { goToRoute } from '../../core/router/RoutingActions';
+import { getEntityKeyId } from '../../utils/DataUtils';
 import {
   APP,
   EDM,
@@ -183,7 +184,6 @@ class EditWorksiteInfoForm extends Component<Props> {
               entitySetIds={entitySetIds}
               propertyTypeIds={propertyTypeIds}
               worksite={worksite}
-              worksiteAddress={worksiteAddress}
               worksiteContacts={worksiteContacts} />
           <EditWorksiteAddressForm
               entityIndexToIdMap={entityIndexToIdMap}

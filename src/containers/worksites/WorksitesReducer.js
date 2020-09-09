@@ -3,15 +3,11 @@
  */
 
 import { List, Map, fromJS } from 'immutable';
+import { DataUtils } from 'lattice-utils';
 import { RequestStates } from 'redux-reqseq';
-import type { SequenceAction } from 'redux-reqseq';
 import type { FQN } from 'lattice';
+import type { SequenceAction } from 'redux-reqseq';
 
-import { isDefined } from '../../utils/LangUtils';
-import { getEntityProperties, getPropertyFqnFromEdm } from '../../utils/DataUtils';
-import { WORKSITES } from '../../utils/constants/ReduxStateConsts';
-import { PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
-import { WORKSITE_STATUSES } from './WorksitesConstants';
 import {
   addOrganization,
   addWorksite,
@@ -31,7 +27,14 @@ import {
   getWorksites,
   getWorksitesByOrg,
 } from './WorksitesActions';
+import { WORKSITE_STATUSES } from './WorksitesConstants';
 
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { getEntityProperties, getPropertyFqnFromEdm } from '../../utils/DataUtils';
+import { isDefined } from '../../utils/LangUtils';
+import { WORKSITES } from '../../utils/constants/ReduxStateConsts';
+
+const { getEntityKeyId } = DataUtils;
 const {
   ACTIONS,
   ADD_ORGANIZATION,
@@ -63,6 +66,7 @@ const {
   WORKSITES_INFO,
   WORKSITES_LIST,
 } = WORKSITES;
+const { STAFF } = APP_TYPE_FQNS;
 const { DATETIME_END, DATETIME_START, ENTITY_KEY_ID } = PROPERTY_TYPE_FQNS;
 
 const INITIAL_STATE :Map<*, *> = fromJS({
@@ -74,6 +78,9 @@ const INITIAL_STATE :Map<*, *> = fromJS({
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [ADD_WORKSITE_ADDRESS]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [ADD_WORKSITE_CONTACTS]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [CREATE_WORKSITE_SCHEDULE]: {
@@ -274,13 +281,25 @@ export default function worksitesReducer(state :Map<*, *> = INITIAL_STATE, actio
       return deleteWorksiteContact.reducer(state, action, {
 
         REQUEST: () => state
-          .setIn([ACTIONS, ADD_WORKSITE_CONTACTS, action.id], action)
-          .setIn([ACTIONS, ADD_WORKSITE_CONTACTS, REQUEST_STATE], RequestStates.PENDING),
-        SUCCESS: () => state
-          .setIn([ACTIONS, ADD_WORKSITE_CONTACTS, REQUEST_STATE], RequestStates.SUCCESS),
+          .setIn([ACTIONS, DELETE_WORKSITE_CONTACT, action.id], action)
+          .setIn([ACTIONS, DELETE_WORKSITE_CONTACT, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+          const deletedStaffContactEKID :UUID = action.value;
+          let worksiteContacts :List = state.get(WORKSITE_CONTACTS);
+          const contactIndexToDelete = worksiteContacts.findIndex((contact :Map) => {
+            const staffMember :Map = contact.get(STAFF, Map());
+            return getEntityKeyId(staffMember) === deletedStaffContactEKID;
+          });
+          if (contactIndexToDelete !== -1) {
+            worksiteContacts = worksiteContacts.delete(contactIndexToDelete);
+          }
+          return state
+            .set(WORKSITE_CONTACTS, worksiteContacts)
+            .setIn([ACTIONS, DELETE_WORKSITE_CONTACT, REQUEST_STATE], RequestStates.SUCCESS);
+        },
         FAILURE: () => state
-          .setIn([ACTIONS, ADD_WORKSITE_CONTACTS, REQUEST_STATE], RequestStates.FAILURE),
-        FINALLY: () => state.deleteIn([ACTIONS, ADD_WORKSITE_CONTACTS, action.id]),
+          .setIn([ACTIONS, DELETE_WORKSITE_CONTACT, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, DELETE_WORKSITE_CONTACT, action.id]),
       });
     }
 
@@ -350,24 +369,9 @@ export default function worksitesReducer(state :Map<*, *> = INITIAL_STATE, actio
           .setIn([ACTIONS, EDIT_WORKSITE_CONTACT, action.id], action)
           .setIn([ACTIONS, EDIT_WORKSITE_CONTACT, REQUEST_STATE], RequestStates.PENDING),
         SUCCESS: () => {
-
-          const seqAction :SequenceAction = action;
-          const storedSeqAction :SequenceAction = state.getIn([ACTIONS, EDIT_WORKSITE_CONTACT, seqAction.id]);
-
-          let worksiteContacts :List = state.get(WORKSITE_CONTACTS);
-          if (storedSeqAction) {
-
-            const { value } :Object = seqAction;
-            const { newlyEditedContact } = value;
-
-            const storedValue :Object = storedSeqAction.value;
-            const { path } = storedValue;
-            const arrayIndex = path[1];
-            worksiteContacts = worksiteContacts.set(arrayIndex, newlyEditedContact);
-          }
-
+          const newlyEditedWorksiteContacts = action.value;
           return state
-            .set(WORKSITE_CONTACTS, worksiteContacts)
+            .set(WORKSITE_CONTACTS, newlyEditedWorksiteContacts)
             .setIn([ACTIONS, EDIT_WORKSITE_CONTACT, REQUEST_STATE], RequestStates.SUCCESS);
         },
         FAILURE: () => state
