@@ -1,7 +1,6 @@
 // @flow
 import { COURT_TYPES_MAP, ENROLLMENT_STATUSES } from '../../../core/edm/constants/DataModelConsts';
 
-
 const courtTypeCountObj :Object = {
   [COURT_TYPES_MAP.CHILD_SUPPORT]: 0,
   [COURT_TYPES_MAP.DRUG_COURT]: 0,

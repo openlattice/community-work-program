@@ -1,12 +1,12 @@
 // @flow
 import React, { Component } from 'react';
+
 import {
   List,
   Map,
   fromJS,
   hasIn,
 } from 'immutable';
-import { DateTime } from 'luxon';
 import { DataProcessingUtils } from 'lattice-fabricate';
 import {
   Button,
@@ -16,16 +16,24 @@ import {
   Select,
   TextArea,
 } from 'lattice-ui-kit';
+import { DateTime } from 'luxon';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import type { RequestSequence } from 'redux-reqseq';
 import type { FQN } from 'lattice';
+import type { RequestSequence } from 'redux-reqseq';
 
 import { addNewDiversionPlanStatus, markDiversionPlanAsComplete } from './ParticipantActions';
+
+import {
+  ButtonsRow,
+  FormRow,
+  FormWrapper,
+  RowContent
+} from '../../components/Layout';
+import { ENROLLMENT_STATUSES, WORKSITE_ENROLLMENT_STATUSES } from '../../core/edm/constants/DataModelConsts';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { getEntityKeyId, getEntitySetIdFromApp, getPropertyTypeIdFromEdm } from '../../utils/DataUtils';
 import { getCombinedDateTime } from '../../utils/ScheduleUtils';
-import { STATUS_FILTER_OPTIONS } from '../participants/ParticipantsConstants';
-import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import {
   APP,
   EDM,
@@ -33,13 +41,7 @@ import {
   STATE,
   WORKSITE_PLANS
 } from '../../utils/constants/ReduxStateConsts';
-import { ENROLLMENT_STATUSES, WORKSITE_ENROLLMENT_STATUSES } from '../../core/edm/constants/DataModelConsts';
-import {
-  ButtonsRow,
-  FormRow,
-  FormWrapper,
-  RowContent
-} from '../../components/Layout';
+import { STATUS_FILTER_OPTIONS } from '../participants/ParticipantsConstants';
 
 const {
   getEntityAddressKey,
@@ -155,7 +157,6 @@ class AddNewPlanStatusForm extends Component<Props, State> {
       );
       newEnrollmentData = newEnrollmentData.setIn(effectiveDateKeyPath, dateAsDateTime);
     }
-
 
     associations.push([RELATED_TO, 0, ENROLLMENT_STATUS, diversionPlanEKID, DIVERSION_PLAN, {}]);
 

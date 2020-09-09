@@ -1,18 +1,20 @@
 // @flow
 import React, { Component } from 'react';
+
 import styled from 'styled-components';
 import { Map } from 'immutable';
+import { DataProcessingUtils, Form } from 'lattice-fabricate';
 import { DateTime } from 'luxon';
-import { Form, DataProcessingUtils } from 'lattice-fabricate';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import type { RequestSequence } from 'redux-reqseq';
 
 import { editInfractionEvent } from './InfractionsActions';
 import { schema, uiSchema } from './schemas/EditInfractionSchemas';
+
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { getEntityKeyId, getEntityProperties } from '../../../utils/DataUtils';
 import { getCombinedDateTime } from '../../../utils/ScheduleUtils';
-import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { APP, EDM, STATE } from '../../../utils/constants/ReduxStateConsts';
 
 const {
@@ -181,7 +183,6 @@ const mapDispatchToProps = (dispatch) => ({
     editInfractionEvent,
   }, dispatch)
 });
-
 
 // $FlowFixMe
 export default connect(mapStateToProps, mapDispatchToProps)(EditInfractionForm);

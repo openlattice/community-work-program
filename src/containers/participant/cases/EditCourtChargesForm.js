@@ -1,5 +1,6 @@
 // @flow
 import React, { Component } from 'react';
+
 import styled from 'styled-components';
 import {
   List,
@@ -7,7 +8,7 @@ import {
   fromJS,
   get,
 } from 'immutable';
-import { DateTime } from 'luxon';
+import { DataProcessingUtils, Form } from 'lattice-fabricate';
 import {
   Button,
   Card,
@@ -15,23 +16,23 @@ import {
   CardSegment,
   Spinner,
 } from 'lattice-ui-kit';
-import { Form, DataProcessingUtils } from 'lattice-fabricate';
+import { DateTime } from 'luxon';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
-import AddToAvailableCourtChargesModal from '../charges/AddToAvailableCourtChargesModal';
-import ErrorMessage from '../../../components/error/ErrorMessage';
-
 import { courtChargeSchema, courtChargeUiSchema } from './schemas/EditCaseInfoSchemas';
 import { disableChargesForm, hydrateCourtChargeSchema, temporarilyDisableForm } from './utils/EditCaseInfoUtils';
-import { getEntityKeyId } from '../../../utils/DataUtils';
-import { getCombinedDateTime } from '../../../utils/ScheduleUtils';
-import { requestIsFailure, requestIsPending } from '../../../utils/RequestStateUtils';
-import { isDefined } from '../../../utils/LangUtils';
-import { addCourtChargesToCase, removeCourtChargeFromCase } from '../charges/ChargesActions';
+
+import AddToAvailableCourtChargesModal from '../charges/AddToAvailableCourtChargesModal';
+import ErrorMessage from '../../../components/error/ErrorMessage';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
+import { getEntityKeyId } from '../../../utils/DataUtils';
+import { isDefined } from '../../../utils/LangUtils';
+import { requestIsFailure, requestIsPending } from '../../../utils/RequestStateUtils';
+import { getCombinedDateTime } from '../../../utils/ScheduleUtils';
 import { CHARGES, SHARED, STATE } from '../../../utils/constants/ReduxStateConsts';
+import { addCourtChargesToCase, removeCourtChargeFromCase } from '../charges/ChargesActions';
 
 const {
   getEntityAddressKey,
@@ -148,7 +149,6 @@ class EditCourtChargesForm extends Component<Props, State> {
       });
     }
     newChargeSchema = hydrateCourtChargeSchema(courtChargeSchema, charges);
-
 
     this.setState({
       chargesFormData,

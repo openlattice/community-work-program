@@ -3,6 +3,7 @@
  */
 
 import React from 'react';
+
 import styled, { keyframes } from 'styled-components';
 
 const KeyFrames = keyframes`
@@ -42,7 +43,6 @@ const EllipseTop = styled(Ellipse)`
 const EllipseBottom = styled(Ellipse)`
   animation-delay: 0s;
 `;
-
 
 const LoadingText = styled.div`
   font-size: 16px;

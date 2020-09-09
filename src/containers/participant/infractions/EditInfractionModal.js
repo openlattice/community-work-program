@@ -1,5 +1,6 @@
 // @flow
 import React, { Component } from 'react';
+
 import { Map } from 'immutable';
 import { Modal } from 'lattice-ui-kit';
 import { connect } from 'react-redux';
@@ -11,7 +12,6 @@ import EditInfractionForm from './EditInfractionForm';
 import { PERSON_INFRACTIONS, STATE } from '../../../utils/constants/ReduxStateConsts';
 
 const { ACTIONS, EDIT_INFRACTION_EVENT, REQUEST_STATE } = PERSON_INFRACTIONS;
-
 
 type Props = {
   editInfractionEventRequestState :RequestState;

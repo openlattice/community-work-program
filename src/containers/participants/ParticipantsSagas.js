@@ -2,8 +2,6 @@
  * @flow
  */
 
-import { List, Map, fromJS } from 'immutable';
-import { DateTime } from 'luxon';
 import {
   all,
   call,
@@ -11,16 +9,16 @@ import {
   select,
   takeEvery,
 } from '@redux-saga/core/effects';
+import { List, Map, fromJS } from 'immutable';
 import {
   DataApiActions,
   DataApiSagas,
   SearchApiActions,
   SearchApiSagas,
 } from 'lattice-sagas';
+import { DateTime } from 'luxon';
 import type { SequenceAction } from 'redux-reqseq';
 
-import Logger from '../../utils/Logger';
-import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../utils/Errors';
 import {
   ADD_PARTICIPANT,
   GET_COURT_TYPE,
@@ -39,6 +37,10 @@ import {
   getParticipantPhotos,
   getParticipants,
 } from './ParticipantsActions';
+
+import Logger from '../../utils/Logger';
+import { INFRACTIONS_CONSTS } from '../../core/edm/constants/DataModelConsts';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { submitDataGraph } from '../../core/sagas/data/DataActions';
 import { submitDataGraphWorker } from '../../core/sagas/data/DataSagas';
 import {
@@ -49,11 +51,10 @@ import {
   getNeighborESID,
   sortEntitiesByDateProperty,
 } from '../../utils/DataUtils';
+import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../utils/Errors';
 import { isDefined } from '../../utils/LangUtils';
 import { isValidUUID } from '../../utils/ValidationUtils';
 import { STATE } from '../../utils/constants/ReduxStateConsts';
-import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
-import { INFRACTIONS_CONSTS } from '../../core/edm/constants/DataModelConsts';
 
 const { getEntitySetData } = DataApiActions;
 const { getEntitySetDataWorker } = DataApiSagas;
@@ -515,7 +516,6 @@ function* getEnrollmentStatusesWatcher() :Generator<*, *, *> {
 
   yield takeEvery(GET_ENROLLMENT_STATUSES, getEnrollmentStatusesWorker);
 }
-
 
 /*
  *

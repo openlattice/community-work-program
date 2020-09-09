@@ -221,6 +221,5 @@ const mapDispatchToProps = (dispatch) => ({
   }, dispatch)
 });
 
-
 // $FlowFixMe
 export default connect(mapStateToProps, mapDispatchToProps)(EditAppointmentForm);
