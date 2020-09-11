@@ -66,6 +66,7 @@ const OuterWrapper = styled.div`
 
 const AppointmentCardSegment = styled(CardSegment)`
   display: flex;
+  flex-direction: row;
   justify-content: space-between;
 `;
 

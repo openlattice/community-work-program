@@ -33,7 +33,7 @@ const SexChart = ({ sexDemographics } :Props) => {
   const sortedListOfSexes :List = getListForRadialChartKey(chartData, valuesNotFound);
   return (
     <CardSegment>
-      <CardSegment padding="0 0 10px 0">
+      <CardSegment padding="0 0 10px 0" vertical={false}>
         <RadialChart
             colorType="literal"
             data={chartData}

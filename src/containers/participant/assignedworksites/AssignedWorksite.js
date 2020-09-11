@@ -1,22 +1,19 @@
 // @flow
 import React, { useEffect, useState } from 'react';
+
 import styled from 'styled-components';
-import { Map } from 'immutable';
-import {
-  Card,
-  CardSegment,
-  EditButton,
-  StyleUtils,
-} from 'lattice-ui-kit';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTools } from '@fortawesome/pro-light-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { Map } from 'immutable';
+import { Card, CardSegment, StyleUtils } from 'lattice-ui-kit';
 
 import EditWorksitePlanModal from './EditWorksitePlanModal';
 
-import { getEntityProperties } from '../../../utils/DataUtils';
-import { PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
+import EditButton from '../../../components/controls/buttons/EditButton';
 import { WORKSITE_ENROLLMENT_STATUSES } from '../../../core/edm/constants/DataModelConsts';
+import { PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { ENROLLMENT_STATUS_COLORS, OL } from '../../../core/style/Colors';
+import { getEntityProperties } from '../../../utils/DataUtils';
 
 const {
   HOURS_WORKED,
@@ -87,7 +84,7 @@ const AssignedWorksite = ({ status, worksite, worksitePlan } :Props) => {
   return (
     <OuterWrapper>
       <Card>
-        <AppointmentCardSegment padding="sm">
+        <AppointmentCardSegment padding="sm" vertical={false}>
           <InnerWrapper>
             <Text>
               <FontAwesomeIcon icon={faTools} size="sm" />
@@ -96,7 +93,7 @@ const AssignedWorksite = ({ status, worksite, worksitePlan } :Props) => {
             <Text color={worksitePlanStatus}>{ worksitePlanStatus }</Text>
             <Text>{ hours }</Text>
           </InnerWrapper>
-          <EditButton mode="subtle" onClick={() => setEditModalVisibility(true)} />
+          <EditButton onClick={() => setEditModalVisibility(true)} />
         </AppointmentCardSegment>
       </Card>
       <EditWorksitePlanModal

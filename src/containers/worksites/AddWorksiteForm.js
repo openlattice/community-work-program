@@ -110,7 +110,7 @@ class AddWorksiteForm extends Component<Props, State> {
   render() {
     const { isLoading, onDiscard } = this.props;
     return (
-      <CardSegment padding="small">
+      <CardSegment padding="sm">
         <FormRow>
           <RowContent>
             <Label>Worksite name</Label>

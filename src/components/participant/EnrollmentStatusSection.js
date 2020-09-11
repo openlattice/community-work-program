@@ -1,12 +1,13 @@
 // @flow
 import React, { useState } from 'react';
+
 import styled from 'styled-components';
 import toString from 'lodash/toString';
 import {
-  fromJS,
   List,
   Map,
-  OrderedMap
+  OrderedMap,
+  fromJS
 } from 'immutable';
 import {
   Card,
@@ -17,19 +18,19 @@ import {
 } from 'lattice-ui-kit';
 import { withRouter } from 'react-router-dom';
 
-import AddNewPlanStatusModal from '../../containers/participant/AddNewPlanStatusModal';
-
 import {
+  EditButton,
   SectionLabel,
   SectionNameRow,
   SectionWrapper,
-  EditButton,
 } from './SectionStyledComponents';
-import { getEntityProperties } from '../../utils/DataUtils';
-import { PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
-import { ENROLLMENT_STATUSES } from '../../core/edm/constants/DataModelConsts';
+
+import AddNewPlanStatusModal from '../../containers/participant/AddNewPlanStatusModal';
 import { EMPTY_FIELD } from '../../containers/participants/ParticipantsConstants';
+import { ENROLLMENT_STATUSES } from '../../core/edm/constants/DataModelConsts';
+import { PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { ENROLLMENT_STATUS_COLORS, OL } from '../../core/style/Colors';
+import { getEntityProperties } from '../../utils/DataUtils';
 
 const { STATUS } = PROPERTY_TYPE_FQNS;
 const { getStyleVariation } = StyleUtils;
@@ -93,7 +94,7 @@ const EnrollmentStatusSection = ({
         <EditButton mode="subtle" onClick={() => setChangeStatusModalVisibility(true)} />
       </SectionNameRow>
       <Card>
-        <CardSegment padding="md">
+        <CardSegment padding="md" vertical={false}>
           <StatusBox>
             <Label subtle>Status</Label>
             <StatusText status={status}>{ status || EMPTY_FIELD }</StatusText>
