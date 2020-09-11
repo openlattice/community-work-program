@@ -1,14 +1,13 @@
 import BackNavButton from './buttons/BackNavButton';
 import ContactSupport from './buttons/ContactSupport';
-import { NavButton } from './buttons/NavButton';
-import { StyledEditButton } from './buttons/StyledEditButton';
-
+import EditButton from './buttons/EditButton';
 import ToolBar from './ToolBar';
+import { NavButton } from './buttons/NavButton';
 
 export {
   BackNavButton,
   ContactSupport,
   NavButton,
-  StyledEditButton,
+  EditButton,
   ToolBar,
 };
