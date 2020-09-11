@@ -2,8 +2,6 @@
 import styled from 'styled-components';
 import { Label } from 'lattice-ui-kit';
 
-import EditButton from '../controls/index';
-
 const SectionWrapper = styled.div`
   display: grid;
   grid-template-rows: 42px 1fr;
@@ -24,7 +22,6 @@ const SectionLabel = styled(Label)`
 `;
 
 export {
-  EditButton,
   SectionLabel,
   SectionNameRow,
   SectionWrapper,
