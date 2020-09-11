@@ -1,8 +1,9 @@
 // @flow
 import React, { Component } from 'react';
+
 import styled from 'styled-components';
 import { List, Map } from 'immutable';
-import { DateTime } from 'luxon';
+import { AuthUtils } from 'lattice-auth';
 import {
   Card,
   CardSegment,
@@ -12,17 +13,17 @@ import {
   Select,
   Sizes,
 } from 'lattice-ui-kit';
-import { AuthUtils } from 'lattice-auth';
-import { bindActionCreators } from 'redux';
+import { DateTime } from 'luxon';
 import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
 import { RequestStates } from 'redux-reqseq';
-import type { RequestSequence, RequestState } from 'redux-reqseq';
 import type { Match } from 'react-router';
+import type { RequestSequence, RequestState } from 'redux-reqseq';
+
+import { getInfoForPrintInfraction } from './PrintParticipantActions';
 
 import LogoLoader from '../../../components/LogoLoader';
 import ViolationHeader from '../../../assets/images/violation-header.png';
-
-import { getInfoForPrintInfraction } from './PrintParticipantActions';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { getEntityProperties, getValuesFromEntityList } from '../../../utils/DataUtils';
 import {
@@ -219,7 +220,7 @@ class PrintInfractionContainer extends Component<Props, State> {
         <CardSegment>
           <PenningtonSherrifsHeader />
         </CardSegment>
-        <CardSegment vertical>
+        <CardSegment>
           <Label subtle>Date</Label>
           <TextWrapper>{ infractionDate }</TextWrapper>
           <RowWrapper>
@@ -235,7 +236,7 @@ class PrintInfractionContainer extends Component<Props, State> {
           <Label subtle>Violation Type</Label>
           <TextWrapper>{ infractionCategory }</TextWrapper>
         </CardSegment>
-        <CardSegment vertical>
+        <CardSegment>
           {
             caseFieldRowArray.map((num :number) => (
               <div key={num}>
@@ -269,11 +270,11 @@ class PrintInfractionContainer extends Component<Props, State> {
             ))
           }
         </CardSegment>
-        <CardSegment vertical>
+        <CardSegment>
           <Label subtle>Narrative</Label>
           <TextWrapper>{ narrative }</TextWrapper>
         </CardSegment>
-        <CardSegment vertical>
+        <CardSegment>
           <Label subtle>Work Program Staff Person</Label>
           <TextWrapper>{ username }</TextWrapper>
         </CardSegment>

@@ -262,7 +262,7 @@ class WorksiteProfile extends Component<Props> {
                   data={datesAndAddress}
                   labelMap={datesLabelMap} />
             </CardSegment>
-            <CardSegment padding={cardSegmentPadding} vertical>
+            <CardSegment padding={cardSegmentPadding}>
               <ContactLabelsRow>
                 {
                   contactsHeaders.map((label :string) => (

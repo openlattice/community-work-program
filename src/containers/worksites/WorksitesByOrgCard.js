@@ -1,5 +1,6 @@
 // @flow
 import React, { Component } from 'react';
+
 import styled from 'styled-components';
 import { List, Map } from 'immutable';
 import {
@@ -8,23 +9,23 @@ import {
   Card,
   CardSegment
 } from 'lattice-ui-kit';
-import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
 
 import AddWorksiteModal from './AddWorksiteModal';
+import { WORKSITE_INFO_CONSTS } from './WorksitesConstants';
+
 import WorksitesHeaderRow from '../../components/table/WorksitesHeaderRow';
 import WorksitesTableRow from '../../components/table/WorksitesTableRow';
-
 import * as Routes from '../../core/router/Routes';
-import { goToRoute } from '../../core/router/RoutingActions';
 import { CustomTable, TableCell } from '../../components/table/styled/index';
+import { PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { goToRoute } from '../../core/router/RoutingActions';
+import { OL } from '../../core/style/Colors';
 import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
 import { formatAsDate } from '../../utils/DateTimeUtils';
 import { generateTableHeaders } from '../../utils/FormattingUtils';
 import { isDefined } from '../../utils/LangUtils';
-import { WORKSITE_INFO_CONSTS } from './WorksitesConstants';
-import { PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
-import { OL } from '../../core/style/Colors';
 import type { GoToRoute } from '../../core/router/RoutingActions';
 
 const {
@@ -186,7 +187,7 @@ class WorksitesByOrgCard extends Component<Props, State> {
 
     return (
       <Card>
-        <CardSegment vertical padding="0">
+        <CardSegment padding="0">
           <TextWrapper>
             <TitleRowWrapper>
               <OrgHeaderWrapper>

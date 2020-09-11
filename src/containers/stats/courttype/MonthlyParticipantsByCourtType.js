@@ -1,7 +1,9 @@
 // @flow
 import React, { useState } from 'react';
+
+import { faSearch } from '@fortawesome/pro-duotone-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { List, Map } from 'immutable';
-import { DateTime } from 'luxon';
 import {
   Button,
   Card,
@@ -12,12 +14,21 @@ import {
   Select,
   Spinner,
 } from 'lattice-ui-kit';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSearch } from '@fortawesome/pro-duotone-svg-icons';
+import { DateTime } from 'luxon';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
+import {
+  DOWNLOAD_COURT_TYPE_DATA,
+  GET_MONTHLY_PARTICIPANTS_BY_COURT_TYPE,
+  downloadCourtTypeData,
+  getMonthlyParticipantsByCourtType,
+} from './CourtTypeActions';
+
+import { requestIsPending } from '../../../utils/RequestStateUtils';
+import { SHARED, STATE, STATS } from '../../../utils/constants/ReduxStateConsts';
+import { MONTHS_OPTIONS, YEARS_OPTIONS } from '../consts/TimeConsts';
 import {
   SpinnerWrapper,
   StyledExpansionPanelSummary,
@@ -26,20 +37,10 @@ import {
 import {
   ActionsWrapper,
   GraphHeader,
-  // HeaderActionsWrapper,
   InnerHeaderRow,
   SelectsWrapper,
 } from '../styled/GraphStyles';
-import { requestIsPending } from '../../../utils/RequestStateUtils';
 import { formatParticipantsByCourtTypeDataForDownload } from '../utils/StatsUtils';
-import {
-  DOWNLOAD_COURT_TYPE_DATA,
-  GET_MONTHLY_PARTICIPANTS_BY_COURT_TYPE,
-  downloadCourtTypeData,
-  getMonthlyParticipantsByCourtType,
-} from './CourtTypeActions';
-import { SHARED, STATE, STATS } from '../../../utils/constants/ReduxStateConsts';
-import { MONTHS_OPTIONS, YEARS_OPTIONS } from '../consts/TimeConsts';
 
 const { ACTIONS, REQUEST_STATE } = SHARED;
 const { MONTHLY_PARTICIPANTS_BY_COURT_TYPE } = STATS;
@@ -134,7 +135,7 @@ const MonthlyParticipantsByCourtTypeList = ({ actions, monthlyParticipantsByCour
                       <div>{ title }</div>
                     </StyledExpansionPanelSummary>
                     <ExpansionPanelDetails>
-                      <CardSegment padding="0" vertical>
+                      <CardSegment padding="0">
                         { participants.map((participantMap :Map) => (
                           <div key={participantMap.get('personName')}>
                             { `${participantMap.get('personName')} • ${participantMap.get('hours')} hours` }

@@ -1,8 +1,10 @@
 // @flow
 import React, { useState } from 'react';
+
 import styled from 'styled-components';
+import { faSearch } from '@fortawesome/pro-duotone-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { List, Map } from 'immutable';
-import { DateTime } from 'luxon';
 import {
   Button,
   Card,
@@ -12,6 +14,8 @@ import {
   Select,
   Spinner,
 } from 'lattice-ui-kit';
+import { DateTime } from 'luxon';
+import { connect } from 'react-redux';
 import {
   Hint,
   HorizontalBarSeries,
@@ -21,12 +25,31 @@ import {
   XYPlot,
   YAxis,
 } from 'react-vis';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSearch } from '@fortawesome/pro-duotone-svg-icons';
-import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
+import {
+  DOWNLOAD_COURT_TYPE_DATA,
+  GET_ENROLLMENTS_BY_COURT_TYPE,
+  GET_HOURS_BY_COURT_TYPE,
+  downloadCourtTypeData,
+  getEnrollmentsByCourtType,
+  getHoursByCourtType,
+} from './CourtTypeActions';
+
+import { OL } from '../../../core/style/Colors';
+import { isDefined } from '../../../utils/LangUtils';
+import { requestIsPending } from '../../../utils/RequestStateUtils';
+import { SHARED, STATE } from '../../../utils/constants/ReduxStateConsts';
+import { GET_STATS_DATA, getStatsData } from '../StatsActions';
+import {
+  ALL_TIME,
+  MONTHLY,
+  MONTHS_OPTIONS,
+  TIME_FRAME_OPTIONS,
+  YEARLY,
+  YEARS_OPTIONS,
+} from '../consts/TimeConsts';
 import {
   ActionsWrapper,
   GraphHeader,
@@ -43,31 +66,10 @@ import {
   KeySquare,
 } from '../styled/RadialChartStyles';
 import {
-  formatEnrollmentsDataForDownload,
   formatEnrollmentStatusPeopleData,
+  formatEnrollmentsDataForDownload,
   getBottomRowForEnrollments,
 } from '../utils/StatsUtils';
-import { isDefined } from '../../../utils/LangUtils';
-import { requestIsPending } from '../../../utils/RequestStateUtils';
-import {
-  DOWNLOAD_COURT_TYPE_DATA,
-  GET_ENROLLMENTS_BY_COURT_TYPE,
-  GET_HOURS_BY_COURT_TYPE,
-  downloadCourtTypeData,
-  getEnrollmentsByCourtType,
-  getHoursByCourtType,
-} from './CourtTypeActions';
-import { GET_STATS_DATA, getStatsData } from '../StatsActions';
-import { OL } from '../../../core/style/Colors';
-import {
-  ALL_TIME,
-  MONTHLY,
-  MONTHS_OPTIONS,
-  TIME_FRAME_OPTIONS,
-  YEARLY,
-  YEARS_OPTIONS,
-} from '../consts/TimeConsts';
-import { SHARED, STATE } from '../../../utils/constants/ReduxStateConsts';
 
 const {
   BLUE_2,
@@ -250,7 +252,7 @@ const EnrollmentsAndStatusByCourtType = ({
           )
         }
       </GraphHeader>
-      <CardSegment padding="30px" vertical>
+      <CardSegment padding="30px">
         {
           requestIsPending(requestStates[GET_STATS_DATA])
             || requestIsPending(requestStates[GET_ENROLLMENTS_BY_COURT_TYPE])
@@ -311,7 +313,7 @@ const EnrollmentsAndStatusByCourtType = ({
             )
         }
       </CardSegment>
-      <CardSegment padding="30px" vertical>
+      <CardSegment padding="30px">
         <KeyWrapper>
           {
             STATUSES_PER_BAR.map(({ status, color: statusColor } :Object) => (

@@ -70,7 +70,7 @@ const WeeklyHoursBreakdown = ({ appointments, checkInsByAppointment } :Props) =>
             <div>Show Weekly Hours Breakdown</div>
           </ExpansionPanelSummary>
           <ExpansionPanelDetails>
-            <CardSegment padding="0" vertical>
+            <CardSegment padding="0">
               {
                 weeklyHoursBreakdown.map((weekMap :Map) => {
                   const hours = `${weekMap.get('hours')} hrs`;

@@ -65,7 +65,7 @@ const EnrollmentDates = ({
         <EditButton mode="subtle" onClick={edit} />
       </SectionNameRow>
       <Card>
-        <CardSegment padding="md" vertical>
+        <CardSegment padding="md">
           <DataGrid
               columns={3}
               data={data}

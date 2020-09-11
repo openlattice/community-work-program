@@ -1,5 +1,6 @@
 // @flow
 import React, { Component } from 'react';
+
 import styled from 'styled-components';
 import { List, Map } from 'immutable';
 import {
@@ -19,9 +20,15 @@ import AssignedWorksitesContainer from './assignedworksites/AssignedWorksitesCon
 import CreateWorkAppointmentModal from './schedule/CreateAppointmentModal';
 import EnrollmentTableRow from './enrollment/EnrollmentTableRow';
 import InfractionsContainer from './infractions/InfractionsContainer';
-import LogoLoader from '../../components/LogoLoader';
 import ParticipantWorkScheduleContainer from './schedule/ParticipantWorkScheduleContainer';
 import ProgramCompletionBanner from './ProgramCompletionBanner';
+import generateDiversionPlanOptions from './utils/ParticipantProfileUtils';
+import { getAllParticipantInfo, getEnrollmentFromDiversionPlan } from './ParticipantActions';
+import { clearAppointmentsAndPlans } from './assignedworksites/WorksitePlanActions';
+
+import LogoLoader from '../../components/LogoLoader';
+import * as Routes from '../../core/router/Routes';
+import { BackNavButton } from '../../components/controls/index';
 import {
   CaseInfoSection,
   EnrollmentDates,
@@ -30,19 +37,14 @@ import {
   PersonNotes,
   ProgramNotes,
 } from '../../components/participant/index';
-import generateDiversionPlanOptions from './utils/ParticipantProfileUtils';
-import { getAllParticipantInfo, getEnrollmentFromDiversionPlan } from './ParticipantActions';
-import { clearAppointmentsAndPlans } from './assignedworksites/WorksitePlanActions';
+import { ENROLLMENT_STATUSES } from '../../core/edm/constants/DataModelConsts';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { goToRoute } from '../../core/router/RoutingActions';
 import { OL } from '../../core/style/Colors';
 import { PARTICIPANT_PROFILE_WIDTH } from '../../core/style/Sizes';
-import * as Routes from '../../core/router/Routes';
-import { BackNavButton } from '../../components/controls/index';
 import { getEntityKeyId, getEntityProperties, sortEntitiesByDateProperty } from '../../utils/DataUtils';
-import { isDefined } from '../../utils/LangUtils';
 import { generateTableHeaders } from '../../utils/FormattingUtils';
-import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
-import { ENROLLMENT_STATUSES } from '../../core/edm/constants/DataModelConsts';
+import { isDefined } from '../../utils/LangUtils';
 import {
   APP,
   CHARGES,
@@ -560,7 +562,7 @@ class ParticipantProfile extends Component<Props, State> {
               <NameHeader>Enrollment History</NameHeader>
             </NameRowWrapper>
             <Card>
-              <CardSegment vertical>
+              <CardSegment>
                 <Table
                     components={{
                       Row: EnrollmentTableRow
