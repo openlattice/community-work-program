@@ -7,7 +7,6 @@ import {
   Card,
   CardSegment,
   DataGrid,
-  EditButton,
   Label,
   Table,
 } from 'lattice-ui-kit';
@@ -20,6 +19,7 @@ import type { RequestSequence, RequestState } from 'redux-reqseq';
 import { getWorksite } from './WorksitesActions';
 import { getWeekdayTableData, getWeekdayTableHeaders, getWorksiteStatus } from './utils/WorksitesUtils';
 
+import EditButton from '../../components/controls/buttons/EditButton';
 import LogoLoader from '../../components/LogoLoader';
 import * as Routes from '../../core/router/Routes';
 import {

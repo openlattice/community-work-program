@@ -18,14 +18,10 @@ import {
 } from 'lattice-ui-kit';
 import { withRouter } from 'react-router-dom';
 
-import {
-  EditButton,
-  SectionLabel,
-  SectionNameRow,
-  SectionWrapper,
-} from './SectionStyledComponents';
+import { SectionLabel, SectionNameRow, SectionWrapper } from './SectionStyledComponents';
 
 import AddNewPlanStatusModal from '../../containers/participant/AddNewPlanStatusModal';
+import EditButton from '../controls/buttons/EditButton';
 import { EMPTY_FIELD } from '../../containers/participants/ParticipantsConstants';
 import { ENROLLMENT_STATUSES } from '../../core/edm/constants/DataModelConsts';
 import { PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
@@ -91,7 +87,7 @@ const EnrollmentStatusSection = ({
     <SectionWrapper>
       <SectionNameRow>
         <SectionLabel subtle>Enrollment Status</SectionLabel>
-        <EditButton mode="subtle" onClick={() => setChangeStatusModalVisibility(true)} />
+        <EditButton onClick={() => setChangeStatusModalVisibility(true)} />
       </SectionNameRow>
       <Card>
         <CardSegment padding="md" vertical={false}>

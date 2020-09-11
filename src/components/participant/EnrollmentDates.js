@@ -4,13 +4,9 @@ import React from 'react';
 import { Map, OrderedMap, fromJS } from 'immutable';
 import { Card, CardSegment, DataGrid } from 'lattice-ui-kit';
 
-import {
-  EditButton,
-  SectionLabel,
-  SectionNameRow,
-  SectionWrapper,
-} from './SectionStyledComponents';
+import { SectionLabel, SectionNameRow, SectionWrapper } from './SectionStyledComponents';
 
+import EditButton from '../controls/buttons/EditButton';
 import { formatAsDate } from '../../utils/DateTimeUtils';
 import { getCheckInDeadline, getSentenceEndDate } from '../../utils/ScheduleUtils';
 
@@ -62,7 +58,7 @@ const EnrollmentDates = ({
     <SectionWrapper>
       <SectionNameRow>
         <SectionLabel subtle>Enrollment Dates</SectionLabel>
-        <EditButton mode="subtle" onClick={edit} />
+        <EditButton onClick={edit} />
       </SectionNameRow>
       <Card>
         <CardSegment padding="md">

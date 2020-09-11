@@ -1,20 +1,17 @@
 // @flow
 import React, { useState } from 'react';
+
 import styled from 'styled-components';
-import { Card, CardSegment } from 'lattice-ui-kit';
 import { Map } from 'immutable';
+import { Card, CardSegment } from 'lattice-ui-kit';
 import { connect } from 'react-redux';
 import type { RequestState } from 'redux-reqseq';
 
+import { SectionLabel, SectionNameRow, SectionWrapper } from './SectionStyledComponents';
+
+import EditButton from '../controls/buttons/EditButton';
 import EditNotesModal from '../../containers/participant/notes/EditNotesModal';
 import EditPersonNotesForm from '../../containers/participant/notes/EditPersonNotesForm';
-
-import {
-  SectionLabel,
-  SectionNameRow,
-  SectionWrapper,
-  EditButton,
-} from './SectionStyledComponents';
 import { EMPTY_FIELD } from '../../containers/participants/ParticipantsConstants';
 import { PERSON, STATE } from '../../utils/constants/ReduxStateConsts';
 

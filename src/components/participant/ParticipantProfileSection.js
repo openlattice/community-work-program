@@ -1,5 +1,6 @@
 // @flow
 import React from 'react';
+
 import styled from 'styled-components';
 import { Map } from 'immutable';
 import {
@@ -9,19 +10,16 @@ import {
 } from 'lattice-ui-kit';
 import { withRouter } from 'react-router-dom';
 
-import {
-  SectionLabel,
-  SectionNameRow,
-  SectionWrapper,
-  EditButton,
-} from './SectionStyledComponents';
+import { SectionLabel, SectionNameRow, SectionWrapper } from './SectionStyledComponents';
+
+import EditButton from '../controls/buttons/EditButton';
+import { EMPTY_FIELD } from '../../containers/participants/ParticipantsConstants';
+import { PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { OL } from '../../core/style/Colors';
+import { getEntityProperties } from '../../utils/DataUtils';
 import { formatAsDate } from '../../utils/DateTimeUtils';
 import { formatPairOfStrings } from '../../utils/FormattingUtils';
-import { getEntityProperties } from '../../utils/DataUtils';
 import { getPersonAddress, getPersonFullName, getPersonProfilePicture } from '../../utils/PeopleUtils';
-import { PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
-import { EMPTY_FIELD } from '../../containers/participants/ParticipantsConstants';
 
 const {
   DOB,
@@ -114,7 +112,7 @@ const ParticipantProfileSection = ({
     <SectionWrapper>
       <SectionNameRow>
         <SectionLabel subtle>Participant Profile</SectionLabel>
-        <EditButton mode="subtle" onClick={edit} />
+        <EditButton onClick={edit} />
       </SectionNameRow>
       <Card>
         <PersonHeaderRow>

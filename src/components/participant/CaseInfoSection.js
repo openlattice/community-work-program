@@ -12,13 +12,9 @@ import {
 import { Card, CardSegment, DataGrid } from 'lattice-ui-kit';
 import { DateTime } from 'luxon';
 
-import {
-  EditButton,
-  SectionLabel,
-  SectionNameRow,
-  SectionWrapper,
-} from './SectionStyledComponents';
+import { SectionLabel, SectionNameRow, SectionWrapper } from './SectionStyledComponents';
 
+import EditButton from '../controls/buttons/EditButton';
 import { EMPTY_FIELD } from '../../containers/participants/ParticipantsConstants';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { getEntityProperties, sortEntitiesByDateProperty } from '../../utils/DataUtils';
@@ -109,7 +105,7 @@ const CaseInfoSection = ({
     <SectionWrapper>
       <SectionNameRow>
         <SectionLabel subtle>Case Info</SectionLabel>
-        <EditButton mode="subtle" onClick={edit} />
+        <EditButton onClick={edit} />
       </SectionNameRow>
       <Card>
         <CardSegment padding="md">

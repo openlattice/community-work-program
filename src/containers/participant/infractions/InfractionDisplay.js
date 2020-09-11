@@ -16,7 +16,6 @@ import {
   Card,
   CardSegment,
   DataGrid,
-  EditButton,
   IconButton,
   Label,
 } from 'lattice-ui-kit';
@@ -26,6 +25,7 @@ import { bindActionCreators } from 'redux';
 import DeleteInfractionModal from './DeleteInfractionModal';
 import EditInfractionModal from './EditInfractionModal';
 
+import EditButton from '../../../components/controls/buttons/EditButton';
 import * as Routes from '../../../core/router/Routes';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { goToRoute } from '../../../core/router/RoutingActions';
