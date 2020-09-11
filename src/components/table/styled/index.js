@@ -2,12 +2,12 @@ import styled from 'styled-components';
 import {
   Card,
   CardSegment,
-  Table,
   StyleUtils,
+  Table,
 } from 'lattice-ui-kit';
 
-import { ENROLLMENT_STATUS_COLORS, OL } from '../../../core/style/Colors';
 import { ENROLLMENT_STATUSES } from '../../../core/edm/constants/DataModelConsts';
+import { ENROLLMENT_STATUS_COLORS, OL } from '../../../core/style/Colors';
 
 const { getStickyPosition, getStyleVariation } = StyleUtils;
 
@@ -71,10 +71,11 @@ const TableCard = styled(Card)`
 `;
 
 const TableHeader = styled(CardSegment)`
+  align-items: center;
   color: ${OL.BLACK};
   font-size: 24px;
   font-weight: 600;
-  align-items: center;
+  flex-direction: row;
 `;
 
 const TableName = styled.div`
@@ -82,20 +83,20 @@ const TableName = styled.div`
 `;
 
 const CustomTable = styled(Table)`
-  font-size: 12px;
   color: ${OL.GREY02};
+  font-size: 12px;
 `;
 
 const TableCell = styled.td`
+  color: ${statusColorVariation};
   font-family: 'Open Sans', sans-serif;
   font-size: 12px;
   padding: 7px 30px 7px 0;
   text-align: left;
   vertical-align: middle;
-  word-wrap: break-word;
-  color: ${statusColorVariation};
-  width: ${widthVariation};
   white-space: ${whiteSpaceVariation};
+  width: ${widthVariation};
+  word-wrap: break-word;
   ${(props) => props.cellStyle};
 
   :first-child {
@@ -126,8 +127,8 @@ const StyledTableRow = styled.tr`
   }
 
   &:hover {
-    cursor: pointer;
     background: ${OL.GREY14};
+    cursor: pointer;
   }
 
   &:active {
