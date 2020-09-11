@@ -23,7 +23,7 @@ import {
   SectionLabel,
   SectionNameRow,
   SectionWrapper,
-  StyledEditButton,
+  EditButton,
 } from './SectionStyledComponents';
 import { getEntityProperties } from '../../utils/DataUtils';
 import { PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
@@ -90,7 +90,7 @@ const EnrollmentStatusSection = ({
     <SectionWrapper>
       <SectionNameRow>
         <SectionLabel subtle>Enrollment Status</SectionLabel>
-        <StyledEditButton mode="subtle" onClick={() => setChangeStatusModalVisibility(true)} />
+        <EditButton mode="subtle" onClick={() => setChangeStatusModalVisibility(true)} />
       </SectionNameRow>
       <Card>
         <CardSegment padding="md">

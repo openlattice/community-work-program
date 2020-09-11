@@ -13,7 +13,7 @@ import {
   SectionLabel,
   SectionNameRow,
   SectionWrapper,
-  StyledEditButton,
+  EditButton,
 } from './SectionStyledComponents';
 import { OL } from '../../core/style/Colors';
 import { formatAsDate } from '../../utils/DateTimeUtils';
@@ -114,7 +114,7 @@ const ParticipantProfileSection = ({
     <SectionWrapper>
       <SectionNameRow>
         <SectionLabel subtle>Participant Profile</SectionLabel>
-        <StyledEditButton mode="subtle" onClick={edit} />
+        <EditButton mode="subtle" onClick={edit} />
       </SectionNameRow>
       <Card>
         <PersonHeaderRow>
