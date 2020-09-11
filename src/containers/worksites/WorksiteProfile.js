@@ -44,6 +44,7 @@ const {
   DESCRIPTION,
   EMAIL,
   NAME,
+  NOTES,
   PHONE_NUMBER,
 } = PROPERTY_TYPE_FQNS;
 
@@ -219,8 +220,9 @@ class WorksiteProfile extends Component<Props> {
       [DATETIME_END]: dateInactive,
       [DATETIME_START]: dateActive,
       [DESCRIPTION]: availableWork,
-      [NAME]: worksiteName
-    } = getEntityProperties(worksite, [DATETIME_END, DATETIME_START, DESCRIPTION, NAME]);
+      [NAME]: worksiteName,
+      [NOTES]: worksiteNotes,
+    } = getEntityProperties(worksite, [DATETIME_END, DATETIME_START, DESCRIPTION, NAME, NOTES]);
 
     const address :string = getPersonAddress(worksiteAddress);
     const datesAndAddress :Map = Map({
@@ -290,6 +292,10 @@ class WorksiteProfile extends Component<Props> {
                   columns={2}
                   data={worksiteInfo}
                   labelMap={worksiteInfoLabelMap} />
+            </CardSegment>
+            <CardSegment padding={cardSegmentPadding} vertical>
+              <Label subtle>Notes</Label>
+              <div>{ worksiteNotes && worksiteNotes.length ? worksiteNotes : EMPTY_FIELD }</div>
             </CardSegment>
           </Card>
           <HeaderRowWrapper>
