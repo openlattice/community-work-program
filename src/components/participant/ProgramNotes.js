@@ -17,7 +17,7 @@ import { PERSON, STATE } from '../../utils/constants/ReduxStateConsts';
 
 const { ACTIONS, EDIT_PLAN_NOTES, REQUEST_STATE } = PERSON;
 
-const TextWrapper = styled.div`
+const TextWrapper = styled(CardSegment)`
   align-self: center;
   display: block;
   overflow: hidden;
@@ -42,9 +42,7 @@ const ProgramNotes = ({ editPlanNotesRequestState, notes } :Props) => {
         <EditButton mode="subtle" onClick={() => setEditModalVisibility(true)} />
       </SectionNameRow>
       <Card>
-        <CardSegment padding="md">
-          <TextWrapper>{ notes || EMPTY_FIELD }</TextWrapper>
-        </CardSegment>
+        <TextWrapper padding="md">{ notes || EMPTY_FIELD }</TextWrapper>
       </Card>
       <EditNotesModal
           editForm={EditPlanNotesForm}

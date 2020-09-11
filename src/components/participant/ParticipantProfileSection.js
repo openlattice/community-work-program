@@ -3,11 +3,7 @@ import React from 'react';
 
 import styled from 'styled-components';
 import { Map } from 'immutable';
-import {
-  Card,
-  CardSegment,
-  Label,
-} from 'lattice-ui-kit';
+import { Card, CardSegment, Label } from 'lattice-ui-kit';
 import { withRouter } from 'react-router-dom';
 
 import { SectionLabel, SectionNameRow, SectionWrapper } from './SectionStyledComponents';
@@ -31,10 +27,9 @@ const {
   SEX,
 } = PROPERTY_TYPE_FQNS;
 
-const PersonHeaderRow = styled.div`
+const PersonHeaderRow = styled(CardSegment)`
   align-items: center;
   display: flex;
-  flex-direction: column;
   justify-content: center;
   margin-top: 20px;
 `;
@@ -119,43 +114,43 @@ const ParticipantProfileSection = ({
           {picture}
           <PersonNameHeader>{ fullName }</PersonNameHeader>
         </PersonHeaderRow>
-        <CardSegment noBleed padding="0">
+        <CardSegment noBleed padding="10px 0">
           <PersonInfoRow>
             <Label subtle>Zuercher ID</Label>
             <PersonValue>{ zuercherID }</PersonValue>
           </PersonInfoRow>
         </CardSegment>
-        <CardSegment noBleed padding="0">
+        <CardSegment noBleed padding="10px 0">
           <PersonInfoRow>
             <Label subtle>Date of Birth</Label>
             <PersonValue>{ dob || EMPTY_FIELD }</PersonValue>
           </PersonInfoRow>
         </CardSegment>
-        <CardSegment noBleed padding="0">
+        <CardSegment noBleed padding="10px 0">
           <PersonInfoRow>
             <Label subtle>Race/Ethnicity</Label>
             <PersonValue>{ raceAndEthnicity }</PersonValue>
           </PersonInfoRow>
         </CardSegment>
-        <CardSegment noBleed padding="0">
+        <CardSegment noBleed padding="10px 0">
           <PersonInfoRow>
             <Label subtle>Sex</Label>
             <PersonValue>{ sex || EMPTY_FIELD }</PersonValue>
           </PersonInfoRow>
         </CardSegment>
-        <CardSegment noBleed padding="0">
+        <CardSegment noBleed padding="10px 0">
           <PersonInfoRow>
             <Label subtle>Phone #</Label>
             <PersonValue>{ phoneNumber || EMPTY_FIELD }</PersonValue>
           </PersonInfoRow>
         </CardSegment>
-        <CardSegment noBleed padding="0">
+        <CardSegment noBleed padding="10px 0">
           <PersonInfoRow>
             <Label subtle>Email</Label>
             <PersonValue>{ emailAddress || EMPTY_FIELD }</PersonValue>
           </PersonInfoRow>
         </CardSegment>
-        <CardSegment noBleed padding="0">
+        <CardSegment noBleed padding="10px 0 0">
           <PersonInfoRow>
             <Label subtle>Address</Label>
             <PersonValue>{ streetAddress || EMPTY_FIELD }</PersonValue>

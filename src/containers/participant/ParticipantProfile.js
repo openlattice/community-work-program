@@ -137,7 +137,7 @@ const GeneralInfoSection = styled.div`
   font-size: 13px;
   grid-gap: 16px 33px;
   grid-template-columns: 383px 1fr;
-  height: 836px;
+  height: 800px;
   margin-bottom: 30px;
   overflow-x: visible;
   overflow-y: auto;
