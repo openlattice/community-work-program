@@ -1,14 +1,8 @@
 // @flow
 import React, { useEffect, useState } from 'react';
-import styled from 'styled-components';
+
 import isFunction from 'lodash/isFunction';
-import { Map } from 'immutable';
-import {
-  Button,
-  Colors,
-  Skeleton,
-} from 'lattice-ui-kit';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import styled from 'styled-components';
 import {
   faBriefcase,
   faCheckCircle,
@@ -17,6 +11,13 @@ import {
   faTimesCircle,
   faUserAlt,
 } from '@fortawesome/pro-duotone-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { Map } from 'immutable';
+import {
+  Button,
+  Colors,
+  Skeleton,
+} from 'lattice-ui-kit';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
@@ -25,29 +26,30 @@ import ChargesGraphs from './charges/ChargesGraphs';
 import CourtTypeGraphs from './courttype/CourtTypeGraphs';
 import DemographicsGraphs from './demographics/DemographicsGraphs';
 import WorksiteGraphs from './worksite/WorksiteGraphs';
+import { GET_STATS_DATA, getStatsData } from './StatsActions';
+import { GET_CHARGES_STATS, getChargesStats } from './charges/ChargesStatsActions';
+import {
+  SCREEN_VIEWS,
+  SCREEN_VIEWS_LIST,
+} from './consts/StatsConsts';
+import { getHoursByCourtType } from './courttype/CourtTypeActions';
+import { GET_PARTICIPANTS_DEMOGRAPHICS, getParticipantsDemographics } from './demographics/DemographicsActions';
+import { GET_WORKSITE_STATS_DATA, getWorksiteStatsData } from './worksite/WorksiteStatsActions';
+
 import LogoLoader from '../../components/LogoLoader';
 import { ContainerInnerWrapper, ContainerOuterWrapper } from '../../components/Layout';
 import { reduceRequestStates, requestIsPending } from '../../utils/RequestStateUtils';
-import { GET_STATS_DATA, getStatsData } from './StatsActions';
-import { getHoursByCourtType } from './courttype/CourtTypeActions';
-import { GET_WORKSITE_STATS_DATA, getWorksiteStatsData } from './worksite/WorksiteStatsActions';
-import { GET_PARTICIPANTS_DEMOGRAPHICS, getParticipantsDemographics } from './demographics/DemographicsActions';
-import { GET_CHARGES_STATS, getChargesStats } from './charges/ChargesStatsActions';
 import {
   APP,
   SHARED,
   STATE,
   STATS,
 } from '../../utils/constants/ReduxStateConsts';
-import {
-  SCREEN_VIEWS,
-  SCREEN_VIEWS_LIST,
-} from './consts/StatsConsts';
 
 const {
   BLACK,
-  NEUTRALS,
-  PURPLES,
+  NEUTRAL,
+  PURPLE,
   WHITE
 } = Colors;
 const {
@@ -80,7 +82,7 @@ const StatBox = styled.div`
   align-items: center;
   background-color: ${WHITE};
   border-radius: 5px;
-  border: 1px solid ${NEUTRALS[4]};
+  border: 1px solid ${NEUTRAL.N100};
   box-sizing: border-box;
   display: flex;
   margin: 0 20px 20px 0;
@@ -104,7 +106,7 @@ const Number = styled.div`
 `;
 
 const Category = styled.div`
-  color: ${NEUTRALS[1]};
+  color: ${NEUTRAL.N500};
   font-size: 16px;
   font-weight: 600;
 `;
@@ -121,22 +123,22 @@ const ToolbarWrapper = styled.div`
 `;
 
 const ToolbarButton = styled(Button)`
-  background-color: ${(props) => (props.selected ? PURPLES[1] : NEUTRALS[7])};
-  border-bottom: 1px solid ${NEUTRALS[4]};
+  background-color: ${(props) => (props.selected ? PURPLE.P300 : NEUTRAL.N00)};
+  border-bottom: 1px solid ${NEUTRAL.N100};
   border-radius: 0;
-  border-right: 1px solid ${NEUTRALS[4]};
-  border-top: 1px solid ${NEUTRALS[4]};
-  color: ${(props) => (props.selected ? WHITE : NEUTRALS[0])};
+  border-right: 1px solid ${NEUTRAL.N100};
+  border-top: 1px solid ${NEUTRAL.N100};
+  color: ${(props) => (props.selected ? WHITE : NEUTRAL.N700)};
   width: 150px;
 
   &:hover {
-    background-color: ${(props) => (props.selected ? PURPLES[1] : NEUTRALS[5])};
-    border-color: ${(props) => (props.selected ? PURPLES[1] : NEUTRALS[4])};
+    background-color: ${(props) => (props.selected ? PURPLE.P300 : NEUTRAL.N200)};
+    border-color: ${(props) => (props.selected ? PURPLE.P300 : NEUTRAL.N300)};
   }
 
   &:first-child {
     border-radius: 4px 0 0 4px;
-    border-left: 1px solid ${NEUTRALS[4]};
+    border-left: 1px solid ${NEUTRAL.N300};
   }
 
   &:last-child {

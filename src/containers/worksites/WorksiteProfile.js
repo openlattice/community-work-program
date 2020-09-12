@@ -4,10 +4,10 @@ import React, { Component } from 'react';
 import styled from 'styled-components';
 import { Map, OrderedMap } from 'immutable';
 import {
+  Button,
   Card,
   CardSegment,
   DataGrid,
-  EditButton,
   Label,
   Table,
 } from 'lattice-ui-kit';
@@ -255,7 +255,7 @@ class WorksiteProfile extends Component<Props> {
           </div>
           <HeaderRowWrapper>
             <ProfileNameHeader>{ worksiteName }</ProfileNameHeader>
-            <EditButton onClick={this.goToEditWorksiteInfoForm}>Edit</EditButton>
+            <Button onClick={this.goToEditWorksiteInfoForm}>Edit</Button>
           </HeaderRowWrapper>
           <Card>
             <CardSegment padding={cardSegmentPadding}>
@@ -264,7 +264,7 @@ class WorksiteProfile extends Component<Props> {
                   data={datesAndAddress}
                   labelMap={datesLabelMap} />
             </CardSegment>
-            <CardSegment padding={cardSegmentPadding} vertical>
+            <CardSegment padding={cardSegmentPadding}>
               <ContactLabelsRow>
                 {
                   contactsHeaders.map((label :string) => (
@@ -300,7 +300,7 @@ class WorksiteProfile extends Component<Props> {
           </Card>
           <HeaderRowWrapper>
             <ProfileNameHeader>Hours of Operation</ProfileNameHeader>
-            <EditButton onClick={this.goToEditHoursOfOperation}>Edit</EditButton>
+            <Button onClick={this.goToEditHoursOfOperation}>Edit</Button>
           </HeaderRowWrapper>
           <Card>
             <Table

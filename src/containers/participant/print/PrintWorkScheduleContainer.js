@@ -1,28 +1,30 @@
 // @flow
 import React, { Component } from 'react';
+
 import styled from 'styled-components';
+import { faCalendarWeek, faRedo } from '@fortawesome/pro-duotone-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
-  fromJS,
   List,
   Map,
-  OrderedMap
+  OrderedMap,
+  fromJS
 } from 'immutable';
-import { DateTime } from 'luxon';
 import {
   Card,
   CardSegment,
+  Colors,
   DataGrid,
   DatePicker,
   IconButton,
   Label,
 } from 'lattice-ui-kit';
-import { faCalendarWeek, faRedo } from '@fortawesome/pro-duotone-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { DateTime } from 'luxon';
 
-import { getEntityKeyId, getEntityProperties, sortEntitiesByDateProperty } from '../../../utils/DataUtils';
 import { PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
-import { OL } from '../../../core/style/Colors';
+import { getEntityKeyId, getEntityProperties, sortEntitiesByDateProperty } from '../../../utils/DataUtils';
 
+const { NEUTRAL } = Colors;
 const {
   DATETIME_END,
   FIRST_NAME,
@@ -194,15 +196,15 @@ class PrintWorkScheduleContainer extends Component<Props, State> {
     const filteredAppointments :List = this.filterAppointments();
     return (
       <Card>
-        <CardSegment padding="sm" vertical>
+        <CardSegment padding="sm">
           <NameAndButtonRow>
             <div>
               { personFullName }
               Schedule
             </div>
-            <IconButton
-                icon={<FontAwesomeIcon icon={faCalendarWeek} color={OL.GREY02} />}
-                onClick={this.showDatePickers} />
+            <IconButton onClick={this.showDatePickers}>
+              <FontAwesomeIcon icon={faCalendarWeek} color={NEUTRAL.N500} />
+            </IconButton>
           </NameAndButtonRow>
           {
             datePickersVisible && (
@@ -211,9 +213,9 @@ class PrintWorkScheduleContainer extends Component<Props, State> {
                 <DatePickersWrapper>
                   <DatePicker onChange={this.setStartDate} value={startDate} />
                   <DatePicker onChange={this.setEndDate} value={endDate} />
-                  <IconButton
-                      icon={<FontAwesomeIcon icon={faRedo} color={OL.GREY02} />}
-                      onClick={this.resetDateRange} />
+                  <IconButton onClick={this.resetDateRange}>
+                    <FontAwesomeIcon icon={faRedo} color={NEUTRAL.N500} />
+                  </IconButton>
                 </DatePickersWrapper>
               </DatePickersRow>
             )

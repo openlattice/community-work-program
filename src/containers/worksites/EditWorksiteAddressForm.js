@@ -136,7 +136,7 @@ class EditWorksiteAddressForm extends Component<Props, State> {
 
     return (
       <Card>
-        <CardHeader mode="primary" padding="sm">Edit Work Site Address</CardHeader>
+        <CardHeader padding="sm">Edit Work Site Address</CardHeader>
         <Form
             disabled={prepopulated}
             formContext={formContext}

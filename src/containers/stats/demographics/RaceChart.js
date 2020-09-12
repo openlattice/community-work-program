@@ -1,9 +1,11 @@
 // @flow
 import React, { useState } from 'react';
+
 import { List, Map } from 'immutable';
 import { CardSegment, Colors } from 'lattice-ui-kit';
 import { Hint, RadialChart } from 'react-vis';
 
+import { toolTipStyle } from '../styled/GraphStyles';
 import {
   GraphDescription,
   KeyItem,
@@ -12,9 +14,8 @@ import {
   KeyWrapper,
 } from '../styled/RadialChartStyles';
 import { formatRadialChartData, getListForRadialChartKey } from '../utils/StatsUtils';
-import { toolTipStyle } from '../styled/GraphStyles';
 
-const { NEUTRALS } = Colors;
+const { NEUTRAL } = Colors;
 
 type Props = {
   raceDemographics :Map;
@@ -24,15 +25,15 @@ const RaceChart = ({ raceDemographics } :Props) => {
 
   const [hintValue, setHintValue] = useState();
   const toolTipStyleWithBackground :Object = {
-    background: NEUTRALS[0],
+    background: NEUTRAL.N700,
     ...toolTipStyle
   };
 
   const { chartData, valuesNotFound } :Object = formatRadialChartData(raceDemographics);
   const sortedListOfRaces :List = getListForRadialChartKey(chartData, valuesNotFound);
   return (
-    <CardSegment vertical>
-      <CardSegment padding="0 0 10px 0">
+    <CardSegment>
+      <CardSegment padding="0 0 10px 0" vertical={false}>
         <RadialChart
             colorType="literal"
             data={chartData}
@@ -54,7 +55,7 @@ const RaceChart = ({ raceDemographics } :Props) => {
             )
           }
         </RadialChart>
-        <KeyWrapper padding="0" vertical>
+        <KeyWrapper padding="0">
           {
             sortedListOfRaces.map(({ color, name } :Object) => (
               <KeyItemWrapper key={name}>

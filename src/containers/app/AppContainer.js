@@ -6,21 +6,24 @@ import React, { Component } from 'react';
 
 import styled from 'styled-components';
 import { Map } from 'immutable';
+import { AuthActions } from 'lattice-auth';
 import {
   LatticeLuxonUtils,
   MuiPickersUtilsProvider,
+  StylesProvider,
   ThemeProvider,
   lightTheme
 } from 'lattice-ui-kit';
-import { AuthActions } from 'lattice-auth';
-import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { Redirect, Route, Switch } from 'react-router-dom';
+import { bindActionCreators } from 'redux';
 import { RequestStates } from 'redux-reqseq';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
-import AddParticipantContainer from '../participants/newparticipant/AddParticipantContainer';
 import AppHeaderContainer from './AppHeaderContainer';
+import * as AppActions from './AppActions';
+
+import AddParticipantContainer from '../participants/newparticipant/AddParticipantContainer';
 import DashboardContainer from '../dashboard/DashboardContainer';
 import EditWorksiteHoursForm from '../worksites/EditWorksiteHoursForm';
 import EditWorksiteInfoForm from '../worksites/EditWorksiteInfoForm';
@@ -32,14 +35,10 @@ import StatsContainer from '../stats/StatsContainer';
 import WorkScheduleContainer from '../workschedule/WorkScheduleContainer';
 import WorksiteProfile from '../worksites/WorksiteProfile';
 import WorksitesContainer from '../worksites/WorksitesContainer';
-
-import * as AppActions from './AppActions';
 import * as ParticipantsActions from '../participants/ParticipantsActions';
 import * as Routes from '../../core/router/Routes';
-
 import { ContactSupport } from '../../components/controls/index';
 import { APP_CONTAINER_WIDTH } from '../../core/style/Sizes';
-import { OL } from '../../core/style/Colors';
 import { APP, STATE } from '../../utils/constants/ReduxStateConsts';
 
 const { logout } = AuthActions;
@@ -54,7 +53,6 @@ const AppContainerWrapper = styled.div`
 `;
 
 const AppContentOuterWrapper = styled.main`
-  background-color: ${OL.GREY38};
   display: flex;
   flex: 1 0 auto;
   justify-content: center;
@@ -133,31 +131,33 @@ class AppContainer extends Component<Props> {
     return (
       <ThemeProvider theme={lightTheme}>
         <MuiPickersUtilsProvider utils={LatticeLuxonUtils}>
-          <AppContainerWrapper>
-            {
-              !isPrintView && (
-                <AppHeaderContainer
-                    loading={loading}
-                    organizations={orgList}
-                    selectedOrg={selectedOrg}
-                    switchOrg={this.switchOrganization} />
-              )
-            }
-            <AppContentOuterWrapper>
-              <AppContentInnerWrapper>
-                {
-                  loading ? (
-                    <LogoLoader
-                        loadingText="Please wait..."
-                        size={60} />
-                  ) : (
-                    this.renderAppContent()
-                  )
-                }
-                <ContactSupport />
-              </AppContentInnerWrapper>
-            </AppContentOuterWrapper>
-          </AppContainerWrapper>
+          <StylesProvider injectFirst>
+            <AppContainerWrapper>
+              {
+                !isPrintView && (
+                  <AppHeaderContainer
+                      loading={loading}
+                      organizations={orgList}
+                      selectedOrg={selectedOrg}
+                      switchOrg={this.switchOrganization} />
+                )
+              }
+              <AppContentOuterWrapper>
+                <AppContentInnerWrapper>
+                  {
+                    loading ? (
+                      <LogoLoader
+                          loadingText="Please wait..."
+                          size={60} />
+                    ) : (
+                      this.renderAppContent()
+                    )
+                  }
+                  <ContactSupport />
+                </AppContentInnerWrapper>
+              </AppContentOuterWrapper>
+            </AppContainerWrapper>
+          </StylesProvider>
         </MuiPickersUtilsProvider>
       </ThemeProvider>
     );

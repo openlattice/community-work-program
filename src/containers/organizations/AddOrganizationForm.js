@@ -1,6 +1,7 @@
 // @flow
 import React, { Component } from 'react';
-import { fromJS, Map } from 'immutable';
+
+import { Map, fromJS } from 'immutable';
 import { DataProcessingUtils } from 'lattice-fabricate';
 import {
   Button,
@@ -13,15 +14,15 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import type { RequestSequence } from 'redux-reqseq';
 
-import { addOrganization } from '../worksites/WorksitesActions';
-import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
-import { APP, EDM, STATE } from '../../utils/constants/ReduxStateConsts';
 import {
   ButtonsRow,
   ButtonsWrapper,
   FormRow,
   RowContent,
 } from '../../components/Layout';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { APP, EDM, STATE } from '../../utils/constants/ReduxStateConsts';
+import { addOrganization } from '../worksites/WorksitesActions';
 
 const {
   getEntityAddressKey,
@@ -80,7 +81,7 @@ class AddOrganizationForm extends Component<Props, State> {
   render() {
     const { isLoading, onDiscard } = this.props;
     return (
-      <CardSegment padding="small" vertical>
+      <CardSegment padding="small">
         <FormRow>
           <RowContent>
             <Label>Organization name</Label>

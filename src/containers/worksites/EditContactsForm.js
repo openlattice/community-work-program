@@ -111,7 +111,7 @@ const EditContactsForm = ({
 
   return (
     <Card>
-      <CardHeader mode="primary" padding="sm">Edit Work Site Contacts</CardHeader>
+      <CardHeader padding="sm">Edit Work Site Contacts</CardHeader>
       <Form
           disabled={prepopulated}
           formContext={formContext}

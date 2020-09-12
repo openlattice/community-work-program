@@ -1,18 +1,21 @@
 // @flow
 import React, { Component } from 'react';
+
 import styled from 'styled-components';
 import { Map, getIn } from 'immutable';
-import { Card, CardHeader, CardStack } from 'lattice-ui-kit';
-import { Form, DataProcessingUtils } from 'lattice-fabricate';
+import { DataProcessingUtils, Form } from 'lattice-fabricate';
+import {
+  Card,
+  CardHeader,
+  CardStack,
+  Colors,
+} from 'lattice-ui-kit';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { RequestStates } from 'redux-reqseq';
-import type { RequestSequence, RequestState } from 'redux-reqseq';
 import type { Match } from 'react-router';
+import type { RequestSequence, RequestState } from 'redux-reqseq';
 
-import LogoLoader from '../../components/LogoLoader';
-
-import * as Routes from '../../core/router/Routes';
 import {
   addNewParticipantContacts,
   addPersonPhoto,
@@ -21,23 +24,25 @@ import {
   getInfoForEditPerson,
   updatePersonPhoto,
 } from './ParticipantActions';
-import { goToRoute } from '../../core/router/RoutingActions';
 import {
   contactsSchema,
   contactsUiSchema,
-  personSchema,
-  personUiSchema,
   personPhotoSchema,
   personPhotoUiSchema,
+  personSchema,
+  personUiSchema,
 } from './schemas/EditPersonAndContactsSchemas';
-import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
-import { getImageDataFromEntity, removeDataUriPrefix } from '../../utils/BinaryUtils';
-import { isDefined } from '../../utils/LangUtils';
+
+import LogoLoader from '../../components/LogoLoader';
+import * as Routes from '../../core/router/Routes';
 import { BackNavButton } from '../../components/controls/index';
 import { PersonPhoto, PersonPicture } from '../../components/picture/PersonPicture';
-import { PARTICIPANT_PROFILE_WIDTH } from '../../core/style/Sizes';
-import { OL } from '../../core/style/Colors';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { goToRoute } from '../../core/router/RoutingActions';
+import { PARTICIPANT_PROFILE_WIDTH } from '../../core/style/Sizes';
+import { getImageDataFromEntity, removeDataUriPrefix } from '../../utils/BinaryUtils';
+import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
+import { isDefined } from '../../utils/LangUtils';
 import {
   APP,
   EDM,
@@ -56,7 +61,7 @@ const {
   processEntityDataForPartialReplace,
   replaceEntityAddressKeys,
 } = DataProcessingUtils;
-
+const { GREEN } = Colors;
 const {
   ADDRESS,
   CONTACT_INFORMATION,
@@ -130,7 +135,7 @@ const PreviewPhotoWrapper = styled.div`
 
 const SubmittedMessage = styled.div`
   align-self: center;
-  color: ${OL.GREEN01};
+  color: ${GREEN.G300};
   font-weight: 600;
 `;
 
