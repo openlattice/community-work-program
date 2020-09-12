@@ -1,23 +1,25 @@
 // @flow
 import React, { Component } from 'react';
+
 import styled from 'styled-components';
 import toString from 'lodash/toString';
-import { fromJS, OrderedMap, Map } from 'immutable';
+import { Map, OrderedMap, fromJS } from 'immutable';
 import {
   Banner,
   Button,
+  Colors,
   DataGrid,
   Label,
   Modal
 } from 'lattice-ui-kit';
 import { DateTime } from 'luxon';
 
-import { getEntityProperties } from '../../utils/DataUtils';
-import { PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { ENROLLMENT_STATUSES } from '../../core/edm/constants/DataModelConsts';
-import { OL } from '../../core/style/Colors';
+import { PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { getEntityProperties } from '../../utils/DataUtils';
 import { EMPTY_FIELD } from '../participants/ParticipantsConstants';
 
+const { GREEN, NEUTRAL } = Colors;
 const { DATETIME_COMPLETED, DESCRIPTION, HOURS_WORKED } = PROPERTY_TYPE_FQNS;
 
 const successfulStatuses = [ENROLLMENT_STATUSES.COMPLETED, ENROLLMENT_STATUSES.SUCCESSFUL];
@@ -44,13 +46,12 @@ const BannerInnerWrapper = styled.div`
   justify-content: space-between;
 `;
 
-const DataGridWithMargin = styled(DataGrid)`
-  margin-bottom: 10px;
+const BannerText = styled.div`
+  color: ${(props) => (props.bannerMode === 'success' ? GREEN.G400 : NEUTRAL.N700)};
 `;
 
-const BannerText = styled.div`
-  color: ${OL.WHITE};
-  font-size: 12px;
+const DataGridWithMargin = styled(DataGrid)`
+  margin-bottom: 10px;
 `;
 
 const NotesSection = styled.div`
@@ -139,12 +140,9 @@ class ProgramCompletionBanner extends Component<Props, State> {
       <BannerWrapper>
         <Banner isOpen mode={bannerMode}>
           <BannerInnerWrapper>
-            <BannerText>{ outcomeStatement }</BannerText>
-            <Button
-                fontColor={OL.WHITE}
-                mode="neutral"
-                onClick={this.showOutcomeReportModal}>
-              View Outcome Report
+            <BannerText bannerMode={bannerMode}>{ outcomeStatement }</BannerText>
+            <Button onClick={this.showOutcomeReportModal} variant="text">
+              <BannerText bannerMode={bannerMode}>View Outcome Report</BannerText>
             </Button>
           </BannerInnerWrapper>
         </Banner>
