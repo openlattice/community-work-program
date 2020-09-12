@@ -9,6 +9,7 @@ import { List, Map } from 'immutable';
 import {
   Button,
   CheckboxSelect,
+  Colors,
   DatePicker,
   IconButton,
   Label,
@@ -41,6 +42,7 @@ import { formatClickedProperty } from '../participants/utils/SearchContainerUtil
 import { getWorksites } from '../worksites/WorksitesActions';
 import type { GoToRoute } from '../../core/router/RoutingActions';
 
+const { NEUTRAL } = Colors;
 const { ENTITY_SET_IDS_BY_ORG, SELECTED_ORG_ID } = APP;
 const { WORKSITES_LIST } = WORKSITES;
 const {
@@ -267,12 +269,12 @@ class WorkScheduleContainer extends Component<Props, State> {
         <IconButton
             disabled={appointments.isEmpty()}
             onClick={this.showFilters}>
-          <FontAwesomeIcon icon={faFilter} />
+          <FontAwesomeIcon color={NEUTRAL.N500} icon={faFilter} />
         </IconButton>
         <IconButton
             disabled={appointments.isEmpty()}
             onClick={() => this.setState({ sortedByPersonLastName: !sortedByPersonLastName })}>
-          <FontAwesomeIcon icon={faSortAlphaDown} />
+          <FontAwesomeIcon color={NEUTRAL.N500} icon={faSortAlphaDown} />
         </IconButton>
         <Button onClick={this.goToPrintSchedule}>Print</Button>
         <Button mode="primary" onClick={this.getAppointments}>Display Appointments</Button>
