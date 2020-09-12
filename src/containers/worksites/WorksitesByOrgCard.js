@@ -7,7 +7,8 @@ import {
   Badge,
   Button,
   Card,
-  CardSegment
+  CardSegment,
+  Colors,
 } from 'lattice-ui-kit';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
@@ -21,13 +22,13 @@ import * as Routes from '../../core/router/Routes';
 import { CustomTable, TableCell } from '../../components/table/styled/index';
 import { PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { goToRoute } from '../../core/router/RoutingActions';
-import { OL } from '../../core/style/Colors';
 import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
 import { formatAsDate } from '../../utils/DateTimeUtils';
 import { generateTableHeaders } from '../../utils/FormattingUtils';
 import { isDefined } from '../../utils/LangUtils';
 import type { GoToRoute } from '../../core/router/RoutingActions';
 
+const { NEUTRAL } = Colors;
 const {
   DATETIME_END,
   DATETIME_START,
@@ -64,19 +65,19 @@ const OrgHeaderWrapper = styled.div`
 `;
 
 const OrganizationName = styled.h1`
-  color: ${OL.GREY15};
+  color: ${NEUTRAL.N800};
   font-weight: 600;
   font-size: 20px;
   margin-right: 10px;
 `;
 
 const Description = styled.div`
-  color: ${OL.GREY15};
+  color: ${NEUTRAL.N800};
   font-size: 14px;
 `;
 
 const StyledButton = styled(Button)`
-  font-size: 13px;
+  font-size: 14px;
   padding: 6px 12px;
 `;
 

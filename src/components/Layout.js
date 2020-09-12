@@ -1,11 +1,13 @@
+// @flow
 import styled from 'styled-components';
-import { StyleUtils } from 'lattice-ui-kit';
+import { Colors, StyleUtils } from 'lattice-ui-kit';
 
-import { APP_CONTENT_PADDING, SEARCH_CONTAINER_WIDTH } from '../core/style/Sizes';
-import { OL } from '../core/style/Colors';
 import { WORKSITE_STATUSES } from '../containers/worksites/WorksitesConstants';
+import { OL } from '../core/style/Colors';
+import { APP_CONTENT_PADDING, SEARCH_CONTAINER_WIDTH } from '../core/style/Sizes';
 
 const { getStyleVariation } = StyleUtils;
+const { NEUTRAL } = Colors;
 
 const statusColorVariation = getStyleVariation('status', {
   default: OL.GREY02,
@@ -47,7 +49,7 @@ export const ButtonsWrapper = styled.div`
 `;
 
 export const ContainerHeader = styled.span`
-  color: ${OL.BLACK};
+  color: ${NEUTRAL.N900};
   font-size: 26px;
   font-weight: 600;
 `;

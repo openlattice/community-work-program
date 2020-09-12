@@ -3,7 +3,7 @@ import React, { Component } from 'react';
 
 import styled from 'styled-components';
 import { List, Map } from 'immutable';
-import { CardStack } from 'lattice-ui-kit';
+import { CardStack, Colors } from 'lattice-ui-kit';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 import { bindActionCreators } from 'redux';
@@ -24,11 +24,11 @@ import LogoLoader from '../../components/LogoLoader';
 import { ContainerHeader, ContainerInnerWrapper, ContainerOuterWrapper } from '../../components/Layout';
 import { ToolBar } from '../../components/controls/index';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
-import { OL } from '../../core/style/Colors';
 import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
 import { isDefined } from '../../utils/LangUtils';
 import { APP, STATE, WORKSITES } from '../../utils/constants/ReduxStateConsts';
 
+const { NEUTRAL } = Colors;
 const { ORGANIZATION } = APP_TYPE_FQNS;
 const { ORGANIZATION_NAME } = PROPERTY_TYPE_FQNS;
 const { ENTITY_SET_IDS_BY_ORG, SELECTED_ORG_ID } = APP;
@@ -62,13 +62,13 @@ const SubHeaderWrapper = styled.div`
 `;
 
 const ContainerSubHeader = styled(ContainerHeader)`
-  color: ${OL.GREY02};
-  font-size: 14px;
+  color: ${NEUTRAL.N500};
+  font-size: 18px;
 `;
 
 const Separator = styled.div`
   align-items: center;
-  color: ${OL.GREY02};
+  color: ${NEUTRAL.N500};
   display: flex;
   font-weight: 600;
   justify-content: center;
