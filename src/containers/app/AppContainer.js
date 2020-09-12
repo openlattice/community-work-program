@@ -38,7 +38,6 @@ import WorksitesContainer from '../worksites/WorksitesContainer';
 import * as ParticipantsActions from '../participants/ParticipantsActions';
 import * as Routes from '../../core/router/Routes';
 import { ContactSupport } from '../../components/controls/index';
-import { OL } from '../../core/style/Colors';
 import { APP_CONTAINER_WIDTH } from '../../core/style/Sizes';
 import { APP, STATE } from '../../utils/constants/ReduxStateConsts';
 
@@ -54,7 +53,6 @@ const AppContainerWrapper = styled.div`
 `;
 
 const AppContentOuterWrapper = styled.main`
-  background-color: ${OL.GREY38};
   display: flex;
   flex: 1 0 auto;
   justify-content: center;
