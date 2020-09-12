@@ -1,25 +1,27 @@
 // @flow
 import React, { Component } from 'react';
+
 import { List, Map, getIn } from 'immutable';
+import { DataProcessingUtils, Form } from 'lattice-fabricate';
 import {
   Card,
   CardHeader,
   CardSegment,
   Spinner,
 } from 'lattice-ui-kit';
-import { Form, DataProcessingUtils } from 'lattice-fabricate';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
-import ErrorMessage from '../../../components/error/ErrorMessage';
+import { judgeSchema, judgeUiSchema } from './schemas/EditCaseInfoSchemas';
 import { disableJudgeForm, hydrateJudgeSchema } from './utils/EditCaseInfoUtils';
+
+import ErrorMessage from '../../../components/error/ErrorMessage';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { getEntityKeyId } from '../../../utils/DataUtils';
 import { requestIsFailure, requestIsPending } from '../../../utils/RequestStateUtils';
-import { judgeSchema, judgeUiSchema } from './schemas/EditCaseInfoSchemas';
-import { reassignJudge } from '../ParticipantActions';
-import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { PERSON, SHARED, STATE } from '../../../utils/constants/ReduxStateConsts';
+import { reassignJudge } from '../ParticipantActions';
 
 const {
   getEntityAddressKey,
@@ -195,7 +197,7 @@ class AssignJudgeForm extends Component<Props, State> {
     };
     return (
       <Card>
-        <CardHeader mode="primary" padding="sm">Assign Judge</CardHeader>
+        <CardHeader padding="sm">Assign Judge</CardHeader>
         <Form
             disabled={judgePrepopulated}
             isSubmitting={submissionIsPending}

@@ -392,7 +392,7 @@ class AddParticipantForm extends Component<Props, State> {
         </ButtonWrapper>
         <CardStack>
           <Card>
-            <CardHeader mode="primary" padding="md">Add New Participant</CardHeader>
+            <CardHeader padding="md">Add New Participant</CardHeader>
             {
               (formIsVisible && !requestIsPending(requestStates[ADD_PARTICIPANT])) && (
                 <Form

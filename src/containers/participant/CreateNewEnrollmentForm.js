@@ -324,7 +324,7 @@ class CreateNewEnrollmentForm extends Component<Props> {
         </ButtonWrapper>
         <CardStack>
           <Card>
-            <CardHeader mode="primary" padding="md">Create New Enrollment</CardHeader>
+            <CardHeader padding="md">Create New Enrollment</CardHeader>
             {
               (createNewEnrollmentRequestState !== RequestStates.PENDING
                   && createNewEnrollmentRequestState !== RequestStates.SUCCESS)
