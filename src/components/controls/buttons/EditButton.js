@@ -4,7 +4,7 @@ import type { Node } from 'react';
 
 import { faPen } from '@fortawesome/pro-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Button, Colors } from 'lattice-ui-kit';
+import { Colors, IconButton } from 'lattice-ui-kit';
 
 const { NEUTRAL } = Colors;
 
@@ -14,21 +14,21 @@ type Props = {
 };
 
 const EditIcon = (
-  <FontAwesomeIcon color={NEUTRAL.N700} icon={faPen} />
+  <FontAwesomeIcon color={NEUTRAL.N500} icon={faPen} />
 );
 
 const EditButton = ({ children, onClick } :Props) => {
 
   if (!children) {
     return (
-      <Button onClick={onClick}>{EditIcon}</Button>
+      <IconButton onClick={onClick}>{EditIcon}</IconButton>
     );
   }
 
   return (
-    <Button onClick={onClick} startIcon={EditIcon}>
+    <IconButton onClick={onClick} startIcon={EditIcon}>
       {children}
-    </Button>
+    </IconButton>
   );
 };
 
