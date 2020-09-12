@@ -1,14 +1,13 @@
 // @flow
 import React, { Fragment, useState } from 'react';
+
 import styled from 'styled-components';
 import { List, Map } from 'immutable';
-import { Button, IconButton, Select } from 'lattice-ui-kit';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFilter } from '@fortawesome/pro-light-svg-icons';
+import { Button, Select } from 'lattice-ui-kit';
 
 import SearchContainer from '../../containers/search/SearchContainer';
-import { ButtonWrapper, ButtonsWrapper } from '../Layout';
 import { OL } from '../../core/style/Colors';
+import { ButtonWrapper, ButtonsWrapper } from '../Layout';
 
 const ToolBarWrapper = styled.div`
   align-items: center;
@@ -79,11 +78,9 @@ const ToolBar = ({
         <ActionsWrapper>
           <SearchContainer
               search={search} />
-          <IconButton
-              icon={<FontAwesomeIcon icon={faFilter} />}
-              onClick={() => showFilters(!filtersVisible)}>
-            Filter
-          </IconButton>
+          <Button onClick={() => showFilters(!filtersVisible)}>
+            { filtersVisible ? 'Close Filter' : 'Open Filter'}
+          </Button>
         </ActionsWrapper>
         <ButtonsWrapper>
           {

@@ -154,9 +154,9 @@ const ParticipantsByCourtTypeGraph = ({
                       options={YEARS_OPTIONS}
                       placeholder={today.year} />
                 </SelectsWrapper>
-                <IconButton
-                    icon={<FontAwesomeIcon icon={faSearch} />}
-                    onClick={getNewParticipantsData} />
+                <IconButton onClick={getNewParticipantsData}>
+                  <FontAwesomeIcon icon={faSearch} />
+                </IconButton>
               </ActionsWrapper>
             </InnerHeaderRow>
           )

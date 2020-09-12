@@ -104,9 +104,9 @@ const MonthlyParticipantsByCourtTypeList = ({ actions, monthlyParticipantsByCour
                   options={YEARS_OPTIONS}
                   placeholder={today.year} />
             </SelectsWrapper>
-            <IconButton
-                icon={<FontAwesomeIcon icon={faSearch} />}
-                onClick={getNewData} />
+            <IconButton onClick={getNewData}>
+              <FontAwesomeIcon icon={faSearch} />
+            </IconButton>
           </ActionsWrapper>
         </GraphHeader>
       </Card>

@@ -244,9 +244,9 @@ const EnrollmentsAndStatusByCourtType = ({
                       options={YEARS_OPTIONS}
                       placeholder={today.year} />
                 </SelectsWrapper>
-                <IconButton
-                    icon={<FontAwesomeIcon icon={faSearch} />}
-                    onClick={getNewEnrollmentsData} />
+                <IconButton onClick={getNewEnrollmentsData}>
+                  <FontAwesomeIcon icon={faSearch} />
+                </IconButton>
               </ActionsWrapper>
             </InnerHeaderRow>
           )

@@ -3,7 +3,6 @@ import styled from 'styled-components';
 import { CardSegment } from 'lattice-ui-kit';
 
 const KeyWrapper = styled(CardSegment)`
-  flex-direction: row;
   justify-content: center;
   margin-left: 70px;
 `;

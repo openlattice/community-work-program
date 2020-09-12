@@ -4,7 +4,7 @@ import React, { Component } from 'react';
 import type { Element } from 'react';
 
 import styled from 'styled-components';
-import { faPrint, faTrash } from '@fortawesome/pro-solid-svg-icons';
+import { faPen, faPrint, faTrash } from '@fortawesome/pro-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   List,
@@ -15,6 +15,7 @@ import {
 import {
   Card,
   CardSegment,
+  Colors,
   DataGrid,
   IconButton,
   Label,
@@ -25,16 +26,15 @@ import { bindActionCreators } from 'redux';
 import DeleteInfractionModal from './DeleteInfractionModal';
 import EditInfractionModal from './EditInfractionModal';
 
-import EditButton from '../../../components/controls/buttons/EditButton';
 import * as Routes from '../../../core/router/Routes';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { goToRoute } from '../../../core/router/RoutingActions';
-import { OL } from '../../../core/style/Colors';
 import { getEntityKeyId, getEntityProperties } from '../../../utils/DataUtils';
 import { formatAsDate, formatAsTime } from '../../../utils/DateTimeUtils';
 import { EMPTY_FIELD } from '../../participants/ParticipantsConstants';
 import type { GoToRoute } from '../../../core/router/RoutingActions';
 
+const { NEUTRAL } = Colors;
 const { WORKSITE_PLAN } = APP_TYPE_FQNS;
 const {
   CATEGORY,
@@ -170,13 +170,15 @@ class InfractionDisplay extends Component<Props, State> {
               <span>{ notes }</span>
             </NotesWrapper>
             <ButtonsWrapper>
-              <IconButton
-                  icon={<FontAwesomeIcon icon={faPrint} color={OL.GREY02} />}
-                  onClick={this.goToPrintInfraction} />
-              <EditButton onClick={() => this.handleShowModal(EDIT_INFRACTION_MODAL)} />
-              <IconButton
-                  icon={<FontAwesomeIcon icon={faTrash} color={OL.GREY02} />}
-                  onClick={() => this.handleShowModal(DELETE_INFRACTION_MODAL)} />
+              <IconButton onClick={this.goToPrintInfraction}>
+                <FontAwesomeIcon icon={faPrint} color={NEUTRAL.N500} />
+              </IconButton>
+              <IconButton onClick={this.goToPrintInfraction}>
+                <FontAwesomeIcon color={NEUTRAL.N500} icon={faPen} />
+              </IconButton>
+              <IconButton onClick={() => this.handleShowModal(DELETE_INFRACTION_MODAL)}>
+                <FontAwesomeIcon icon={faTrash} color={NEUTRAL.N500} />
+              </IconButton>
             </ButtonsWrapper>
           </BottomRow>
         </CardSegment>

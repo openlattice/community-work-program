@@ -169,9 +169,9 @@ const WorksiteGraphs = ({
                         options={YEARS_OPTIONS}
                         placeholder={today.year} />
                   </SelectsWrapper>
-                  <IconButton
-                      icon={<FontAwesomeIcon icon={faSearch} />}
-                      onClick={getHoursData} />
+                  <IconButton onClick={getHoursData}>
+                    <FontAwesomeIcon icon={faSearch} />
+                  </IconButton>
                 </ActionsWrapper>
               </InnerHeaderRow>
             )
@@ -212,9 +212,9 @@ const WorksiteGraphs = ({
                   options={YEARS_OPTIONS}
                   placeholder={today.year} />
             </SelectsWrapper>
-            <IconButton
-                icon={<FontAwesomeIcon icon={faSearch} />}
-                onClick={getParticipantsData} />
+            <IconButton onClick={getParticipantsData}>
+              <FontAwesomeIcon icon={faSearch} />
+            </IconButton>
           </ActionsWrapper>
         </GraphHeader>
       </Card>
