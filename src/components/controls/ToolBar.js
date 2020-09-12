@@ -3,16 +3,17 @@ import React, { Fragment, useState } from 'react';
 
 import styled from 'styled-components';
 import { List, Map } from 'immutable';
-import { Button, Select } from 'lattice-ui-kit';
+import { Button, Colors, Select } from 'lattice-ui-kit';
 
 import SearchContainer from '../../containers/search/SearchContainer';
-import { OL } from '../../core/style/Colors';
 import { ButtonWrapper, ButtonsWrapper } from '../Layout';
+
+const { NEUTRAL, WHITE } = Colors;
 
 const ToolBarWrapper = styled.div`
   align-items: center;
-  background-color: ${OL.WHITE};
-  border-bottom: 1px solid ${OL.GREY11};
+  background-color: ${WHITE};
+  border-bottom: 1px solid ${NEUTRAL.N100};
   display: flex;
   flex-direction: column;
   min-height: 60px;
@@ -44,7 +45,7 @@ const SelectWrapper = styled.div`
 `;
 
 const FiltersHeader = styled.div`
-  color: ${OL.GRAY_02};
+  color: ${NEUTRAL.N500};
   font-size: 14px;
   font-weight: 600;
   margin-left: 10px;

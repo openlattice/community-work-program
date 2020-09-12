@@ -1,25 +1,25 @@
 // @flow
 import React, { Component } from 'react';
+
 import styled from 'styled-components';
 import { List, Map } from 'immutable';
+import { Colors, StyleUtils } from 'lattice-ui-kit';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import { StyleUtils } from 'lattice-ui-kit';
-import type { RowData } from 'lattice-ui-kit';
 import type { RequestSequence } from 'redux-reqseq';
 
-import { getEnrollmentFromDiversionPlan } from '../ParticipantActions';
 import { getEntityKeyId } from '../../../utils/DataUtils';
 import { isDefined } from '../../../utils/LangUtils';
 import { PERSON, STATE } from '../../../utils/constants/ReduxStateConsts';
-import { OL } from '../../../core/style/Colors';
+import { getEnrollmentFromDiversionPlan } from '../ParticipantActions';
 
 const { getStickyPosition } = StyleUtils;
+const { NEUTRAL, PURPLE } = Colors;
 const { ALL_DIVERSION_PLANS } = PERSON;
 
 const StyledEnrollmentRow = styled.tr`
-  background-color: ${OL.WHITE};
-  border-bottom: 1px solid ${OL.GREY05};
+  background-color: '#fff';
+  border-bottom: 1px solid ${NEUTRAL.N100};
 
   td,
   th {
@@ -28,11 +28,11 @@ const StyledEnrollmentRow = styled.tr`
 
   &:hover {
     cursor: pointer;
-    background: ${OL.GREY14};
+    background: ${NEUTRAL.N100};
   }
 
   &:active {
-    background-color: ${OL.PURPLE06};
+    background-color: ${PURPLE.P100};
   }
 `;
 
@@ -43,7 +43,7 @@ type Props = {
   allDiversionPlans :List;
   className ? :string;
   components :Object;
-  data :RowData;
+  data :Object;
   headers :Object[];
 };
 

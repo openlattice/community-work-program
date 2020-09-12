@@ -15,7 +15,7 @@ import {
 } from '../styled/RadialChartStyles';
 import { formatRadialChartData, getListForRadialChartKey } from '../utils/StatsUtils';
 
-const { NEUTRALS } = Colors;
+const { NEUTRAL } = Colors;
 
 type Props = {
   raceDemographics :Map;
@@ -25,7 +25,7 @@ const RaceChart = ({ raceDemographics } :Props) => {
 
   const [hintValue, setHintValue] = useState();
   const toolTipStyleWithBackground :Object = {
-    background: NEUTRALS[0],
+    background: NEUTRAL.N700,
     ...toolTipStyle
   };
 

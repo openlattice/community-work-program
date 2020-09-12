@@ -59,7 +59,7 @@ import { formatHoursByCourtTypeData, formatHoursByCourtTypeDataForDownload } fro
 const { ACTIONS, REQUEST_STATE } = SHARED;
 const { HOURS_BY_COURT_TYPE } = STATS;
 
-const { BLUE_2, PURPLES } = Colors;
+const { PURPLE } = Colors;
 const defaultToolTipValues :Object = {
   background: 'rgba(0, 0, 0, 0.0)',
   hoveredBar: {},
@@ -189,10 +189,10 @@ const HoursByCourtType = ({
                 <XAxis />
                 <YAxis />
                 <HorizontalBarSeries
-                    color={BLUE_2}
+                    color={PURPLE.P200}
                     data={hoursGraphData}
                     onValueMouseOver={(v :Object) => setToolTipValues(
-                      { background: PURPLES[1], hoveredBar: v, toolTipText: `${v.x} hours` }
+                      { background: PURPLE.P300, hoveredBar: v, toolTipText: `${v.x} hours` }
                     )}
                     onValueMouseOut={() => setToolTipValues(defaultToolTipValues)} />
                 {

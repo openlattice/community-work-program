@@ -59,7 +59,7 @@ import { formatParticipantsByCourtTypeData, formatTotalParticipantsDataForDownlo
 const { ACTIONS, REQUEST_STATE } = SHARED;
 const { TOTAL_PARTICIPANTS_BY_COURT_TYPE } = STATS;
 
-const { BLUE_1, PURPLES } = Colors;
+const { BLUE, PURPLE } = Colors;
 const defaultToolTipValues :Object = {
   background: 'rgba(0, 0, 0, 0.0)',
   hoveredBar: {},
@@ -185,10 +185,10 @@ const ParticipantsByCourtTypeGraph = ({
                 <XAxis />
                 <YAxis />
                 <HorizontalBarSeries
-                    color={BLUE_1}
+                    color={BLUE.B300}
                     data={graphData}
                     onValueMouseOver={(v :Object) => setToolTipValues(
-                      { background: PURPLES[1], hoveredBar: v, toolTipText: `${v.x} participants` }
+                      { background: PURPLE.P300, hoveredBar: v, toolTipText: `${v.x} participants` }
                     )}
                     onValueMouseOut={() => setToolTipValues(defaultToolTipValues)} />
                 {

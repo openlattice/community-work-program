@@ -12,6 +12,7 @@ import {
 import {
   Card,
   CardSegment,
+  Colors,
   DataGrid,
   Label,
   StyleUtils,
@@ -25,14 +26,15 @@ import EditButton from '../controls/buttons/EditButton';
 import { EMPTY_FIELD } from '../../containers/participants/ParticipantsConstants';
 import { ENROLLMENT_STATUSES } from '../../core/edm/constants/DataModelConsts';
 import { PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
-import { ENROLLMENT_STATUS_COLORS, OL } from '../../core/style/Colors';
+import { ENROLLMENT_STATUS_COLORS } from '../../core/style/Colors';
 import { getEntityProperties } from '../../utils/DataUtils';
 
-const { STATUS } = PROPERTY_TYPE_FQNS;
 const { getStyleVariation } = StyleUtils;
+const { NEUTRAL } = Colors;
+const { STATUS } = PROPERTY_TYPE_FQNS;
 
 const statusColorVariation = getStyleVariation('status', {
-  default: OL.GREY02,
+  default: NEUTRAL.N700,
   [ENROLLMENT_STATUSES.ACTIVE]: ENROLLMENT_STATUS_COLORS.ACTIVE,
   [ENROLLMENT_STATUSES.ACTIVE_REOPENED]: ENROLLMENT_STATUS_COLORS.ACTIVE_REOPENED,
   [ENROLLMENT_STATUSES.AWAITING_CHECKIN]: ENROLLMENT_STATUS_COLORS.AWAITING_CHECKIN,

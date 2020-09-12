@@ -3,39 +3,38 @@ import styled from 'styled-components';
 import { Colors, StyleUtils } from 'lattice-ui-kit';
 
 import { WORKSITE_STATUSES } from '../containers/worksites/WorksitesConstants';
-import { OL } from '../core/style/Colors';
 import { APP_CONTENT_PADDING, SEARCH_CONTAINER_WIDTH } from '../core/style/Sizes';
 
 const { getStyleVariation } = StyleUtils;
-const { NEUTRAL } = Colors;
+const { GREEN, NEUTRAL, RED } = Colors;
 
 const statusColorVariation = getStyleVariation('status', {
-  default: OL.GREY02,
-  [WORKSITE_STATUSES.ACTIVE]: OL.GREEN02,
-  [WORKSITE_STATUSES.INACTIVE]: OL.RED01,
+  default: NEUTRAL.N700,
+  [WORKSITE_STATUSES.ACTIVE]: GREEN.G300,
+  [WORKSITE_STATUSES.INACTIVE]: RED.R300,
 });
 
 /* Component Wrappers */
 
 export const ContainerOuterWrapper = styled.div`
   display: flex;
-  justify-content: center;
   flex-direction: column;
+  justify-content: center;
 `;
 
 export const ContainerInnerWrapper = styled.div`
-  display: flex;
-  justify-content: center;
-  flex-direction: column;
-  padding: ${APP_CONTENT_PADDING}px;
-  margin-top: 30px;
-  width: ${SEARCH_CONTAINER_WIDTH}px;
   align-self: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  margin-top: 30px;
+  padding: ${APP_CONTENT_PADDING}px;
+  width: ${SEARCH_CONTAINER_WIDTH}px;
 `;
 
 export const ButtonWrapper = styled.div`
-  display: flex;
   align-items: center;
+  display: flex;
   margin-left: 15px;
 
   &:hover {
@@ -63,7 +62,6 @@ export const SubtitleWrapper = styled.span`
 export const Subtitle = styled.span`
   font-size: 14px;
   font-weight: 600;
-  color: ${OL.GREY02};
 `;
 
 export const Status = styled(Subtitle)`
@@ -78,13 +76,12 @@ export const BodyTextSegment = styled.span`
 `;
 
 export const BodyTextHeader = styled.span`
-  color: ${OL.GREY02};
   font-size: 11px;
   font-weight: 600;
 `;
 
 export const BodyText = styled.span`
-  color: ${OL.GREY15};
+  color: ${NEUTRAL.N900};
   font-size: 14px;
   margin: 5px 0;
 `;
@@ -98,47 +95,47 @@ export const RowWrapper = styled.div`
 `;
 
 export const Menu = styled.div`
-  display: flex;
   align-items: center;
+  display: flex;
 `;
 
 export const MenuItem = styled.span`
-  display: flex;
-  justify-content: center;
   align-items: center;
-  margin-right: 20px;
-  color: ${(props) => (props.selected ? OL.GREY15 : OL.GREY02)};
+  color: ${(props) => (props.selected ? NEUTRAL.N900 : NEUTRAL.N700)};
+  display: flex;
   font-weight: 600;
+  justify-content: center;
+  margin-right: 20px;
 
   &:hover {
+    color: ${NEUTRAL.N900};
     cursor: pointer;
-    color: ${OL.GREY01};
   }
 `;
 
 /* Table */
 
 export const TableBanner = styled.tr`
-  width: 100%;
-  font-size: 24px;
-  color: ${OL.BLACK};
-  padding: 50px;
+  color: ${NEUTRAL.N900};
   display: flex;
+  font-size: 24px;
+  padding: 50px;
+  width: 100%;
 `;
 
 export const TableFooter = styled.div`
-  border-top: 1px solid ${OL.GREY11};
-  padding: 20px 50px;
+  border-top: 1px solid ${NEUTRAL.N100};
   display: flex;
+  padding: 20px 50px;
 `;
 
 export const FooterCell = styled.span`
-  padding: 15px 0;
+  color: ${NEUTRAL.N900};
   font-family: 'Open Sans', sans-serif;
   font-size: ${(props) => (props.small ? '12' : '14')}px;
   font-weight: 600;
+  padding: 15px 0;
   text-align: left;
-  color: ${OL.GREY15};
 `;
 
 /* Messages */
@@ -158,9 +155,9 @@ export const FormWrapper = styled.div`
 `;
 
 export const FormRow = styled.div`
+  align-items: center;
   display: flex;
   justify-content: space-between;
-  align-items: center;
 `;
 
 export const ButtonsRow = styled(FormRow)`

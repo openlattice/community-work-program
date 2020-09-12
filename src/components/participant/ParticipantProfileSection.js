@@ -3,7 +3,12 @@ import React from 'react';
 
 import styled from 'styled-components';
 import { Map } from 'immutable';
-import { Card, CardSegment, Label } from 'lattice-ui-kit';
+import {
+  Card,
+  CardSegment,
+  Colors,
+  Label,
+} from 'lattice-ui-kit';
 import { withRouter } from 'react-router-dom';
 
 import { SectionLabel, SectionNameRow, SectionWrapper } from './SectionStyledComponents';
@@ -11,12 +16,12 @@ import { SectionLabel, SectionNameRow, SectionWrapper } from './SectionStyledCom
 import EditButton from '../controls/buttons/EditButton';
 import { EMPTY_FIELD } from '../../containers/participants/ParticipantsConstants';
 import { PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
-import { OL } from '../../core/style/Colors';
 import { getEntityProperties } from '../../utils/DataUtils';
 import { formatAsDate } from '../../utils/DateTimeUtils';
 import { formatPairOfStrings } from '../../utils/FormattingUtils';
 import { getPersonAddress, getPersonFullName, getPersonProfilePicture } from '../../utils/PeopleUtils';
 
+const { NEUTRAL } = Colors;
 const {
   DOB,
   EMAIL,
@@ -35,7 +40,7 @@ const PersonHeaderRow = styled(CardSegment)`
 `;
 
 const PersonNameHeader = styled.div`
-  color: ${OL.BLACK};
+  color: ${NEUTRAL.N900};
   font-size: 26px;
   font-weight: 600;
   margin-top: 14px;

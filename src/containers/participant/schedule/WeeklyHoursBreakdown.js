@@ -19,11 +19,11 @@ import { expandIcon } from '../../stats/styled/ExpansionStyles';
 import { getWeeklyBreakdownOfHoursPerWeek } from '../utils/CheckInUtils';
 
 const { getStyleVariation } = StyleUtils;
-const { NEUTRALS } = Colors;
+const { NEUTRAL } = Colors;
 
 const numHoursColorVariation = getStyleVariation('hours', {
-  default: NEUTRALS[0],
-  '0 hrs': NEUTRALS[2],
+  default: NEUTRAL.N700,
+  '0 hrs': NEUTRAL.N500,
 });
 
 const getHoursString = (weekMap :Map) => {

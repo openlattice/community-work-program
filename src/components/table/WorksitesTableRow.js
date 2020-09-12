@@ -1,18 +1,21 @@
 // @flow
 import React, { Component } from 'react';
-import styled from 'styled-components';
-import { bindActionCreators } from 'redux';
-import { connect } from 'react-redux';
-import type { RowData } from 'lattice-ui-kit';
 
-import { goToRoute } from '../../core/router/RoutingActions';
-import * as Routes from '../../core/router/Routes';
+import styled from 'styled-components';
+import { Colors } from 'lattice-ui-kit';
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+
 import { StyledTableRow } from './styled/index';
-import { OL } from '../../core/style/Colors';
+
+import * as Routes from '../../core/router/Routes';
+import { goToRoute } from '../../core/router/RoutingActions';
 import type { GoToRoute } from '../../core/router/RoutingActions';
 
+const { NEUTRAL } = Colors;
+
 export const TableRow = styled(StyledTableRow)`
-  border-bottom: 1px solid ${OL.GREY05};
+  border-bottom: 1px solid ${NEUTRAL.N100};
 
   :last-of-type {
     border-bottom: none;
@@ -25,7 +28,7 @@ type Props = {
   };
   className ?:string;
   components :Object;
-  data :RowData;
+  data :Object;
   headers :Object[];
 };
 

@@ -1,8 +1,8 @@
 // @flow
 import React, { Component } from 'react';
+
 import styled from 'styled-components';
-import { fromJS, Map } from 'immutable';
-import { DateTime } from 'luxon';
+import { Map, fromJS } from 'immutable';
 import { DataProcessingUtils } from 'lattice-fabricate';
 import {
   Button,
@@ -12,13 +12,11 @@ import {
   Radio,
   TimePicker,
 } from 'lattice-ui-kit';
+import { DateTime } from 'luxon';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import type { RequestSequence } from 'redux-reqseq';
 
-import { checkInForAppointment } from '../assignedworksites/WorksitePlanActions';
-import { getCombinedDateTime } from '../../../utils/ScheduleUtils';
-import { get24HourTimeForCheckIn, getHoursScheduled } from '../utils/CheckInUtils';
 import {
   ButtonsRow,
   FormRow,
@@ -26,14 +24,17 @@ import {
   RowContent
 } from '../../../components/Layout';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
+import { getCombinedDateTime } from '../../../utils/ScheduleUtils';
 import {
   APP,
   EDM,
   PERSON,
   STATE
 } from '../../../utils/constants/ReduxStateConsts';
+import { checkInForAppointment } from '../assignedworksites/WorksitePlanActions';
+import { get24HourTimeForCheckIn, getHoursScheduled } from '../utils/CheckInUtils';
 
-const { RED_1 } = Colors;
+const { RED } = Colors;
 
 const {
   APPOINTMENT,
@@ -69,7 +70,7 @@ const RadioWrapper = styled.span`
 `;
 
 const ErrorMessage = styled.div`
-  color: ${RED_1};
+  color: ${RED.R300};
   max-width: 351px;
 `;
 

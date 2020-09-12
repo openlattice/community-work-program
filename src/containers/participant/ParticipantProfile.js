@@ -7,6 +7,7 @@ import {
   Button,
   Card,
   CardSegment,
+  Colors,
   Select,
   Table,
 } from 'lattice-ui-kit';
@@ -40,7 +41,6 @@ import {
 import { ENROLLMENT_STATUSES } from '../../core/edm/constants/DataModelConsts';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { goToRoute } from '../../core/router/RoutingActions';
-import { OL } from '../../core/style/Colors';
 import { PARTICIPANT_PROFILE_WIDTH } from '../../core/style/Sizes';
 import { getEntityKeyId, getEntityProperties, sortEntitiesByDateProperty } from '../../utils/DataUtils';
 import { generateTableHeaders } from '../../utils/FormattingUtils';
@@ -56,6 +56,7 @@ import {
 } from '../../utils/constants/ReduxStateConsts';
 import type { GoToRoute } from '../../core/router/RoutingActions';
 
+const { NEUTRAL } = Colors;
 const {
   CHECK_IN_DATETIME,
   CHECK_IN_DEADLINE,
@@ -176,9 +177,9 @@ const TopRowWrapper = styled.div`
 `;
 
 const NameHeader = styled.div`
+  color: ${NEUTRAL.N900};
   font-size: 26px;
   font-weight: 600;
-  color: ${OL.BLACK};
 `;
 
 const ButtonsWrapper = styled.div`

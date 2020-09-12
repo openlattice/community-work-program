@@ -45,7 +45,7 @@ import {
 } from '../participant/utils/CheckInUtils';
 
 const { getStyleVariation } = StyleUtils;
-const { NEUTRAL, PURPLE, YELLOW_1 } = Colors;
+const { NEUTRAL, PURPLE, YELLOW } = Colors;
 const { CHECK_INS_BY_APPOINTMENT, WORKSITES_BY_WORKSITE_PLAN } = WORKSITE_PLANS;
 const { PARTICIPANT } = PERSON;
 const { PERSON_BY_APPOINTMENT_EKID } = WORK_SCHEDULE;
@@ -56,7 +56,7 @@ const CheckedInIcon = (
 );
 
 const ExclamationIcon = (
-  <FontAwesomeIcon icon={faExclamationCircle} color={YELLOW_1} size="lg" />
+  <FontAwesomeIcon icon={faExclamationCircle} color={YELLOW.Y300} size="lg" />
 );
 
 const OuterWrapper = styled.div`

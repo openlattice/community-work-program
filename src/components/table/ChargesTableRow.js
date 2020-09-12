@@ -1,13 +1,15 @@
 // @flow
 import React from 'react';
+
 import styled from 'styled-components';
-import type { RowData } from 'lattice-ui-kit';
+import { Colors } from 'lattice-ui-kit';
 
 import { StyledTableRow } from './styled/index';
-import { OL } from '../../core/style/Colors';
+
+const { NEUTRAL } = Colors;
 
 export const TableRow = styled(StyledTableRow)`
-  border-bottom: 1px solid ${OL.GREY05};
+  border-bottom: 1px solid ${NEUTRAL.N100};
 
   :last-of-type {
     border-bottom: none;
@@ -17,7 +19,7 @@ export const TableRow = styled(StyledTableRow)`
 type Props = {
   className ?:string;
   components :Object;
-  data :RowData;
+  data :Object;
   headers :Object[];
 };
 
