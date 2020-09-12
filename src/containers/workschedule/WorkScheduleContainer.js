@@ -3,7 +3,7 @@ import React, { Component } from 'react';
 
 import startCase from 'lodash/startCase';
 import styled from 'styled-components';
-import { faFilter, faSortAlphaDown } from '@fortawesome/pro-light-svg-icons';
+import { faFilter, faSortAlphaDown } from '@fortawesome/pro-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { List, Map } from 'immutable';
 import {
