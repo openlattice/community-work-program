@@ -293,7 +293,7 @@ class WorksiteProfile extends Component<Props> {
                   data={worksiteInfo}
                   labelMap={worksiteInfoLabelMap} />
             </CardSegment>
-            <CardSegment padding={cardSegmentPadding} vertical>
+            <CardSegment padding={cardSegmentPadding}>
               <Label subtle>Notes</Label>
               <div>{ worksiteNotes && worksiteNotes.length ? worksiteNotes : EMPTY_FIELD }</div>
             </CardSegment>
