@@ -4,6 +4,7 @@ import React, { Component } from 'react';
 import styled from 'styled-components';
 import { Map, OrderedMap } from 'immutable';
 import {
+  Button,
   Card,
   CardSegment,
   DataGrid,
@@ -19,7 +20,6 @@ import type { RequestSequence, RequestState } from 'redux-reqseq';
 import { getWorksite } from './WorksitesActions';
 import { getWeekdayTableData, getWeekdayTableHeaders, getWorksiteStatus } from './utils/WorksitesUtils';
 
-import EditButton from '../../components/controls/buttons/EditButton';
 import LogoLoader from '../../components/LogoLoader';
 import * as Routes from '../../core/router/Routes';
 import {
@@ -253,7 +253,7 @@ class WorksiteProfile extends Component<Props> {
           </div>
           <HeaderRowWrapper>
             <ProfileNameHeader>{ worksiteName }</ProfileNameHeader>
-            <EditButton onClick={this.goToEditWorksiteInfoForm}>Edit</EditButton>
+            <Button onClick={this.goToEditWorksiteInfoForm}>Edit</Button>
           </HeaderRowWrapper>
           <Card>
             <CardSegment padding={cardSegmentPadding}>
@@ -294,7 +294,7 @@ class WorksiteProfile extends Component<Props> {
           </Card>
           <HeaderRowWrapper>
             <ProfileNameHeader>Hours of Operation</ProfileNameHeader>
-            <EditButton onClick={this.goToEditHoursOfOperation}>Edit</EditButton>
+            <Button onClick={this.goToEditHoursOfOperation}>Edit</Button>
           </HeaderRowWrapper>
           <Card>
             <Table
