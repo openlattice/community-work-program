@@ -222,10 +222,10 @@ const AppointmentContainer = ({
               !checkedIn && (
                 <ActionButtonsWrapper>
                   <IconButton onClick={() => handleEditAppointmentModalVisibility(true)}>
-                    <FontAwesomeIcon icon={faPen} color={NEUTRAL.N700} />
+                    <FontAwesomeIcon icon={faPen} color={NEUTRAL.N500} />
                   </IconButton>
                   <IconButton onClick={() => handleDeleteAppointmentModalVisibility(true)}>
-                    <FontAwesomeIcon icon={faTrash} color={NEUTRAL.N700} />
+                    <FontAwesomeIcon icon={faTrash} color={NEUTRAL.N500} />
                   </IconButton>
                 </ActionButtonsWrapper>
               )
