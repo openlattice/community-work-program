@@ -12,7 +12,6 @@ import {
   ThemeProvider,
   lightTheme
 } from 'lattice-ui-kit';
-import { AuthActions } from 'lattice-auth';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { Redirect, Route, Switch } from 'react-router-dom';
@@ -41,8 +40,6 @@ import { ContactSupport } from '../../components/controls/index';
 import { APP_CONTAINER_WIDTH } from '../../core/style/Sizes';
 import { OL } from '../../core/style/Colors';
 import { APP, STATE } from '../../utils/constants/ReduxStateConsts';
-
-const { logout } = AuthActions;
 
 const AppContainerWrapper = styled.div`
   display: flex;
@@ -175,7 +172,6 @@ const mapStateToProps = (state :Map<*, *>) => {
 const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
     initializeApplication: AppActions.initializeApplication,
-    logout,
     resetRequestState: ParticipantsActions.resetRequestState,
     switchOrganization: AppActions.switchOrganization,
   }, dispatch)
