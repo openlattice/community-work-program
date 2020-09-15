@@ -4,16 +4,18 @@
 
 import React, { Component } from 'react';
 
+import _isFunction from 'lodash/isFunction';
 import styled from 'styled-components';
 import { Map } from 'immutable';
 import { AuthActions, AuthUtils } from 'lattice-auth';
 import { Button, Colors, Select } from 'lattice-ui-kit';
 import { connect } from 'react-redux';
-import { bindActionCreators } from 'redux';
 import { withRouter } from 'react-router';
 import { Link } from 'react-router-dom';
+import { bindActionCreators } from 'redux';
 
 import AppNavigationContainer from './AppNavigationContainer';
+
 import OpenLatticeLogo from '../../assets/images/logo_v2.png';
 import * as Routes from '../../core/router/Routes';
 import {
@@ -21,6 +23,9 @@ import {
   APP_CONTAINER_WIDTH,
   APP_CONTENT_PADDING,
 } from '../../core/style/Sizes';
+import { GOOGLE_TRACKING_ID } from '../../core/tracking/google';
+
+declare var gtag :?Function;
 
 const { NEUTRALS, WHITE } = Colors;
 
@@ -122,6 +127,16 @@ type Props = {
 
 class AppHeaderContainer extends Component<Props> {
 
+  handleOnClickLogOut = () => {
+
+    const { actions } = this.props;
+    actions.logout();
+
+    if (_isFunction(gtag)) {
+      gtag('config', GOOGLE_TRACKING_ID, { user_id: undefined, send_page_view: false });
+    }
+  }
+
   renderDisplayName = () => {
     const userInfo = AuthUtils.getUserInfo();
 
@@ -163,19 +178,15 @@ class AppHeaderContainer extends Component<Props> {
     </LeftSideContentWrapper>
   )
 
-  renderRightSideContent = () => {
-
-    const { actions } = this.props;
-    return (
-      <RightSideContentWrapper>
-        <SelectWrapper>{ this.renderOrgSelector() }</SelectWrapper>
-        { this.renderDisplayName() }
-        <LogoutButton onClick={actions.logout}>
-          Log Out
-        </LogoutButton>
-      </RightSideContentWrapper>
-    );
-  }
+  renderRightSideContent = () => (
+    <RightSideContentWrapper>
+      <SelectWrapper>{ this.renderOrgSelector() }</SelectWrapper>
+      { this.renderDisplayName() }
+      <LogoutButton onClick={this.handleOnClickLogOut}>
+        Log Out
+      </LogoutButton>
+    </RightSideContentWrapper>
+  )
 
   render() {
 
