@@ -41,8 +41,6 @@ import { ContactSupport } from '../../components/controls/index';
 import { APP_CONTAINER_WIDTH } from '../../core/style/Sizes';
 import { APP, STATE } from '../../utils/constants/ReduxStateConsts';
 
-const { logout } = AuthActions;
-
 const AppContainerWrapper = styled.div`
   display: flex;
   flex-direction: column;
@@ -175,7 +173,6 @@ const mapStateToProps = (state :Map<*, *>) => {
 const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
     initializeApplication: AppActions.initializeApplication,
-    logout,
     resetRequestState: ParticipantsActions.resetRequestState,
     switchOrganization: AppActions.switchOrganization,
   }, dispatch)
