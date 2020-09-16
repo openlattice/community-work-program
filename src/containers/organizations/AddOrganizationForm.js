@@ -1,7 +1,6 @@
 // @flow
 import React, { Component } from 'react';
 
-import styled from 'styled-components';
 import { Map, fromJS } from 'immutable';
 import { DataProcessingUtils } from 'lattice-fabricate';
 import {
@@ -15,11 +14,7 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import type { RequestSequence } from 'redux-reqseq';
 
-import {
-  ButtonsRow,
-  FormRow,
-  RowContent,
-} from '../../components/Layout';
+import { ButtonsRow, FormRow, RowContent } from '../../components/Layout';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { APP, EDM, STATE } from '../../utils/constants/ReduxStateConsts';
 import { addOrganization } from '../worksites/WorksitesActions';
@@ -33,10 +28,6 @@ const { ORGANIZATION } = APP_TYPE_FQNS;
 const { DESCRIPTION, ORGANIZATION_NAME } = PROPERTY_TYPE_FQNS;
 const { ENTITY_SET_IDS_BY_ORG, SELECTED_ORG_ID } = APP;
 const { PROPERTY_TYPES, TYPE_IDS_BY_FQNS } = EDM;
-
-const PaddedButtonsRow = styled(ButtonsRow)`
-  padding-bottom: 30px;
-`;
 
 type Props = {
   actions:{
@@ -85,7 +76,7 @@ class AddOrganizationForm extends Component<Props, State> {
   render() {
     const { isLoading, onDiscard } = this.props;
     return (
-      <CardSegment padding="small">
+      <CardSegment padding="0 0 30px">
         <FormRow>
           <RowContent>
             <Label>Organization name</Label>
@@ -103,7 +94,7 @@ class AddOrganizationForm extends Component<Props, State> {
                 onChange={this.handleInputChange} />
           </RowContent>
         </FormRow>
-        <PaddedButtonsRow>
+        <ButtonsRow>
           <Button onClick={onDiscard}>Discard</Button>
           <Button
               color="primary"
@@ -111,7 +102,7 @@ class AddOrganizationForm extends Component<Props, State> {
               onClick={this.handleOnSubmit}>
             Submit
           </Button>
-        </PaddedButtonsRow>
+        </ButtonsRow>
       </CardSegment>
     );
   }
