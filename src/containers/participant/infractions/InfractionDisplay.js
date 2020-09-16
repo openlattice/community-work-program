@@ -173,7 +173,7 @@ class InfractionDisplay extends Component<Props, State> {
               <IconButton onClick={this.goToPrintInfraction}>
                 <FontAwesomeIcon icon={faPrint} color={NEUTRAL.N500} />
               </IconButton>
-              <IconButton onClick={this.goToPrintInfraction}>
+              <IconButton onClick={() => this.handleShowModal(EDIT_INFRACTION_MODAL)}>
                 <FontAwesomeIcon color={NEUTRAL.N500} icon={faPen} />
               </IconButton>
               <IconButton onClick={() => this.handleShowModal(DELETE_INFRACTION_MODAL)}>
