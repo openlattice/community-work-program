@@ -2,14 +2,15 @@
 import React, { Component } from 'react';
 
 import styled from 'styled-components';
+import { faMinus, faPlus } from '@fortawesome/pro-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { List, Map } from 'immutable';
 import { AuthUtils } from 'lattice-auth';
 import {
   Card,
   CardSegment,
+  IconButton,
   Label,
-  MinusButton,
-  PlusButton,
   Select,
   Sizes,
 } from 'lattice-ui-kit';
@@ -258,10 +259,14 @@ class PrintInfractionContainer extends Component<Props, State> {
                   (num === caseFieldRowArray[caseFieldRowArray.length - 1]) && (
                     <ButtonsWrapper>
                       <ButtonWrapper>
-                        <MinusButton onClick={this.removeCaseFieldsRow} />
+                        <IconButton onClick={this.removeCaseFieldsRow}>
+                          <FontAwesomeIcon icon={faMinus} />
+                        </IconButton>
                       </ButtonWrapper>
                       <ButtonWrapper>
-                        <PlusButton onClick={this.addCaseFieldsRow} />
+                        <IconButton onClick={this.addCaseFieldsRow}>
+                          <FontAwesomeIcon icon={faPlus} />
+                        </IconButton>
                       </ButtonWrapper>
                     </ButtonsWrapper>
                   )
