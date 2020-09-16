@@ -22,6 +22,7 @@ const {
   FULL_ADDRESS,
   LAST_NAME,
   NAME,
+  NOTES,
   PHONE_NUMBER,
   US_STATE,
   ZIP,
@@ -54,6 +55,11 @@ const worksiteSchema = {
           title: 'Available work',
           format: 'textarea'
         },
+        [getEntityAddressKey(0, WORKSITE, NOTES)]: {
+          type: 'string',
+          title: 'Notes',
+          format: 'textarea'
+        },
       }
     },
   },
@@ -72,6 +78,9 @@ const worksiteUiSchema = {
       classNames: 'column-span-4'
     },
     [getEntityAddressKey(0, WORKSITE, DESCRIPTION)]: {
+      classNames: 'column-span-12'
+    },
+    [getEntityAddressKey(0, WORKSITE, NOTES)]: {
       classNames: 'column-span-12'
     },
     'ui:options': { editable: true },
