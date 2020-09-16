@@ -6,7 +6,6 @@ import React, { Component } from 'react';
 
 import styled from 'styled-components';
 import { Map } from 'immutable';
-import { AuthActions } from 'lattice-auth';
 import {
   LatticeLuxonUtils,
   MuiPickersUtilsProvider,
@@ -68,7 +67,6 @@ const AppContentInnerWrapper = styled.div`
 type Props = {
   actions:{
     initializeApplication :RequestSequence;
-    logout :() => void;
     resetRequestState :(actionType :string) => void;
     switchOrganization :RequestSequence;
   },
