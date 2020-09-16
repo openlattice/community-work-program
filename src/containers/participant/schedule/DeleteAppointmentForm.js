@@ -84,8 +84,8 @@ class DeleteAppointmentForm extends Component<Props, State> {
         <ButtonsRow>
           <Button onClick={onDiscard}>No</Button>
           <Button
+              color="primary"
               isLoading={isLoading}
-              mode="primary"
               onClick={this.handleOnSubmit}>
             Yes
           </Button>

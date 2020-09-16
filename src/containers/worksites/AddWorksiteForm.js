@@ -156,8 +156,8 @@ class AddWorksiteForm extends Component<Props, State> {
           <RowContent>
             <ButtonsWrapper>
               <Button
+                  color="primary"
                   isLoading={isLoading}
-                  mode="primary"
                   onClick={this.handleOnSubmit}>
                 Submit
               </Button>

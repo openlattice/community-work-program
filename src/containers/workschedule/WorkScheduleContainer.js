@@ -277,7 +277,7 @@ class WorkScheduleContainer extends Component<Props, State> {
           <FontAwesomeIcon color={NEUTRAL.N500} icon={faSortAlphaDown} />
         </IconButton>
         <Button onClick={this.goToPrintSchedule}>Print</Button>
-        <Button mode="primary" onClick={this.getAppointments}>Display Appointments</Button>
+        <Button color="primary" onClick={this.getAppointments}>Display Appointments</Button>
       </FieldsRowWrapper>
     );
   }
