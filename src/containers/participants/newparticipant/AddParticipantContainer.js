@@ -1,10 +1,12 @@
 // @flow
 import React, { useState } from 'react';
+
 import styled from 'styled-components';
 import { Button, CardSegment, CardStack } from 'lattice-ui-kit';
 
 import AddParticipantForm from './AddParticipantForm';
 import SearchExistingPeople from './SearchExistingPeople';
+
 import { APP_CONTENT_WIDTH } from '../../../core/style/Sizes';
 
 const ContainerWrapper = styled.div`
@@ -17,6 +19,7 @@ const ContainerWrapper = styled.div`
 `;
 
 const FlexEndCardSegment = styled(CardSegment)`
+  flex-direction: row;
   justify-content: flex-end;
 `;
 

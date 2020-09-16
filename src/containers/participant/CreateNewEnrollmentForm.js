@@ -1,6 +1,9 @@
 // @flow
 import React, { Component } from 'react';
+
 import styled from 'styled-components';
+import { faCheckCircle } from '@fortawesome/pro-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   List,
   Map,
@@ -11,40 +14,39 @@ import {
   removeIn,
   setIn,
 } from 'immutable';
-import { DateTime } from 'luxon';
+import { DataProcessingUtils, Form } from 'lattice-fabricate';
 import {
   Card,
   CardHeader,
   CardSegment,
   CardStack,
+  Colors,
   Spinner,
 } from 'lattice-ui-kit';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCheckCircle } from '@fortawesome/pro-solid-svg-icons';
-import { Form, DataProcessingUtils } from 'lattice-fabricate';
+import { DateTime } from 'luxon';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { RequestStates } from 'redux-reqseq';
-import type { RequestSequence, RequestState } from 'redux-reqseq';
 import type { Match } from 'react-router-dom';
+import type { RequestSequence, RequestState } from 'redux-reqseq';
 
-import LogoLoader from '../../components/LogoLoader';
-
-import * as Routes from '../../core/router/Routes';
 import { createNewEnrollment, getInfoForAddParticipant } from './ParticipantActions';
-import { goToRoute } from '../../core/router/RoutingActions';
-import { hydrateSchema } from './utils/CreateNewEnrollmentUtils';
-import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
-import { CWP, ENROLLMENT_STATUSES } from '../../core/edm/constants/DataModelConsts';
-import { schema, uiSchema } from './schemas/CreateNewEnrollmentSchemas';
-import { getEntityKeyId } from '../../utils/DataUtils';
-import { getCombinedDateTime } from '../../utils/ScheduleUtils';
 import {
   formatExistingChargeDataAndAssociation,
   formatNewArrestChargeDataAndAssociations,
 } from './charges/utils/ChargesUtils';
+import { schema, uiSchema } from './schemas/CreateNewEnrollmentSchemas';
+import { hydrateSchema } from './utils/CreateNewEnrollmentUtils';
+
+import LogoLoader from '../../components/LogoLoader';
+import * as Routes from '../../core/router/Routes';
 import { BackNavButton } from '../../components/controls/index';
+import { CWP, ENROLLMENT_STATUSES } from '../../core/edm/constants/DataModelConsts';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { goToRoute } from '../../core/router/RoutingActions';
 import { PARTICIPANT_PROFILE_WIDTH } from '../../core/style/Sizes';
+import { getEntityKeyId } from '../../utils/DataUtils';
+import { getCombinedDateTime } from '../../utils/ScheduleUtils';
 import {
   APP,
   CHARGES,
@@ -52,7 +54,6 @@ import {
   PERSON,
   STATE
 } from '../../utils/constants/ReduxStateConsts';
-import { OL } from '../../core/style/Colors';
 import type { GoToRoute } from '../../core/router/RoutingActions';
 
 const {
@@ -62,6 +63,7 @@ const {
   processAssociationEntityData,
   processEntityData,
 } = DataProcessingUtils;
+const { PURPLE } = Colors;
 const {
   APPEARS_IN,
   CHARGE_EVENT,
@@ -322,7 +324,7 @@ class CreateNewEnrollmentForm extends Component<Props> {
         </ButtonWrapper>
         <CardStack>
           <Card>
-            <CardHeader mode="primary" padding="md">Create New Enrollment</CardHeader>
+            <CardHeader padding="md">Create New Enrollment</CardHeader>
             {
               (createNewEnrollmentRequestState !== RequestStates.PENDING
                   && createNewEnrollmentRequestState !== RequestStates.SUCCESS)
@@ -350,7 +352,7 @@ class CreateNewEnrollmentForm extends Component<Props> {
                   <SubmissionActionsWrapper>
                     <SubmittedWrapper>
                       <SubmittedWrapper>
-                        <FontAwesomeIcon icon={faCheckCircle} color={OL.PURPLE02} />
+                        <FontAwesomeIcon icon={faCheckCircle} color={PURPLE.P300} />
                       </SubmittedWrapper>
                       <SubmittedWrapper>
                         CWP Enrollment Created!

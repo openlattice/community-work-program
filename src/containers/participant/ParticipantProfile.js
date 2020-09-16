@@ -1,11 +1,13 @@
 // @flow
 import React, { Component } from 'react';
+
 import styled from 'styled-components';
 import { List, Map } from 'immutable';
 import {
   Button,
   Card,
   CardSegment,
+  Colors,
   Select,
   Table,
 } from 'lattice-ui-kit';
@@ -19,9 +21,15 @@ import AssignedWorksitesContainer from './assignedworksites/AssignedWorksitesCon
 import CreateWorkAppointmentModal from './schedule/CreateAppointmentModal';
 import EnrollmentTableRow from './enrollment/EnrollmentTableRow';
 import InfractionsContainer from './infractions/InfractionsContainer';
-import LogoLoader from '../../components/LogoLoader';
 import ParticipantWorkScheduleContainer from './schedule/ParticipantWorkScheduleContainer';
 import ProgramCompletionBanner from './ProgramCompletionBanner';
+import generateDiversionPlanOptions from './utils/ParticipantProfileUtils';
+import { getAllParticipantInfo, getEnrollmentFromDiversionPlan } from './ParticipantActions';
+import { clearAppointmentsAndPlans } from './assignedworksites/WorksitePlanActions';
+
+import LogoLoader from '../../components/LogoLoader';
+import * as Routes from '../../core/router/Routes';
+import { BackNavButton } from '../../components/controls/index';
 import {
   CaseInfoSection,
   EnrollmentDates,
@@ -30,19 +38,13 @@ import {
   PersonNotes,
   ProgramNotes,
 } from '../../components/participant/index';
-import generateDiversionPlanOptions from './utils/ParticipantProfileUtils';
-import { getAllParticipantInfo, getEnrollmentFromDiversionPlan } from './ParticipantActions';
-import { clearAppointmentsAndPlans } from './assignedworksites/WorksitePlanActions';
-import { goToRoute } from '../../core/router/RoutingActions';
-import { OL } from '../../core/style/Colors';
-import { PARTICIPANT_PROFILE_WIDTH } from '../../core/style/Sizes';
-import * as Routes from '../../core/router/Routes';
-import { BackNavButton } from '../../components/controls/index';
-import { getEntityKeyId, getEntityProperties, sortEntitiesByDateProperty } from '../../utils/DataUtils';
-import { isDefined } from '../../utils/LangUtils';
-import { generateTableHeaders } from '../../utils/FormattingUtils';
-import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { ENROLLMENT_STATUSES } from '../../core/edm/constants/DataModelConsts';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { goToRoute } from '../../core/router/RoutingActions';
+import { PARTICIPANT_PROFILE_WIDTH } from '../../core/style/Sizes';
+import { getEntityKeyId, getEntityProperties, sortEntitiesByDateProperty } from '../../utils/DataUtils';
+import { generateTableHeaders } from '../../utils/FormattingUtils';
+import { isDefined } from '../../utils/LangUtils';
 import {
   APP,
   CHARGES,
@@ -54,6 +56,7 @@ import {
 } from '../../utils/constants/ReduxStateConsts';
 import type { GoToRoute } from '../../core/router/RoutingActions';
 
+const { NEUTRAL } = Colors;
 const {
   CHECK_IN_DATETIME,
   CHECK_IN_DEADLINE,
@@ -135,7 +138,7 @@ const GeneralInfoSection = styled.div`
   font-size: 13px;
   grid-gap: 16px 33px;
   grid-template-columns: 383px 1fr;
-  height: 836px;
+  height: 800px;
   margin-bottom: 30px;
   overflow-x: visible;
   overflow-y: auto;
@@ -174,9 +177,9 @@ const TopRowWrapper = styled.div`
 `;
 
 const NameHeader = styled.div`
+  color: ${NEUTRAL.N900};
   font-size: 26px;
   font-weight: 600;
-  color: ${OL.BLACK};
 `;
 
 const ButtonsWrapper = styled.div`
@@ -560,7 +563,7 @@ class ParticipantProfile extends Component<Props, State> {
               <NameHeader>Enrollment History</NameHeader>
             </NameRowWrapper>
             <Card>
-              <CardSegment vertical>
+              <CardSegment>
                 <Table
                     components={{
                       Row: EnrollmentTableRow

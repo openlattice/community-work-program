@@ -96,7 +96,7 @@ class EditRequiredHoursForm extends Component<Props, State> {
 
     return (
       <Card>
-        <CardHeader mode="primary" padding="sm">Edit Required Hours</CardHeader>
+        <CardHeader padding="sm">Edit Required Hours</CardHeader>
         <Form
             disabled
             formContext={requiredHoursFormContext}

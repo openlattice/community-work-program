@@ -1,52 +1,57 @@
 // @flow
 import React, { Component } from 'react';
-import styled from 'styled-components';
-import toString from 'lodash/toString';
-import { Badge, CardStack, Tag } from 'lattice-ui-kit';
-import { List, Map } from 'immutable';
-import { DateTime } from 'luxon';
-import { bindActionCreators } from 'redux';
-import { connect } from 'react-redux';
-import { RequestStates } from 'redux-reqseq';
-import type { RequestSequence, RequestState } from 'redux-reqseq';
 import type { Element } from 'react';
 
-import LogoLoader from '../../components/LogoLoader';
-import NoParticipantsFound from './NoParticipantsFound';
-import ParticipantsTableRow from '../../components/table/ParticipantsTableRow';
-import TableHeaderRow from '../../components/table/TableHeaderRow';
-import TableHeadCell from '../../components/table/TableHeadCell';
-
+import styled from 'styled-components';
+import toString from 'lodash/toString';
+import { List, Map } from 'immutable';
 import {
-  TableCell,
-  CustomTable,
-  TableCard,
-  TableHeader,
-  TableName,
-} from '../../components/table/styled/index';
-import { ErrorMessage } from '../../components/Layout';
-import { getDiversionPlans } from '../participants/ParticipantsActions';
-import { goToRoute } from '../../core/router/RoutingActions';
-import { PARTICIPANT_PROFILE } from '../../core/router/Routes';
-import { DASHBOARD_WIDTH } from '../../core/style/Sizes';
-import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
-import { getCheckInDeadline, getDateInISOFormat } from '../../utils/ScheduleUtils';
-import { formatAsDate } from '../../utils/DateTimeUtils';
-import { getPersonFullName, getHoursServed, getPersonPictureForTable } from '../../utils/PeopleUtils';
-import { generateTableHeaders } from '../../utils/FormattingUtils';
-import { ENROLLMENT_STATUSES, HOURS_CONSTS, INFRACTIONS_CONSTS } from '../../core/edm/constants/DataModelConsts';
-import { PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
-import { APP, PEOPLE, STATE } from '../../utils/constants/ReduxStateConsts';
+  Badge,
+  CardStack,
+  Colors,
+  Tag,
+} from 'lattice-ui-kit';
+import { DateTime } from 'luxon';
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+import { RequestStates } from 'redux-reqseq';
+import type { RequestSequence, RequestState } from 'redux-reqseq';
+
+import NoParticipantsFound from './NoParticipantsFound';
 import {
   NEW_PARTICIPANTS_COLUMNS,
   PENDING_PARTICIPANTS_COLUMNS,
   VIOLATIONS_WATCH_COLUMNS,
 } from './DashboardConstants';
+
+import LogoLoader from '../../components/LogoLoader';
+import ParticipantsTableRow from '../../components/table/ParticipantsTableRow';
+import TableHeadCell from '../../components/table/TableHeadCell';
+import TableHeaderRow from '../../components/table/TableHeaderRow';
+import { ErrorMessage } from '../../components/Layout';
+import {
+  CustomTable,
+  TableCard,
+  TableCell,
+  TableHeader,
+  TableName,
+} from '../../components/table/styled/index';
+import { ENROLLMENT_STATUSES, HOURS_CONSTS, INFRACTIONS_CONSTS } from '../../core/edm/constants/DataModelConsts';
+import { PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { PARTICIPANT_PROFILE } from '../../core/router/Routes';
+import { goToRoute } from '../../core/router/RoutingActions';
+import { DASHBOARD_WIDTH } from '../../core/style/Sizes';
+import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
+import { formatAsDate } from '../../utils/DateTimeUtils';
+import { generateTableHeaders } from '../../utils/FormattingUtils';
+import { getHoursServed, getPersonFullName, getPersonPictureForTable } from '../../utils/PeopleUtils';
+import { getCheckInDeadline, getDateInISOFormat } from '../../utils/ScheduleUtils';
+import { APP, PEOPLE, STATE } from '../../utils/constants/ReduxStateConsts';
+import { getDiversionPlans } from '../participants/ParticipantsActions';
 import { EMPTY_FIELD } from '../participants/ParticipantsConstants';
-import { OL } from '../../core/style/Colors';
 import type { GoToRoute } from '../../core/router/RoutingActions';
 
-/* constants */
+const { GREEN, RED, WHITE } = Colors;
 const { CHECK_IN_DEADLINE, DATETIME_RECEIVED, STATUS } = PROPERTY_TYPE_FQNS;
 const { REQUIRED, WORKED } = HOURS_CONSTS;
 const {
@@ -83,15 +88,15 @@ const DashboardBody = styled.div`
 `;
 
 const SubtleTag = styled(Tag)`
-  background-color: ${OL.WHITE};
-  border: 0.5px solid ${OL.GREEN02};
-  color: ${OL.GREEN02};
+  background-color: ${WHITE};
+  border: 0.5px solid ${GREEN.G300};
+  color: ${GREEN.G300};
   font-weight: 500;
 `;
 
 const ReportTag = styled(SubtleTag)`
-  border-color: ${OL.RED01};
-  color: ${OL.RED01};
+  border-color: ${RED.R300};
+  color: ${RED.R300};
 `;
 
 type Props = {

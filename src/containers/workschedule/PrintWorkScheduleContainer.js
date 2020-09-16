@@ -1,27 +1,28 @@
 // @flow
 import React, { Component } from 'react';
+
 import {
-  fromJS,
   List,
   Map,
-  OrderedMap
+  OrderedMap,
+  fromJS
 } from 'immutable';
-import { DateTime } from 'luxon';
 import { Card, CardSegment, DataGrid } from 'lattice-ui-kit';
-import { bindActionCreators } from 'redux';
+import { DateTime } from 'luxon';
 import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
 import { RequestStates } from 'redux-reqseq';
 import type { Match } from 'react-router';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
-import LogoLoader from '../../components/LogoLoader';
-
 import { findAppointments } from './WorkScheduleActions';
+
+import LogoLoader from '../../components/LogoLoader';
+import { COURT_TYPES_MAP } from '../../core/edm/constants/DataModelConsts';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { getEntityKeyId, getEntityProperties, sortEntitiesByDateProperty } from '../../utils/DataUtils';
 import { getPersonFullName } from '../../utils/PeopleUtils';
 import { APP, STATE, WORK_SCHEDULE } from '../../utils/constants/ReduxStateConsts';
-import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
-import { COURT_TYPES_MAP } from '../../core/edm/constants/DataModelConsts';
 import { EMPTY_FIELD } from '../participants/ParticipantsConstants';
 
 const { ENTITY_SET_IDS_BY_ORG, SELECTED_ORG_ID } = APP;
@@ -151,7 +152,7 @@ class PrintWorkScheduleContainer extends Component<Props> {
     });
     return (
       <Card>
-        <CardSegment padding="sm" vertical>
+        <CardSegment padding="sm">
           Work Schedule
         </CardSegment>
         <CardSegment padding="sm">

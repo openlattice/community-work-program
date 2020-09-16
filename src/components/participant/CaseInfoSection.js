@@ -1,8 +1,8 @@
 // @flow
 import React from 'react';
+
 import startCase from 'lodash/startCase';
 import toString from 'lodash/toString';
-import { DateTime } from 'luxon';
 import {
   List,
   Map,
@@ -10,16 +10,14 @@ import {
   fromJS,
 } from 'immutable';
 import { Card, CardSegment, DataGrid } from 'lattice-ui-kit';
+import { DateTime } from 'luxon';
 
-import {
-  SectionLabel,
-  SectionNameRow,
-  SectionWrapper,
-  StyledEditButton,
-} from './SectionStyledComponents';
-import { getEntityProperties, sortEntitiesByDateProperty } from '../../utils/DataUtils';
-import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { SectionLabel, SectionNameRow, SectionWrapper } from './SectionStyledComponents';
+
+import EditButton from '../controls/buttons/EditButton';
 import { EMPTY_FIELD } from '../../containers/participants/ParticipantsConstants';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { getEntityProperties, sortEntitiesByDateProperty } from '../../utils/DataUtils';
 
 const { ARREST_CHARGE_LIST, CHARGE_EVENT, MANUAL_ARREST_CHARGES } = APP_TYPE_FQNS;
 const {
@@ -107,10 +105,10 @@ const CaseInfoSection = ({
     <SectionWrapper>
       <SectionNameRow>
         <SectionLabel subtle>Case Info</SectionLabel>
-        <StyledEditButton mode="subtle" onClick={edit} />
+        <EditButton onClick={edit} />
       </SectionNameRow>
       <Card>
-        <CardSegment padding="md" vertical>
+        <CardSegment padding="md">
           <DataGrid
               columns={3}
               data={data}

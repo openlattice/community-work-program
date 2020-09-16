@@ -1,8 +1,10 @@
 // @flow
 import React, { useState } from 'react';
+
 import styled from 'styled-components';
+import { faSearch } from '@fortawesome/pro-duotone-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { List, Map } from 'immutable';
-import { DateTime } from 'luxon';
 import {
   Button,
   Card,
@@ -12,6 +14,8 @@ import {
   Select,
   Spinner,
 } from 'lattice-ui-kit';
+import { DateTime } from 'luxon';
+import { connect } from 'react-redux';
 import {
   Hint,
   HorizontalBarSeries,
@@ -21,12 +25,30 @@ import {
   XYPlot,
   YAxis,
 } from 'react-vis';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSearch } from '@fortawesome/pro-duotone-svg-icons';
-import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
+import {
+  DOWNLOAD_COURT_TYPE_DATA,
+  GET_ENROLLMENTS_BY_COURT_TYPE,
+  GET_HOURS_BY_COURT_TYPE,
+  downloadCourtTypeData,
+  getEnrollmentsByCourtType,
+  getHoursByCourtType,
+} from './CourtTypeActions';
+
+import { isDefined } from '../../../utils/LangUtils';
+import { requestIsPending } from '../../../utils/RequestStateUtils';
+import { SHARED, STATE } from '../../../utils/constants/ReduxStateConsts';
+import { GET_STATS_DATA, getStatsData } from '../StatsActions';
+import {
+  ALL_TIME,
+  MONTHLY,
+  MONTHS_OPTIONS,
+  TIME_FRAME_OPTIONS,
+  YEARLY,
+  YEARS_OPTIONS,
+} from '../consts/TimeConsts';
 import {
   ActionsWrapper,
   GraphHeader,
@@ -43,48 +65,27 @@ import {
   KeySquare,
 } from '../styled/RadialChartStyles';
 import {
-  formatEnrollmentsDataForDownload,
   formatEnrollmentStatusPeopleData,
+  formatEnrollmentsDataForDownload,
   getBottomRowForEnrollments,
 } from '../utils/StatsUtils';
-import { isDefined } from '../../../utils/LangUtils';
-import { requestIsPending } from '../../../utils/RequestStateUtils';
-import {
-  DOWNLOAD_COURT_TYPE_DATA,
-  GET_ENROLLMENTS_BY_COURT_TYPE,
-  GET_HOURS_BY_COURT_TYPE,
-  downloadCourtTypeData,
-  getEnrollmentsByCourtType,
-  getHoursByCourtType,
-} from './CourtTypeActions';
-import { GET_STATS_DATA, getStatsData } from '../StatsActions';
-import { OL } from '../../../core/style/Colors';
-import {
-  ALL_TIME,
-  MONTHLY,
-  MONTHS_OPTIONS,
-  TIME_FRAME_OPTIONS,
-  YEARLY,
-  YEARS_OPTIONS,
-} from '../consts/TimeConsts';
-import { SHARED, STATE } from '../../../utils/constants/ReduxStateConsts';
 
 const {
-  BLUE_2,
-  PURPLES,
+  BLUE,
+  MAGENTA,
+  PURPLE,
   WHITE,
-  YELLOW_1,
+  YELLOW,
 } = Colors;
-const { PINK01 } = OL;
 
 const { ACTIONS, REQUEST_STATE } = SHARED;
 
 const STATUSES_PER_BAR = [
-  { status: 'Successful/Completed', color: PURPLES[2] },
-  { status: 'Unsuccessful/Noncompliant', color: PURPLES[0] },
-  { status: 'Closed', color: BLUE_2 },
-  { status: 'Active', color: PINK01 },
-  { status: 'Job Search', color: YELLOW_1 },
+  { status: 'Successful/Completed', color: BLUE.B200 },
+  { status: 'Unsuccessful/Noncompliant', color: BLUE.B500 },
+  { status: 'Closed', color: PURPLE.P200 },
+  { status: 'Active', color: MAGENTA.M300 },
+  { status: 'Job Search', color: YELLOW.Y200 },
 ];
 
 const defaultToolTipValues :Object = {
@@ -92,7 +93,7 @@ const defaultToolTipValues :Object = {
   hoveredBar: {},
   format: []
 };
-const background :string = PURPLES[1];
+const background :string = PURPLE.P300;
 const color :string = WHITE;
 
 const KeyWrapper = styled.div`
@@ -242,15 +243,15 @@ const EnrollmentsAndStatusByCourtType = ({
                       options={YEARS_OPTIONS}
                       placeholder={today.year} />
                 </SelectsWrapper>
-                <IconButton
-                    icon={<FontAwesomeIcon icon={faSearch} />}
-                    onClick={getNewEnrollmentsData} />
+                <IconButton onClick={getNewEnrollmentsData}>
+                  <FontAwesomeIcon icon={faSearch} />
+                </IconButton>
               </ActionsWrapper>
             </InnerHeaderRow>
           )
         }
       </GraphHeader>
-      <CardSegment padding="30px" vertical>
+      <CardSegment padding="30px">
         {
           requestIsPending(requestStates[GET_STATS_DATA])
             || requestIsPending(requestStates[GET_ENROLLMENTS_BY_COURT_TYPE])
@@ -275,27 +276,27 @@ const EnrollmentsAndStatusByCourtType = ({
                 <XAxis />
                 <YAxis />
                 <HorizontalBarSeries
-                    color={PURPLES[2]}
+                    color={BLUE.B200}
                     data={successfulPeopleGraphData}
                     onValueMouseOver={(v :Object) => setToolTipValues({ background, color, hoveredBar: v })}
                     onValueMouseOut={() => setToolTipValues(defaultToolTipValues)} />
                 <HorizontalBarSeries
-                    color={PURPLES[0]}
+                    color={BLUE.B500}
                     data={unsuccessfulPeopleGraphData}
                     onValueMouseOver={(v :Object) => setToolTipValues({ background, color, hoveredBar: v })}
                     onValueMouseOut={() => setToolTipValues(defaultToolTipValues)} />
                 <HorizontalBarSeries
-                    color={BLUE_2}
+                    color={PURPLE.P200}
                     data={closedPeopleGraphData}
                     onValueMouseOver={(v :Object) => setToolTipValues({ background, color, hoveredBar: v })}
                     onValueMouseOut={() => setToolTipValues(defaultToolTipValues)} />
                 <HorizontalBarSeries
-                    color={PINK01}
+                    color={MAGENTA.M300}
                     data={activePeopleGraphData}
                     onValueMouseOver={(v :Object) => setToolTipValues({ background, color, hoveredBar: v })}
                     onValueMouseOut={() => setToolTipValues(defaultToolTipValues)} />
                 <HorizontalBarSeries
-                    color={YELLOW_1}
+                    color={YELLOW.Y200}
                     data={jobSearchPeopleGraphData}
                     onValueMouseOver={(v :Object) => setToolTipValues({ background, color, hoveredBar: v })}
                     onValueMouseOut={() => setToolTipValues(defaultToolTipValues)} />
@@ -311,7 +312,7 @@ const EnrollmentsAndStatusByCourtType = ({
             )
         }
       </CardSegment>
-      <CardSegment padding="30px" vertical>
+      <CardSegment padding="30px">
         <KeyWrapper>
           {
             STATUSES_PER_BAR.map(({ status, color: statusColor } :Object) => (

@@ -19,11 +19,11 @@ import { expandIcon } from '../../stats/styled/ExpansionStyles';
 import { getWeeklyBreakdownOfHoursPerWeek } from '../utils/CheckInUtils';
 
 const { getStyleVariation } = StyleUtils;
-const { NEUTRALS } = Colors;
+const { NEUTRAL } = Colors;
 
 const numHoursColorVariation = getStyleVariation('hours', {
-  default: NEUTRALS[0],
-  '0 hrs': NEUTRALS[2],
+  default: NEUTRAL.N700,
+  '0 hrs': NEUTRAL.N500,
 });
 
 const getHoursString = (weekMap :Map) => {
@@ -70,7 +70,7 @@ const WeeklyHoursBreakdown = ({ appointments, checkInsByAppointment } :Props) =>
             <div>Show Weekly Hours Breakdown</div>
           </ExpansionPanelSummary>
           <ExpansionPanelDetails>
-            <CardSegment padding="0" vertical>
+            <CardSegment padding="0">
               {
                 weeklyHoursBreakdown.map((weekMap :Map) => {
                   const hours = `${weekMap.get('hours')} hrs`;

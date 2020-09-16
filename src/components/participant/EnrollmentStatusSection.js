@@ -1,41 +1,40 @@
 // @flow
 import React, { useState } from 'react';
+
 import styled from 'styled-components';
 import toString from 'lodash/toString';
 import {
-  fromJS,
   List,
   Map,
-  OrderedMap
+  OrderedMap,
+  fromJS
 } from 'immutable';
 import {
   Card,
   CardSegment,
+  Colors,
   DataGrid,
   Label,
   StyleUtils,
 } from 'lattice-ui-kit';
 import { withRouter } from 'react-router-dom';
 
+import { SectionLabel, SectionNameRow, SectionWrapper } from './SectionStyledComponents';
+
 import AddNewPlanStatusModal from '../../containers/participant/AddNewPlanStatusModal';
-
-import {
-  SectionLabel,
-  SectionNameRow,
-  SectionWrapper,
-  StyledEditButton,
-} from './SectionStyledComponents';
-import { getEntityProperties } from '../../utils/DataUtils';
-import { PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
-import { ENROLLMENT_STATUSES } from '../../core/edm/constants/DataModelConsts';
+import EditButton from '../controls/buttons/EditButton';
 import { EMPTY_FIELD } from '../../containers/participants/ParticipantsConstants';
-import { ENROLLMENT_STATUS_COLORS, OL } from '../../core/style/Colors';
+import { ENROLLMENT_STATUSES } from '../../core/edm/constants/DataModelConsts';
+import { PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { ENROLLMENT_STATUS_COLORS } from '../../core/style/Colors';
+import { getEntityProperties } from '../../utils/DataUtils';
 
-const { STATUS } = PROPERTY_TYPE_FQNS;
 const { getStyleVariation } = StyleUtils;
+const { NEUTRAL } = Colors;
+const { STATUS } = PROPERTY_TYPE_FQNS;
 
 const statusColorVariation = getStyleVariation('status', {
-  default: OL.GREY02,
+  default: NEUTRAL.N700,
   [ENROLLMENT_STATUSES.ACTIVE]: ENROLLMENT_STATUS_COLORS.ACTIVE,
   [ENROLLMENT_STATUSES.ACTIVE_REOPENED]: ENROLLMENT_STATUS_COLORS.ACTIVE_REOPENED,
   [ENROLLMENT_STATUSES.AWAITING_CHECKIN]: ENROLLMENT_STATUS_COLORS.AWAITING_CHECKIN,
@@ -90,10 +89,10 @@ const EnrollmentStatusSection = ({
     <SectionWrapper>
       <SectionNameRow>
         <SectionLabel subtle>Enrollment Status</SectionLabel>
-        <StyledEditButton mode="subtle" onClick={() => setChangeStatusModalVisibility(true)} />
+        <EditButton onClick={() => setChangeStatusModalVisibility(true)} />
       </SectionNameRow>
       <Card>
-        <CardSegment padding="md">
+        <CardSegment padding="md" vertical={false}>
           <StatusBox>
             <Label subtle>Status</Label>
             <StatusText status={status}>{ status || EMPTY_FIELD }</StatusText>

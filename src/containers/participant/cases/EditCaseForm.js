@@ -134,7 +134,7 @@ class EditCaseForm extends Component<Props, State> {
 
     return (
       <Card>
-        <CardHeader mode="primary" padding="sm">Edit Court Case</CardHeader>
+        <CardHeader padding="sm">Edit Court Case</CardHeader>
         <Form
             disabled={casePrepopulated}
             formContext={caseFormContext}

@@ -1,7 +1,9 @@
 // @flow
 import React, { useState } from 'react';
+
+import { faSearch } from '@fortawesome/pro-duotone-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { List, Map } from 'immutable';
-import { DateTime } from 'luxon';
 import {
   Button,
   Card,
@@ -13,26 +15,12 @@ import {
   Select,
   Spinner,
 } from 'lattice-ui-kit';
+import { DateTime } from 'luxon';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSearch } from '@fortawesome/pro-duotone-svg-icons';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
 import HoursByWorksiteGraph from './HoursByWorksiteGraph';
-import {
-  ActionsWrapper,
-  GraphHeader,
-  HeaderActionsWrapper,
-  InnerHeaderRow,
-  SelectsWrapper,
-  SmallSelectWrapper,
-} from '../styled/GraphStyles';
-import {
-  SpinnerWrapper,
-  StyledExpansionPanelSummary,
-  expandIcon,
-} from '../styled/ExpansionStyles';
 import {
   DOWNLOAD_WORKSITE_STATS_DATA,
   GET_HOURS_WORKED_BY_WORKSITE,
@@ -41,7 +29,7 @@ import {
   getHoursWorkedByWorksite,
   getMonthlyParticipantsByWorksite
 } from './WorksiteStatsActions';
-import { formatWorksiteHoursDataForDownload, formatWorksiteParticipantsDataForDownload } from '../utils/StatsUtils';
+
 import { requestIsPending } from '../../../utils/RequestStateUtils';
 import { SHARED, STATE, STATS } from '../../../utils/constants/ReduxStateConsts';
 import {
@@ -52,6 +40,20 @@ import {
   YEARLY,
   YEARS_OPTIONS,
 } from '../consts/TimeConsts';
+import {
+  SpinnerWrapper,
+  StyledExpansionPanelSummary,
+  expandIcon,
+} from '../styled/ExpansionStyles';
+import {
+  ActionsWrapper,
+  GraphHeader,
+  HeaderActionsWrapper,
+  InnerHeaderRow,
+  SelectsWrapper,
+  SmallSelectWrapper,
+} from '../styled/GraphStyles';
+import { formatWorksiteHoursDataForDownload, formatWorksiteParticipantsDataForDownload } from '../utils/StatsUtils';
 
 const { ACTIONS, REQUEST_STATE } = SHARED;
 const { HOURS_BY_WORKSITE, PARTICIPANTS_BY_WORKSITE } = STATS;
@@ -167,15 +169,15 @@ const WorksiteGraphs = ({
                         options={YEARS_OPTIONS}
                         placeholder={today.year} />
                   </SelectsWrapper>
-                  <IconButton
-                      icon={<FontAwesomeIcon icon={faSearch} />}
-                      onClick={getHoursData} />
+                  <IconButton onClick={getHoursData}>
+                    <FontAwesomeIcon icon={faSearch} />
+                  </IconButton>
                 </ActionsWrapper>
               </InnerHeaderRow>
             )
           }
         </GraphHeader>
-        <CardSegment vertical>
+        <CardSegment>
           {
             hoursDataIsLoading
               ? (
@@ -210,9 +212,9 @@ const WorksiteGraphs = ({
                   options={YEARS_OPTIONS}
                   placeholder={today.year} />
             </SelectsWrapper>
-            <IconButton
-                icon={<FontAwesomeIcon icon={faSearch} />}
-                onClick={getParticipantsData} />
+            <IconButton onClick={getParticipantsData}>
+              <FontAwesomeIcon icon={faSearch} />
+            </IconButton>
           </ActionsWrapper>
         </GraphHeader>
       </Card>
@@ -239,7 +241,7 @@ const WorksiteGraphs = ({
                       <div>{ title }</div>
                     </StyledExpansionPanelSummary>
                     <ExpansionPanelDetails>
-                      <CardSegment padding="0" vertical>
+                      <CardSegment padding="0">
                         { participants.map((name :string) => <div key={name}>{ name }</div>) }
                       </CardSegment>
                     </ExpansionPanelDetails>
