@@ -1,16 +1,18 @@
 // @flow
 import React, { Component } from 'react';
+
 import { Map } from 'immutable';
-import { DateTime } from 'luxon';
+import { DataProcessingUtils, Form } from 'lattice-fabricate';
 import { Card, CardHeader } from 'lattice-ui-kit';
-import { Form, DataProcessingUtils } from 'lattice-fabricate';
+import { DateTime } from 'luxon';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import type { RequestSequence } from 'redux-reqseq';
 
 import { editWorksite } from './WorksitesActions';
-import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { worksiteSchema, worksiteUiSchema } from './schemas/EditWorksiteInfoSchemas';
+
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { getEntityProperties } from '../../utils/DataUtils';
 
 const { WORKSITE } = APP_TYPE_FQNS;
@@ -19,6 +21,7 @@ const {
   DATETIME_START,
   DESCRIPTION,
   NAME,
+  NOTES,
 } = PROPERTY_TYPE_FQNS;
 
 const {
@@ -69,8 +72,9 @@ class EditWorksiteForm extends Component<Props, State> {
       [DATETIME_END]: dateInactive,
       [DATETIME_START]: dateActive,
       [DESCRIPTION]: availableWork,
-      [NAME]: worksiteName
-    } = getEntityProperties(worksite, [DATETIME_END, DATETIME_START, DESCRIPTION, NAME]);
+      [NAME]: worksiteName,
+      [NOTES]: worksiteNotes,
+    } = getEntityProperties(worksite, [DATETIME_END, DATETIME_START, DESCRIPTION, NAME, NOTES]);
 
     const sectionOneKey = getPageSectionKey(1, 1);
     formData[sectionOneKey] = {};
@@ -80,6 +84,7 @@ class EditWorksiteForm extends Component<Props, State> {
     formData[sectionOneKey][getEntityAddressKey(0, WORKSITE, DATETIME_END)] = DateTime
       .fromISO(dateInactive).toISODate() || '';
     formData[sectionOneKey][getEntityAddressKey(0, WORKSITE, DESCRIPTION)] = availableWork;
+    formData[sectionOneKey][getEntityAddressKey(0, WORKSITE, NOTES)] = worksiteNotes;
 
     this.setState({
       formData,
@@ -104,7 +109,7 @@ class EditWorksiteForm extends Component<Props, State> {
 
     return (
       <Card>
-        <CardHeader mode="primary" padding="sm">Edit Work Site Info</CardHeader>
+        <CardHeader padding="sm">Edit Work Site Info</CardHeader>
         <Form
             disabled
             formContext={formContext}

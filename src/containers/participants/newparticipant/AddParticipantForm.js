@@ -1,6 +1,9 @@
 // @flow
 import React, { Component } from 'react';
+
 import styled from 'styled-components';
+import { faCheckCircle } from '@fortawesome/pro-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   List,
   Map,
@@ -11,41 +14,35 @@ import {
   removeIn,
   setIn,
 } from 'immutable';
-import { DateTime } from 'luxon';
+import { DataProcessingUtils, Form } from 'lattice-fabricate';
 import {
   Button,
   Card,
   CardHeader,
   CardSegment,
   CardStack,
+  Colors,
   Spinner,
 } from 'lattice-ui-kit';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCheckCircle } from '@fortawesome/pro-solid-svg-icons';
-import { Form, DataProcessingUtils } from 'lattice-fabricate';
+import { DateTime } from 'luxon';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
-import LogoLoader from '../../../components/LogoLoader';
+import { resetSearchedParticipants } from './NewParticipantActions';
 
+import LogoLoader from '../../../components/LogoLoader';
 import * as Routes from '../../../core/router/Routes';
 import { BackNavButton } from '../../../components/controls/index';
-import { addParticipant } from '../ParticipantsActions';
-import { getInfoForAddParticipant } from '../../participant/ParticipantActions';
+import { CWP, ENROLLMENT_STATUSES } from '../../../core/edm/constants/DataModelConsts';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { goToRoute } from '../../../core/router/RoutingActions';
-import { hydrateSchema, setPersonValues } from '../utils/AddParticipantFormUtils';
-import { formatNewArrestChargeDataAndAssociations } from '../../participant/charges/utils/ChargesUtils';
-import { requestIsPending, requestIsSuccess } from '../../../utils/RequestStateUtils';
-import { isDefined } from '../../../utils/LangUtils';
+import { PARTICIPANT_PROFILE_WIDTH } from '../../../core/style/Sizes';
 import { getEntityKeyId } from '../../../utils/DataUtils';
-import { schema, uiSchema } from '../schemas/AddParticipantFormSchemas';
+import { isDefined } from '../../../utils/LangUtils';
+import { requestIsPending, requestIsSuccess } from '../../../utils/RequestStateUtils';
 import { getCombinedDateTime } from '../../../utils/ScheduleUtils';
 import { isValidUUID } from '../../../utils/ValidationUtils';
-import { resetSearchedParticipants } from './NewParticipantActions';
-import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
-import { CWP, ENROLLMENT_STATUSES } from '../../../core/edm/constants/DataModelConsts';
-import { PARTICIPANT_PROFILE_WIDTH } from '../../../core/style/Sizes';
 import {
   APP,
   CHARGES,
@@ -54,7 +51,11 @@ import {
   PERSON,
   STATE
 } from '../../../utils/constants/ReduxStateConsts';
-import { OL } from '../../../core/style/Colors';
+import { getInfoForAddParticipant } from '../../participant/ParticipantActions';
+import { formatNewArrestChargeDataAndAssociations } from '../../participant/charges/utils/ChargesUtils';
+import { addParticipant } from '../ParticipantsActions';
+import { schema, uiSchema } from '../schemas/AddParticipantFormSchemas';
+import { hydrateSchema, setPersonValues } from '../utils/AddParticipantFormUtils';
 import type { GoToRoute } from '../../../core/router/RoutingActions';
 
 const {
@@ -63,6 +64,7 @@ const {
   processAssociationEntityData,
   processEntityData,
 } = DataProcessingUtils;
+const { PURPLE } = Colors;
 const {
   ADDRESS,
   APPEARS_IN,
@@ -390,7 +392,7 @@ class AddParticipantForm extends Component<Props, State> {
         </ButtonWrapper>
         <CardStack>
           <Card>
-            <CardHeader mode="primary" padding="md">Add New Participant</CardHeader>
+            <CardHeader padding="md">Add New Participant</CardHeader>
             {
               (formIsVisible && !requestIsPending(requestStates[ADD_PARTICIPANT])) && (
                 <Form
@@ -416,7 +418,7 @@ class AddParticipantForm extends Component<Props, State> {
                   <SubmissionActionsWrapper>
                     <SubmittedWrapper>
                       <SubmittedWrapper>
-                        <FontAwesomeIcon icon={faCheckCircle} color={OL.PURPLE02} />
+                        <FontAwesomeIcon icon={faCheckCircle} color={PURPLE.P300} />
                       </SubmittedWrapper>
                       <SubmittedWrapper>
                         Participant Added!

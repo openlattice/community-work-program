@@ -1,7 +1,9 @@
 // @flow
 import React, { useState } from 'react';
+
+import { faSearch } from '@fortawesome/pro-duotone-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { List, Map } from 'immutable';
-import { DateTime } from 'luxon';
 import {
   Button,
   Card,
@@ -11,6 +13,8 @@ import {
   Select,
   Spinner,
 } from 'lattice-ui-kit';
+import { DateTime } from 'luxon';
+import { connect } from 'react-redux';
 import {
   Hint,
   HorizontalBarSeries,
@@ -20,12 +24,27 @@ import {
   XYPlot,
   YAxis,
 } from 'react-vis';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSearch } from '@fortawesome/pro-duotone-svg-icons';
-import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
+import {
+  DOWNLOAD_COURT_TYPE_DATA,
+  GET_HOURS_BY_COURT_TYPE,
+  downloadCourtTypeData,
+  getHoursByCourtType,
+} from './CourtTypeActions';
+
+import { requestIsPending } from '../../../utils/RequestStateUtils';
+import { SHARED, STATE, STATS } from '../../../utils/constants/ReduxStateConsts';
+import { getStatsData } from '../StatsActions';
+import {
+  ALL_TIME,
+  MONTHLY,
+  MONTHS_OPTIONS,
+  TIME_FRAME_OPTIONS,
+  YEARLY,
+  YEARS_OPTIONS,
+} from '../consts/TimeConsts';
 import {
   ActionsWrapper,
   GraphHeader,
@@ -36,28 +55,11 @@ import {
   toolTipStyle,
 } from '../styled/GraphStyles';
 import { formatHoursByCourtTypeData, formatHoursByCourtTypeDataForDownload } from '../utils/StatsUtils';
-import { requestIsPending } from '../../../utils/RequestStateUtils';
-import {
-  DOWNLOAD_COURT_TYPE_DATA,
-  GET_HOURS_BY_COURT_TYPE,
-  downloadCourtTypeData,
-  getHoursByCourtType,
-} from './CourtTypeActions';
-import { getStatsData } from '../StatsActions';
-import {
-  ALL_TIME,
-  MONTHLY,
-  MONTHS_OPTIONS,
-  TIME_FRAME_OPTIONS,
-  YEARLY,
-  YEARS_OPTIONS,
-} from '../consts/TimeConsts';
-import { SHARED, STATE, STATS } from '../../../utils/constants/ReduxStateConsts';
 
 const { ACTIONS, REQUEST_STATE } = SHARED;
 const { HOURS_BY_COURT_TYPE } = STATS;
 
-const { BLUE_2, PURPLES } = Colors;
+const { PURPLE } = Colors;
 const defaultToolTipValues :Object = {
   background: 'rgba(0, 0, 0, 0.0)',
   hoveredBar: {},
@@ -156,15 +158,15 @@ const HoursByCourtType = ({
                       options={YEARS_OPTIONS}
                       placeholder={today.year} />
                 </SelectsWrapper>
-                <IconButton
-                    icon={<FontAwesomeIcon icon={faSearch} />}
-                    onClick={getNewHoursData} />
+                <IconButton onClick={getNewHoursData}>
+                  <FontAwesomeIcon icon={faSearch} />
+                </IconButton>
               </ActionsWrapper>
             </InnerHeaderRow>
           )
         }
       </GraphHeader>
-      <CardSegment padding="30px" vertical>
+      <CardSegment padding="30px">
         {
           requestIsPending(requestStates[GET_HOURS_BY_COURT_TYPE])
             ? (
@@ -187,10 +189,10 @@ const HoursByCourtType = ({
                 <XAxis />
                 <YAxis />
                 <HorizontalBarSeries
-                    color={BLUE_2}
+                    color={PURPLE.P200}
                     data={hoursGraphData}
                     onValueMouseOver={(v :Object) => setToolTipValues(
-                      { background: PURPLES[1], hoveredBar: v, toolTipText: `${v.x} hours` }
+                      { background: PURPLE.P300, hoveredBar: v, toolTipText: `${v.x} hours` }
                     )}
                     onValueMouseOut={() => setToolTipValues(defaultToolTipValues)} />
                 {

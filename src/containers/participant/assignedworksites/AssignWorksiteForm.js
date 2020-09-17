@@ -1,34 +1,36 @@
 // @flow
 import React, { Component } from 'react';
+
 import styled from 'styled-components';
-import { fromJS, List, Map } from 'immutable';
-import { DateTime } from 'luxon';
+import { faExclamationCircle } from '@fortawesome/pro-regular-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { List, Map, fromJS } from 'immutable';
 import { DataProcessingUtils } from 'lattice-fabricate';
 import {
   Button,
+  Colors,
   Input,
   Label,
   Select,
 } from 'lattice-ui-kit';
-import { faExclamationCircle } from '@fortawesome/pro-regular-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { DateTime } from 'luxon';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import type { RequestSequence } from 'redux-reqseq';
 import type { FQN } from 'lattice';
+import type { RequestSequence } from 'redux-reqseq';
 
 import { addWorksitePlan } from './WorksitePlanActions';
-import { getEntityKeyId, getEntityProperties } from '../../../utils/DataUtils';
-import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
-import { WORKSITE_ENROLLMENT_STATUSES } from '../../../core/edm/constants/DataModelConsts';
-import { APP, EDM, STATE } from '../../../utils/constants/ReduxStateConsts';
+
 import {
   ButtonsRow,
   FormRow,
   FormWrapper,
   RowContent
 } from '../../../components/Layout';
-import { OL } from '../../../core/style/Colors';
+import { WORKSITE_ENROLLMENT_STATUSES } from '../../../core/edm/constants/DataModelConsts';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
+import { getEntityKeyId, getEntityProperties } from '../../../utils/DataUtils';
+import { APP, EDM, STATE } from '../../../utils/constants/ReduxStateConsts';
 
 const {
   getEntityAddressKey,
@@ -36,6 +38,7 @@ const {
   processAssociationEntityData,
   processEntityData
 } = DataProcessingUtils;
+const { RED } = Colors;
 const {
   ASSIGNED_TO,
   BASED_ON,
@@ -61,7 +64,7 @@ const { PROPERTY_TYPES, TYPE_IDS_BY_FQNS } = EDM;
 const { PLANNED } = WORKSITE_ENROLLMENT_STATUSES;
 
 const WarningLabel = styled(Label)`
-  color: ${OL.RED01};
+  color: ${RED.R300};
   font-weight: 600;
   margin: 0 10px;
 `;
@@ -198,7 +201,7 @@ class AssignWorksiteForm extends Component<Props, State> {
             : (
               <FormRow>
                 <RowContent>
-                  <FontAwesomeIcon icon={faExclamationCircle} color={OL.RED01} />
+                  <FontAwesomeIcon icon={faExclamationCircle} color={RED.R300} />
                   <WarningLabel>{ noWorksitesMessage }</WarningLabel>
                 </RowContent>
               </FormRow>
@@ -210,8 +213,8 @@ class AssignWorksiteForm extends Component<Props, State> {
               <ButtonsRow>
                 <Button onClick={onDiscard}>Discard</Button>
                 <Button
+                    color="primary"
                     isLoading={isLoading}
-                    mode="primary"
                     onClick={this.handleOnSubmit}>
                   Submit
                 </Button>

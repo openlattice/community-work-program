@@ -1,28 +1,27 @@
 // @flow
 import React from 'react';
+
 import styled from 'styled-components';
 import { Map } from 'immutable';
 import {
   Card,
   CardSegment,
+  Colors,
   Label,
 } from 'lattice-ui-kit';
 import { withRouter } from 'react-router-dom';
 
-import {
-  SectionLabel,
-  SectionNameRow,
-  SectionWrapper,
-  StyledEditButton,
-} from './SectionStyledComponents';
-import { OL } from '../../core/style/Colors';
+import { SectionLabel, SectionNameRow, SectionWrapper } from './SectionStyledComponents';
+
+import EditButton from '../controls/buttons/EditButton';
+import { EMPTY_FIELD } from '../../containers/participants/ParticipantsConstants';
+import { PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { getEntityProperties } from '../../utils/DataUtils';
 import { formatAsDate } from '../../utils/DateTimeUtils';
 import { formatPairOfStrings } from '../../utils/FormattingUtils';
-import { getEntityProperties } from '../../utils/DataUtils';
 import { getPersonAddress, getPersonFullName, getPersonProfilePicture } from '../../utils/PeopleUtils';
-import { PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
-import { EMPTY_FIELD } from '../../containers/participants/ParticipantsConstants';
 
+const { NEUTRAL } = Colors;
 const {
   DOB,
   EMAIL,
@@ -33,16 +32,15 @@ const {
   SEX,
 } = PROPERTY_TYPE_FQNS;
 
-const PersonHeaderRow = styled.div`
+const PersonHeaderRow = styled(CardSegment)`
   align-items: center;
   display: flex;
-  flex-direction: column;
   justify-content: center;
   margin-top: 20px;
 `;
 
 const PersonNameHeader = styled.div`
-  color: ${OL.BLACK};
+  color: ${NEUTRAL.N900};
   font-size: 26px;
   font-weight: 600;
   margin-top: 14px;
@@ -114,50 +112,50 @@ const ParticipantProfileSection = ({
     <SectionWrapper>
       <SectionNameRow>
         <SectionLabel subtle>Participant Profile</SectionLabel>
-        <StyledEditButton mode="subtle" onClick={edit} />
+        <EditButton onClick={edit} />
       </SectionNameRow>
       <Card>
         <PersonHeaderRow>
           {picture}
           <PersonNameHeader>{ fullName }</PersonNameHeader>
         </PersonHeaderRow>
-        <CardSegment noBleed padding="0">
+        <CardSegment noBleed padding="10px 0">
           <PersonInfoRow>
             <Label subtle>Zuercher ID</Label>
             <PersonValue>{ zuercherID }</PersonValue>
           </PersonInfoRow>
         </CardSegment>
-        <CardSegment noBleed padding="0">
+        <CardSegment noBleed padding="10px 0">
           <PersonInfoRow>
             <Label subtle>Date of Birth</Label>
             <PersonValue>{ dob || EMPTY_FIELD }</PersonValue>
           </PersonInfoRow>
         </CardSegment>
-        <CardSegment noBleed padding="0">
+        <CardSegment noBleed padding="10px 0">
           <PersonInfoRow>
             <Label subtle>Race/Ethnicity</Label>
             <PersonValue>{ raceAndEthnicity }</PersonValue>
           </PersonInfoRow>
         </CardSegment>
-        <CardSegment noBleed padding="0">
+        <CardSegment noBleed padding="10px 0">
           <PersonInfoRow>
             <Label subtle>Sex</Label>
             <PersonValue>{ sex || EMPTY_FIELD }</PersonValue>
           </PersonInfoRow>
         </CardSegment>
-        <CardSegment noBleed padding="0">
+        <CardSegment noBleed padding="10px 0">
           <PersonInfoRow>
             <Label subtle>Phone #</Label>
             <PersonValue>{ phoneNumber || EMPTY_FIELD }</PersonValue>
           </PersonInfoRow>
         </CardSegment>
-        <CardSegment noBleed padding="0">
+        <CardSegment noBleed padding="10px 0">
           <PersonInfoRow>
             <Label subtle>Email</Label>
             <PersonValue>{ emailAddress || EMPTY_FIELD }</PersonValue>
           </PersonInfoRow>
         </CardSegment>
-        <CardSegment noBleed padding="0">
+        <CardSegment noBleed padding="10px 0 0">
           <PersonInfoRow>
             <Label subtle>Address</Label>
             <PersonValue>{ streetAddress || EMPTY_FIELD }</PersonValue>

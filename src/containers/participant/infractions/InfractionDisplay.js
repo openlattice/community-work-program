@@ -2,38 +2,39 @@
 
 import React, { Component } from 'react';
 import type { Element } from 'react';
+
 import styled from 'styled-components';
+import { faPen, faPrint, faTrash } from '@fortawesome/pro-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import {
+  List,
+  Map,
+  OrderedMap,
+  fromJS
+} from 'immutable';
 import {
   Card,
   CardSegment,
+  Colors,
   DataGrid,
-  EditButton,
   IconButton,
   Label,
 } from 'lattice-ui-kit';
-import {
-  fromJS,
-  List,
-  Map,
-  OrderedMap
-} from 'immutable';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPrint, faTrash } from '@fortawesome/pro-solid-svg-icons';
-import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
 
-import EditInfractionModal from './EditInfractionModal';
 import DeleteInfractionModal from './DeleteInfractionModal';
+import EditInfractionModal from './EditInfractionModal';
 
 import * as Routes from '../../../core/router/Routes';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { goToRoute } from '../../../core/router/RoutingActions';
 import { getEntityKeyId, getEntityProperties } from '../../../utils/DataUtils';
 import { formatAsDate, formatAsTime } from '../../../utils/DateTimeUtils';
-import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { EMPTY_FIELD } from '../../participants/ParticipantsConstants';
-import { OL } from '../../../core/style/Colors';
 import type { GoToRoute } from '../../../core/router/RoutingActions';
 
+const { NEUTRAL } = Colors;
 const { WORKSITE_PLAN } = APP_TYPE_FQNS;
 const {
   CATEGORY,
@@ -158,7 +159,7 @@ class InfractionDisplay extends Component<Props, State> {
     return (
       <Card>
         { controls }
-        <CardSegment padding="sm" vertical>
+        <CardSegment padding="sm">
           <DataGrid
               columns={3}
               data={data}
@@ -169,13 +170,15 @@ class InfractionDisplay extends Component<Props, State> {
               <span>{ notes }</span>
             </NotesWrapper>
             <ButtonsWrapper>
-              <IconButton
-                  icon={<FontAwesomeIcon icon={faPrint} color={OL.GREY02} />}
-                  onClick={this.goToPrintInfraction} />
-              <EditButton onClick={() => this.handleShowModal(EDIT_INFRACTION_MODAL)} />
-              <IconButton
-                  icon={<FontAwesomeIcon icon={faTrash} color={OL.GREY02} />}
-                  onClick={() => this.handleShowModal(DELETE_INFRACTION_MODAL)} />
+              <IconButton onClick={this.goToPrintInfraction}>
+                <FontAwesomeIcon icon={faPrint} color={NEUTRAL.N500} />
+              </IconButton>
+              <IconButton onClick={() => this.handleShowModal(EDIT_INFRACTION_MODAL)}>
+                <FontAwesomeIcon color={NEUTRAL.N500} icon={faPen} />
+              </IconButton>
+              <IconButton onClick={() => this.handleShowModal(DELETE_INFRACTION_MODAL)}>
+                <FontAwesomeIcon icon={faTrash} color={NEUTRAL.N500} />
+              </IconButton>
             </ButtonsWrapper>
           </BottomRow>
         </CardSegment>

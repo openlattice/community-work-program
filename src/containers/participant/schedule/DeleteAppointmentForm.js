@@ -1,31 +1,29 @@
 // @flow
 import React, { Component } from 'react';
+
 import styled from 'styled-components';
 import { Map } from 'immutable';
-import {
-  Button,
-  Label,
-} from 'lattice-ui-kit';
+import { Button, Colors, Label } from 'lattice-ui-kit';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import type { RequestSequence } from 'redux-reqseq';
 
-import { deleteAppointment } from '../assignedworksites/WorksitePlanActions';
-import { getEntitySetIdFromApp } from '../../../utils/DataUtils';
-import { APP_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
-import { STATE } from '../../../utils/constants/ReduxStateConsts';
 import {
   ButtonsRow,
   FormRow,
   FormWrapper,
   RowContent
 } from '../../../components/Layout';
-import { OL } from '../../../core/style/Colors';
+import { APP_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
+import { getEntitySetIdFromApp } from '../../../utils/DataUtils';
+import { STATE } from '../../../utils/constants/ReduxStateConsts';
+import { deleteAppointment } from '../assignedworksites/WorksitePlanActions';
 
+const { PURPLE } = Colors;
 const { APPOINTMENT } = APP_TYPE_FQNS;
 
 const ColoredText = styled.div`
-  color: ${OL.PURPLE02};
+  color: ${PURPLE.P300};
   text-align: center;
 `;
 
@@ -86,8 +84,8 @@ class DeleteAppointmentForm extends Component<Props, State> {
         <ButtonsRow>
           <Button onClick={onDiscard}>No</Button>
           <Button
+              color="primary"
               isLoading={isLoading}
-              mode="primary"
               onClick={this.handleOnSubmit}>
             Yes
           </Button>

@@ -1,37 +1,40 @@
 // @flow
 import React, { useEffect, useState } from 'react';
+
 import styled from 'styled-components';
+import { faTools } from '@fortawesome/pro-light-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Map } from 'immutable';
 import {
   Card,
   CardSegment,
-  EditButton,
+  Colors,
   StyleUtils,
 } from 'lattice-ui-kit';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTools } from '@fortawesome/pro-light-svg-icons';
 
 import EditWorksitePlanModal from './EditWorksitePlanModal';
 
-import { getEntityProperties } from '../../../utils/DataUtils';
-import { PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
+import EditButton from '../../../components/controls/buttons/EditButton';
 import { WORKSITE_ENROLLMENT_STATUSES } from '../../../core/edm/constants/DataModelConsts';
-import { ENROLLMENT_STATUS_COLORS, OL } from '../../../core/style/Colors';
+import { PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
+import { ENROLLMENT_STATUS_COLORS } from '../../../core/style/Colors';
+import { getEntityProperties } from '../../../utils/DataUtils';
 
+const { getStyleVariation } = StyleUtils;
+const { NEUTRAL, YELLOW } = Colors;
 const {
   HOURS_WORKED,
   NAME,
   REQUIRED_HOURS,
   STATUS,
 } = PROPERTY_TYPE_FQNS;
-const { getStyleVariation } = StyleUtils;
 
 const statusColorVariation = getStyleVariation('color', {
-  default: OL.GREY02,
+  default: NEUTRAL.N700,
   [WORKSITE_ENROLLMENT_STATUSES.ACTIVE]: ENROLLMENT_STATUS_COLORS.ACTIVE,
-  [WORKSITE_ENROLLMENT_STATUSES.CANCELED]: OL.GREY02,
-  [WORKSITE_ENROLLMENT_STATUSES.COMPLETED]: ENROLLMENT_STATUS_COLORS.SUCCESSFULLY_COMPLETED,
-  [WORKSITE_ENROLLMENT_STATUSES.ON_HOLD]: OL.YELLOW01,
+  [WORKSITE_ENROLLMENT_STATUSES.CANCELED]: NEUTRAL.N700,
+  [WORKSITE_ENROLLMENT_STATUSES.COMPLETED]: ENROLLMENT_STATUS_COLORS.SUCCESSFUL,
+  [WORKSITE_ENROLLMENT_STATUSES.ON_HOLD]: YELLOW.Y300,
   [WORKSITE_ENROLLMENT_STATUSES.PLANNED]: ENROLLMENT_STATUS_COLORS.AWAITING_CHECKIN,
 });
 
@@ -87,7 +90,7 @@ const AssignedWorksite = ({ status, worksite, worksitePlan } :Props) => {
   return (
     <OuterWrapper>
       <Card>
-        <AppointmentCardSegment padding="sm">
+        <AppointmentCardSegment padding="sm" vertical={false}>
           <InnerWrapper>
             <Text>
               <FontAwesomeIcon icon={faTools} size="sm" />
@@ -96,7 +99,7 @@ const AssignedWorksite = ({ status, worksite, worksitePlan } :Props) => {
             <Text color={worksitePlanStatus}>{ worksitePlanStatus }</Text>
             <Text>{ hours }</Text>
           </InnerWrapper>
-          <EditButton mode="subtle" onClick={() => setEditModalVisibility(true)} />
+          <EditButton onClick={() => setEditModalVisibility(true)} />
         </AppointmentCardSegment>
       </Card>
       <EditWorksitePlanModal

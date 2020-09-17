@@ -1,7 +1,7 @@
 // @flow
 import React, { Component } from 'react';
-import { fromJS, Map } from 'immutable';
-import { DateTime } from 'luxon';
+
+import { Map, fromJS } from 'immutable';
 import { DataProcessingUtils } from 'lattice-fabricate';
 import {
   Button,
@@ -11,21 +11,18 @@ import {
   Label,
   TextArea
 } from 'lattice-ui-kit';
+import { DateTime } from 'luxon';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import type { RequestSequence } from 'redux-reqseq';
 import type { FQN } from 'lattice';
+import type { RequestSequence } from 'redux-reqseq';
 
 import { addWorksite } from './WorksitesActions';
-import { getEntityKeyId } from '../../utils/DataUtils';
+
+import { ButtonsRow, FormRow, RowContent } from '../../components/Layout';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { getEntityKeyId } from '../../utils/DataUtils';
 import { APP, EDM, STATE } from '../../utils/constants/ReduxStateConsts';
-import {
-  ButtonsRow,
-  ButtonsWrapper,
-  FormRow,
-  RowContent,
-} from '../../components/Layout';
 
 const {
   getEntityAddressKey,
@@ -108,7 +105,7 @@ class AddWorksiteForm extends Component<Props, State> {
   render() {
     const { isLoading, onDiscard } = this.props;
     return (
-      <CardSegment padding="small" vertical>
+      <CardSegment padding="0 0 30px">
         <FormRow>
           <RowContent>
             <Label>Worksite name</Label>
@@ -146,21 +143,13 @@ class AddWorksiteForm extends Component<Props, State> {
           </RowContent>
         </FormRow>
         <ButtonsRow>
-          <RowContent>
-            <ButtonsWrapper>
-              <Button onClick={onDiscard}>Discard</Button>
-            </ButtonsWrapper>
-          </RowContent>
-          <RowContent>
-            <ButtonsWrapper>
-              <Button
-                  isLoading={isLoading}
-                  mode="primary"
-                  onClick={this.handleOnSubmit}>
-                Submit
-              </Button>
-            </ButtonsWrapper>
-          </RowContent>
+          <Button onClick={onDiscard}>Discard</Button>
+          <Button
+              color="primary"
+              isLoading={isLoading}
+              onClick={this.handleOnSubmit}>
+            Submit
+          </Button>
         </ButtonsRow>
       </CardSegment>
     );

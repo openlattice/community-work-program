@@ -357,7 +357,7 @@ class EditArrestChargesForm extends Component<Props, State> {
     return (
       <>
         <Card>
-          <CardHeader mode="primary" padding="sm">
+          <CardHeader padding="sm">
             <InnerCardHeader>
               <div>Edit Arrest Charges</div>
               <Button mode="secondary" onClick={this.handleShowModal}>Add to Available Arrest Charges</Button>

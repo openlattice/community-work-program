@@ -1,8 +1,10 @@
 // @flow
 import React, { useState } from 'react';
+
 import styled from 'styled-components';
+import { faSearch } from '@fortawesome/pro-duotone-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Map } from 'immutable';
-import { DateTime } from 'luxon';
 import {
   Button,
   Card,
@@ -12,8 +14,7 @@ import {
   Select,
   Spinner,
 } from 'lattice-ui-kit';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSearch } from '@fortawesome/pro-duotone-svg-icons';
+import { DateTime } from 'luxon';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
@@ -21,7 +22,24 @@ import type { RequestSequence, RequestState } from 'redux-reqseq';
 import EthnicityChart from './EthnicityChart';
 import RaceChart from './RaceChart';
 import SexChart from './SexChart';
+import {
+  DOWNLOAD_DEMOGRAPHICS_DATA,
+  GET_MONTHLY_DEMOGRAPHICS,
+  GET_PARTICIPANTS_DEMOGRAPHICS,
+  downloadDemographicsData,
+  getMonthlyDemographics,
+  getParticipantsDemographics,
+} from './DemographicsActions';
 
+import { requestIsPending } from '../../../utils/RequestStateUtils';
+import { SHARED, STATE, STATS } from '../../../utils/constants/ReduxStateConsts';
+import {
+  ALL_TIME,
+  MONTHLY,
+  MONTHS_OPTIONS,
+  TIME_FRAME_OPTIONS,
+  YEARS_OPTIONS,
+} from '../consts/TimeConsts';
 import {
   ActionsWrapper,
   GraphHeader,
@@ -31,23 +49,6 @@ import {
   SmallSelectWrapper,
 } from '../styled/GraphStyles';
 import { formatRadialChartData } from '../utils/StatsUtils';
-import { requestIsPending } from '../../../utils/RequestStateUtils';
-import {
-  DOWNLOAD_DEMOGRAPHICS_DATA,
-  GET_MONTHLY_DEMOGRAPHICS,
-  GET_PARTICIPANTS_DEMOGRAPHICS,
-  downloadDemographicsData,
-  getMonthlyDemographics,
-  getParticipantsDemographics,
-} from './DemographicsActions';
-import { SHARED, STATE, STATS } from '../../../utils/constants/ReduxStateConsts';
-import {
-  ALL_TIME,
-  MONTHLY,
-  MONTHS_OPTIONS,
-  TIME_FRAME_OPTIONS,
-  YEARS_OPTIONS,
-} from '../consts/TimeConsts';
 
 const { ACTIONS, REQUEST_STATE } = SHARED;
 const { ETHNICITY_DEMOGRAPHICS, RACE_DEMOGRAPHICS, SEX_DEMOGRAPHICS } = STATS;
@@ -103,7 +104,7 @@ const DemographicsGraphs = ({
 
   return (
     <>
-      <CardSegment padding="0 0 30px 0" vertical>
+      <CardSegment padding="0 0 30px 0">
         <InnerHeaderRow>
           <HeaderActionsWrapper>
             <SmallSelectWrapper>
@@ -130,9 +131,9 @@ const DemographicsGraphs = ({
                       options={YEARS_OPTIONS}
                       placeholder={today.year} />
                 </SelectsWrapper>
-                <IconButton
-                    icon={<FontAwesomeIcon icon={faSearch} />}
-                    onClick={getMonthlyDemographicsData} />
+                <IconButton onClick={getMonthlyDemographicsData}>
+                  <FontAwesomeIcon icon={faSearch} />
+                </IconButton>
               </ActionsWrapper>
             </InnerHeaderRow>
           )

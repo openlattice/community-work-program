@@ -1,7 +1,9 @@
 // @flow
 import React, { useState } from 'react';
+
+import { faSearch } from '@fortawesome/pro-duotone-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { List, Map } from 'immutable';
-import { DateTime } from 'luxon';
 import {
   Button,
   Card,
@@ -11,6 +13,8 @@ import {
   Select,
   Spinner,
 } from 'lattice-ui-kit';
+import { DateTime } from 'luxon';
+import { connect } from 'react-redux';
 import {
   Hint,
   HorizontalBarSeries,
@@ -20,12 +24,27 @@ import {
   XYPlot,
   YAxis,
 } from 'react-vis';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSearch } from '@fortawesome/pro-duotone-svg-icons';
-import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
+import {
+  DOWNLOAD_COURT_TYPE_DATA,
+  GET_TOTAL_PARTICIPANTS_BY_COURT_TYPE,
+  downloadCourtTypeData,
+  getTotalParticipantsByCourtType,
+} from './CourtTypeActions';
+
+import { requestIsPending } from '../../../utils/RequestStateUtils';
+import { SHARED, STATE, STATS } from '../../../utils/constants/ReduxStateConsts';
+import { getStatsData } from '../StatsActions';
+import {
+  ALL_TIME,
+  MONTHLY,
+  MONTHS_OPTIONS,
+  TIME_FRAME_OPTIONS,
+  YEARLY,
+  YEARS_OPTIONS,
+} from '../consts/TimeConsts';
 import {
   ActionsWrapper,
   GraphHeader,
@@ -36,28 +55,11 @@ import {
   toolTipStyle,
 } from '../styled/GraphStyles';
 import { formatParticipantsByCourtTypeData, formatTotalParticipantsDataForDownload } from '../utils/StatsUtils';
-import { requestIsPending } from '../../../utils/RequestStateUtils';
-import {
-  DOWNLOAD_COURT_TYPE_DATA,
-  GET_TOTAL_PARTICIPANTS_BY_COURT_TYPE,
-  downloadCourtTypeData,
-  getTotalParticipantsByCourtType,
-} from './CourtTypeActions';
-import { getStatsData } from '../StatsActions';
-import { SHARED, STATE, STATS } from '../../../utils/constants/ReduxStateConsts';
-import {
-  ALL_TIME,
-  MONTHLY,
-  MONTHS_OPTIONS,
-  TIME_FRAME_OPTIONS,
-  YEARLY,
-  YEARS_OPTIONS,
-} from '../consts/TimeConsts';
 
 const { ACTIONS, REQUEST_STATE } = SHARED;
 const { TOTAL_PARTICIPANTS_BY_COURT_TYPE } = STATS;
 
-const { BLUE_1, PURPLES } = Colors;
+const { BLUE, PURPLE } = Colors;
 const defaultToolTipValues :Object = {
   background: 'rgba(0, 0, 0, 0.0)',
   hoveredBar: {},
@@ -152,15 +154,15 @@ const ParticipantsByCourtTypeGraph = ({
                       options={YEARS_OPTIONS}
                       placeholder={today.year} />
                 </SelectsWrapper>
-                <IconButton
-                    icon={<FontAwesomeIcon icon={faSearch} />}
-                    onClick={getNewParticipantsData} />
+                <IconButton onClick={getNewParticipantsData}>
+                  <FontAwesomeIcon icon={faSearch} />
+                </IconButton>
               </ActionsWrapper>
             </InnerHeaderRow>
           )
         }
       </GraphHeader>
-      <CardSegment padding="30px" vertical>
+      <CardSegment padding="30px">
         {
           requestIsPending(requestStates[GET_TOTAL_PARTICIPANTS_BY_COURT_TYPE])
             ? (
@@ -183,10 +185,10 @@ const ParticipantsByCourtTypeGraph = ({
                 <XAxis />
                 <YAxis />
                 <HorizontalBarSeries
-                    color={BLUE_1}
+                    color={BLUE.B300}
                     data={graphData}
                     onValueMouseOver={(v :Object) => setToolTipValues(
-                      { background: PURPLES[1], hoveredBar: v, toolTipText: `${v.x} participants` }
+                      { background: PURPLE.P300, hoveredBar: v, toolTipText: `${v.x} participants` }
                     )}
                     onValueMouseOut={() => setToolTipValues(defaultToolTipValues)} />
                 {

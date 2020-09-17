@@ -1,45 +1,48 @@
 // @flow
 import React, { Component } from 'react';
-import styled from 'styled-components';
-import { List, Map } from 'immutable';
+
 import startCase from 'lodash/startCase';
-import { DateTime } from 'luxon';
+import styled from 'styled-components';
+import { faFilter, faSortAlphaDown } from '@fortawesome/pro-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { List, Map } from 'immutable';
 import {
   Button,
   CheckboxSelect,
+  Colors,
   DatePicker,
   IconButton,
   Label,
   Select
 } from 'lattice-ui-kit';
+import { DateTime } from 'luxon';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFilter, faSortAlphaDown } from '@fortawesome/pro-light-svg-icons';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
 import AppointmentListContainer from './AppointmentListContainer';
-import * as Routes from '../../core/router/Routes';
-
 import { FIND_APPOINTMENTS, findAppointments } from './WorkScheduleActions';
-import { getWorksites } from '../worksites/WorksitesActions';
-import { goToRoute } from '../../core/router/RoutingActions';
-import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
-import { formatClickedProperty } from '../participants/utils/SearchContainerUtils';
-import { requestIsPending, requestIsSuccess } from '../../utils/RequestStateUtils';
+import { TIME_PERIOD_OPTIONS, timePeriods } from './WorkScheduleConstants';
+
+import * as Routes from '../../core/router/Routes';
 import { ContainerHeader } from '../../components/Layout';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { goToRoute } from '../../core/router/RoutingActions';
 import { SEARCH_CONTAINER_WIDTH } from '../../core/style/Sizes';
+import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
+import { requestIsPending, requestIsSuccess } from '../../utils/RequestStateUtils';
 import {
   APP,
   STATE,
   WORKSITES,
   WORK_SCHEDULE
 } from '../../utils/constants/ReduxStateConsts';
-import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
-import { timePeriods, TIME_PERIOD_OPTIONS } from './WorkScheduleConstants';
 import { ALL, COURT_TYPE_FILTER_OPTIONS } from '../participants/ParticipantsConstants';
+import { formatClickedProperty } from '../participants/utils/SearchContainerUtils';
+import { getWorksites } from '../worksites/WorksitesActions';
 import type { GoToRoute } from '../../core/router/RoutingActions';
 
+const { NEUTRAL } = Colors;
 const { ENTITY_SET_IDS_BY_ORG, SELECTED_ORG_ID } = APP;
 const { WORKSITES_LIST } = WORKSITES;
 const {
@@ -265,14 +268,16 @@ class WorkScheduleContainer extends Component<Props, State> {
         </FieldsWrapper>
         <IconButton
             disabled={appointments.isEmpty()}
-            icon={<FontAwesomeIcon icon={faFilter} />}
-            onClick={this.showFilters} />
+            onClick={this.showFilters}>
+          <FontAwesomeIcon color={NEUTRAL.N500} icon={faFilter} />
+        </IconButton>
         <IconButton
             disabled={appointments.isEmpty()}
-            icon={<FontAwesomeIcon icon={faSortAlphaDown} />}
-            onClick={() => this.setState({ sortedByPersonLastName: !sortedByPersonLastName })} />
+            onClick={() => this.setState({ sortedByPersonLastName: !sortedByPersonLastName })}>
+          <FontAwesomeIcon color={NEUTRAL.N500} icon={faSortAlphaDown} />
+        </IconButton>
         <Button onClick={this.goToPrintSchedule}>Print</Button>
-        <Button mode="primary" onClick={this.getAppointments}>Display Appointments</Button>
+        <Button color="primary" onClick={this.getAppointments}>Display Appointments</Button>
       </FieldsRowWrapper>
     );
   }

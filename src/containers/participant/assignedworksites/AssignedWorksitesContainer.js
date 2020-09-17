@@ -1,22 +1,25 @@
 // @flow
 import React from 'react';
+
 import styled from 'styled-components';
+import { faTools } from '@fortawesome/pro-light-svg-icons';
 import { List, Map } from 'immutable';
 import {
   Button,
   Card,
   CardSegment,
   CardStack,
+  Colors,
   IconSplash,
   Label,
 } from 'lattice-ui-kit';
-import { faTools } from '@fortawesome/pro-light-svg-icons';
 
 import AssignedWorksite from './AssignedWorksite';
-import { getEntityKeyId } from '../../../utils/DataUtils';
-import { OL } from '../../../core/style/Colors';
-import { PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 
+import { PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
+import { getEntityKeyId } from '../../../utils/DataUtils';
+
+const { NEUTRAL } = Colors;
 const { HOURS_WORKED, REQUIRED_HOURS } = PROPERTY_TYPE_FQNS;
 
 const getHoursTotals = (worksitePlansList :List) :Object => {
@@ -38,7 +41,7 @@ const NameRowWrapper = styled.div`
 `;
 
 const NameHeader = styled.div`
-  color: ${OL.BLACK};
+  color: ${NEUTRAL.N900};
   font-size: 26px;
   font-weight: 600;
 `;
@@ -51,7 +54,6 @@ const CountWrapper = styled.div`
 `;
 
 const CountLabel = styled(Label)`
-  color: ${OL.GREY01};
   font-size: 12px;
   margin-left: 15px;
 `;

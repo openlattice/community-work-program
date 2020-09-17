@@ -1,18 +1,21 @@
+// @flow
 import styled from 'styled-components';
 import {
   Card,
   CardSegment,
-  Table,
+  Colors,
   StyleUtils,
+  Table,
 } from 'lattice-ui-kit';
 
-import { ENROLLMENT_STATUS_COLORS, OL } from '../../../core/style/Colors';
 import { ENROLLMENT_STATUSES } from '../../../core/edm/constants/DataModelConsts';
+import { ENROLLMENT_STATUS_COLORS } from '../../../core/style/Colors';
 
 const { getStickyPosition, getStyleVariation } = StyleUtils;
+const { NEUTRAL, PURPLE } = Colors;
 
 const statusColorVariation = getStyleVariation('status', {
-  default: OL.GREY02,
+  default: NEUTRAL.N700,
   [ENROLLMENT_STATUSES.ACTIVE]: ENROLLMENT_STATUS_COLORS.ACTIVE,
   [ENROLLMENT_STATUSES.ACTIVE_REOPENED]: ENROLLMENT_STATUS_COLORS.ACTIVE_REOPENED,
   [ENROLLMENT_STATUSES.AWAITING_CHECKIN]: ENROLLMENT_STATUS_COLORS.AWAITING_CHECKIN,
@@ -23,7 +26,7 @@ const statusColorVariation = getStyleVariation('status', {
   [ENROLLMENT_STATUSES.SUCCESSFUL]: ENROLLMENT_STATUS_COLORS.SUCCESSFUL,
   [ENROLLMENT_STATUSES.UNSUCCESSFUL]: ENROLLMENT_STATUS_COLORS.UNSUCCESSFUL,
   Inactive: ENROLLMENT_STATUS_COLORS.UNSUCCESSFUL,
-}, OL.GREY02);
+}, NEUTRAL.N700);
 
 const headersToCustomize = [
   'AGE',
@@ -71,10 +74,11 @@ const TableCard = styled(Card)`
 `;
 
 const TableHeader = styled(CardSegment)`
-  color: ${OL.BLACK};
+  align-items: center;
+  color: ${NEUTRAL.N900};
   font-size: 24px;
   font-weight: 600;
-  align-items: center;
+  flex-direction: row;
 `;
 
 const TableName = styled.div`
@@ -83,19 +87,18 @@ const TableName = styled.div`
 
 const CustomTable = styled(Table)`
   font-size: 12px;
-  color: ${OL.GREY02};
 `;
 
 const TableCell = styled.td`
+  color: ${statusColorVariation};
   font-family: 'Open Sans', sans-serif;
   font-size: 12px;
   padding: 7px 30px 7px 0;
   text-align: left;
   vertical-align: middle;
-  word-wrap: break-word;
-  color: ${statusColorVariation};
-  width: ${widthVariation};
   white-space: ${whiteSpaceVariation};
+  width: ${widthVariation};
+  word-wrap: break-word;
   ${(props) => props.cellStyle};
 
   :first-child {
@@ -110,8 +113,8 @@ const TableCell = styled.td`
 `;
 
 const StyledTableRow = styled.tr`
-  background-color: ${OL.WHITE};
-  border-bottom: 1px solid ${OL.GREY05};
+  background-color: '#000';
+  border-bottom: 1px solid ${NEUTRAL.N100};
   font-size: 12px;
   color: ${statusColorVariation};
   padding: 7px 30px;
@@ -126,12 +129,12 @@ const StyledTableRow = styled.tr`
   }
 
   &:hover {
+    background: ${NEUTRAL.N100};
     cursor: pointer;
-    background: ${OL.GREY14};
   }
 
   &:active {
-    background-color: ${OL.PURPLE06};
+    background-color: ${PURPLE.P100};
   }
 `;
 

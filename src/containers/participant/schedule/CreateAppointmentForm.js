@@ -1,8 +1,8 @@
 // @flow
 import React, { Component } from 'react';
+
 import styled from 'styled-components';
-import { fromJS, Map } from 'immutable';
-import { DateTime } from 'luxon';
+import { Map, fromJS } from 'immutable';
 import { DataProcessingUtils } from 'lattice-fabricate';
 import {
   Button,
@@ -12,30 +12,31 @@ import {
   Select,
   TimePicker,
 } from 'lattice-ui-kit';
+import { DateTime } from 'luxon';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import type { RequestSequence } from 'redux-reqseq';
 
-import { createWorkAppointments } from '../assignedworksites/WorksitePlanActions';
-import { getEntityProperties } from '../../../utils/DataUtils';
-import {
-  getCombinedDateTime,
-  getCustomSchedule,
-  getRegularlyRepeatingAppointments
-} from '../../../utils/ScheduleUtils';
-import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
-import {
-  APP,
-  EDM,
-  STATE,
-  WORKSITE_PLANS
-} from '../../../utils/constants/ReduxStateConsts';
 import {
   ButtonsRow,
   FormRow,
   FormWrapper,
   RowContent
 } from '../../../components/Layout';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
+import { getEntityProperties } from '../../../utils/DataUtils';
+import {
+  getCombinedDateTime,
+  getCustomSchedule,
+  getRegularlyRepeatingAppointments
+} from '../../../utils/ScheduleUtils';
+import {
+  APP,
+  EDM,
+  STATE,
+  WORKSITE_PLANS
+} from '../../../utils/constants/ReduxStateConsts';
+import { createWorkAppointments } from '../assignedworksites/WorksitePlanActions';
 
 const {
   getEntityAddressKey,
@@ -341,8 +342,8 @@ class CreateWorkAppointmentForm extends Component<Props, State> {
         <ButtonsRow>
           <Button onClick={onDiscard}>Discard</Button>
           <Button
+              color="primary"
               isLoading={isLoading}
-              mode="primary"
               onClick={this.handleOnSubmit}>
             Submit
           </Button>

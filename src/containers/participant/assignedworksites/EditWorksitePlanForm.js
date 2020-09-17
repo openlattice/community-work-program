@@ -1,7 +1,7 @@
 // @flow
 import React, { Component } from 'react';
-import { fromJS, Map } from 'immutable';
-import { DateTime } from 'luxon';
+
+import { Map, fromJS } from 'immutable';
 import { DataProcessingUtils } from 'lattice-fabricate';
 import {
   Button,
@@ -9,22 +9,24 @@ import {
   Label,
   Select,
 } from 'lattice-ui-kit';
+import { DateTime } from 'luxon';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import type { RequestSequence } from 'redux-reqseq';
 
 import { editWorksitePlan } from './WorksitePlanActions';
-import { isDefined } from '../../../utils/LangUtils';
-import { getEntityProperties, getEntityKeyId } from '../../../utils/DataUtils';
-import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
-import { WORKSITE_ENROLLMENT_STATUSES } from '../../../core/edm/constants/DataModelConsts';
-import { APP, EDM, STATE } from '../../../utils/constants/ReduxStateConsts';
+
 import {
   ButtonsRow,
   FormRow,
   FormWrapper,
   RowContent
 } from '../../../components/Layout';
+import { WORKSITE_ENROLLMENT_STATUSES } from '../../../core/edm/constants/DataModelConsts';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
+import { getEntityKeyId, getEntityProperties } from '../../../utils/DataUtils';
+import { isDefined } from '../../../utils/LangUtils';
+import { APP, EDM, STATE } from '../../../utils/constants/ReduxStateConsts';
 
 const {
   getEntityAddressKey,
@@ -193,8 +195,8 @@ class EditWorksitePlanForm extends Component<Props, State> {
         <ButtonsRow>
           <Button onClick={onDiscard}>Discard</Button>
           <Button
+              color="primary"
               isLoading={isLoading}
-              mode="primary"
               onClick={this.handleOnSubmit}>
             Submit
           </Button>

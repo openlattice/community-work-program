@@ -1,8 +1,8 @@
 // @flow
 import React, { Component } from 'react';
+
 import styled from 'styled-components';
-import { fromJS, List, Map } from 'immutable';
-import { DateTime } from 'luxon';
+import { List, Map, fromJS } from 'immutable';
 import { DataProcessingUtils } from 'lattice-fabricate';
 import {
   Button,
@@ -13,30 +13,32 @@ import {
   TextArea,
   TimePicker
 } from 'lattice-ui-kit';
+import { DateTime } from 'luxon';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import type { RequestSequence } from 'redux-reqseq';
 
 import { addInfraction } from './InfractionsActions';
-import { getEntityKeyId, getEntityProperties } from '../../../utils/DataUtils';
-import { getCombinedDateTime } from '../../../utils/ScheduleUtils';
-import { STATUS_FILTER_OPTIONS } from '../../participants/ParticipantsConstants';
-import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
-import {
-  APP,
-  EDM,
-  PERSON_INFRACTIONS,
-  PERSON,
-  STATE,
-  WORKSITE_PLANS,
-} from '../../../utils/constants/ReduxStateConsts';
-import { INFRACTIONS_CONSTS } from '../../../core/edm/constants/DataModelConsts';
+
 import {
   ButtonsRow,
   FormRow,
   FormWrapper,
   RowContent
 } from '../../../components/Layout';
+import { INFRACTIONS_CONSTS } from '../../../core/edm/constants/DataModelConsts';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
+import { getEntityKeyId, getEntityProperties } from '../../../utils/DataUtils';
+import { getCombinedDateTime } from '../../../utils/ScheduleUtils';
+import {
+  APP,
+  EDM,
+  PERSON,
+  PERSON_INFRACTIONS,
+  STATE,
+  WORKSITE_PLANS,
+} from '../../../utils/constants/ReduxStateConsts';
+import { STATUS_FILTER_OPTIONS } from '../../participants/ParticipantsConstants';
 
 const {
   getEntityAddressKey,
@@ -362,8 +364,8 @@ class AddInfractionForm extends Component<Props, State> {
         <ButtonsRow>
           <Button onClick={onDiscard}>Discard</Button>
           <Button
+              color="primary"
               isLoading={isLoading}
-              mode="primary"
               onClick={this.handleOnSubmit}>
             Submit
           </Button>

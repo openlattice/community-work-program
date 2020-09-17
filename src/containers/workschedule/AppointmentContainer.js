@@ -19,8 +19,8 @@ import {
   IconButton,
   StyleUtils
 } from 'lattice-ui-kit';
+import { useGoToRoute } from 'lattice-utils';
 import { connect } from 'react-redux';
-import { NavLink } from 'react-router-dom';
 
 import CheckInDetailsModal from '../participant/schedule/CheckInDetailsModal';
 import CheckInModal from '../participant/schedule/CheckInModal';
@@ -29,7 +29,6 @@ import EditAppointmentModal from '../participant/schedule/EditAppointmentModal';
 import * as Routes from '../../core/router/Routes';
 import { ButtonWrapper } from '../../components/Layout';
 import { PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
-import { OL } from '../../core/style/Colors';
 import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
 import { isDefined } from '../../utils/LangUtils';
 import {
@@ -46,18 +45,18 @@ import {
 } from '../participant/utils/CheckInUtils';
 
 const { getStyleVariation } = StyleUtils;
-const { YELLOW_1 } = Colors;
+const { NEUTRAL, PURPLE, YELLOW } = Colors;
 const { CHECK_INS_BY_APPOINTMENT, WORKSITES_BY_WORKSITE_PLAN } = WORKSITE_PLANS;
 const { PARTICIPANT } = PERSON;
 const { PERSON_BY_APPOINTMENT_EKID } = WORK_SCHEDULE;
 const { ENTITY_KEY_ID, FIRST_NAME, LAST_NAME } = PROPERTY_TYPE_FQNS;
 
 const CheckedInIcon = (
-  <FontAwesomeIcon icon={faCheckCircle} color={OL.PURPLE02} size="lg" />
+  <FontAwesomeIcon icon={faCheckCircle} color={PURPLE.P300} size="lg" />
 );
 
 const ExclamationIcon = (
-  <FontAwesomeIcon icon={faExclamationCircle} color={YELLOW_1} size="lg" />
+  <FontAwesomeIcon icon={faExclamationCircle} color={YELLOW.Y300} size="lg" />
 );
 
 const OuterWrapper = styled.div`
@@ -66,6 +65,7 @@ const OuterWrapper = styled.div`
 
 const AppointmentCardSegment = styled(CardSegment)`
   display: flex;
+  flex-direction: row;
   justify-content: space-between;
 `;
 
@@ -89,17 +89,6 @@ const sharedTextStyles = css`
 
 const Text = styled.span`
   ${sharedTextStyles}
-`;
-
-const LinkAsText = styled(NavLink)`
-  ${sharedTextStyles}
-  color: ${OL.GREY01};
-  text-decoration: none;
-
-  &:hover {
-    color: ${OL.PURPLE02};
-    cursor: pointer;
-  }
 `;
 
 const CheckWrapper = styled(ButtonWrapper)`
@@ -180,6 +169,10 @@ const AppointmentContainer = ({
     checkedInSymbol = ExclamationIcon;
   }
   const hoursToDisplay = getHoursForDisplay(numHours, checkIn);
+
+  const goToParticipantProfile = useGoToRoute(
+    Routes.PARTICIPANT_PROFILE.replace(':participantId', personEKID)
+  );
   return (
     <OuterWrapper>
       <Card>
@@ -191,10 +184,12 @@ const AppointmentContainer = ({
             <Text>{ day }</Text>
             {
               personName && (
-                <LinkAsText
-                    to={Routes.PARTICIPANT_PROFILE.replace(':participantId', personEKID)}>
+                <Button
+                    onClick={goToParticipantProfile}
+                    size="small"
+                    variant="text">
                   { personName }
-                </LinkAsText>
+                </Button>
               )
             }
             <Text>{ worksiteName }</Text>
@@ -216,8 +211,9 @@ const AppointmentContainer = ({
                 )
                 : (
                   <Button
+                      color="primary"
                       onClick={() => handleCheckInModalVisibility(true)}
-                      mode="subtle">
+                      variant="text">
                     Check in
                   </Button>
                 )
@@ -225,14 +221,12 @@ const AppointmentContainer = ({
             {
               !checkedIn && (
                 <ActionButtonsWrapper>
-                  <IconButton
-                      icon={<FontAwesomeIcon icon={faPen} color={OL.GREY04} size="sm" />}
-                      mode="subtle"
-                      onClick={() => handleEditAppointmentModalVisibility(true)} />
-                  <IconButton
-                      icon={<FontAwesomeIcon icon={faTrash} color={OL.GREY04} size="sm" />}
-                      mode="subtle"
-                      onClick={() => handleDeleteAppointmentModalVisibility(true)} />
+                  <IconButton onClick={() => handleEditAppointmentModalVisibility(true)}>
+                    <FontAwesomeIcon icon={faPen} color={NEUTRAL.N500} />
+                  </IconButton>
+                  <IconButton onClick={() => handleDeleteAppointmentModalVisibility(true)}>
+                    <FontAwesomeIcon icon={faTrash} color={NEUTRAL.N500} />
+                  </IconButton>
                 </ActionButtonsWrapper>
               )
             }

@@ -7,13 +7,17 @@ import {
   OrderedMap,
   fromJS,
 } from 'immutable';
-import { DataGrid, Modal, Spinner } from 'lattice-ui-kit';
+import {
+  Colors,
+  DataGrid,
+  Modal,
+  Spinner,
+} from 'lattice-ui-kit';
 import { DateTime } from 'luxon';
 import { useDispatch, useSelector } from 'react-redux';
 import type { RequestState } from 'redux-reqseq';
 
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
-import { OL } from '../../../core/style/Colors';
 import { getEntityKeyId, getEntityProperties } from '../../../utils/DataUtils';
 import {
   requestIsFailure,
@@ -30,6 +34,7 @@ import {
 import { EMPTY_FIELD } from '../../participants/ParticipantsConstants';
 import { deleteCheckIn, resetDeleteCheckInRequestState } from '../assignedworksites/WorksitePlanActions';
 
+const { RED } = Colors;
 const { CHECK_INS } = APP_TYPE_FQNS;
 const {
   CHECKED_IN,
@@ -62,7 +67,7 @@ const SpinnerWrapper = styled.div`
 `;
 
 const FailureMessage = styled.div`
-  color: ${OL.RED01};
+  color: ${RED.R300};
   margin-top: 10px;
 `;
 

@@ -1,5 +1,6 @@
 // @flow
 import React, { useState } from 'react';
+
 import { Map } from 'immutable';
 import { Colors } from 'lattice-ui-kit';
 import {
@@ -12,10 +13,10 @@ import {
   YAxis,
 } from 'react-vis';
 
-import { formatHoursByWorksiteData } from '../utils/StatsUtils';
 import { toolTipStyle } from '../styled/GraphStyles';
+import { formatHoursByWorksiteData } from '../utils/StatsUtils';
 
-const { BLUE_2, ORANGE_1, WHITE } = Colors;
+const { BLUE, ORANGE, WHITE } = Colors;
 const defaultToolTipValues :Object = {
   background: WHITE,
   hoveredBar: {},
@@ -52,10 +53,10 @@ const HoursByWorksiteGraph = ({ hoursByWorksite } :Props) => {
       <XAxis />
       <YAxis />
       <HorizontalBarSeries
-          color={ORANGE_1}
+          color={ORANGE.O300}
           data={hoursGraphData}
           onValueMouseOver={(v :Object) => setToolTipValues(
-            { background: BLUE_2, hoveredBar: v, toolTipText: `${v.x} hours` }
+            { background: BLUE.B300, hoveredBar: v, toolTipText: `${v.x} hours` }
           )}
           onValueMouseOut={() => setToolTipValues(defaultToolTipValues)} />
       {

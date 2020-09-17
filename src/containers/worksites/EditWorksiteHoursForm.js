@@ -210,7 +210,7 @@ class EditWorksiteHoursForm extends Component<Props, State> {
         </ButtonWrapper>
         <CardStack>
           <Card>
-            <CardHeader mode="primary" padding="sm">Edit Hours of Operation</CardHeader>
+            <CardHeader padding="sm">Edit Hours of Operation</CardHeader>
             <Form
                 disabled={prepopulated}
                 formData={formData}

@@ -1,26 +1,23 @@
 // @flow
 import React, { useState } from 'react';
+
 import styled from 'styled-components';
-import { Card, CardSegment } from 'lattice-ui-kit';
 import { Map } from 'immutable';
+import { Card, CardSegment } from 'lattice-ui-kit';
 import { connect } from 'react-redux';
 import type { RequestState } from 'redux-reqseq';
 
+import { SectionLabel, SectionNameRow, SectionWrapper } from './SectionStyledComponents';
+
+import EditButton from '../controls/buttons/EditButton';
 import EditNotesModal from '../../containers/participant/notes/EditNotesModal';
 import EditPlanNotesForm from '../../containers/participant/notes/EditPlanNotesForm';
-
-import {
-  SectionLabel,
-  SectionNameRow,
-  SectionWrapper,
-  StyledEditButton,
-} from './SectionStyledComponents';
 import { EMPTY_FIELD } from '../../containers/participants/ParticipantsConstants';
 import { PERSON, STATE } from '../../utils/constants/ReduxStateConsts';
 
 const { ACTIONS, EDIT_PLAN_NOTES, REQUEST_STATE } = PERSON;
 
-const TextWrapper = styled.div`
+const TextWrapper = styled(CardSegment)`
   align-self: center;
   display: block;
   overflow: hidden;
@@ -42,12 +39,10 @@ const ProgramNotes = ({ editPlanNotesRequestState, notes } :Props) => {
     <SectionWrapper>
       <SectionNameRow>
         <SectionLabel subtle>Program Notes</SectionLabel>
-        <StyledEditButton mode="subtle" onClick={() => setEditModalVisibility(true)} />
+        <EditButton mode="subtle" onClick={() => setEditModalVisibility(true)} />
       </SectionNameRow>
       <Card>
-        <CardSegment padding="md">
-          <TextWrapper>{ notes || EMPTY_FIELD }</TextWrapper>
-        </CardSegment>
+        <TextWrapper padding="md">{ notes || EMPTY_FIELD }</TextWrapper>
       </Card>
       <EditNotesModal
           editForm={EditPlanNotesForm}
