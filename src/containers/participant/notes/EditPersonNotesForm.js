@@ -1,5 +1,6 @@
 // @flow
 import React, { Component } from 'react';
+
 import styled from 'styled-components';
 import { Map } from 'immutable';
 import {
@@ -10,21 +11,21 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import type { RequestSequence } from 'redux-reqseq';
 
-import { editPersonNotes } from '../ParticipantActions';
-import {
-  getEntityKeyId,
-  getEntityProperties,
-  getEntitySetIdFromApp,
-  getPropertyTypeIdFromEdm
-} from '../../../utils/DataUtils';
-import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
-import { PERSON, STATE } from '../../../utils/constants/ReduxStateConsts';
 import {
   ButtonsRow,
   FormRow,
   FormWrapper,
   RowContent
 } from '../../../components/Layout';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
+import {
+  getEntityKeyId,
+  getEntityProperties,
+  getEntitySetIdFromApp,
+  getPropertyTypeIdFromEdm
+} from '../../../utils/DataUtils';
+import { PERSON, STATE } from '../../../utils/constants/ReduxStateConsts';
+import { editPersonNotes } from '../ParticipantActions';
 
 const { PEOPLE } = APP_TYPE_FQNS;
 const { PERSON_NOTES } = PROPERTY_TYPE_FQNS;
@@ -112,8 +113,8 @@ class EditPlanNotesForm extends Component<Props, State> {
         <ButtonsRow>
           <Button onClick={onDiscard}>Discard</Button>
           <Button
+              color="primary"
               isLoading={isLoading}
-              mode="primary"
               onClick={this.handleOnSubmit}>
             Submit
           </Button>
