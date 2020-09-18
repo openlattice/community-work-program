@@ -1,18 +1,20 @@
 // @flow
 import React from 'react';
+
 import { Map } from 'immutable';
-import { Switch, Route } from 'react-router-dom';
 import { connect } from 'react-redux';
+import { Route, Switch } from 'react-router-dom';
 import type { Match } from 'react-router';
 
-import ParticipantProfile from './ParticipantProfile';
-import PrintWorkScheduleContainer from './print/PrintWorkScheduleContainer';
-import PrintInfractionContainer from './print/PrintInfractionContainer';
-import EditPersonAndContactsForm from './EditPersonAndContactsForm';
-import EditEnrollmentDatesForm from './EditEnrollmentDatesForm';
+import CreateNewEnrollmentForm from './CreateNewEnrollmentForm';
 import EditCaseInfoForm from './cases/EditCaseInfoForm';
-import * as Routes from '../../core/router/Routes';
+import EditEnrollmentDatesForm from './EditEnrollmentDatesForm';
+import EditPersonAndContactsForm from './EditPersonAndContactsForm';
+import ParticipantProfile from './ParticipantProfile';
+import PrintInfractionContainer from './print/PrintInfractionContainer';
+import PrintWorkScheduleContainer from './print/PrintWorkScheduleContainer';
 
+import * as Routes from '../../core/router/Routes';
 import {
   PERSON,
   STATE,
@@ -21,7 +23,6 @@ import {
 
 const { PARTICIPANT } = PERSON;
 const { WORKSITES_BY_WORKSITE_PLAN, WORK_APPOINTMENTS_BY_WORKSITE_PLAN } = WORKSITE_PLANS;
-
 
 type Props = {
   match :Match;
@@ -41,6 +42,9 @@ const ParticipantProfileContainer = (props :Props) => {
   } = props;
   return (
     <Switch>
+      <Route
+          path={Routes.CREATE_NEW_ENROLLMENT}
+          component={CreateNewEnrollmentForm} />
       <Route
           path={Routes.PRINT_INFRACTION}
           component={PrintInfractionContainer} />

@@ -1,18 +1,21 @@
 // @flow
 import React, { Component } from 'react';
+
 import styled from 'styled-components';
 import { Map, getIn } from 'immutable';
-import { Card, CardHeader, CardStack } from 'lattice-ui-kit';
-import { Form, DataProcessingUtils } from 'lattice-fabricate';
+import { DataProcessingUtils, Form } from 'lattice-fabricate';
+import {
+  Card,
+  CardHeader,
+  CardStack,
+  Colors,
+} from 'lattice-ui-kit';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { RequestStates } from 'redux-reqseq';
-import type { RequestSequence, RequestState } from 'redux-reqseq';
 import type { Match } from 'react-router';
+import type { RequestSequence, RequestState } from 'redux-reqseq';
 
-import LogoLoader from '../../components/LogoLoader';
-
-import * as Routes from '../../core/router/Routes';
 import {
   addNewParticipantContacts,
   addPersonPhoto,
@@ -21,29 +24,31 @@ import {
   getInfoForEditPerson,
   updatePersonPhoto,
 } from './ParticipantActions';
-import { goToRoute } from '../../core/router/RoutingActions';
 import {
   contactsSchema,
   contactsUiSchema,
-  personSchema,
-  personUiSchema,
   personPhotoSchema,
   personPhotoUiSchema,
+  personSchema,
+  personUiSchema,
 } from './schemas/EditPersonAndContactsSchemas';
-import {
-  getEntityKeyId,
-  getEntityProperties,
-  getEntitySetIdFromApp,
-  getPropertyTypeIdFromEdm
-} from '../../utils/DataUtils';
-import { getImageDataFromEntity, removeDataUriPrefix } from '../../utils/BinaryUtils';
-import { isDefined } from '../../utils/LangUtils';
+
+import LogoLoader from '../../components/LogoLoader';
+import * as Routes from '../../core/router/Routes';
 import { BackNavButton } from '../../components/controls/index';
 import { PersonPhoto, PersonPicture } from '../../components/picture/PersonPicture';
-import { PARTICIPANT_PROFILE_WIDTH } from '../../core/style/Sizes';
-import { OL } from '../../core/style/Colors';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
-import { APP, PERSON, STATE } from '../../utils/constants/ReduxStateConsts';
+import { goToRoute } from '../../core/router/RoutingActions';
+import { PARTICIPANT_PROFILE_WIDTH } from '../../core/style/Sizes';
+import { getImageDataFromEntity, removeDataUriPrefix } from '../../utils/BinaryUtils';
+import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
+import { isDefined } from '../../utils/LangUtils';
+import {
+  APP,
+  EDM,
+  PERSON,
+  STATE
+} from '../../utils/constants/ReduxStateConsts';
 import type { GoToRoute } from '../../core/router/RoutingActions';
 
 const {
@@ -56,7 +61,7 @@ const {
   processEntityDataForPartialReplace,
   replaceEntityAddressKeys,
 } = DataProcessingUtils;
-
+const { GREEN } = Colors;
 const {
   ADDRESS,
   CONTACT_INFORMATION,
@@ -67,6 +72,7 @@ const {
   PEOPLE
 } = APP_TYPE_FQNS;
 const {
+  CITY,
   DOB,
   EMAIL,
   ETHNICITY,
@@ -79,8 +85,12 @@ const {
   PREFERRED,
   RACE,
   SEX,
+  US_STATE,
+  ZIP,
 } = PROPERTY_TYPE_FQNS;
 
+const { ENTITY_SET_IDS_BY_ORG, SELECTED_ORG_ID } = APP;
+const { PROPERTY_TYPES, TYPE_IDS_BY_FQNS } = EDM;
 const {
   ACTIONS,
   ADD_PERSON_PHOTO,
@@ -125,7 +135,7 @@ const PreviewPhotoWrapper = styled.div`
 
 const SubmittedMessage = styled.div`
   align-self: center;
-  color: ${OL.GREEN01};
+  color: ${GREEN.G300};
   font-weight: 600;
 `;
 
@@ -141,15 +151,15 @@ type Props = {
   },
   address :Map;
   addPersonPhotoRequestState :RequestState;
-  app :Map;
-  edm :Map;
   email :Map;
+  entitySetIds :Map;
   getInfoForEditPersonRequestState :RequestState;
   initializeAppRequestState :RequestState;
   match :Match;
   participant :Map;
   personPhoto :Map;
   phone :Map;
+  propertyTypeIds :Map;
   updatePersonPhotoRequestState :RequestState;
 };
 
@@ -182,9 +192,9 @@ class EditPersonAndContactsForm extends Component<Props, State> {
   componentDidUpdate(prevProps :Props) {
     const {
       actions,
-      app,
       address,
       email,
+      entitySetIds,
       getInfoForEditPersonRequestState,
       match: {
         params: { participantId: personEKID }
@@ -192,7 +202,7 @@ class EditPersonAndContactsForm extends Component<Props, State> {
       participant,
       phone,
     } = this.props;
-    if (!prevProps.app.get(PEOPLE) && app.get(PEOPLE) && personEKID) {
+    if (!prevProps.entitySetIds.get(PEOPLE) && entitySetIds.get(PEOPLE) && personEKID) {
       actions.getInfoForEditPerson({ personEKID });
     }
     if ((prevProps.getInfoForEditPersonRequestState === RequestStates.PENDING
@@ -249,7 +259,12 @@ class EditPersonAndContactsForm extends Component<Props, State> {
 
     const { [PHONE_NUMBER]: phoneNumber } = getEntityProperties(phone, [PHONE_NUMBER]);
     const { [EMAIL]: emailAddress } = getEntityProperties(email, [EMAIL]);
-    const { [FULL_ADDRESS]: personAddress } = getEntityProperties(address, [FULL_ADDRESS]);
+    const {
+      [CITY]: city,
+      [FULL_ADDRESS]: streetAddress,
+      [US_STATE]: state,
+      [ZIP]: zipCode,
+    } = getEntityProperties(address, [CITY, FULL_ADDRESS, US_STATE, ZIP]);
 
     const contactsFormData :Map = Map().withMutations((map :Map) => {
       if (!phone.isEmpty()) {
@@ -259,7 +274,10 @@ class EditPersonAndContactsForm extends Component<Props, State> {
         map.setIn([getPageSectionKey(1, 2), getEntityAddressKey(1, CONTACT_INFORMATION, EMAIL)], emailAddress);
       }
       if (!address.isEmpty()) {
-        map.setIn([getPageSectionKey(1, 3), getEntityAddressKey(0, ADDRESS, FULL_ADDRESS)], personAddress);
+        map.setIn([getPageSectionKey(1, 3), getEntityAddressKey(0, ADDRESS, FULL_ADDRESS)], streetAddress);
+        map.setIn([getPageSectionKey(1, 3), getEntityAddressKey(0, ADDRESS, CITY)], city || '');
+        map.setIn([getPageSectionKey(1, 3), getEntityAddressKey(0, ADDRESS, US_STATE)], state || '');
+        map.setIn([getPageSectionKey(1, 3), getEntityAddressKey(0, ADDRESS, ZIP)], zipCode || '');
       }
     });
 
@@ -269,36 +287,6 @@ class EditPersonAndContactsForm extends Component<Props, State> {
     });
     return { contactsFormData, personFormData, photoFormData };
   }
-
-  createEntitySetIdsMap = () => {
-    const { app } = this.props;
-    return {
-      [ADDRESS]: getEntitySetIdFromApp(app, ADDRESS),
-      [CONTACT_INFORMATION]: getEntitySetIdFromApp(app, CONTACT_INFORMATION),
-      [CONTACT_INFO_GIVEN]: getEntitySetIdFromApp(app, CONTACT_INFO_GIVEN),
-      [IMAGE]: getEntitySetIdFromApp(app, IMAGE),
-      [IS_PICTURE_OF]: getEntitySetIdFromApp(app, IS_PICTURE_OF),
-      [LOCATED_AT]: getEntitySetIdFromApp(app, LOCATED_AT),
-      [PEOPLE]: getEntitySetIdFromApp(app, PEOPLE),
-    };
-  };
-
-  createPropertyTypeIdsMap = () => {
-    const { edm } = this.props;
-    return {
-      [DOB]: getPropertyTypeIdFromEdm(edm, DOB),
-      [EMAIL]: getPropertyTypeIdFromEdm(edm, EMAIL),
-      [ETHNICITY]: getPropertyTypeIdFromEdm(edm, ETHNICITY),
-      [FIRST_NAME]: getPropertyTypeIdFromEdm(edm, FIRST_NAME),
-      [FULL_ADDRESS]: getPropertyTypeIdFromEdm(edm, FULL_ADDRESS),
-      [IMAGE_DATA]: getPropertyTypeIdFromEdm(edm, IMAGE_DATA),
-      [LAST_NAME]: getPropertyTypeIdFromEdm(edm, LAST_NAME),
-      [PHONE_NUMBER]: getPropertyTypeIdFromEdm(edm, PHONE_NUMBER),
-      [PREFERRED]: getPropertyTypeIdFromEdm(edm, PREFERRED),
-      [RACE]: getPropertyTypeIdFromEdm(edm, RACE),
-      [SEX]: getPropertyTypeIdFromEdm(edm, SEX),
-    };
-  };
 
   createEntityIndexToIdMap = () => {
     const {
@@ -330,10 +318,9 @@ class EditPersonAndContactsForm extends Component<Props, State> {
   }
 
   handleOnSubmitContacts = ({ formData } :Object) => {
-    const { actions } = this.props;
+    const { actions, entitySetIds, propertyTypeIds } = this.props;
 
     const dataToProcess = formData;
-    const [entitySetIds, propertyTypeIds] = [this.createEntitySetIdsMap(), this.createPropertyTypeIdsMap()];
 
     const phoneKey = getEntityAddressKey(0, CONTACT_INFORMATION, PHONE_NUMBER);
     const emailKey = getEntityAddressKey(1, CONTACT_INFORMATION, EMAIL);
@@ -356,14 +343,16 @@ class EditPersonAndContactsForm extends Component<Props, State> {
   }
 
   handleOnSubmitPhoto = ({ formData } :Object) => {
-    const { actions, participant } = this.props;
+    const {
+      actions,
+      entitySetIds,
+      participant,
+      propertyTypeIds
+    } = this.props;
     const personEKID :UUID = getEntityKeyId(participant);
     const associations = [
       [IS_PICTURE_OF, 0, IMAGE, personEKID, PEOPLE, {}]
     ];
-
-    const entitySetIds :Object = this.createEntitySetIdsMap();
-    const propertyTypeIds :Object = this.createPropertyTypeIdsMap();
 
     const entityData :Object = processEntityData(formData, entitySetIds, propertyTypeIds, mappers);
     const associationEntityData :Object = processAssociationEntityData(
@@ -375,11 +364,9 @@ class EditPersonAndContactsForm extends Component<Props, State> {
   }
 
   handleOnUpdatePhoto = ({ formData } :Object) => {
-    const { actions } = this.props;
+    const { actions, entitySetIds, propertyTypeIds } = this.props;
 
     const entityIndexToIdMap = this.createEntityIndexToIdMap();
-    const entitySetIds = this.createEntitySetIdsMap();
-    const propertyTypeIds = this.createPropertyTypeIdsMap();
 
     const draftWithKeys = replaceEntityAddressKeys(
       formData,
@@ -418,9 +405,11 @@ class EditPersonAndContactsForm extends Component<Props, State> {
     const {
       actions,
       addPersonPhotoRequestState,
+      entitySetIds,
       getInfoForEditPersonRequestState,
       initializeAppRequestState,
       personPhoto,
+      propertyTypeIds,
       updatePersonPhotoRequestState,
     } = this.props;
     const {
@@ -447,8 +436,6 @@ class EditPersonAndContactsForm extends Component<Props, State> {
     ) || existingPhotoUrl;
 
     const entityIndexToIdMap = this.createEntityIndexToIdMap();
-    const entitySetIds = this.createEntitySetIdsMap();
-    const propertyTypeIds = this.createPropertyTypeIdsMap();
 
     const personFormContext :Object = {
       editAction: actions.editPersonDetails,
@@ -532,17 +519,20 @@ const mapStateToProps = (state :Map) => {
   const app = state.get(STATE.APP);
   const edm = state.get(STATE.EDM);
   const person = state.get(STATE.PERSON);
+  const selectedOrgId :string = app.get(SELECTED_ORG_ID);
   return ({
     [PERSON.ADDRESS]: person.get(PERSON.ADDRESS),
     addPersonPhotoRequestState: person.getIn([ACTIONS, ADD_PERSON_PHOTO, REQUEST_STATE]),
     app,
     edm,
+    entitySetIds: app.getIn([ENTITY_SET_IDS_BY_ORG, selectedOrgId], Map()),
     [PERSON.EMAIL]: person.get(PERSON.EMAIL),
     getInfoForEditPersonRequestState: person.getIn([ACTIONS, GET_INFO_FOR_EDIT_PERSON, REQUEST_STATE]),
     initializeAppRequestState: app.getIn([APP.ACTIONS, APP.INITIALIZE_APPLICATION, APP.REQUEST_STATE]),
     [PARTICIPANT]: person.get(PARTICIPANT),
     [PERSON_PHOTO]: person.get(PERSON_PHOTO),
     [PHONE]: person.get(PHONE),
+    propertyTypeIds: edm.getIn([TYPE_IDS_BY_FQNS, PROPERTY_TYPES], Map()),
     updatePersonPhotoRequestState: person.getIn([ACTIONS, UPDATE_PERSON_PHOTO, REQUEST_STATE]),
   });
 };

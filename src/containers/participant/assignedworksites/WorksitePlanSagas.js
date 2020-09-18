@@ -1,9 +1,3 @@
-// @flow
-import {
-  List,
-  Map,
-  fromJS,
-} from 'immutable';
 import {
   all,
   call,
@@ -11,17 +5,21 @@ import {
   select,
   takeEvery,
 } from '@redux-saga/core/effects';
+// @flow
+import {
+  List,
+  Map,
+  fromJS,
+} from 'immutable';
 import { SearchApiActions, SearchApiSagas } from 'lattice-sagas';
 import type { SequenceAction } from 'redux-reqseq';
-
-import Logger from '../../../utils/Logger';
-import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../../utils/Errors';
 
 import {
   ADD_WORKSITE_PLAN,
   CHECK_IN_FOR_APPOINTMENT,
   CREATE_WORK_APPOINTMENTS,
   DELETE_APPOINTMENT,
+  DELETE_CHECK_IN,
   EDIT_APPOINTMENT,
   EDIT_WORKSITE_PLAN,
   GET_APPOINTMENT_CHECK_INS,
@@ -34,6 +32,7 @@ import {
   checkInForAppointment,
   createWorkAppointments,
   deleteAppointment,
+  deleteCheckIn,
   editAppointment,
   editWorksitePlan,
   getAppointmentCheckIns,
@@ -43,23 +42,34 @@ import {
   getWorksitePlans,
   updateHoursWorked,
 } from './WorksitePlanActions';
+
+import Logger from '../../../utils/Logger';
+import { ASSOCIATION_DETAILS } from '../../../core/edm/constants/DataModelConsts';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
+import {
+  createOrReplaceAssociation,
+  deleteEntities,
+  submitDataGraph,
+  submitPartialReplace
+} from '../../../core/sagas/data/DataActions';
+import {
+  createOrReplaceAssociationWorker,
+  deleteEntitiesWorker,
+  submitDataGraphWorker,
+  submitPartialReplaceWorker
+} from '../../../core/sagas/data/DataSagas';
 import {
   getEntityKeyId,
   getEntityProperties,
   getEntitySetIdFromApp,
   getNeighborDetails,
+  getPropertyFqnFromEdm,
   getPropertyTypeIdFromEdm,
   sortEntitiesByDateProperty,
 } from '../../../utils/DataUtils';
+import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../../utils/Errors';
 import { isDefined } from '../../../utils/LangUtils';
-import { deleteEntities, submitDataGraph, submitPartialReplace } from '../../../core/sagas/data/DataActions';
-import {
-  deleteEntitiesWorker,
-  submitDataGraphWorker,
-  submitPartialReplaceWorker
-} from '../../../core/sagas/data/DataSagas';
 import { STATE, WORKSITES } from '../../../utils/constants/ReduxStateConsts';
-import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 
 const { searchEntityNeighborsWithFilter } = SearchApiActions;
 const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
@@ -75,7 +85,13 @@ const {
   WORKSITE,
   WORKSITE_PLAN,
 } = APP_TYPE_FQNS;
-const { EFFECTIVE_DATE, HOURS_WORKED } = PROPERTY_TYPE_FQNS;
+const {
+  DATETIME_END,
+  EFFECTIVE_DATE,
+  ENTITY_KEY_ID,
+  INCIDENT_START_DATETIME,
+  HOURS_WORKED,
+} = PROPERTY_TYPE_FQNS;
 
 const getAppFromState = (state) => state.get(STATE.APP, Map());
 const getEdmFromState = (state) => state.get(STATE.EDM, Map());
@@ -230,21 +246,76 @@ function* deleteAppointmentWatcher() :Generator<*, *, *> {
 function* editAppointmentWorker(action :SequenceAction) :Generator<*, *, *> {
 
   const { id, value } = action;
+  let response :Object = {};
 
   try {
     yield put(editAppointment.request(id, value));
 
-    const response = yield call(submitPartialReplaceWorker, submitPartialReplace(value));
-    if (response.error) {
-      throw response.error;
-    }
+    const {
+      appointmentEKID,
+      entityData,
+      newWorksitePlanEKID,
+      personEKID,
+    } = value;
     const app = yield select(getAppFromState);
     const appointmentESID :UUID = getEntitySetIdFromApp(app, APPOINTMENT);
+    const worksitePlanESID :UUID = getEntitySetIdFromApp(app, WORKSITE_PLAN);
+
+    if (newWorksitePlanEKID.length) {
+      const searchFilter = {
+        entityKeyIds: [appointmentEKID],
+        destinationEntitySetIds: [worksitePlanESID],
+        sourceEntitySetIds: [],
+      };
+      response = yield call(
+        searchEntityNeighborsWithFilterWorker,
+        searchEntityNeighborsWithFilter({ entitySetId: appointmentESID, filter: searchFilter })
+      );
+      if (response.error) throw response.error;
+      const addressesAssociation :Map = fromJS(response.data).getIn([appointmentEKID, 0, ASSOCIATION_DETAILS]);
+      const addressesEKID :UUID = getEntityKeyId(addressesAssociation);
+      const addressesESID :UUID = getEntitySetIdFromApp(app, ADDRESSES);
+      const associationsToDelete :Object[] = [
+        { entitySetId: addressesESID, entityKeyIds: [addressesEKID] }
+      ];
+      const associations :{} = {
+        [addressesESID]: [
+          {
+            data: {},
+            dst: {
+              entitySetId: worksitePlanESID,
+              entityKeyId: newWorksitePlanEKID
+            },
+            src: {
+              entitySetId: appointmentESID,
+              entityKeyId: appointmentEKID
+            }
+          }
+        ]
+      };
+      response = yield call(
+        createOrReplaceAssociationWorker,
+        createOrReplaceAssociation({
+          associations,
+          associationsToDelete,
+        })
+      );
+      if (response.error) throw response.error;
+    }
+    response = yield call(submitPartialReplaceWorker, submitPartialReplace({ entityData }));
+    if (response.error) throw response.error;
+
     const edm = yield select(getEdmFromState);
+    const startDateTimePTID :UUID = getPropertyTypeIdFromEdm(edm, INCIDENT_START_DATETIME);
+    const endDateTimePTID :UUID = getPropertyTypeIdFromEdm(edm, DATETIME_END);
 
     yield put(editAppointment.success(id, {
+      appointmentEKID,
       appointmentESID,
-      edm,
+      endDateTimePTID,
+      newWorksitePlanEKID,
+      personEKID,
+      startDateTimePTID,
     }));
   }
   catch (error) {
@@ -333,7 +404,6 @@ function* editWorksitePlanWatcher() :Generator<*, *, *> {
 
   yield takeEvery(EDIT_WORKSITE_PLAN, editWorksitePlanWorker);
 }
-
 
 /*
  *
@@ -430,7 +500,6 @@ function* getAppointmentCheckInsWatcher() :Generator<*, *, *> {
 
   yield takeEvery(GET_APPOINTMENT_CHECK_INS, getAppointmentCheckInsWorker);
 }
-
 
 /*
  *
@@ -793,9 +862,7 @@ function* checkInForAppointmentWorker(action :SequenceAction) :Generator<*, *, *
     yield put(checkInForAppointment.request(id, value));
 
     response = yield call(submitDataGraphWorker, submitDataGraph(value));
-    if (response.error) {
-      throw response.error;
-    }
+    if (response.error) throw response.error;
     const { data } = response;
     const { entityKeyIds } = data;
     const app = yield select(getAppFromState);
@@ -815,17 +882,24 @@ function* checkInForAppointmentWorker(action :SequenceAction) :Generator<*, *, *
       const appointmentEKID :UUID = associationEntityData[fulfillsESID][0].dstEntityKeyId;
 
       response = yield call(updateHoursWorkedWorker, updateHoursWorked({ appointmentEKID, numberHoursWorked }));
-      if (response.error) {
-        throw response.error;
-      }
+      if (response.error) throw response.error;
 
-      response = {
-        appointmentEKID,
-        checkInDetailsESID,
-        checkInEKID,
-        checkInESID,
-        edm,
-      };
+      const storedCheckInEntity :Map = fromJS(entityData[checkInESID][0]);
+      const storedCheckInDetailsEntity :Map = fromJS(entityData[checkInDetailsESID][0]);
+
+      const newCheckIn :Map = Map().withMutations((map :Map) => {
+        map.set(ENTITY_KEY_ID, checkInEKID);
+
+        storedCheckInEntity.forEach((propertyValue, propertyId) => {
+          const propertyTypeFqn = getPropertyFqnFromEdm(edm, propertyId);
+          map.set(propertyTypeFqn, propertyValue);
+        });
+
+        const hoursWorked :number = storedCheckInDetailsEntity.getIn([hoursWorkedPTID, 0]);
+        map.set(HOURS_WORKED, hoursWorked);
+      });
+
+      response = { appointmentEKID, newCheckIn };
     }
 
     yield put(checkInForAppointment.success(id, response));
@@ -844,6 +918,42 @@ function* checkInForAppointmentWatcher() :Generator<*, *, *> {
   yield takeEvery(CHECK_IN_FOR_APPOINTMENT, checkInForAppointmentWorker);
 }
 
+/*
+ *
+ * WorksitePlanActions.deleteCheckIn()
+ *
+ */
+
+function* deleteCheckInWorker(action :SequenceAction) :Generator<*, *, *> {
+  const { id, value } = action;
+
+  try {
+    yield put(deleteCheckIn.request(id, value));
+
+    const { appointmentEKID, checkInToDelete, numberHoursWorked } = value;
+
+    let response :Object = yield call(deleteEntitiesWorker, deleteEntities(checkInToDelete));
+    if (response.error) throw response.error;
+
+    response = yield call(updateHoursWorkedWorker, updateHoursWorked({ appointmentEKID, numberHoursWorked }));
+    if (response.error) throw response.error;
+
+    yield put(deleteCheckIn.success(id));
+  }
+  catch (error) {
+    LOG.error(action.type);
+    yield put(deleteCheckIn.failure(id, error));
+  }
+  finally {
+    yield put(deleteCheckIn.finally(id));
+  }
+}
+
+function* deleteCheckInWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(DELETE_CHECK_IN, deleteCheckInWorker);
+}
+
 export {
   addWorksitePlanWatcher,
   addWorksitePlanWorker,
@@ -853,6 +963,8 @@ export {
   createWorkAppointmentsWorker,
   deleteAppointmentWatcher,
   deleteAppointmentWorker,
+  deleteCheckInWatcher,
+  deleteCheckInWorker,
   editAppointmentWatcher,
   editAppointmentWorker,
   editWorksitePlanWatcher,

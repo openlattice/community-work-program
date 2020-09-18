@@ -1,26 +1,22 @@
 // @flow
 import React, { Component } from 'react';
+
 import styled from 'styled-components';
-import { fromJS, Map } from 'immutable';
-import { DateTime } from 'luxon';
+import { Map, fromJS } from 'immutable';
 import { DataProcessingUtils } from 'lattice-fabricate';
 import {
   Button,
+  Colors,
   Input,
   Label,
   Radio,
   TimePicker,
 } from 'lattice-ui-kit';
+import { DateTime } from 'luxon';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import type { RequestSequence } from 'redux-reqseq';
 
-import { checkInForAppointment } from '../assignedworksites/WorksitePlanActions';
-import { getCombinedDateTime } from '../../../utils/ScheduleUtils';
-import {
-  getEntitySetIdFromApp,
-  getPropertyTypeIdFromEdm
-} from '../../../utils/DataUtils';
 import {
   ButtonsRow,
   FormRow,
@@ -28,7 +24,17 @@ import {
   RowContent
 } from '../../../components/Layout';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
-import { PERSON, STATE } from '../../../utils/constants/ReduxStateConsts';
+import { getCombinedDateTime } from '../../../utils/ScheduleUtils';
+import {
+  APP,
+  EDM,
+  PERSON,
+  STATE
+} from '../../../utils/constants/ReduxStateConsts';
+import { checkInForAppointment } from '../assignedworksites/WorksitePlanActions';
+import { get24HourTimeForCheckIn, getHoursScheduled } from '../utils/CheckInUtils';
+
+const { RED } = Colors;
 
 const {
   APPOINTMENT,
@@ -46,6 +52,8 @@ const {
   HOURS_WORKED,
 } = PROPERTY_TYPE_FQNS;
 
+const { ENTITY_SET_IDS_BY_ORG, SELECTED_ORG_ID } = APP;
+const { PROPERTY_TYPES, TYPE_IDS_BY_FQNS } = EDM;
 const { PARTICIPANT } = PERSON;
 
 const {
@@ -61,17 +69,22 @@ const RadioWrapper = styled.span`
   margin-right: 20px;
 `;
 
+const ErrorMessage = styled.div`
+  color: ${RED.R300};
+  max-width: 351px;
+`;
+
 type Props = {
   actions:{
     checkInForAppointment :RequestSequence;
   };
-  app :Map;
   appointment :Map;
-  edm :Map;
+  entitySetIds :Map;
   isLoading :boolean;
   onDiscard :() => void;
   personEKID :UUID;
   personName :string;
+  propertyTypeIds :Map;
 };
 
 type State = {
@@ -83,58 +96,98 @@ type State = {
 
 class CheckInForm extends Component<Props, State> {
 
-  state = {
-    checkedIn: '',
-    newCheckInData: fromJS({
-      [getPageSectionKey(1, 1)]: {},
-    }),
-    timeIn: '',
-    timeOut: '',
-  };
+  constructor(props :Props) {
+    super(props);
 
-  createEntitySetIdsMap = () => {
-    const { app } = this.props;
-    return {
-      [APPOINTMENT]: getEntitySetIdFromApp(app, APPOINTMENT),
-      [CHECK_INS]: getEntitySetIdFromApp(app, CHECK_INS),
-      [CHECK_IN_DETAILS]: getEntitySetIdFromApp(app, CHECK_IN_DETAILS),
-      [FULFILLS]: getEntitySetIdFromApp(app, FULFILLS),
-      [HAS]: getEntitySetIdFromApp(app, HAS),
-      [PEOPLE]: getEntitySetIdFromApp(app, PEOPLE),
-    };
-  }
-
-  createPropertyTypeIdsMap = () => {
-    const { edm } = this.props;
-    return {
-      [DATETIME_START]: getPropertyTypeIdFromEdm(edm, DATETIME_START),
-      [DATETIME_END]: getPropertyTypeIdFromEdm(edm, DATETIME_END),
-      [CHECKED_IN]: getPropertyTypeIdFromEdm(edm, CHECKED_IN),
-      [HOURS_WORKED]: getPropertyTypeIdFromEdm(edm, HOURS_WORKED),
+    const { appointment } = props;
+    const hours = appointment.get('hours');
+    const { timeIn, timeOut } = get24HourTimeForCheckIn(hours);
+    const hoursScheduled :number = getHoursScheduled(timeIn, timeOut);
+    this.state = {
+      checkedIn: '',
+      newCheckInData: fromJS({
+        [getPageSectionKey(1, 1)]: {
+          [getEntityAddressKey(0, CHECK_IN_DETAILS, HOURS_WORKED)]: hoursScheduled
+        },
+      }),
+      timeIn,
+      timeOut,
     };
   }
 
   handleInputChange = (e :SyntheticEvent<HTMLInputElement>) => {
     const { newCheckInData } = this.state;
     const { name, value } = e.currentTarget;
-    const valueToFloat = parseFloat(value);
+    const valueToFloat = value.length ? parseFloat(value) : '';
     this.setState({ newCheckInData: newCheckInData.setIn([getPageSectionKey(1, 1), name], valueToFloat) });
   }
 
   handleRadioChange = (option :Object) => {
+    const { appointment } = this.props;
+    const { newCheckInData } = this.state;
     const { name } = option.currentTarget;
-    this.setState({
-      checkedIn: name,
-    });
+
+    if (name === RADIO_OPTIONS[1]) {
+      this.setState({
+        checkedIn: name,
+        newCheckInData: newCheckInData.setIn([
+          getPageSectionKey(1, 1),
+          getEntityAddressKey(0, CHECK_IN_DETAILS, HOURS_WORKED)
+        ], 0),
+        timeIn: '',
+        timeOut: ''
+      });
+    }
+    else {
+      const hours = appointment.get('hours');
+      const { timeIn: originalTimeIn, timeOut: originalTimeOut } = get24HourTimeForCheckIn(hours);
+      const hoursScheduled :number = getHoursScheduled(originalTimeIn, originalTimeOut);
+      this.setState({
+        checkedIn: name,
+        newCheckInData: newCheckInData.setIn([
+          getPageSectionKey(1, 1),
+          getEntityAddressKey(0, CHECK_IN_DETAILS, HOURS_WORKED)
+        ], hoursScheduled),
+        timeIn: originalTimeIn,
+        timeOut: originalTimeOut
+      });
+    }
   }
 
   setRawTime = (type :string) => (time :string) => {
-    if (type === DATETIME_START) this.setState({ timeIn: time });
-    if (type === DATETIME_END) this.setState({ timeOut: time });
+    const { newCheckInData, timeIn, timeOut } = this.state;
+
+    if (type === DATETIME_START) {
+      const hoursCalculatedFromFormTimes :number = getHoursScheduled(time, timeOut);
+      this.setState({
+        newCheckInData: newCheckInData.setIn([
+          getPageSectionKey(1, 1),
+          getEntityAddressKey(0, CHECK_IN_DETAILS, HOURS_WORKED)
+        ], hoursCalculatedFromFormTimes),
+        timeIn: time
+      });
+    }
+
+    if (type === DATETIME_END) {
+      const hoursCalculatedFromFormTimes :number = getHoursScheduled(timeIn, time);
+      this.setState({
+        newCheckInData: newCheckInData.setIn([
+          getPageSectionKey(1, 1),
+          getEntityAddressKey(0, CHECK_IN_DETAILS, HOURS_WORKED)
+        ], hoursCalculatedFromFormTimes),
+        timeOut: time
+      });
+    }
   }
 
   handleOnSubmit = () => {
-    const { actions, appointment, personEKID } = this.props;
+    const {
+      actions,
+      appointment,
+      entitySetIds,
+      personEKID,
+      propertyTypeIds,
+    } = this.props;
     const { checkedIn, timeIn, timeOut } = this.state;
     let { newCheckInData } = this.state;
 
@@ -143,14 +196,16 @@ class CheckInForm extends Component<Props, State> {
     newCheckInData = newCheckInData
       .setIn([getPageSectionKey(1, 1), getEntityAddressKey(0, CHECK_INS, CHECKED_IN)], participantCheckedIn);
 
-    const appointmentDateToISO :string = new Date(appointment.get('day')).toISOString();
-    const appointmentDate :string = DateTime.fromISO(appointmentDateToISO).toISODate();
-    const dateTimeCheckedIn :string = getCombinedDateTime(appointmentDate, timeIn);
-    const dateTimeCheckedOut :string = getCombinedDateTime(appointmentDate, timeOut);
-    newCheckInData = newCheckInData
-      .setIn([getPageSectionKey(1, 1), getEntityAddressKey(0, CHECK_INS, DATETIME_START)], dateTimeCheckedIn);
-    newCheckInData = newCheckInData
-      .setIn([getPageSectionKey(1, 1), getEntityAddressKey(0, CHECK_INS, DATETIME_END)], dateTimeCheckedOut);
+    if (participantCheckedIn) {
+      const appointmentDateToISO :string = new Date(appointment.get('day')).toISOString();
+      const appointmentDate :string = DateTime.fromISO(appointmentDateToISO).toISODate();
+      const dateTimeCheckedIn :string = getCombinedDateTime(appointmentDate, timeIn);
+      const dateTimeCheckedOut :string = getCombinedDateTime(appointmentDate, timeOut);
+      newCheckInData = newCheckInData
+        .setIn([getPageSectionKey(1, 1), getEntityAddressKey(0, CHECK_INS, DATETIME_START)], dateTimeCheckedIn);
+      newCheckInData = newCheckInData
+        .setIn([getPageSectionKey(1, 1), getEntityAddressKey(0, CHECK_INS, DATETIME_END)], dateTimeCheckedOut);
+    }
 
     const appointmentEKID :UUID = appointment.get(ENTITY_KEY_ID);
     const associations = [];
@@ -159,9 +214,6 @@ class CheckInForm extends Component<Props, State> {
     associations.push([FULFILLS, 0, CHECK_INS, appointmentEKID, APPOINTMENT, {}]);
     associations.push([HAS, 0, CHECK_INS, 0, CHECK_IN_DETAILS, {}]);
 
-    const entitySetIds :Object = this.createEntitySetIdsMap();
-    const propertyTypeIds :Object = this.createPropertyTypeIdsMap();
-
     const entityData :{} = processEntityData(newCheckInData, entitySetIds, propertyTypeIds);
     const associationEntityData :{} = processAssociationEntityData(fromJS(associations), entitySetIds, propertyTypeIds);
     actions.checkInForAppointment({ associationEntityData, entityData });
@@ -169,7 +221,21 @@ class CheckInForm extends Component<Props, State> {
 
   render() {
     const { isLoading, onDiscard, personName } = this.props;
-    const { checkedIn } = this.state;
+    const {
+      checkedIn,
+      newCheckInData,
+      timeIn,
+      timeOut,
+    } = this.state;
+
+    const checkedInIsBlankOrNo :boolean = !checkedIn || checkedIn === RADIO_OPTIONS[1];
+
+    const hoursCalculatedFromFormTimes = getHoursScheduled(timeIn, timeOut);
+    const hoursInFormData :number | string = newCheckInData.getIn([
+      getPageSectionKey(1, 1),
+      getEntityAddressKey(0, CHECK_IN_DETAILS, HOURS_WORKED)
+    ]);
+    const formHoursAndTimesConflict :boolean = hoursCalculatedFromFormTimes !== hoursInFormData;
 
     const checkInQuestion = `Did ${personName} appear for this work appointment?`;
     return (
@@ -202,32 +268,59 @@ class CheckInForm extends Component<Props, State> {
           <RowContent>
             <Label>Time checked in</Label>
             <TimePicker
+                disabled={checkedInIsBlankOrNo}
+                format="H:mm"
+                mask="__:__"
                 name={getEntityAddressKey(0, CHECK_INS, DATETIME_START)}
-                onChange={this.setRawTime(DATETIME_START)} />
+                onChange={this.setRawTime(DATETIME_START)}
+                placeholder="HH:MM"
+                value={timeIn} />
           </RowContent>
         </FormRow>
         <FormRow>
           <RowContent>
             <Label>Time checked out</Label>
             <TimePicker
+                disabled={checkedInIsBlankOrNo}
+                format="H:mm"
+                mask="__:__"
                 name={getEntityAddressKey(0, CHECK_INS, DATETIME_END)}
-                onChange={this.setRawTime(DATETIME_END)} />
+                onChange={this.setRawTime(DATETIME_END)}
+                placeholder="HH:MM"
+                value={timeOut} />
           </RowContent>
         </FormRow>
         <FormRow>
           <RowContent>
             <Label>Hours worked during appointment</Label>
             <Input
+                disabled={checkedInIsBlankOrNo}
                 name={getEntityAddressKey(0, CHECK_IN_DETAILS, HOURS_WORKED)}
                 onChange={this.handleInputChange}
-                type="text" />
+                type="text"
+                value={newCheckInData.getIn([
+                  getPageSectionKey(1, 1),
+                  getEntityAddressKey(0, CHECK_IN_DETAILS, HOURS_WORKED)
+                ])} />
           </RowContent>
         </FormRow>
+        {
+          formHoursAndTimesConflict && (
+            <FormRow>
+              <RowContent>
+                <ErrorMessage>
+                  There is a conflict between hours entered and times selected. Please fix before submitting.
+                </ErrorMessage>
+              </RowContent>
+            </FormRow>
+          )
+        }
         <ButtonsRow>
           <Button onClick={onDiscard}>Discard</Button>
           <Button
+              color="primary"
+              disabled={!checkedIn || formHoursAndTimesConflict}
               isLoading={isLoading}
-              mode="primary"
               onClick={this.handleOnSubmit}>
             Submit
           </Button>
@@ -238,10 +331,13 @@ class CheckInForm extends Component<Props, State> {
 }
 
 const mapStateToProps = (state :Map) => {
+  const app = state.get(STATE.APP);
+  const edm = state.get(STATE.EDM);
+  const selectedOrgId :string = app.get(SELECTED_ORG_ID);
   const person = state.get(STATE.PERSON);
   return ({
-    app: state.get(STATE.APP),
-    edm: state.get(STATE.EDM),
+    entitySetIds: app.getIn([ENTITY_SET_IDS_BY_ORG, selectedOrgId], Map()),
+    propertyTypeIds: edm.getIn([TYPE_IDS_BY_FQNS, PROPERTY_TYPES], Map()),
     [PARTICIPANT]: person.get(PARTICIPANT),
   });
 };

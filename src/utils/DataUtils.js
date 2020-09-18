@@ -11,32 +11,35 @@ import {
   NEIGHBOR_DETAILS,
   NEIGHBOR_ENTITY_SET,
   SEARCH_PREFIX,
-  TYPE_IDS_BY_FQNS,
-  TYPES_BY_ID
 } from '../core/edm/constants/DataModelConsts';
 import { PROPERTY_TYPE_FQNS } from '../core/edm/constants/FullyQualifiedNames';
-import { APP } from './constants/ReduxStateConsts';
+import { APP, EDM } from './constants/ReduxStateConsts';
 
 const { FullyQualifiedName } = Models;
 const { ENTITY_KEY_ID } = PROPERTY_TYPE_FQNS;
+const {
+  PROPERTY_TYPES,
+  TYPES_BY_ID,
+  TYPE_IDS_BY_FQNS,
+} = EDM;
 
 /* entity and property types */
 const getEntitySetIdFromApp = (app :Object | Map, fqn :FullyQualifiedName) => {
 
   const orgId = app.get(APP.SELECTED_ORG_ID);
   return app.getIn([
-    fqn,
-    APP.ENTITY_SETS_BY_ORG,
-    orgId
+    APP.ENTITY_SET_IDS_BY_ORG,
+    orgId,
+    fqn
   ]);
 };
 
 const getPropertyTypeIdFromEdm = (
   edm :Object | Map, propertyFqn :FullyQualifiedName
-) => edm.getIn([TYPE_IDS_BY_FQNS, propertyFqn]);
+) => edm.getIn([TYPE_IDS_BY_FQNS, PROPERTY_TYPES, propertyFqn]);
 
 const getPropertyFqnFromEdm = (edm :Object | Map, propertyTypeId :UUID) => {
-  const propertyType = edm.getIn([TYPES_BY_ID, propertyTypeId, 'type']);
+  const propertyType = edm.getIn([TYPES_BY_ID, PROPERTY_TYPES, propertyTypeId, 'type']);
   return new FullyQualifiedName(propertyType);
 };
 
@@ -112,6 +115,27 @@ const findEntityPathInMap = (entityMap :Map, entityEKID :UUID) :any[] => {
   return [keyEKID, index];
 };
 
+const getValuesFromEntityList = (entities :List, propertyList :FQN[]) => {
+
+  const values = [];
+  const labels = [];
+  entities.forEach((entity :Map) => {
+
+    let label :string = '';
+    propertyList.forEach((propertyType) => {
+      const backUpValue = entity.get(propertyType, '');
+      const property = getFirstNeighborValue(entity, propertyType, backUpValue);
+      label = label.concat(' ', property);
+    });
+    const entityEKID :UUID = getEntityKeyId(entity);
+
+    labels.push(label);
+    values.push(entityEKID);
+  });
+
+  return [values, labels];
+};
+
 /* search queries */
 const getSearchTerm = (
   propertyTypeId :UUID,
@@ -151,5 +175,6 @@ export {
   getSearchTerm,
   getSearchTermNotExact,
   getUTCDateRangeSearchString,
+  getValuesFromEntityList,
   sortEntitiesByDateProperty,
 };

@@ -1,21 +1,23 @@
 // @flow
 import React, { Component } from 'react';
+
 import { Map } from 'immutable';
+import { DataProcessingUtils, Form } from 'lattice-fabricate';
 import { Card, CardHeader } from 'lattice-ui-kit';
-import { Form, DataProcessingUtils } from 'lattice-fabricate';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import type { RequestSequence } from 'redux-reqseq';
 
-import { editRequiredHours } from '../ParticipantActions';
-import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import {
   requiredHoursSchema,
   requiredHoursUiSchema,
-} from '../schemas/EditCaseInfoSchemas';
+} from './schemas/EditCaseInfoSchemas';
+
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import {
   getEntityProperties,
 } from '../../../utils/DataUtils';
+import { editRequiredHours } from '../ParticipantActions';
 
 const {
   getEntityAddressKey,
@@ -37,15 +39,17 @@ type Props = {
 
 type State = {
   requiredHoursFormData :Object;
-  requiredHoursPrepopulated :boolean;
 };
 
 class EditRequiredHoursForm extends Component<Props, State> {
 
-  state = {
-    requiredHoursFormData: {},
-    requiredHoursPrepopulated: false,
-  };
+  constructor(props :Props) {
+    super(props);
+
+    this.state = {
+      requiredHoursFormData: {},
+    };
+  }
 
   componentDidMount() {
     this.prepopulateFormData();
@@ -63,19 +67,13 @@ class EditRequiredHoursForm extends Component<Props, State> {
 
     const sectionOneKey = getPageSectionKey(1, 1);
     const { [REQUIRED_HOURS]: requiredHours } = getEntityProperties(diversionPlan, [REQUIRED_HOURS]);
-    const requiredHoursPrepopulated = !!requiredHours;
-    const requiredHoursFormData :{} = requiredHoursPrepopulated
-      ? {
-        [sectionOneKey]: {
-          [getEntityAddressKey(0, DIVERSION_PLAN, REQUIRED_HOURS)]: requiredHours
-        }
+    const requiredHoursFormData :{} = {
+      [sectionOneKey]: {
+        [getEntityAddressKey(0, DIVERSION_PLAN, REQUIRED_HOURS)]: requiredHours
       }
-      : {};
+    };
 
-    this.setState({
-      requiredHoursFormData,
-      requiredHoursPrepopulated,
-    });
+    this.setState({ requiredHoursFormData });
   }
 
   render() {
@@ -87,7 +85,6 @@ class EditRequiredHoursForm extends Component<Props, State> {
     } = this.props;
     const {
       requiredHoursFormData,
-      requiredHoursPrepopulated,
     } = this.state;
 
     const requiredHoursFormContext = {
@@ -97,12 +94,11 @@ class EditRequiredHoursForm extends Component<Props, State> {
       propertyTypeIds,
     };
 
-
     return (
       <Card>
         <CardHeader padding="sm">Edit Required Hours</CardHeader>
         <Form
-            disabled={requiredHoursPrepopulated}
+            disabled
             formContext={requiredHoursFormContext}
             formData={requiredHoursFormData}
             schema={requiredHoursSchema}
@@ -112,7 +108,7 @@ class EditRequiredHoursForm extends Component<Props, State> {
   }
 }
 
-const mapDispatchToProps = dispatch => ({
+const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
     editRequiredHours,
   }, dispatch)

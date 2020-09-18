@@ -1,17 +1,27 @@
 // @flow
 import React, { Component } from 'react';
+
 import { List, Map, getIn } from 'immutable';
-import { Card, CardHeader } from 'lattice-ui-kit';
-import { Form, DataProcessingUtils } from 'lattice-fabricate';
+import { DataProcessingUtils, Form } from 'lattice-fabricate';
+import {
+  Card,
+  CardHeader,
+  CardSegment,
+  Spinner,
+} from 'lattice-ui-kit';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import type { RequestSequence } from 'redux-reqseq';
+import type { RequestSequence, RequestState } from 'redux-reqseq';
 
-import { reassignJudge } from '../ParticipantActions';
+import { judgeSchema, judgeUiSchema } from './schemas/EditCaseInfoSchemas';
+import { disableJudgeForm, hydrateJudgeSchema } from './utils/EditCaseInfoUtils';
+
+import ErrorMessage from '../../../components/error/ErrorMessage';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
-import { judgeSchema, judgeUiSchema } from '../schemas/EditCaseInfoSchemas';
-import { disableJudgeForm, hydrateJudgeSchema } from '../utils/EditCaseInfoUtils';
 import { getEntityKeyId } from '../../../utils/DataUtils';
+import { requestIsFailure, requestIsPending } from '../../../utils/RequestStateUtils';
+import { PERSON, SHARED, STATE } from '../../../utils/constants/ReduxStateConsts';
+import { reassignJudge } from '../ParticipantActions';
 
 const {
   getEntityAddressKey,
@@ -25,6 +35,8 @@ const {
   PRESIDES_OVER,
 } = APP_TYPE_FQNS;
 const { ENTITY_KEY_ID } = PROPERTY_TYPE_FQNS;
+const { ACTIONS, REQUEST_STATE } = SHARED;
+const { REASSIGN_JUDGE } = PERSON;
 
 type Props = {
   actions:{
@@ -37,10 +49,13 @@ type Props = {
   judges :List;
   personCase :Map;
   propertyTypeIds :Object;
+  requestStates :{
+    REASSIGN_JUDGE :RequestState;
+  };
 };
 
 type State = {
-  judgeFormData :Object;
+  formData :Object;
   judgeFormSchema :Object;
   judgePrepopulated :boolean;
   judgeFormUiSchema :Object;
@@ -48,12 +63,16 @@ type State = {
 
 class AssignJudgeForm extends Component<Props, State> {
 
-  state = {
-    judgeFormData: {},
-    judgeFormSchema: judgeSchema,
-    judgePrepopulated: false,
-    judgeFormUiSchema: {},
-  };
+  constructor(props :Props) {
+    super(props);
+
+    this.state = {
+      formData: {},
+      judgeFormSchema: judgeSchema,
+      judgePrepopulated: false,
+      judgeFormUiSchema: {},
+    };
+  }
 
   componentDidMount() {
     this.prepopulateFormData();
@@ -73,7 +92,7 @@ class AssignJudgeForm extends Component<Props, State> {
 
     let newJudgeSchema :Object = judgeSchema;
     let newJudgeUiSchema :Object = judgeUiSchema;
-    let judgeFormData :Object = {};
+    let formData :Object = {};
     let judgePrepopulated :boolean = false;
 
     if (personCase.isEmpty()) {
@@ -83,11 +102,11 @@ class AssignJudgeForm extends Component<Props, State> {
     else {
       const sectionOneKey = getPageSectionKey(1, 1);
 
-      judgePrepopulated = !judge.isEmpty();
-      judgeFormData = judgePrepopulated
+      judgePrepopulated = !judge || !judge.isEmpty();
+      formData = judgePrepopulated
         ? {
           [sectionOneKey]: {
-            [getEntityAddressKey(0, JUDGES, ENTITY_KEY_ID)]: [getEntityKeyId(judge)],
+            [getEntityAddressKey(0, JUDGES, ENTITY_KEY_ID)]: getEntityKeyId(judge),
           }
         }
         : {};
@@ -95,75 +114,83 @@ class AssignJudgeForm extends Component<Props, State> {
     }
 
     this.setState({
-      judgeFormData,
+      formData,
       judgeFormSchema: newJudgeSchema,
       judgePrepopulated,
       judgeFormUiSchema: newJudgeUiSchema,
     });
   }
 
-  handleOnJudgeSubmit = () => {
+  onSubmit = ({ formData } :Object) => {
     const {
       actions,
       diversionPlan,
       entitySetIds,
       personCase,
     } = this.props;
-    const { judgeFormData } = this.state;
 
-    const judgeEKID = getIn(judgeFormData, [getPageSectionKey(1, 1), getEntityAddressKey(0, JUDGES, ENTITY_KEY_ID)]);
+    let judgeEKID = getIn(formData, [getPageSectionKey(1, 1), getEntityAddressKey(0, JUDGES, ENTITY_KEY_ID)]);
+    if (Array.isArray(judgeEKID)) [judgeEKID] = judgeEKID;
     const caseEKID = getEntityKeyId(personCase);
     const diversionPlanEKID = getEntityKeyId(diversionPlan);
 
-    const associationEntityData :{} = {
-      [entitySetIds[PRESIDES_OVER]]: [
+    const associations :{} = {
+      [entitySetIds.get(PRESIDES_OVER)]: [
         {
           data: {},
           dst: {
-            entitySetId: entitySetIds[MANUAL_PRETRIAL_COURT_CASES],
+            entitySetId: entitySetIds.get(MANUAL_PRETRIAL_COURT_CASES),
             entityKeyId: caseEKID
           },
           src: {
-            entitySetId: entitySetIds[JUDGES],
+            entitySetId: entitySetIds.get(JUDGES),
             entityKeyId: judgeEKID
           }
         },
         {
           data: {},
           dst: {
-            entitySetId: entitySetIds[DIVERSION_PLAN],
+            entitySetId: entitySetIds.get(DIVERSION_PLAN),
             entityKeyId: diversionPlanEKID
           },
           src: {
-            entitySetId: entitySetIds[JUDGES],
+            entitySetId: entitySetIds.get(JUDGES),
             entityKeyId: judgeEKID
           }
         }
       ]
     };
-    actions.reassignJudge({ associationEntityData, entityData: {} });
+    actions.reassignJudge({
+      associations,
+      caseEKID,
+      diversionPlanEKID,
+      judgeEKID
+    });
   }
 
-  handleOnChangeJudge = ({ formData } :Object) => {
-    this.setState({ judgeFormData: formData });
+  onChange = ({ formData } :Object) => {
+    this.setState({ formData });
   }
 
   render() {
     const {
-      actions,
       entityIndexToIdMap,
       entitySetIds,
       propertyTypeIds,
+      requestStates,
     } = this.props;
     const {
-      judgeFormData,
+      formData,
       judgePrepopulated,
       judgeFormSchema,
       judgeFormUiSchema,
     } = this.state;
 
+    const submissionFailed = requestIsFailure(requestStates[REASSIGN_JUDGE]);
+    const submissionIsPending = requestIsPending(requestStates[REASSIGN_JUDGE]);
+
     const judgeFormContext = {
-      editAction: actions.reassignJudge,
+      editAction: this.onSubmit,
       entityIndexToIdMap,
       entitySetIds,
       propertyTypeIds,
@@ -173,16 +200,30 @@ class AssignJudgeForm extends Component<Props, State> {
         <CardHeader padding="sm">Assign Judge</CardHeader>
         <Form
             disabled={judgePrepopulated}
+            isSubmitting={submissionIsPending}
             formContext={judgeFormContext}
-            formData={judgeFormData}
-            onChange={this.handleOnChangeJudge}
-            onSubmit={this.handleOnJudgeSubmit}
+            formData={formData}
+            onChange={this.onChange}
+            onSubmit={this.onSubmit}
             schema={judgeFormSchema}
             uiSchema={judgeFormUiSchema} />
+        { (judgePrepopulated && submissionIsPending) && (
+          <CardSegment><Spinner size="2x" /></CardSegment>
+        )}
+        { submissionFailed && <ErrorMessage /> }
       </Card>
     );
   }
 }
+
+const mapStateToProps = (state :Map) => {
+  const person = state.get(STATE.PERSON);
+  return {
+    requestStates: {
+      [REASSIGN_JUDGE]: person.getIn([ACTIONS, REASSIGN_JUDGE, REQUEST_STATE])
+    }
+  };
+};
 
 const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
@@ -191,4 +232,4 @@ const mapDispatchToProps = (dispatch) => ({
 });
 
 // $FlowFixMe
-export default connect(null, mapDispatchToProps)(AssignJudgeForm);
+export default connect(mapStateToProps, mapDispatchToProps)(AssignJudgeForm);

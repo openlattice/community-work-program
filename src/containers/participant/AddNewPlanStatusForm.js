@@ -1,12 +1,12 @@
 // @flow
 import React, { Component } from 'react';
+
 import {
   List,
   Map,
   fromJS,
   hasIn,
 } from 'immutable';
-import { DateTime } from 'luxon';
 import { DataProcessingUtils } from 'lattice-fabricate';
 import {
   Button,
@@ -16,24 +16,32 @@ import {
   Select,
   TextArea,
 } from 'lattice-ui-kit';
+import { DateTime } from 'luxon';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import type { RequestSequence } from 'redux-reqseq';
 import type { FQN } from 'lattice';
+import type { RequestSequence } from 'redux-reqseq';
 
 import { addNewDiversionPlanStatus, markDiversionPlanAsComplete } from './ParticipantActions';
-import { getEntityKeyId, getEntitySetIdFromApp, getPropertyTypeIdFromEdm } from '../../utils/DataUtils';
-import { getCombinedDateTime } from '../../utils/ScheduleUtils';
-import { STATUS_FILTER_OPTIONS } from '../participants/ParticipantsConstants';
-import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
-import { PERSON, STATE, WORKSITE_PLANS } from '../../utils/constants/ReduxStateConsts';
-import { ENROLLMENT_STATUSES, WORKSITE_ENROLLMENT_STATUSES } from '../../core/edm/constants/DataModelConsts';
+
 import {
   ButtonsRow,
   FormRow,
   FormWrapper,
   RowContent
 } from '../../components/Layout';
+import { ENROLLMENT_STATUSES, WORKSITE_ENROLLMENT_STATUSES } from '../../core/edm/constants/DataModelConsts';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { getEntityKeyId, getEntitySetIdFromApp, getPropertyTypeIdFromEdm } from '../../utils/DataUtils';
+import { getCombinedDateTime } from '../../utils/ScheduleUtils';
+import {
+  APP,
+  EDM,
+  PERSON,
+  STATE,
+  WORKSITE_PLANS
+} from '../../utils/constants/ReduxStateConsts';
+import { STATUS_FILTER_OPTIONS } from '../participants/ParticipantsConstants';
 
 const {
   getEntityAddressKey,
@@ -58,11 +66,14 @@ const {
   STATUS,
 } = PROPERTY_TYPE_FQNS;
 
+const { ENTITY_SET_IDS_BY_ORG, SELECTED_ORG_ID } = APP;
+const { PROPERTY_TYPES, TYPE_IDS_BY_FQNS } = EDM;
+
 const ENROLLMENT_STATUS_OPTIONS :Object[] = STATUS_FILTER_OPTIONS
   .slice(1)
-  .map((status :Object) => {
-    return { label: status.label, value: status.value };
-  });
+  .map((status :Object) => (
+    ({ label: status.label, value: status.value })
+  ));
 
 type Props = {
   actions:{
@@ -73,9 +84,11 @@ type Props = {
   currentStatus :string;
   diversionPlan :Map;
   edm :Map;
+  entitySetIds :Map;
   isLoading :boolean;
   onDiscard :() => void;
   personName :string;
+  propertyTypeIds :Map;
   worksitePlans :List;
 };
 
@@ -93,30 +106,6 @@ class AddNewPlanStatusForm extends Component<Props, State> {
         [getPageSectionKey(1, 2)]: {},
         [getPageSectionKey(1, 3)]: {},
       }),
-    };
-  }
-
-  createEntitySetIdsMap = () => {
-    const { app } = this.props;
-    return {
-      [DIVERSION_PLAN]: getEntitySetIdFromApp(app, DIVERSION_PLAN),
-      [ENROLLMENT_STATUS]: getEntitySetIdFromApp(app, ENROLLMENT_STATUS),
-      [PROGRAM_OUTCOME]: getEntitySetIdFromApp(app, PROGRAM_OUTCOME),
-      [RELATED_TO]: getEntitySetIdFromApp(app, RELATED_TO),
-      [RESULTS_IN]: getEntitySetIdFromApp(app, RESULTS_IN),
-      [WORKSITE_PLAN]: getEntitySetIdFromApp(app, WORKSITE_PLAN),
-    };
-  }
-
-  createPropertyTypeIdsMap = () => {
-    const { edm } = this.props;
-    return {
-      [COMPLETED]: getPropertyTypeIdFromEdm(edm, COMPLETED),
-      [DATETIME_COMPLETED]: getPropertyTypeIdFromEdm(edm, DATETIME_COMPLETED),
-      [DESCRIPTION]: getPropertyTypeIdFromEdm(edm, DESCRIPTION),
-      [EFFECTIVE_DATE]: getPropertyTypeIdFromEdm(edm, EFFECTIVE_DATE),
-      [HOURS_WORKED]: getPropertyTypeIdFromEdm(edm, HOURS_WORKED),
-      [STATUS]: getPropertyTypeIdFromEdm(edm, STATUS),
     };
   }
 
@@ -144,6 +133,8 @@ class AddNewPlanStatusForm extends Component<Props, State> {
       app,
       diversionPlan,
       edm,
+      entitySetIds,
+      propertyTypeIds,
       worksitePlans,
     } = this.props;
     let { newEnrollmentData } = this.state;
@@ -166,7 +157,6 @@ class AddNewPlanStatusForm extends Component<Props, State> {
       );
       newEnrollmentData = newEnrollmentData.setIn(effectiveDateKeyPath, dateAsDateTime);
     }
-
 
     associations.push([RELATED_TO, 0, ENROLLMENT_STATUS, diversionPlanEKID, DIVERSION_PLAN, {}]);
 
@@ -239,9 +229,6 @@ class AddNewPlanStatusForm extends Component<Props, State> {
       };
       actions.markDiversionPlanAsComplete({ entityData: diversionPlanDataToUpdate });
     }
-
-    const entitySetIds :Object = this.createEntitySetIdsMap();
-    const propertyTypeIds :Object = this.createPropertyTypeIdsMap();
 
     const entityData :{} = processEntityData(newEnrollmentData, entitySetIds, propertyTypeIds);
     const associationEntityData :{} = processAssociationEntityData(fromJS(associations), entitySetIds, propertyTypeIds);
@@ -327,8 +314,8 @@ class AddNewPlanStatusForm extends Component<Props, State> {
         <ButtonsRow>
           <Button onClick={onDiscard}>Discard</Button>
           <Button
+              color="primary"
               isLoading={isLoading}
-              mode="primary"
               onClick={this.handleOnSubmit}>
             Submit
           </Button>
@@ -338,12 +325,18 @@ class AddNewPlanStatusForm extends Component<Props, State> {
   }
 }
 
-const mapStateToProps = (state :Map) => ({
-  app: state.get(STATE.APP),
-  diversionPlan: state.getIn([STATE.PERSON, PERSON.DIVERSION_PLAN]),
-  edm: state.get(STATE.EDM),
-  worksitePlans: state.getIn([STATE.WORKSITE_PLANS, WORKSITE_PLANS.WORKSITE_PLANS_LIST]),
-});
+const mapStateToProps = (state :Map) => {
+  const app = state.get(STATE.APP);
+  const selectedOrgId :string = app.get(SELECTED_ORG_ID);
+  return {
+    app: state.get(STATE.APP),
+    diversionPlan: state.getIn([STATE.PERSON, PERSON.DIVERSION_PLAN]),
+    edm: state.get(STATE.EDM),
+    entitySetIds: app.getIn([ENTITY_SET_IDS_BY_ORG, selectedOrgId], Map()),
+    propertyTypeIds: state.getIn([STATE.EDM, TYPE_IDS_BY_FQNS, PROPERTY_TYPES], Map()),
+    worksitePlans: state.getIn([STATE.WORKSITE_PLANS, WORKSITE_PLANS.WORKSITE_PLANS_LIST]),
+  };
+};
 
 const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({

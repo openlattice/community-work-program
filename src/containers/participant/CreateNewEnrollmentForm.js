@@ -1,46 +1,78 @@
 // @flow
 import React, { Component } from 'react';
-import { fromJS, Map } from 'immutable';
-import { DateTime } from 'luxon';
-import { DataProcessingUtils } from 'lattice-fabricate';
+
+import styled from 'styled-components';
+import { faCheckCircle } from '@fortawesome/pro-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
-  Button,
-  DatePicker,
-  Input,
-  Label,
-  Select,
+  List,
+  Map,
+  fromJS,
+  get,
+  getIn,
+  hasIn,
+  removeIn,
+  setIn,
+} from 'immutable';
+import { DataProcessingUtils, Form } from 'lattice-fabricate';
+import {
+  Card,
+  CardHeader,
+  CardSegment,
+  CardStack,
+  Colors,
+  Spinner,
 } from 'lattice-ui-kit';
+import { DateTime } from 'luxon';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import type { RequestSequence } from 'redux-reqseq';
-import type { FQN } from 'lattice';
+import { RequestStates } from 'redux-reqseq';
+import type { Match } from 'react-router-dom';
+import type { RequestSequence, RequestState } from 'redux-reqseq';
 
-import { createNewEnrollment } from './ParticipantActions';
-import { getEntityKeyId, getEntitySetIdFromApp, getPropertyTypeIdFromEdm } from '../../utils/DataUtils';
-import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
-import { PERSON, STATE } from '../../utils/constants/ReduxStateConsts';
-import { CWP, ENROLLMENT_STATUSES } from '../../core/edm/constants/DataModelConsts';
-import { courtTypeOptions } from '../participants/ParticipantsConstants';
+import { createNewEnrollment, getInfoForAddParticipant } from './ParticipantActions';
 import {
-  ButtonsRow,
-  FormRow,
-  FormWrapper,
-  RowContent
-} from '../../components/Layout';
+  formatExistingChargeDataAndAssociation,
+  formatNewArrestChargeDataAndAssociations,
+} from './charges/utils/ChargesUtils';
+import { schema, uiSchema } from './schemas/CreateNewEnrollmentSchemas';
+import { hydrateSchema } from './utils/CreateNewEnrollmentUtils';
+
+import LogoLoader from '../../components/LogoLoader';
+import * as Routes from '../../core/router/Routes';
+import { BackNavButton } from '../../components/controls/index';
+import { CWP, ENROLLMENT_STATUSES } from '../../core/edm/constants/DataModelConsts';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { goToRoute } from '../../core/router/RoutingActions';
+import { PARTICIPANT_PROFILE_WIDTH } from '../../core/style/Sizes';
+import { getEntityKeyId } from '../../utils/DataUtils';
+import { getCombinedDateTime } from '../../utils/ScheduleUtils';
+import {
+  APP,
+  CHARGES,
+  EDM,
+  PERSON,
+  STATE
+} from '../../utils/constants/ReduxStateConsts';
+import type { GoToRoute } from '../../core/router/RoutingActions';
 
 const {
+  INDEX_MAPPERS,
   getEntityAddressKey,
   getPageSectionKey,
   processAssociationEntityData,
-  processEntityData
+  processEntityData,
 } = DataProcessingUtils;
+const { PURPLE } = Colors;
 const {
   APPEARS_IN,
+  CHARGE_EVENT,
   DIVERSION_PLAN,
   ENROLLMENT_STATUS,
+  JUDGES,
   MANUAL_PRETRIAL_COURT_CASES,
   MANUAL_SENTENCED_WITH,
-  PEOPLE,
+  PRESIDES_OVER,
   RELATED_TO,
 } = APP_TYPE_FQNS;
 const {
@@ -48,217 +80,321 @@ const {
   COMPLETED,
   COURT_CASE_TYPE,
   DATETIME_COMPLETED,
-  DATETIME_END,
   DATETIME_RECEIVED,
   EFFECTIVE_DATE,
+  ENTITY_KEY_ID,
   NAME,
-  REQUIRED_HOURS,
   STATUS,
 } = PROPERTY_TYPE_FQNS;
+const {
+  ACTIONS,
+  CREATE_NEW_ENROLLMENT,
+  GET_INFO_FOR_ADD_PARTICIPANT,
+  PARTICIPANT,
+  REQUEST_STATE,
+} = PERSON;
+const { ENTITY_SET_IDS_BY_ORG, SELECTED_ORG_ID } = APP;
+const {
+  ARREST_CHARGES,
+  ARREST_CHARGES_FROM_PSA,
+  ARREST_CASE_BY_ARREST_CHARGE_EKID_FROM_PSA,
+} = CHARGES;
+const { PROPERTY_TYPES, TYPE_IDS_BY_FQNS } = EDM;
 
-const { PARTICIPANT } = PERSON;
+const FormWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-self: center;
+  width: ${PARTICIPANT_PROFILE_WIDTH}px;
+  margin-top: 30px;
+  position: relative;
+`;
+
+const ButtonWrapper = styled.div`
+  margin-bottom: 30px;
+`;
+
+const SubmissionActionsWrapper = styled.div`
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+`;
+
+const SpinnerWrapper = styled(SubmissionActionsWrapper)`
+  justify-content: center;
+`;
+
+const SubmittedWrapper = styled.div`
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  margin-right: 8px;
+
+  :last-of-type {
+    margin: none;
+  }
+`;
 
 type Props = {
   actions:{
     createNewEnrollment :RequestSequence;
+    getInfoForAddParticipant :RequestSequence;
+    goToRoute :GoToRoute;
   };
-  app :Map;
-  edm :Map;
-  isLoading :boolean;
-  onDiscard :() => void;
+  arrestCharges :List;
+  arrestChargesFromPSA :List;
+  arrestCaseByArrestChargeEKIDFromPSA :Map;
+  createNewEnrollmentRequestState :RequestState;
+  entitySetIds :Map;
+  getInfoRequestState :RequestState;
+  judges :List;
+  match :Match;
   participant :Map;
+  propertyTypeIds :Map;
 };
 
-type State = {
-  newEnrollmentData :Map;
-};
+class CreateNewEnrollmentForm extends Component<Props> {
 
-class AddParticipantForm extends Component<Props, State> {
-
-  constructor(props :Props) {
-    super(props);
-    this.state = {
-      newEnrollmentData: fromJS({
-        [getPageSectionKey(1, 1)]: {
-          [getEntityAddressKey(0, DIVERSION_PLAN, COMPLETED)]: false,
-          [getEntityAddressKey(0, DIVERSION_PLAN, NAME)]: CWP,
-          [getEntityAddressKey(0, ENROLLMENT_STATUS, STATUS)]: ENROLLMENT_STATUSES.AWAITING_CHECKIN,
-          [getEntityAddressKey(0, MANUAL_PRETRIAL_COURT_CASES, CASE_NUMBER_TEXT)]: '',
-        },
-      }),
-    };
+  componentDidMount() {
+    const {
+      actions,
+      entitySetIds,
+      match: {
+        params: {
+          participantId: personEKID
+        }
+      }
+    } = this.props;
+    if (entitySetIds.has(JUDGES)) {
+      actions.getInfoForAddParticipant({ personEKID });
+    }
   }
 
-  createEntitySetIdsMap = () => {
-    const { app } = this.props;
-
-    const appearsInESID :UUID = getEntitySetIdFromApp(app, APPEARS_IN);
-    const diversionPlanESID :UUID = getEntitySetIdFromApp(app, DIVERSION_PLAN);
-    const enrollmentStatusESID :UUID = getEntitySetIdFromApp(app, ENROLLMENT_STATUS);
-    const manualCasesESID :UUID = getEntitySetIdFromApp(app, MANUAL_PRETRIAL_COURT_CASES);
-    const manualSentencedWithESID :UUID = getEntitySetIdFromApp(app, MANUAL_SENTENCED_WITH);
-    const peopleESID :UUID = getEntitySetIdFromApp(app, PEOPLE);
-    const relatedToESID :UUID = getEntitySetIdFromApp(app, RELATED_TO);
-
-    return {
-      [APPEARS_IN]: appearsInESID,
-      [DIVERSION_PLAN]: diversionPlanESID,
-      [ENROLLMENT_STATUS]: enrollmentStatusESID,
-      [MANUAL_PRETRIAL_COURT_CASES]: manualCasesESID,
-      [MANUAL_SENTENCED_WITH]: manualSentencedWithESID,
-      [PEOPLE]: peopleESID,
-      [RELATED_TO]: relatedToESID,
-    };
+  componentDidUpdate(prevProps :Props) {
+    const {
+      actions,
+      entitySetIds,
+      match: {
+        params: {
+          participantId: personEKID
+        }
+      }
+    } = this.props;
+    if (!prevProps.entitySetIds.has(JUDGES) && entitySetIds.has(JUDGES)) {
+      actions.getInfoForAddParticipant({ personEKID });
+    }
   }
 
-  createPropertyTypeIdsMap = () => {
-    const { edm } = this.props;
-
-    const caseNumberTextPTID :UUID = getPropertyTypeIdFromEdm(edm, CASE_NUMBER_TEXT);
-    const completedPTID :UUID = getPropertyTypeIdFromEdm(edm, COMPLETED);
-    const courtCaseTypePTID :UUID = getPropertyTypeIdFromEdm(edm, COURT_CASE_TYPE);
-    const datetimeCompletedPTID :UUID = getPropertyTypeIdFromEdm(edm, DATETIME_COMPLETED);
-    const datetimeReceivedPTID :UUID = getPropertyTypeIdFromEdm(edm, DATETIME_RECEIVED);
-    const datetimeEndPTID :UUID = getPropertyTypeIdFromEdm(edm, DATETIME_END);
-    const effectiveDatePTID :UUID = getPropertyTypeIdFromEdm(edm, EFFECTIVE_DATE);
-    const namePTID :UUID = getPropertyTypeIdFromEdm(edm, NAME);
-    const requiredHoursPTID :UUID = getPropertyTypeIdFromEdm(edm, REQUIRED_HOURS);
-    const statusPTID :UUID = getPropertyTypeIdFromEdm(edm, STATUS);
-
-    return {
-      [CASE_NUMBER_TEXT]: caseNumberTextPTID,
-      [COMPLETED]: completedPTID,
-      [COURT_CASE_TYPE]: courtCaseTypePTID,
-      [DATETIME_COMPLETED]: datetimeCompletedPTID,
-      [DATETIME_RECEIVED]: datetimeReceivedPTID,
-      [DATETIME_END]: datetimeEndPTID,
-      [EFFECTIVE_DATE]: effectiveDatePTID,
-      [NAME]: namePTID,
-      [REQUIRED_HOURS]: requiredHoursPTID,
-      [STATUS]: statusPTID,
-    };
-  }
-
-  handleInputChange = (e :SyntheticEvent<HTMLInputElement>) => {
-    const { newEnrollmentData } = this.state;
-    const { name, value } = e.currentTarget;
-    this.setState({ newEnrollmentData: newEnrollmentData.setIn([getPageSectionKey(1, 1), name], value) });
-  }
-
-  handleSelectChange = (option :Object, e :Object) => {
-    const { newEnrollmentData } = this.state;
-    const { name } = e;
-    const { value } = option;
-    this.setState({ newEnrollmentData: newEnrollmentData.setIn([getPageSectionKey(1, 1), name], value) });
-  }
-
-  handleOnSubmit = () => {
-    const { actions, participant } = this.props;
-    let { newEnrollmentData } = this.state;
+  handleOnSubmit = ({ formData } :Object) => {
+    const {
+      actions,
+      arrestCaseByArrestChargeEKIDFromPSA,
+      entitySetIds,
+      participant,
+      propertyTypeIds,
+    } = this.props;
 
     const personEKID :UUID = getEntityKeyId(participant);
-    const associations = [];
-    const nowAsIso = DateTime.local().toISO();
+    let dataToSubmit :Object = formData;
 
-    associations.push([MANUAL_SENTENCED_WITH, personEKID, PEOPLE, 0, DIVERSION_PLAN, {}]);
+    const now = DateTime.local();
+    const currentTime = now.toLocaleString(DateTime.TIME_24_SIMPLE);
+    dataToSubmit = setIn(dataToSubmit, [getPageSectionKey(1, 1), getEntityAddressKey(0, DIVERSION_PLAN, NAME)], CWP);
+    dataToSubmit = setIn(
+      dataToSubmit,
+      [getPageSectionKey(1, 1), getEntityAddressKey(0, DIVERSION_PLAN, COMPLETED)],
+      false
+    );
+    const sentenceDateKey :string[] = [
+      getPageSectionKey(1, 1),
+      getEntityAddressKey(0, DIVERSION_PLAN, DATETIME_RECEIVED)
+    ];
+    if (hasIn(dataToSubmit, sentenceDateKey)) {
+      const sentenceDate :string = getIn(dataToSubmit, sentenceDateKey);
+      const sentenceDateTime :string = getCombinedDateTime(sentenceDate, currentTime);
+      dataToSubmit = setIn(dataToSubmit, sentenceDateKey, sentenceDateTime);
+    }
+
+    /* add in enrollment status */
+    dataToSubmit = setIn(dataToSubmit, [getPageSectionKey(1, 4)], {
+      [getEntityAddressKey(0, ENROLLMENT_STATUS, EFFECTIVE_DATE)]: now.toISO(),
+      [getEntityAddressKey(0, ENROLLMENT_STATUS, STATUS)]: ENROLLMENT_STATUSES.AWAITING_CHECKIN,
+    });
+
+    /* ensure case entity is created */
+    const docketNumberKey :string[] = [
+      getPageSectionKey(1, 1),
+      getEntityAddressKey(0, MANUAL_PRETRIAL_COURT_CASES, CASE_NUMBER_TEXT)
+    ];
+    const hasCourtType :boolean = hasIn(dataToSubmit, [
+      getPageSectionKey(1, 1),
+      getEntityAddressKey(0, MANUAL_PRETRIAL_COURT_CASES, COURT_CASE_TYPE)
+    ]);
+    const hasDocketNumber :boolean = hasIn(dataToSubmit, docketNumberKey);
+    if (!hasCourtType || !hasDocketNumber) {
+      dataToSubmit = setIn(dataToSubmit, docketNumberKey, getIn(dataToSubmit, docketNumberKey) || '');
+    }
+
+    /* required associations */
+    let associations :Array<Array<*>> = [];
+    associations.push([MANUAL_SENTENCED_WITH, personEKID, APP_TYPE_FQNS.PEOPLE, 0, DIVERSION_PLAN, {}]);
     associations.push([RELATED_TO, 0, ENROLLMENT_STATUS, 0, DIVERSION_PLAN, {}]);
-    associations.push([APPEARS_IN, personEKID, PEOPLE, 0, MANUAL_PRETRIAL_COURT_CASES, {}]);
     associations.push([RELATED_TO, 0, DIVERSION_PLAN, 0, MANUAL_PRETRIAL_COURT_CASES, {}]);
+    associations.push([APPEARS_IN, personEKID, APP_TYPE_FQNS.PEOPLE, 0, MANUAL_PRETRIAL_COURT_CASES, {}]);
 
-    // required hours is saved as a string and needs to be converted to number:
-    const requiredHoursKey = getEntityAddressKey(0, DIVERSION_PLAN, REQUIRED_HOURS);
-    let requiredHours = newEnrollmentData.getIn([getPageSectionKey(1, 1), requiredHoursKey], '0');
-    requiredHours = parseInt(requiredHours, 10);
-    newEnrollmentData = newEnrollmentData.setIn([getPageSectionKey(1, 1), requiredHoursKey], requiredHours);
+    /* should only submit judge entity if there's judge data in the form */
+    const judgesPath :string[] = [getPageSectionKey(1, 1), getEntityAddressKey(0, JUDGES, ENTITY_KEY_ID)];
+    if (hasIn(dataToSubmit, judgesPath)) {
+      const judgeEKID :UUID = getIn(dataToSubmit, judgesPath);
+      associations.push([PRESIDES_OVER, judgeEKID, JUDGES, 0, MANUAL_PRETRIAL_COURT_CASES, {}]);
+      associations.push([PRESIDES_OVER, judgeEKID, JUDGES, 0, DIVERSION_PLAN, {}]);
+      dataToSubmit = removeIn(dataToSubmit, judgesPath);
+    }
+    /* should only submit charge event entities if there's charge data in the form */
+    // charges that exist from PSA
+    const chargesFromPSA :Object[] = get(dataToSubmit, getPageSectionKey(1, 2), []);
+    const { psaChargeEntities, psaChargeAssociations } = formatExistingChargeDataAndAssociation(
+      chargesFromPSA,
+      { personIndexOrEKID: personEKID, diversionPlanIndexOrEKID: 0 },
+      arrestCaseByArrestChargeEKIDFromPSA,
+    );
+    dataToSubmit[getPageSectionKey(1, 2)] = psaChargeEntities;
+    associations = associations.concat(psaChargeAssociations);
 
-    // set datetime on enrollment status:
-    const enrollmentStatusKey = getEntityAddressKey(0, ENROLLMENT_STATUS, EFFECTIVE_DATE);
-    newEnrollmentData = newEnrollmentData.setIn([getPageSectionKey(1, 1), enrollmentStatusKey], nowAsIso);
+    // new arrest charges
+    const newCharges = get(dataToSubmit, getPageSectionKey(1, 3), []);
+    const { newChargeEntities, newChargeAssociations } = formatNewArrestChargeDataAndAssociations(
+      newCharges,
+      chargesFromPSA.length,
+      { personIndexOrEKID: personEKID, diversionPlanIndexOrEKID: 0 }
+    );
+    dataToSubmit[getPageSectionKey(1, 3)] = newChargeEntities;
+    associations = associations.concat(newChargeAssociations);
 
-    const entitySetIds :Object = this.createEntitySetIdsMap();
-    const propertyTypeIds :Object = this.createPropertyTypeIdsMap();
-
-    const entityData :{} = processEntityData(newEnrollmentData, entitySetIds, propertyTypeIds);
-    const associationEntityData :{} = processAssociationEntityData(fromJS(associations), entitySetIds, propertyTypeIds);
-
+    const entityMappers :Map = Map().withMutations((mappers :Map) => {
+      const indexMappers = Map().withMutations((map :Map) => {
+        map.set(
+          getEntityAddressKey(-1, CHARGE_EVENT, DATETIME_COMPLETED),
+          (i) => i + chargesFromPSA.length
+        );
+      });
+      mappers.set(INDEX_MAPPERS, indexMappers);
+    });
+    const entityData :Object = processEntityData(dataToSubmit, entitySetIds, propertyTypeIds, entityMappers);
+    const associationEntityData :Object = processAssociationEntityData(
+      fromJS(associations),
+      entitySetIds,
+      propertyTypeIds
+    );
     actions.createNewEnrollment({ associationEntityData, entityData });
   }
 
-  setDate = (name :FQN) => (date :string) => {
-    const { newEnrollmentData } = this.state;
-    this.setState({ newEnrollmentData: newEnrollmentData.setIn([getPageSectionKey(1, 1), name], date) });
-  }
-
-  setDateTime = (name :FQN) => (date :string) => {
-    const { newEnrollmentData } = this.state;
-    const dateAsDateTime = DateTime.fromISO(date).toISO();
-    this.setState({ newEnrollmentData: newEnrollmentData.setIn([getPageSectionKey(1, 1), name], dateAsDateTime) });
+  handleOnClickBackButton = () => {
+    const { actions, participant } = this.props;
+    const personEKID :UUID = getEntityKeyId(participant);
+    actions.goToRoute(Routes.PARTICIPANT_PROFILE.replace(':participantId', personEKID));
   }
 
   render() {
-    const { isLoading, onDiscard } = this.props;
+    const {
+      createNewEnrollmentRequestState,
+      arrestCharges,
+      arrestChargesFromPSA,
+      getInfoRequestState,
+      judges,
+    } = this.props;
+
+    if (getInfoRequestState === RequestStates.PENDING) {
+      return (
+        <LogoLoader
+            loadingText="Please wait..."
+            size={60} />
+      );
+    }
+
+    const formSchema = hydrateSchema(schema, judges, arrestChargesFromPSA, arrestCharges);
+
     return (
       <FormWrapper>
-        <FormRow>
-          <RowContent>
-            <Label>Sentence date</Label>
-            <DatePicker
-                name={getEntityAddressKey(0, DIVERSION_PLAN, DATETIME_RECEIVED)}
-                onChange={this.setDateTime(getEntityAddressKey(0, DIVERSION_PLAN, DATETIME_RECEIVED))} />
-          </RowContent>
-          <RowContent>
-            <Label>Required hours</Label>
-            <Input
-                name={getEntityAddressKey(0, DIVERSION_PLAN, REQUIRED_HOURS)}
-                onChange={this.handleInputChange}
-                type="text" />
-          </RowContent>
-        </FormRow>
-        <FormRow>
-          <RowContent>
-            <Label>Court type</Label>
-            <Select
-                name={getEntityAddressKey(0, MANUAL_PRETRIAL_COURT_CASES, COURT_CASE_TYPE)}
-                onChange={this.handleSelectChange}
-                options={courtTypeOptions} />
-          </RowContent>
-          <RowContent>
-            <Label>Docket number</Label>
-            <Input
-                name={getEntityAddressKey(0, MANUAL_PRETRIAL_COURT_CASES, CASE_NUMBER_TEXT)}
-                onChange={this.handleInputChange} />
-          </RowContent>
-        </FormRow>
-        <ButtonsRow>
-          <Button onClick={onDiscard}>Discard</Button>
-          <Button
-              isLoading={isLoading}
-              mode="primary"
-              onClick={this.handleOnSubmit}>
-            Submit
-          </Button>
-        </ButtonsRow>
+        <ButtonWrapper>
+          <BackNavButton
+              onClick={this.handleOnClickBackButton}>
+            Back to Profile
+          </BackNavButton>
+        </ButtonWrapper>
+        <CardStack>
+          <Card>
+            <CardHeader padding="md">Create New Enrollment</CardHeader>
+            {
+              (createNewEnrollmentRequestState !== RequestStates.PENDING
+                  && createNewEnrollmentRequestState !== RequestStates.SUCCESS)
+                && (
+                  <Form
+                      onSubmit={this.handleOnSubmit}
+                      schema={formSchema}
+                      uiSchema={uiSchema} />
+                )
+            }
+            {
+              createNewEnrollmentRequestState === RequestStates.PENDING
+              && (
+                <CardSegment padding="md">
+                  <SpinnerWrapper>
+                    <Spinner size="2x" />
+                  </SpinnerWrapper>
+                </CardSegment>
+              )
+            }
+            {
+              createNewEnrollmentRequestState === RequestStates.SUCCESS
+              && (
+                <CardSegment padding="md">
+                  <SubmissionActionsWrapper>
+                    <SubmittedWrapper>
+                      <SubmittedWrapper>
+                        <FontAwesomeIcon icon={faCheckCircle} color={PURPLE.P300} />
+                      </SubmittedWrapper>
+                      <SubmittedWrapper>
+                        CWP Enrollment Created!
+                      </SubmittedWrapper>
+                    </SubmittedWrapper>
+                  </SubmissionActionsWrapper>
+                </CardSegment>
+              )
+            }
+          </Card>
+        </CardStack>
       </FormWrapper>
     );
   }
 }
 
-const mapStateToProps = (state :Map<*, *>) => {
+const mapStateToProps = (state :Map) => {
   const app = state.get(STATE.APP);
+  const charges = state.get(STATE.CHARGES);
   const edm = state.get(STATE.EDM);
   const person = state.get(STATE.PERSON);
-  return {
-    app,
-    edm,
+  const selectedOrgId :string = app.get(SELECTED_ORG_ID);
+  return ({
+    [ARREST_CHARGES]: charges.get(ARREST_CHARGES),
+    [ARREST_CHARGES_FROM_PSA]: charges.get(ARREST_CHARGES_FROM_PSA),
+    [ARREST_CASE_BY_ARREST_CHARGE_EKID_FROM_PSA]: charges.get(ARREST_CASE_BY_ARREST_CHARGE_EKID_FROM_PSA),
     [PARTICIPANT]: person.get(PARTICIPANT),
-  };
+    [PERSON.JUDGES]: person.get(PERSON.JUDGES),
+    createNewEnrollmentRequestState: person.getIn([ACTIONS, CREATE_NEW_ENROLLMENT, REQUEST_STATE]),
+    entitySetIds: app.getIn([ENTITY_SET_IDS_BY_ORG, selectedOrgId], Map()),
+    getInfoRequestState: person.getIn([ACTIONS, GET_INFO_FOR_ADD_PARTICIPANT, REQUEST_STATE]),
+    propertyTypeIds: edm.getIn([TYPE_IDS_BY_FQNS, PROPERTY_TYPES], Map()),
+  });
 };
 
 const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
     createNewEnrollment,
+    getInfoForAddParticipant,
+    goToRoute,
   }, dispatch)
 });
 
 // $FlowFixMe
-export default connect(mapStateToProps, mapDispatchToProps)(AddParticipantForm);
+export default connect(mapStateToProps, mapDispatchToProps)(CreateNewEnrollmentForm);

@@ -3,18 +3,15 @@ import {
   List,
   Map,
   fromJS,
-  getIn,
 } from 'immutable';
 import { RequestStates } from 'redux-reqseq';
 import type { SequenceAction } from 'redux-reqseq';
 import type { FQN } from 'lattice';
 
 import {
-  addChargesToCase,
   addNewDiversionPlanStatus,
   addNewParticipantContacts,
   addPersonPhoto,
-  addToAvailableCharges,
   createCase,
   createNewEnrollment,
   editEnrollmentDates,
@@ -26,12 +23,12 @@ import {
   editRequiredHours,
   getAllParticipantInfo,
   getCaseInfo,
-  getCharges,
-  getChargesForCase,
   getContactInfo,
+  getDiversionPlan,
   getEnrollmentHistory,
   getEnrollmentFromDiversionPlan,
   getEnrollmentStatus,
+  getInfoForAddParticipant,
   getInfoForEditCase,
   getInfoForEditPerson,
   getJudgeForCase,
@@ -43,7 +40,6 @@ import {
   getProgramOutcome,
   markDiversionPlanAsComplete,
   reassignJudge,
-  removeChargeFromCase,
   updatePersonPhoto,
 } from './ParticipantActions';
 import {
@@ -53,13 +49,13 @@ import {
 } from '../../utils/DataUtils';
 import { isDefined } from '../../utils/LangUtils';
 import { PERSON } from '../../utils/constants/ReduxStateConsts';
-import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { CONTACT_METHODS } from '../../core/edm/constants/DataModelConsts';
 
-const { COURT_CHARGE_LIST } = APP_TYPE_FQNS;
 const {
   CASE_NUMBER_TEXT,
   CHECK_IN_DATETIME,
+  CHECK_IN_DEADLINE,
   COMPLETED,
   COURT_CASE_TYPE,
   DATETIME_END,
@@ -77,12 +73,9 @@ const {
   ADD_NEW_DIVERSION_PLAN_STATUS,
   ADD_NEW_PARTICIPANT_CONTACTS,
   ADD_PERSON_PHOTO,
-  ADD_TO_AVAILABLE_CHARGES,
   ADDRESS,
   ALL_DIVERSION_PLANS,
   ALL_PARTICIPANT_CASES,
-  CHARGES,
-  CHARGES_FOR_CASE,
   CREATE_CASE,
   CREATE_NEW_ENROLLMENT,
   DIVERSION_PLAN,
@@ -98,12 +91,12 @@ const {
   ENROLLMENT_STATUS,
   GET_ALL_PARTICIPANT_INFO,
   GET_CASE_INFO,
-  GET_CHARGES,
-  GET_CHARGES_FOR_CASE,
   GET_CONTACT_INFO,
+  GET_DIVERSION_PLAN,
   GET_ENROLLMENT_HISTORY,
   GET_ENROLLMENT_FROM_DIVERSION_PLAN,
   GET_ENROLLMENT_STATUS,
+  GET_INFO_FOR_ADD_PARTICIPANT,
   GET_INFO_FOR_EDIT_CASE,
   GET_INFO_FOR_EDIT_PERSON,
   GET_JUDGE_FOR_CASE,
@@ -123,7 +116,6 @@ const {
   PHONE,
   PROGRAM_OUTCOME,
   REASSIGN_JUDGE,
-  REMOVE_CHARGE_FROM_CASE,
   REQUEST_STATE,
   UPDATE_PERSON_PHOTO,
 } = PERSON;
@@ -137,9 +129,6 @@ const INITIAL_STATE :Map<*, *> = fromJS({
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [ADD_PERSON_PHOTO]: {
-      [REQUEST_STATE]: RequestStates.STANDBY
-    },
-    [ADD_TO_AVAILABLE_CHARGES]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [CREATE_CASE]: {
@@ -172,13 +161,10 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     [GET_CASE_INFO]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
-    [GET_CHARGES]: {
-      [REQUEST_STATE]: RequestStates.STANDBY
-    },
-    [GET_CHARGES_FOR_CASE]: {
-      [REQUEST_STATE]: RequestStates.STANDBY
-    },
     [GET_CONTACT_INFO]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [GET_DIVERSION_PLAN]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [GET_ENROLLMENT_HISTORY]: {
@@ -188,6 +174,9 @@ const INITIAL_STATE :Map<*, *> = fromJS({
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [GET_ENROLLMENT_STATUS]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [GET_INFO_FOR_ADD_PARTICIPANT]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [GET_INFO_FOR_EDIT_CASE]: {
@@ -230,8 +219,6 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [ADDRESS]: Map(),
   [ALL_DIVERSION_PLANS]: List(),
   [ALL_PARTICIPANT_CASES]: List(),
-  [CHARGES]: List(),
-  [CHARGES_FOR_CASE]: List(),
   [DIVERSION_PLAN]: Map(),
   [EMAIL]: Map(),
   [ENROLLMENT_HISTORY_DATA]: List(),
@@ -248,43 +235,6 @@ const INITIAL_STATE :Map<*, *> = fromJS({
 export default function participantReducer(state :Map<*, *> = INITIAL_STATE, action :SequenceAction) :Map<*, *> {
 
   switch (action.type) {
-
-    case addChargesToCase.case(action.type): {
-
-      return addChargesToCase.reducer(state, action, {
-
-        REQUEST: () => state
-          .setIn([ACTIONS, ADD_CHARGES_TO_CASE, action.id], action)
-          .setIn([ACTIONS, ADD_CHARGES_TO_CASE, REQUEST_STATE], RequestStates.PENDING),
-        SUCCESS: () => {
-
-          const seqAction :SequenceAction = action;
-
-          const successValue :Object = seqAction.value;
-          const { chargeEKIDs } = successValue;
-          let { newChargeMaps } = successValue;
-
-          const charges :List = state.get(CHARGES);
-          chargeEKIDs.forEach((chargeEKID :UUID, index :number) => {
-            const chargeEntity :Map = charges.find((charge :Map) => getEntityKeyId(charge) === chargeEKID);
-            let chargeMap :Map = newChargeMaps.get(index);
-            chargeMap = chargeMap.set(COURT_CHARGE_LIST, chargeEntity);
-            newChargeMaps = newChargeMaps.set(index, chargeMap);
-          });
-
-          let existingChargesForCase :List = state.get(CHARGES_FOR_CASE);
-          existingChargesForCase = existingChargesForCase.concat(newChargeMaps);
-
-          return state
-            .set(CHARGES_FOR_CASE, existingChargesForCase)
-            .setIn([ACTIONS, ADD_CHARGES_TO_CASE, REQUEST_STATE], RequestStates.SUCCESS);
-        },
-        FAILURE: () => state
-          .set(CHARGES_FOR_CASE, List())
-          .setIn([ACTIONS, ADD_CHARGES_TO_CASE, REQUEST_STATE], RequestStates.FAILURE),
-        FINALLY: () => state.deleteIn([ACTIONS, ADD_CHARGES_TO_CASE, action.id]),
-      });
-    }
 
     case addNewDiversionPlanStatus.case(action.type): {
 
@@ -387,32 +337,6 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
         FAILURE: () => state
           .setIn([ACTIONS, ADD_PERSON_PHOTO, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, ADD_PERSON_PHOTO, action.id]),
-      });
-    }
-
-    case addToAvailableCharges.case(action.type): {
-
-      return addToAvailableCharges.reducer(state, action, {
-
-        REQUEST: () => state
-          .setIn([ACTIONS, ADD_TO_AVAILABLE_CHARGES, action.id], action)
-          .setIn([ACTIONS, ADD_TO_AVAILABLE_CHARGES, REQUEST_STATE], RequestStates.PENDING),
-        SUCCESS: () => {
-
-          const seqAction :SequenceAction = action;
-          const successValue :Object = seqAction.value;
-          const { newCharge } = successValue;
-
-          let charges = state.get(CHARGES);
-          charges = charges.push(newCharge);
-
-          return state
-            .set(CHARGES, charges)
-            .setIn([ACTIONS, ADD_TO_AVAILABLE_CHARGES, REQUEST_STATE], RequestStates.SUCCESS);
-        },
-        FAILURE: () => state
-          .setIn([ACTIONS, ADD_TO_AVAILABLE_CHARGES, REQUEST_STATE], RequestStates.FAILURE),
-        FINALLY: () => state.deleteIn([ACTIONS, ADD_TO_AVAILABLE_CHARGES, action.id]),
       });
     }
 
@@ -622,6 +546,7 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
           if (!newDiversionPlanData.isEmpty()) {
 
             const checkInDateTime :UUID = getPropertyTypeIdFromEdm(edm, CHECK_IN_DATETIME);
+            const checkInDeadline :UUID = getPropertyTypeIdFromEdm(edm, CHECK_IN_DEADLINE);
             const orientationDateTime :UUID = getPropertyTypeIdFromEdm(edm, ORIENTATION_DATETIME);
             const sentenceDate :UUID = getPropertyTypeIdFromEdm(edm, DATETIME_RECEIVED);
             const sentenceEndDate :UUID = getPropertyTypeIdFromEdm(edm, DATETIME_END);
@@ -629,6 +554,9 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
             let diversionPlan = state.get(DIVERSION_PLAN);
             if (newDiversionPlanData.get(checkInDateTime)) {
               diversionPlan = diversionPlan.set(CHECK_IN_DATETIME, newDiversionPlanData.get(checkInDateTime));
+            }
+            if (newDiversionPlanData.get(checkInDeadline)) {
+              diversionPlan = diversionPlan.set(CHECK_IN_DEADLINE, newDiversionPlanData.get(checkInDeadline));
             }
             if (newDiversionPlanData.get(orientationDateTime)) {
               diversionPlan = diversionPlan.set(ORIENTATION_DATETIME, newDiversionPlanData.get(orientationDateTime));
@@ -767,64 +695,6 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
       });
     }
 
-    case getCharges.case(action.type): {
-
-      return getCharges.reducer(state, action, {
-
-        REQUEST: () => state
-          .setIn([ACTIONS, GET_CHARGES, action.id], fromJS(action))
-          .setIn([ACTIONS, GET_CHARGES, REQUEST_STATE], RequestStates.PENDING),
-        SUCCESS: () => {
-
-          if (!state.hasIn([ACTIONS, GET_CHARGES, action.id])) {
-            return state;
-          }
-
-          const { value } = action;
-          if (value === null || value === undefined) {
-            return state;
-          }
-
-          return state
-            .set(CHARGES, value)
-            .setIn([ACTIONS, GET_CHARGES, REQUEST_STATE], RequestStates.SUCCESS);
-        },
-        FAILURE: () => state
-          .set(CHARGES, List())
-          .setIn([ACTIONS, GET_CHARGES, REQUEST_STATE], RequestStates.FAILURE),
-        FINALLY: () => state.deleteIn([ACTIONS, GET_CHARGES, action.id])
-      });
-    }
-
-    case getChargesForCase.case(action.type): {
-
-      return getChargesForCase.reducer(state, action, {
-
-        REQUEST: () => state
-          .setIn([ACTIONS, GET_CHARGES_FOR_CASE, action.id], fromJS(action))
-          .setIn([ACTIONS, GET_CHARGES_FOR_CASE, REQUEST_STATE], RequestStates.PENDING),
-        SUCCESS: () => {
-
-          if (!state.hasIn([ACTIONS, GET_CHARGES_FOR_CASE, action.id])) {
-            return state;
-          }
-
-          const { value } = action;
-          if (value === null || value === undefined) {
-            return state;
-          }
-
-          return state
-            .set(CHARGES_FOR_CASE, value)
-            .setIn([ACTIONS, GET_CHARGES_FOR_CASE, REQUEST_STATE], RequestStates.SUCCESS);
-        },
-        FAILURE: () => state
-          .set(CHARGES_FOR_CASE, List())
-          .setIn([ACTIONS, GET_CHARGES_FOR_CASE, REQUEST_STATE], RequestStates.FAILURE),
-        FINALLY: () => state.deleteIn([ACTIONS, GET_CHARGES_FOR_CASE, action.id])
-      });
-    }
-
     case getContactInfo.case(action.type): {
 
       return getContactInfo.reducer(state, action, {
@@ -853,6 +723,26 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
         FAILURE: () => state
           .setIn([ACTIONS, GET_CONTACT_INFO, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, GET_CONTACT_INFO, action.id])
+      });
+    }
+
+    case getDiversionPlan.case(action.type): {
+
+      return getDiversionPlan.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, GET_DIVERSION_PLAN, action.id], fromJS(action))
+          .setIn([ACTIONS, GET_DIVERSION_PLAN, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+          const seqAction :SequenceAction = action;
+          const { value } = seqAction;
+          return state
+            .set(DIVERSION_PLAN, value)
+            .setIn([ACTIONS, GET_DIVERSION_PLAN, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, GET_DIVERSION_PLAN, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, GET_DIVERSION_PLAN, action.id])
       });
     }
 
@@ -940,6 +830,28 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
         FAILURE: () => state
           .setIn([ACTIONS, GET_ENROLLMENT_STATUS, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, GET_ENROLLMENT_STATUS, action.id])
+      });
+    }
+
+    case getInfoForAddParticipant.case(action.type): {
+
+      return getInfoForAddParticipant.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, GET_INFO_FOR_ADD_PARTICIPANT, action.id], fromJS(action))
+          .setIn([ACTIONS, GET_INFO_FOR_ADD_PARTICIPANT, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+
+          if (!state.hasIn([ACTIONS, GET_INFO_FOR_ADD_PARTICIPANT, action.id])) {
+            return state;
+          }
+
+          return state
+            .setIn([ACTIONS, GET_INFO_FOR_ADD_PARTICIPANT, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, GET_INFO_FOR_ADD_PARTICIPANT, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, GET_INFO_FOR_ADD_PARTICIPANT, action.id])
       });
     }
 
@@ -1214,53 +1126,19 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
           .setIn([ACTIONS, REASSIGN_JUDGE, REQUEST_STATE], RequestStates.PENDING),
         SUCCESS: () => {
 
-          const seqAction :SequenceAction = action;
-          const storedSeqAction :SequenceAction = state.getIn([ACTIONS, REASSIGN_JUDGE, seqAction.id]);
+          const seqAction :SequenceAction = (action :any);
+          const judgeEKID = seqAction.value;
 
-          if (storedSeqAction) {
+          const judge = state.get(JUDGES)
+            .find((storedJudge :Map) => getEntityKeyId(storedJudge) === judgeEKID);
 
-            const requestValue = storedSeqAction.value;
-            const { associationEntityData, entityData } = requestValue;
-            const successValue = seqAction.value;
-            const { edm, judgesESID, presidesOverESID } = successValue;
-
-            let judgeEKID :UUID = '';
-            if (entityData) {
-              judgeEKID = getIn(entityData, [judgesESID, 0, getPropertyTypeIdFromEdm(edm, ENTITY_KEY_ID), 0]);
-            }
-            if (associationEntityData) {
-              judgeEKID = getIn(associationEntityData, [presidesOverESID, 0, 'src', 'entityKeyId']);
-            }
-
-            const judges = state.get(JUDGES);
-            const judge :Map = judges.find((storedJudge :Map) => {
-              return getEntityKeyId(storedJudge) === judgeEKID;
-            });
-
-            return state
-              .set(JUDGE, judge)
-              .setIn([ACTIONS, JUDGE, REQUEST_STATE], RequestStates.SUCCESS);
-          }
-          return state;
+          return state
+            .set(JUDGE, judge)
+            .setIn([ACTIONS, REASSIGN_JUDGE, REQUEST_STATE], RequestStates.SUCCESS);
         },
         FAILURE: () => state
           .setIn([ACTIONS, REASSIGN_JUDGE, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, REASSIGN_JUDGE, action.id])
-      });
-    }
-
-    case removeChargeFromCase.case(action.type): {
-
-      return removeChargeFromCase.reducer(state, action, {
-
-        REQUEST: () => state
-          .setIn([ACTIONS, REMOVE_CHARGE_FROM_CASE, action.id], action)
-          .setIn([ACTIONS, REMOVE_CHARGE_FROM_CASE, REQUEST_STATE], RequestStates.PENDING),
-        SUCCESS: () => state
-          .setIn([ACTIONS, REMOVE_CHARGE_FROM_CASE, REQUEST_STATE], RequestStates.SUCCESS),
-        FAILURE: () => state
-          .setIn([ACTIONS, REMOVE_CHARGE_FROM_CASE, REQUEST_STATE], RequestStates.FAILURE),
-        FINALLY: () => state.deleteIn([ACTIONS, REMOVE_CHARGE_FROM_CASE, action.id])
       });
     }
 

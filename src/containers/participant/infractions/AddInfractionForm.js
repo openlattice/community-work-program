@@ -1,8 +1,8 @@
 // @flow
 import React, { Component } from 'react';
+
 import styled from 'styled-components';
-import { fromJS, List, Map } from 'immutable';
-import { DateTime } from 'luxon';
+import { List, Map, fromJS } from 'immutable';
 import { DataProcessingUtils } from 'lattice-fabricate';
 import {
   Button,
@@ -13,33 +13,32 @@ import {
   TextArea,
   TimePicker
 } from 'lattice-ui-kit';
+import { DateTime } from 'luxon';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import type { RequestSequence } from 'redux-reqseq';
 
 import { addInfraction } from './InfractionsActions';
-import {
-  getEntityKeyId,
-  getEntityProperties,
-  getEntitySetIdFromApp,
-  getPropertyTypeIdFromEdm
-} from '../../../utils/DataUtils';
-import { getCombinedDateTime } from '../../../utils/ScheduleUtils';
-import { STATUS_FILTER_OPTIONS } from '../../participants/ParticipantsConstants';
-import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
-import {
-  PERSON_INFRACTIONS,
-  PERSON,
-  STATE,
-  WORKSITE_PLANS,
-} from '../../../utils/constants/ReduxStateConsts';
-import { INFRACTIONS_CONSTS } from '../../../core/edm/constants/DataModelConsts';
+
 import {
   ButtonsRow,
   FormRow,
   FormWrapper,
   RowContent
 } from '../../../components/Layout';
+import { INFRACTIONS_CONSTS } from '../../../core/edm/constants/DataModelConsts';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
+import { getEntityKeyId, getEntityProperties } from '../../../utils/DataUtils';
+import { getCombinedDateTime } from '../../../utils/ScheduleUtils';
+import {
+  APP,
+  EDM,
+  PERSON,
+  PERSON_INFRACTIONS,
+  STATE,
+  WORKSITE_PLANS,
+} from '../../../utils/constants/ReduxStateConsts';
+import { STATUS_FILTER_OPTIONS } from '../../participants/ParticipantsConstants';
 
 const {
   getEntityAddressKey,
@@ -72,6 +71,8 @@ const {
   TYPE,
 } = PROPERTY_TYPE_FQNS;
 
+const { ENTITY_SET_IDS_BY_ORG, SELECTED_ORG_ID } = APP;
+const { PROPERTY_TYPES, TYPE_IDS_BY_FQNS } = EDM;
 const { INFRACTION_TYPES } = PERSON_INFRACTIONS;
 const {
   WORKSITE_PLANS_LIST,
@@ -81,9 +82,9 @@ const {
 
 const ENROLLMENT_STATUS_OPTIONS :Object[] = STATUS_FILTER_OPTIONS
   .slice(1)
-  .map((status :Object) => {
-    return { label: status.label, value: status.value };
-  });
+  .map((status :Object) => (
+    ({ label: status.label, value: status.value })
+  ));
 const RADIO_OPTIONS :string[] = ['Yes', 'No'];
 const INFRACTION_TYPE_OPTIONS :Object[] = [
   { label: INFRACTIONS_CONSTS.VIOLATION, value: INFRACTIONS_CONSTS.VIOLATION },
@@ -98,14 +99,14 @@ type Props = {
   actions:{
     addInfraction :RequestSequence;
   };
-  app :Map;
   currentStatus :string;
   diversionPlan :Map;
-  edm :Map;
+  entitySetIds :Map;
   infractionTypes :List;
   isLoading :boolean;
   onDiscard :() => void;
   personEKID :UUID;
+  propertyTypeIds :Map;
   workAppointmentsByWorksitePlan :Map;
   worksitesByWorksitePlan :Map;
 };
@@ -165,34 +166,6 @@ class AddInfractionForm extends Component<Props, State> {
     };
   }
 
-  createEntitySetIdsMap = () => {
-    const { app } = this.props;
-    return {
-      [APPOINTMENT]: getEntitySetIdFromApp(app, APPOINTMENT),
-      [DIVERSION_PLAN]: getEntitySetIdFromApp(app, DIVERSION_PLAN),
-      [ENROLLMENT_STATUS]: getEntitySetIdFromApp(app, ENROLLMENT_STATUS),
-      [INFRACTIONS]: getEntitySetIdFromApp(app, INFRACTIONS),
-      [INFRACTION_EVENT]: getEntitySetIdFromApp(app, INFRACTION_EVENT),
-      [PEOPLE]: getEntitySetIdFromApp(app, PEOPLE),
-      [REGISTERED_FOR]: getEntitySetIdFromApp(app, REGISTERED_FOR),
-      [RELATED_TO]: getEntitySetIdFromApp(app, RELATED_TO),
-      [RESULTS_IN]: getEntitySetIdFromApp(app, RESULTS_IN),
-      [SUBJECT_OF]: getEntitySetIdFromApp(app, SUBJECT_OF),
-      [WORKSITE_PLAN]: getEntitySetIdFromApp(app, WORKSITE_PLAN),
-    };
-  }
-
-  createPropertyTypeIdsMap = () => {
-    const { edm } = this.props;
-    return {
-      [DATETIME_COMPLETED]: getPropertyTypeIdFromEdm(edm, DATETIME_COMPLETED),
-      [EFFECTIVE_DATE]: getPropertyTypeIdFromEdm(edm, EFFECTIVE_DATE),
-      [STATUS]: getPropertyTypeIdFromEdm(edm, STATUS),
-      [NOTES]: getPropertyTypeIdFromEdm(edm, NOTES),
-      [TYPE]: getPropertyTypeIdFromEdm(edm, TYPE),
-    };
-  }
-
   storeDate = () => (date :string) => {
     this.setState({ date });
   }
@@ -234,7 +207,13 @@ class AddInfractionForm extends Component<Props, State> {
   }
 
   handleOnSubmit = () => {
-    const { actions, diversionPlan, personEKID } = this.props;
+    const {
+      actions,
+      diversionPlan,
+      entitySetIds,
+      personEKID,
+      propertyTypeIds,
+    } = this.props;
     const {
       appointmentEKID,
       infractionEKID,
@@ -275,9 +254,6 @@ class AddInfractionForm extends Component<Props, State> {
       associations.push([RESULTS_IN, worksitePlanEKID, WORKSITE_PLAN, 0, INFRACTION_EVENT, {}]);
     }
 
-    const entitySetIds :Object = this.createEntitySetIdsMap();
-    const propertyTypeIds :Object = this.createPropertyTypeIdsMap();
-
     const entityData :{} = processEntityData(newInfractionData, entitySetIds, propertyTypeIds);
     const associationEntityData :{} = processAssociationEntityData(fromJS(associations), entitySetIds, propertyTypeIds);
 
@@ -310,8 +286,11 @@ class AddInfractionForm extends Component<Props, State> {
           <RowContent>
             <Label>Time of infraction</Label>
             <TimePicker
+                format="H:mm"
+                mask="__:__"
                 name={getEntityAddressKey(0, INFRACTION_EVENT, DATETIME_COMPLETED)}
-                onChange={this.storeTime()} />
+                onChange={this.storeTime()}
+                placeholder="HH:MM" />
           </RowContent>
         </FormRow>
         <FormRow>
@@ -385,8 +364,8 @@ class AddInfractionForm extends Component<Props, State> {
         <ButtonsRow>
           <Button onClick={onDiscard}>Discard</Button>
           <Button
+              color="primary"
               isLoading={isLoading}
-              mode="primary"
               onClick={this.handleOnSubmit}>
             Submit
           </Button>
@@ -397,17 +376,20 @@ class AddInfractionForm extends Component<Props, State> {
 }
 
 const mapStateToProps = (state :Map) => {
-  const person = state.get(STATE.PERSON);
+  const app = state.get(STATE.APP);
+  const edm = state.get(STATE.EDM);
   const infractions = state.get(STATE.INFRACTIONS);
+  const person = state.get(STATE.PERSON);
   const worksitePlans = state.get(STATE.WORKSITE_PLANS);
+  const selectedOrgId :string = app.get(SELECTED_ORG_ID);
   return ({
-    app: state.get(STATE.APP),
     [PERSON.DIVERSION_PLAN]: person.get(PERSON.DIVERSION_PLAN),
-    edm: state.get(STATE.EDM),
     [INFRACTION_TYPES]: infractions.get(INFRACTION_TYPES),
     [WORKSITE_PLANS_LIST]: worksitePlans.get(WORKSITE_PLANS_LIST),
     [WORKSITES_BY_WORKSITE_PLAN]: worksitePlans.get(WORKSITES_BY_WORKSITE_PLAN),
     [WORK_APPOINTMENTS_BY_WORKSITE_PLAN]: worksitePlans.get(WORK_APPOINTMENTS_BY_WORKSITE_PLAN),
+    entitySetIds: app.getIn([ENTITY_SET_IDS_BY_ORG, selectedOrgId], Map()),
+    propertyTypeIds: edm.getIn([TYPE_IDS_BY_FQNS, PROPERTY_TYPES], Map()),
   });
 };
 

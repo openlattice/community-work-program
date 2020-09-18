@@ -2,9 +2,6 @@
 import { newRequestSequence } from 'redux-reqseq';
 import type { RequestSequence } from 'redux-reqseq';
 
-const ADD_CHARGES_TO_CASE :'ADD_CHARGES_TO_CASE' = 'ADD_CHARGES_TO_CASE';
-const addChargesToCase :RequestSequence = newRequestSequence(ADD_CHARGES_TO_CASE);
-
 const ADD_NEW_DIVERSION_PLAN_STATUS :'ADD_NEW_DIVERSION_PLAN_STATUS' = 'ADD_NEW_DIVERSION_PLAN_STATUS';
 const addNewDiversionPlanStatus :RequestSequence = newRequestSequence(ADD_NEW_DIVERSION_PLAN_STATUS);
 
@@ -13,9 +10,6 @@ const addNewParticipantContacts :RequestSequence = newRequestSequence(ADD_NEW_PA
 
 const ADD_PERSON_PHOTO :'ADD_PERSON_PHOTO' = 'ADD_PERSON_PHOTO';
 const addPersonPhoto :RequestSequence = newRequestSequence(ADD_PERSON_PHOTO);
-
-const ADD_TO_AVAILABLE_CHARGES :'ADD_TO_AVAILABLE_CHARGES' = 'ADD_TO_AVAILABLE_CHARGES';
-const addToAvailableCharges :RequestSequence = newRequestSequence(ADD_TO_AVAILABLE_CHARGES);
 
 const CREATE_CASE :'CREATE_CASE' = 'CREATE_CASE';
 const createCase :RequestSequence = newRequestSequence(CREATE_CASE);
@@ -50,14 +44,11 @@ const getAllParticipantInfo :RequestSequence = newRequestSequence(GET_ALL_PARTIC
 const GET_CASE_INFO :'GET_CASE_INFO' = 'GET_CASE_INFO';
 const getCaseInfo :RequestSequence = newRequestSequence(GET_CASE_INFO);
 
-const GET_CHARGES :'GET_CHARGES' = 'GET_CHARGES';
-const getCharges :RequestSequence = newRequestSequence(GET_CHARGES);
-
-const GET_CHARGES_FOR_CASE :'GET_CHARGES_FOR_CASE' = 'GET_CHARGES_FOR_CASE';
-const getChargesForCase :RequestSequence = newRequestSequence(GET_CHARGES_FOR_CASE);
-
 const GET_CONTACT_INFO :'GET_CONTACT_INFO' = 'GET_CONTACT_INFO';
 const getContactInfo :RequestSequence = newRequestSequence(GET_CONTACT_INFO);
+
+const GET_DIVERSION_PLAN :'GET_DIVERSION_PLAN' = 'GET_DIVERSION_PLAN';
+const getDiversionPlan :RequestSequence = newRequestSequence(GET_DIVERSION_PLAN);
 
 const GET_ENROLLMENT_HISTORY :'GET_ENROLLMENT_HISTORY' = 'GET_ENROLLMENT_HISTORY';
 const getEnrollmentHistory :RequestSequence = newRequestSequence(GET_ENROLLMENT_HISTORY);
@@ -67,6 +58,9 @@ const getEnrollmentFromDiversionPlan :RequestSequence = newRequestSequence(GET_E
 
 const GET_ENROLLMENT_STATUS :'GET_ENROLLMENT_STATUS' = 'GET_ENROLLMENT_STATUS';
 const getEnrollmentStatus :RequestSequence = newRequestSequence(GET_ENROLLMENT_STATUS);
+
+const GET_INFO_FOR_ADD_PARTICIPANT :'GET_INFO_FOR_ADD_PARTICIPANT' = 'GET_INFO_FOR_ADD_PARTICIPANT';
+const getInfoForAddParticipant :RequestSequence = newRequestSequence(GET_INFO_FOR_ADD_PARTICIPANT);
 
 const GET_INFO_FOR_EDIT_CASE :'GET_INFO_FOR_EDIT_CASE' = 'GET_INFO_FOR_EDIT_CASE';
 const getInfoForEditCase :RequestSequence = newRequestSequence(GET_INFO_FOR_EDIT_CASE);
@@ -101,18 +95,13 @@ const markDiversionPlanAsComplete :RequestSequence = newRequestSequence(MARK_DIV
 const REASSIGN_JUDGE :'REASSIGN_JUDGE' = 'REASSIGN_JUDGE';
 const reassignJudge :RequestSequence = newRequestSequence(REASSIGN_JUDGE);
 
-const REMOVE_CHARGE_FROM_CASE :'REMOVE_CHARGE_FROM_CASE' = 'REMOVE_CHARGE_FROM_CASE';
-const removeChargeFromCase :RequestSequence = newRequestSequence(REMOVE_CHARGE_FROM_CASE);
-
 const UPDATE_PERSON_PHOTO :'UPDATE_PERSON_PHOTO' = 'UPDATE_PERSON_PHOTO';
 const updatePersonPhoto :RequestSequence = newRequestSequence(UPDATE_PERSON_PHOTO);
 
 export {
-  ADD_CHARGES_TO_CASE,
   ADD_NEW_DIVERSION_PLAN_STATUS,
   ADD_NEW_PARTICIPANT_CONTACTS,
   ADD_PERSON_PHOTO,
-  ADD_TO_AVAILABLE_CHARGES,
   CREATE_CASE,
   CREATE_NEW_ENROLLMENT,
   EDIT_ENROLLMENT_DATES,
@@ -124,12 +113,12 @@ export {
   EDIT_REQUIRED_HOURS,
   GET_ALL_PARTICIPANT_INFO,
   GET_CASE_INFO,
-  GET_CHARGES,
-  GET_CHARGES_FOR_CASE,
   GET_CONTACT_INFO,
-  GET_ENROLLMENT_HISTORY,
+  GET_DIVERSION_PLAN,
   GET_ENROLLMENT_FROM_DIVERSION_PLAN,
+  GET_ENROLLMENT_HISTORY,
   GET_ENROLLMENT_STATUS,
+  GET_INFO_FOR_ADD_PARTICIPANT,
   GET_INFO_FOR_EDIT_CASE,
   GET_INFO_FOR_EDIT_PERSON,
   GET_JUDGES,
@@ -141,13 +130,10 @@ export {
   GET_PROGRAM_OUTCOME,
   MARK_DIVERSION_PLAN_AS_COMPLETE,
   REASSIGN_JUDGE,
-  REMOVE_CHARGE_FROM_CASE,
   UPDATE_PERSON_PHOTO,
-  addChargesToCase,
   addNewDiversionPlanStatus,
   addNewParticipantContacts,
   addPersonPhoto,
-  addToAvailableCharges,
   createCase,
   createNewEnrollment,
   editEnrollmentDates,
@@ -159,12 +145,12 @@ export {
   editRequiredHours,
   getAllParticipantInfo,
   getCaseInfo,
-  getCharges,
-  getChargesForCase,
   getContactInfo,
-  getEnrollmentHistory,
+  getDiversionPlan,
   getEnrollmentFromDiversionPlan,
+  getEnrollmentHistory,
   getEnrollmentStatus,
+  getInfoForAddParticipant,
   getInfoForEditCase,
   getInfoForEditPerson,
   getJudgeForCase,
@@ -176,6 +162,5 @@ export {
   getProgramOutcome,
   markDiversionPlanAsComplete,
   reassignJudge,
-  removeChargeFromCase,
   updatePersonPhoto,
 };

@@ -2,6 +2,7 @@
 import React from 'react';
 import toString from 'lodash/toString';
 import { Map } from 'immutable';
+import { DateTime } from 'luxon';
 import { faUser, faUserCircle } from '@fortawesome/pro-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import type { Element } from 'react';
@@ -10,14 +11,19 @@ import { PersonPhoto, PersonPicture, StyledPersonPhoto } from '../components/pic
 import { PROPERTY_TYPE_FQNS } from '../core/edm/constants/FullyQualifiedNames';
 import { EMPTY_FIELD } from '../containers/participants/ParticipantsConstants';
 import { isDefined } from './LangUtils';
-import { getEntityProperties } from './DataUtils';
+import { getEntityKeyId, getEntityProperties } from './DataUtils';
 import { getImageDataFromEntity } from './BinaryUtils';
 
 const {
+  CITY,
+  DOB,
   FIRST_NAME,
+  FULL_ADDRESS,
   LAST_NAME,
   MUGSHOT,
   PICTURE,
+  US_STATE,
+  ZIP,
 } = PROPERTY_TYPE_FQNS;
 
 const getPersonFullName = (personEntity :Map) :string => {
@@ -28,6 +34,16 @@ const getPersonFullName = (personEntity :Map) :string => {
 
   fullName = `${firstName} ${lastName}`;
   return fullName;
+};
+
+const getPersonDOB = (personEntity :Map) :string => {
+  let personDOB :string = EMPTY_FIELD;
+  const { [DOB]: dob } = getEntityProperties(personEntity, [DOB]);
+  if (dob.length) {
+    const dobDateTime = DateTime.fromISO(dob);
+    if (dobDateTime.isValid) personDOB = dobDateTime.toLocaleString(DateTime.DATE_SHORT);
+  }
+  return personDOB;
 };
 
 const getPersonProfilePicture = (person :Map, image :Map) :Element<*> => {
@@ -54,12 +70,18 @@ const getPersonProfilePicture = (person :Map, image :Map) :Element<*> => {
   return defaultIcon;
 };
 
-const getPersonPictureForTable = (person :Map, small :boolean) :Element<*> => {
+const getPersonPictureForTable = (person :Map, small :boolean, personPhotosByPersonEKID :Map) :Element<*> => {
 
   const { [MUGSHOT]: mugshot, [PICTURE]: picture } = getEntityProperties(person, [MUGSHOT, PICTURE]);
-  const photo :string = mugshot || picture;
+  const personEKID :UUID = getEntityKeyId(person);
+  let photo :string = mugshot || picture;
 
-  if (photo) {
+  if (!photo.length) {
+    const personPhotoEntity :Map = personPhotosByPersonEKID.get(personEKID, Map());
+    const urlResult = getImageDataFromEntity(personPhotoEntity);
+    if (isDefined(urlResult)) photo = urlResult;
+  }
+  if (photo.length) {
     return (
       <StyledPersonPhoto small={small}>
         <PersonPicture src={photo} alt="" />
@@ -79,8 +101,26 @@ const getHoursServed = (hoursWorked :number, hoursRequired :number) :string => {
   return `${toString(hoursWorked)} / ${toString(hoursRequired)}`;
 };
 
+const getPersonAddress = (address :Map) :string => {
+
+  if (!Map.isMap(address)) return EMPTY_FIELD;
+
+  const {
+    [CITY]: city,
+    [FULL_ADDRESS]: streetAddress,
+    [US_STATE]: state,
+    [ZIP]: zipCode,
+  } = getEntityProperties(address, [CITY, FULL_ADDRESS, US_STATE, ZIP]);
+
+  if (!streetAddress) return EMPTY_FIELD;
+  if (!city || !state || !zipCode) return streetAddress;
+  return `${streetAddress} ${city}, ${state} ${zipCode}`;
+};
+
 export {
   getHoursServed,
+  getPersonAddress,
+  getPersonDOB,
   getPersonFullName,
   getPersonPictureForTable,
   getPersonProfilePicture,

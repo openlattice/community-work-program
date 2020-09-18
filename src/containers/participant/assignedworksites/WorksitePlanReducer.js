@@ -5,14 +5,19 @@ import {
   fromJS,
 } from 'immutable';
 import { RequestStates } from 'redux-reqseq';
-import type { SequenceAction } from 'redux-reqseq';
 import type { FQN } from 'lattice';
+import type { SequenceAction } from 'redux-reqseq';
 
 import {
+  CLEAR_APPOINTMENTS_AND_PLANS,
+  DELETE_APPOINTMENT,
+  RESET_CHECK_IN_REQUEST_STATE,
+  RESET_DELETE_CHECK_IN_REQUEST_STATE,
   addWorksitePlan,
   checkInForAppointment,
   createWorkAppointments,
   deleteAppointment,
+  deleteCheckIn,
   editAppointment,
   editWorksitePlan,
   getAppointmentCheckIns,
@@ -22,23 +27,22 @@ import {
   getWorksitePlans,
   updateHoursWorked,
 } from './WorksitePlanActions';
+
+import { PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import {
   findEntityPathInMap,
   getEntityKeyId,
   getPropertyFqnFromEdm,
-  getPropertyTypeIdFromEdm,
 } from '../../../utils/DataUtils';
 import { WORKSITE_PLANS } from '../../../utils/constants/ReduxStateConsts';
-import { PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 
 const {
   ACTIONS,
   ADD_WORKSITE_PLAN,
   CHECK_INS_BY_APPOINTMENT,
   CHECK_IN_FOR_APPOINTMENT,
-  CLEAR_APPOINTMENTS_AND_PLANS,
   CREATE_WORK_APPOINTMENTS,
-  DELETE_APPOINTMENT,
+  DELETE_CHECK_IN,
   EDIT_APPOINTMENT,
   EDIT_WORKSITE_PLAN,
   GET_APPOINTMENT_CHECK_INS,
@@ -58,7 +62,6 @@ const {
   DATETIME_END,
   ENTITY_KEY_ID,
   INCIDENT_START_DATETIME,
-  HOURS_WORKED,
 } = PROPERTY_TYPE_FQNS;
 
 const INITIAL_STATE :Map<*, *> = fromJS({
@@ -73,6 +76,9 @@ const INITIAL_STATE :Map<*, *> = fromJS({
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [DELETE_APPOINTMENT]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [DELETE_CHECK_IN]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [EDIT_APPOINTMENT]: {
@@ -111,8 +117,24 @@ export default function worksitePlanReducer(state :Map<*, *> = INITIAL_STATE, ac
 
   switch (action.type) {
 
-    case CLEAR_APPOINTMENTS_AND_PLANS:
-      return INITIAL_STATE;
+    case CLEAR_APPOINTMENTS_AND_PLANS: {
+      return state
+        .set(CHECK_INS_BY_APPOINTMENT, Map())
+        .set(WORKSITES_BY_WORKSITE_PLAN, Map())
+        .set(WORKSITE_PLANS_LIST, List())
+        .set(WORKSITE_PLAN_STATUSES, Map())
+        .set(WORK_APPOINTMENTS_BY_WORKSITE_PLAN, Map());
+    }
+
+    case RESET_CHECK_IN_REQUEST_STATE: {
+      return state
+        .setIn([ACTIONS, CHECK_IN_FOR_APPOINTMENT, REQUEST_STATE], RequestStates.STANDBY);
+    }
+
+    case RESET_DELETE_CHECK_IN_REQUEST_STATE: {
+      return state
+        .setIn([ACTIONS, DELETE_CHECK_IN, REQUEST_STATE], RequestStates.STANDBY);
+    }
 
     case checkInForAppointment.case(action.type): {
 
@@ -122,45 +144,15 @@ export default function worksitePlanReducer(state :Map<*, *> = INITIAL_STATE, ac
           .setIn([ACTIONS, CHECK_IN_FOR_APPOINTMENT, action.id], action)
           .setIn([ACTIONS, CHECK_IN_FOR_APPOINTMENT, REQUEST_STATE], RequestStates.PENDING),
         SUCCESS: () => {
+          const seqAction :SequenceAction = (action :any);
+          const { value } = seqAction;
+          const { appointmentEKID, newCheckIn } = value;
 
-          const seqAction :SequenceAction = action;
-          const storedSeqAction :SequenceAction = state.getIn([ACTIONS, CHECK_IN_FOR_APPOINTMENT, seqAction.id]);
-
-          if (storedSeqAction) {
-
-            const successValue :Object = seqAction.value;
-            const {
-              appointmentEKID,
-              checkInDetailsESID,
-              checkInEKID,
-              checkInESID,
-              edm,
-            } = successValue;
-            const requestValue :Object = storedSeqAction.value;
-            const { entityData } = requestValue;
-
-            const storedCheckInEntity :Map = fromJS(entityData[checkInESID][0]);
-            const storedCheckInDetailsEntity :Map = fromJS(entityData[checkInDetailsESID][0]);
-
-            let newCheckIn :Map = Map();
-            storedCheckInEntity.forEach((value, id) => {
-              const propertyTypeFqn :FQN = getPropertyFqnFromEdm(edm, id);
-              newCheckIn = newCheckIn.set(propertyTypeFqn, value);
-            });
-            newCheckIn = newCheckIn.set(ENTITY_KEY_ID, checkInEKID);
-            const hoursWorkedPTID :UUID = getPropertyTypeIdFromEdm(edm, HOURS_WORKED);
-            const hoursWorked :number = storedCheckInDetailsEntity.getIn([hoursWorkedPTID, 0]);
-            newCheckIn = newCheckIn.set(HOURS_WORKED, hoursWorked);
-
-            let checkInsByAppointment :Map = state.get(CHECK_INS_BY_APPOINTMENT);
-            checkInsByAppointment = checkInsByAppointment.set(appointmentEKID, newCheckIn);
-
-            return state
-              .set(CHECK_INS_BY_APPOINTMENT, checkInsByAppointment)
-              .setIn([ACTIONS, CHECK_IN_FOR_APPOINTMENT, REQUEST_STATE], RequestStates.SUCCESS);
-          }
+          let checkInsByAppointment :Map = state.get(CHECK_INS_BY_APPOINTMENT);
+          checkInsByAppointment = checkInsByAppointment.set(appointmentEKID, newCheckIn);
 
           return state
+            .set(CHECK_INS_BY_APPOINTMENT, checkInsByAppointment)
             .setIn([ACTIONS, CHECK_IN_FOR_APPOINTMENT, REQUEST_STATE], RequestStates.SUCCESS);
         },
         FAILURE: () => state
@@ -244,7 +236,8 @@ export default function worksitePlanReducer(state :Map<*, *> = INITIAL_STATE, ac
           if (storedSeqAction) {
 
             const requestValue :Object = storedSeqAction.value;
-            const { entityKeyId } :Object = requestValue[0];
+            const { entityKeyIds } :Object = requestValue[0];
+            const [entityKeyId] = entityKeyIds;
 
             let workAppointmentsByWorksitePlan = state.get(WORK_APPOINTMENTS_BY_WORKSITE_PLAN);
 
@@ -267,6 +260,40 @@ export default function worksitePlanReducer(state :Map<*, *> = INITIAL_STATE, ac
       });
     }
 
+    case deleteCheckIn.case(action.type): {
+
+      return deleteCheckIn.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, DELETE_CHECK_IN, action.id], action)
+          .setIn([ACTIONS, DELETE_CHECK_IN, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+
+          const seqAction :SequenceAction = action;
+          const storedSeqAction :SequenceAction = state.getIn([ACTIONS, DELETE_CHECK_IN, seqAction.id]);
+
+          if (storedSeqAction) {
+
+            const requestValue :Object = storedSeqAction.value;
+            const { appointmentEKID } :Object = requestValue;
+
+            let checkInsByAppointment :Map = state.get(CHECK_INS_BY_APPOINTMENT, Map());
+            checkInsByAppointment = checkInsByAppointment.delete(appointmentEKID);
+
+            return state
+              .set(CHECK_INS_BY_APPOINTMENT, checkInsByAppointment)
+              .setIn([ACTIONS, DELETE_CHECK_IN, REQUEST_STATE], RequestStates.SUCCESS);
+          }
+
+          return state
+            .setIn([ACTIONS, DELETE_CHECK_IN, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, DELETE_CHECK_IN, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, DELETE_CHECK_IN, action.id]),
+      });
+    }
+
     case editAppointment.case(action.type): {
 
       return editAppointment.reducer(state, action, {
@@ -282,36 +309,53 @@ export default function worksitePlanReducer(state :Map<*, *> = INITIAL_STATE, ac
           if (storedSeqAction) {
 
             const successValue :Object = seqAction.value;
-            const { appointmentESID, edm } = successValue;
+            const {
+              appointmentEKID,
+              appointmentESID,
+              endDateTimePTID,
+              newWorksitePlanEKID,
+              startDateTimePTID,
+            } = successValue;
 
             const requestValue :Object = storedSeqAction.value;
             const { entityData } :Object = requestValue;
-            const appointmentEKID = Object.keys(entityData[appointmentESID])[0];
 
             let workAppointmentsByWorksitePlan = state.get(WORK_APPOINTMENTS_BY_WORKSITE_PLAN);
             const [keyEKID, index] = findEntityPathInMap(workAppointmentsByWorksitePlan, appointmentEKID);
             if (index !== -1) {
 
               const newAppointmentData :Map = fromJS(entityData[appointmentESID][appointmentEKID]);
-              const startDateTimePTID :UUID = getPropertyTypeIdFromEdm(edm, INCIDENT_START_DATETIME);
               const newStartDateTime :string = newAppointmentData.getIn([startDateTimePTID, 0]);
-
-              const endDateTimePTID :UUID = getPropertyTypeIdFromEdm(edm, DATETIME_END);
               const newEndDateTime :string = newAppointmentData.getIn([endDateTimePTID, 0]);
 
-              if (newStartDateTime) {
-                workAppointmentsByWorksitePlan = workAppointmentsByWorksitePlan.setIn([
-                  keyEKID,
-                  index,
-                  INCIDENT_START_DATETIME,
-                ], List([newStartDateTime]));
+              if (!newWorksitePlanEKID.length || newWorksitePlanEKID === keyEKID) {
+                if (newStartDateTime) {
+                  workAppointmentsByWorksitePlan = workAppointmentsByWorksitePlan.setIn([
+                    keyEKID,
+                    index,
+                    INCIDENT_START_DATETIME,
+                  ], List([newStartDateTime]));
+                }
+                if (newEndDateTime) {
+                  workAppointmentsByWorksitePlan = workAppointmentsByWorksitePlan.setIn([
+                    keyEKID,
+                    index,
+                    DATETIME_END,
+                  ], List([newEndDateTime]));
+                }
               }
-              if (newEndDateTime) {
-                workAppointmentsByWorksitePlan = workAppointmentsByWorksitePlan.setIn([
-                  keyEKID,
-                  index,
-                  DATETIME_END,
-                ], List([newEndDateTime]));
+              else {
+                let workAppointment :Map = workAppointmentsByWorksitePlan.getIn([keyEKID, index]);
+                let appointmentsForNewWorksitePlan :List = workAppointmentsByWorksitePlan
+                  .get(newWorksitePlanEKID, List());
+
+                workAppointment = workAppointment.set(INCIDENT_START_DATETIME, List([newStartDateTime]));
+                workAppointment = workAppointment.set(DATETIME_END, List([newEndDateTime]));
+                appointmentsForNewWorksitePlan = appointmentsForNewWorksitePlan.push(workAppointment);
+
+                workAppointmentsByWorksitePlan = workAppointmentsByWorksitePlan
+                  .set(newWorksitePlanEKID, appointmentsForNewWorksitePlan);
+                workAppointmentsByWorksitePlan = workAppointmentsByWorksitePlan.deleteIn([keyEKID, index]);
               }
 
               return state

@@ -5,16 +5,21 @@
 import React, { Component } from 'react';
 
 import styled from 'styled-components';
-import { List, Map } from 'immutable';
+import { Map } from 'immutable';
+import { AuthActions, AuthUtils } from 'lattice-auth';
 import {
   AppContainerWrapper,
   AppContentWrapper,
   AppHeaderWrapper,
   AppNavigationWrapper,
+  Colors,
+  LatticeLuxonUtils,
+  MuiPickersUtilsProvider,
   Sizes,
+  StylesProvider,
+  ThemeProvider,
+  lightTheme,
 } from 'lattice-ui-kit';
-import { AuthActions, AuthUtils } from 'lattice-auth';
-import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import {
   NavLink,
@@ -22,8 +27,12 @@ import {
   Route,
   Switch,
 } from 'react-router-dom';
-import type { RequestSequence, RequestState } from 'redux-reqseq';
+import { bindActionCreators } from 'redux';
+import type { RequestSequence } from 'redux-reqseq';
 
+import * as AppActions from './AppActions';
+
+import AddParticipantContainer from '../participants/newparticipant/AddParticipantContainer';
 import DashboardContainer from '../dashboard/DashboardContainer';
 import EditWorksiteHoursForm from '../worksites/EditWorksiteHoursForm';
 import EditWorksiteInfoForm from '../worksites/EditWorksiteInfoForm';
@@ -31,27 +40,24 @@ import OpenLatticeLogo from '../../assets/images/logo_v2.png';
 import ParticipantProfileContainer from '../participant/ParticipantProfileContainer';
 import ParticipantsSearchContainer from '../participants/ParticipantsSearchContainer';
 import PrintWorkScheduleContainer from '../workschedule/PrintWorkScheduleContainer';
+import StatsContainer from '../stats/StatsContainer';
+import WorkScheduleContainer from '../workschedule/WorkScheduleContainer';
 import WorksiteProfile from '../worksites/WorksiteProfile';
 import WorksitesContainer from '../worksites/WorksitesContainer';
-import WorkScheduleContainer from '../workschedule/WorkScheduleContainer';
-
-import * as AppActions from './AppActions';
 import * as ParticipantsActions from '../participants/ParticipantsActions';
 import * as Routes from '../../core/router/Routes';
-
-import { ToolBar } from '../../components/controls/index';
-import { OL } from '../../core/style/Colors';
-import { APP, STATE } from '../../utils/constants/ReduxStateConsts';
+import { ContactSupport } from '../../components/controls/index';
 import { isNonEmptyString } from '../../utils/LangUtils';
+import { APP, STATE } from '../../utils/constants/ReduxStateConsts';
 
-const { APP_CONTENT_WIDTH } = Sizes;
 const { logout } = AuthActions;
+const { NEUTRAL } = Colors;
+const { APP_CONTENT_WIDTH } = Sizes;
 
 const FancySearchAndFilterHeader = styled(AppContentWrapper)`
-  border-bottom: 1px solid ${OL.GREY11};
+  border-bottom: 1px solid ${NEUTRAL.N100};
   justify-content: center;
   position: sticky;
-
   > div {
     padding: 10px 30px;
   }
@@ -101,8 +107,10 @@ class AppContainer extends Component<Props> {
       <Route path={Routes.PRINT_WORK_SCHEDULE} component={PrintWorkScheduleContainer} />
       <Route path={Routes.WORK_SCHEDULE} component={WorkScheduleContainer} />
       <Route path={Routes.WORKSITES} component={WorksitesContainer} />
+      <Route exact strict path={Routes.ADD_PARTICIPANT} component={AddParticipantContainer} />
       <Route path={Routes.PARTICIPANT_PROFILE} component={ParticipantProfileContainer} />
       <Route path={Routes.PARTICIPANTS} component={ParticipantsSearchContainer} />
+      <Route path={Routes.STATS} component={StatsContainer} />
       <Route path={Routes.DASHBOARD} component={DashboardContainer} />
       <Redirect to={Routes.DASHBOARD} />
     </Switch>
@@ -129,54 +137,59 @@ class AppContainer extends Component<Props> {
     }
 
     return (
-      <AppContainerWrapper>
-        {
-          !isPrintView && (
-            <AppHeaderWrapper
-                appIcon={OpenLatticeLogo}
-                appTitle="Community Work Program"
-                logout={this.logout}
-                organizationsSelect={{
-                  onChange: this.switchOrganization,
-                  organizations,
-                }}
-                user={user}>
-              <AppNavigationWrapper>
-                <NavLink to={Routes.DASHBOARD}>Community Work Program</NavLink>
-                <NavLink to={Routes.DASHBOARD}>Dashboard</NavLink>
-                <NavLink to={Routes.PARTICIPANTS}>Participants</NavLink>
-                <NavLink to={Routes.WORKSITES}>Work Sites</NavLink>
-                <NavLink to={Routes.WORK_SCHEDULE}>Work Schedule</NavLink>
-              </AppNavigationWrapper>
-            </AppHeaderWrapper>
-          )
-        }
-        {
-          location.pathname === Routes.PARTICIPANTS && (
-            <FancySearchAndFilterHeader bgColor="white">
-              <ToolBar
-                  dropdowns={List()}
-                  onSelectFunctions={Map()}
-                  primaryButtonAction={() => {}}
-                  primaryButtonText="Add Participant"
-                  search={() => {}} />
-            </FancySearchAndFilterHeader>
-          )
-        }
-        <AppContentWrapper contentWidth={APP_CONTENT_WIDTH}>
-          { this.renderAppContent() }
-        </AppContentWrapper>
-      </AppContainerWrapper>
+      <ThemeProvider theme={lightTheme}>
+        <MuiPickersUtilsProvider utils={LatticeLuxonUtils}>
+          <StylesProvider injectFirst>
+            <AppContainerWrapper>
+              {
+                !isPrintView && (
+                  <AppHeaderWrapper
+                      appIcon={OpenLatticeLogo}
+                      appTitle="Community Work Program"
+                      logout={this.logout}
+                      organizationsSelect={{
+                        onChange: this.switchOrganization,
+                        organizations,
+                      }}
+                      user={user}>
+                    <AppNavigationWrapper>
+                      <NavLink to={Routes.DASHBOARD}>Community Work Program</NavLink>
+                      <NavLink to={Routes.DASHBOARD}>Dashboard</NavLink>
+                      <NavLink to={Routes.PARTICIPANTS}>Participants</NavLink>
+                      <NavLink to={Routes.WORKSITES}>Work Sites</NavLink>
+                      <NavLink to={Routes.WORK_SCHEDULE}>Work Schedule</NavLink>
+                      <NavLink to={Routes.STATS}>Stats</NavLink>
+                    </AppNavigationWrapper>
+                  </AppHeaderWrapper>
+                )
+              }
+              {/*
+                location.pathname === Routes.PARTICIPANTS && (
+                  <FancySearchAndFilterHeader bgColor="white">
+                    <ToolBar
+                        dropdowns={dropdowns}
+                        onSelectFunctions={onSelectFunctions}
+                        primaryButtonAction={this.goToAddParticipantForm}
+                        primaryButtonText="Add Participant"
+                        search={this.searchParticipantList} />
+                  </FancySearchAndFilterHeader>
+                )
+              */}
+              <AppContentWrapper contentWidth={APP_CONTENT_WIDTH}>
+                { this.renderAppContent() }
+              </AppContentWrapper>
+              <ContactSupport />
+            </AppContainerWrapper>
+          </StylesProvider>
+        </MuiPickersUtilsProvider>
+      </ThemeProvider>
     );
   }
 }
 
-const mapStateToProps = (state :Map<*, *>) => {
-  const app = state.get(STATE.APP);
-  return {
-    app,
-  };
-};
+const mapStateToProps = (state :Map) => ({
+  app: state.get(STATE.APP),
+});
 
 const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({

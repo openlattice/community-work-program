@@ -1,7 +1,7 @@
 // @flow
 import React, { Component } from 'react';
-import { fromJS, Map } from 'immutable';
-import { DateTime } from 'luxon';
+
+import { Map, fromJS } from 'immutable';
 import { DataProcessingUtils } from 'lattice-fabricate';
 import {
   Button,
@@ -11,21 +11,18 @@ import {
   Label,
   TextArea
 } from 'lattice-ui-kit';
+import { DateTime } from 'luxon';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import type { RequestSequence } from 'redux-reqseq';
 import type { FQN } from 'lattice';
+import type { RequestSequence } from 'redux-reqseq';
 
 import { addWorksite } from './WorksitesActions';
-import { getEntityKeyId, getEntitySetIdFromApp, getPropertyTypeIdFromEdm } from '../../utils/DataUtils';
+
+import { ButtonsRow, FormRow, RowContent } from '../../components/Layout';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
-import { STATE } from '../../utils/constants/ReduxStateConsts';
-import {
-  ButtonsRow,
-  ButtonsWrapper,
-  FormRow,
-  RowContent,
-} from '../../components/Layout';
+import { getEntityKeyId } from '../../utils/DataUtils';
+import { APP, EDM, STATE } from '../../utils/constants/ReduxStateConsts';
 
 const {
   getEntityAddressKey,
@@ -41,16 +38,18 @@ const {
   DESCRIPTION,
   NAME,
 } = PROPERTY_TYPE_FQNS;
+const { ENTITY_SET_IDS_BY_ORG, SELECTED_ORG_ID } = APP;
+const { PROPERTY_TYPES, TYPE_IDS_BY_FQNS } = EDM;
 
 type Props = {
   actions:{
     addWorksite :RequestSequence;
   };
-  app :Map;
-  edm :Map;
+  entitySetIds :Map;
   isLoading :boolean;
   onDiscard :() => void;
   organization :Map;
+  propertyTypeIds :Map;
 };
 
 type State = {
@@ -85,25 +84,11 @@ class AddWorksiteForm extends Component<Props, State> {
   handleOnSubmit = () => {
     const {
       actions,
-      app,
-      edm,
-      organization
+      entitySetIds,
+      organization,
+      propertyTypeIds
     } = this.props;
     const { newWorksiteData } = this.state;
-
-    const entitySetIds :{} = {
-      [ORGANIZATION]: getEntitySetIdFromApp(app, ORGANIZATION),
-      [WORKSITE]: getEntitySetIdFromApp(app, WORKSITE),
-      [OPERATES]: getEntitySetIdFromApp(app, OPERATES),
-    };
-    const propertyTypeIds :{} = {
-      [DATETIME]: getPropertyTypeIdFromEdm(edm, DATETIME),
-      [DATETIME_START]: getPropertyTypeIdFromEdm(edm, DATETIME_START),
-      [DATETIME_END]: getPropertyTypeIdFromEdm(edm, DATETIME_END),
-      [DESCRIPTION]: getPropertyTypeIdFromEdm(edm, DESCRIPTION),
-      [NAME]: getPropertyTypeIdFromEdm(edm, NAME),
-    };
-
     const organizationEKID :UUID = getEntityKeyId(organization);
     const associations = [];
     const nowAsIso = DateTime.local().toISO();
@@ -120,7 +105,7 @@ class AddWorksiteForm extends Component<Props, State> {
   render() {
     const { isLoading, onDiscard } = this.props;
     return (
-      <CardSegment padding="small" vertical>
+      <CardSegment padding="0 0 30px">
         <FormRow>
           <RowContent>
             <Label>Worksite name</Label>
@@ -158,31 +143,28 @@ class AddWorksiteForm extends Component<Props, State> {
           </RowContent>
         </FormRow>
         <ButtonsRow>
-          <RowContent>
-            <ButtonsWrapper>
-              <Button onClick={onDiscard}>Discard</Button>
-            </ButtonsWrapper>
-          </RowContent>
-          <RowContent>
-            <ButtonsWrapper>
-              <Button
-                  isLoading={isLoading}
-                  mode="primary"
-                  onClick={this.handleOnSubmit}>
-                Submit
-              </Button>
-            </ButtonsWrapper>
-          </RowContent>
+          <Button onClick={onDiscard}>Discard</Button>
+          <Button
+              color="primary"
+              isLoading={isLoading}
+              onClick={this.handleOnSubmit}>
+            Submit
+          </Button>
         </ButtonsRow>
       </CardSegment>
     );
   }
 }
 
-const mapStateToProps = (state :Map) => ({
-  app: state.get(STATE.APP),
-  edm: state.get(STATE.EDM),
-});
+const mapStateToProps = (state :Map) => {
+  const app = state.get(STATE.APP);
+  const edm = state.get(STATE.EDM);
+  const selectedOrgId :string = app.get(SELECTED_ORG_ID);
+  return ({
+    entitySetIds: app.getIn([ENTITY_SET_IDS_BY_ORG, selectedOrgId], Map()),
+    propertyTypeIds: edm.getIn([TYPE_IDS_BY_FQNS, PROPERTY_TYPES], Map()),
+  });
+};
 
 const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({

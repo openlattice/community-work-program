@@ -8,14 +8,14 @@ import {
   SEX_VALUES,
 } from '../../core/edm/constants/DataModelConsts';
 
-const generateOptions = (list :string[]) :Object[] => list.map(value => ({
+const generateOptions = (list :string[]) :Object[] => list.map((value :string) => ({
   label: value,
   value
 }));
 
-export const EMPTY_FIELD = '----';
+const EMPTY_FIELD = '----';
 
-export const ALL_PARTICIPANTS_COLUMNS = [
+const ALL_PARTICIPANTS_COLUMNS = [
   '',
   'NAME',
   'AGE',
@@ -30,7 +30,7 @@ export const ALL_PARTICIPANTS_COLUMNS = [
 
 /* Sort Participant Table */
 
-export const SORTABLE_PARTICIPANT_COLUMNS = {
+const SORTABLE_PARTICIPANT_COLUMNS = {
   COURT_TYPE: 'court type',
   NAME: 'name',
   SENT_END_DATE: 'sent. end date',
@@ -39,13 +39,14 @@ export const SORTABLE_PARTICIPANT_COLUMNS = {
 
 /* Filters */
 
-export const FILTERS = {
-  STATUS: 'Filter by: Status'
+const FILTERS = {
+  COURT_TYPE: 'Court Type',
+  STATUS: 'Status',
 };
-export const ALL = 'ALL';
+const ALL = 'ALL';
 
 /* Filter Participant Table by status */
-export const STATUS_FILTER_OPTIONS = [
+const STATUS_FILTER_OPTIONS = [
   {
     label: 'All',
     value: ALL,
@@ -103,11 +104,47 @@ export const STATUS_FILTER_OPTIONS = [
   },
 ];
 
-export const statusFilterDropdown :Map = Map().withMutations((map :Map) => {
+const statusFilterDropdown :Map = Map().withMutations((map :Map) => {
   map.set('title', FILTERS.STATUS);
   map.set('enums', STATUS_FILTER_OPTIONS);
 });
 
-export const sexOptions = generateOptions(SEX_VALUES);
-export const raceOptions = generateOptions(RACE_VALUES);
-export const courtTypeOptions = generateOptions(COURT_TYPES);
+/* Options lists */
+const sexOptions :Object[] = generateOptions(SEX_VALUES);
+const raceOptions :Object[] = generateOptions(RACE_VALUES);
+const courtTypeOptions :Object[] = generateOptions(COURT_TYPES);
+
+/* Filter Participant Table by court type */
+courtTypeOptions.unshift({ label: 'All', value: ALL });
+const COURT_TYPE_FILTER_OPTIONS :Object[] = courtTypeOptions
+  .map((courtType :Object) => {
+    const courtTypeFilter = courtType;
+    courtTypeFilter.filter = FILTERS.COURT_TYPE;
+    return courtTypeFilter;
+  })
+  .sort((courtTypeA :Object, courtTypeB :Object) => {
+    if (courtTypeA.label < courtTypeB.label) return -1;
+    if (courtTypeA.label > courtTypeB.label) return 1;
+    return 0;
+  });
+
+const courtTypeFilterDropdown :Map = Map().withMutations((map :Map) => {
+  map.set('title', FILTERS.COURT_TYPE);
+  map.set('enums', COURT_TYPE_FILTER_OPTIONS);
+});
+
+export {
+  ALL,
+  ALL_PARTICIPANTS_COLUMNS,
+  COURT_TYPE_FILTER_OPTIONS,
+  EMPTY_FIELD,
+  FILTERS,
+  SORTABLE_PARTICIPANT_COLUMNS,
+  STATUS_FILTER_OPTIONS,
+  courtTypeFilterDropdown,
+  courtTypeOptions,
+  generateOptions,
+  raceOptions,
+  sexOptions,
+  statusFilterDropdown,
+};

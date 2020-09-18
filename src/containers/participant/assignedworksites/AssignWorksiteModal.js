@@ -1,5 +1,6 @@
 // @flow
 import React, { Component } from 'react';
+
 import { List, Map } from 'immutable';
 import { Modal } from 'lattice-ui-kit';
 import { connect } from 'react-redux';
@@ -11,7 +12,6 @@ import AssignWorksiteForm from './AssignWorksiteForm';
 import { STATE, WORKSITE_PLANS } from '../../../utils/constants/ReduxStateConsts';
 
 const { ACTIONS, ADD_WORKSITE_PLAN, REQUEST_STATE } = WORKSITE_PLANS;
-
 
 type Props = {
   addWorksitePlanRequestState :RequestState;

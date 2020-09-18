@@ -2,7 +2,6 @@
  * @flow
  */
 
-import { List, Map, fromJS } from 'immutable';
 import {
   all,
   call,
@@ -11,30 +10,23 @@ import {
   takeEvery,
 } from '@redux-saga/core/effects';
 import {
+  List,
+  Map,
+  fromJS,
+  getIn,
+  has,
+} from 'immutable';
+import { Models } from 'lattice';
+import { DataProcessingUtils } from 'lattice-fabricate';
+import {
   DataApiActions,
   DataApiSagas,
   SearchApiActions,
   SearchApiSagas
 } from 'lattice-sagas';
-import { DataProcessingUtils } from 'lattice-fabricate';
+import { DateTime } from 'luxon';
 import type { SequenceAction } from 'redux-reqseq';
 
-import Logger from '../../utils/Logger';
-import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../utils/Errors';
-import { WORKSITE_INFO_CONSTS } from './WorksitesConstants';
-import {
-  getEntityKeyId,
-  getEntityProperties,
-  getEntitySetIdFromApp,
-  getNeighborDetails,
-  getNeighborESID,
-  getPropertyFqnFromEdm,
-  sortEntitiesByDateProperty,
-} from '../../utils/DataUtils';
-import { getWorksiteScheduleFromFormData, getWorksiteScheduleFromEntities } from '../../utils/ScheduleUtils';
-import { isDefined } from '../../utils/LangUtils';
-import { STATE } from '../../utils/constants/ReduxStateConsts';
-import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import {
   ADD_ORGANIZATION,
   ADD_WORKSITE,
@@ -71,12 +63,34 @@ import {
   getWorksites,
   getWorksitesByOrg,
 } from './WorksitesActions';
+import { WORKSITE_INFO_CONSTS } from './WorksitesConstants';
+
+import Logger from '../../utils/Logger';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { deleteEntities, submitDataGraph, submitPartialReplace } from '../../core/sagas/data/DataActions';
 import {
   deleteEntitiesWorker,
   submitDataGraphWorker,
   submitPartialReplaceWorker
 } from '../../core/sagas/data/DataSagas';
+import {
+  getEntityKeyId,
+  getEntityProperties,
+  getEntitySetIdFromApp,
+  getNeighborDetails,
+  getNeighborESID,
+  getPropertyFqnFromEdm,
+  getPropertyTypeIdFromEdm,
+  sortEntitiesByDateProperty,
+} from '../../utils/DataUtils';
+import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../utils/Errors';
+import { isDefined } from '../../utils/LangUtils';
+import {
+  getCombinedDateTime,
+  getWorksiteScheduleFromEntities,
+  getWorksiteScheduleFromFormData
+} from '../../utils/ScheduleUtils';
+import { STATE, WORKSITES } from '../../utils/constants/ReduxStateConsts';
 
 const { PAST, SCHEDULED, TOTAL_HOURS } = WORKSITE_INFO_CONSTS;
 const {
@@ -90,6 +104,8 @@ const {
   WORKSITE_PLAN,
 } = APP_TYPE_FQNS;
 const {
+  DATETIME_END,
+  DATETIME_START,
   EMAIL,
   ENTITY_KEY_ID,
   HOURS_WORKED,
@@ -97,8 +113,9 @@ const {
   PHONE_NUMBER,
   REQUIRED_HOURS,
 } = PROPERTY_TYPE_FQNS;
+const { WORKSITE_CONTACTS } = WORKSITES;
 
-const LOG = new Logger('WorksitesSagas');
+const { FullyQualifiedName } = Models;
 const { searchEntityNeighborsWithFilter } = SearchApiActions;
 const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
 const { getEntityData, getEntitySetData } = DataApiActions;
@@ -107,6 +124,8 @@ const { getPageSectionKey, parseEntityAddressKey } = DataProcessingUtils;
 
 const getAppFromState = (state) => state.get(STATE.APP, Map());
 const getEdmFromState = (state) => state.get(STATE.EDM, Map());
+
+const LOG = new Logger('WorksitesSagas');
 
 /*
  *
@@ -218,32 +237,43 @@ function* addWorksiteContactsWorker(action :SequenceAction) :Generator<*, *, *> 
     const { associationEntityData, entityData } :Object = value;
 
     response = yield call(submitDataGraphWorker, submitDataGraph({ associationEntityData, entityData }));
-    if (response.error) {
-      throw response.error;
-    }
+    if (response.error) throw response.error;
 
-    const { contacts } = value;
-    const newContactData :Object = contacts[getPageSectionKey(1, 1)][0];
-    let newContact :Map = Map();
-    fromJS(newContactData).forEach((contactValue :string, entityAddressKey :string) => {
-      const { entityIndex, entitySetName, propertyTypeFQN } = parseEntityAddressKey(entityAddressKey);
-      if (entitySetName === STAFF.toString()) {
-        let staffMember :Map = newContact.get(STAFF, Map());
-        staffMember = staffMember.set(propertyTypeFQN, contactValue);
-        newContact = newContact.set(STAFF, staffMember);
-      }
-      if (entitySetName === CONTACT_INFORMATION.toString()) {
-        if (entityIndex === 0) {
-          let contactMethod :Map = newContact.get(PHONE_NUMBER, Map());
-          contactMethod = contactMethod.set(propertyTypeFQN, contactValue);
-          newContact = newContact.set(PHONE_NUMBER, contactMethod);
+    const { entityKeyIds } = response.data;
+    const app = yield select(getAppFromState);
+    const staffESID :UUID = getEntitySetIdFromApp(app, STAFF);
+    const contactInfoESID :UUID = getEntitySetIdFromApp(app, CONTACT_INFORMATION);
+    const staffEKID :UUID = entityKeyIds[staffESID][0];
+    const phoneEKID :UUID = entityKeyIds[contactInfoESID][0];
+    const emailEKID :UUID = entityKeyIds[contactInfoESID][1];
+
+    const { editedContactData } = value;
+    const newContactData :Object = editedContactData[getPageSectionKey(1, 1)][0];
+
+    const newContact :Map = Map().withMutations((mutator :Map) => {
+      fromJS(newContactData).forEach((contactValue :string, entityAddressKey :string) => {
+        const { entityIndex, entitySetName, propertyTypeFQN } = parseEntityAddressKey(entityAddressKey);
+        if (entitySetName === STAFF.toString()) {
+          let staffMember :Map = mutator.get(STAFF, Map());
+          staffMember = staffMember.set(propertyTypeFQN, List([contactValue]));
+          mutator.set(STAFF, staffMember);
         }
-        if (entityIndex === 1) {
-          let contactMethod :Map = newContact.get(EMAIL, Map());
-          contactMethod = contactMethod.set(propertyTypeFQN, contactValue);
-          newContact = newContact.set(EMAIL, contactMethod);
+        if (entitySetName === CONTACT_INFORMATION.toString()) {
+          if (entityIndex === 0) {
+            let contactMethod :Map = mutator.get(PHONE_NUMBER, Map());
+            contactMethod = contactMethod.set(propertyTypeFQN, List([contactValue]));
+            mutator.set(PHONE_NUMBER, contactMethod);
+          }
+          if (entityIndex === 1) {
+            let contactMethod :Map = mutator.get(EMAIL, Map());
+            contactMethod = contactMethod.set(propertyTypeFQN, List([contactValue]));
+            mutator.set(EMAIL, contactMethod);
+          }
         }
-      }
+      });
+      mutator.setIn([STAFF, ENTITY_KEY_ID], List([staffEKID]));
+      mutator.setIn([PHONE_NUMBER, ENTITY_KEY_ID], List([phoneEKID]));
+      mutator.setIn([EMAIL, ENTITY_KEY_ID], List([emailEKID]));
     });
     newWorksiteContacts = newWorksiteContacts.push(newContact);
 
@@ -368,31 +398,60 @@ function* createWorksiteScheduleWatcher() :Generator<*, *, *> {
 
 function* deleteWorksiteContactWorker(action :SequenceAction) :Generator<*, *, *> {
 
-  const { id, value } = action;
-  if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
-  let response :Object = {};
+  const { id } = action;
 
   try {
-    yield put(deleteWorksiteContact.request(id, value));
+    yield put(deleteWorksiteContact.request(id));
+    const { value } = action;
+    if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
 
     const { entityData } = value;
+
+    const app = yield select(getAppFromState);
+    const staffESID :UUID = getEntitySetIdFromApp(app, STAFF);
+    let deletedStaffContactEKID = '';
 
     const entitiesToDelete :Object[] = [];
     fromJS(entityData).forEach((setOfEKIDs :Set<UUID>, entitySetId :UUID) => {
       setOfEKIDs.forEach((entityKeyId :UUID) => {
-        entitiesToDelete.push({
-          entitySetId,
-          entityKeyId
-        });
+        if (isDefined(entityKeyId)) {
+          entitiesToDelete.push({
+            entitySetId,
+            entityKeyIds: [entityKeyId]
+          });
+        }
       });
+      if (entitySetId === staffESID) {
+        deletedStaffContactEKID = setOfEKIDs.values().next().value;
+      }
     });
 
-    response = yield call(deleteEntitiesWorker, deleteEntities(entitiesToDelete));
-    if (response.error) {
-      throw response.error;
+    if (deletedStaffContactEKID.length) {
+      const employeeESID :UUID = getEntitySetIdFromApp(app, EMPLOYEE);
+      const filter = {
+        entityKeyIds: [deletedStaffContactEKID],
+        destinationEntitySetIds: [employeeESID],
+        sourceEntitySetIds: [],
+      };
+      const response = yield call(
+        searchEntityNeighborsWithFilterWorker,
+        searchEntityNeighborsWithFilter({ entitySetId: staffESID, filter })
+      );
+      if (response.error) throw response.error;
+      const data = fromJS(response.data);
+      if (!data.isEmpty()) {
+        const employee = getNeighborDetails(data.getIn([deletedStaffContactEKID, 0]));
+        const employeeEKID :UUID = getEntityKeyId(employee);
+        entitiesToDelete.push({ entitySetId: employeeESID, entityKeyIds: [employeeEKID] });
+      }
     }
 
-    yield put(deleteWorksiteContact.success(id));
+    if (entitiesToDelete.length) {
+      const response = yield call(deleteEntitiesWorker, deleteEntities(entitiesToDelete));
+      if (response.error) throw response.error;
+    }
+
+    yield put(deleteWorksiteContact.success(id, deletedStaffContactEKID));
   }
   catch (error) {
     LOG.error(action.type, error);
@@ -422,20 +481,32 @@ function* editWorksiteWorker(action :SequenceAction) :Generator<*, *, *> {
   try {
     yield put(editWorksite.request(id, value));
 
-    response = yield call(submitPartialReplaceWorker, submitPartialReplace(value));
-    if (response.error) {
-      throw response.error;
-    }
     const { entityData } = value;
     const app = yield select(getAppFromState);
     const worksiteESID :UUID = getEntitySetIdFromApp(app, WORKSITE);
     const edm = yield select(getEdmFromState);
+    const dateTimeStartPTID :UUID = getPropertyTypeIdFromEdm(edm, DATETIME_START);
+    const dateTimeEndPTID :UUID = getPropertyTypeIdFromEdm(edm, DATETIME_END);
 
     const personEKID :UUID = Object.keys(entityData[worksiteESID])[0];
-    const storedWorksiteData :Map = fromJS(entityData[worksiteESID][personEKID]);
+    const storedWorksiteData :Object = entityData[worksiteESID][personEKID];
+    const timeNow :string = DateTime.local().toLocaleString(DateTime.TIME_24_SIMPLE);
+    if (has(storedWorksiteData, dateTimeStartPTID)) {
+      const dateTimeStartValue = getIn(storedWorksiteData, [dateTimeStartPTID, 0]);
+      entityData[worksiteESID][personEKID][dateTimeStartPTID] = [getCombinedDateTime(dateTimeStartValue, timeNow)];
+    }
+    if (has(storedWorksiteData, dateTimeEndPTID)) {
+      const dateTimeEndValue = getIn(storedWorksiteData, [dateTimeEndPTID, 0]);
+      entityData[worksiteESID][personEKID][dateTimeEndPTID] = [getCombinedDateTime(dateTimeEndValue, timeNow)];
+    }
+
+    response = yield call(submitPartialReplaceWorker, submitPartialReplace({ entityData }));
+    if (response.error) {
+      throw response.error;
+    }
 
     let newWorksiteData :Map = Map();
-    storedWorksiteData.forEach((worksiteValue, propertyTypeId) => {
+    fromJS(storedWorksiteData).forEach((worksiteValue, propertyTypeId) => {
       const propertyTypeFqn = getPropertyFqnFromEdm(edm, propertyTypeId);
       newWorksiteData = newWorksiteData.set(propertyTypeFqn, worksiteValue);
     });
@@ -464,41 +535,66 @@ function* editWorksiteWatcher() :Generator<*, *, *> {
 function* editWorksiteContactWorker(action :SequenceAction) :Generator<*, *, *> {
 
   const { id, value } = action;
-  let response :Object = {};
-  let newlyEditedContact :Map = Map();
 
   try {
     yield put(editWorksiteContact.request(id, value));
 
-    response = yield call(submitPartialReplaceWorker, submitPartialReplace(value));
-    if (response.error) {
-      throw response.error;
-    }
+    const response = yield call(submitPartialReplaceWorker, submitPartialReplace(value));
+    if (response.error) throw response.error;
 
-    const { properties } = value;
+    const { entityData, path } = value;
 
-    fromJS(properties).forEach((contactValue :string, entityAddressKey :string) => {
+    const app = yield select(getAppFromState);
+    const edm = yield select(getEdmFromState);
 
-      const { entityIndex, entitySetName, propertyTypeFQN } = parseEntityAddressKey(entityAddressKey);
-      if (entitySetName === STAFF.toString()) {
-        let staffMember :Map = newlyEditedContact.get(STAFF, Map());
-        staffMember = staffMember.set(propertyTypeFQN, contactValue);
-        newlyEditedContact = newlyEditedContact.set(STAFF, staffMember);
+    const worksiteContacts :List = yield select((state) => state.getIn([
+      STATE.WORKSITES,
+      WORKSITE_CONTACTS
+    ], List()));
+    const contactIndex = parseInt(path[1], 0);
+    let editedWorksiteContact :Map = worksiteContacts.get(contactIndex);
+
+    fromJS(entityData).forEach((editedEntityData :Map, entitySetId :UUID) => {
+      const editedEntityKeyId = editedEntityData.keySeq().toList().get(0);
+      const valueMap = editedEntityData.get(editedEntityKeyId);
+
+      let relevantFqnOnEditedEntity;
+      const staffESID :UUID = getEntitySetIdFromApp(app, STAFF);
+      if (entitySetId === staffESID) {
+        relevantFqnOnEditedEntity = STAFF;
       }
-      if (entitySetName === CONTACT_INFORMATION.toString()) {
-        if (entityIndex === -1) {
-          let contactMethod :Map = newlyEditedContact.get(PHONE_NUMBER, Map());
-          contactMethod = contactMethod.set(propertyTypeFQN, contactValue);
-          newlyEditedContact = newlyEditedContact.set(PHONE_NUMBER, contactMethod);
-        }
-        if (entityIndex === -2) {
-          let contactMethod :Map = newlyEditedContact.get(EMAIL, Map());
-          contactMethod = contactMethod.set(propertyTypeFQN, contactValue);
-          newlyEditedContact = newlyEditedContact.set(EMAIL, contactMethod);
-        }
+      const firstPropertyTypeId = valueMap.keySeq().toList().get(0);
+      const propertyFqn = getPropertyFqnFromEdm(edm, firstPropertyTypeId);
+      if (propertyFqn.toString() === PHONE_NUMBER.toString()
+        || propertyFqn.toString() === EMAIL.toString()) {
+        relevantFqnOnEditedEntity = propertyFqn;
       }
+
+      editedWorksiteContact.forEach((contactEntity :Map, contactFqn :FullyQualifiedName) => {
+
+        let contactFqnToUpdate;
+        if (contactFqn.toString() === STAFF.toString()) {
+          contactFqnToUpdate = STAFF;
+        }
+        if (contactFqn.toString() === PHONE_NUMBER.toString()) {
+          contactFqnToUpdate = PHONE_NUMBER;
+        }
+        if (contactFqn.toString() === EMAIL.toString()) {
+          contactFqnToUpdate = EMAIL;
+        }
+
+        if (contactFqnToUpdate && contactFqnToUpdate.toString() === relevantFqnOnEditedEntity.toString()) {
+          valueMap.forEach((editedValue :any, propertyTypeId :UUID) => {
+            const fqn = getPropertyFqnFromEdm(edm, propertyTypeId);
+            editedWorksiteContact = editedWorksiteContact.setIn([contactFqnToUpdate, fqn], editedValue);
+          });
+        }
+      });
     });
-    yield put(editWorksiteContact.success(id, { newlyEditedContact }));
+
+    const newlyEditedWorksiteContacts = worksiteContacts.set(contactIndex, editedWorksiteContact);
+
+    yield put(editWorksiteContact.success(id, newlyEditedWorksiteContacts));
   }
   catch (error) {
     LOG.error(action.type, error);

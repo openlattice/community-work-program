@@ -1,30 +1,35 @@
 // @flow
 import React, { Component } from 'react';
+
 import {
-  fromJS,
   List,
   Map,
-  OrderedMap
+  OrderedMap,
+  fromJS
 } from 'immutable';
-import { DateTime } from 'luxon';
 import { Card, CardSegment, DataGrid } from 'lattice-ui-kit';
-import { bindActionCreators } from 'redux';
+import { DateTime } from 'luxon';
 import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
 import { RequestStates } from 'redux-reqseq';
 import type { Match } from 'react-router';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
-import LogoLoader from '../../components/LogoLoader';
-
 import { findAppointments } from './WorkScheduleActions';
+
+import LogoLoader from '../../components/LogoLoader';
+import { COURT_TYPES_MAP } from '../../core/edm/constants/DataModelConsts';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { getEntityKeyId, getEntityProperties, sortEntitiesByDateProperty } from '../../utils/DataUtils';
 import { getPersonFullName } from '../../utils/PeopleUtils';
 import { APP, STATE, WORK_SCHEDULE } from '../../utils/constants/ReduxStateConsts';
-import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { EMPTY_FIELD } from '../participants/ParticipantsConstants';
 
+const { ENTITY_SET_IDS_BY_ORG, SELECTED_ORG_ID } = APP;
 const {
   ACTIONS,
   APPOINTMENTS,
+  COURT_TYPE_BY_APPOINTMENT_EKID,
   FIND_APPOINTMENTS,
   PERSON_BY_APPOINTMENT_EKID,
   REQUEST_STATE,
@@ -42,6 +47,7 @@ const headerLabelMap :OrderedMap = OrderedMap({
   date: 'Date',
   personName: 'Participant',
   worksiteName: 'Worksite',
+  personCourtType: 'Court Type',
   hours: 'Hours',
 });
 const appointmentLabelMap :OrderedMap = OrderedMap({
@@ -49,6 +55,7 @@ const appointmentLabelMap :OrderedMap = OrderedMap({
   date: EMPTY_STRING,
   personName: EMPTY_STRING,
   worksiteName: EMPTY_STRING,
+  personCourtType: EMPTY_STRING,
   hours: EMPTY_STRING,
 });
 const headerDataMap :Map = Map({
@@ -56,6 +63,7 @@ const headerDataMap :Map = Map({
   date: SPACED_STRING,
   personName: SPACED_STRING,
   worksiteName: SPACED_STRING,
+  personCourtType: SPACED_STRING,
   hours: SPACED_STRING,
 });
 
@@ -63,8 +71,9 @@ type Props = {
   actions:{
     findAppointments :RequestSequence;
   };
-  app :Map;
   appointments :List;
+  courtTypeByAppointmentEKID :Map;
+  entitySetIds :Map;
   findAppointmentsRequestState :RequestState;
   initializeApplicationRequestState :RequestState;
   match :Match;
@@ -77,12 +86,12 @@ class PrintWorkScheduleContainer extends Component<Props> {
   componentDidMount() {
     const {
       actions,
-      app,
+      entitySetIds,
       match: {
         params: { date: selectedDate, timeframe: timePeriod }
       },
     } = this.props;
-    if (app.get(APPOINTMENT)) {
+    if (entitySetIds.has(APPOINTMENT)) {
       actions.findAppointments({ selectedDate, timePeriod });
     }
   }
@@ -90,12 +99,12 @@ class PrintWorkScheduleContainer extends Component<Props> {
   componentDidUpdate(prevProps :Props) {
     const {
       actions,
-      app,
+      entitySetIds,
       match: {
         params: { date: selectedDate, timeframe: timePeriod }
       },
     } = this.props;
-    if (!prevProps.app.get(APPOINTMENT) && app.get(APPOINTMENT)) {
+    if (!prevProps.entitySetIds.has(APPOINTMENT) && entitySetIds.has(APPOINTMENT)) {
       actions.findAppointments({ selectedDate, timePeriod });
     }
   }
@@ -107,10 +116,11 @@ class PrintWorkScheduleContainer extends Component<Props> {
   render() {
     const {
       appointments,
+      courtTypeByAppointmentEKID,
       findAppointmentsRequestState,
       initializeApplicationRequestState,
       match: {
-        params: { worksites }
+        params: { courtType, worksites }
       },
       personByAppointmentEKID,
       worksiteNamesByAppointmentEKID,
@@ -133,18 +143,21 @@ class PrintWorkScheduleContainer extends Component<Props> {
     const filteredAppointments :List = sortedAppointments.filter((appointment :Map) => {
       const appointmentEKID :UUID = getEntityKeyId(appointment);
       const worksiteName :string = worksiteNamesByAppointmentEKID.get(appointmentEKID);
+      const personCourtType :string = courtTypeByAppointmentEKID.get(appointmentEKID, '');
+      const selectedCourtType :string = courtType ? COURT_TYPES_MAP[courtType] : '';
+      if ((worksiteNames.includes(worksiteName) || !worksiteNames.length)
+        && personCourtType === selectedCourtType) return true;
       if (!worksiteNames.length) return true;
-      if (worksiteNames.includes(worksiteName)) return true;
       return false;
     });
     return (
       <Card>
-        <CardSegment padding="sm" vertical>
+        <CardSegment padding="sm">
           Work Schedule
         </CardSegment>
         <CardSegment padding="sm">
           <DataGrid
-              columns={5}
+              columns={6}
               data={headerDataMap}
               labelMap={headerLabelMap} />
         </CardSegment>
@@ -152,6 +165,7 @@ class PrintWorkScheduleContainer extends Component<Props> {
           filteredAppointments.map((appointment :Map) => {
             const appointmentEKID :UUID = getEntityKeyId(appointment);
             const worksiteName :string = worksiteNamesByAppointmentEKID.get(appointmentEKID);
+            const personCourtType :string = courtTypeByAppointmentEKID.get(appointmentEKID, EMPTY_FIELD);
             const person :Map = personByAppointmentEKID.get(appointmentEKID);
             const personName :string = getPersonFullName(person);
 
@@ -172,12 +186,13 @@ class PrintWorkScheduleContainer extends Component<Props> {
               date,
               personName,
               worksiteName,
+              personCourtType,
               hours,
             });
             return (
               <CardSegment key={appointmentEKID} padding="sm">
                 <DataGrid
-                    columns={5}
+                    columns={6}
                     data={data}
                     labelMap={appointmentLabelMap} />
               </CardSegment>
@@ -192,13 +207,15 @@ class PrintWorkScheduleContainer extends Component<Props> {
 const mapStateToProps = (state) => {
   const app = state.get(STATE.APP);
   const workSchedule = state.get(STATE.WORK_SCHEDULE);
+  const selectedOrgId :string = app.get(SELECTED_ORG_ID);
   return {
-    app,
     [APPOINTMENTS]: workSchedule.get(APPOINTMENTS),
-    findAppointmentsRequestState: workSchedule.getIn([ACTIONS, FIND_APPOINTMENTS, REQUEST_STATE]),
-    initializeApplicationRequestState: app.getIn([APP.ACTIONS, APP.INITIALIZE_APPLICATION, APP.REQUEST_STATE]),
+    [COURT_TYPE_BY_APPOINTMENT_EKID]: workSchedule.get(COURT_TYPE_BY_APPOINTMENT_EKID),
     [PERSON_BY_APPOINTMENT_EKID]: workSchedule.get(PERSON_BY_APPOINTMENT_EKID),
     [WORKSITE_NAMES_BY_APPOINTMENT_EKID]: workSchedule.get(WORKSITE_NAMES_BY_APPOINTMENT_EKID),
+    entitySetIds: app.getIn([ENTITY_SET_IDS_BY_ORG, selectedOrgId], Map()),
+    findAppointmentsRequestState: workSchedule.getIn([ACTIONS, FIND_APPOINTMENTS, REQUEST_STATE]),
+    initializeApplicationRequestState: app.getIn([APP.ACTIONS, APP.INITIALIZE_APPLICATION, APP.REQUEST_STATE]),
   };
 };
 

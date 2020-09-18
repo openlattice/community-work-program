@@ -14,25 +14,19 @@ import type { Match } from 'react-router';
 import LogoLoader from '../../components/LogoLoader';
 
 import * as Routes from '../../core/router/Routes';
-import {
-  editEnrollmentDates,
-  getEnrollmentStatus,
-} from './ParticipantActions';
-import { goToRoute } from '../../core/router/RoutingActions';
-import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
-import {
-  schema,
-  uiSchema,
-} from './schemas/EditEnrollmentDatesSchemas';
-import {
-  getEntityKeyId,
-  getEntityProperties,
-  getEntitySetIdFromApp,
-  getPropertyTypeIdFromEdm
-} from '../../utils/DataUtils';
 import { BackNavButton } from '../../components/controls/index';
+import { editEnrollmentDates, getDiversionPlan } from './ParticipantActions';
+import { goToRoute } from '../../core/router/RoutingActions';
+import { schema, uiSchema } from './schemas/EditEnrollmentDatesSchemas';
+import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { PARTICIPANT_PROFILE_WIDTH } from '../../core/style/Sizes';
-import { APP, PERSON, STATE } from '../../utils/constants/ReduxStateConsts';
+import {
+  APP,
+  EDM,
+  PERSON,
+  STATE
+} from '../../utils/constants/ReduxStateConsts';
 import type { GoToRoute } from '../../core/router/RoutingActions';
 
 const { getEntityAddressKey, getPageSectionKey } = DataProcessingUtils;
@@ -40,15 +34,17 @@ const { getEntityAddressKey, getPageSectionKey } = DataProcessingUtils;
 const { DIVERSION_PLAN } = APP_TYPE_FQNS;
 const {
   CHECK_IN_DATETIME,
+  CHECK_IN_DEADLINE,
   DATETIME_END,
   DATETIME_RECEIVED,
-  DATETIME_START,
   ORIENTATION_DATETIME,
 } = PROPERTY_TYPE_FQNS;
 
+const { ENTITY_SET_IDS_BY_ORG, SELECTED_ORG_ID } = APP;
+const { PROPERTY_TYPES, TYPE_IDS_BY_FQNS } = EDM;
 const {
   ACTIONS,
-  GET_ENROLLMENT_STATUS,
+  GET_DIVERSION_PLAN,
   REQUEST_STATE,
 } = PERSON;
 
@@ -68,15 +64,15 @@ const ButtonWrapper = styled.div`
 type Props = {
   actions:{
     editEnrollmentDates :RequestSequence;
-    getEnrollmentStatus :RequestSequence;
+    getDiversionPlan :RequestSequence;
     goToRoute :GoToRoute;
   },
-  app :Map;
   diversionPlan :Map;
-  edm :Map;
-  getEnrollmentStatusRequestState :RequestState;
+  entitySetIds :Map;
+  getDiversionPlanRequestState :RequestState;
   initializeAppRequestState :RequestState;
   match :Match;
+  propertyTypeIds :Map;
 };
 
 type State = {
@@ -85,38 +81,42 @@ type State = {
 
 class EditCaseInfoForm extends Component<Props, State> {
 
-  state = {
-    formData: {},
-  };
+  constructor(props :Props) {
+    super(props);
+
+    this.state = {
+      formData: {},
+    };
+  }
 
   componentDidMount() {
     const {
       actions,
-      app,
+      entitySetIds,
       match: {
-        params: { participantId: personEKID }
+        params: { diversionPlanId: diversionPlanEKID }
       },
     } = this.props;
-    if (app.get(DIVERSION_PLAN) && personEKID) {
-      actions.getEnrollmentStatus({ personEKID });
+    if (entitySetIds.has(DIVERSION_PLAN) && diversionPlanEKID) {
+      actions.getDiversionPlan({ diversionPlanEKID });
     }
   }
 
   componentDidUpdate(prevProps :Props) {
     const {
       actions,
-      app,
+      entitySetIds,
       diversionPlan,
-      getEnrollmentStatusRequestState,
+      getDiversionPlanRequestState,
       match: {
-        params: { participantId: personEKID }
+        params: { diversionPlanId: diversionPlanEKID }
       },
     } = this.props;
-    if (!prevProps.app.get(DIVERSION_PLAN) && app.get(DIVERSION_PLAN) && personEKID) {
-      actions.getEnrollmentStatus({ personEKID, populateProfile: false });
+    if ((!prevProps.entitySetIds.has(DIVERSION_PLAN) && entitySetIds.has(DIVERSION_PLAN)) && diversionPlanEKID) {
+      actions.getDiversionPlan({ diversionPlanEKID });
     }
-    if ((prevProps.getEnrollmentStatusRequestState === RequestStates.PENDING
-      && getEnrollmentStatusRequestState !== RequestStates.PENDING)
+    if ((prevProps.getDiversionPlanRequestState === RequestStates.PENDING
+      && getDiversionPlanRequestState !== RequestStates.PENDING)
       || !prevProps.diversionPlan.equals(diversionPlan)) {
       this.prepopulateFormData();
     }
@@ -130,19 +130,24 @@ class EditCaseInfoForm extends Component<Props, State> {
 
     const {
       [CHECK_IN_DATETIME]: checkInDateTime,
+      [CHECK_IN_DEADLINE]: checkInDeadline,
       [DATETIME_END]: sentenceEndDate,
       [DATETIME_RECEIVED]: sentenceDate,
       [ORIENTATION_DATETIME]: orientationDateTime,
     } = getEntityProperties(
       diversionPlan,
-      [CHECK_IN_DATETIME, DATETIME_END, DATETIME_RECEIVED, ORIENTATION_DATETIME]
+      [CHECK_IN_DATETIME, CHECK_IN_DEADLINE, DATETIME_END, DATETIME_RECEIVED, ORIENTATION_DATETIME]
     );
-
     formData[sectionOneKey] = {};
     if (checkInDateTime) {
       formData[sectionOneKey][getEntityAddressKey(
         0, DIVERSION_PLAN, CHECK_IN_DATETIME
       )] = DateTime.fromISO(checkInDateTime).toISODate();
+    }
+    if (checkInDeadline) {
+      formData[sectionOneKey][getEntityAddressKey(
+        0, DIVERSION_PLAN, CHECK_IN_DEADLINE
+      )] = DateTime.fromISO(checkInDeadline).toISODate();
     }
     if (orientationDateTime) {
       formData[sectionOneKey][getEntityAddressKey(
@@ -177,24 +182,6 @@ class EditCaseInfoForm extends Component<Props, State> {
     return entityIndexToIdMap;
   }
 
-  createEntitySetIdsMap = () => {
-    const { app } = this.props;
-    return {
-      [DIVERSION_PLAN]: getEntitySetIdFromApp(app, DIVERSION_PLAN)
-    };
-  }
-
-  createPropertyTypeIdsMap = () => {
-    const { edm } = this.props;
-    return {
-      [CHECK_IN_DATETIME]: getPropertyTypeIdFromEdm(edm, CHECK_IN_DATETIME),
-      [DATETIME_END]: getPropertyTypeIdFromEdm(edm, DATETIME_END),
-      [DATETIME_RECEIVED]: getPropertyTypeIdFromEdm(edm, DATETIME_RECEIVED),
-      [DATETIME_START]: getPropertyTypeIdFromEdm(edm, DATETIME_START),
-      [ORIENTATION_DATETIME]: getPropertyTypeIdFromEdm(edm, ORIENTATION_DATETIME),
-    };
-  }
-
   handleOnClickBackButton = () => {
     const {
       actions,
@@ -210,13 +197,15 @@ class EditCaseInfoForm extends Component<Props, State> {
   render() {
     const {
       actions,
-      getEnrollmentStatusRequestState,
+      entitySetIds,
+      getDiversionPlanRequestState,
       initializeAppRequestState,
+      propertyTypeIds,
     } = this.props;
     const { formData } = this.state;
 
     if (initializeAppRequestState === RequestStates.PENDING
-      || getEnrollmentStatusRequestState === RequestStates.PENDING) {
+      || getDiversionPlanRequestState === RequestStates.PENDING) {
       return (
         <LogoLoader
             loadingText="Please wait..."
@@ -225,8 +214,6 @@ class EditCaseInfoForm extends Component<Props, State> {
     }
 
     const entityIndexToIdMap = this.createEntityIndexToIdMap();
-    const entitySetIds = this.createEntitySetIdsMap();
-    const propertyTypeIds = this.createPropertyTypeIdsMap();
 
     const formContext = {
       editAction: actions.editEnrollmentDates,
@@ -261,20 +248,22 @@ class EditCaseInfoForm extends Component<Props, State> {
 
 const mapStateToProps = (state :Map) => {
   const app = state.get(STATE.APP);
+  const edm = state.get(STATE.EDM);
   const person = state.get(STATE.PERSON);
+  const selectedOrgId :string = app.get(SELECTED_ORG_ID);
   return ({
-    app,
     [PERSON.DIVERSION_PLAN]: person.get(PERSON.DIVERSION_PLAN),
-    edm: state.get(STATE.EDM),
-    getEnrollmentStatusRequestState: person.getIn([ACTIONS, GET_ENROLLMENT_STATUS, REQUEST_STATE]),
+    entitySetIds: app.getIn([ENTITY_SET_IDS_BY_ORG, selectedOrgId], Map()),
+    getDiversionPlanRequestState: person.getIn([ACTIONS, GET_DIVERSION_PLAN, REQUEST_STATE]),
     initializeAppRequestState: app.getIn([APP.ACTIONS, APP.INITIALIZE_APPLICATION, APP.REQUEST_STATE]),
+    propertyTypeIds: edm.getIn([TYPE_IDS_BY_FQNS, PROPERTY_TYPES], Map()),
   });
 };
 
 const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
     editEnrollmentDates,
-    getEnrollmentStatus,
+    getDiversionPlan,
     goToRoute,
   }, dispatch)
 });

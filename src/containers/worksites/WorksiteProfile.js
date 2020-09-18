@@ -1,38 +1,39 @@
 // @flow
 import React, { Component } from 'react';
+
 import styled from 'styled-components';
 import { Map, OrderedMap } from 'immutable';
 import {
+  Button,
   Card,
   CardSegment,
   DataGrid,
-  EditButton,
   Label,
   Table,
 } from 'lattice-ui-kit';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { RequestStates } from 'redux-reqseq';
-import type { RequestSequence, RequestState } from 'redux-reqseq';
 import type { Match } from 'react-router';
+import type { RequestSequence, RequestState } from 'redux-reqseq';
+
+import { getWorksite } from './WorksitesActions';
+import { getWeekdayTableData, getWeekdayTableHeaders, getWorksiteStatus } from './utils/WorksitesUtils';
 
 import LogoLoader from '../../components/LogoLoader';
-
 import * as Routes from '../../core/router/Routes';
-import { getWorksite } from './WorksitesActions';
-import { goToRoute } from '../../core/router/RoutingActions';
-import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
-import { APP, STATE, WORKSITES } from '../../utils/constants/ReduxStateConsts';
-import { getEntityProperties } from '../../utils/DataUtils';
-import { getPersonFullName } from '../../utils/PeopleUtils';
-import { formatAsDate } from '../../utils/DateTimeUtils';
-import { getWeekdayTableData, getWeekdayTableHeaders, getWorksiteStatus } from './WorksitesUtils';
 import {
   ContainerHeader,
   ContainerInnerWrapper,
   ContainerOuterWrapper,
 } from '../../components/Layout';
 import { BackNavButton } from '../../components/controls/index';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { goToRoute } from '../../core/router/RoutingActions';
+import { getEntityProperties } from '../../utils/DataUtils';
+import { formatAsDate } from '../../utils/DateTimeUtils';
+import { getPersonAddress, getPersonFullName } from '../../utils/PeopleUtils';
+import { APP, STATE, WORKSITES } from '../../utils/constants/ReduxStateConsts';
 import { EMPTY_FIELD } from '../participants/ParticipantsConstants';
 import type { GoToRoute } from '../../core/router/RoutingActions';
 
@@ -42,10 +43,12 @@ const {
   DATETIME_START,
   DESCRIPTION,
   EMAIL,
-  FULL_ADDRESS,
   NAME,
+  NOTES,
   PHONE_NUMBER,
 } = PROPERTY_TYPE_FQNS;
+
+const { ENTITY_SET_IDS_BY_ORG, SELECTED_ORG_ID } = APP;
 const {
   ACTIONS,
   GET_WORKSITE,
@@ -99,7 +102,7 @@ type Props = {
     getWorksite :RequestSequence;
     goToRoute :GoToRoute;
   },
-  app :Map;
+  entitySetIds :Map;
   getWorksiteRequestState :RequestState;
   initializeAppRequestState :RequestState;
   match :Match;
@@ -112,15 +115,15 @@ type Props = {
 class WorksiteProfile extends Component<Props> {
 
   componentDidMount() {
-    const { app } = this.props;
-    if (app.get(APP_TYPE_FQNS.WORKSITE)) {
+    const { entitySetIds } = this.props;
+    if (entitySetIds.has(APP_TYPE_FQNS.WORKSITE)) {
       this.loadProfile();
     }
   }
 
   componentDidUpdate(prevProps :Props) {
-    const { app } = this.props;
-    if (!prevProps.app.get(APP_TYPE_FQNS.WORKSITE) && app.get(APP_TYPE_FQNS.WORKSITE)) {
+    const { entitySetIds } = this.props;
+    if (!prevProps.entitySetIds.has(APP_TYPE_FQNS.WORKSITE) && entitySetIds.has(APP_TYPE_FQNS.WORKSITE)) {
       this.loadProfile();
     }
   }
@@ -217,10 +220,11 @@ class WorksiteProfile extends Component<Props> {
       [DATETIME_END]: dateInactive,
       [DATETIME_START]: dateActive,
       [DESCRIPTION]: availableWork,
-      [NAME]: worksiteName
-    } = getEntityProperties(worksite, [DATETIME_END, DATETIME_START, DESCRIPTION, NAME]);
+      [NAME]: worksiteName,
+      [NOTES]: worksiteNotes,
+    } = getEntityProperties(worksite, [DATETIME_END, DATETIME_START, DESCRIPTION, NAME, NOTES]);
 
-    const { [FULL_ADDRESS]: address } = getEntityProperties(worksiteAddress, [FULL_ADDRESS]);
+    const address :string = getPersonAddress(worksiteAddress);
     const datesAndAddress :Map = Map({
       dateFirstActive: formatAsDate(dateActive),
       dateInactive: formatAsDate(dateInactive),
@@ -251,7 +255,7 @@ class WorksiteProfile extends Component<Props> {
           </div>
           <HeaderRowWrapper>
             <ProfileNameHeader>{ worksiteName }</ProfileNameHeader>
-            <EditButton onClick={this.goToEditWorksiteInfoForm}>Edit</EditButton>
+            <Button onClick={this.goToEditWorksiteInfoForm}>Edit</Button>
           </HeaderRowWrapper>
           <Card>
             <CardSegment padding={cardSegmentPadding}>
@@ -260,7 +264,7 @@ class WorksiteProfile extends Component<Props> {
                   data={datesAndAddress}
                   labelMap={datesLabelMap} />
             </CardSegment>
-            <CardSegment padding={cardSegmentPadding} vertical>
+            <CardSegment padding={cardSegmentPadding}>
               <ContactLabelsRow>
                 {
                   contactsHeaders.map((label :string) => (
@@ -289,10 +293,14 @@ class WorksiteProfile extends Component<Props> {
                   data={worksiteInfo}
                   labelMap={worksiteInfoLabelMap} />
             </CardSegment>
+            <CardSegment padding={cardSegmentPadding}>
+              <Label subtle>Notes</Label>
+              <div>{ worksiteNotes && worksiteNotes.length ? worksiteNotes : EMPTY_FIELD }</div>
+            </CardSegment>
           </Card>
           <HeaderRowWrapper>
             <ProfileNameHeader>Hours of Operation</ProfileNameHeader>
-            <EditButton onClick={this.goToEditHoursOfOperation}>Edit</EditButton>
+            <Button onClick={this.goToEditHoursOfOperation}>Edit</Button>
           </HeaderRowWrapper>
           <Card>
             <Table
@@ -309,8 +317,9 @@ class WorksiteProfile extends Component<Props> {
 const mapStateToProps = (state) => {
   const app = state.get(STATE.APP);
   const worksites = state.get(STATE.WORKSITES);
+  const selectedOrgId :string = app.get(SELECTED_ORG_ID);
   return ({
-    app,
+    entitySetIds: app.getIn([ENTITY_SET_IDS_BY_ORG, selectedOrgId], Map()),
     getWorksiteRequestState: worksites.getIn([ACTIONS, GET_WORKSITE, REQUEST_STATE]),
     initializeAppRequestState: app.getIn([APP.ACTIONS, APP.INITIALIZE_APPLICATION, APP.REQUEST_STATE]),
     [SCHEDULE_BY_WEEKDAY]: worksites.get(SCHEDULE_BY_WEEKDAY),

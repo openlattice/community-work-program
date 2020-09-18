@@ -1,40 +1,54 @@
 // @flow
 import React, { Component } from 'react';
-import styled from 'styled-components';
-import { List, Map } from 'immutable';
+
 import startCase from 'lodash/startCase';
-import { DateTime } from 'luxon';
+import styled from 'styled-components';
+import { faFilter, faSortAlphaDown } from '@fortawesome/pro-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { List, Map } from 'immutable';
 import {
   Button,
   CheckboxSelect,
+  Colors,
   DatePicker,
+  IconButton,
   Label,
   Select
 } from 'lattice-ui-kit';
+import { DateTime } from 'luxon';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import { RequestStates } from 'redux-reqseq';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
 import AppointmentListContainer from './AppointmentListContainer';
-import * as Routes from '../../core/router/Routes';
+import { FIND_APPOINTMENTS, findAppointments } from './WorkScheduleActions';
+import { TIME_PERIOD_OPTIONS, timePeriods } from './WorkScheduleConstants';
 
-import { findAppointments } from './WorkScheduleActions';
-import { getWorksites } from '../worksites/WorksitesActions';
-import { goToRoute } from '../../core/router/RoutingActions';
-import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
+import * as Routes from '../../core/router/Routes';
 import { ContainerHeader } from '../../components/Layout';
-import { SEARCH_CONTAINER_WIDTH } from '../../core/style/Sizes';
-import { STATE, WORKSITES, WORK_SCHEDULE } from '../../utils/constants/ReduxStateConsts';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
-import { timePeriods, TIME_PERIOD_OPTIONS } from './WorkScheduleConstants';
+import { goToRoute } from '../../core/router/RoutingActions';
+import { SEARCH_CONTAINER_WIDTH } from '../../core/style/Sizes';
+import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
+import { requestIsPending, requestIsSuccess } from '../../utils/RequestStateUtils';
+import {
+  APP,
+  STATE,
+  WORKSITES,
+  WORK_SCHEDULE
+} from '../../utils/constants/ReduxStateConsts';
+import { ALL, COURT_TYPE_FILTER_OPTIONS } from '../participants/ParticipantsConstants';
+import { formatClickedProperty } from '../participants/utils/SearchContainerUtils';
+import { getWorksites } from '../worksites/WorksitesActions';
 import type { GoToRoute } from '../../core/router/RoutingActions';
 
+const { NEUTRAL } = Colors;
+const { ENTITY_SET_IDS_BY_ORG, SELECTED_ORG_ID } = APP;
 const { WORKSITES_LIST } = WORKSITES;
 const {
   ACTIONS,
   APPOINTMENTS,
-  FIND_APPOINTMENTS,
+  COURT_TYPE_BY_APPOINTMENT_EKID,
   PERSON_BY_APPOINTMENT_EKID,
   REQUEST_STATE,
   WORKSITE_NAMES_BY_APPOINTMENT_EKID,
@@ -75,14 +89,20 @@ const FieldsRowWrapper = styled.div`
 const FieldsWrapper = styled.div`
   display: grid;
   grid-template-columns: 200px 200px minmax(200px, auto);
-  grid-gap: 0 20px;
+  grid-gap: 0 15px;
+  margin-right: 15px;
 `;
 
-const ButtonsWrapper = styled.div`
-  display: grid;
-  grid-template-columns: minmax(min-content, 1fr) minmax(min-content, 1fr);
-  grid-gap: 0 15px;
-  margin-left: 8px;
+const SelectAndLabelWrapper = styled.div`
+  align-items: center;
+  align-self: flex-start;
+  display: flex;
+  margin-bottom: 20px;
+`;
+
+const SelectWrapper = styled.div`
+  margin-left: 20px;
+  width: 300px;
 `;
 
 type Props = {
@@ -91,16 +111,22 @@ type Props = {
     getWorksites :RequestSequence;
     goToRoute :GoToRoute;
   };
-  app :Map;
   appointments :List;
-  findAppointmentsRequestState :RequestState;
+  courtTypeByAppointmentEKID :Map;
+  entitySetIds :Map;
   personByAppointmentEKID :Map;
+  requestStates :{
+    FIND_APPOINTMENTS :RequestState;
+  };
   worksiteNamesByAppointmentEKID :Map;
   worksitesList :List;
 };
 
 type State = {
+  courtTypeToShow :string;
+  filtersVisible :boolean;
   selectedDate :string;
+  sortedByPersonLastName :boolean;
   timePeriod :string;
   worksites :Map;
 };
@@ -112,22 +138,25 @@ class WorkScheduleContainer extends Component<Props, State> {
 
     const today = DateTime.local().toISODate();
     this.state = {
+      courtTypeToShow: ALL,
+      filtersVisible: false,
       selectedDate: today,
+      sortedByPersonLastName: false,
       timePeriod: timePeriods.DAY,
       worksites: Map(),
     };
   }
 
   componentDidMount() {
-    const { app } = this.props;
-    if (app.get(APP_TYPE_FQNS.APPOINTMENT)) {
+    const { entitySetIds } = this.props;
+    if (entitySetIds.has(APP_TYPE_FQNS.APPOINTMENT)) {
       this.loadDefaultSchedule();
     }
   }
 
   componentDidUpdate(prevProps :Props) {
-    const { app } = this.props;
-    if (!prevProps.app.get(APP_TYPE_FQNS.APPOINTMENT) && app.get(APP_TYPE_FQNS.APPOINTMENT)) {
+    const { entitySetIds } = this.props;
+    if (!prevProps.entitySetIds.has(APP_TYPE_FQNS.APPOINTMENT) && entitySetIds.has(APP_TYPE_FQNS.APPOINTMENT)) {
       this.loadDefaultSchedule();
     }
   }
@@ -163,7 +192,12 @@ class WorkScheduleContainer extends Component<Props, State> {
 
   goToPrintSchedule = () => {
     const { actions } = this.props;
-    const { selectedDate, timePeriod, worksites } = this.state;
+    const {
+      courtTypeToShow,
+      selectedDate,
+      timePeriod,
+      worksites
+    } = this.state;
 
     let worksiteNames :string = 'all';
     if (!worksites.isEmpty()) {
@@ -180,11 +214,23 @@ class WorkScheduleContainer extends Component<Props, State> {
         .replace(':date', selectedDate)
         .replace(':timeframe', timePeriod)
         .replace(':worksites', worksiteNames)
+        .replace(':courtType', courtTypeToShow)
     );
   }
 
+  showFilters = () => {
+    const { filtersVisible } = this.state;
+    this.setState({ filtersVisible: !filtersVisible });
+  }
+
+  handleCourtTypeSelect = (clickedProperty :Map) => {
+    const property :string = formatClickedProperty(clickedProperty);
+    this.setState({ courtTypeToShow: property });
+  }
+
   renderFields = () => {
-    const { worksitesList } = this.props;
+    const { appointments, worksitesList } = this.props;
+    const { sortedByPersonLastName } = this.state;
 
     const WORKSITES_OPTIONS :Object[] = [];
     worksitesList.forEach((worksite :Map) => {
@@ -220,10 +266,18 @@ class WorkScheduleContainer extends Component<Props, State> {
                 options={WORKSITES_OPTIONS} />
           </div>
         </FieldsWrapper>
-        <ButtonsWrapper>
-          <Button onClick={this.goToPrintSchedule}>Print Schedule</Button>
-          <Button mode="primary" onClick={this.getAppointments}>Display Appointments</Button>
-        </ButtonsWrapper>
+        <IconButton
+            disabled={appointments.isEmpty()}
+            onClick={this.showFilters}>
+          <FontAwesomeIcon color={NEUTRAL.N500} icon={faFilter} />
+        </IconButton>
+        <IconButton
+            disabled={appointments.isEmpty()}
+            onClick={() => this.setState({ sortedByPersonLastName: !sortedByPersonLastName })}>
+          <FontAwesomeIcon color={NEUTRAL.N500} icon={faSortAlphaDown} />
+        </IconButton>
+        <Button onClick={this.goToPrintSchedule}>Print</Button>
+        <Button color="primary" onClick={this.getAppointments}>Display Appointments</Button>
       </FieldsRowWrapper>
     );
   }
@@ -231,13 +285,19 @@ class WorkScheduleContainer extends Component<Props, State> {
   render() {
     const {
       appointments,
-      findAppointmentsRequestState,
+      courtTypeByAppointmentEKID,
+      requestStates,
       personByAppointmentEKID,
       worksiteNamesByAppointmentEKID
     } = this.props;
-    const { worksites } = this.state;
-    const isLoading :boolean = findAppointmentsRequestState === RequestStates.PENDING;
-    const hasSearched :boolean = findAppointmentsRequestState === RequestStates.SUCCESS;
+    const {
+      filtersVisible,
+      courtTypeToShow,
+      sortedByPersonLastName,
+      worksites
+    } = this.state;
+    const isLoading :boolean = requestIsPending(requestStates[FIND_APPOINTMENTS]);
+    const hasSearched :boolean = requestIsSuccess(requestStates[FIND_APPOINTMENTS]);
     const worksitesToInclude :Object[] | void = worksites.get('worksites');
     return (
       <ScheduleOuterWrapper>
@@ -246,11 +306,27 @@ class WorkScheduleContainer extends Component<Props, State> {
             <ContainerHeader>Work Schedule</ContainerHeader>
           </HeaderWrapper>
           { this.renderFields() }
+          {
+            filtersVisible && (
+              <SelectAndLabelWrapper>
+                <Label>Court type:</Label>
+                <SelectWrapper>
+                  <Select
+                      onChange={this.handleCourtTypeSelect}
+                      options={COURT_TYPE_FILTER_OPTIONS}
+                      placeholder="All" />
+                </SelectWrapper>
+              </SelectAndLabelWrapper>
+            )
+          }
           <AppointmentListContainer
               appointments={appointments}
+              courtTypeByAppointmentEKID={courtTypeByAppointmentEKID}
+              courtTypeToShow={courtTypeToShow}
               hasSearched={hasSearched}
               isLoading={isLoading}
               personByAppointmentEKID={personByAppointmentEKID}
+              sortedByPersonLastName={sortedByPersonLastName}
               worksiteNamesByAppointmentEKID={worksiteNamesByAppointmentEKID}
               worksitesToInclude={worksitesToInclude} />
         </ScheduleInnerWrapper>
@@ -262,13 +338,17 @@ class WorkScheduleContainer extends Component<Props, State> {
 const mapStateToProps = (state :Map) => {
   const app = state.get(STATE.APP);
   const workSchedule = state.get(STATE.WORK_SCHEDULE);
+  const selectedOrgId :string = app.get(SELECTED_ORG_ID);
   return ({
-    app,
     [APPOINTMENTS]: workSchedule.get(APPOINTMENTS),
+    [COURT_TYPE_BY_APPOINTMENT_EKID]: workSchedule.get(COURT_TYPE_BY_APPOINTMENT_EKID),
     [PERSON_BY_APPOINTMENT_EKID]: workSchedule.get(PERSON_BY_APPOINTMENT_EKID),
     [WORKSITES_LIST]: state.getIn([STATE.WORKSITES, WORKSITES_LIST]),
     [WORKSITE_NAMES_BY_APPOINTMENT_EKID]: workSchedule.get(WORKSITE_NAMES_BY_APPOINTMENT_EKID),
-    findAppointmentsRequestState: workSchedule.getIn([ACTIONS, FIND_APPOINTMENTS, REQUEST_STATE]),
+    entitySetIds: app.getIn([ENTITY_SET_IDS_BY_ORG, selectedOrgId], Map()),
+    requestStates: {
+      [FIND_APPOINTMENTS]: workSchedule.getIn([ACTIONS, FIND_APPOINTMENTS, REQUEST_STATE]),
+    }
   });
 };
 

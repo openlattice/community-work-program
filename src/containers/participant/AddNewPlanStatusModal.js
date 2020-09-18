@@ -1,5 +1,6 @@
 // @flow
 import React, { Component } from 'react';
+
 import { Map } from 'immutable';
 import { Modal } from 'lattice-ui-kit';
 import { connect } from 'react-redux';
@@ -11,7 +12,6 @@ import AddNewPlanStatusForm from './AddNewPlanStatusForm';
 import { PERSON, STATE } from '../../utils/constants/ReduxStateConsts';
 
 const { ACTIONS, ADD_NEW_DIVERSION_PLAN_STATUS, REQUEST_STATE } = PERSON;
-
 
 type Props = {
   currentStatus :string;

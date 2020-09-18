@@ -1,22 +1,35 @@
 // @flow
 import React, { Component } from 'react';
+
 import styled from 'styled-components';
 import { List, Map } from 'immutable';
 import {
   Button,
   Card,
   CardSegment,
-  CardStack,
-  IconSplash,
+  Colors,
   Select,
   Table,
 } from 'lattice-ui-kit';
-import { faTools } from '@fortawesome/pro-light-svg-icons';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { RequestStates } from 'redux-reqseq';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
+import AssignWorksiteModal from './assignedworksites/AssignWorksiteModal';
+import AssignedWorksitesContainer from './assignedworksites/AssignedWorksitesContainer';
+import CreateWorkAppointmentModal from './schedule/CreateAppointmentModal';
+import EnrollmentTableRow from './enrollment/EnrollmentTableRow';
+import InfractionsContainer from './infractions/InfractionsContainer';
+import ParticipantWorkScheduleContainer from './schedule/ParticipantWorkScheduleContainer';
+import ProgramCompletionBanner from './ProgramCompletionBanner';
+import generateDiversionPlanOptions from './utils/ParticipantProfileUtils';
+import { getAllParticipantInfo, getEnrollmentFromDiversionPlan } from './ParticipantActions';
+import { clearAppointmentsAndPlans } from './assignedworksites/WorksitePlanActions';
+
+import LogoLoader from '../../components/LogoLoader';
+import * as Routes from '../../core/router/Routes';
+import { BackNavButton } from '../../components/controls/index';
 import {
   CaseInfoSection,
   EnrollmentDates,
@@ -25,31 +38,16 @@ import {
   PersonNotes,
   ProgramNotes,
 } from '../../components/participant/index';
-import EnrollmentTableRow from './enrollment/EnrollmentTableRow';
-import ParticipantWorkScheduleContainer from './schedule/ParticipantWorkScheduleContainer';
-import ProgramCompletionBanner from './ProgramCompletionBanner';
-
-import CreateNewEnrollmentModal from './CreateNewEnrollmentModal';
-import AssignedWorksite from './assignedworksites/AssignedWorksite';
-import AssignWorksiteModal from './assignedworksites/AssignWorksiteModal';
-import InfractionsContainer from './infractions/InfractionsContainer';
-import CreateWorkAppointmentModal from './schedule/CreateAppointmentModal';
-import LogoLoader from '../../components/LogoLoader';
-
-import { getAllParticipantInfo, getEnrollmentFromDiversionPlan } from './ParticipantActions';
-import { goToRoute } from '../../core/router/RoutingActions';
-import { OL } from '../../core/style/Colors';
-import { PARTICIPANT_PROFILE_WIDTH } from '../../core/style/Sizes';
-import * as Routes from '../../core/router/Routes';
-import { BackNavButton } from '../../components/controls/index';
-import { generateDiversionPlanOptions } from './utils/ParticipantProfileUtils';
-import { getEntityKeyId, getEntityProperties, sortEntitiesByDateProperty } from '../../utils/DataUtils';
-import { isDefined } from '../../utils/LangUtils';
-import { generateTableHeaders } from '../../utils/FormattingUtils';
-import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { ENROLLMENT_STATUSES } from '../../core/edm/constants/DataModelConsts';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { goToRoute } from '../../core/router/RoutingActions';
+import { PARTICIPANT_PROFILE_WIDTH } from '../../core/style/Sizes';
+import { getEntityKeyId, getEntityProperties, sortEntitiesByDateProperty } from '../../utils/DataUtils';
+import { generateTableHeaders } from '../../utils/FormattingUtils';
+import { isDefined } from '../../utils/LangUtils';
 import {
   APP,
+  CHARGES,
   PERSON,
   PERSON_INFRACTIONS,
   STATE,
@@ -58,8 +56,10 @@ import {
 } from '../../utils/constants/ReduxStateConsts';
 import type { GoToRoute } from '../../core/router/RoutingActions';
 
+const { NEUTRAL } = Colors;
 const {
   CHECK_IN_DATETIME,
+  CHECK_IN_DEADLINE,
   DATETIME_END,
   DATETIME_RECEIVED,
   DATETIME_START,
@@ -73,12 +73,12 @@ const {
   STATUS,
 } = PROPERTY_TYPE_FQNS;
 
+const { ENTITY_SET_IDS_BY_ORG, SELECTED_ORG_ID } = APP;
+const { ARREST_CHARGE_MAPS_CREATED_IN_CWP, ARREST_CHARGE_MAPS_CREATED_IN_PSA } = CHARGES;
 const {
   ACTIONS,
   ADDRESS,
   ALL_DIVERSION_PLANS,
-  CHARGES_FOR_CASE,
-  CREATE_NEW_ENROLLMENT,
   DIVERSION_PLAN,
   EMAIL,
   ENROLLMENT_STATUS,
@@ -110,7 +110,6 @@ const ENROLLMENT_STATUSES_EXCLUDING_PREENROLLMENT = Object.values(ENROLLMENT_STA
 export const enrollmentHeaderNames = ['STATUS', 'SENTENCE', 'ORIENTATION', 'COMPLETION', 'HOURS'];
 
 /* Constants for Modals */
-const NEW_ENROLLMENT = 'showNewEnrollmentModal';
 const ASSIGN_WORKSITE = 'showAssignWorksiteModal';
 const WORK_APPOINTMENT = 'showWorkAppointmentModal';
 
@@ -139,7 +138,7 @@ const GeneralInfoSection = styled.div`
   font-size: 13px;
   grid-gap: 16px 33px;
   grid-template-columns: 383px 1fr;
-  height: 836px;
+  height: 800px;
   margin-bottom: 30px;
   overflow-x: visible;
   overflow-y: auto;
@@ -178,9 +177,9 @@ const TopRowWrapper = styled.div`
 `;
 
 const NameHeader = styled.div`
+  color: ${NEUTRAL.N900};
   font-size: 26px;
   font-weight: 600;
-  color: ${OL.BLACK};
 `;
 
 const ButtonsWrapper = styled.div`
@@ -204,20 +203,21 @@ const EnrollmentControlsWrapper = styled.div`
 
 type Props = {
   actions:{
+    clearAppointmentsAndPlans :() => { type :string };
     getAllParticipantInfo :RequestSequence;
     getEnrollmentFromDiversionPlan :RequestSequence;
     goToRoute :GoToRoute;
   };
   address :Map;
   allDiversionPlans :List;
-  app :Map;
-  chargesForCase :List;
+  arrestChargeMapsCreatedInCWP :List;
+  arrestChargeMapsCreatedInPSA :List;
   checkInsByAppointment :Map;
-  createNewEnrollmentRequestState :RequestState;
   diversionPlan :Map;
   email :Map;
   enrollmentHistoryData :List;
   enrollmentStatus :Map;
+  entitySetIds :Map;
   getAllParticipantInfoRequestState :RequestState;
   getEnrollmentFromDiversionPlanRequestState :RequestState;
   initializeAppRequestState :RequestState;
@@ -240,7 +240,6 @@ type Props = {
 type State = {
   workStartDateTime :string;
   showAssignWorksiteModal :boolean;
-  showNewEnrollmentModal :boolean;
   showWorkAppointmentModal :boolean;
   worksiteNamesByWorksitePlan :Map;
 };
@@ -253,29 +252,27 @@ class ParticipantProfile extends Component<Props, State> {
     this.state = {
       workStartDateTime: '',
       [ASSIGN_WORKSITE]: false,
-      [NEW_ENROLLMENT]: false,
       [WORK_APPOINTMENT]: false,
       worksiteNamesByWorksitePlan: Map(),
     };
   }
 
   componentDidMount() {
-    const { app } = this.props;
-    if (app.get(APP_TYPE_FQNS.PEOPLE)) {
+    const { entitySetIds } = this.props;
+    if (entitySetIds.has(APP_TYPE_FQNS.PEOPLE)) {
       this.loadProfile();
     }
   }
 
   componentDidUpdate(prevProps :Props) {
     const {
-      app,
       checkInsByAppointment,
-      createNewEnrollmentRequestState,
+      entitySetIds,
       getAllParticipantInfoRequestState,
       worksitesByWorksitePlan,
       worksitesList,
     } = this.props;
-    if (!prevProps.app.get(APP_TYPE_FQNS.PEOPLE) && app.get(APP_TYPE_FQNS.PEOPLE)) {
+    if (!prevProps.entitySetIds.has(APP_TYPE_FQNS.PEOPLE) && entitySetIds.has(APP_TYPE_FQNS.PEOPLE)) {
       this.loadProfile();
     }
     if ((prevProps.getAllParticipantInfoRequestState === RequestStates.PENDING
@@ -285,11 +282,11 @@ class ParticipantProfile extends Component<Props, State> {
         || !prevProps.checkInsByAppointment.equals(checkInsByAppointment)) {
       this.setWorkAndWorksiteInfo();
     }
-    if (prevProps.createNewEnrollmentRequestState === RequestStates.PENDING
-      && createNewEnrollmentRequestState !== RequestStates.PENDING) {
-      this.loadProfile();
-      this.handleHideModal(NEW_ENROLLMENT);
-    }
+  }
+
+  componentWillUnmount() {
+    const { actions } = this.props;
+    actions.clearAppointmentsAndPlans();
   }
 
   loadProfile = () => {
@@ -356,13 +353,29 @@ class ParticipantProfile extends Component<Props, State> {
   }
 
   editCaseInfo = () => {
-    const { actions, personEKID } = this.props;
-    actions.goToRoute(Routes.EDIT_CASE_INFO.replace(':participantId', personEKID));
+    const { actions, diversionPlan, personEKID } = this.props;
+    const diversionPlanEKID :UUID = getEntityKeyId(diversionPlan);
+    actions.goToRoute(Routes.EDIT_CASE_INFO
+      .replace(':participantId', personEKID)
+      .replace(':diversionPlanId', diversionPlanEKID));
   }
 
   editEnrollmentDates = () => {
+    const { actions, diversionPlan, personEKID } = this.props;
+    const diversionPlanEKID :UUID = getEntityKeyId(diversionPlan);
+    actions.goToRoute(Routes.EDIT_DATES
+      .replace(':participantId', personEKID)
+      .replace(':diversionPlanId', diversionPlanEKID));
+  }
+
+  goToNewEnrollmentForm = () => {
     const { actions, personEKID } = this.props;
-    actions.goToRoute(Routes.EDIT_DATES.replace(':participantId', personEKID));
+    actions.goToRoute(Routes.CREATE_NEW_ENROLLMENT.replace(':participantId', personEKID));
+  }
+
+  goBackToParticipants = () => {
+    const { actions } = this.props;
+    actions.goToRoute(Routes.PARTICIPANTS);
   }
 
   selectDiversionPlan = (option :Object) => {
@@ -373,10 +386,10 @@ class ParticipantProfile extends Component<Props, State> {
 
   render() {
     const {
-      actions,
       address,
       allDiversionPlans,
-      chargesForCase,
+      arrestChargeMapsCreatedInCWP,
+      arrestChargeMapsCreatedInPSA,
       diversionPlan,
       email,
       enrollmentHistoryData,
@@ -400,7 +413,6 @@ class ParticipantProfile extends Component<Props, State> {
     } = this.props;
     const {
       showAssignWorksiteModal,
-      showNewEnrollmentModal,
       showWorkAppointmentModal,
       workStartDateTime,
       worksiteNamesByWorksitePlan
@@ -427,6 +439,7 @@ class ParticipantProfile extends Component<Props, State> {
     const diversionPlanEKID :UUID = getEntityKeyId(diversionPlan);
     const {
       [CHECK_IN_DATETIME]: checkInDate,
+      [CHECK_IN_DEADLINE]: checkInDeadline,
       [DATETIME_END]: sentenceEndDateTime,
       [DATETIME_RECEIVED]: sentenceDate,
       [ORIENTATION_DATETIME]: orientationDateTime,
@@ -434,6 +447,7 @@ class ParticipantProfile extends Component<Props, State> {
       [REQUIRED_HOURS]: requiredHours,
     } = getEntityProperties(diversionPlan, [
       CHECK_IN_DATETIME,
+      CHECK_IN_DEADLINE,
       DATETIME_END,
       DATETIME_RECEIVED,
       NOTES,
@@ -459,10 +473,7 @@ class ParticipantProfile extends Component<Props, State> {
           <GeneralInfoSection>
             <ProfileInfoColumnWrapper>
               <TopRowWrapper>
-                <BackNavButton
-                    onClick={() => {
-                      actions.goToRoute(Routes.PARTICIPANTS);
-                    }}>
+                <BackNavButton onClick={this.goBackToParticipants}>
                   Back to Participants
                 </BackNavButton>
               </TopRowWrapper>
@@ -482,7 +493,7 @@ class ParticipantProfile extends Component<Props, State> {
                     onChange={this.selectDiversionPlan}
                     options={diversionPlanOptions}
                     value={diversionPlanOptions.find((option) => (option.value).equals(diversionPlan))} />
-                <Button onClick={() => this.handleShowModal(NEW_ENROLLMENT)}>Create New Enrollment</Button>
+                <Button onClick={this.goToNewEnrollmentForm}>Create New Enrollment</Button>
               </EnrollmentControlsWrapper>
               <EnrollmentStatusSection
                   enrollmentStatus={enrollmentStatus}
@@ -491,13 +502,15 @@ class ParticipantProfile extends Component<Props, State> {
                   warnings={warnings} />
               <EnrollmentDates
                   checkInDate={checkInDate}
+                  checkInDeadline={checkInDeadline}
                   edit={this.editEnrollmentDates}
                   orientationDateTime={orientationDateTime}
                   sentenceDateTime={sentenceDate}
                   sentenceEndDateTime={sentenceEndDateTime}
                   workStartDateTime={workStartDateTime} />
               <CaseInfoSection
-                  charges={chargesForCase}
+                  arrestChargeMapsCreatedInCWP={arrestChargeMapsCreatedInCWP}
+                  arrestChargeMapsCreatedInPSA={arrestChargeMapsCreatedInPSA}
                   edit={this.editCaseInfo}
                   hours={requiredHours}
                   judge={judge}
@@ -509,41 +522,12 @@ class ParticipantProfile extends Component<Props, State> {
           {
             ENROLLMENT_STATUSES_EXCLUDING_PREENROLLMENT.includes(status) && (
               <ProfileBody>
-                <NameRowWrapper>
-                  <NameHeader>Assigned Work Sites</NameHeader>
-                  <Button onClick={() => this.handleShowModal(ASSIGN_WORKSITE)}>Add Work Site</Button>
-                </NameRowWrapper>
-                {
-                  worksitePlansList.isEmpty()
-                    ? (
-                      <Card>
-                        <CardSegment>
-                          <IconSplash
-                              caption="No Assigned Work Sites"
-                              icon={faTools}
-                              size="3x" />
-                        </CardSegment>
-                      </Card>
-                    )
-                    : (
-                      <CardStack>
-                        {
-                          worksitePlansList.map((worksitePlan :Map) => {
-                            const worksitePlanEKID :UUID = getEntityKeyId(worksitePlan);
-                            const worksite :Map = worksitesByWorksitePlan.get(worksitePlanEKID);
-                            const worksitePlanStatus :Map = worksitePlanStatuses.get(worksitePlanEKID);
-                            return (
-                              <AssignedWorksite
-                                  key={worksitePlanEKID}
-                                  status={worksitePlanStatus}
-                                  worksite={worksite}
-                                  worksitePlan={worksitePlan} />
-                            );
-                          })
-                        }
-                      </CardStack>
-                    )
-                }
+                <AssignedWorksitesContainer
+                    assignWorksiteModal={ASSIGN_WORKSITE}
+                    handleShowModal={this.handleShowModal}
+                    worksitePlanStatuses={worksitePlanStatuses}
+                    worksitePlansList={worksitePlansList}
+                    worksitesByWorksitePlan={worksitesByWorksitePlan} />
               </ProfileBody>
             )
           }
@@ -579,7 +563,7 @@ class ParticipantProfile extends Component<Props, State> {
               <NameHeader>Enrollment History</NameHeader>
             </NameRowWrapper>
             <Card>
-              <CardSegment vertical>
+              <CardSegment>
                 <Table
                     components={{
                       Row: EnrollmentTableRow
@@ -600,9 +584,6 @@ class ParticipantProfile extends Component<Props, State> {
               isOpen={showWorkAppointmentModal}
               onClose={() => this.handleHideModal(WORK_APPOINTMENT)}
               personEKID={personEKID} />
-          <CreateNewEnrollmentModal
-              isOpen={showNewEnrollmentModal}
-              onClose={() => this.handleHideModal(NEW_ENROLLMENT)} />
         </ProfileWrapper>
       </>
     );
@@ -611,25 +592,22 @@ class ParticipantProfile extends Component<Props, State> {
 
 const mapStateToProps = (state :Map<*, *>) => {
   const app = state.get(STATE.APP);
+  const charges = state.get(STATE.CHARGES);
   const infractions = state.get(STATE.INFRACTIONS);
   const person = state.get(STATE.PERSON);
   const worksitePlans = state.get(STATE.WORKSITE_PLANS);
   const worksites = state.get(STATE.WORKSITES);
+  const selectedOrgId :string = app.get(SELECTED_ORG_ID);
   return {
     [ADDRESS]: person.get(ADDRESS),
     [ALL_DIVERSION_PLANS]: person.get(ALL_DIVERSION_PLANS),
-    app,
-    [CHARGES_FOR_CASE]: person.get(CHARGES_FOR_CASE),
     [CHECK_INS_BY_APPOINTMENT]: worksitePlans.get(CHECK_INS_BY_APPOINTMENT),
-    createNewEnrollmentRequestState: person.getIn([ACTIONS, CREATE_NEW_ENROLLMENT, REQUEST_STATE]),
+    [ARREST_CHARGE_MAPS_CREATED_IN_CWP]: charges.get(ARREST_CHARGE_MAPS_CREATED_IN_CWP),
+    [ARREST_CHARGE_MAPS_CREATED_IN_PSA]: charges.get(ARREST_CHARGE_MAPS_CREATED_IN_PSA),
     [DIVERSION_PLAN]: person.get(DIVERSION_PLAN),
     [EMAIL]: person.get(EMAIL),
     [ENROLLMENT_HISTORY_DATA]: person.get(ENROLLMENT_HISTORY_DATA),
     [ENROLLMENT_STATUS]: person.get(ENROLLMENT_STATUS),
-    getAllParticipantInfoRequestState: person.getIn([ACTIONS, GET_ALL_PARTICIPANT_INFO, REQUEST_STATE]),
-    getEnrollmentFromDiversionPlanRequestState: person
-      .getIn([ACTIONS, GET_ENROLLMENT_FROM_DIVERSION_PLAN, REQUEST_STATE]),
-    initializeAppRequestState: app.getIn([APP.ACTIONS, APP.INITIALIZE_APPLICATION, APP.REQUEST_STATE]),
     [JUDGE]: person.get(JUDGE),
     [PARTICIPANT]: person.get(PARTICIPANT),
     [PERSON_CASE]: person.get(PERSON_CASE),
@@ -638,16 +616,22 @@ const mapStateToProps = (state :Map<*, *>) => {
     [PROGRAM_OUTCOME]: person.get(PROGRAM_OUTCOME),
     [VIOLATIONS]: infractions.get(VIOLATIONS),
     [WARNINGS]: infractions.get(WARNINGS),
-    [WORK_APPOINTMENTS_BY_WORKSITE_PLAN]: worksitePlans.get(WORK_APPOINTMENTS_BY_WORKSITE_PLAN),
     [WORKSITES_BY_WORKSITE_PLAN]: worksitePlans.get(WORKSITES_BY_WORKSITE_PLAN),
+    [WORKSITES_LIST]: worksites.get(WORKSITES_LIST),
     [WORKSITE_PLANS_LIST]: worksitePlans.get(WORKSITE_PLANS_LIST),
     [WORKSITE_PLAN_STATUSES]: worksitePlans.get(WORKSITE_PLAN_STATUSES),
-    [WORKSITES_LIST]: worksites.get(WORKSITES_LIST),
+    [WORK_APPOINTMENTS_BY_WORKSITE_PLAN]: worksitePlans.get(WORK_APPOINTMENTS_BY_WORKSITE_PLAN),
+    entitySetIds: app.getIn([ENTITY_SET_IDS_BY_ORG, selectedOrgId], Map()),
+    getAllParticipantInfoRequestState: person.getIn([ACTIONS, GET_ALL_PARTICIPANT_INFO, REQUEST_STATE]),
+    getEnrollmentFromDiversionPlanRequestState: person
+      .getIn([ACTIONS, GET_ENROLLMENT_FROM_DIVERSION_PLAN, REQUEST_STATE]),
+    initializeAppRequestState: app.getIn([APP.ACTIONS, APP.INITIALIZE_APPLICATION, APP.REQUEST_STATE]),
   };
 };
 
 const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
+    clearAppointmentsAndPlans,
     getAllParticipantInfo,
     getEnrollmentFromDiversionPlan,
     goToRoute,

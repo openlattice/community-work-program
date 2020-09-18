@@ -1,62 +1,68 @@
 // @flow
 import React, { Component } from 'react';
-import styled from 'styled-components';
-import toString from 'lodash/toString';
-import { Badge, CardStack, Tag } from 'lattice-ui-kit';
-import { List, Map } from 'immutable';
-import { DateTime } from 'luxon';
-import { bindActionCreators } from 'redux';
-import { connect } from 'react-redux';
-import { RequestStates } from 'redux-reqseq';
-import type { RequestSequence, RequestState } from 'redux-reqseq';
 import type { Element } from 'react';
 
-import LogoLoader from '../../components/LogoLoader';
-import NoParticipantsFound from './NoParticipantsFound';
-import ParticipantsTableRow from '../../components/table/ParticipantsTableRow';
-import TableHeaderRow from '../../components/table/TableHeaderRow';
-import TableHeadCell from '../../components/table/TableHeadCell';
-
+import styled from 'styled-components';
+import toString from 'lodash/toString';
+import { List, Map } from 'immutable';
 import {
-  TableCell,
-  CustomTable,
-  TableCard,
-  TableHeader,
-  TableName,
-} from '../../components/table/styled/index';
-import { ErrorMessage } from '../../components/Layout';
-import { getDiversionPlans } from '../participants/ParticipantsActions';
-import { goToRoute } from '../../core/router/RoutingActions';
-import { clearAppointmentsAndPlans } from '../participant/assignedworksites/WorksitePlanActions';
-import { PARTICIPANT_PROFILE } from '../../core/router/Routes';
-import { DASHBOARD_WIDTH } from '../../core/style/Sizes';
-import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
-import { getCheckInDeadline, getDateInISOFormat } from '../../utils/ScheduleUtils';
-import { formatAsDate } from '../../utils/DateTimeUtils';
-import { getPersonFullName, getHoursServed, getPersonPictureForTable } from '../../utils/PeopleUtils';
-import { generateTableHeaders } from '../../utils/FormattingUtils';
-import { ENROLLMENT_STATUSES, HOURS_CONSTS, INFRACTIONS_CONSTS } from '../../core/edm/constants/DataModelConsts';
-import { PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
-import { APP, PEOPLE, STATE } from '../../utils/constants/ReduxStateConsts';
+  Badge,
+  CardStack,
+  Colors,
+  Tag,
+} from 'lattice-ui-kit';
+import { DateTime } from 'luxon';
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+import { RequestStates } from 'redux-reqseq';
+import type { RequestSequence, RequestState } from 'redux-reqseq';
+
+import NoParticipantsFound from './NoParticipantsFound';
 import {
   NEW_PARTICIPANTS_COLUMNS,
   PENDING_PARTICIPANTS_COLUMNS,
   VIOLATIONS_WATCH_COLUMNS,
 } from './DashboardConstants';
+
+import LogoLoader from '../../components/LogoLoader';
+import ParticipantsTableRow from '../../components/table/ParticipantsTableRow';
+import TableHeadCell from '../../components/table/TableHeadCell';
+import TableHeaderRow from '../../components/table/TableHeaderRow';
+import { ErrorMessage } from '../../components/Layout';
+import {
+  CustomTable,
+  TableCard,
+  TableCell,
+  TableHeader,
+  TableName,
+} from '../../components/table/styled/index';
+import { ENROLLMENT_STATUSES, HOURS_CONSTS, INFRACTIONS_CONSTS } from '../../core/edm/constants/DataModelConsts';
+import { PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { PARTICIPANT_PROFILE } from '../../core/router/Routes';
+import { goToRoute } from '../../core/router/RoutingActions';
+import { DASHBOARD_WIDTH } from '../../core/style/Sizes';
+import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
+import { formatAsDate } from '../../utils/DateTimeUtils';
+import { generateTableHeaders } from '../../utils/FormattingUtils';
+import { getHoursServed, getPersonFullName, getPersonPictureForTable } from '../../utils/PeopleUtils';
+import { getCheckInDeadline, getDateInISOFormat } from '../../utils/ScheduleUtils';
+import { APP, PEOPLE, STATE } from '../../utils/constants/ReduxStateConsts';
+import { getDiversionPlans } from '../participants/ParticipantsActions';
 import { EMPTY_FIELD } from '../participants/ParticipantsConstants';
-import { OL } from '../../core/style/Colors';
 import type { GoToRoute } from '../../core/router/RoutingActions';
 
-/* constants */
-const { DATETIME_RECEIVED, STATUS } = PROPERTY_TYPE_FQNS;
+const { GREEN, RED, WHITE } = Colors;
+const { CHECK_IN_DEADLINE, DATETIME_RECEIVED, STATUS } = PROPERTY_TYPE_FQNS;
 const { REQUIRED, WORKED } = HOURS_CONSTS;
 const {
   CURRENT_DIVERSION_PLANS_BY_PARTICIPANT,
   ENROLLMENT_BY_PARTICIPANT,
   HOURS_WORKED,
   INFRACTION_COUNTS_BY_PARTICIPANT,
+  PARTICIPANT_PHOTOS_BY_PARTICIPANT_EKID,
   PARTICIPANTS,
 } = PEOPLE;
+const { ENTITY_SET_IDS_BY_ORG } = APP;
 
 const tableComponents :Object = {
   Cell: TableCell,
@@ -82,30 +88,30 @@ const DashboardBody = styled.div`
 `;
 
 const SubtleTag = styled(Tag)`
-  background-color: ${OL.WHITE};
-  border: 0.5px solid ${OL.GREEN02};
-  color: ${OL.GREEN02};
+  background-color: ${WHITE};
+  border: 0.5px solid ${GREEN.G300};
+  color: ${GREEN.G300};
   font-weight: 500;
 `;
 
 const ReportTag = styled(SubtleTag)`
-  border-color: ${OL.RED01};
-  color: ${OL.RED01};
+  border-color: ${RED.R300};
+  color: ${RED.R300};
 `;
 
 type Props = {
   actions:{
-    clearAppointmentsAndPlans :RequestSequence;
     getDiversionPlans :RequestSequence;
     goToRoute :GoToRoute;
   };
-  app :Map;
   currentDiversionPlansByParticipant :Map;
   enrollmentByParticipant :Map;
+  entitySetIds :Map;
   initializeAppRequestState :RequestState;
   getDiversionPlansRequestState :RequestState;
   hoursWorked :Map;
   infractionCountsByParticipant :Map;
+  participantPhotosByParticipantEKID :Map;
   participants :List;
 };
 
@@ -133,8 +139,8 @@ class DashboardContainer extends Component<Props, State> {
   }
 
   componentDidMount() {
-    const { actions, app, participants } = this.props;
-    if (app.get(APP.SELECTED_ORG_ID)) {
+    const { actions, entitySetIds, participants } = this.props;
+    if (entitySetIds.count() > 0) {
       actions.getDiversionPlans();
     }
     if (participants.count() > 0) {
@@ -144,12 +150,11 @@ class DashboardContainer extends Component<Props, State> {
   }
 
   componentDidUpdate(prevProps :Props) {
-    const { actions, app, participants } = this.props;
-    if (prevProps.app.count() !== app.count()
-      || prevProps.app.get(APP.SELECTED_ORG_ID) !== app.get(APP.SELECTED_ORG_ID)) {
+    const { actions, entitySetIds, participants } = this.props;
+    if (!prevProps.entitySetIds.count() > 0 && entitySetIds.count() > 0) {
       actions.getDiversionPlans();
     }
-    if (prevProps.participants.count() !== participants.count()) {
+    if (!prevProps.participants.equals(participants)) {
       this.setParticipantsWithHoursComplete();
       this.setParticipantsWithViolations();
     }
@@ -157,7 +162,6 @@ class DashboardContainer extends Component<Props, State> {
 
   handleOnSelectPerson = (personEKID :string) => {
     const { actions } = this.props;
-    actions.clearAppointmentsAndPlans();
     actions.goToRoute(PARTICIPANT_PROFILE.replace(':participantId', personEKID));
   }
 
@@ -247,9 +251,12 @@ class DashboardContainer extends Component<Props, State> {
     const noShows :List = participants.filter((participant :Map) => {
       const personEKID :UUID = getEntityKeyId(participant);
       const diversionPlan = currentDiversionPlansByParticipant.get(personEKID);
-      const { [DATETIME_RECEIVED]: sentenceDate } = getEntityProperties(diversionPlan, [DATETIME_RECEIVED]);
+      const {
+        [CHECK_IN_DEADLINE]: checkInDeadlineDateTime,
+        [DATETIME_RECEIVED]: sentenceDate,
+      } = getEntityProperties(diversionPlan, [CHECK_IN_DEADLINE, DATETIME_RECEIVED]);
 
-      const checkInDeadline :string = getCheckInDeadline(sentenceDate);
+      const checkInDeadline :string = getCheckInDeadline(sentenceDate, checkInDeadlineDateTime);
       if (checkInDeadline === EMPTY_FIELD) {
         return false;
       }
@@ -275,6 +282,7 @@ class DashboardContainer extends Component<Props, State> {
     const {
       currentDiversionPlansByParticipant,
       hoursWorked,
+      participantPhotosByParticipantEKID,
     } = this.props;
     const { newParticipants } = this.state;
 
@@ -284,15 +292,18 @@ class DashboardContainer extends Component<Props, State> {
 
         const personEKID :UUID = getEntityKeyId(person);
         const diversionPlan :Map = currentDiversionPlansByParticipant.get(personEKID);
-        const { [DATETIME_RECEIVED]: sentenceDateTime } = getEntityProperties(diversionPlan, [DATETIME_RECEIVED]);
+        const {
+          [CHECK_IN_DEADLINE]: checkInDeadlineDateTime,
+          [DATETIME_RECEIVED]: sentenceDateTime,
+        } = getEntityProperties(diversionPlan, [CHECK_IN_DEADLINE, DATETIME_RECEIVED]);
         const sentenceDate :string = formatAsDate(sentenceDateTime);
-        const checkInDeadline :string = getCheckInDeadline(sentenceDateTime);
+        const checkInDeadline :string = getCheckInDeadline(sentenceDateTime, checkInDeadlineDateTime);
         const personHours :Map = hoursWorked.get(personEKID);
         let requiredHours :number | string = personHours.get(REQUIRED, EMPTY_FIELD);
         requiredHours = toString(requiredHours);
 
         const personRow :Object = {
-          [NEW_PARTICIPANTS_COLUMNS[0]]: getPersonPictureForTable(person, true),
+          [NEW_PARTICIPANTS_COLUMNS[0]]: getPersonPictureForTable(person, true, participantPhotosByParticipantEKID),
           [NEW_PARTICIPANTS_COLUMNS[1]]: getPersonFullName(person),
           [NEW_PARTICIPANTS_COLUMNS[2]]: sentenceDate,
           [NEW_PARTICIPANTS_COLUMNS[3]]: checkInDeadline,
@@ -309,6 +320,7 @@ class DashboardContainer extends Component<Props, State> {
     const {
       currentDiversionPlansByParticipant,
       hoursWorked,
+      participantPhotosByParticipantEKID,
     } = this.props;
     const { pendingCompletionReview } = this.state;
 
@@ -325,7 +337,7 @@ class DashboardContainer extends Component<Props, State> {
         requiredHours = toString(requiredHours);
 
         const personRow :Object = {
-          [PENDING_PARTICIPANTS_COLUMNS[0]]: getPersonPictureForTable(person, true),
+          [PENDING_PARTICIPANTS_COLUMNS[0]]: getPersonPictureForTable(person, true, participantPhotosByParticipantEKID),
           [PENDING_PARTICIPANTS_COLUMNS[1]]: getPersonFullName(person),
           [PENDING_PARTICIPANTS_COLUMNS[2]]: sentenceDate,
           [PENDING_PARTICIPANTS_COLUMNS[3]]: requiredHours,
@@ -339,7 +351,7 @@ class DashboardContainer extends Component<Props, State> {
   }
 
   aggregateViolationsWatchData = () => {
-    const { hoursWorked } = this.props;
+    const { hoursWorked, participantPhotosByParticipantEKID } = this.props;
     const { noShows, violationMap, violationsWatch } = this.state;
 
     const data :Object[] = [];
@@ -358,7 +370,7 @@ class DashboardContainer extends Component<Props, State> {
         if (noShows.includes(person)) reportTag = <ReportTag>Report</ReportTag>;
 
         const personRow :Object = {
-          [VIOLATIONS_WATCH_COLUMNS[0]]: getPersonPictureForTable(person, true),
+          [VIOLATIONS_WATCH_COLUMNS[0]]: getPersonPictureForTable(person, true, participantPhotosByParticipantEKID),
           [VIOLATIONS_WATCH_COLUMNS[1]]: getPersonFullName(person),
           [VIOLATIONS_WATCH_COLUMNS[2]]: toString(violationsCount),
           [VIOLATIONS_WATCH_COLUMNS[3]]: hoursServed,
@@ -480,20 +492,20 @@ const mapStateToProps = (state :Map<*, *>) => {
   const app = state.get(STATE.APP);
   const people = state.get(STATE.PEOPLE);
   return {
-    app,
     [CURRENT_DIVERSION_PLANS_BY_PARTICIPANT]: people.get(CURRENT_DIVERSION_PLANS_BY_PARTICIPANT),
     [ENROLLMENT_BY_PARTICIPANT]: people.get(ENROLLMENT_BY_PARTICIPANT),
-    getDiversionPlansRequestState: people.getIn([PEOPLE.ACTIONS, PEOPLE.GET_DIVERSION_PLANS, PEOPLE.REQUEST_STATE]),
     [HOURS_WORKED]: people.get(HOURS_WORKED),
     [INFRACTION_COUNTS_BY_PARTICIPANT]: people.get(INFRACTION_COUNTS_BY_PARTICIPANT),
-    initializeAppRequestState: app.getIn([APP.ACTIONS, APP.INITIALIZE_APPLICATION, APP.REQUEST_STATE]),
     [PARTICIPANTS]: people.get(PARTICIPANTS),
+    [PARTICIPANT_PHOTOS_BY_PARTICIPANT_EKID]: people.get(PARTICIPANT_PHOTOS_BY_PARTICIPANT_EKID),
+    entitySetIds: app.get(ENTITY_SET_IDS_BY_ORG, Map()),
+    getDiversionPlansRequestState: people.getIn([PEOPLE.ACTIONS, PEOPLE.GET_DIVERSION_PLANS, PEOPLE.REQUEST_STATE]),
+    initializeAppRequestState: app.getIn([APP.ACTIONS, APP.INITIALIZE_APPLICATION, APP.REQUEST_STATE]),
   };
 };
 
 const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
-    clearAppointmentsAndPlans,
     getDiversionPlans,
     goToRoute,
   }, dispatch)

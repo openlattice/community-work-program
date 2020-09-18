@@ -1,35 +1,37 @@
 // @flow
 import React, { Component } from 'react';
+
 import styled from 'styled-components';
 import { List, Map } from 'immutable';
-import { CardStack } from 'lattice-ui-kit';
-import { withRouter } from 'react-router-dom';
+import { CardStack, Colors } from 'lattice-ui-kit';
 import { connect } from 'react-redux';
+import { withRouter } from 'react-router-dom';
 import { bindActionCreators } from 'redux';
 import { RequestStates } from 'redux-reqseq';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
 import WorksitesByOrgCard from './WorksitesByOrgCard';
-import AddOrganizationModal from '../organizations/AddOrganizationModal';
-import LogoLoader from '../../components/LogoLoader';
-
-import { getOrganizations, getWorksitesByOrg, getWorksitePlans } from './WorksitesActions';
-import { ContainerHeader, ContainerInnerWrapper, ContainerOuterWrapper } from '../../components/Layout';
-import { ToolBar } from '../../components/controls/index';
-import { isDefined } from '../../utils/LangUtils';
-import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
+import { getOrganizations, getWorksitePlans, getWorksitesByOrg } from './WorksitesActions';
 import {
   ALL,
   FILTERS,
-  statusFilterDropdown,
-  WORKSITE_STATUSES
+  WORKSITE_STATUSES,
+  statusFilterDropdown
 } from './WorksitesConstants';
-import { APP, STATE, WORKSITES } from '../../utils/constants/ReduxStateConsts';
-import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
-import { OL } from '../../core/style/Colors';
 
+import AddOrganizationModal from '../organizations/AddOrganizationModal';
+import LogoLoader from '../../components/LogoLoader';
+import { ContainerHeader, ContainerInnerWrapper, ContainerOuterWrapper } from '../../components/Layout';
+import { ToolBar } from '../../components/controls/index';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
+import { isDefined } from '../../utils/LangUtils';
+import { APP, STATE, WORKSITES } from '../../utils/constants/ReduxStateConsts';
+
+const { NEUTRAL } = Colors;
 const { ORGANIZATION } = APP_TYPE_FQNS;
 const { ORGANIZATION_NAME } = PROPERTY_TYPE_FQNS;
+const { ENTITY_SET_IDS_BY_ORG, SELECTED_ORG_ID } = APP;
 const {
   ACTIONS,
   GET_ORGANIZATIONS,
@@ -46,7 +48,6 @@ const dropdowns :List = List().withMutations((list :List) => {
 const defaultFilterOption :Map = statusFilterDropdown.get('enums')
   .find((obj :Object) => obj.value.toUpperCase() === ALL);
 
-
 const HeaderWrapper = styled.div`
   display: flex;
   flex-direction: column;
@@ -61,13 +62,13 @@ const SubHeaderWrapper = styled.div`
 `;
 
 const ContainerSubHeader = styled(ContainerHeader)`
-  color: ${OL.GREY02};
-  font-size: 14px;
+  color: ${NEUTRAL.N500};
+  font-size: 18px;
 `;
 
 const Separator = styled.div`
   align-items: center;
-  color: ${OL.GREY02};
+  color: ${NEUTRAL.N500};
   display: flex;
   font-weight: 600;
   justify-content: center;
@@ -80,7 +81,7 @@ type Props = {
     getWorksitesByOrg :RequestSequence;
     getWorksitePlans :RequestSequence;
   },
-  app :Map;
+  entitySetIds :Map;
   getOrganizationsRequestState :RequestState;
   initializeAppRequestState :RequestState;
   organizationsList :List;
@@ -108,20 +109,20 @@ class WorksitesContainer extends Component<Props, State> {
   }
 
   componentDidMount() {
-    const { actions, app } = this.props;
-    if (app.get(ORGANIZATION)) {
+    const { actions, entitySetIds } = this.props;
+    if (entitySetIds.has(ORGANIZATION)) {
       actions.getOrganizations();
     }
   }
 
   componentDidUpdate(prevProps :Props) {
     const {
-      app,
+      entitySetIds,
       actions,
       organizationsList,
     } = this.props;
-    const prevOrganizationESID = prevProps.app.get(ORGANIZATION);
-    const organizationESID = app.get(ORGANIZATION);
+    const prevOrganizationESID = prevProps.entitySetIds.get(ORGANIZATION);
+    const organizationESID = entitySetIds.get(ORGANIZATION);
     // if app types have loaded successfully:
     if (!prevOrganizationESID && organizationESID) {
       actions.getOrganizations();
@@ -275,7 +276,7 @@ class WorksitesContainer extends Component<Props, State> {
             {
               organizationsToRender.map((org :Map) => {
                 const orgEKID :UUID = getEntityKeyId(org);
-                const orgWorksites = worksitesByOrg.get(orgEKID);
+                const orgWorksites :List = worksitesByOrg.get(orgEKID, List());
                 const orgWorksiteCount :number = orgWorksites.count();
                 return (
                   <WorksitesByOrgCard
@@ -300,14 +301,15 @@ class WorksitesContainer extends Component<Props, State> {
 const mapStateToProps = (state :Map<*, *>) => {
   const app = state.get(STATE.APP);
   const worksites = state.get(STATE.WORKSITES);
+  const selectedOrgId :string = app.get(SELECTED_ORG_ID);
   return {
-    app,
-    getOrganizationsRequestState: worksites.getIn([ACTIONS, GET_ORGANIZATIONS, REQUEST_STATE]),
-    initializeAppRequestState: app.getIn([APP.ACTIONS, APP.INITIALIZE_APPLICATION, APP.REQUEST_STATE]),
     [ORGANIZATIONS_LIST]: worksites.get(ORGANIZATIONS_LIST),
     [ORGANIZATION_STATUSES]: worksites.get(ORGANIZATION_STATUSES),
     [WORKSITES_BY_ORG]: worksites.get(WORKSITES_BY_ORG),
     [WORKSITES_INFO]: worksites.get(WORKSITES_INFO),
+    entitySetIds: app.getIn([ENTITY_SET_IDS_BY_ORG, selectedOrgId], Map()),
+    getOrganizationsRequestState: worksites.getIn([ACTIONS, GET_ORGANIZATIONS, REQUEST_STATE]),
+    initializeAppRequestState: app.getIn([APP.ACTIONS, APP.INITIALIZE_APPLICATION, APP.REQUEST_STATE]),
   };
 };
 

@@ -23,13 +23,18 @@ export const SEARCH_PREFIX = 'entity';
 
 /* Demographics */
 export const RACE_VALUES = [
-  'American Indian',
-  'Asian / Pacific Islander',
-  'Black / African American',
-  'Hispanic / Latino (Non-White)',
   'White',
-  'Unknown',
+  'Black or African American',
+  'American Indian or Alaska Native',
+  'Asian',
+  'Native Hawaiian or Other Pacific Islander',
   'Other Not Specified',
+  'Unknown',
+];
+
+export const ETHNICITY_VALUES = [
+  'Hispanic or Latino',
+  'Not Hispanic or Latino'
 ];
 
 export const SEX_VALUES = [
@@ -51,6 +56,17 @@ export const COURT_TYPES = [
   'Veterans Court',
   'HOPE Probation',
 ];
+
+export const COURT_TYPES_MAP = {
+  CHILD_SUPPORT: 'Child Support',
+  DRUG_COURT: 'Drug Court',
+  DUI_COURT: 'DUI Court',
+  HOPE_PROBATION: 'HOPE Probation',
+  MENTAL_HEALTH: 'Mental Health Court',
+  PROBATION: 'Probation',
+  SENTENCED: 'Sentenced',
+  VETERANS_COURT: 'Veterans Court',
+};
 
 export const ENROLLMENT_STATUSES = {
   ACTIVE: 'Active',
@@ -87,3 +103,56 @@ export const CONTACT_METHODS = {
   EMAIL: 'Email',
   PHONE: 'Phone'
 };
+
+export const USA_STATES = [
+  'AL',
+  'AK',
+  'AZ',
+  'AR',
+  'CA',
+  'CO',
+  'CT',
+  'DE',
+  'FL',
+  'GA',
+  'HI',
+  'ID',
+  'IL',
+  'IN',
+  'IA',
+  'KS',
+  'KY',
+  'LA',
+  'ME',
+  'MD',
+  'MA',
+  'MI',
+  'MN',
+  'MS',
+  'MO',
+  'MT',
+  'NE',
+  'NV',
+  'NH',
+  'NJ',
+  'NM',
+  'NY',
+  'NC',
+  'ND',
+  'OH',
+  'OK',
+  'OR',
+  'PA',
+  'RI',
+  'SC',
+  'SD',
+  'TN',
+  'TX',
+  'UT',
+  'VT',
+  'VA',
+  'WA',
+  'WV',
+  'WI',
+  'WY'
+];

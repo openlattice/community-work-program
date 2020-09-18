@@ -5,7 +5,6 @@
 import { List, Map, fromJS } from 'immutable';
 import { RequestStates } from 'redux-reqseq';
 import type { SequenceAction } from 'redux-reqseq';
-import type { FQN } from 'lattice';
 
 import {
   addParticipant,
@@ -14,12 +13,18 @@ import {
   getEnrollmentStatuses,
   getHoursWorked,
   getInfractions,
+  getParticipantPhotos,
   getParticipants,
   RESET_REQUEST_STATE,
 } from './ParticipantsActions';
+import {
+  RESET_SEARCHED_PARTICIPANTS,
+  SEARCH_EXISTING_PEOPLE,
+  SELECT_EXISTING_PERSON,
+  searchExistingPeople,
+  selectExistingPerson,
+} from './newparticipant/NewParticipantActions';
 import { PEOPLE } from '../../utils/constants/ReduxStateConsts';
-import { getPropertyFqnFromEdm } from '../../utils/DataUtils';
-import { PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 
 const {
   ACTIONS,
@@ -27,23 +32,23 @@ const {
   COURT_TYPE_BY_PARTICIPANT,
   CURRENT_DIVERSION_PLANS_BY_PARTICIPANT,
   ENROLLMENT_BY_PARTICIPANT,
-  ERRORS,
+  EXISTING_PERSON,
   GET_COURT_TYPE,
   GET_DIVERSION_PLANS,
   GET_ENROLLMENT_STATUSES,
   GET_HOURS_WORKED,
   GET_INFRACTIONS,
+  GET_PARTICIPANT_PHOTOS,
   GET_PARTICIPANTS,
   HOURS_WORKED,
   INFRACTIONS_BY_PARTICIPANT,
   INFRACTION_COUNTS_BY_PARTICIPANT,
+  NEW_PARTICIPANT_EKID,
+  PEOPLE_ALREADY_IN_ENTITY_SET,
+  PARTICIPANT_PHOTOS_BY_PARTICIPANT_EKID,
   PARTICIPANTS,
   REQUEST_STATE,
 } = PEOPLE;
-const { ENTITY_KEY_ID, REQUIRED_HOURS } = PROPERTY_TYPE_FQNS;
-
-const DIVERSION_PLAN = 'diversionPlan';
-const PERSON = 'person';
 
 const INITIAL_STATE :Map<*, *> = fromJS({
   [ACTIONS]: {
@@ -62,24 +67,30 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     [GET_INFRACTIONS]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
+    [GET_PARTICIPANT_PHOTOS]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
     [GET_PARTICIPANTS]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [SEARCH_EXISTING_PEOPLE]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [SELECT_EXISTING_PERSON]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
   },
   [COURT_TYPE_BY_PARTICIPANT]: Map(),
   [CURRENT_DIVERSION_PLANS_BY_PARTICIPANT]: Map(),
   [ENROLLMENT_BY_PARTICIPANT]: Map(),
-  [ERRORS]: {
-    [ADD_PARTICIPANT]: Map(),
-    [GET_ENROLLMENT_STATUSES]: Map(),
-    [GET_HOURS_WORKED]: Map(),
-    [GET_INFRACTIONS]: Map(),
-    [GET_PARTICIPANTS]: Map(),
-  },
+  [EXISTING_PERSON]: Map(),
   [HOURS_WORKED]: Map(),
   [INFRACTIONS_BY_PARTICIPANT]: Map(),
   [INFRACTION_COUNTS_BY_PARTICIPANT]: Map(),
+  [NEW_PARTICIPANT_EKID]: '',
+  [PARTICIPANT_PHOTOS_BY_PARTICIPANT_EKID]: Map(),
   [PARTICIPANTS]: List(),
+  [PEOPLE_ALREADY_IN_ENTITY_SET]: List(),
 });
 
 export default function participantsReducer(state :Map<*, *> = INITIAL_STATE, action :Object) :Map<*, *> {
@@ -94,6 +105,20 @@ export default function participantsReducer(state :Map<*, *> = INITIAL_STATE, ac
       return state;
     }
 
+    case selectExistingPerson.case(action.type): {
+      const { value } = action;
+      const { existingPerson } = value;
+      return state
+        .set(EXISTING_PERSON, existingPerson);
+    }
+
+    case RESET_SEARCHED_PARTICIPANTS: {
+      return state
+        .set(EXISTING_PERSON, Map())
+        .set(PEOPLE_ALREADY_IN_ENTITY_SET, List())
+        .setIn([ACTIONS, SEARCH_EXISTING_PEOPLE, REQUEST_STATE], RequestStates.STANDBY);
+    }
+
     case addParticipant.case(action.type): {
 
       return addParticipant.reducer(state, action, {
@@ -102,56 +127,11 @@ export default function participantsReducer(state :Map<*, *> = INITIAL_STATE, ac
           .setIn([ACTIONS, ADD_PARTICIPANT, action.id], action)
           .setIn([ACTIONS, ADD_PARTICIPANT, REQUEST_STATE], RequestStates.PENDING),
         SUCCESS: () => {
-
-          const seqAction :SequenceAction = action;
-          const storedSeqAction :SequenceAction = state.getIn([ACTIONS, ADD_PARTICIPANT, seqAction.id]);
-
-          if (storedSeqAction) {
-
-            const { value } :Object = seqAction; // success value
-            const {
-              diversionPlanESID,
-              edm,
-              personEKID,
-              peopleESID,
-            } = value;
-
-            const storedValue :Object = storedSeqAction.value; // request value
-            const { entityData } :Object = storedValue;
-            const storedEntities :Map = Map().withMutations((map :Map) => {
-              map.set(PERSON, fromJS(entityData[peopleESID][0]));
-              map.set(DIVERSION_PLAN, fromJS(entityData[diversionPlanESID][0]));
-            });
-            let newEntities :Map = Map();
-            storedEntities.forEach((entity :Map, key :string) => {
-              let newEntity = Map();
-              entity.forEach((entityValue, id) => {
-                const propertyTypeFqn :FQN = getPropertyFqnFromEdm(edm, id);
-                newEntity = newEntity.set(propertyTypeFqn, entityValue);
-              });
-              newEntities = newEntities.set(key, newEntity);
-            });
-
-            let person = newEntities.get(PERSON);
-            person = person.set(ENTITY_KEY_ID, personEKID);
-            newEntities = newEntities.set(PERSON, person);
-
-            const participants :List = state.get(PARTICIPANTS)
-              .push(newEntities.get(PERSON));
-            const enrollmentByParticipant = state.get(ENROLLMENT_BY_PARTICIPANT)
-              .set(personEKID, Map());
-            const required = newEntities.getIn([DIVERSION_PLAN, REQUIRED_HOURS, 0], 0);
-            const hoursWorked = state.get(HOURS_WORKED)
-              .set(personEKID, Map({ worked: 0, required }));
-
-            return state
-              .set(PARTICIPANTS, participants)
-              .set(ENROLLMENT_BY_PARTICIPANT, enrollmentByParticipant)
-              .set(HOURS_WORKED, hoursWorked)
-              .setIn([ACTIONS, ADD_PARTICIPANT, REQUEST_STATE], RequestStates.SUCCESS);
-          }
-
-          return state;
+          const seqAction :SequenceAction = (action :any);
+          const { value } = seqAction;
+          return state
+            .set(NEW_PARTICIPANT_EKID, value)
+            .setIn([ACTIONS, ADD_PARTICIPANT, REQUEST_STATE], RequestStates.SUCCESS);
         },
         FAILURE: () => state
           .setIn([ACTIONS, ADD_PARTICIPANT, REQUEST_STATE], RequestStates.FAILURE),
@@ -189,6 +169,27 @@ export default function participantsReducer(state :Map<*, *> = INITIAL_STATE, ac
       });
     }
 
+    case getParticipantPhotos.case(action.type): {
+      const seqAction :SequenceAction = (action :any);
+      return getParticipantPhotos.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, GET_PARTICIPANT_PHOTOS, seqAction.id], seqAction)
+          .setIn([ACTIONS, GET_PARTICIPANT_PHOTOS, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+          const { value } = seqAction;
+          return state
+            .set(PARTICIPANT_PHOTOS_BY_PARTICIPANT_EKID, value)
+            .setIn([ACTIONS, GET_PARTICIPANT_PHOTOS, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .set(COURT_TYPE_BY_PARTICIPANT, Map())
+          .setIn([ACTIONS, GET_PARTICIPANT_PHOTOS, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state
+          .deleteIn([ACTIONS, GET_PARTICIPANT_PHOTOS, seqAction.id]),
+      });
+    }
+
     case getCourtType.case(action.type): {
       const seqAction :SequenceAction = (action :any);
       return getCourtType.reducer(state, action, {
@@ -197,16 +198,7 @@ export default function participantsReducer(state :Map<*, *> = INITIAL_STATE, ac
           .setIn([ACTIONS, GET_COURT_TYPE, seqAction.id], fromJS(seqAction))
           .setIn([ACTIONS, GET_COURT_TYPE, REQUEST_STATE], RequestStates.PENDING),
         SUCCESS: () => {
-
-          if (!state.hasIn([ACTIONS, GET_COURT_TYPE, seqAction.id])) {
-            return state;
-          }
-
           const { value } = seqAction;
-          if (value === null || value === undefined) {
-            return state;
-          }
-
           return state
             .set(COURT_TYPE_BY_PARTICIPANT, value)
             .setIn([ACTIONS, GET_COURT_TYPE, REQUEST_STATE], RequestStates.SUCCESS);
@@ -326,6 +318,25 @@ export default function participantsReducer(state :Map<*, *> = INITIAL_STATE, ac
           .setIn([ACTIONS, GET_HOURS_WORKED, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state
           .deleteIn([ACTIONS, GET_HOURS_WORKED, seqAction.id]),
+      });
+    }
+
+    case searchExistingPeople.case(action.type): {
+
+      return searchExistingPeople.reducer(state, action, {
+
+        REQUEST: () => state
+          .setIn([ACTIONS, SEARCH_EXISTING_PEOPLE, action.id], action)
+          .setIn([ACTIONS, SEARCH_EXISTING_PEOPLE, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+          const { value } = action;
+          return state
+            .set(PEOPLE_ALREADY_IN_ENTITY_SET, value)
+            .setIn([ACTIONS, SEARCH_EXISTING_PEOPLE, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, SEARCH_EXISTING_PEOPLE, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, SEARCH_EXISTING_PEOPLE, action.id]),
       });
     }
 

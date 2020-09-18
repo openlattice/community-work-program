@@ -20,7 +20,8 @@ import { isDefined, isNonEmptyArray } from '../../utils/LangUtils';
 import { getEntityKeyId, getEntityProperties, sortEntitiesByDateProperty } from '../../utils/DataUtils';
 import { PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { WORKSITE_PLANS, STATE } from '../../utils/constants/ReduxStateConsts';
-import { EMPTY_FIELD } from '../participants/ParticipantsConstants';
+import { ALL, EMPTY_FIELD } from '../participants/ParticipantsConstants';
+import { COURT_TYPES_MAP } from '../../core/edm/constants/DataModelConsts';
 
 const {
   DATETIME_END,
@@ -37,10 +38,13 @@ const OuterWrapper = styled.div`
 
 type Props = {
   appointments :List;
+  courtTypeByAppointmentEKID :?Map;
+  courtTypeToShow :?string;
   editAppointmentsRequestState :RequestState;
   hasSearched :boolean;
   isLoading :boolean;
   personByAppointmentEKID ?:Map;
+  sortedByPersonLastName :boolean;
   worksiteNamesByAppointmentEKID :Map;
   worksitesToInclude ?:Object[];
 };
@@ -51,18 +55,30 @@ type State = {
 
 class AppointmentListContainer extends Component<Props, State> {
 
-  state = {
-    fullWorkAppointments: List(),
-  };
+  constructor(props :Props) {
+    super(props);
+
+    this.state = {
+      fullWorkAppointments: List(),
+    };
+  }
 
   static defaultProps = {
+    courtTypeToShow: undefined,
+    courtTypeByAppointmentEKID: undefined,
     personByAppointmentEKID: undefined,
     worksitesToInclude: undefined,
   };
 
   componentDidUpdate(prevProps :Props) {
-    const { appointments, editAppointmentsRequestState, isLoading } = this.props;
-    if (prevProps.appointments.count() !== appointments.count()
+    const {
+      appointments,
+      courtTypeToShow,
+      editAppointmentsRequestState,
+      isLoading
+    } = this.props;
+    if (!prevProps.appointments.equals(appointments)
+      || prevProps.courtTypeToShow !== courtTypeToShow
       || (prevProps.isLoading && !isLoading)
       || (prevProps.editAppointmentsRequestState === RequestStates.PENDING
         && editAppointmentsRequestState !== RequestStates.PENDING)) {
@@ -75,8 +91,25 @@ class AppointmentListContainer extends Component<Props, State> {
     sortEntitiesByDateProperty(appointments, [INCIDENT_START_DATETIME])
   );
 
+  filterByCourtType = (appointments :List) => {
+    const { courtTypeByAppointmentEKID, courtTypeToShow } = this.props;
+    if (!isDefined(courtTypeToShow) || !isDefined(courtTypeByAppointmentEKID)) return appointments;
+    if (courtTypeToShow === ALL) return appointments;
+    const selectedFilter = COURT_TYPES_MAP[courtTypeToShow];
+    const filteredAppointments :List = appointments.filter((appointment :Map) => {
+      const appointmentEKID :UUID = getEntityKeyId(appointment);
+      const courtType :String = courtTypeByAppointmentEKID.get(appointmentEKID, '');
+      return courtType === selectedFilter;
+    });
+    return filteredAppointments;
+  }
+
   setFullWorkAppointments = (appointments :List) => {
-    const { personByAppointmentEKID, worksiteNamesByAppointmentEKID } = this.props;
+    const {
+      courtTypeByAppointmentEKID,
+      personByAppointmentEKID,
+      worksiteNamesByAppointmentEKID
+    } = this.props;
     let { worksitesToInclude } = this.props;
 
     if (isDefined(worksitesToInclude)) {
@@ -84,7 +117,8 @@ class AppointmentListContainer extends Component<Props, State> {
     }
 
     let fullWorkAppointments :List = List();
-    appointments.forEach((appointmentEntity :Map) => {
+    const filteredAppointments :List = this.filterByCourtType(appointments);
+    filteredAppointments.forEach((appointmentEntity :Map) => {
 
       const {
         [DATETIME_END]: datetimeEnd,
@@ -106,6 +140,10 @@ class AppointmentListContainer extends Component<Props, State> {
         personName = `${firstName} ${lastName}`;
       }
       const worksiteName :string = worksiteNamesByAppointmentEKID.get(appointmentEKID, EMPTY_FIELD);
+      let courtType :string = '';
+      if (isDefined(courtTypeByAppointmentEKID)) {
+        courtType = courtTypeByAppointmentEKID.get(appointmentEKID, EMPTY_FIELD);
+      }
 
       if (isNonEmptyArray(worksitesToInclude) && !worksitesToInclude.includes(worksiteName)) {
         return;
@@ -117,6 +155,7 @@ class AppointmentListContainer extends Component<Props, State> {
         hours,
         personName,
         worksiteName,
+        courtType,
       });
       fullWorkAppointments = fullWorkAppointments.push(fullWorkAppointment);
     });
@@ -124,8 +163,13 @@ class AppointmentListContainer extends Component<Props, State> {
   }
 
   render() {
-    const { hasSearched, isLoading } = this.props;
+    const { hasSearched, isLoading, sortedByPersonLastName } = this.props;
     const { fullWorkAppointments } = this.state;
+    let appointmentsToDisplay = fullWorkAppointments;
+    if (sortedByPersonLastName) {
+      appointmentsToDisplay = appointmentsToDisplay
+        .sortBy((appointment) => appointment.get('personName').split(' ')[1]);
+    }
     return (
       <OuterWrapper>
         <SearchResults
@@ -133,7 +177,7 @@ class AppointmentListContainer extends Component<Props, State> {
             isLoading={isLoading}
             noResults={NoAppointmentsScheduled}
             resultComponent={AppointmentContainer}
-            results={fullWorkAppointments} />
+            results={appointmentsToDisplay} />
       </OuterWrapper>
     );
   }

@@ -1,20 +1,18 @@
 // @flow
 import React from 'react';
-import { fromJS, Map, OrderedMap } from 'immutable';
+
+import { Map, OrderedMap, fromJS } from 'immutable';
 import { Card, CardSegment, DataGrid } from 'lattice-ui-kit';
 
-import {
-  SectionLabel,
-  SectionNameRow,
-  SectionWrapper,
-  StyledEditButton,
-} from './SectionStyledComponents';
+import { SectionLabel, SectionNameRow, SectionWrapper } from './SectionStyledComponents';
+
+import EditButton from '../controls/buttons/EditButton';
 import { formatAsDate } from '../../utils/DateTimeUtils';
 import { getCheckInDeadline, getSentenceEndDate } from '../../utils/ScheduleUtils';
 
 const labelMap :OrderedMap = OrderedMap({
   sentenceDate: 'Sentence date',
-  checkInDeadline: 'Check-in deadline',
+  checkInDeadlineDate: 'Check-in deadline',
   checkedInDate: 'Date checked in',
   orientationDate: 'Orientation date',
   workStartDate: 'Started work',
@@ -23,6 +21,7 @@ const labelMap :OrderedMap = OrderedMap({
 
 type Props = {
   checkInDate :string;
+  checkInDeadline :string;
   edit :() => void;
   orientationDateTime :string;
   sentenceDateTime :string;
@@ -32,6 +31,7 @@ type Props = {
 
 const EnrollmentDates = ({
   checkInDate,
+  checkInDeadline,
   edit,
   orientationDateTime,
   sentenceDateTime,
@@ -40,7 +40,7 @@ const EnrollmentDates = ({
 } :Props) => {
 
   const sentenceDate = formatAsDate(sentenceDateTime);
-  const checkInDeadline = getCheckInDeadline(sentenceDateTime);
+  const checkInDeadlineDate = getCheckInDeadline(sentenceDateTime, checkInDeadline);
   const sentenceEndDate = getSentenceEndDate(sentenceEndDateTime, sentenceDateTime);
   const orientationDate = formatAsDate(orientationDateTime);
   const workStartDate = formatAsDate(workStartDateTime);
@@ -48,7 +48,7 @@ const EnrollmentDates = ({
 
   const data :Map = fromJS({
     sentenceDate,
-    checkInDeadline,
+    checkInDeadlineDate,
     checkedInDate,
     orientationDate,
     workStartDate,
@@ -58,10 +58,10 @@ const EnrollmentDates = ({
     <SectionWrapper>
       <SectionNameRow>
         <SectionLabel subtle>Enrollment Dates</SectionLabel>
-        <StyledEditButton mode="subtle" onClick={edit} />
+        <EditButton onClick={edit} />
       </SectionNameRow>
       <Card>
-        <CardSegment padding="md" vertical>
+        <CardSegment padding="md">
           <DataGrid
               columns={3}
               data={data}

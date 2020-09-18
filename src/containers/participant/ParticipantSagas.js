@@ -2,15 +2,6 @@
  * @flow
  */
 
-import {
-  List,
-  Map,
-  fromJS,
-  getIn,
-  has,
-  setIn,
-} from 'immutable';
-import { DateTime } from 'luxon';
 import toString from 'lodash/toString';
 import {
   all,
@@ -20,23 +11,26 @@ import {
   takeEvery,
 } from '@redux-saga/core/effects';
 import {
+  List,
+  Map,
+  fromJS,
+  getIn,
+  setIn,
+} from 'immutable';
+import {
   DataApiActions,
   DataApiSagas,
   SearchApiActions,
   SearchApiSagas,
 } from 'lattice-sagas';
-import { DataProcessingUtils } from 'lattice-fabricate';
-import type { SequenceAction } from 'redux-reqseq';
+import { DateTime } from 'luxon';
 import type { FQN } from 'lattice';
+import type { SequenceAction } from 'redux-reqseq';
 
-import Logger from '../../utils/Logger';
-import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../utils/Errors';
 import {
-  ADD_CHARGES_TO_CASE,
   ADD_NEW_DIVERSION_PLAN_STATUS,
   ADD_NEW_PARTICIPANT_CONTACTS,
   ADD_PERSON_PHOTO,
-  ADD_TO_AVAILABLE_CHARGES,
   CREATE_CASE,
   CREATE_NEW_ENROLLMENT,
   EDIT_ENROLLMENT_DATES,
@@ -48,12 +42,12 @@ import {
   EDIT_REQUIRED_HOURS,
   GET_ALL_PARTICIPANT_INFO,
   GET_CASE_INFO,
-  GET_CHARGES,
-  GET_CHARGES_FOR_CASE,
   GET_CONTACT_INFO,
-  GET_ENROLLMENT_HISTORY,
+  GET_DIVERSION_PLAN,
   GET_ENROLLMENT_FROM_DIVERSION_PLAN,
+  GET_ENROLLMENT_HISTORY,
   GET_ENROLLMENT_STATUS,
+  GET_INFO_FOR_ADD_PARTICIPANT,
   GET_INFO_FOR_EDIT_CASE,
   GET_INFO_FOR_EDIT_PERSON,
   GET_JUDGES,
@@ -65,13 +59,10 @@ import {
   GET_PROGRAM_OUTCOME,
   MARK_DIVERSION_PLAN_AS_COMPLETE,
   REASSIGN_JUDGE,
-  REMOVE_CHARGE_FROM_CASE,
   UPDATE_PERSON_PHOTO,
-  addChargesToCase,
   addNewDiversionPlanStatus,
   addNewParticipantContacts,
   addPersonPhoto,
-  addToAvailableCharges,
   createCase,
   createNewEnrollment,
   editEnrollmentDates,
@@ -83,12 +74,12 @@ import {
   editRequiredHours,
   getAllParticipantInfo,
   getCaseInfo,
-  getCharges,
-  getChargesForCase,
   getContactInfo,
-  getEnrollmentHistory,
+  getDiversionPlan,
   getEnrollmentFromDiversionPlan,
+  getEnrollmentHistory,
   getEnrollmentStatus,
+  getInfoForAddParticipant,
   getInfoForEditCase,
   getInfoForEditPerson,
   getJudgeForCase,
@@ -100,29 +91,42 @@ import {
   getProgramOutcome,
   markDiversionPlanAsComplete,
   reassignJudge,
-  removeChargeFromCase,
   updatePersonPhoto,
 } from './ParticipantActions';
+import { enrollmentHeaderNames } from './ParticipantProfile';
+import { getWorksitePlans } from './assignedworksites/WorksitePlanActions';
+import { getWorksitePlansWorker } from './assignedworksites/WorksitePlanSagas';
+import {
+  getArrestCasesAndChargesFromPSA,
+  getArrestCharges,
+  getArrestChargesLinkedToCWP,
+  getCourtCharges,
+  getCourtChargesForCase,
+} from './charges/ChargesActions';
+import {
+  getArrestCasesAndChargesFromPSAWorker,
+  getArrestChargesLinkedToCWPWorker,
+  getArrestChargesWorker,
+  getCourtChargesForCaseWorker,
+  getCourtChargesWorker,
+} from './charges/ChargesSagas';
+import { getInfractionTypes, getParticipantInfractions } from './infractions/InfractionsActions';
+import { getInfractionTypesWorker, getParticipantInfractionsWorker } from './infractions/InfractionsSagas';
+
+import Logger from '../../utils/Logger';
+import { ASSOCIATION_DETAILS, CONTACT_METHODS } from '../../core/edm/constants/DataModelConsts';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import {
   createOrReplaceAssociation,
-  deleteEntities,
   submitDataGraph,
   submitPartialReplace
 } from '../../core/sagas/data/DataActions';
 import {
   createOrReplaceAssociationWorker,
-  deleteEntitiesWorker,
   submitDataGraphWorker,
   submitPartialReplaceWorker
 } from '../../core/sagas/data/DataSagas';
-import { getWorksites } from '../worksites/WorksitesActions';
-import { getWorksitesWorker } from '../worksites/WorksitesSagas';
-import { getInfractionTypes, getParticipantInfractions } from './infractions/InfractionsActions';
-import { getInfractionTypesWorker, getParticipantInfractionsWorker } from './infractions/InfractionsSagas';
-import { getWorksitePlans } from './assignedworksites/WorksitePlanActions';
-import { getWorksitePlansWorker } from './assignedworksites/WorksitePlanSagas';
 import {
-  getAssociationNeighborESID,
   getEntityKeyId,
   getEntityProperties,
   getEntitySetIdFromApp,
@@ -131,36 +135,31 @@ import {
   getPropertyTypeIdFromEdm,
   sortEntitiesByDateProperty,
 } from '../../utils/DataUtils';
-import { isDefined } from '../../utils/LangUtils';
 import { formatAsDate } from '../../utils/DateTimeUtils';
+import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../utils/Errors';
+import { isDefined } from '../../utils/LangUtils';
 import { getCombinedDateTime } from '../../utils/ScheduleUtils';
-import { enrollmentHeaderNames } from './ParticipantProfile';
+import { isValidUUID } from '../../utils/ValidationUtils';
+import { STATE } from '../../utils/constants/ReduxStateConsts';
 import { EMPTY_FIELD } from '../participants/ParticipantsConstants';
-import { PERSON, STATE } from '../../utils/constants/ReduxStateConsts';
-import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
-import { ASSOCIATION_DETAILS, CONTACT_METHODS } from '../../core/edm/constants/DataModelConsts';
+import { getWorksites } from '../worksites/WorksitesActions';
+import { getWorksitesWorker } from '../worksites/WorksitesSagas';
 
 const { getEntityData, getEntitySetData } = DataApiActions;
 const { getEntityDataWorker, getEntitySetDataWorker } = DataApiSagas;
 const { searchEntityNeighborsWithFilter } = SearchApiActions;
 const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
-const { processAssociationEntityData } = DataProcessingUtils;
 const {
   ADDRESS,
-  APPEARS_IN,
-  CHARGE_EVENT,
   CONTACT_INFORMATION,
-  COURT_CHARGE_LIST,
   DIVERSION_PLAN,
   ENROLLMENT_STATUS,
   IMAGE,
   JUDGES,
-  MANUAL_CHARGED_WITH,
   MANUAL_PRETRIAL_COURT_CASES,
   PEOPLE,
   PRESIDES_OVER,
   PROGRAM_OUTCOME,
-  REGISTERED_FOR,
 } = APP_TYPE_FQNS;
 const {
   DATETIME_COMPLETED,
@@ -179,194 +178,7 @@ const {
 
 const getAppFromState = (state) => state.get(STATE.APP, Map());
 const getEdmFromState = (state) => state.get(STATE.EDM, Map());
-const getPersonFromState = (state) => state.get(STATE.PERSON, Map());
-
 const LOG = new Logger('ParticipantSagas');
-
-/*
- *
- * ParticipantActions.addChargesToCase()
- *
- */
-
-function* addChargesToCaseWorker(action :SequenceAction) :Generator<*, *, *> {
-
-  const { id, value } = action;
-  if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
-  const workerResponse = {};
-  let response :Object = {};
-  let newChargeMaps :List = List();
-  let chargeEKIDs :List = List();
-
-  try {
-    yield put(addChargesToCase.request(id, value));
-    let { associationEntityData } = value;
-    const { entityData } :Object = value;
-
-    const app = yield select(getAppFromState);
-    const edm = yield select(getEdmFromState);
-    const chargeEventESID :UUID = getEntitySetIdFromApp(app, CHARGE_EVENT);
-    const appearsInESID :UUID = getEntitySetIdFromApp(app, APPEARS_IN);
-
-    // if data is coming from addAction in form rather than first-time submission:
-    if (!associationEntityData) {
-
-      /* Construct associationEntityData */
-      const associations = [];
-      const courtChargeListESID :UUID = getEntitySetIdFromApp(app, COURT_CHARGE_LIST);
-      const olEKID :UUID = getPropertyTypeIdFromEdm(edm, ENTITY_KEY_ID);
-
-      const person = yield select(getPersonFromState);
-      const personEKID :UUID = getEntityKeyId(person.get(PERSON.PARTICIPANT));
-      const caseEKID :UUID = getEntityKeyId(person.get(PERSON.PERSON_CASE));
-
-      fromJS(entityData).get(courtChargeListESID).forEach((courtCharge :Map, index :number) => {
-
-        const courtChargeEKID :UUID = courtCharge.getIn([olEKID, 0]);
-        associations.push([APPEARS_IN, courtChargeEKID, COURT_CHARGE_LIST, caseEKID, MANUAL_PRETRIAL_COURT_CASES]);
-        associations.push([REGISTERED_FOR, index, CHARGE_EVENT, courtChargeEKID, COURT_CHARGE_LIST]);
-        associations.push([MANUAL_CHARGED_WITH, personEKID, PEOPLE, courtChargeEKID, COURT_CHARGE_LIST]);
-        associations.push([MANUAL_CHARGED_WITH, personEKID, PEOPLE, index, CHARGE_EVENT]);
-      });
-
-      const entitySetIds :{} = {
-        [APPEARS_IN]: appearsInESID,
-        [CHARGE_EVENT]: chargeEventESID,
-        [COURT_CHARGE_LIST]: courtChargeListESID,
-        [MANUAL_CHARGED_WITH]: getEntitySetIdFromApp(app, MANUAL_CHARGED_WITH),
-        [MANUAL_PRETRIAL_COURT_CASES]: getEntitySetIdFromApp(app, MANUAL_PRETRIAL_COURT_CASES),
-        [PEOPLE]: getEntitySetIdFromApp(app, PEOPLE),
-        [REGISTERED_FOR]: getEntitySetIdFromApp(app, REGISTERED_FOR),
-      };
-      associationEntityData = processAssociationEntityData(associations, entitySetIds, {});
-
-      /* Edit entityData to use datetimes instead of dates */
-      delete entityData[courtChargeListESID];
-
-      entityData[chargeEventESID] = entityData[chargeEventESID].map((charge :{}) => {
-        const datetimeCompletedPTID :UUID = getPropertyTypeIdFromEdm(edm, DATETIME_COMPLETED);
-        const date :string = charge[datetimeCompletedPTID][0];
-        const currentTime = DateTime.local().toLocaleString(DateTime.TIME_24_SIMPLE);
-        const datetime = getCombinedDateTime(date, currentTime);
-        return {
-          [datetimeCompletedPTID]: [datetime]
-        };
-      });
-
-    }
-
-    response = yield call(submitDataGraphWorker, submitDataGraph({ associationEntityData, entityData }));
-    if (response.error) {
-      throw response.error;
-    }
-
-    fromJS(entityData[chargeEventESID]).forEach((storedChargeEvent :Map, index :number) => {
-      let chargeMap :Map = Map();
-      let chargeEvent :Map = Map();
-      storedChargeEvent.forEach((chargeEventValue, ptid) => {
-        const propertyTypeFqn :FQN = getPropertyFqnFromEdm(edm, ptid);
-        chargeEvent = chargeEvent.set(propertyTypeFqn, chargeEventValue);
-      });
-      chargeMap = chargeMap.set(CHARGE_EVENT, chargeEvent);
-      const chargeEKID :UUID = associationEntityData[appearsInESID][index].srcEntityKeyId;
-      chargeEKIDs = chargeEKIDs.push(chargeEKID);
-      newChargeMaps = newChargeMaps.push(chargeMap);
-    });
-
-    yield put(addChargesToCase.success(id, { chargeEKIDs, newChargeMaps }));
-  }
-  catch (error) {
-    workerResponse.error = error;
-    LOG.error('caught exception in addChargesToCaseWorker()', error);
-    yield put(addChargesToCase.failure(id, error));
-  }
-  finally {
-    yield put(addChargesToCase.finally(id));
-  }
-}
-
-function* addChargesToCaseWatcher() :Generator<*, *, *> {
-
-  yield takeEvery(ADD_CHARGES_TO_CASE, addChargesToCaseWorker);
-}
-
-/*
- *
- * ParticipantActions.removeChargeFromCase()
- *
- */
-
-function* removeChargeFromCaseWorker(action :SequenceAction) :Generator<*, *, *> {
-
-  const { id, value } = action;
-  if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
-  let response :{} = {};
-
-  try {
-    yield put(removeChargeFromCase.request(id, value));
-
-    const { entityData } = value;
-
-    const app = yield select(getAppFromState);
-    const courtChargeListESID :UUID = getEntitySetIdFromApp(app, COURT_CHARGE_LIST);
-    const chargeEventESID :UUID = getEntitySetIdFromApp(app, CHARGE_EVENT);
-    const caseESID :UUID = getEntitySetIdFromApp(app, MANUAL_PRETRIAL_COURT_CASES);
-    const peopleESID :UUID = getEntitySetIdFromApp(app, PEOPLE);
-
-    const courtChargeListIterator = entityData[courtChargeListESID].values();
-    const courtChargeListEKID :UUID = courtChargeListIterator.next().value;
-    const chargeEventIterator = entityData[chargeEventESID].values();
-    const chargeEventEKID :UUID = chargeEventIterator.next().value;
-
-    const entitiesToDelete :Object[] = [{
-      entitySetId: chargeEventESID,
-      entityKeyId: chargeEventEKID
-    }];
-
-    const searchFilter = {
-      entityKeyIds: [courtChargeListEKID],
-      destinationEntitySetIds: [caseESID],
-      sourceEntitySetIds: [peopleESID],
-    };
-    response = yield call(
-      searchEntityNeighborsWithFilterWorker,
-      searchEntityNeighborsWithFilter({ entitySetId: courtChargeListESID, filter: searchFilter })
-    );
-    if (response.error) {
-      throw response.error;
-    }
-    if (response.data[courtChargeListEKID]) {
-      fromJS(response.data[courtChargeListEKID]).forEach((neighbor :Map) => {
-        const associationEntity :Map = neighbor.get(ASSOCIATION_DETAILS);
-        const associationEKID :UUID = getEntityKeyId(associationEntity);
-        const associationESID :UUID = getAssociationNeighborESID(neighbor);
-        entitiesToDelete.push({
-          entitySetId: associationESID,
-          entityKeyId: associationEKID
-        });
-      });
-    }
-
-    response = yield call(deleteEntitiesWorker, deleteEntities(entitiesToDelete));
-    if (response.error) {
-      throw response.error;
-    }
-
-    yield put(removeChargeFromCase.success(id, {}));
-  }
-  catch (error) {
-    LOG.error('caught exception in removeChargeFromCaseWorker()', error);
-    yield put(removeChargeFromCase.failure(id, error));
-  }
-  finally {
-    yield put(removeChargeFromCase.finally(id));
-  }
-}
-
-function* removeChargeFromCaseWatcher() :Generator<*, *, *> {
-
-  yield takeEvery(REMOVE_CHARGE_FROM_CASE, removeChargeFromCaseWorker);
-}
 
 /*
  *
@@ -488,58 +300,6 @@ function* updatePersonPhotoWatcher() :Generator<any, any, any> {
 
 /*
  *
- * ParticipantActions.addToAvailableCharges()
- *
- */
-
-function* addToAvailableChargesWorker(action :SequenceAction) :Generator<*, *, *> {
-
-  const { id, value } = action;
-  let response :Object = {};
-
-  try {
-    yield put(addToAvailableCharges.request(id, value));
-
-    response = yield call(submitDataGraphWorker, submitDataGraph(value));
-    if (response.error) {
-      throw response.error;
-    }
-    const { data } :Object = response;
-    const { entityKeyIds } :Object = data;
-
-    const app = yield select(getAppFromState);
-    const edm = yield select(getEdmFromState);
-    const courtChargeListESID = getEntitySetIdFromApp(app, COURT_CHARGE_LIST);
-    const courtChargeEKID = entityKeyIds[courtChargeListESID][0];
-
-    const { entityData } = value;
-    const newChargeData = fromJS(entityData[courtChargeListESID][0]);
-
-    let newCharge :Map = Map();
-    newCharge = newCharge.set(ENTITY_KEY_ID, courtChargeEKID);
-    newChargeData.forEach((chargeValue, ptid) => {
-      const propertyTypeFqn :FQN = getPropertyFqnFromEdm(edm, ptid);
-      newCharge = newCharge.set(propertyTypeFqn, chargeValue);
-    });
-
-    yield put(addToAvailableCharges.success(id, { newCharge }));
-  }
-  catch (error) {
-    LOG.error('caught exception in addToAvailableChargesWorker()', error);
-    yield put(addToAvailableCharges.failure(id, error));
-  }
-  finally {
-    yield put(addToAvailableCharges.finally(id));
-  }
-}
-
-function* addToAvailableChargesWatcher() :Generator<*, *, *> {
-
-  yield takeEvery(ADD_TO_AVAILABLE_CHARGES, addToAvailableChargesWorker);
-}
-
-/*
- *
  * ParticipantActions.createCase()
  *
  */
@@ -621,6 +381,53 @@ function* createNewEnrollmentWorker(action :SequenceAction) :Generator<*, *, *> 
 function* createNewEnrollmentWatcher() :Generator<*, *, *> {
 
   yield takeEvery(CREATE_NEW_ENROLLMENT, createNewEnrollmentWorker);
+}
+
+/*
+ *
+ * ParticipantsActions.getDiversionPlan()
+ *
+ */
+
+function* getDiversionPlanWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+  if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
+  const workerResponse = {};
+  let response :Object = {};
+  let diversionPlan :Map = Map();
+
+  try {
+    yield put(getDiversionPlan.request(id));
+    const { diversionPlanEKID } = value;
+    const app = yield select(getAppFromState);
+    const diversionPlanESID :UUID = getEntitySetIdFromApp(app, DIVERSION_PLAN);
+
+    response = yield call(
+      getEntityDataWorker,
+      getEntityData({ entitySetId: diversionPlanESID, entityKeyId: diversionPlanEKID })
+    );
+    if (response.error) {
+      throw response.error;
+    }
+    diversionPlan = fromJS(response.data);
+
+    yield put(getDiversionPlan.success(id, diversionPlan));
+  }
+  catch (error) {
+    workerResponse.error = error;
+    LOG.error(action.type, error);
+    yield put(getDiversionPlan.failure(id, error));
+  }
+  finally {
+    yield put(getDiversionPlan.finally(id));
+  }
+  return workerResponse;
+}
+
+function* getDiversionPlanWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(GET_DIVERSION_PLAN, getDiversionPlanWorker);
 }
 
 /*
@@ -1084,67 +891,55 @@ function* reassignJudgeWorker(action :SequenceAction) :Generator<*, *, *> {
     yield put(reassignJudge.request(id, value));
 
     const app = yield select(getAppFromState);
-    const edm = yield select(getEdmFromState);
     const judgesESID :UUID = getEntitySetIdFromApp(app, JUDGES);
     const presidesOverESID :UUID = getEntitySetIdFromApp(app, PRESIDES_OVER);
 
-    const { associationEntityData } = value;
-    let associations :Object = associationEntityData;
-    const associationsToDelete = [];
+    const {
+      associations,
+      caseEKID,
+      diversionPlanEKID,
+      judgeEKID
+    } = value;
 
-    const { entityData } = value;
-    if (has(entityData, judgesESID)) {
+    const caseESID :UUID = getEntitySetIdFromApp(app, MANUAL_PRETRIAL_COURT_CASES);
+    const diversionPlanESID :UUID = getEntitySetIdFromApp(app, DIVERSION_PLAN);
 
-      const judgeEKID :UUID = getIn(entityData, [judgesESID, 0, getPropertyTypeIdFromEdm(edm, ENTITY_KEY_ID), 0]);
-      const person = yield select(getPersonFromState);
-      const caseEKID :UUID = getEntityKeyId(person.getIn([PERSON.PERSON_CASE]));
-      const caseESID :UUID = getEntitySetIdFromApp(app, MANUAL_PRETRIAL_COURT_CASES);
-      const diversionPlanEKID :UUID = getEntityKeyId(person.getIn([PERSON.DIVERSION_PLAN]));
-      const diversionPlanESID :UUID = getEntitySetIdFromApp(app, DIVERSION_PLAN);
+    const caseFilter = {
+      entityKeyIds: [caseEKID],
+      destinationEntitySetIds: [],
+      sourceEntitySetIds: [judgesESID],
+    };
+    const diversionPlanFilter = {
+      entityKeyIds: [diversionPlanEKID],
+      destinationEntitySetIds: [],
+      sourceEntitySetIds: [judgesESID],
+    };
+    const [caseResponse, diversionPlanResponse] = yield all([
+      call(
+        searchEntityNeighborsWithFilterWorker,
+        searchEntityNeighborsWithFilter({ entitySetId: caseESID, filter: caseFilter })
+      ),
+      call(
+        searchEntityNeighborsWithFilterWorker,
+        searchEntityNeighborsWithFilter({ entitySetId: diversionPlanESID, filter: diversionPlanFilter })
+      ),
+    ]);
+    if (caseResponse.error) throw caseResponse.error;
+    if (diversionPlanResponse.error) throw diversionPlanResponse.error;
+    const casePresidesOverAssociation :Map = fromJS(caseResponse.data).getIn([caseEKID, 0, ASSOCIATION_DETAILS]);
+    const casePresidesOverEKID :UUID = getEntityKeyId(casePresidesOverAssociation);
+    const diversionPlanPresidesOverAssociation :Map = fromJS(diversionPlanResponse.data)
+      .getIn([diversionPlanEKID, 0, ASSOCIATION_DETAILS]);
+    const diversionPlanPresidesOverEKID :UUID = getEntityKeyId(diversionPlanPresidesOverAssociation);
 
-      const existingAssociationsResponse = yield call(
-        getEntitySetDataWorker,
-        getEntitySetData({ entitySetId: presidesOverESID })
-      );
-      if (existingAssociationsResponse.error) throw existingAssociationsResponse.error;
-      if (existingAssociationsResponse.data) {
-
-        fromJS(existingAssociationsResponse.data)
-          .forEach((associationEntity :Map) => {
-            associationsToDelete.push({
-              entitySetId: presidesOverESID,
-              entityKeyId: getEntityKeyId(associationEntity)
-            });
-          });
-      }
-
-      associations = {
-        [presidesOverESID]: [
-          {
-            data: {},
-            dst: {
-              entitySetId: caseESID,
-              entityKeyId: caseEKID
-            },
-            src: {
-              entitySetId: judgesESID,
-              entityKeyId: judgeEKID
-            }
-          },
-          {
-            data: {},
-            dst: {
-              entitySetId: diversionPlanESID,
-              entityKeyId: diversionPlanEKID
-            },
-            src: {
-              entitySetId: judgesESID,
-              entityKeyId: judgeEKID
-            }
-          }
-        ]
-      };
+    const associationEKIDsToDelete :UUID[] = [];
+    if (casePresidesOverEKID && diversionPlanPresidesOverEKID) {
+      associationEKIDsToDelete.push(casePresidesOverEKID);
+      associationEKIDsToDelete.push(diversionPlanPresidesOverEKID);
     }
+    const associationsToDelete :Object[] = associationEKIDsToDelete.length
+      ? [{ entitySetId: presidesOverESID, entityKeyIds: associationEKIDsToDelete }]
+      : [];
 
     const associationResponse = yield call(
       createOrReplaceAssociationWorker,
@@ -1155,7 +950,7 @@ function* reassignJudgeWorker(action :SequenceAction) :Generator<*, *, *> {
     );
     if (associationResponse.error) throw associationResponse.error;
 
-    yield put(reassignJudge.success(id, { edm, judgesESID, presidesOverESID }));
+    yield put(reassignJudge.success(id, judgeEKID));
   }
   catch (error) {
     LOG.error('caught exception in reassignJudgeWorker()', error);
@@ -1215,48 +1010,6 @@ function* getParticipantWorker(action :SequenceAction) :Generator<*, *, *> {
 function* getParticipantWatcher() :Generator<*, *, *> {
 
   yield takeEvery(GET_PARTICIPANT, getParticipantWorker);
-}
-
-/*
- *
- * ParticipantsActions.getCharges()
- *
- */
-
-function* getChargesWorker(action :SequenceAction) :Generator<*, *, *> {
-
-  const { id } = action;
-  const workerResponse = {};
-  let response :Object = {};
-  let charges :List = List();
-
-  try {
-    yield put(getCharges.request(id));
-    const app = yield select(getAppFromState);
-    const courtChargeListESID = getEntitySetIdFromApp(app, COURT_CHARGE_LIST);
-
-    response = yield call(getEntitySetDataWorker, getEntitySetData({ entitySetId: courtChargeListESID }));
-    if (response.error) {
-      throw response.error;
-    }
-    charges = fromJS(response.data);
-
-    yield put(getCharges.success(id, charges));
-  }
-  catch (error) {
-    workerResponse.error = error;
-    LOG.error('caught exception in getChargesWorker()', error);
-    yield put(getCharges.failure(id, error));
-  }
-  finally {
-    yield put(getCharges.finally(id));
-  }
-  return workerResponse;
-}
-
-function* getChargesWatcher() :Generator<*, *, *> {
-
-  yield takeEvery(GET_CHARGES, getChargesWorker);
 }
 
 /*
@@ -1322,106 +1075,6 @@ function* getJudgeForCaseWatcher() :Generator<*, *, *> {
 
 /*
  *
- * ParticipantsActions.getChargesForCase()
- *
- */
-
-function* getChargesForCaseWorker(action :SequenceAction) :Generator<*, *, *> {
-
-  /*
-    person -> charged with -> charge (datetime stored on charged with)
-    charge -> appears in -> case
-  */
-  const { id, value } = action;
-  const workerResponse = {};
-  let response :Object = {};
-  let chargesInCase :List = List();
-
-  try {
-    yield put(getChargesForCase.request(id));
-    if (value === null || value === undefined) {
-      throw ERR_ACTION_VALUE_NOT_DEFINED;
-    }
-    const { caseEKID } = value;
-    const app = yield select(getAppFromState);
-    const courtCasesESID :UUID = getEntitySetIdFromApp(app, MANUAL_PRETRIAL_COURT_CASES);
-    const courtChargeListESID :UUID = getEntitySetIdFromApp(app, COURT_CHARGE_LIST);
-
-    let searchFilter :Object = {
-      entityKeyIds: [caseEKID],
-      destinationEntitySetIds: [],
-      sourceEntitySetIds: [courtChargeListESID],
-    };
-    response = yield call(
-      searchEntityNeighborsWithFilterWorker,
-      searchEntityNeighborsWithFilter({ entitySetId: courtCasesESID, filter: searchFilter })
-    );
-    if (response.error) {
-      throw response.error;
-    }
-    if (response.data[caseEKID]) {
-      const chargesNeighborsResults :List = fromJS(response.data[caseEKID]);
-      const chargesEKIDs = [];
-      chargesNeighborsResults.forEach((neighbor :Map) => {
-        const chargeEntity :Map = getNeighborDetails(neighbor);
-        const chargeEKID :UUID = getEntityKeyId(chargeEntity);
-        chargesEKIDs.push(chargeEKID);
-        chargesInCase = chargesInCase.push(fromJS({
-          [COURT_CHARGE_LIST]: chargeEntity
-        }));
-      });
-
-      const chargeEventESID :UUID = getEntitySetIdFromApp(app, CHARGE_EVENT);
-      searchFilter = {
-        entityKeyIds: chargesEKIDs,
-        destinationEntitySetIds: [],
-        sourceEntitySetIds: [chargeEventESID],
-      };
-      response = yield call(
-        searchEntityNeighborsWithFilterWorker,
-        searchEntityNeighborsWithFilter({ entitySetId: courtChargeListESID, filter: searchFilter })
-      );
-      if (response.error) {
-        throw response.error;
-      }
-      const chargeEventResults :Map = fromJS(response.data);
-      if (!chargeEventResults.isEmpty()) {
-        chargeEventResults.forEach((chargeEventObj :List, chargeEKID :UUID) => {
-          const chargeEvent :Map = getNeighborDetails(chargeEventObj.get(0));
-          let chargeMap :Map = chargesInCase.find((map :Map) => getEntityKeyId(
-            map.get(COURT_CHARGE_LIST)
-          ) === chargeEKID);
-          if (isDefined(chargeMap)) {
-            const chargeMapIndex :number = chargesInCase.findIndex((map :Map) => getEntityKeyId(
-              map.get(COURT_CHARGE_LIST)
-            ) === chargeEKID);
-            chargeMap = chargeMap.set(CHARGE_EVENT, chargeEvent);
-            chargesInCase = chargesInCase.set(chargeMapIndex, chargeMap);
-          }
-        });
-      }
-    }
-
-    yield put(getChargesForCase.success(id, chargesInCase));
-  }
-  catch (error) {
-    workerResponse.error = error;
-    LOG.error('caught exception in getChargesForCaseWorker()', error);
-    yield put(getChargesForCase.failure(id, error));
-  }
-  finally {
-    yield put(getChargesForCase.finally(id));
-  }
-  return workerResponse;
-}
-
-function* getChargesForCaseWatcher() :Generator<*, *, *> {
-
-  yield takeEvery(GET_CHARGES_FOR_CASE, getChargesForCaseWorker);
-}
-
-/*
- *
  * ParticipantsActions.getCaseInfo()
  *
  */
@@ -1461,7 +1114,7 @@ function* getCaseInfoWorker(action :SequenceAction) :Generator<*, *, *> {
     }
 
     const caseEKID :UUID = getEntityKeyId(personCase);
-    yield call(getChargesForCaseWorker, getChargesForCase({ caseEKID }));
+    yield call(getCourtChargesForCaseWorker, getCourtChargesForCase({ caseEKID }));
     yield call(getJudgeForCaseWorker, getJudgeForCase({ caseEKIDs: [caseEKID] }));
 
     yield put(getCaseInfo.success(id, personCase));
@@ -1799,6 +1452,7 @@ function* getEnrollmentStatusWorker(action :SequenceAction) :Generator<*, *, *> 
       const diversionPlanEKID :UUID = getEntityKeyId(diversionPlan);
 
       yield call(getCaseInfoWorker, getCaseInfo({ diversionPlanEKID }));
+      yield call(getArrestChargesLinkedToCWPWorker, getArrestChargesLinkedToCWP({ diversionPlanEKID }));
       /* If populating profile, call getWorksitePlans() to find all worksite plans for current diversion plan */
       const { populateProfile } = value;
       if (populateProfile) {
@@ -1995,7 +1649,6 @@ function* getJudgesWorker(action :SequenceAction) :Generator<*, *, *> {
   return workerResponse;
 }
 
-
 function* getJudgesWatcher() :Generator<*, *, *> {
 
   yield takeEvery(GET_JUDGES, getJudgesWorker);
@@ -2035,7 +1688,7 @@ function* getParticipantCasesWorker(action :SequenceAction) :Generator<*, *, *> 
       throw response.error;
     }
     const caseResults :List = fromJS(response.data[personEKID]);
-    if (!caseResults.isEmpty()) {
+    if (caseResults && !caseResults.isEmpty()) {
       allParticipantCases = caseResults.map((caseResult :Map) => getNeighborDetails(caseResult));
 
       const caseEKIDs :UUID[] = allParticipantCases.map((caseEntity :Map) => getEntityKeyId(caseEntity)).toJS();
@@ -2053,7 +1706,6 @@ function* getParticipantCasesWorker(action :SequenceAction) :Generator<*, *, *> 
   }
   return workerResponse;
 }
-
 
 function* getParticipantCasesWatcher() :Generator<*, *, *> {
 
@@ -2126,20 +1778,24 @@ function* getPersonPhotoWatcher() :Generator<*, *, *> {
 function* getInfoForEditCaseWorker(action :SequenceAction) :Generator<*, *, *> {
 
   const { id, value } = action;
-  if (value === null || value === undefined) {
+  if (!isDefined(value)) {
     yield put(getInfoForEditCase.failure(id, ERR_ACTION_VALUE_NOT_DEFINED));
     return;
   }
 
   try {
     yield put(getInfoForEditCase.request(id));
-    const { personEKID } = value;
+    const { diversionPlanEKID, personEKID } = value;
 
     const workerResponses = yield all([
-      call(getParticipantWorker, getParticipant({ personEKID })),
-      call(getEnrollmentStatusWorker, getEnrollmentStatus({ personEKID, populateProfile: false })),
+      call(getArrestCasesAndChargesFromPSAWorker, getArrestCasesAndChargesFromPSA({ personEKID })),
+      call(getArrestChargesLinkedToCWPWorker, getArrestChargesLinkedToCWP({ diversionPlanEKID })),
+      call(getArrestChargesWorker, getArrestCharges()),
+      call(getCaseInfoWorker, getCaseInfo({ diversionPlanEKID })),
+      call(getCourtChargesWorker, getCourtCharges()),
+      call(getDiversionPlanWorker, getDiversionPlan({ diversionPlanEKID })),
       call(getJudgesWorker, getJudges()),
-      call(getChargesWorker, getCharges()),
+      call(getParticipantWorker, getParticipant({ personEKID })),
     ]);
     const responseError = workerResponses.reduce(
       (error, workerResponse) => error || workerResponse.error,
@@ -2163,6 +1819,54 @@ function* getInfoForEditCaseWorker(action :SequenceAction) :Generator<*, *, *> {
 function* getInfoForEditCaseWatcher() :Generator<*, *, *> {
 
   yield takeEvery(GET_INFO_FOR_EDIT_CASE, getInfoForEditCaseWorker);
+}
+
+/*
+ *
+ * ParticipantActions.getInfoForAddParticipant()
+ *
+ */
+
+function* getInfoForAddParticipantWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+
+  try {
+    yield put(getInfoForAddParticipant.request(id));
+
+    const workerCalls = [
+      call(getJudgesWorker, getJudges()),
+      call(getArrestChargesWorker, getArrestCharges()),
+    ];
+    const { personEKID } = value;
+    if (isValidUUID(personEKID)) {
+      workerCalls.push(call(getParticipantWorker, getParticipant({ personEKID })));
+      workerCalls.push(call(getArrestCasesAndChargesFromPSAWorker, getArrestCasesAndChargesFromPSA({ personEKID })));
+    }
+
+    const workerResponses = yield all(workerCalls);
+    const responseError = workerResponses.reduce(
+      (error, workerResponse) => error || workerResponse.error,
+      undefined,
+    );
+    if (responseError) {
+      throw responseError;
+    }
+
+    yield put(getInfoForAddParticipant.success(id));
+  }
+  catch (error) {
+    LOG.error('caught exception in getInfoForAddParticipantWorker()', error);
+    yield put(getInfoForAddParticipant.failure(id, error));
+  }
+  finally {
+    yield put(getInfoForAddParticipant.finally(id));
+  }
+}
+
+function* getInfoForAddParticipantWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(GET_INFO_FOR_ADD_PARTICIPANT, getInfoForAddParticipantWorker);
 }
 
 /*
@@ -2264,16 +1968,12 @@ function* getAllParticipantInfoWatcher() :Generator<*, *, *> {
 }
 
 export {
-  addChargesToCaseWatcher,
-  addChargesToCaseWorker,
   addNewDiversionPlanStatusWatcher,
   addNewDiversionPlanStatusWorker,
   addNewParticipantContactsWatcher,
   addNewParticipantContactsWorker,
   addPersonPhotoWatcher,
   addPersonPhotoWorker,
-  addToAvailableChargesWatcher,
-  addToAvailableChargesWorker,
   createCaseWatcher,
   createCaseWorker,
   createNewEnrollmentWatcher,
@@ -2296,18 +1996,18 @@ export {
   getAllParticipantInfoWorker,
   getCaseInfoWatcher,
   getCaseInfoWorker,
-  getChargesForCaseWatcher,
-  getChargesForCaseWorker,
-  getChargesWatcher,
-  getChargesWorker,
   getContactInfoWatcher,
   getContactInfoWorker,
+  getDiversionPlanWatcher,
+  getDiversionPlanWorker,
   getEnrollmentHistoryWatcher,
   getEnrollmentHistoryWorker,
   getEnrollmentFromDiversionPlanWatcher,
   getEnrollmentFromDiversionPlanWorker,
   getEnrollmentStatusWatcher,
   getEnrollmentStatusWorker,
+  getInfoForAddParticipantWatcher,
+  getInfoForAddParticipantWorker,
   getInfoForEditCaseWatcher,
   getInfoForEditCaseWorker,
   getInfoForEditPersonWatcher,
@@ -2330,8 +2030,6 @@ export {
   markDiversionPlanAsCompleteWorker,
   reassignJudgeWatcher,
   reassignJudgeWorker,
-  removeChargeFromCaseWatcher,
-  removeChargeFromCaseWorker,
   updatePersonPhotoWatcher,
   updatePersonPhotoWorker,
 };

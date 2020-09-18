@@ -1,5 +1,6 @@
 // @flow
 import React, { Component } from 'react';
+
 import { Map } from 'immutable';
 import {
   Button,
@@ -10,15 +11,16 @@ import { bindActionCreators } from 'redux';
 import type { RequestSequence } from 'redux-reqseq';
 
 import { deleteInfractionEvent } from './InfractionsActions';
-import { getEntitySetIdFromApp } from '../../../utils/DataUtils';
-import { APP_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
-import { STATE } from '../../../utils/constants/ReduxStateConsts';
+
 import {
   ButtonsRow,
   FormRow,
   FormWrapper,
   RowContent
 } from '../../../components/Layout';
+import { APP_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
+import { getEntitySetIdFromApp } from '../../../utils/DataUtils';
+import { STATE } from '../../../utils/constants/ReduxStateConsts';
 
 const { INFRACTION_EVENT } = APP_TYPE_FQNS;
 
@@ -48,7 +50,7 @@ class DeleteInfractionForm extends Component<Props, State> {
     const infractionEventESID :UUID = getEntitySetIdFromApp(app, INFRACTION_EVENT);
     const entitiesToDelete :Object[] = [{
       entitySetId: infractionEventESID,
-      entityKeyId: infractionEventEKID
+      entityKeyIds: [infractionEventEKID]
     }];
     actions.deleteInfractionEvent(entitiesToDelete);
   }
@@ -70,8 +72,8 @@ class DeleteInfractionForm extends Component<Props, State> {
         <ButtonsRow>
           <Button onClick={onDiscard}>No</Button>
           <Button
+              color="primary"
               isLoading={isLoading}
-              mode="primary"
               onClick={this.handleDelete}>
             Yes
           </Button>
@@ -85,7 +87,7 @@ const mapStateToProps = (state :Map) => ({
   app: state.get(STATE.APP),
 });
 
-const mapDispatchToProps = dispatch => ({
+const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
     deleteInfractionEvent,
   }, dispatch)

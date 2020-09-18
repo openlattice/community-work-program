@@ -1,24 +1,21 @@
 // @flow
 import React, { Component } from 'react';
+
 import styled from 'styled-components';
 import { Map } from 'immutable';
+import { DataProcessingUtils, Form } from 'lattice-fabricate';
 import { DateTime } from 'luxon';
-import { Form, DataProcessingUtils } from 'lattice-fabricate';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import type { RequestSequence } from 'redux-reqseq';
 
 import { editInfractionEvent } from './InfractionsActions';
 import { schema, uiSchema } from './schemas/EditInfractionSchemas';
-import {
-  getEntityKeyId,
-  getEntityProperties,
-  getEntitySetIdFromApp,
-  getPropertyTypeIdFromEdm,
-} from '../../../utils/DataUtils';
-import { getCombinedDateTime } from '../../../utils/ScheduleUtils';
+
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
-import { STATE } from '../../../utils/constants/ReduxStateConsts';
+import { getEntityKeyId, getEntityProperties } from '../../../utils/DataUtils';
+import { getCombinedDateTime } from '../../../utils/ScheduleUtils';
+import { APP, EDM, STATE } from '../../../utils/constants/ReduxStateConsts';
 
 const {
   getPageSectionKey,
@@ -28,6 +25,8 @@ const {
 
 const { INFRACTION_EVENT } = APP_TYPE_FQNS;
 const { DATETIME_COMPLETED, NOTES, TYPE } = PROPERTY_TYPE_FQNS;
+const { ENTITY_SET_IDS_BY_ORG, SELECTED_ORG_ID } = APP;
+const { PROPERTY_TYPES, TYPE_IDS_BY_FQNS } = EDM;
 
 const FormWrapper = styled.div`
   width: 600px;
@@ -37,10 +36,10 @@ type Props = {
   actions:{
     editInfractionEvent :RequestSequence;
   },
-  app :Map;
-  edm :Map;
-  infractionEvent :Map;
+  entitySetIds :Map;
   infractionCategory :string;
+  infractionEvent :Map;
+  propertyTypeIds :Map;
 };
 
 type State = {
@@ -49,9 +48,13 @@ type State = {
 
 class EditInfractionForm extends Component<Props, State> {
 
-  state = {
-    formData: {},
-  };
+  constructor(props :Props) {
+    super(props);
+
+    this.state = {
+      formData: {},
+    };
+  }
 
   componentDidMount() {
     this.prepopulateFormData();
@@ -88,28 +91,17 @@ class EditInfractionForm extends Component<Props, State> {
     return entityIndexToIdMap;
   }
 
-  createEntitySetIdsMap = () => {
-    const { app } = this.props;
-    return {
-      [INFRACTION_EVENT]: getEntitySetIdFromApp(app, INFRACTION_EVENT),
-    };
-  };
-
-  createPropertyTypeIdsMap = () => {
-    const { edm } = this.props;
-    return {
-      [DATETIME_COMPLETED]: getPropertyTypeIdFromEdm(edm, DATETIME_COMPLETED),
-      [NOTES]: getPropertyTypeIdFromEdm(edm, NOTES),
-      [TYPE]: getPropertyTypeIdFromEdm(edm, TYPE),
-    };
-  };
-
   handleOnChange = ({ formData } :Object) => {
     this.setState({ formData });
   }
 
   handleOnSubmit = ({ formData } :Object) => {
-    const { actions, infractionEvent } = this.props;
+    const {
+      actions,
+      entitySetIds,
+      infractionEvent,
+      propertyTypeIds,
+    } = this.props;
 
     const infractionEventEKID :UUID = getEntityKeyId(infractionEvent);
     const pageKey :string = getPageSectionKey(1, 1);
@@ -145,8 +137,8 @@ class EditInfractionForm extends Component<Props, State> {
     const entityData :Object = processEntityDataForPartialReplace(
       dataToProcess,
       originalData,
-      this.createEntitySetIdsMap(),
-      this.createPropertyTypeIdsMap(),
+      entitySetIds,
+      propertyTypeIds,
       {}
     );
 
@@ -154,12 +146,13 @@ class EditInfractionForm extends Component<Props, State> {
   }
 
   render() {
+    const { entitySetIds, propertyTypeIds } = this.props;
     const { formData } = this.state;
 
     const formContext :{} = {
       entityIndexToIdMap: this.createEntityIndexToIdMap(),
-      entitySetIds: this.createEntitySetIdsMap(),
-      propertyTypeIds: this.createPropertyTypeIdsMap(),
+      entitySetIds,
+      propertyTypeIds,
     };
     return (
       <FormWrapper>
@@ -178,18 +171,18 @@ class EditInfractionForm extends Component<Props, State> {
 const mapStateToProps = (state :Map) => {
   const app = state.get(STATE.APP);
   const edm = state.get(STATE.EDM);
+  const selectedOrgId :string = app.get(SELECTED_ORG_ID);
   return ({
-    app,
-    edm,
+    entitySetIds: app.getIn([ENTITY_SET_IDS_BY_ORG, selectedOrgId], Map()),
+    propertyTypeIds: edm.getIn([TYPE_IDS_BY_FQNS, PROPERTY_TYPES], Map()),
   });
 };
 
-const mapDispatchToProps = dispatch => ({
+const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
     editInfractionEvent,
   }, dispatch)
 });
-
 
 // $FlowFixMe
 export default connect(mapStateToProps, mapDispatchToProps)(EditInfractionForm);

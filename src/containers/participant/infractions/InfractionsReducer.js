@@ -5,8 +5,8 @@ import {
   fromJS,
 } from 'immutable';
 import { RequestStates } from 'redux-reqseq';
-import type { SequenceAction } from 'redux-reqseq';
 import type { FQN } from 'lattice';
+import type { SequenceAction } from 'redux-reqseq';
 
 import {
   addInfraction,
@@ -16,6 +16,9 @@ import {
   getInfractionTypes,
   getParticipantInfractions,
 } from './InfractionsActions';
+
+import { INFRACTIONS_CONSTS } from '../../../core/edm/constants/DataModelConsts';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import {
   getEntityKeyId,
   getEntityProperties,
@@ -23,8 +26,6 @@ import {
   getPropertyTypeIdFromEdm,
 } from '../../../utils/DataUtils';
 import { PERSON_INFRACTIONS } from '../../../utils/constants/ReduxStateConsts';
-import { INFRACTIONS_CONSTS } from '../../../core/edm/constants/DataModelConsts';
-import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 
 const { WORKSITE_PLAN } = APP_TYPE_FQNS;
 const {
@@ -67,7 +68,6 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [VIOLATIONS]: List(),
   [WARNINGS]: List(),
 });
-
 
 export default function infractionsReducer(state :Map<*, *> = INITIAL_STATE, action :SequenceAction) :Map<*, *> {
 
