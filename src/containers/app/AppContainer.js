@@ -11,7 +11,6 @@ import {
   AppContentWrapper,
   AppHeaderWrapper,
   AppNavigationWrapper,
-  Colors,
   LatticeLuxonUtils,
   MuiPickersUtilsProvider,
   Sizes,
@@ -52,7 +51,6 @@ import { requestIsPending } from '../../utils/RequestStateUtils';
 import { APP, SHARED, STATE } from '../../utils/constants/ReduxStateConsts';
 
 const { logout } = AuthActions;
-const { NEUTRAL } = Colors;
 const { APP_CONTENT_WIDTH } = Sizes;
 const { SELECTED_ORG_ID } = APP;
 const { ACTIONS, REQUEST_STATE } = SHARED;
