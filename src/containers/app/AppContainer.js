@@ -4,7 +4,6 @@
 
 import React, { Component } from 'react';
 
-import styled from 'styled-components';
 import { Map } from 'immutable';
 import { AuthActions, AuthUtils } from 'lattice-auth';
 import {
@@ -57,15 +56,6 @@ const { NEUTRAL } = Colors;
 const { APP_CONTENT_WIDTH } = Sizes;
 const { SELECTED_ORG_ID } = APP;
 const { ACTIONS, REQUEST_STATE } = SHARED;
-
-const FancySearchAndFilterHeader = styled(AppContentWrapper)`
-  border-bottom: 1px solid ${NEUTRAL.N100};
-  justify-content: center;
-  position: sticky;
-  > div {
-    padding: 10px 30px;
-  }
-`;
 
 type Props = {
   actions:{
@@ -179,18 +169,6 @@ class AppContainer extends Component<Props> {
                   </AppHeaderWrapper>
                 )
               }
-              {/*
-                location.pathname === Routes.PARTICIPANTS && (
-                  <FancySearchAndFilterHeader bgColor="white">
-                    <ToolBar
-                        dropdowns={dropdowns}
-                        onSelectFunctions={onSelectFunctions}
-                        primaryButtonAction={this.goToAddParticipantForm}
-                        primaryButtonText="Add Participant"
-                        search={this.searchParticipantList} />
-                  </FancySearchAndFilterHeader>
-                )
-              */}
               <AppContentWrapper contentWidth={APP_CONTENT_WIDTH}>
                 {
                   isInitializing ? (
