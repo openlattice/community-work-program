@@ -79,11 +79,10 @@ const TableCard = styled(Card)`
 `;
 
 const TableHeader = styled(CardSegment)`
-  align-items: center;
   color: ${NEUTRAL.N900};
   font-size: 24px;
   font-weight: 600;
-  flex-direction: row;
+  justify-content: center;
 `;
 
 const TableName = styled.div`
