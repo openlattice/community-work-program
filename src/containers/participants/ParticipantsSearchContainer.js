@@ -3,8 +3,16 @@ import React, { Component } from 'react';
 
 import styled from 'styled-components';
 import toString from 'lodash/toString';
+import { faFilter } from '@fortawesome/pro-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { List, Map } from 'immutable';
-import { Badge } from 'lattice-ui-kit';
+import {
+  Badge,
+  Button,
+  Colors,
+  IconButton,
+  Select,
+} from 'lattice-ui-kit';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { RequestStates } from 'redux-reqseq';
@@ -14,8 +22,9 @@ import { getDiversionPlans } from './ParticipantsActions';
 import {
   ALL,
   ALL_PARTICIPANTS_COLUMNS,
+  COURT_TYPE_FILTER_OPTIONS,
   EMPTY_FIELD,
-  FILTERS,
+  STATUS_FILTER_OPTIONS,
   courtTypeFilterDropdown,
   statusFilterDropdown,
 } from './ParticipantsConstants';
@@ -24,9 +33,9 @@ import { formatClickedProperty, getFilteredPeople } from './utils/SearchContaine
 import LogoLoader from '../../components/LogoLoader';
 import NoParticipantsFound from '../dashboard/NoParticipantsFound';
 import ParticipantsTableRow from '../../components/table/ParticipantsTableRow';
+import SearchContainer from '../search/SearchContainer';
 import TableHeadCell from '../../components/table/TableHeadCell';
 import TableHeaderRow from '../../components/table/TableHeaderRow';
-import { ToolBar } from '../../components/controls/index';
 import {
   CustomTable,
   TableCard,
@@ -52,6 +61,7 @@ import { getSentenceEndDate } from '../../utils/ScheduleUtils';
 import { APP, PEOPLE, STATE } from '../../utils/constants/ReduxStateConsts';
 import type { GoToRoute } from '../../core/router/RoutingActions';
 
+const { NEUTRAL } = Colors;
 const { ENTITY_SET_IDS_BY_ORG, SELECTED_ORG_ID } = APP;
 const {
   COURT_TYPE_BY_PARTICIPANT,
@@ -73,10 +83,6 @@ const {
 const { VIOLATION, WARNING } = INFRACTIONS_CONSTS;
 const { REQUIRED, WORKED } = HOURS_CONSTS;
 
-const dropdowns :List = List().withMutations((list :List) => {
-  list.set(0, statusFilterDropdown);
-  list.set(1, courtTypeFilterDropdown);
-});
 const defaultStatusFilterOption :Map = statusFilterDropdown.get('enums')
   .find((obj) => obj.value.toUpperCase() === ALL);
 const defaultCourtTypeFilterOption :Map = courtTypeFilterDropdown.get('enums')
@@ -99,6 +105,36 @@ const ParticipantSearchInnerWrapper = styled.div`
   /* width: ${SEARCH_CONTAINER_WIDTH}px; */
 `;
 
+const TableHeaderItemsWrapper = styled.div`
+  align-items: center;
+  display: flex;
+`;
+
+const TableHeaderTopRow = styled(TableHeaderItemsWrapper)`
+  justify-content: space-between;
+`;
+
+const IconButtonWrapper = styled.div`
+  margin-right: 10px;
+`;
+
+const FiltersHeader = styled.div`
+  color: ${NEUTRAL.N500};
+  font-size: 14px;
+  font-weight: 600;
+  margin-left: 10px;
+  margin-right: 20px;
+`;
+
+const SelectWrapper = styled.div`
+  align-items: center;
+  display: flex;
+  height: 35px;
+  justify-content: center;
+  margin: 10px 10px 10px 0;
+  min-width: 175px;
+`;
+
 type Props = {
   actions:{
     getDiversionPlans :RequestSequence;
@@ -118,6 +154,7 @@ type Props = {
 
 type State = {
   courtTypeFilterValue :Object;
+  filtersVisible :boolean;
   peopleToRender :List;
   statusFilterValue :Object;
 };
@@ -129,6 +166,7 @@ class ParticipantsSearchContainer extends Component<Props, State> {
 
     this.state = {
       courtTypeFilterValue: defaultCourtTypeFilterOption,
+      filtersVisible: false,
       peopleToRender: props.participants,
       statusFilterValue: defaultStatusFilterOption,
     };
@@ -286,6 +324,7 @@ class ParticipantsSearchContainer extends Component<Props, State> {
 
   render() {
     const { getInitializeAppRequestState, getDiversionPlansRequestState } = this.props;
+    const { filtersVisible } = this.state;
 
     if (getDiversionPlansRequestState === RequestStates.PENDING
         || getInitializeAppRequestState === RequestStates.PENDING) {
@@ -296,28 +335,53 @@ class ParticipantsSearchContainer extends Component<Props, State> {
       );
     }
 
-    const onSelectFunctions = Map().withMutations((map :Map) => {
-      map.set(FILTERS.STATUS, this.handleOnFilter);
-      map.set(FILTERS.COURT_TYPE, this.handleOnFilter);
-    });
     const tableData :Object[] = this.aggregateTableData();
     const tableHeaders :Object[] = generateTableHeaders(ALL_PARTICIPANTS_COLUMNS);
 
     return (
       <ParticipantSearchOuterWrapper>
-        <ToolBar
-            dropdowns={dropdowns}
-            onSelectFunctions={onSelectFunctions}
-            primaryButtonAction={this.goToAddParticipantForm}
-            primaryButtonText="Add Participant"
-            search={this.searchParticipantList} />
         <ParticipantSearchInnerWrapper>
           <TableCard>
             <TableHeader padding="40px">
-              <TableName>
-              All Participants
-              </TableName>
-              <Badge mode="primary" count={tableData.length} />
+              <TableHeaderTopRow>
+                <TableHeaderItemsWrapper>
+                  <TableName>All Participants</TableName>
+                  <Badge mode="primary" count={tableData.length} />
+                </TableHeaderItemsWrapper>
+                <TableHeaderItemsWrapper>
+                  <SearchContainer search={this.searchParticipantList} />
+                  <IconButtonWrapper>
+                    <IconButton onClick={() => this.setState({ filtersVisible: !filtersVisible })}>
+                      <FontAwesomeIcon icon={faFilter} />
+                    </IconButton>
+                  </IconButtonWrapper>
+                  <Button onClick={this.goToAddParticipantForm}>Add</Button>
+                </TableHeaderItemsWrapper>
+              </TableHeaderTopRow>
+              {
+                filtersVisible && (
+                  <TableHeaderItemsWrapper>
+                    <>
+                      <FiltersHeader>Status</FiltersHeader>
+                      <SelectWrapper>
+                        <Select
+                            onChange={this.handleOnFilter}
+                            options={STATUS_FILTER_OPTIONS}
+                            placeholder="All" />
+                      </SelectWrapper>
+                    </>
+                    <>
+                      <FiltersHeader>Court Type</FiltersHeader>
+                      <SelectWrapper>
+                        <Select
+                            onChange={this.handleOnFilter}
+                            options={COURT_TYPE_FILTER_OPTIONS}
+                            placeholder="All" />
+                      </SelectWrapper>
+                    </>
+                  </TableHeaderItemsWrapper>
+                )
+              }
             </TableHeader>
             {
               tableData.length > 0
