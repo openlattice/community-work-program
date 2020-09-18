@@ -28,14 +28,15 @@ import {
   Switch,
 } from 'react-router-dom';
 import { bindActionCreators } from 'redux';
-import type { RequestSequence } from 'redux-reqseq';
+import type { RequestSequence, RequestState } from 'redux-reqseq';
 
-import * as AppActions from './AppActions';
+import { INITIALIZE_APPLICATION, initializeApplication, switchOrganization } from './AppActions';
 
 import AddParticipantContainer from '../participants/newparticipant/AddParticipantContainer';
 import DashboardContainer from '../dashboard/DashboardContainer';
 import EditWorksiteHoursForm from '../worksites/EditWorksiteHoursForm';
 import EditWorksiteInfoForm from '../worksites/EditWorksiteInfoForm';
+import LogoLoader from '../../components/LogoLoader';
 import OpenLatticeLogo from '../../assets/images/logo_v2.png';
 import ParticipantProfileContainer from '../participant/ParticipantProfileContainer';
 import ParticipantsSearchContainer from '../participants/ParticipantsSearchContainer';
@@ -48,11 +49,14 @@ import * as ParticipantsActions from '../participants/ParticipantsActions';
 import * as Routes from '../../core/router/Routes';
 import { ContactSupport } from '../../components/controls/index';
 import { isNonEmptyString } from '../../utils/LangUtils';
-import { APP, STATE } from '../../utils/constants/ReduxStateConsts';
+import { requestIsPending } from '../../utils/RequestStateUtils';
+import { APP, SHARED, STATE } from '../../utils/constants/ReduxStateConsts';
 
 const { logout } = AuthActions;
 const { NEUTRAL } = Colors;
 const { APP_CONTENT_WIDTH } = Sizes;
+const { SELECTED_ORG_ID } = APP;
+const { ACTIONS, REQUEST_STATE } = SHARED;
 
 const FancySearchAndFilterHeader = styled(AppContentWrapper)`
   border-bottom: 1px solid ${NEUTRAL.N100};
@@ -72,6 +76,10 @@ type Props = {
   },
   app :Map;
   location :Object;
+  requestStates :{
+    INITIALIZE_APPLICATION :RequestState;
+  };
+  selectedOrganizationId :UUID;
 };
 
 class AppContainer extends Component<Props> {
@@ -84,8 +92,7 @@ class AppContainer extends Component<Props> {
   }
 
   switchOrganization = (organization :Object) => {
-    const { actions, app } = this.props;
-    const selectedOrganizationId = app.get(APP.SELECTED_ORG_ID);
+    const { actions, selectedOrganizationId } = this.props;
     if (organization.value !== selectedOrganizationId) {
       actions.switchOrganization({
         orgId: organization.value,
@@ -117,7 +124,12 @@ class AppContainer extends Component<Props> {
   );
 
   render() {
-    const { app, location } = this.props;
+    const {
+      app,
+      location,
+      requestStates,
+      selectedOrganizationId,
+    } = this.props;
 
     const { pathname } = location;
     const isPrintView :boolean = pathname.substring(pathname.lastIndexOf('/')) === '/print';
@@ -136,6 +148,8 @@ class AppContainer extends Component<Props> {
       user = userInfo.email;
     }
 
+    const isInitializing = requestIsPending(requestStates[INITIALIZE_APPLICATION]);
+
     return (
       <ThemeProvider theme={lightTheme}>
         <MuiPickersUtilsProvider utils={LatticeLuxonUtils}>
@@ -148,8 +162,10 @@ class AppContainer extends Component<Props> {
                       appTitle="Community Work Program"
                       logout={this.logout}
                       organizationsSelect={{
+                        isLoading: isInitializing,
                         onChange: this.switchOrganization,
                         organizations,
+                        selectedOrganizationId
                       }}
                       user={user}>
                     <AppNavigationWrapper>
@@ -176,7 +192,15 @@ class AppContainer extends Component<Props> {
                 )
               */}
               <AppContentWrapper contentWidth={APP_CONTENT_WIDTH}>
-                { this.renderAppContent() }
+                {
+                  isInitializing ? (
+                    <LogoLoader
+                        loadingText="Please wait..."
+                        size={60} />
+                  ) : (
+                    this.renderAppContent()
+                  )
+                }
               </AppContentWrapper>
               <ContactSupport />
             </AppContainerWrapper>
@@ -189,14 +213,18 @@ class AppContainer extends Component<Props> {
 
 const mapStateToProps = (state :Map) => ({
   app: state.get(STATE.APP),
+  requestStates: {
+    [INITIALIZE_APPLICATION]: state.getIn([STATE.APP, ACTIONS, INITIALIZE_APPLICATION, REQUEST_STATE]),
+  },
+  [SELECTED_ORG_ID]: state.getIn([STATE.APP, SELECTED_ORG_ID]),
 });
 
 const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
-    initializeApplication: AppActions.initializeApplication,
+    initializeApplication,
     logout,
     resetRequestState: ParticipantsActions.resetRequestState,
-    switchOrganization: AppActions.switchOrganization,
+    switchOrganization,
   }, dispatch)
 });
 
