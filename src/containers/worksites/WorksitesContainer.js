@@ -2,8 +2,18 @@
 import React, { Component } from 'react';
 
 import styled from 'styled-components';
+import { faFilter } from '@fortawesome/pro-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { List, Map } from 'immutable';
-import { CardStack, Colors } from 'lattice-ui-kit';
+import {
+  Button,
+  Card,
+  CardSegment,
+  CardStack,
+  Colors,
+  IconButton,
+  Select,
+} from 'lattice-ui-kit';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 import { bindActionCreators } from 'redux';
@@ -15,14 +25,15 @@ import { getOrganizations, getWorksitePlans, getWorksitesByOrg } from './Worksit
 import {
   ALL,
   FILTERS,
+  STATUS_FILTER_OPTIONS,
   WORKSITE_STATUSES,
   statusFilterDropdown
 } from './WorksitesConstants';
 
 import AddOrganizationModal from '../organizations/AddOrganizationModal';
 import LogoLoader from '../../components/LogoLoader';
+import SearchContainer from '../search/SearchContainer';
 import { ContainerHeader, ContainerInnerWrapper, ContainerOuterWrapper } from '../../components/Layout';
-import { ToolBar } from '../../components/controls/index';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
 import { isDefined } from '../../utils/LangUtils';
@@ -42,9 +53,6 @@ const {
   WORKSITES_INFO,
 } = WORKSITES;
 
-const dropdowns :List = List().withMutations((list :List) => {
-  list.set(0, statusFilterDropdown);
-});
 const defaultFilterOption :Map = statusFilterDropdown.get('enums')
   .find((obj :Object) => obj.value.toUpperCase() === ALL);
 
@@ -53,6 +61,12 @@ const HeaderWrapper = styled.div`
   flex-direction: column;
   justify-content: flex-start;
   margin-bottom: 20px;
+`;
+
+const HeaderWrapperWithButton = styled.div`
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
 `;
 
 const SubHeaderWrapper = styled.div`
@@ -75,6 +89,26 @@ const Separator = styled.div`
   margin: 0 10px;
 `;
 
+const ActionsWrapper = styled.div`
+  align-items: center;
+  display: flex;
+`;
+
+const FilterWrapper = styled.div`
+  margin: 10px;
+`;
+
+const FiltersHeader = styled.div`
+  color: ${NEUTRAL.N500};
+  font-size: 14px;
+  font-weight: 600;
+`;
+
+const SelectWrapper = styled.div`
+  height: 35px;
+  max-width: 175px;
+`;
+
 type Props = {
   actions:{
     getOrganizations :RequestSequence;
@@ -91,6 +125,7 @@ type Props = {
 };
 
 type State = {
+  filtersVisible :boolean;
   organizationsToRender :List;
   selectedFilterOption :Map;
   showAddOrganization :boolean;
@@ -102,6 +137,7 @@ class WorksitesContainer extends Component<Props, State> {
     super(props);
 
     this.state = {
+      filtersVisible: false,
       organizationsToRender: props.organizationsList,
       selectedFilterOption: defaultFilterOption,
       showAddOrganization: false,
@@ -232,10 +268,8 @@ class WorksitesContainer extends Component<Props, State> {
       worksitesByOrg,
       worksitesInfo,
     } = this.props;
-    const { organizationsToRender, showAddOrganization } = this.state;
-    const onSelectFunctions :Map = Map().withMutations((map :Map) => {
-      map.set(FILTERS.STATUS, this.handleOnFilter);
-    });
+    const { filtersVisible, organizationsToRender, showAddOrganization } = this.state;
+
     const orgSubHeader :string = organizationsToRender.count() !== 1
       ? `${organizationsToRender.count()} Organizations` : '1 Organization';
     const worksiteCount = organizationsToRender.reduce((count, org) => {
@@ -257,15 +291,12 @@ class WorksitesContainer extends Component<Props, State> {
 
     return (
       <ContainerOuterWrapper>
-        <ToolBar
-            dropdowns={dropdowns}
-            onSelectFunctions={onSelectFunctions}
-            primaryButtonAction={this.handleShowAddOrganization}
-            primaryButtonText="Add Organization"
-            search={this.handleOnSearch} />
         <ContainerInnerWrapper>
           <HeaderWrapper>
-            <ContainerHeader>Work Sites</ContainerHeader>
+            <HeaderWrapperWithButton>
+              <ContainerHeader>Work Sites</ContainerHeader>
+              <Button color="primary" onClick={this.handleShowAddOrganization}>Add Organization</Button>
+            </HeaderWrapperWithButton>
             <SubHeaderWrapper>
               <ContainerSubHeader>{ orgSubHeader }</ContainerSubHeader>
               <Separator>•</Separator>
@@ -273,6 +304,29 @@ class WorksitesContainer extends Component<Props, State> {
             </SubHeaderWrapper>
           </HeaderWrapper>
           <CardStack>
+            <Card>
+              <CardSegment padding="5px">
+                <ActionsWrapper>
+                  <SearchContainer search={this.handleOnSearch} />
+                  <IconButton onClick={() => this.setState({ filtersVisible: !filtersVisible })}>
+                    <FontAwesomeIcon icon={faFilter} />
+                  </IconButton>
+                </ActionsWrapper>
+                {
+                  filtersVisible && (
+                    <FilterWrapper>
+                      <FiltersHeader>Status</FiltersHeader>
+                      <SelectWrapper>
+                        <Select
+                            onChange={this.handleOnFilter}
+                            options={STATUS_FILTER_OPTIONS}
+                            placeholder="All" />
+                      </SelectWrapper>
+                    </FilterWrapper>
+                  )
+                }
+              </CardSegment>
+            </Card>
             {
               organizationsToRender.map((org :Map) => {
                 const orgEKID :UUID = getEntityKeyId(org);
