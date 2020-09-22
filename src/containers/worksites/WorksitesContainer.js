@@ -33,7 +33,7 @@ import {
 import AddOrganizationModal from '../organizations/AddOrganizationModal';
 import LogoLoader from '../../components/LogoLoader';
 import SearchContainer from '../search/SearchContainer';
-import { ContainerHeader, ContainerInnerWrapper, ContainerOuterWrapper } from '../../components/Layout';
+import { ContainerHeader, ContainerOuterWrapper } from '../../components/Layout';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
 import { isDefined } from '../../utils/LangUtils';
@@ -291,59 +291,57 @@ class WorksitesContainer extends Component<Props, State> {
 
     return (
       <ContainerOuterWrapper>
-        <ContainerInnerWrapper>
-          <HeaderWrapper>
-            <HeaderWrapperWithButton>
-              <ContainerHeader>Work Sites</ContainerHeader>
-              <Button color="primary" onClick={this.handleShowAddOrganization}>Add Organization</Button>
-            </HeaderWrapperWithButton>
-            <SubHeaderWrapper>
-              <ContainerSubHeader>{ orgSubHeader }</ContainerSubHeader>
-              <Separator>•</Separator>
-              <ContainerSubHeader>{ worksiteSubHeader }</ContainerSubHeader>
-            </SubHeaderWrapper>
-          </HeaderWrapper>
-          <CardStack>
-            <Card>
-              <CardSegment padding="5px">
-                <ActionsWrapper>
-                  <SearchContainer search={this.handleOnSearch} />
-                  <IconButton onClick={() => this.setState({ filtersVisible: !filtersVisible })}>
-                    <FontAwesomeIcon icon={faFilter} />
-                  </IconButton>
-                </ActionsWrapper>
-                {
-                  filtersVisible && (
-                    <FilterWrapper>
-                      <FiltersHeader>Status</FiltersHeader>
-                      <SelectWrapper>
-                        <Select
-                            onChange={this.handleOnFilter}
-                            options={STATUS_FILTER_OPTIONS}
-                            placeholder="All" />
-                      </SelectWrapper>
-                    </FilterWrapper>
-                  )
-                }
-              </CardSegment>
-            </Card>
-            {
-              organizationsToRender.map((org :Map) => {
-                const orgEKID :UUID = getEntityKeyId(org);
-                const orgWorksites :List = worksitesByOrg.get(orgEKID, List());
-                const orgWorksiteCount :number = orgWorksites.count();
-                return (
-                  <WorksitesByOrgCard
-                      key={orgEKID}
-                      organization={org}
-                      worksiteCount={orgWorksiteCount}
-                      worksites={orgWorksites}
-                      worksitesInfo={worksitesInfo} />
-                );
-              })
-            }
-          </CardStack>
-        </ContainerInnerWrapper>
+        <HeaderWrapper>
+          <HeaderWrapperWithButton>
+            <ContainerHeader>Work Sites</ContainerHeader>
+            <Button color="primary" onClick={this.handleShowAddOrganization}>Add Organization</Button>
+          </HeaderWrapperWithButton>
+          <SubHeaderWrapper>
+            <ContainerSubHeader>{ orgSubHeader }</ContainerSubHeader>
+            <Separator>•</Separator>
+            <ContainerSubHeader>{ worksiteSubHeader }</ContainerSubHeader>
+          </SubHeaderWrapper>
+        </HeaderWrapper>
+        <CardStack>
+          <Card>
+            <CardSegment padding="5px">
+              <ActionsWrapper>
+                <SearchContainer search={this.handleOnSearch} />
+                <IconButton onClick={() => this.setState({ filtersVisible: !filtersVisible })}>
+                  <FontAwesomeIcon icon={faFilter} />
+                </IconButton>
+              </ActionsWrapper>
+              {
+                filtersVisible && (
+                  <FilterWrapper>
+                    <FiltersHeader>Status</FiltersHeader>
+                    <SelectWrapper>
+                      <Select
+                          onChange={this.handleOnFilter}
+                          options={STATUS_FILTER_OPTIONS}
+                          placeholder="All" />
+                    </SelectWrapper>
+                  </FilterWrapper>
+                )
+              }
+            </CardSegment>
+          </Card>
+          {
+            organizationsToRender.map((org :Map) => {
+              const orgEKID :UUID = getEntityKeyId(org);
+              const orgWorksites :List = worksitesByOrg.get(orgEKID, List());
+              const orgWorksiteCount :number = orgWorksites.count();
+              return (
+                <WorksitesByOrgCard
+                    key={orgEKID}
+                    organization={org}
+                    worksiteCount={orgWorksiteCount}
+                    worksites={orgWorksites}
+                    worksitesInfo={worksitesInfo} />
+              );
+            })
+          }
+        </CardStack>
         <AddOrganizationModal
             isOpen={showAddOrganization}
             onClose={this.handleHideAddOrganization} />
