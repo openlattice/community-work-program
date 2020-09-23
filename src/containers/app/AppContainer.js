@@ -157,7 +157,7 @@ class AppContainer extends Component<Props> {
                       }}
                       user={user}>
                     <AppNavigationWrapper>
-                      <NavLink to={Routes.DASHBOARD}>Community Work Program</NavLink>
+                      <NavLink to={Routes.DASHBOARD} />
                       <NavLink to={Routes.DASHBOARD}>Dashboard</NavLink>
                       <NavLink to={Routes.PARTICIPANTS}>Participants</NavLink>
                       <NavLink to={Routes.WORKSITES}>Work Sites</NavLink>
