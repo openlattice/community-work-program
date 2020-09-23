@@ -9,8 +9,8 @@ import { List, Map } from 'immutable';
 import {
   Badge,
   Button,
-  Colors,
   IconButton,
+  Label,
   Select,
 } from 'lattice-ui-kit';
 import { connect } from 'react-redux';
@@ -51,7 +51,6 @@ import {
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { ADD_PARTICIPANT, PARTICIPANT_PROFILE } from '../../core/router/Routes';
 import { goToRoute } from '../../core/router/RoutingActions';
-import { SEARCH_CONTAINER_WIDTH } from '../../core/style/Sizes';
 import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
 import { calculateAge, formatAsDate } from '../../utils/DateTimeUtils';
 import { generateTableHeaders } from '../../utils/FormattingUtils';
@@ -61,7 +60,6 @@ import { getSentenceEndDate } from '../../utils/ScheduleUtils';
 import { APP, PEOPLE, STATE } from '../../utils/constants/ReduxStateConsts';
 import type { GoToRoute } from '../../core/router/RoutingActions';
 
-const { NEUTRAL } = Colors;
 const { ENTITY_SET_IDS_BY_ORG, SELECTED_ORG_ID } = APP;
 const {
   COURT_TYPE_BY_PARTICIPANT,
@@ -102,7 +100,6 @@ const ParticipantSearchInnerWrapper = styled.div`
   justify-content: center;
   margin-top: 30px;
   position: relative;
-  /* width: ${SEARCH_CONTAINER_WIDTH}px; */
 `;
 
 const TableHeaderItemsWrapper = styled.div`
@@ -118,21 +115,10 @@ const IconButtonWrapper = styled.div`
   margin-right: 10px;
 `;
 
-const FiltersHeader = styled.div`
-  color: ${NEUTRAL.N500};
-  font-size: 14px;
-  font-weight: 600;
-  margin-left: 10px;
-  margin-right: 20px;
-`;
-
-const SelectWrapper = styled.div`
-  align-items: center;
-  display: flex;
-  height: 35px;
-  justify-content: center;
-  margin: 10px 10px 10px 0;
-  min-width: 175px;
+const FiltersGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, 175px);
+  grid-gap: 0 10px;
 `;
 
 type Props = {
@@ -360,26 +346,22 @@ class ParticipantsSearchContainer extends Component<Props, State> {
               </TableHeaderTopRow>
               {
                 filtersVisible && (
-                  <TableHeaderItemsWrapper>
-                    <>
-                      <FiltersHeader>Status</FiltersHeader>
-                      <SelectWrapper>
-                        <Select
-                            onChange={this.handleOnFilter}
-                            options={STATUS_FILTER_OPTIONS}
-                            placeholder="All" />
-                      </SelectWrapper>
-                    </>
-                    <>
-                      <FiltersHeader>Court Type</FiltersHeader>
-                      <SelectWrapper>
-                        <Select
-                            onChange={this.handleOnFilter}
-                            options={COURT_TYPE_FILTER_OPTIONS}
-                            placeholder="All" />
-                      </SelectWrapper>
-                    </>
-                  </TableHeaderItemsWrapper>
+                  <FiltersGrid>
+                    <div>
+                      <Label>Status</Label>
+                      <Select
+                          onChange={this.handleOnFilter}
+                          options={STATUS_FILTER_OPTIONS}
+                          placeholder="All" />
+                    </div>
+                    <div>
+                      <Label>Court Type</Label>
+                      <Select
+                          onChange={this.handleOnFilter}
+                          options={COURT_TYPE_FILTER_OPTIONS}
+                          placeholder="All" />
+                    </div>
+                  </FiltersGrid>
                 )
               }
             </TableHeader>

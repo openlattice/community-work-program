@@ -12,6 +12,7 @@ import {
   CardStack,
   Colors,
   IconButton,
+  Label,
   Select,
 } from 'lattice-ui-kit';
 import { connect } from 'react-redux';
@@ -96,17 +97,7 @@ const ActionsWrapper = styled.div`
 
 const FilterWrapper = styled.div`
   margin: 10px;
-`;
-
-const FiltersHeader = styled.div`
-  color: ${NEUTRAL.N500};
-  font-size: 14px;
-  font-weight: 600;
-`;
-
-const SelectWrapper = styled.div`
-  height: 35px;
-  max-width: 175px;
+  width: 175px;
 `;
 
 type Props = {
@@ -314,13 +305,11 @@ class WorksitesContainer extends Component<Props, State> {
               {
                 filtersVisible && (
                   <FilterWrapper>
-                    <FiltersHeader>Status</FiltersHeader>
-                    <SelectWrapper>
-                      <Select
-                          onChange={this.handleOnFilter}
-                          options={STATUS_FILTER_OPTIONS}
-                          placeholder="All" />
-                    </SelectWrapper>
+                    <Label>Status</Label>
+                    <Select
+                        onChange={this.handleOnFilter}
+                        options={STATUS_FILTER_OPTIONS}
+                        placeholder="All" />
                   </FilterWrapper>
                 )
               }
