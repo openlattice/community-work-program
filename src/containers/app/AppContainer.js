@@ -167,7 +167,7 @@ class AppContainer extends Component<Props> {
                   </AppHeaderWrapper>
                 )
               }
-              <AppContentWrapper contentWidth={APP_CONTENT_WIDTH}>
+              <AppContentWrapper>
                 {
                   isInitializing ? (
                     <LogoLoader
