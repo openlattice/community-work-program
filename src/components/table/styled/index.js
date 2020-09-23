@@ -30,17 +30,17 @@ const statusColorVariation = getStyleVariation('status', {
 
 const HEADERS_TO_CUSTOMIZE = {
   AGE: 'AGE',
-  SENT_DATE: 'SENT. DATE',
-  SENT_END_DATE: 'SENT. END DATE',
-  NUM_OF_WARN: '# OF WARN.',
-  NUM_OF_VIO: '# OF VIO.',
+  CHECK_IN_DEADLINE: 'CHECK-IN DEADLINE',
+  COURT_TYPE: 'COURT TYPE',
   HRS_SERVED: 'HRS. SERVED',
+  NUM_OF_VIO: '# OF VIO.',
+  NUM_OF_WARN: '# OF WARN.',
+  PAST_PARTIC: 'PAST PARTIC.',
   REQ_HRS: 'REQ. HRS.',
   SCHED_PARTIC: 'SCHED. PARTIC.',
-  PAST_PARTIC: 'PAST PARTIC.',
+  SENT_DATE: 'SENT. DATE',
+  SENT_END_DATE: 'SENT. END DATE',
   TOTAL_HOURS: 'TOTAL HOURS',
-  COURT_TYPE: 'COURT TYPE',
-  CHECK_IN_DEADLINE: 'CHECK-IN DEADLINE',
 };
 const widthVariation = getStyleVariation('width', {
   default: 'auto',
