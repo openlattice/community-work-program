@@ -4,6 +4,7 @@
 
 import React, { Component } from 'react';
 
+import _isFunction from 'lodash/isFunction';
 import { Map } from 'immutable';
 import { AuthActions, AuthUtils } from 'lattice-auth';
 import {
@@ -45,9 +46,12 @@ import WorksitesContainer from '../worksites/WorksitesContainer';
 import * as ParticipantsActions from '../participants/ParticipantsActions';
 import * as Routes from '../../core/router/Routes';
 import { ContactSupport } from '../../components/controls/index';
+import { GOOGLE_TRACKING_ID } from '../../core/tracking/google';
 import { isNonEmptyString } from '../../utils/LangUtils';
 import { requestIsPending } from '../../utils/RequestStateUtils';
 import { APP, SHARED, STATE } from '../../utils/constants/ReduxStateConsts';
+
+declare var gtag :?Function;
 
 const { logout } = AuthActions;
 const { SELECTED_ORG_ID } = APP;
@@ -90,6 +94,16 @@ class AppContainer extends Component<Props> {
   logout = () => {
     const { actions } = this.props;
     actions.logout();
+  }
+
+  handleOnClickLogOut = () => {
+
+    const { actions } = this.props;
+    actions.logout();
+
+    if (_isFunction(gtag)) {
+      gtag('config', GOOGLE_TRACKING_ID, { user_id: undefined, send_page_view: false });
+    }
   }
 
   renderAppContent = () => (
