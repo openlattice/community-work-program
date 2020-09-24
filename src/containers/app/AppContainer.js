@@ -13,7 +13,6 @@ import {
   AppNavigationWrapper,
   LatticeLuxonUtils,
   MuiPickersUtilsProvider,
-  Sizes,
   StylesProvider,
   ThemeProvider,
   lightTheme,
@@ -51,7 +50,6 @@ import { requestIsPending } from '../../utils/RequestStateUtils';
 import { APP, SHARED, STATE } from '../../utils/constants/ReduxStateConsts';
 
 const { logout } = AuthActions;
-const { APP_CONTENT_WIDTH } = Sizes;
 const { SELECTED_ORG_ID } = APP;
 const { ACTIONS, REQUEST_STATE } = SHARED;
 
