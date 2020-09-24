@@ -160,7 +160,7 @@ class AppContainer extends Component<Props> {
                   <AppHeaderWrapper
                       appIcon={OpenLatticeLogo}
                       appTitle="Community Work Program"
-                      logout={this.logout}
+                      logout={this.handleOnClickLogOut}
                       organizationsSelect={{
                         isLoading: isInitializing,
                         onChange: this.switchOrganization,
