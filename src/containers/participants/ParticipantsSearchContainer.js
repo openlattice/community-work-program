@@ -1,29 +1,48 @@
 // @flow
 import React, { Component } from 'react';
+
 import styled from 'styled-components';
 import toString from 'lodash/toString';
-import { Badge } from 'lattice-ui-kit';
+import { faFilter } from '@fortawesome/pro-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { List, Map } from 'immutable';
-import { bindActionCreators } from 'redux';
+import {
+  Badge,
+  Button,
+  IconButton,
+  Label,
+  Select,
+} from 'lattice-ui-kit';
 import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
 import { RequestStates } from 'redux-reqseq';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
+
+import { getDiversionPlans } from './ParticipantsActions';
+import {
+  ALL,
+  ALL_PARTICIPANTS_COLUMNS,
+  COURT_TYPE_FILTER_OPTIONS,
+  EMPTY_FIELD,
+  STATUS_FILTER_OPTIONS,
+  courtTypeFilterDropdown,
+  statusFilterDropdown,
+} from './ParticipantsConstants';
+import { formatClickedProperty, getFilteredPeople } from './utils/SearchContainerUtils';
 
 import LogoLoader from '../../components/LogoLoader';
 import NoParticipantsFound from '../dashboard/NoParticipantsFound';
 import ParticipantsTableRow from '../../components/table/ParticipantsTableRow';
-import TableHeaderRow from '../../components/table/TableHeaderRow';
+import SearchContainer from '../search/SearchContainer';
 import TableHeadCell from '../../components/table/TableHeadCell';
-
+import TableHeaderRow from '../../components/table/TableHeaderRow';
 import {
-  ALL,
-  ALL_PARTICIPANTS_COLUMNS,
-  EMPTY_FIELD,
-  FILTERS,
-  courtTypeFilterDropdown,
-  statusFilterDropdown,
-} from './ParticipantsConstants';
-import { APP, PEOPLE, STATE } from '../../utils/constants/ReduxStateConsts';
+  CustomTable,
+  TableCard,
+  TableCell,
+  TableHeader,
+  TableName,
+} from '../../components/table/styled/index';
 import {
   ENROLLMENT_STATUSES,
   HOURS_CONSTS,
@@ -31,24 +50,14 @@ import {
 } from '../../core/edm/constants/DataModelConsts';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { ADD_PARTICIPANT, PARTICIPANT_PROFILE } from '../../core/router/Routes';
-import { SEARCH_CONTAINER_WIDTH } from '../../core/style/Sizes';
-import {
-  TableCell,
-  CustomTable,
-  TableCard,
-  TableHeader,
-  TableName,
-} from '../../components/table/styled/index';
-import { ToolBar } from '../../components/controls/index';
-import { formatClickedProperty, getFilteredPeople } from './utils/SearchContainerUtils';
+import { goToRoute } from '../../core/router/RoutingActions';
+import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
 import { calculateAge, formatAsDate } from '../../utils/DateTimeUtils';
 import { generateTableHeaders } from '../../utils/FormattingUtils';
-import { getDiversionPlans } from './ParticipantsActions';
-import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
+import { isDefined } from '../../utils/LangUtils';
 import { getHoursServed, getPersonFullName, getPersonPictureForTable } from '../../utils/PeopleUtils';
 import { getSentenceEndDate } from '../../utils/ScheduleUtils';
-import { goToRoute } from '../../core/router/RoutingActions';
-import { isDefined } from '../../utils/LangUtils';
+import { APP, PEOPLE, STATE } from '../../utils/constants/ReduxStateConsts';
 import type { GoToRoute } from '../../core/router/RoutingActions';
 
 const { ENTITY_SET_IDS_BY_ORG, SELECTED_ORG_ID } = APP;
@@ -72,10 +81,6 @@ const {
 const { VIOLATION, WARNING } = INFRACTIONS_CONSTS;
 const { REQUIRED, WORKED } = HOURS_CONSTS;
 
-const dropdowns :List = List().withMutations((list :List) => {
-  list.set(0, statusFilterDropdown);
-  list.set(1, courtTypeFilterDropdown);
-});
 const defaultStatusFilterOption :Map = statusFilterDropdown.get('enums')
   .find((obj) => obj.value.toUpperCase() === ALL);
 const defaultCourtTypeFilterOption :Map = courtTypeFilterDropdown.get('enums')
@@ -95,7 +100,25 @@ const ParticipantSearchInnerWrapper = styled.div`
   justify-content: center;
   margin-top: 30px;
   position: relative;
-  width: ${SEARCH_CONTAINER_WIDTH}px;
+`;
+
+const TableHeaderItemsWrapper = styled.div`
+  align-items: center;
+  display: flex;
+`;
+
+const TableHeaderTopRow = styled(TableHeaderItemsWrapper)`
+  justify-content: space-between;
+`;
+
+const IconButtonWrapper = styled.div`
+  margin-right: 10px;
+`;
+
+const FiltersGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, 175px);
+  grid-gap: 0 10px;
 `;
 
 type Props = {
@@ -117,6 +140,7 @@ type Props = {
 
 type State = {
   courtTypeFilterValue :Object;
+  filtersVisible :boolean;
   peopleToRender :List;
   statusFilterValue :Object;
 };
@@ -128,6 +152,7 @@ class ParticipantsSearchContainer extends Component<Props, State> {
 
     this.state = {
       courtTypeFilterValue: defaultCourtTypeFilterOption,
+      filtersVisible: false,
       peopleToRender: props.participants,
       statusFilterValue: defaultStatusFilterOption,
     };
@@ -285,6 +310,7 @@ class ParticipantsSearchContainer extends Component<Props, State> {
 
   render() {
     const { getInitializeAppRequestState, getDiversionPlansRequestState } = this.props;
+    const { filtersVisible } = this.state;
 
     if (getDiversionPlansRequestState === RequestStates.PENDING
         || getInitializeAppRequestState === RequestStates.PENDING) {
@@ -295,28 +321,49 @@ class ParticipantsSearchContainer extends Component<Props, State> {
       );
     }
 
-    const onSelectFunctions = Map().withMutations((map :Map) => {
-      map.set(FILTERS.STATUS, this.handleOnFilter);
-      map.set(FILTERS.COURT_TYPE, this.handleOnFilter);
-    });
     const tableData :Object[] = this.aggregateTableData();
     const tableHeaders :Object[] = generateTableHeaders(ALL_PARTICIPANTS_COLUMNS);
 
     return (
       <ParticipantSearchOuterWrapper>
-        <ToolBar
-            dropdowns={dropdowns}
-            onSelectFunctions={onSelectFunctions}
-            primaryButtonAction={this.goToAddParticipantForm}
-            primaryButtonText="Add Participant"
-            search={this.searchParticipantList} />
         <ParticipantSearchInnerWrapper>
           <TableCard>
             <TableHeader padding="40px">
-              <TableName>
-              All Participants
-              </TableName>
-              <Badge mode="primary" count={tableData.length} />
+              <TableHeaderTopRow>
+                <TableHeaderItemsWrapper>
+                  <TableName>All Participants</TableName>
+                  <Badge mode="primary" count={tableData.length} />
+                </TableHeaderItemsWrapper>
+                <TableHeaderItemsWrapper>
+                  <SearchContainer search={this.searchParticipantList} />
+                  <IconButtonWrapper>
+                    <IconButton onClick={() => this.setState({ filtersVisible: !filtersVisible })}>
+                      <FontAwesomeIcon icon={faFilter} />
+                    </IconButton>
+                  </IconButtonWrapper>
+                  <Button onClick={this.goToAddParticipantForm}>Add</Button>
+                </TableHeaderItemsWrapper>
+              </TableHeaderTopRow>
+              {
+                filtersVisible && (
+                  <FiltersGrid>
+                    <div>
+                      <Label>Status</Label>
+                      <Select
+                          onChange={this.handleOnFilter}
+                          options={STATUS_FILTER_OPTIONS}
+                          placeholder="All" />
+                    </div>
+                    <div>
+                      <Label>Court Type</Label>
+                      <Select
+                          onChange={this.handleOnFilter}
+                          options={COURT_TYPE_FILTER_OPTIONS}
+                          placeholder="All" />
+                    </div>
+                  </FiltersGrid>
+                )
+              }
             </TableHeader>
             {
               tableData.length > 0
