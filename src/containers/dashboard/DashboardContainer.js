@@ -77,7 +77,7 @@ const DashboardWrapper = styled.div`
   display: flex;
   flex-direction: column;
   margin-top: 30px;
-  width: ${DASHBOARD_WIDTH}px;
+  /* width: ${DASHBOARD_WIDTH}px; */
 `;
 
 const DashboardBody = styled.div`
@@ -97,6 +97,12 @@ const SubtleTag = styled(Tag)`
 const ReportTag = styled(SubtleTag)`
   border-color: ${RED.R300};
   color: ${RED.R300};
+`;
+
+const DashboardTableHeader = styled(TableHeader)`
+  align-items: center;
+  flex-direction: row;
+  justify-content: flex-start;
 `;
 
 type Props = {
@@ -417,12 +423,10 @@ class DashboardContainer extends Component<Props, State> {
         <DashboardBody>
           <div>
             <TableCard>
-              <TableHeader padding="40px">
-                <TableName>
-                  New Participants
-                </TableName>
+              <DashboardTableHeader padding="40px">
+                <TableName>New Participants</TableName>
                 <Badge mode="primary" count={newParticipantsTableData.length} />
-              </TableHeader>
+              </DashboardTableHeader>
               {
                 newParticipantsTableData.length > 0
                   ? (
@@ -440,12 +444,10 @@ class DashboardContainer extends Component<Props, State> {
           </div>
           <CardStack>
             <TableCard>
-              <TableHeader padding="40px">
-                <TableName>
-                  Pending Completion Review
-                </TableName>
+              <DashboardTableHeader padding="40px">
+                <TableName>Pending Completion Review</TableName>
                 <Badge mode="primary" count={pendingCompletionTableData.length} />
-              </TableHeader>
+              </DashboardTableHeader>
               {
                 pendingCompletionTableData.length > 0
                   ? (
@@ -461,12 +463,10 @@ class DashboardContainer extends Component<Props, State> {
               }
             </TableCard>
             <TableCard>
-              <TableHeader padding="40px">
-                <TableName>
-                  Violations Watch
-                </TableName>
+              <DashboardTableHeader padding="40px">
+                <TableName>Violations Watch</TableName>
                 <Badge mode="primary" count={violationsWatchTableData.length} />
-              </TableHeader>
+              </DashboardTableHeader>
               {
                 violationsWatchTableData.length > 0
                   ? (

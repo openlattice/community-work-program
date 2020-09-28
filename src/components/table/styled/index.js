@@ -28,43 +28,48 @@ const statusColorVariation = getStyleVariation('status', {
   Inactive: ENROLLMENT_STATUS_COLORS.UNSUCCESSFUL,
 }, NEUTRAL.N700);
 
-const headersToCustomize = [
-  'AGE',
-  'SENT. DATE',
-  'SENT. END DATE',
-  '# OF WARN.',
-  '# OF VIO.',
-  'HRS. SERVED',
-  'REQ. HRS.',
-  'SCHED. PARTIC.',
-  'PAST PARTIC.',
-  'TOTAL HOURS'
-];
+const HEADERS_TO_CUSTOMIZE = {
+  AGE: 'AGE',
+  CHECK_IN_DEADLINE: 'CHECK-IN DEADLINE',
+  COURT_TYPE: 'COURT TYPE',
+  HRS_SERVED: 'HRS. SERVED',
+  NUM_OF_VIO: '# OF VIO.',
+  NUM_OF_WARN: '# OF WARN.',
+  PAST_PARTIC: 'PAST PARTIC.',
+  REQ_HRS: 'REQ. HRS.',
+  SCHED_PARTIC: 'SCHED. PARTIC.',
+  SENT_DATE: 'SENT. DATE',
+  SENT_END_DATE: 'SENT. END DATE',
+  TOTAL_HOURS: 'TOTAL HOURS',
+};
 const widthVariation = getStyleVariation('width', {
   default: 'auto',
-  [headersToCustomize[0]]: '55px',
-  [headersToCustomize[1]]: '105px',
-  [headersToCustomize[2]]: '105px',
-  [headersToCustomize[3]]: '98px',
-  [headersToCustomize[4]]: '83px',
-  [headersToCustomize[5]]: '95px',
-  [headersToCustomize[6]]: '95px',
-  [headersToCustomize[7]]: '130px',
-  [headersToCustomize[8]]: '130px',
-  [headersToCustomize[9]]: '130px',
+  [HEADERS_TO_CUSTOMIZE.AGE]: '55px',
+  [HEADERS_TO_CUSTOMIZE.SENT_DATE]: '95px',
+  [HEADERS_TO_CUSTOMIZE.SENT_END_DATE]: '95px',
+  [HEADERS_TO_CUSTOMIZE.NUM_OF_WARN]: '80px',
+  [HEADERS_TO_CUSTOMIZE.NUM_OF_VIO]: '70px',
+  [HEADERS_TO_CUSTOMIZE.HRS_SERVED]: '95px',
+  [HEADERS_TO_CUSTOMIZE.REQ_HRS]: '70px',
+  [HEADERS_TO_CUSTOMIZE.SCHED_PARTIC]: '130px',
+  [HEADERS_TO_CUSTOMIZE.PAST_PARTIC]: '130px',
+  [HEADERS_TO_CUSTOMIZE.TOTAL_HOURS]: '130px',
+  [HEADERS_TO_CUSTOMIZE.COURT_TYPE]: '110px',
+  [HEADERS_TO_CUSTOMIZE.CHECK_IN_DEADLINE]: '95px',
 }, 'auto');
 const whiteSpaceVariation = getStyleVariation('whiteSpace', {
   default: 'normal',
-  [headersToCustomize[0]]: 'nowrap',
-  [headersToCustomize[1]]: '105px',
-  [headersToCustomize[2]]: '105px',
-  [headersToCustomize[3]]: 'nowrap',
-  [headersToCustomize[4]]: 'nowrap',
-  [headersToCustomize[5]]: 'nowrap',
-  [headersToCustomize[6]]: 'nowrap',
-  [headersToCustomize[7]]: 'nowrap',
-  [headersToCustomize[8]]: 'nowrap',
-  [headersToCustomize[9]]: 'nowrap',
+  [HEADERS_TO_CUSTOMIZE.AGE]: 'nowrap',
+  [HEADERS_TO_CUSTOMIZE.SENT_DATE]: 'nowrap',
+  [HEADERS_TO_CUSTOMIZE.SENT_END_DATE]: 'nowrap',
+  [HEADERS_TO_CUSTOMIZE.NUM_OF_WARN]: 'nowrap',
+  [HEADERS_TO_CUSTOMIZE.NUM_OF_VIO]: 'nowrap',
+  [HEADERS_TO_CUSTOMIZE.HRS_SERVED]: 'nowrap',
+  [HEADERS_TO_CUSTOMIZE.REQ_HRS]: 'nowrap',
+  [HEADERS_TO_CUSTOMIZE.SCHED_PARTIC]: 'nowrap',
+  [HEADERS_TO_CUSTOMIZE.PAST_PARTIC]: 'nowrap',
+  [HEADERS_TO_CUSTOMIZE.TOTAL_HOURS]: 'nowrap',
+  [HEADERS_TO_CUSTOMIZE.COURT_TYPE]: 'nowrap',
 }, 'normal');
 
 const TableCard = styled(Card)`
@@ -74,11 +79,10 @@ const TableCard = styled(Card)`
 `;
 
 const TableHeader = styled(CardSegment)`
-  align-items: center;
   color: ${NEUTRAL.N900};
   font-size: 24px;
   font-weight: 600;
-  flex-direction: row;
+  justify-content: center;
 `;
 
 const TableName = styled.div`

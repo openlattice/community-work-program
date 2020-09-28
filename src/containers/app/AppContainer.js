@@ -4,29 +4,38 @@
 
 import React, { Component } from 'react';
 
-import styled from 'styled-components';
+import _isFunction from 'lodash/isFunction';
 import { Map } from 'immutable';
+import { AuthActions, AuthUtils } from 'lattice-auth';
 import {
+  AppContainerWrapper,
+  AppContentWrapper,
+  AppHeaderWrapper,
+  AppNavigationWrapper,
   LatticeLuxonUtils,
   MuiPickersUtilsProvider,
   StylesProvider,
   ThemeProvider,
-  lightTheme
+  lightTheme,
 } from 'lattice-ui-kit';
 import { connect } from 'react-redux';
-import { Redirect, Route, Switch } from 'react-router-dom';
+import {
+  NavLink,
+  Redirect,
+  Route,
+  Switch,
+} from 'react-router-dom';
 import { bindActionCreators } from 'redux';
-import { RequestStates } from 'redux-reqseq';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
-import AppHeaderContainer from './AppHeaderContainer';
-import * as AppActions from './AppActions';
+import { INITIALIZE_APPLICATION, initializeApplication, switchOrganization } from './AppActions';
 
 import AddParticipantContainer from '../participants/newparticipant/AddParticipantContainer';
 import DashboardContainer from '../dashboard/DashboardContainer';
 import EditWorksiteHoursForm from '../worksites/EditWorksiteHoursForm';
 import EditWorksiteInfoForm from '../worksites/EditWorksiteInfoForm';
 import LogoLoader from '../../components/LogoLoader';
+import OpenLatticeLogo from '../../assets/images/logo_v2.png';
 import ParticipantProfileContainer from '../participant/ParticipantProfileContainer';
 import ParticipantsSearchContainer from '../participants/ParticipantsSearchContainer';
 import PrintWorkScheduleContainer from '../workschedule/PrintWorkScheduleContainer';
@@ -37,42 +46,30 @@ import WorksitesContainer from '../worksites/WorksitesContainer';
 import * as ParticipantsActions from '../participants/ParticipantsActions';
 import * as Routes from '../../core/router/Routes';
 import { ContactSupport } from '../../components/controls/index';
-import { APP_CONTAINER_WIDTH } from '../../core/style/Sizes';
-import { APP, STATE } from '../../utils/constants/ReduxStateConsts';
+import { GOOGLE_TRACKING_ID } from '../../core/tracking/google';
+import { isNonEmptyString } from '../../utils/LangUtils';
+import { requestIsPending } from '../../utils/RequestStateUtils';
+import { APP, SHARED, STATE } from '../../utils/constants/ReduxStateConsts';
 
-const AppContainerWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  margin: 0;
-  min-width: ${APP_CONTAINER_WIDTH}px;
-  padding: 0;
-`;
+declare var gtag :?Function;
 
-const AppContentOuterWrapper = styled.main`
-  display: flex;
-  flex: 1 0 auto;
-  justify-content: center;
-  position: relative;
-`;
-
-const AppContentInnerWrapper = styled.div`
-  display: flex;
-  flex: 1 0 auto;
-  flex-direction: column;
-  justify-content: flex-start;
-  position: relative;
-`;
+const { logout } = AuthActions;
+const { SELECTED_ORG_ID } = APP;
+const { ACTIONS, REQUEST_STATE } = SHARED;
 
 type Props = {
   actions:{
     initializeApplication :RequestSequence;
+    logout :() => void;
     resetRequestState :(actionType :string) => void;
     switchOrganization :RequestSequence;
   },
   app :Map;
-  initializeAppRequestState :RequestState;
   location :Object;
+  requestStates :{
+    INITIALIZE_APPLICATION :RequestState;
+  };
+  selectedOrganizationId :UUID;
 };
 
 class AppContainer extends Component<Props> {
@@ -85,13 +82,27 @@ class AppContainer extends Component<Props> {
   }
 
   switchOrganization = (organization :Object) => {
-    const { actions, app } = this.props;
-    const selectedOrganizationId = app.get(APP.SELECTED_ORG_ID);
+    const { actions, selectedOrganizationId } = this.props;
     if (organization.value !== selectedOrganizationId) {
       actions.switchOrganization({
         orgId: organization.value,
         title: organization.label
       });
+    }
+  }
+
+  logout = () => {
+    const { actions } = this.props;
+    actions.logout();
+  }
+
+  handleOnClickLogOut = () => {
+
+    const { actions } = this.props;
+    actions.logout();
+
+    if (_isFunction(gtag)) {
+      gtag('config', GOOGLE_TRACKING_ID, { user_id: undefined, send_page_view: false });
     }
   }
 
@@ -113,17 +124,32 @@ class AppContainer extends Component<Props> {
   );
 
   render() {
-    const { app, initializeAppRequestState, location } = this.props;
+    const {
+      app,
+      location,
+      requestStates,
+      selectedOrganizationId,
+    } = this.props;
 
     const { pathname } = location;
     const isPrintView :boolean = pathname.substring(pathname.lastIndexOf('/')) === '/print';
 
-    const selectedOrg = app.get(APP.SELECTED_ORG_ID, '');
-    const orgList = app.get(APP.ORGS).entrySeq().map(([value, organization]) => {
-      const label = organization.get('title', '');
-      return { label, value };
+    const organizations :Map = app.get(APP.ORGS).map((orgMap :Map, orgId :UUID) => {
+      const orgName :string = orgMap.get('title', '');
+      return { id: orgId, title: orgName };
     });
-    const loading = initializeAppRequestState === RequestStates.PENDING;
+
+    const userInfo :Object = AuthUtils.getUserInfo() || {};
+    let user = null;
+    if (isNonEmptyString(userInfo.name)) {
+      user = userInfo.name;
+    }
+    else if (isNonEmptyString(userInfo.email)) {
+      user = userInfo.email;
+    }
+
+    const isInitializing = requestIsPending(requestStates[INITIALIZE_APPLICATION]);
+
     return (
       <ThemeProvider theme={lightTheme}>
         <MuiPickersUtilsProvider utils={LatticeLuxonUtils}>
@@ -131,27 +157,40 @@ class AppContainer extends Component<Props> {
             <AppContainerWrapper>
               {
                 !isPrintView && (
-                  <AppHeaderContainer
-                      loading={loading}
-                      organizations={orgList}
-                      selectedOrg={selectedOrg}
-                      switchOrg={this.switchOrganization} />
+                  <AppHeaderWrapper
+                      appIcon={OpenLatticeLogo}
+                      appTitle="Community Work Program"
+                      logout={this.handleOnClickLogOut}
+                      organizationsSelect={{
+                        isLoading: isInitializing,
+                        onChange: this.switchOrganization,
+                        organizations,
+                        selectedOrganizationId
+                      }}
+                      user={user}>
+                    <AppNavigationWrapper>
+                      <NavLink to={Routes.DASHBOARD} />
+                      <NavLink to={Routes.DASHBOARD}>Dashboard</NavLink>
+                      <NavLink to={Routes.PARTICIPANTS}>Participants</NavLink>
+                      <NavLink to={Routes.WORKSITES}>Work Sites</NavLink>
+                      <NavLink to={Routes.WORK_SCHEDULE}>Work Schedule</NavLink>
+                      <NavLink to={Routes.STATS}>Stats</NavLink>
+                    </AppNavigationWrapper>
+                  </AppHeaderWrapper>
                 )
               }
-              <AppContentOuterWrapper>
-                <AppContentInnerWrapper>
-                  {
-                    loading ? (
-                      <LogoLoader
-                          loadingText="Please wait..."
-                          size={60} />
-                    ) : (
-                      this.renderAppContent()
-                    )
-                  }
-                  <ContactSupport />
-                </AppContentInnerWrapper>
-              </AppContentOuterWrapper>
+              <AppContentWrapper>
+                {
+                  isInitializing ? (
+                    <LogoLoader
+                        loadingText="Please wait..."
+                        size={60} />
+                  ) : (
+                    this.renderAppContent()
+                  )
+                }
+              </AppContentWrapper>
+              <ContactSupport />
             </AppContainerWrapper>
           </StylesProvider>
         </MuiPickersUtilsProvider>
@@ -160,19 +199,20 @@ class AppContainer extends Component<Props> {
   }
 }
 
-const mapStateToProps = (state :Map<*, *>) => {
-  const app = state.get(STATE.APP);
-  return {
-    app,
-    initializeAppRequestState: app.getIn([APP.ACTIONS, APP.INITIALIZE_APPLICATION, APP.REQUEST_STATE]),
-  };
-};
+const mapStateToProps = (state :Map) => ({
+  app: state.get(STATE.APP),
+  requestStates: {
+    [INITIALIZE_APPLICATION]: state.getIn([STATE.APP, ACTIONS, INITIALIZE_APPLICATION, REQUEST_STATE]),
+  },
+  [SELECTED_ORG_ID]: state.getIn([STATE.APP, SELECTED_ORG_ID]),
+});
 
 const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
-    initializeApplication: AppActions.initializeApplication,
+    initializeApplication,
+    logout,
     resetRequestState: ParticipantsActions.resetRequestState,
-    switchOrganization: AppActions.switchOrganization,
+    switchOrganization,
   }, dispatch)
 });
 
