@@ -1,43 +1,34 @@
 // @flow
 import { Map, setIn } from 'immutable';
+import { Models } from 'lattice';
 import { DataProcessingUtils } from 'lattice-fabricate';
 
-import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
+import { APP_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { getEntityProperties } from '../../../utils/DataUtils';
 
+const { FQN } = Models;
 const { getEntityAddressKey, getPageSectionKey } = DataProcessingUtils;
 const { CONTACT_INFORMATION } = APP_TYPE_FQNS;
-const { EMAIL, PHONE_NUMBER } = PROPERTY_TYPE_FQNS;
 
-const getOriginalPhoneFormData = (phone :Map) :Object => {
+const getContactFormData = (contact :Map, fqn :FQN) => {
   let originalFormData = {
     [getPageSectionKey(1, 1)]: {}
   };
-  if (phone.isEmpty()) return originalFormData;
-  const { [PHONE_NUMBER]: phoneNumber } = getEntityProperties(phone, [PHONE_NUMBER]);
+
+  if (contact.isEmpty()) return originalFormData;
+
+  // $FlowFixMe
+  const { [fqn]: contactVal } = getEntityProperties(contact, [fqn]);
   originalFormData = setIn(
     originalFormData,
-    [getPageSectionKey(1, 1), getEntityAddressKey(0, CONTACT_INFORMATION, PHONE_NUMBER)],
-    phoneNumber
+    [getPageSectionKey(1, 1), getEntityAddressKey(0, CONTACT_INFORMATION, fqn)],
+    contactVal
   );
+
   return originalFormData;
 };
 
-const getOriginalEmailFormData = (email :Map) :Object => {
-  let originalFormData = {
-    [getPageSectionKey(1, 1)]: {}
-  };
-  if (email.isEmpty()) return originalFormData;
-  const { [EMAIL]: emailAddress } = getEntityProperties(email, [EMAIL]);
-  originalFormData = setIn(
-    originalFormData,
-    [getPageSectionKey(1, 1), getEntityAddressKey(0, CONTACT_INFORMATION, EMAIL)],
-    emailAddress
-  );
-  return originalFormData;
-};
-
+/* eslint-disable import/prefer-default-export */
 export {
-  getOriginalEmailFormData,
-  getOriginalPhoneFormData,
+  getContactFormData,
 };

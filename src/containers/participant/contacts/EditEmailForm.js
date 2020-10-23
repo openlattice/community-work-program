@@ -16,7 +16,7 @@ import type { RequestState } from 'redux-reqseq';
 
 import { ADD_PERSON_EMAIL, addPersonEmail, editPersonEmail } from './PersonContactsActions';
 
-import { APP_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import {
   APP,
   EDM,
@@ -24,7 +24,7 @@ import {
   STATE
 } from '../../../utils/constants/ReduxStateConsts';
 import { emailSchema, emailUiSchema } from '../schemas/EditPersonAndContactsSchemas';
-import { getOriginalEmailFormData } from '../utils/EditContactsUtils';
+import { getContactFormData } from '../utils/EditContactsUtils';
 
 const { getEntityKeyId } = DataUtils;
 const { isDefined } = LangUtils;
@@ -35,6 +35,7 @@ const {
 } = DataProcessingUtils;
 const { isPending } = ReduxUtils;
 const { CONTACT_INFORMATION, CONTACT_INFO_GIVEN, PEOPLE } = APP_TYPE_FQNS;
+const { EMAIL } = PROPERTY_TYPE_FQNS;
 const { ENTITY_SET_IDS_BY_ORG, SELECTED_ORG_ID } = APP;
 const { PROPERTY_TYPES, TYPE_IDS_BY_FQNS } = EDM;
 const { ACTIONS } = SHARED;
@@ -52,7 +53,7 @@ const EditEmailForm = ({ email, participant } :Props) => {
   };
 
   useEffect(() => {
-    const originalFormData = getOriginalEmailFormData(email);
+    const originalFormData = getContactFormData(email, EMAIL);
     updateFormData(originalFormData);
   }, [email]);
 
