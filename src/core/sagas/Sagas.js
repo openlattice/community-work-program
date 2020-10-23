@@ -6,17 +6,19 @@ import { all, fork } from '@redux-saga/core/effects';
 import { AuthSagas } from 'lattice-auth';
 import { DataApiSagas, SearchApiSagas } from 'lattice-sagas';
 
+import * as DataSagas from './data/DataSagas';
+
 import * as AppSagas from '../../containers/app/AppSagas';
 import * as ChargesSagas from '../../containers/participant/charges/ChargesSagas';
 import * as ChargesStatsSagas from '../../containers/stats/charges/ChargesStatsSagas';
 import * as CourtTypeSagas from '../../containers/stats/courttype/CourtTypeSagas';
-import * as DataSagas from './data/DataSagas';
 import * as DemographicsSagas from '../../containers/stats/demographics/DemographicsSagas';
 import * as EDMSagas from '../edm/EDMSagas';
 import * as InfractionsSagas from '../../containers/participant/infractions/InfractionsSagas';
 import * as NewParticipantSagas from '../../containers/participants/newparticipant/NewParticipantSagas';
 import * as ParticipantSagas from '../../containers/participant/ParticipantSagas';
 import * as ParticipantsSagas from '../../containers/participants/ParticipantsSagas';
+import * as PersonContactsSagas from '../../containers/participant/contacts/PersonContactsSagas';
 import * as PrintParticipantSagas from '../../containers/participant/print/PrintParticipantSagas';
 import * as RoutingSagas from '../router/RoutingSagas';
 import * as StatsSagas from '../../containers/stats/StatsSagas';
@@ -97,12 +99,10 @@ export default function* sagas() :Generator<*, *, *> {
 
     // ParticipantSagas
     fork(ParticipantSagas.addNewDiversionPlanStatusWatcher),
-    fork(ParticipantSagas.addNewParticipantContactsWatcher),
     fork(ParticipantSagas.addPersonPhotoWatcher),
     fork(ParticipantSagas.createCaseWatcher),
     fork(ParticipantSagas.createNewEnrollmentWatcher),
     fork(ParticipantSagas.editEnrollmentDatesWatcher),
-    fork(ParticipantSagas.editParticipantContactsWatcher),
     fork(ParticipantSagas.editPersonCaseWatcher),
     fork(ParticipantSagas.editPersonDetailsWatcher),
     fork(ParticipantSagas.editPersonNotesWatcher),
@@ -110,7 +110,6 @@ export default function* sagas() :Generator<*, *, *> {
     fork(ParticipantSagas.editRequiredHoursWatcher),
     fork(ParticipantSagas.getAllParticipantInfoWatcher),
     fork(ParticipantSagas.getCaseInfoWatcher),
-    fork(ParticipantSagas.getContactInfoWatcher),
     fork(ParticipantSagas.getDiversionPlanWatcher),
     fork(ParticipantSagas.getEnrollmentHistoryWatcher),
     fork(ParticipantSagas.getEnrollmentFromDiversionPlanWatcher),
@@ -120,7 +119,6 @@ export default function* sagas() :Generator<*, *, *> {
     fork(ParticipantSagas.getInfoForEditPersonWatcher),
     fork(ParticipantSagas.getJudgeForCaseWatcher),
     fork(ParticipantSagas.getJudgesWatcher),
-    fork(ParticipantSagas.getParticipantAddressWatcher),
     fork(ParticipantSagas.getParticipantWatcher),
     fork(ParticipantSagas.getProgramOutcomeWatcher),
     fork(ParticipantSagas.markDiversionPlanAsCompleteWatcher),
@@ -136,6 +134,16 @@ export default function* sagas() :Generator<*, *, *> {
     fork(ParticipantsSagas.getInfractionsWatcher),
     fork(ParticipantsSagas.getParticipantPhotosWatcher),
     fork(ParticipantsSagas.getParticipantsWatcher),
+
+    // PersonContactsSagas
+    fork(PersonContactsSagas.addPersonAddressWatcher),
+    fork(PersonContactsSagas.addPersonEmailWatcher),
+    fork(PersonContactsSagas.addPersonPhoneWatcher),
+    fork(PersonContactsSagas.editPersonAddressWatcher),
+    fork(PersonContactsSagas.editPersonEmailWatcher),
+    fork(PersonContactsSagas.editPersonPhoneWatcher),
+    fork(PersonContactsSagas.getPersonAddressWatcher),
+    fork(PersonContactsSagas.getPersonContactInfoWatcher),
 
     // PrintParticipantSagas
     fork(PrintParticipantSagas.getInfoForPrintInfractionWatcher),
