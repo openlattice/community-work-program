@@ -1,8 +1,8 @@
 // @flow
 import { DataProcessingUtils } from 'lattice-fabricate';
 
-import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { RACE_VALUES, SEX_VALUES, USA_STATES } from '../../../core/edm/constants/DataModelConsts';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 
 const { getEntityAddressKey, getPageSectionKey } = DataProcessingUtils;
 
@@ -28,7 +28,7 @@ const {
   ZIP,
 } = PROPERTY_TYPE_FQNS;
 
-export const personSchema = {
+const personSchema = {
   type: 'object',
   title: '',
   properties: {
@@ -68,7 +68,7 @@ export const personSchema = {
   },
 };
 
-export const personUiSchema = {
+const personUiSchema = {
   [getPageSectionKey(1, 1)]: {
     classNames: 'column-span-12 grid-container',
     [getEntityAddressKey(0, PEOPLE, FIRST_NAME)]: {
@@ -93,7 +93,7 @@ export const personUiSchema = {
   },
 };
 
-export const contactsSchema = {
+const phoneSchema = {
   type: 'object',
   title: '',
   properties: {
@@ -107,17 +107,51 @@ export const contactsSchema = {
         },
       }
     },
-    [getPageSectionKey(1, 2)]: {
+  }
+};
+
+const phoneUiSchema = {
+  [getPageSectionKey(1, 1)]: {
+    classNames: 'column-span-12 grid-container',
+    [getEntityAddressKey(0, CONTACT_INFORMATION, PHONE_NUMBER)]: {
+      classNames: 'column-span-6',
+    },
+    'ui:options': { editable: true },
+  },
+};
+
+const emailSchema = {
+  type: 'object',
+  title: '',
+  properties: {
+    [getPageSectionKey(1, 1)]: {
       type: 'object',
       title: '',
       properties: {
-        [getEntityAddressKey(1, CONTACT_INFORMATION, EMAIL)]: {
+        [getEntityAddressKey(0, CONTACT_INFORMATION, EMAIL)]: {
           type: 'string',
-          title: 'Email',
+          title: 'Email address',
         },
       }
     },
-    [getPageSectionKey(1, 3)]: {
+  }
+};
+
+const emailUiSchema = {
+  [getPageSectionKey(1, 1)]: {
+    classNames: 'column-span-12 grid-container',
+    [getEntityAddressKey(0, CONTACT_INFORMATION, EMAIL)]: {
+      classNames: 'column-span-6',
+    },
+    'ui:options': { editable: true },
+  },
+};
+
+const addressSchema = {
+  type: 'object',
+  title: '',
+  properties: {
+    [getPageSectionKey(1, 1)]: {
       type: 'object',
       title: '',
       properties: {
@@ -143,22 +177,8 @@ export const contactsSchema = {
   }
 };
 
-export const contactsUiSchema = {
+const addressUiSchema = {
   [getPageSectionKey(1, 1)]: {
-    classNames: 'column-span-12 grid-container',
-    [getEntityAddressKey(0, CONTACT_INFORMATION, PHONE_NUMBER)]: {
-      classNames: 'column-span-6',
-    },
-    'ui:options': { editable: true },
-  },
-  [getPageSectionKey(1, 2)]: {
-    classNames: 'column-span-12 grid-container',
-    [getEntityAddressKey(1, CONTACT_INFORMATION, EMAIL)]: {
-      classNames: 'column-span-6',
-    },
-    'ui:options': { editable: true },
-  },
-  [getPageSectionKey(1, 3)]: {
     classNames: 'column-span-12 grid-container',
     [getEntityAddressKey(0, ADDRESS, FULL_ADDRESS)]: {
       classNames: 'column-span-4',
@@ -176,7 +196,7 @@ export const contactsUiSchema = {
   },
 };
 
-export const personPhotoSchema = {
+const personPhotoSchema = {
   title: '',
   type: 'object',
   properties: {
@@ -194,7 +214,7 @@ export const personPhotoSchema = {
   }
 };
 
-export const personPhotoUiSchema = {
+const personPhotoUiSchema = {
   [getPageSectionKey(1, 1)]: {
     classNames: 'column-span-12 grid-container',
     [getEntityAddressKey(0, IMAGE, IMAGE_DATA)]: {
@@ -204,4 +224,17 @@ export const personPhotoUiSchema = {
       }
     }
   }
+};
+
+export {
+  addressSchema,
+  addressUiSchema,
+  emailSchema,
+  emailUiSchema,
+  personPhotoSchema,
+  personPhotoUiSchema,
+  personSchema,
+  personUiSchema,
+  phoneSchema,
+  phoneUiSchema,
 };
