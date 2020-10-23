@@ -1,5 +1,6 @@
 // @flow
-import { Map, setIn } from 'immutable';
+import set from 'lodash/set';
+import { Map } from 'immutable';
 import { DataProcessingUtils } from 'lattice-fabricate';
 
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
@@ -17,28 +18,14 @@ const {
 } = PROPERTY_TYPE_FQNS;
 
 const getOriginalFormData = (person :Map) => {
-
-  let formData = {
+  const formData = {
     [getPageSectionKey(1, 1)]: {}
   };
-
   if (person.isEmpty()) return formData;
-
-  const {
-    [DOB]: dob,
-    [ETHNICITY]: ethnicity,
-    [FIRST_NAME]: firstName,
-    [LAST_NAME]: lastName,
-    [RACE]: race,
-    [SEX]: sex,
-  } = getEntityProperties(person, [DOB, ETHNICITY, FIRST_NAME, LAST_NAME, RACE, SEX]);
-
-  formData = setIn(formData, [getPageSectionKey(1, 1), getEntityAddressKey(0, PEOPLE, FIRST_NAME)], firstName);
-  formData = setIn(formData, [getPageSectionKey(1, 1), getEntityAddressKey(0, PEOPLE, LAST_NAME)], lastName);
-  formData = setIn(formData, [getPageSectionKey(1, 1), getEntityAddressKey(0, PEOPLE, DOB)], dob);
-  formData = setIn(formData, [getPageSectionKey(1, 1), getEntityAddressKey(0, PEOPLE, RACE)], race);
-  formData = setIn(formData, [getPageSectionKey(1, 1), getEntityAddressKey(0, PEOPLE, ETHNICITY)], ethnicity);
-  formData = setIn(formData, [getPageSectionKey(1, 1), getEntityAddressKey(0, PEOPLE, SEX)], sex);
+  const personValues = getEntityProperties(person, [DOB, ETHNICITY, FIRST_NAME, LAST_NAME, RACE, SEX]);
+  Object.entries(personValues).forEach(([fqn, value]) => {
+    set(formData, [getPageSectionKey(1, 1), getEntityAddressKey(0, PEOPLE, fqn)], value);
+  });
   return formData;
 };
 

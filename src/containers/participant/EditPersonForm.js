@@ -41,7 +41,7 @@ const EditPersonForm = ({ participant } :Props) => {
 
   const dispatch = useDispatch();
 
-  const selectedOrgId :string = useSelector((store :Map) => store.getIn([STATE.APP, SELECTED_ORG_ID]));
+  const selectedOrgId :UUID = useSelector((store :Map) => store.getIn([STATE.APP, SELECTED_ORG_ID]));
   const entitySetIds :Map = useSelector((store :Map) => store.getIn([
     STATE.APP,
     ENTITY_SET_IDS_BY_ORG,

@@ -1,6 +1,7 @@
 // @flow
 import React, { useEffect, useState } from 'react';
 
+import isEmpty from 'lodash/isEmpty';
 import { Map, fromJS } from 'immutable';
 import { DataProcessingUtils, Form } from 'lattice-fabricate';
 import { Card, CardHeader } from 'lattice-ui-kit';
@@ -83,7 +84,7 @@ const EditAddressForm = ({ address, participant } :Props) => {
 
   const onSubmit = ({ formData: submittedFormData }) => {
     if ((!isDefined(address) || address.isEmpty())
-      && Object.values(submittedFormData[getPageSectionKey(1, 1)]).length) {
+      && !isEmpty(submittedFormData[getPageSectionKey(1, 1)])) {
       const entityData = processEntityData(submittedFormData, entitySetIds, propertyTypeIds);
       const associations = [[LOCATED_AT, personEKID, PEOPLE, 0, ADDRESS]];
       const associationEntityData = processAssociationEntityData(associations, entitySetIds, propertyTypeIds);

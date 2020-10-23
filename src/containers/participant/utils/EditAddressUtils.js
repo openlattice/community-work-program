@@ -1,4 +1,5 @@
 // @flow
+import set from 'lodash/set';
 import { Map } from 'immutable';
 import { DataProcessingUtils } from 'lattice-fabricate';
 
@@ -18,20 +19,12 @@ const getOriginalFormData = (address :Map) :Object => {
   const originalFormData = {
     [getPageSectionKey(1, 1)]: {}
   };
-  const {
-    [CITY]: city,
-    [FULL_ADDRESS]: streetAddress,
-    [US_STATE]: state,
-    [ZIP]: zipCode,
-  } = getEntityProperties(address, [CITY, FULL_ADDRESS, US_STATE, ZIP]);
-
+  const addressValues = getEntityProperties(address, [CITY, FULL_ADDRESS, US_STATE, ZIP]);
   if (!address.isEmpty()) {
-    originalFormData[getPageSectionKey(1, 1)][getEntityAddressKey(0, ADDRESS, FULL_ADDRESS)] = streetAddress;
-    originalFormData[getPageSectionKey(1, 1)][getEntityAddressKey(0, ADDRESS, CITY)] = city || '';
-    originalFormData[getPageSectionKey(1, 1)][getEntityAddressKey(0, ADDRESS, US_STATE)] = state || '';
-    originalFormData[getPageSectionKey(1, 1)][getEntityAddressKey(0, ADDRESS, ZIP)] = zipCode || '';
+    Object.entries(addressValues).forEach(([fqn, value]) => {
+      set(originalFormData, [getPageSectionKey(1, 1), getEntityAddressKey(0, ADDRESS, fqn)], value || '');
+    });
   }
-
   return originalFormData;
 };
 
