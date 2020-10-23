@@ -12,7 +12,8 @@ export const STATS :string = '/stats';
 
 export const ADD_PARTICIPANT :string = `${PARTICIPANTS}/add`;
 
-export const PARTICIPANT_PROFILE :string = `${PARTICIPANTS}/:participantId`;
+export const PARTICIPANT_ID :string = 'participantId';
+export const PARTICIPANT_PROFILE :string = `${PARTICIPANTS}/:${PARTICIPANT_ID}`;
 export const PRINT_PARTICIPANT_SCHEDULE :string = `${PARTICIPANT_PROFILE}/schedule/print`;
 const EDIT_PROFILE :string = `${PARTICIPANT_PROFILE}/edit`;
 export const EDIT_PARTICIPANT :string = `${EDIT_PROFILE}/participant`;
