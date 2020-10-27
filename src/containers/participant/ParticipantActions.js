@@ -5,9 +5,6 @@ import type { RequestSequence } from 'redux-reqseq';
 const ADD_NEW_DIVERSION_PLAN_STATUS :'ADD_NEW_DIVERSION_PLAN_STATUS' = 'ADD_NEW_DIVERSION_PLAN_STATUS';
 const addNewDiversionPlanStatus :RequestSequence = newRequestSequence(ADD_NEW_DIVERSION_PLAN_STATUS);
 
-const ADD_NEW_PARTICIPANT_CONTACTS :'ADD_NEW_PARTICIPANT_CONTACTS' = 'ADD_NEW_PARTICIPANT_CONTACTS';
-const addNewParticipantContacts :RequestSequence = newRequestSequence(ADD_NEW_PARTICIPANT_CONTACTS);
-
 const ADD_PERSON_PHOTO :'ADD_PERSON_PHOTO' = 'ADD_PERSON_PHOTO';
 const addPersonPhoto :RequestSequence = newRequestSequence(ADD_PERSON_PHOTO);
 
@@ -19,9 +16,6 @@ const createNewEnrollment :RequestSequence = newRequestSequence(CREATE_NEW_ENROL
 
 const EDIT_ENROLLMENT_DATES :'EDIT_ENROLLMENT_DATES' = 'EDIT_ENROLLMENT_DATES';
 const editEnrollmentDates :RequestSequence = newRequestSequence(EDIT_ENROLLMENT_DATES);
-
-const EDIT_PARTICIPANT_CONTACTS :'EDIT_PARTICIPANT_CONTACTS' = 'EDIT_PARTICIPANT_CONTACTS';
-const editParticipantContacts :RequestSequence = newRequestSequence(EDIT_PARTICIPANT_CONTACTS);
 
 const EDIT_PERSON_CASE :'EDIT_PERSON_CASE' = 'EDIT_PERSON_CASE';
 const editPersonCase :RequestSequence = newRequestSequence(EDIT_PERSON_CASE);
@@ -43,9 +37,6 @@ const getAllParticipantInfo :RequestSequence = newRequestSequence(GET_ALL_PARTIC
 
 const GET_CASE_INFO :'GET_CASE_INFO' = 'GET_CASE_INFO';
 const getCaseInfo :RequestSequence = newRequestSequence(GET_CASE_INFO);
-
-const GET_CONTACT_INFO :'GET_CONTACT_INFO' = 'GET_CONTACT_INFO';
-const getContactInfo :RequestSequence = newRequestSequence(GET_CONTACT_INFO);
 
 const GET_DIVERSION_PLAN :'GET_DIVERSION_PLAN' = 'GET_DIVERSION_PLAN';
 const getDiversionPlan :RequestSequence = newRequestSequence(GET_DIVERSION_PLAN);
@@ -77,9 +68,6 @@ const getJudges :RequestSequence = newRequestSequence(GET_JUDGES);
 const GET_PARTICIPANT :'GET_PARTICIPANT' = 'GET_PARTICIPANT';
 const getParticipant :RequestSequence = newRequestSequence(GET_PARTICIPANT);
 
-const GET_PARTICIPANT_ADDRESS :'GET_PARTICIPANT_ADDRESS' = 'GET_PARTICIPANT_ADDRESS';
-const getParticipantAddress :RequestSequence = newRequestSequence(GET_PARTICIPANT_ADDRESS);
-
 const GET_PARTICIPANT_CASES :'GET_PARTICIPANT_CASES' = 'GET_PARTICIPANT_CASES';
 const getParticipantCases :RequestSequence = newRequestSequence(GET_PARTICIPANT_CASES);
 
@@ -100,12 +88,10 @@ const updatePersonPhoto :RequestSequence = newRequestSequence(UPDATE_PERSON_PHOT
 
 export {
   ADD_NEW_DIVERSION_PLAN_STATUS,
-  ADD_NEW_PARTICIPANT_CONTACTS,
   ADD_PERSON_PHOTO,
   CREATE_CASE,
   CREATE_NEW_ENROLLMENT,
   EDIT_ENROLLMENT_DATES,
-  EDIT_PARTICIPANT_CONTACTS,
   EDIT_PERSON_CASE,
   EDIT_PERSON_DETAILS,
   EDIT_PERSON_NOTES,
@@ -113,7 +99,6 @@ export {
   EDIT_REQUIRED_HOURS,
   GET_ALL_PARTICIPANT_INFO,
   GET_CASE_INFO,
-  GET_CONTACT_INFO,
   GET_DIVERSION_PLAN,
   GET_ENROLLMENT_FROM_DIVERSION_PLAN,
   GET_ENROLLMENT_HISTORY,
@@ -124,7 +109,6 @@ export {
   GET_JUDGES,
   GET_JUDGE_FOR_CASE,
   GET_PARTICIPANT,
-  GET_PARTICIPANT_ADDRESS,
   GET_PARTICIPANT_CASES,
   GET_PERSON_PHOTO,
   GET_PROGRAM_OUTCOME,
@@ -132,12 +116,10 @@ export {
   REASSIGN_JUDGE,
   UPDATE_PERSON_PHOTO,
   addNewDiversionPlanStatus,
-  addNewParticipantContacts,
   addPersonPhoto,
   createCase,
   createNewEnrollment,
   editEnrollmentDates,
-  editParticipantContacts,
   editPersonCase,
   editPersonDetails,
   editPersonNotes,
@@ -145,7 +127,6 @@ export {
   editRequiredHours,
   getAllParticipantInfo,
   getCaseInfo,
-  getContactInfo,
   getDiversionPlan,
   getEnrollmentFromDiversionPlan,
   getEnrollmentHistory,
@@ -156,7 +137,6 @@ export {
   getJudgeForCase,
   getJudges,
   getParticipant,
-  getParticipantAddress,
   getParticipantCases,
   getPersonPhoto,
   getProgramOutcome,

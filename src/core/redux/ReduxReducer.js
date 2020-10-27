@@ -12,6 +12,7 @@ import edmReducer from '../edm/EDMReducer';
 import infractionsReducer from '../../containers/participant/infractions/InfractionsReducer';
 import participantReducer from '../../containers/participant/ParticipantReducer';
 import participantsReducer from '../../containers/participants/ParticipantsReducer';
+import personContactsReducer from '../../containers/participant/contacts/PersonContactsReducer';
 import printParticipantReducer from '../../containers/participant/print/PrintParticipantReducer';
 import statsReducer from '../../containers/stats/StatsReducer';
 import workScheduleReducer from '../../containers/workschedule/WorkScheduleReducer';
@@ -28,6 +29,7 @@ export default function reduxReducer(routerHistory :any) {
     infractions: infractionsReducer,
     people: participantsReducer,
     person: participantReducer,
+    personContacts: personContactsReducer,
     printParticipant: printParticipantReducer,
     router: connectRouter(routerHistory),
     stats: statsReducer,

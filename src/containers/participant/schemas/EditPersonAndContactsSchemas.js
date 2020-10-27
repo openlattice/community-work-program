@@ -1,64 +1,54 @@
 // @flow
-import { DataProcessingUtils } from 'lattice-fabricate';
+import {
+  CITY_EAK,
+  EDIT_FORMS_PSK,
+  EMAIL_EAK,
+  FULL_ADDRESS_EAK,
+  IMAGE_DATA_EAK,
+  PERSON_DOB_EAK,
+  PERSON_ETHNICITY_EAK,
+  PERSON_FIRST_NAME_EAK,
+  PERSON_LAST_NAME_EAK,
+  PERSON_RACE_EAK,
+  PERSON_SEX_EAK,
+  PHONE_EAK,
+  US_STATE_EAK,
+  ZIP_EAK,
+} from './SchemaConstants';
 
-import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { RACE_VALUES, SEX_VALUES, USA_STATES } from '../../../core/edm/constants/DataModelConsts';
 
-const { getEntityAddressKey, getPageSectionKey } = DataProcessingUtils;
-
-const {
-  ADDRESS,
-  CONTACT_INFORMATION,
-  IMAGE,
-  PEOPLE,
-} = APP_TYPE_FQNS;
-const {
-  CITY,
-  DOB,
-  EMAIL,
-  ETHNICITY,
-  FIRST_NAME,
-  FULL_ADDRESS,
-  IMAGE_DATA,
-  LAST_NAME,
-  PHONE_NUMBER,
-  RACE,
-  SEX,
-  US_STATE,
-  ZIP,
-} = PROPERTY_TYPE_FQNS;
-
-export const personSchema = {
+const personSchema = {
   type: 'object',
   title: '',
   properties: {
-    [getPageSectionKey(1, 1)]: {
+    [EDIT_FORMS_PSK]: {
       type: 'object',
       title: '',
       properties: {
-        [getEntityAddressKey(0, PEOPLE, FIRST_NAME)]: {
+        [PERSON_FIRST_NAME_EAK]: {
           type: 'string',
           title: 'First name',
         },
-        [getEntityAddressKey(0, PEOPLE, LAST_NAME)]: {
+        [PERSON_LAST_NAME_EAK]: {
           type: 'string',
           title: 'Last name',
         },
-        [getEntityAddressKey(0, PEOPLE, DOB)]: {
+        [PERSON_DOB_EAK]: {
           type: 'string',
           title: 'Date of birth',
           format: 'date',
         },
-        [getEntityAddressKey(0, PEOPLE, RACE)]: {
+        [PERSON_RACE_EAK]: {
           type: 'string',
           title: 'Race',
           enum: RACE_VALUES,
         },
-        [getEntityAddressKey(0, PEOPLE, ETHNICITY)]: {
+        [PERSON_ETHNICITY_EAK]: {
           type: 'string',
           title: 'Ethnicity',
         },
-        [getEntityAddressKey(0, PEOPLE, SEX)]: {
+        [PERSON_SEX_EAK]: {
           type: 'string',
           title: 'Sex',
           enum: SEX_VALUES,
@@ -68,73 +58,107 @@ export const personSchema = {
   },
 };
 
-export const personUiSchema = {
-  [getPageSectionKey(1, 1)]: {
+const personUiSchema = {
+  [EDIT_FORMS_PSK]: {
     classNames: 'column-span-12 grid-container',
-    [getEntityAddressKey(0, PEOPLE, FIRST_NAME)]: {
+    [PERSON_FIRST_NAME_EAK]: {
       classNames: 'column-span-4',
     },
-    [getEntityAddressKey(0, PEOPLE, LAST_NAME)]: {
+    [PERSON_LAST_NAME_EAK]: {
       classNames: 'column-span-4',
     },
-    [getEntityAddressKey(0, PEOPLE, DOB)]: {
+    [PERSON_DOB_EAK]: {
       classNames: 'column-span-4',
     },
-    [getEntityAddressKey(0, PEOPLE, RACE)]: {
+    [PERSON_RACE_EAK]: {
       classNames: 'column-span-4',
     },
-    [getEntityAddressKey(0, PEOPLE, ETHNICITY)]: {
+    [PERSON_ETHNICITY_EAK]: {
       classNames: 'column-span-4',
     },
-    [getEntityAddressKey(0, PEOPLE, SEX)]: {
+    [PERSON_SEX_EAK]: {
       classNames: 'column-span-4',
     },
     'ui:options': { editable: true },
   },
 };
 
-export const contactsSchema = {
+const phoneSchema = {
   type: 'object',
   title: '',
   properties: {
-    [getPageSectionKey(1, 1)]: {
+    [EDIT_FORMS_PSK]: {
       type: 'object',
       title: '',
       properties: {
-        [getEntityAddressKey(0, CONTACT_INFORMATION, PHONE_NUMBER)]: {
+        [PHONE_EAK]: {
           type: 'string',
           title: 'Phone number',
         },
       }
     },
-    [getPageSectionKey(1, 2)]: {
+  }
+};
+
+const phoneUiSchema = {
+  [EDIT_FORMS_PSK]: {
+    classNames: 'column-span-12 grid-container',
+    [PHONE_EAK]: {
+      classNames: 'column-span-6',
+    },
+    'ui:options': { editable: true },
+  },
+};
+
+const emailSchema = {
+  type: 'object',
+  title: '',
+  properties: {
+    [EDIT_FORMS_PSK]: {
       type: 'object',
       title: '',
       properties: {
-        [getEntityAddressKey(1, CONTACT_INFORMATION, EMAIL)]: {
+        [EMAIL_EAK]: {
           type: 'string',
-          title: 'Email',
+          title: 'Email address',
         },
       }
     },
-    [getPageSectionKey(1, 3)]: {
+  }
+};
+
+const emailUiSchema = {
+  [EDIT_FORMS_PSK]: {
+    classNames: 'column-span-12 grid-container',
+    [EMAIL_EAK]: {
+      classNames: 'column-span-6',
+    },
+    'ui:options': { editable: true },
+  },
+};
+
+const addressSchema = {
+  type: 'object',
+  title: '',
+  properties: {
+    [EDIT_FORMS_PSK]: {
       type: 'object',
       title: '',
       properties: {
-        [getEntityAddressKey(0, ADDRESS, FULL_ADDRESS)]: {
+        [FULL_ADDRESS_EAK]: {
           type: 'string',
           title: 'Street Address',
         },
-        [getEntityAddressKey(0, ADDRESS, CITY)]: {
+        [CITY_EAK]: {
           type: 'string',
           title: 'City',
         },
-        [getEntityAddressKey(0, ADDRESS, US_STATE)]: {
+        [US_STATE_EAK]: {
           type: 'string',
           title: 'State',
           enum: USA_STATES,
         },
-        [getEntityAddressKey(0, ADDRESS, ZIP)]: {
+        [ZIP_EAK]: {
           type: 'string',
           title: 'Zip Code',
         },
@@ -143,48 +167,34 @@ export const contactsSchema = {
   }
 };
 
-export const contactsUiSchema = {
-  [getPageSectionKey(1, 1)]: {
+const addressUiSchema = {
+  [EDIT_FORMS_PSK]: {
     classNames: 'column-span-12 grid-container',
-    [getEntityAddressKey(0, CONTACT_INFORMATION, PHONE_NUMBER)]: {
-      classNames: 'column-span-6',
-    },
-    'ui:options': { editable: true },
-  },
-  [getPageSectionKey(1, 2)]: {
-    classNames: 'column-span-12 grid-container',
-    [getEntityAddressKey(1, CONTACT_INFORMATION, EMAIL)]: {
-      classNames: 'column-span-6',
-    },
-    'ui:options': { editable: true },
-  },
-  [getPageSectionKey(1, 3)]: {
-    classNames: 'column-span-12 grid-container',
-    [getEntityAddressKey(0, ADDRESS, FULL_ADDRESS)]: {
+    [FULL_ADDRESS_EAK]: {
       classNames: 'column-span-4',
     },
-    [getEntityAddressKey(0, ADDRESS, CITY)]: {
+    [CITY_EAK]: {
       classNames: 'column-span-3',
     },
-    [getEntityAddressKey(0, ADDRESS, US_STATE)]: {
+    [US_STATE_EAK]: {
       classNames: 'column-span-2',
     },
-    [getEntityAddressKey(0, ADDRESS, ZIP)]: {
+    [ZIP_EAK]: {
       classNames: 'column-span-3',
     },
     'ui:options': { editable: true },
   },
 };
 
-export const personPhotoSchema = {
+const personPhotoSchema = {
   title: '',
   type: 'object',
   properties: {
-    [getPageSectionKey(1, 1)]: {
+    [EDIT_FORMS_PSK]: {
       type: 'object',
       title: '',
       properties: {
-        [getEntityAddressKey(0, IMAGE, IMAGE_DATA)]: {
+        [IMAGE_DATA_EAK]: {
           type: 'string',
           format: 'data-url',
           title: 'Person photo'
@@ -194,14 +204,27 @@ export const personPhotoSchema = {
   }
 };
 
-export const personPhotoUiSchema = {
-  [getPageSectionKey(1, 1)]: {
+const personPhotoUiSchema = {
+  [EDIT_FORMS_PSK]: {
     classNames: 'column-span-12 grid-container',
-    [getEntityAddressKey(0, IMAGE, IMAGE_DATA)]: {
+    [IMAGE_DATA_EAK]: {
       classNames: 'column-span-12',
       'ui:options': {
         accept: '.jpg'
       }
     }
   }
+};
+
+export {
+  addressSchema,
+  addressUiSchema,
+  emailSchema,
+  emailUiSchema,
+  personPhotoSchema,
+  personPhotoUiSchema,
+  personSchema,
+  personUiSchema,
+  phoneSchema,
+  phoneUiSchema,
 };

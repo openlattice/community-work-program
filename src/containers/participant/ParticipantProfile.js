@@ -49,6 +49,7 @@ import {
   APP,
   CHARGES,
   PERSON,
+  PERSON_CONTACTS,
   PERSON_INFRACTIONS,
   STATE,
   WORKSITES,
@@ -77,10 +78,8 @@ const { ENTITY_SET_IDS_BY_ORG, SELECTED_ORG_ID } = APP;
 const { ARREST_CHARGE_MAPS_CREATED_IN_CWP, ARREST_CHARGE_MAPS_CREATED_IN_PSA } = CHARGES;
 const {
   ACTIONS,
-  ADDRESS,
   ALL_DIVERSION_PLANS,
   DIVERSION_PLAN,
-  EMAIL,
   ENROLLMENT_STATUS,
   GET_ALL_PARTICIPANT_INFO,
   GET_ENROLLMENT_FROM_DIVERSION_PLAN,
@@ -89,10 +88,10 @@ const {
   PARTICIPANT,
   PERSON_CASE,
   PERSON_PHOTO,
-  PHONE,
   PROGRAM_OUTCOME,
   REQUEST_STATE,
 } = PERSON;
+const { EMAIL, PERSON_ADDRESS, PHONE } = PERSON_CONTACTS;
 const { VIOLATIONS, WARNINGS } = PERSON_INFRACTIONS;
 const { WORKSITES_LIST } = WORKSITES;
 const {
@@ -208,7 +207,6 @@ type Props = {
     getEnrollmentFromDiversionPlan :RequestSequence;
     goToRoute :GoToRoute;
   };
-  address :Map;
   allDiversionPlans :List;
   arrestChargeMapsCreatedInCWP :List;
   arrestChargeMapsCreatedInPSA :List;
@@ -223,6 +221,7 @@ type Props = {
   initializeAppRequestState :RequestState;
   judge :Map;
   participant :Map;
+  personAddress :Map;
   personCase :Map;
   personEKID :string;
   personPhoto :Map;
@@ -386,7 +385,6 @@ class ParticipantProfile extends Component<Props, State> {
 
   render() {
     const {
-      address,
       allDiversionPlans,
       arrestChargeMapsCreatedInCWP,
       arrestChargeMapsCreatedInPSA,
@@ -399,6 +397,7 @@ class ParticipantProfile extends Component<Props, State> {
       initializeAppRequestState,
       judge,
       participant,
+      personAddress,
       personCase,
       personPhoto,
       phone,
@@ -406,9 +405,9 @@ class ParticipantProfile extends Component<Props, State> {
       violations,
       warnings,
       workAppointmentsByWorksitePlan,
-      worksitesByWorksitePlan,
-      worksitePlansList,
       worksitePlanStatuses,
+      worksitePlansList,
+      worksitesByWorksitePlan,
       worksitesList,
     } = this.props;
     const {
@@ -478,7 +477,7 @@ class ParticipantProfile extends Component<Props, State> {
                 </BackNavButton>
               </TopRowWrapper>
               <ParticipantProfileSection
-                  address={address}
+                  address={personAddress}
                   edit={this.editParticipant}
                   email={email}
                   person={participant}
@@ -595,24 +594,25 @@ const mapStateToProps = (state :Map<*, *>) => {
   const charges = state.get(STATE.CHARGES);
   const infractions = state.get(STATE.INFRACTIONS);
   const person = state.get(STATE.PERSON);
+  const personContacts = state.get(STATE.PERSON_CONTACTS);
   const worksitePlans = state.get(STATE.WORKSITE_PLANS);
   const worksites = state.get(STATE.WORKSITES);
   const selectedOrgId :string = app.get(SELECTED_ORG_ID);
   return {
-    [ADDRESS]: person.get(ADDRESS),
     [ALL_DIVERSION_PLANS]: person.get(ALL_DIVERSION_PLANS),
-    [CHECK_INS_BY_APPOINTMENT]: worksitePlans.get(CHECK_INS_BY_APPOINTMENT),
     [ARREST_CHARGE_MAPS_CREATED_IN_CWP]: charges.get(ARREST_CHARGE_MAPS_CREATED_IN_CWP),
     [ARREST_CHARGE_MAPS_CREATED_IN_PSA]: charges.get(ARREST_CHARGE_MAPS_CREATED_IN_PSA),
+    [CHECK_INS_BY_APPOINTMENT]: worksitePlans.get(CHECK_INS_BY_APPOINTMENT),
     [DIVERSION_PLAN]: person.get(DIVERSION_PLAN),
-    [EMAIL]: person.get(EMAIL),
+    [EMAIL]: personContacts.get(EMAIL),
     [ENROLLMENT_HISTORY_DATA]: person.get(ENROLLMENT_HISTORY_DATA),
     [ENROLLMENT_STATUS]: person.get(ENROLLMENT_STATUS),
     [JUDGE]: person.get(JUDGE),
     [PARTICIPANT]: person.get(PARTICIPANT),
+    [PERSON_ADDRESS]: personContacts.get(PERSON_ADDRESS),
     [PERSON_CASE]: person.get(PERSON_CASE),
     [PERSON_PHOTO]: person.get(PERSON_PHOTO),
-    [PHONE]: person.get(PHONE),
+    [PHONE]: personContacts.get(PHONE),
     [PROGRAM_OUTCOME]: person.get(PROGRAM_OUTCOME),
     [VIOLATIONS]: infractions.get(VIOLATIONS),
     [WARNINGS]: infractions.get(WARNINGS),
