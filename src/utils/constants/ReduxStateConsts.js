@@ -7,6 +7,7 @@ export const STATE = {
   ORGANIZATION: 'organization',
   PEOPLE: 'people',
   PERSON: 'person',
+  PERSON_CONTACTS: 'personContacts',
   STATS: 'stats',
   WORKSITES: 'worksites',
   WORKSITE_PLANS: 'worksitePlans',
@@ -119,7 +120,6 @@ export const PERSON = {
   ACTIONS: 'actions',
   ADDRESS: 'address',
   ADD_NEW_DIVERSION_PLAN_STATUS: 'addNewDiversionPlanStatus',
-  ADD_NEW_PARTICIPANT_CONTACTS: 'addNewParticipantContacts',
   ADD_ORIENTATION_DATE: 'addOrientationDate',
   ADD_PERSON_PHOTO: 'addPersonPhoto',
   ALL_DIVERSION_PLANS: 'allDiversionPlans',
@@ -129,20 +129,17 @@ export const PERSON = {
   DIVERSION_PLAN: 'diversionPlan',
   EDIT_CHECK_IN_DATE: 'editCheckInDate',
   EDIT_ENROLLMENT_DATES: 'editEnrollmentDates',
-  EDIT_PARTICIPANT_CONTACTS: 'editParticipantContacts',
   EDIT_PERSON_CASE: 'editPersonCase',
   EDIT_PERSON_DETAILS: 'editPersonDetails',
   EDIT_PERSON_NOTES: 'editPersonNotes',
   EDIT_PLAN_NOTES: 'editPlanNotes',
   EDIT_REQUIRED_HOURS: 'editRequiredHours',
   EDIT_SENTENCE_DATE: 'editSentenceDate',
-  EMAIL: 'email',
   ENROLLMENT_HISTORY_DATA: 'enrollmentHistoryData',
   ENROLLMENT_STATUS: 'enrollmentStatus',
   ERRORS: 'errors',
   GET_ALL_PARTICIPANT_INFO: 'getAllParticipantInfo',
   GET_CASE_INFO: 'getCaseInfo',
-  GET_CONTACT_INFO: 'getContactInfo',
   GET_DIVERSION_PLAN: 'getDiversionPlan',
   GET_ENROLLMENT_HISTORY: 'getEnrollmentHistory',
   GET_ENROLLMENT_FROM_DIVERSION_PLAN: 'getEnrollmentFromDiversionPlan',
@@ -153,7 +150,6 @@ export const PERSON = {
   GET_JUDGES: 'getJudges',
   GET_JUDGE_FOR_CASE: 'getJudgeForCase',
   GET_PARTICIPANT: 'getParticipant',
-  GET_PARTICIPANT_ADDRESS: 'getParticipantAddress',
   GET_PARTICIPANT_CASES: 'getParticipantCases',
   GET_PERSON_PHOTO: 'getPersonPhoto',
   GET_PROGRAM_OUTCOME: 'getProgramOutcome',
@@ -165,12 +161,19 @@ export const PERSON = {
   PARTICIPANT: 'participant',
   PERSON_CASE: 'personCase',
   PERSON_PHOTO: 'personPhoto',
-  PHONE: 'phone',
   PROGRAM_OUTCOME: 'programOutcome',
   REASSIGN_JUDGE: 'reassignJudge',
   REQUEST_STATE: 'requestState',
   REQUIRED_HOURS: 'requiredHours',
   UPDATE_PERSON_PHOTO: 'updatePersonPhoto',
+};
+
+/* Person Contacts */
+
+export const PERSON_CONTACTS = {
+  EMAIL: 'email',
+  PERSON_ADDRESS: 'personAddress',
+  PHONE: 'phone',
 };
 
 /* Print Participant */
