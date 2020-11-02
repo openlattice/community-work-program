@@ -62,7 +62,7 @@ const {
   PARTICIPANT_PHOTOS_BY_PARTICIPANT_EKID,
   PARTICIPANTS,
 } = PEOPLE;
-const { ENTITY_SET_IDS_BY_ORG } = APP;
+const { ENTITY_SET_IDS_BY_ORG, SELECTED_ORG_ID } = APP;
 
 const tableComponents :Object = {
   Cell: TableCell,
@@ -119,6 +119,7 @@ type Props = {
   infractionCountsByParticipant :Map;
   participantPhotosByParticipantEKID :Map;
   participants :List;
+  selectedOrganizationId :UUID;
 };
 
 type State = {
@@ -146,7 +147,7 @@ class DashboardContainer extends Component<Props, State> {
 
   componentDidMount() {
     const { actions, entitySetIds, participants } = this.props;
-    if (entitySetIds.count() > 0) {
+    if (!entitySetIds.isEmpty()) {
       actions.getDiversionPlans();
     }
     if (participants.count() > 0) {
@@ -156,8 +157,8 @@ class DashboardContainer extends Component<Props, State> {
   }
 
   componentDidUpdate(prevProps :Props) {
-    const { actions, entitySetIds, participants } = this.props;
-    if (!prevProps.entitySetIds.count() > 0 && entitySetIds.count() > 0) {
+    const { actions, participants, selectedOrganizationId } = this.props;
+    if (selectedOrganizationId !== prevProps.selectedOrganizationId) {
       actions.getDiversionPlans();
     }
     if (!prevProps.participants.equals(participants)) {
@@ -498,6 +499,7 @@ const mapStateToProps = (state :Map<*, *>) => {
     [INFRACTION_COUNTS_BY_PARTICIPANT]: people.get(INFRACTION_COUNTS_BY_PARTICIPANT),
     [PARTICIPANTS]: people.get(PARTICIPANTS),
     [PARTICIPANT_PHOTOS_BY_PARTICIPANT_EKID]: people.get(PARTICIPANT_PHOTOS_BY_PARTICIPANT_EKID),
+    [SELECTED_ORG_ID]: state.getIn([STATE.APP, SELECTED_ORG_ID]),
     entitySetIds: app.get(ENTITY_SET_IDS_BY_ORG, Map()),
     getDiversionPlansRequestState: people.getIn([PEOPLE.ACTIONS, PEOPLE.GET_DIVERSION_PLANS, PEOPLE.REQUEST_STATE]),
     initializeAppRequestState: app.getIn([APP.ACTIONS, APP.INITIALIZE_APPLICATION, APP.REQUEST_STATE]),
