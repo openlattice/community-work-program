@@ -1,4 +1,7 @@
-// @flow
+/*
+ * @flow
+ */
+
 import React, { Component } from 'react';
 
 import startCase from 'lodash/startCase';
@@ -18,6 +21,7 @@ import {
 import { DateTime } from 'luxon';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
+import type { UUID } from 'lattice';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
 import AppointmentListContainer from './AppointmentListContainer';

@@ -1,4 +1,7 @@
-// @flow
+/*
+ * @flow
+ */
+
 import {
   call,
   put,
@@ -12,6 +15,7 @@ import {
 } from 'immutable';
 import { SearchApiActions, SearchApiSagas } from 'lattice-sagas';
 import { LangUtils, Logger } from 'lattice-utils';
+import type { UUID } from 'lattice';
 import type { SequenceAction } from 'redux-reqseq';
 
 import {

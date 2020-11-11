@@ -1,9 +1,7 @@
-// @flow
-import {
-  List,
-  Map,
-  fromJS,
-} from 'immutable';
+/*
+ * @flow
+ */
+
 import {
   call,
   put,
@@ -11,15 +9,18 @@ import {
   takeEvery,
 } from '@redux-saga/core/effects';
 import {
+  List,
+  Map,
+  fromJS,
+} from 'immutable';
+import {
   DataApiActions,
   DataApiSagas,
   SearchApiActions,
   SearchApiSagas,
 } from 'lattice-sagas';
+import type { UUID } from 'lattice';
 import type { SequenceAction } from 'redux-reqseq';
-
-import Logger from '../../../utils/Logger';
-import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../../utils/Errors';
 
 import {
   ADD_INFRACTION,
@@ -35,6 +36,16 @@ import {
   getInfractionTypes,
   getParticipantInfractions,
 } from './InfractionsActions';
+
+import Logger from '../../../utils/Logger';
+import { INFRACTIONS_CONSTS } from '../../../core/edm/constants/DataModelConsts';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
+import { deleteEntities, submitDataGraph, submitPartialReplace } from '../../../core/sagas/data/DataActions';
+import {
+  deleteEntitiesWorker,
+  submitDataGraphWorker,
+  submitPartialReplaceWorker
+} from '../../../core/sagas/data/DataSagas';
 import {
   getEntityKeyId,
   getEntityProperties,
@@ -42,16 +53,9 @@ import {
   getNeighborDetails,
   getNeighborESID,
 } from '../../../utils/DataUtils';
+import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../../utils/Errors';
 import { isDefined } from '../../../utils/LangUtils';
-import { deleteEntities, submitDataGraph, submitPartialReplace } from '../../../core/sagas/data/DataActions';
-import {
-  deleteEntitiesWorker,
-  submitDataGraphWorker,
-  submitPartialReplaceWorker
-} from '../../../core/sagas/data/DataSagas';
 import { STATE } from '../../../utils/constants/ReduxStateConsts';
-import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
-import { INFRACTIONS_CONSTS } from '../../../core/edm/constants/DataModelConsts';
 
 const { getEntityData, getEntitySetData } = DataApiActions;
 const { getEntityDataWorker, getEntitySetDataWorker } = DataApiSagas;

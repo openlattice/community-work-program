@@ -1,13 +1,15 @@
-// @flow
+/*
+ * @flow
+ */
+
 import { Map, setIn } from 'immutable';
-import { Models } from 'lattice';
 import { DataProcessingUtils } from 'lattice-fabricate';
+import type { FQN } from 'lattice';
 
 import { APP_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { getEntityProperties } from '../../../utils/DataUtils';
 import { EDIT_FORMS_PSK } from '../schemas/SchemaConstants';
 
-const { FQN } = Models;
 const { getEntityAddressKey } = DataProcessingUtils;
 const { CONTACT_INFORMATION } = APP_TYPE_FQNS;
 

@@ -10,13 +10,13 @@ import {
   Map,
   fromJS,
 } from 'immutable';
-import { Models } from 'lattice';
 import {
   DataApiActions,
   DataApiSagas,
   SearchApiActions,
   SearchApiSagas,
 } from 'lattice-sagas';
+import type { FQN } from 'lattice';
 import type { SequenceAction } from 'redux-reqseq';
 
 import {
@@ -61,7 +61,6 @@ import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../../utils/Errors';
 import { isDefined } from '../../../utils/LangUtils';
 import { CHARGES, STATE } from '../../../utils/constants/ReduxStateConsts';
 
-const { FullyQualifiedName } = Models;
 const { getEntitySetData } = DataApiActions;
 const { getEntitySetDataWorker } = DataApiSagas;
 const { searchEntityNeighborsWithFilter } = SearchApiActions;
@@ -124,7 +123,7 @@ function* addArrestChargesWorker(action :SequenceAction) :Generator<*, *, *> {
       const newChargeEvent :Map = Map().withMutations((map :Map) => {
         map.set(ENTITY_KEY_ID, List([chargeEventEKID]));
         fromJS(entityData[chargeEventESID][index]).forEach((chargeEventValue, ptid) => {
-          const propertyTypeFqn :FullyQualifiedName = getPropertyFqnFromEdm(edm, ptid);
+          const propertyTypeFqn :FQN = getPropertyFqnFromEdm(edm, ptid);
           map.set(propertyTypeFqn, chargeEventValue);
         });
       }).asImmutable();
@@ -215,7 +214,7 @@ function* addCourtChargesToCaseWorker(action :SequenceAction) :Generator<*, *, *
         const chargeEventEKID :UUID = entityKeyIds[chargeEventESID][0];
         map.set(ENTITY_KEY_ID, List([chargeEventEKID]));
         storedChargeEvent.forEach((chargeEventValue, ptid) => {
-          const propertyTypeFqn :FullyQualifiedName = getPropertyFqnFromEdm(edm, ptid);
+          const propertyTypeFqn :FQN = getPropertyFqnFromEdm(edm, ptid);
           map.set(propertyTypeFqn, chargeEventValue);
         });
       }).asImmutable();
@@ -276,7 +275,7 @@ function* addToAvailableArrestChargesWorker(action :SequenceAction) :Generator<*
     let newCharge :Map = Map();
     newCharge = newCharge.set(ENTITY_KEY_ID, arrestChargeEKID);
     newChargeData.forEach((chargeValue, ptid) => {
-      const propertyTypeFqn :FullyQualifiedName = getPropertyFqnFromEdm(edm, ptid);
+      const propertyTypeFqn :FQN = getPropertyFqnFromEdm(edm, ptid);
       newCharge = newCharge.set(propertyTypeFqn, chargeValue);
     });
 
@@ -327,7 +326,7 @@ function* addToAvailableCourtChargesWorker(action :SequenceAction) :Generator<*,
     let newCharge :Map = Map();
     newCharge = newCharge.set(ENTITY_KEY_ID, courtChargeEKID);
     newChargeData.forEach((chargeValue, ptid) => {
-      const propertyTypeFqn :FullyQualifiedName = getPropertyFqnFromEdm(edm, ptid);
+      const propertyTypeFqn :FQN = getPropertyFqnFromEdm(edm, ptid);
       newCharge = newCharge.set(propertyTypeFqn, chargeValue);
     });
 

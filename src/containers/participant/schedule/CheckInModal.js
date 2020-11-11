@@ -1,16 +1,21 @@
-// @flow
+/*
+ * @flow
+ */
+
 import React, { Component } from 'react';
+
 import { Map } from 'immutable';
 import { Modal } from 'lattice-ui-kit';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { RequestStates } from 'redux-reqseq';
+import type { UUID } from 'lattice';
 import type { RequestState } from 'redux-reqseq';
 
 import CheckInForm from './CheckInForm';
 
+import { STATE, WORKSITE_PLANS } from '../../../utils/constants/ReduxStateConsts';
 import { resetCheckInRequestState } from '../assignedworksites/WorksitePlanActions';
-import { WORKSITE_PLANS, STATE } from '../../../utils/constants/ReduxStateConsts';
 
 const { ACTIONS, CHECK_IN_FOR_APPOINTMENT, REQUEST_STATE } = WORKSITE_PLANS;
 

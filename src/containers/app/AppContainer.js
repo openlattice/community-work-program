@@ -26,6 +26,7 @@ import {
   Switch,
 } from 'react-router-dom';
 import { bindActionCreators } from 'redux';
+import type { UUID } from 'lattice';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
 import { INITIALIZE_APPLICATION, initializeApplication, switchOrganization } from './AppActions';

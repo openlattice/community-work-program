@@ -1,4 +1,7 @@
-// @flow
+/*
+ * @flow
+ */
+
 import React, { Component } from 'react';
 
 import styled from 'styled-components';
@@ -20,6 +23,7 @@ import {
   Label,
 } from 'lattice-ui-kit';
 import { DateTime } from 'luxon';
+import type { UUID } from 'lattice';
 
 import { PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { getEntityKeyId, getEntityProperties, sortEntitiesByDateProperty } from '../../../utils/DataUtils';

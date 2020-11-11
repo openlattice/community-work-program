@@ -1,34 +1,39 @@
-// @flow
-import { Map, fromJS } from 'immutable';
+/*
+ * @flow
+ */
+
 import {
   call,
   put,
   select,
   takeEvery,
 } from '@redux-saga/core/effects';
+import { Map, fromJS } from 'immutable';
 import {
   SearchApiActions,
   SearchApiSagas,
 } from 'lattice-sagas';
+import type { UUID } from 'lattice';
 import type { SequenceAction } from 'redux-reqseq';
 
-import Logger from '../../../utils/Logger';
-import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../../utils/Errors';
 import {
   SEARCH_EXISTING_PEOPLE,
   searchExistingPeople,
 } from './NewParticipantActions';
+
+import Logger from '../../../utils/Logger';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import {
   getEntitySetIdFromApp,
   getPropertyTypeIdFromEdm,
   getSearchTerm,
 } from '../../../utils/DataUtils';
+import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../../utils/Errors';
 import { isDefined } from '../../../utils/LangUtils';
 import { STATE } from '../../../utils/constants/ReduxStateConsts';
-import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 
-const { executeSearch } = SearchApiActions;
-const { executeSearchWorker } = SearchApiSagas;
+const { searchEntitySetData } = SearchApiActions;
+const { searchEntitySetDataWorker } = SearchApiSagas;
 const { PEOPLE } = APP_TYPE_FQNS;
 const { DOB, FIRST_NAME, LAST_NAME } = PROPERTY_TYPE_FQNS;
 
@@ -104,7 +109,7 @@ function* searchExistingPeopleWorker(action :SequenceAction) :Generator<*, *, *>
         }]
       });
     }
-    response = yield call(executeSearchWorker, executeSearch({ searchOptions }));
+    response = yield call(searchEntitySetDataWorker, searchEntitySetData(searchOptions));
     if (response.error) throw response.error;
 
     yield put(searchExistingPeople.success(id, fromJS(response.data.hits)));

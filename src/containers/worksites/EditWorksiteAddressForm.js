@@ -1,15 +1,21 @@
-// @flow
+/*
+ * @flow
+ */
+
 import React, { Component } from 'react';
+
 import { Map } from 'immutable';
+import { DataProcessingUtils, Form } from 'lattice-fabricate';
 import { Card, CardHeader } from 'lattice-ui-kit';
-import { Form, DataProcessingUtils } from 'lattice-fabricate';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
+import type { UUID } from 'lattice';
 import type { RequestSequence } from 'redux-reqseq';
 
 import { addWorksiteAddress, editWorksiteAddress } from './WorksitesActions';
-import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { addressSchema, addressUiSchema } from './schemas/EditWorksiteInfoSchemas';
+
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
 
 const {

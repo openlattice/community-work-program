@@ -1,5 +1,9 @@
-// @flow
+/*
+ * @flow
+ */
+
 import React, { Component } from 'react';
+
 import styled from 'styled-components';
 import {
   List,
@@ -8,7 +12,7 @@ import {
   get,
   has,
 } from 'immutable';
-import { DateTime } from 'luxon';
+import { DataProcessingUtils, Form } from 'lattice-fabricate';
 import {
   Button,
   Card,
@@ -16,25 +20,26 @@ import {
   CardSegment,
   Spinner,
 } from 'lattice-ui-kit';
-import { Form, DataProcessingUtils } from 'lattice-fabricate';
+import { DateTime } from 'luxon';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
+import type { UUID } from 'lattice';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
+
+import { arrestChargeSchema, arrestChargeUiSchema } from './schemas/EditCaseInfoSchemas';
+import { hydrateArrestChargeSchema, temporarilyDisableForm } from './utils/EditCaseInfoUtils';
 
 import AddToAvailableArrestChargesModal from '../charges/AddToAvailableArrestChargesModal';
 import ErrorMessage from '../../../components/error/ErrorMessage';
-
-import { addArrestCharges, removeArrestCharge } from '../charges/ChargesActions';
-import { arrestChargeSchema, arrestChargeUiSchema } from './schemas/EditCaseInfoSchemas';
-import { hydrateArrestChargeSchema, temporarilyDisableForm } from './utils/EditCaseInfoUtils';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { getEntityKeyId, getEntityProperties } from '../../../utils/DataUtils';
+import { requestIsFailure, requestIsPending } from '../../../utils/RequestStateUtils';
+import { CHARGES, SHARED, STATE } from '../../../utils/constants/ReduxStateConsts';
+import { addArrestCharges, removeArrestCharge } from '../charges/ChargesActions';
 import {
   formatExistingChargeDataAndAssociation,
   formatNewArrestChargeDataAndAssociations,
 } from '../charges/utils/ChargesUtils';
-import { requestIsFailure, requestIsPending } from '../../../utils/RequestStateUtils';
-import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
-import { CHARGES, SHARED, STATE } from '../../../utils/constants/ReduxStateConsts';
 
 const {
   INDEX_MAPPERS,

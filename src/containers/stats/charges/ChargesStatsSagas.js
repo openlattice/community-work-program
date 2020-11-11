@@ -1,4 +1,7 @@
-// @flow
+/*
+ * @flow
+ */
+
 import FS from 'file-saver';
 import Papa from 'papaparse';
 import {
@@ -15,6 +18,7 @@ import {
   SearchApiActions,
   SearchApiSagas,
 } from 'lattice-sagas';
+import type { UUID } from 'lattice';
 import type { SequenceAction } from 'redux-reqseq';
 
 import {

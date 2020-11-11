@@ -24,7 +24,7 @@ import {
   SearchApiSagas,
 } from 'lattice-sagas';
 import { DateTime } from 'luxon';
-import type { FQN } from 'lattice';
+import type { FQN, UUID } from 'lattice';
 import type { SequenceAction } from 'redux-reqseq';
 
 import {

@@ -1,4 +1,7 @@
-// @flow
+/*
+ * @flow
+ */
+
 import React, { useEffect, useState } from 'react';
 
 import { Map, fromJS } from 'immutable';
@@ -6,6 +9,7 @@ import { Form } from 'lattice-fabricate';
 import { Card, CardHeader } from 'lattice-ui-kit';
 import { DataUtils } from 'lattice-utils';
 import { useDispatch, useSelector } from 'react-redux';
+import type { UUID } from 'lattice';
 
 import { editPersonDetails } from './ParticipantActions';
 import { personSchema, personUiSchema } from './schemas/EditPersonAndContactsSchemas';

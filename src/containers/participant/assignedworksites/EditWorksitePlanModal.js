@@ -1,16 +1,21 @@
-// @flow
+/*
+ * @flow
+ */
+
 import React, { Component } from 'react';
+
 import { Map } from 'immutable';
 import { Modal } from 'lattice-ui-kit';
 import { connect } from 'react-redux';
 import { RequestStates } from 'redux-reqseq';
+import type { UUID } from 'lattice';
 import type { RequestState } from 'redux-reqseq';
 
 import EditWorksitePlanForm from './EditWorksitePlanForm';
 
+import { PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { getEntityKeyId } from '../../../utils/DataUtils';
 import { STATE, WORKSITE_PLANS } from '../../../utils/constants/ReduxStateConsts';
-import { PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 
 const { NAME } = PROPERTY_TYPE_FQNS;
 const {

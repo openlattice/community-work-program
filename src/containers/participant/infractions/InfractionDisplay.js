@@ -1,4 +1,6 @@
-// @flow
+/*
+ * @flow
+ */
 
 import React, { Component } from 'react';
 import type { Element } from 'react';
@@ -22,6 +24,7 @@ import {
 } from 'lattice-ui-kit';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
+import type { UUID } from 'lattice';
 
 import DeleteInfractionModal from './DeleteInfractionModal';
 import EditInfractionModal from './EditInfractionModal';

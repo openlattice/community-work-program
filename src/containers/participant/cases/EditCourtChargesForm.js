@@ -1,4 +1,7 @@
-// @flow
+/*
+ * @flow
+ */
+
 import React, { Component } from 'react';
 
 import styled from 'styled-components';
@@ -19,6 +22,7 @@ import {
 import { DateTime } from 'luxon';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
+import type { UUID } from 'lattice';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
 import { courtChargeSchema, courtChargeUiSchema } from './schemas/EditCaseInfoSchemas';

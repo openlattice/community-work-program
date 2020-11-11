@@ -1,14 +1,19 @@
-// @flow
+/*
+ * @flow
+ */
+
 import React, { Component } from 'react';
+
 import { Map } from 'immutable';
 import { Modal } from 'lattice-ui-kit';
 import { connect } from 'react-redux';
 import { RequestStates } from 'redux-reqseq';
+import type { UUID } from 'lattice';
 import type { RequestState } from 'redux-reqseq';
 
 import CreateAppointmentForm from './CreateAppointmentForm';
 
-import { WORKSITE_PLANS, STATE } from '../../../utils/constants/ReduxStateConsts';
+import { STATE, WORKSITE_PLANS } from '../../../utils/constants/ReduxStateConsts';
 
 const { ACTIONS, CREATE_WORK_APPOINTMENTS, REQUEST_STATE } = WORKSITE_PLANS;
 
