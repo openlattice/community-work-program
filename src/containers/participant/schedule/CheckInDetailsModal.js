@@ -1,4 +1,7 @@
-// @flow
+/*
+ * @flow
+ */
+
 import React, { useCallback, useEffect } from 'react';
 
 import styled from 'styled-components';
@@ -15,6 +18,7 @@ import {
 } from 'lattice-ui-kit';
 import { DateTime } from 'luxon';
 import { useDispatch, useSelector } from 'react-redux';
+import type { UUID } from 'lattice';
 import type { RequestState } from 'redux-reqseq';
 
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';

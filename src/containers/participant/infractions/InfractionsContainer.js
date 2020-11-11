@@ -1,9 +1,13 @@
-// @flow
+/*
+ * @flow
+ */
+
 import React, { Component } from 'react';
 import type { Element } from 'react';
+
 import styled from 'styled-components';
-import { List, Map } from 'immutable';
 import { faFolderOpen } from '@fortawesome/pro-light-svg-icons';
+import { List, Map } from 'immutable';
 import {
   Button,
   Card,
@@ -11,20 +15,21 @@ import {
   Select,
   Spinner
 } from 'lattice-ui-kit';
-import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
 import { RequestStates } from 'redux-reqseq';
+import type { UUID } from 'lattice';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
-import InfractionDisplay from './InfractionDisplay';
 import AddInfractionModal from './AddInfractionModal';
+import InfractionDisplay from './InfractionDisplay';
+import { getParticipantInfractions } from './InfractionsActions';
 
+import { ContainerOuterWrapper } from '../../../components/Layout';
+import { PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { getEntityKeyId, getEntityProperties, sortEntitiesByDateProperty } from '../../../utils/DataUtils';
 import { formatAsDate } from '../../../utils/DateTimeUtils';
-import { getParticipantInfractions } from './InfractionsActions';
 import { PERSON_INFRACTIONS, STATE, WORKSITE_PLANS } from '../../../utils/constants/ReduxStateConsts';
-import { PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
-import { ContainerOuterWrapper } from '../../../components/Layout';
 
 const InfractionsOuterWrapper = styled(ContainerOuterWrapper)`
   width: 100%;

@@ -1,15 +1,20 @@
-// @flow
+/*
+ * @flow
+ */
+
 import React, { Component } from 'react';
+
 import { Map } from 'immutable';
 import { Modal } from 'lattice-ui-kit';
 import { connect } from 'react-redux';
+import type { UUID } from 'lattice';
 import type { RequestState } from 'redux-reqseq';
 
 import DeleteAppointmentForm from './DeleteAppointmentForm';
 
 import { requestIsPending, requestIsSuccess } from '../../../utils/RequestStateUtils';
-import { DELETE_APPOINTMENT } from '../assignedworksites/WorksitePlanActions';
 import { SHARED, STATE } from '../../../utils/constants/ReduxStateConsts';
+import { DELETE_APPOINTMENT } from '../assignedworksites/WorksitePlanActions';
 
 const { ACTIONS, REQUEST_STATE } = SHARED;
 

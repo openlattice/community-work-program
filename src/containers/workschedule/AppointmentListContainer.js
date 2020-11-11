@@ -1,27 +1,32 @@
-// @flow
+/*
+ * @flow
+ */
+
 import React, { Component } from 'react';
+
 import styled from 'styled-components';
 import {
-  fromJS,
   List,
   Map,
-  OrderedMap
+  OrderedMap,
+  fromJS
 } from 'immutable';
-import { connect } from 'react-redux';
 import { SearchResults } from 'lattice-ui-kit';
 import { DateTime } from 'luxon';
+import { connect } from 'react-redux';
 import { RequestStates } from 'redux-reqseq';
+import type { UUID } from 'lattice';
 import type { RequestState } from 'redux-reqseq';
 
 import AppointmentContainer from './AppointmentContainer';
 import NoAppointmentsScheduled from './NoAppointmentsScheduled';
 
-import { isDefined, isNonEmptyArray } from '../../utils/LangUtils';
-import { getEntityKeyId, getEntityProperties, sortEntitiesByDateProperty } from '../../utils/DataUtils';
-import { PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
-import { WORKSITE_PLANS, STATE } from '../../utils/constants/ReduxStateConsts';
-import { ALL, EMPTY_FIELD } from '../participants/ParticipantsConstants';
 import { COURT_TYPES_MAP } from '../../core/edm/constants/DataModelConsts';
+import { PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { getEntityKeyId, getEntityProperties, sortEntitiesByDateProperty } from '../../utils/DataUtils';
+import { isDefined, isNonEmptyArray } from '../../utils/LangUtils';
+import { STATE, WORKSITE_PLANS } from '../../utils/constants/ReduxStateConsts';
+import { ALL, EMPTY_FIELD } from '../participants/ParticipantsConstants';
 
 const {
   DATETIME_END,

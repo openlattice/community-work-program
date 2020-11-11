@@ -1,25 +1,30 @@
-// @flow
+/*
+ * @flow
+ */
+
 import React, { Component } from 'react';
+
 import styled from 'styled-components';
 import { Map, fromJS } from 'immutable';
+import { DataProcessingUtils, Form } from 'lattice-fabricate';
 import { Card, CardHeader, CardStack } from 'lattice-ui-kit';
-import { Form, DataProcessingUtils } from 'lattice-fabricate';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { RequestStates } from 'redux-reqseq';
-import type { RequestSequence, RequestState } from 'redux-reqseq';
+import type { UUID } from 'lattice';
 import type { Match } from 'react-router';
+import type { RequestSequence, RequestState } from 'redux-reqseq';
 
-import LogoLoader from '../../components/LogoLoader';
-
-import * as Routes from '../../core/router/Routes';
 import { createWorksiteSchedule, getWorksite } from './WorksitesActions';
 import { schema, uiSchema } from './schemas/EditWorksiteHoursSchemas';
-import { goToRoute } from '../../core/router/RoutingActions';
+
+import LogoLoader from '../../components/LogoLoader';
+import * as Routes from '../../core/router/Routes';
 import { BackNavButton } from '../../components/controls/index';
+import { APP_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { goToRoute } from '../../core/router/RoutingActions';
 import { getEntityKeyId } from '../../utils/DataUtils';
 import { getEntitiesForWorksiteSchedule } from '../../utils/ScheduleUtils';
-import { APP_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import {
   APP,
   EDM,

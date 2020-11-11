@@ -4,7 +4,7 @@
 import { isImmutable, List, Map } from 'immutable';
 import { Models } from 'lattice';
 import { DateTime } from 'luxon';
-import type { FQN } from 'lattice';
+import type { UUID } from 'lattice';
 
 import {
   ASSOCIATION_ENTITY_SET,
@@ -15,7 +15,7 @@ import {
 import { PROPERTY_TYPE_FQNS } from '../core/edm/constants/FullyQualifiedNames';
 import { APP, EDM } from './constants/ReduxStateConsts';
 
-const { FullyQualifiedName } = Models;
+const { FQN } = Models;
 const { ENTITY_KEY_ID } = PROPERTY_TYPE_FQNS;
 const {
   PROPERTY_TYPES,
@@ -24,7 +24,7 @@ const {
 } = EDM;
 
 /* entity and property types */
-const getEntitySetIdFromApp = (app :Object | Map, fqn :FullyQualifiedName) => {
+const getEntitySetIdFromApp = (app :Object | Map, fqn :FQN) => {
 
   const orgId = app.get(APP.SELECTED_ORG_ID);
   return app.getIn([
@@ -35,12 +35,12 @@ const getEntitySetIdFromApp = (app :Object | Map, fqn :FullyQualifiedName) => {
 };
 
 const getPropertyTypeIdFromEdm = (
-  edm :Object | Map, propertyFqn :FullyQualifiedName
+  edm :Object | Map, propertyFqn :FQN
 ) => edm.getIn([TYPE_IDS_BY_FQNS, PROPERTY_TYPES, propertyFqn]);
 
 const getPropertyFqnFromEdm = (edm :Object | Map, propertyTypeId :UUID) => {
   const propertyType = edm.getIn([TYPES_BY_ID, PROPERTY_TYPES, propertyTypeId, 'type']);
-  return new FullyQualifiedName(propertyType);
+  return FQN.of(propertyType);
 };
 
 const getNeighborESID = (neighbor :Map) => (neighbor.getIn([NEIGHBOR_ENTITY_SET, 'id']));
@@ -49,7 +49,7 @@ const getAssociationNeighborESID = (neighbor :Map) => (neighbor.getIn([ASSOCIATI
 /* entity data */
 const getFirstNeighborValue = (
   neighborObj :Map,
-  fqn :FullyQualifiedName | string,
+  fqn :FQN | string,
   defaultValue :string = ''
 ) => neighborObj.getIn(
 

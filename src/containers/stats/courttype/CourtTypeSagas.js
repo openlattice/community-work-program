@@ -1,4 +1,7 @@
-// @flow
+/*
+ * @flow
+ */
+
 import FS from 'file-saver';
 import Papa from 'papaparse';
 import isFunction from 'lodash/isFunction';
@@ -16,6 +19,7 @@ import {
   SearchApiSagas,
 } from 'lattice-sagas';
 import { DateTime } from 'luxon';
+import type { UUID } from 'lattice';
 import type { SequenceAction } from 'redux-reqseq';
 
 import {
@@ -53,8 +57,8 @@ import { ALL_TIME, MONTHLY, YEARLY } from '../consts/TimeConsts';
 
 const { getEntitySetData } = DataApiActions;
 const { getEntitySetDataWorker } = DataApiSagas;
-const { executeSearch, searchEntityNeighborsWithFilter } = SearchApiActions;
-const { executeSearchWorker, searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
+const { searchEntitySetData, searchEntityNeighborsWithFilter } = SearchApiActions;
+const { searchEntitySetDataWorker, searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
 const {
   APPOINTMENT,
   CHECK_INS,
@@ -209,7 +213,7 @@ function* getHoursByCourtTypeWorker(action :SequenceAction) :Generator<*, *, *> 
         }]
       });
 
-      response = yield call(executeSearchWorker, executeSearch({ searchOptions }));
+      response = yield call(searchEntitySetDataWorker, searchEntitySetData(searchOptions));
       if (response.error) throw response.error;
       const checkInsWithinMonth :List = fromJS(response.data.hits);
 
@@ -421,7 +425,7 @@ function* getTotalParticipantsByCourtTypeWorker(action :SequenceAction) :Generat
           fuzzy: false
         }]
       });
-      response = yield call(executeSearchWorker, executeSearch({ searchOptions }));
+      response = yield call(searchEntitySetDataWorker, searchEntitySetData(searchOptions));
       if (response.error) throw response.error;
       const diversionPlans :List = fromJS(response.data.hits);
       diversionPlans.forEach((plan :Map) => diversionPlanEKIDs.push(getEntityKeyId(plan)));
@@ -533,7 +537,7 @@ function* getMonthlyParticipantsByCourtTypeWorker(action :SequenceAction) :Gener
         fuzzy: false
       }]
     });
-    response = yield call(executeSearchWorker, executeSearch({ searchOptions }));
+    response = yield call(searchEntitySetDataWorker, searchEntitySetData(searchOptions));
     if (response.error) throw response.error;
     const checkIns :List = fromJS(response.data.hits);
     const checkInEKIDs :UUID[] = [];
@@ -741,7 +745,7 @@ function* getEnrollmentsByCourtTypeWorker(action :SequenceAction) :Generator<*, 
         fuzzy: false
       }]
     });
-    response = yield call(executeSearchWorker, executeSearch({ searchOptions }));
+    response = yield call(searchEntitySetDataWorker, searchEntitySetData(searchOptions));
     if (response.error) throw response.error;
     const enrollmentStatuses :List = fromJS(response.data.hits);
     const enrollmentStatusEKIDs :UUID[] = [];

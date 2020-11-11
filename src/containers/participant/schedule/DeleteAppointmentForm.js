@@ -1,4 +1,7 @@
-// @flow
+/*
+ * @flow
+ */
+
 import React, { Component } from 'react';
 
 import styled from 'styled-components';
@@ -6,6 +9,7 @@ import { Map } from 'immutable';
 import { Button, Colors, Label } from 'lattice-ui-kit';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
+import type { UUID } from 'lattice';
 import type { RequestSequence } from 'redux-reqseq';
 
 import {

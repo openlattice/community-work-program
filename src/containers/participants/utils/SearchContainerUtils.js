@@ -1,11 +1,15 @@
-// @flow
-import { List, Map } from 'immutable';
+/*
+ * @flow
+ */
 
-import { isDefined } from '../../../utils/LangUtils';
-import { getEntityKeyId, getEntityProperties } from '../../../utils/DataUtils';
-import { ALL, FILTERS } from '../ParticipantsConstants';
-import { PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
+import { List, Map } from 'immutable';
+import type { UUID } from 'lattice';
+
 import { COURT_TYPES_MAP, ENROLLMENT_STATUSES } from '../../../core/edm/constants/DataModelConsts';
+import { PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
+import { getEntityKeyId, getEntityProperties } from '../../../utils/DataUtils';
+import { isDefined } from '../../../utils/LangUtils';
+import { ALL, FILTERS } from '../ParticipantsConstants';
 
 const { STATUS } = PROPERTY_TYPE_FQNS;
 

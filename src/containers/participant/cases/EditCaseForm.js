@@ -1,16 +1,22 @@
-// @flow
+/*
+ * @flow
+ */
+
 import React, { Component } from 'react';
+
 import { Map, fromJS } from 'immutable';
+import { DataProcessingUtils, Form } from 'lattice-fabricate';
 import { Card, CardHeader } from 'lattice-ui-kit';
-import { Form, DataProcessingUtils } from 'lattice-fabricate';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
+import type { UUID } from 'lattice';
 import type { RequestSequence } from 'redux-reqseq';
 
-import { createCase, editPersonCase } from '../ParticipantActions';
-import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { caseSchema, caseUiSchema } from './schemas/EditCaseInfoSchemas';
+
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { getEntityProperties } from '../../../utils/DataUtils';
+import { createCase, editPersonCase } from '../ParticipantActions';
 
 const {
   getEntityAddressKey,

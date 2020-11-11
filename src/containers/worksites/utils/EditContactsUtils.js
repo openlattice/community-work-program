@@ -1,6 +1,10 @@
-// @flow
+/*
+ * @flow
+ */
+
 import { List, Map, getIn } from 'immutable';
 import { DataProcessingUtils } from 'lattice-fabricate';
+import type { UUID } from 'lattice';
 
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { getEntityProperties } from '../../../utils/DataUtils';

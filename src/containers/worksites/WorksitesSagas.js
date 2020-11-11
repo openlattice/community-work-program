@@ -16,7 +16,6 @@ import {
   getIn,
   has,
 } from 'immutable';
-import { Models } from 'lattice';
 import { DataProcessingUtils } from 'lattice-fabricate';
 import {
   DataApiActions,
@@ -25,6 +24,7 @@ import {
   SearchApiSagas
 } from 'lattice-sagas';
 import { DateTime } from 'luxon';
+import type { FQN, UUID } from 'lattice';
 import type { SequenceAction } from 'redux-reqseq';
 
 import {
@@ -115,7 +115,6 @@ const {
 } = PROPERTY_TYPE_FQNS;
 const { WORKSITE_CONTACTS } = WORKSITES;
 
-const { FullyQualifiedName } = Models;
 const { searchEntityNeighborsWithFilter } = SearchApiActions;
 const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
 const { getEntityData, getEntitySetData } = DataApiActions;
@@ -551,7 +550,7 @@ function* editWorksiteContactWorker(action :SequenceAction) :Generator<*, *, *> 
       STATE.WORKSITES,
       WORKSITE_CONTACTS
     ], List()));
-    const contactIndex = parseInt(path[1], 0);
+    const contactIndex = parseInt(path[1], 10);
     let editedWorksiteContact :Map = worksiteContacts.get(contactIndex);
 
     fromJS(entityData).forEach((editedEntityData :Map, entitySetId :UUID) => {
@@ -570,7 +569,7 @@ function* editWorksiteContactWorker(action :SequenceAction) :Generator<*, *, *> 
         relevantFqnOnEditedEntity = propertyFqn;
       }
 
-      editedWorksiteContact.forEach((contactEntity :Map, contactFqn :FullyQualifiedName) => {
+      editedWorksiteContact.forEach((contactEntity :Map, contactFqn :FQN) => {
 
         let contactFqnToUpdate;
         if (contactFqn.toString() === STAFF.toString()) {

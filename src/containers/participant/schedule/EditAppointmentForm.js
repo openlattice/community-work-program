@@ -1,10 +1,14 @@
-// @flow
+/*
+ * @flow
+ */
+
 import React, { Component } from 'react';
 
 import { Map, fromJS } from 'immutable';
 import { DataProcessingUtils, Form } from 'lattice-fabricate';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
+import type { UUID } from 'lattice';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
 import { schema, uiSchema } from './schemas/EditAppointmentSchemas';

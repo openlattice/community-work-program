@@ -6,6 +6,7 @@ import { DateTime } from 'luxon';
 import { faUser, faUserCircle } from '@fortawesome/pro-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import type { Element } from 'react';
+import type { UUID } from 'lattice';
 
 import { PersonPhoto, PersonPicture, StyledPersonPhoto } from '../components/picture/PersonPicture';
 import { PROPERTY_TYPE_FQNS } from '../core/edm/constants/FullyQualifiedNames';

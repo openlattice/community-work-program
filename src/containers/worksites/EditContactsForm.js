@@ -1,4 +1,7 @@
-// @flow
+/*
+ * @flow
+ */
+
 import React, { useEffect, useState } from 'react';
 
 import { List, Map } from 'immutable';
@@ -11,6 +14,7 @@ import {
 } from 'lattice-ui-kit';
 import { ReduxUtils, useRequestState } from 'lattice-utils';
 import { useDispatch } from 'react-redux';
+import type { UUID } from 'lattice';
 
 import {
   addWorksiteContacts,
