@@ -1,4 +1,7 @@
-// @flow
+/*
+ * @flow
+ */
+
 import React from 'react';
 
 import styled from 'styled-components';
@@ -13,6 +16,7 @@ import {
   IconSplash,
   Label,
 } from 'lattice-ui-kit';
+import type { UUID } from 'lattice';
 
 import AssignedWorksite from './AssignedWorksite';
 

@@ -1,14 +1,19 @@
-// @flow
+/*
+ * @flow
+ */
+
 import React, { Component } from 'react';
+
 import styled from 'styled-components';
 import { List, Map } from 'immutable';
 import { connect } from 'react-redux';
 import { RequestStates } from 'redux-reqseq';
+import type { UUID } from 'lattice';
 import type { RequestState } from 'redux-reqseq';
 
-import AppointmentListContainer from '../../workschedule/AppointmentListContainer';
 import WeeklyHoursBreakdown from './WeeklyHoursBreakdown';
 
+import AppointmentListContainer from '../../workschedule/AppointmentListContainer';
 import { ContainerOuterWrapper } from '../../../components/Layout';
 import { getEntityKeyId } from '../../../utils/DataUtils';
 import { PERSON, STATE, WORKSITE_PLANS } from '../../../utils/constants/ReduxStateConsts';

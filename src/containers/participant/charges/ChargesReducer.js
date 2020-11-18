@@ -1,7 +1,11 @@
-// @flow
+/*
+ * @flow
+ */
+
 import { List, Map, fromJS } from 'immutable';
 import { DataProcessingUtils } from 'lattice-fabricate';
 import { RequestStates } from 'redux-reqseq';
+import type { UUID } from 'lattice';
 import type { SequenceAction } from 'redux-reqseq';
 
 import {
@@ -17,9 +21,10 @@ import {
   removeArrestCharge,
   removeCourtChargeFromCase,
 } from './ChargesActions';
+
+import { APP_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { getEntityKeyId } from '../../../utils/DataUtils';
 import { CHARGES, SHARED } from '../../../utils/constants/ReduxStateConsts';
-import { APP_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 
 const { getPageSectionKey } = DataProcessingUtils;
 const { ACTIONS, REQUEST_STATE } = SHARED;

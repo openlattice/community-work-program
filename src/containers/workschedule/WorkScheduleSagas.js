@@ -15,6 +15,7 @@ import {
   SearchApiSagas
 } from 'lattice-sagas';
 import { DateTime } from 'luxon';
+import type { UUID } from 'lattice';
 import type { SequenceAction } from 'redux-reqseq';
 
 import {
@@ -46,8 +47,8 @@ import { getAppointmentCheckIns } from '../participant/assignedworksites/Worksit
 import { getAppointmentCheckInsWorker } from '../participant/assignedworksites/WorksitePlanSagas';
 
 const LOG = new Logger('WorkScheduleSagas');
-const { executeSearch, searchEntityNeighborsWithFilter } = SearchApiActions;
-const { executeSearchWorker, searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
+const { searchEntitySetData, searchEntityNeighborsWithFilter } = SearchApiActions;
+const { searchEntitySetDataWorker, searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
 
 const {
   APPOINTMENT,
@@ -398,7 +399,7 @@ function* findAppointmentsWorker(action :SequenceAction) :Generator<*, *, *> {
       fuzzy: false
     });
 
-    response = yield call(executeSearchWorker, executeSearch({ searchOptions }));
+    response = yield call(searchEntitySetDataWorker, searchEntitySetData(searchOptions));
     if (response.error) throw response.error;
     appointments = fromJS(response.data.hits);
 

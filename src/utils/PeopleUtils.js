@@ -1,18 +1,21 @@
 // @flow
 import React from 'react';
-import toString from 'lodash/toString';
-import { Map } from 'immutable';
-import { DateTime } from 'luxon';
-import { faUser, faUserCircle } from '@fortawesome/pro-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import type { Element } from 'react';
 
-import { PersonPhoto, PersonPicture, StyledPersonPhoto } from '../components/picture/PersonPicture';
-import { PROPERTY_TYPE_FQNS } from '../core/edm/constants/FullyQualifiedNames';
-import { EMPTY_FIELD } from '../containers/participants/ParticipantsConstants';
-import { isDefined } from './LangUtils';
-import { getEntityKeyId, getEntityProperties } from './DataUtils';
+import toString from 'lodash/toString';
+import { faUser, faUserCircle } from '@fortawesome/pro-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { Map } from 'immutable';
+import { DateTime } from 'luxon';
+import type { UUID } from 'lattice';
+
 import { getImageDataFromEntity } from './BinaryUtils';
+import { getEntityKeyId, getEntityProperties } from './DataUtils';
+import { isDefined } from './LangUtils';
+
+import { PersonPhoto, PersonPicture, StyledPersonPhoto } from '../components/picture/PersonPicture';
+import { EMPTY_FIELD } from '../containers/participants/ParticipantsConstants';
+import { PROPERTY_TYPE_FQNS } from '../core/edm/constants/FullyQualifiedNames';
 
 const {
   CITY,
@@ -50,19 +53,19 @@ const getPersonProfilePicture = (person :Map, image :Map) :Element<*> => {
 
   const defaultIcon :Element<any> = <FontAwesomeIcon icon={faUser} size="6x" color="#D8D8D8" />;
 
-  const { [MUGSHOT]: mugshot } = getEntityProperties(person, [MUGSHOT]);
-  if (isDefined(mugshot) && mugshot.length) {
-    return (
-      <PersonPhoto>
-        <PersonPicture src={mugshot} />
-      </PersonPhoto>
-    );
-  }
   if (isDefined(image) && !image.isEmpty()) {
     const imageURL = getImageDataFromEntity(image);
     return (
       <PersonPhoto>
         <PersonPicture src={imageURL} />
+      </PersonPhoto>
+    );
+  }
+  const { [MUGSHOT]: mugshot } = getEntityProperties(person, [MUGSHOT]);
+  if (isDefined(mugshot) && mugshot.length) {
+    return (
+      <PersonPhoto>
+        <PersonPicture src={mugshot} />
       </PersonPhoto>
     );
   }
@@ -72,22 +75,28 @@ const getPersonProfilePicture = (person :Map, image :Map) :Element<*> => {
 
 const getPersonPictureForTable = (person :Map, small :boolean, personPhotosByPersonEKID :Map) :Element<*> => {
 
-  const { [MUGSHOT]: mugshot, [PICTURE]: picture } = getEntityProperties(person, [MUGSHOT, PICTURE]);
-  const personEKID :UUID = getEntityKeyId(person);
-  let photo :string = mugshot || picture;
+  let photo :string = '';
 
-  if (!photo.length) {
-    const personPhotoEntity :Map = personPhotosByPersonEKID.get(personEKID, Map());
-    const urlResult = getImageDataFromEntity(personPhotoEntity);
-    if (isDefined(urlResult)) photo = urlResult;
+  const personEKID :UUID = getEntityKeyId(person);
+  const personPhotoEntity :Map = personPhotosByPersonEKID.get(personEKID, Map());
+  const urlResult = getImageDataFromEntity(personPhotoEntity);
+
+  if (isDefined(urlResult)) {
+    photo = urlResult;
   }
-  if (photo.length) {
+  else {
+    const { [MUGSHOT]: mugshot, [PICTURE]: picture } = getEntityProperties(person, [MUGSHOT, PICTURE]);
+    photo = mugshot || picture;
+  }
+
+  if (photo && photo.length) {
     return (
       <StyledPersonPhoto small={small}>
         <PersonPicture src={photo} alt="" />
       </StyledPersonPhoto>
     );
   }
+
   return (
     <FontAwesomeIcon icon={faUserCircle} color="#D8D8D8" size="2x" />
   );

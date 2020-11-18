@@ -1,4 +1,7 @@
-// @flow
+/*
+ * @flow
+ */
+
 import React, { Component } from 'react';
 
 import { Map, fromJS } from 'immutable';
@@ -14,7 +17,7 @@ import {
 import { DateTime } from 'luxon';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import type { FQN } from 'lattice';
+import type { FQN, UUID } from 'lattice';
 import type { RequestSequence } from 'redux-reqseq';
 
 import { addWorksite } from './WorksitesActions';

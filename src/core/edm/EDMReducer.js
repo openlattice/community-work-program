@@ -9,7 +9,7 @@ import type { SequenceAction } from 'redux-reqseq';
 import { getEntityDataModelTypes } from './EDMActions';
 import { EDM } from '../../utils/constants/ReduxStateConsts';
 
-const { FullyQualifiedName } = Models;
+const { FQN } = Models;
 const {
   ASSOCIATION_TYPES,
   ENTITY_TYPES,
@@ -41,12 +41,12 @@ export default function edmReducer(state :Map<*, *> = INITIAL_STATE, action :Obj
           const entityTypes :List = fromJS(seqAction.value.entityTypes);
           const propertyTypes :List = fromJS(seqAction.value.propertyTypes);
 
-          const typeIdsByFqn :Map<FullyQualifiedName, string> = Map().asMutable();
+          const typeIdsByFqn :Map<FQN, string> = Map().asMutable();
           const typesById :Map = Map().asMutable();
 
           associationTypes.forEach((type :Map) => {
             if (type.has('entityType')) {
-              const typeFqn :FullyQualifiedName = new FullyQualifiedName(type.getIn(['entityType', 'type']));
+              const typeFqn :FQN = FQN.of(type.getIn(['entityType', 'type']));
               const typeId :string = type.getIn(['entityType', 'id']);
               typeIdsByFqn.setIn([ASSOCIATION_TYPES, typeFqn], typeId);
               typesById.setIn([ASSOCIATION_TYPES, typeId], type);
@@ -55,7 +55,7 @@ export default function edmReducer(state :Map<*, *> = INITIAL_STATE, action :Obj
 
           entityTypes.forEach((type :Map) => {
             if (type.has('id')) {
-              const typeFqn :FullyQualifiedName = new FullyQualifiedName(type.get('type'));
+              const typeFqn :FQN = FQN.of(type.get('type'));
               const typeId :string = type.get('id');
               typeIdsByFqn.setIn([ENTITY_TYPES, typeFqn], typeId);
               typesById.setIn([ENTITY_TYPES, typeId], type);
@@ -64,7 +64,7 @@ export default function edmReducer(state :Map<*, *> = INITIAL_STATE, action :Obj
 
           propertyTypes.forEach((type :Map) => {
             if (type.has('id')) {
-              const typeFqn :FullyQualifiedName = new FullyQualifiedName(type.get('type'));
+              const typeFqn :FQN = FQN.of(type.get('type'));
               const typeId :string = type.get('id');
               typeIdsByFqn.setIn([PROPERTY_TYPES, typeFqn], typeId);
               typesById.setIn([PROPERTY_TYPES, typeId], type);

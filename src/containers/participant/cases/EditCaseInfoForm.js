@@ -1,29 +1,33 @@
-// @flow
+/*
+ * @flow
+ */
+
 import React, { Component } from 'react';
+
 import styled from 'styled-components';
 import { List, Map } from 'immutable';
 import { CardStack, Colors } from 'lattice-ui-kit';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { RequestStates } from 'redux-reqseq';
-import type { RequestSequence, RequestState } from 'redux-reqseq';
+import type { UUID } from 'lattice';
 import type { Match } from 'react-router';
+import type { RequestSequence, RequestState } from 'redux-reqseq';
 
 import AssignJudgeForm from './AssignJudgeForm';
 import EditArrestChargesForm from './EditArrestChargesForm';
 import EditCaseForm from './EditCaseForm';
 import EditCourtChargesForm from './EditCourtChargesForm';
 import EditRequiredHoursForm from './EditRequiredHoursForm';
-import LogoLoader from '../../../components/LogoLoader';
 
+import LogoLoader from '../../../components/LogoLoader';
 import * as Routes from '../../../core/router/Routes';
-import { getInfoForEditCase } from '../ParticipantActions';
-import { goToRoute } from '../../../core/router/RoutingActions';
+import { BackNavButton } from '../../../components/controls/index';
 import { APP_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
+import { goToRoute } from '../../../core/router/RoutingActions';
+import { PARTICIPANT_PROFILE_WIDTH } from '../../../core/style/Sizes';
 import { getEntityKeyId } from '../../../utils/DataUtils';
 import { getPersonFullName } from '../../../utils/PeopleUtils';
-import { BackNavButton } from '../../../components/controls/index';
-import { PARTICIPANT_PROFILE_WIDTH } from '../../../core/style/Sizes';
 import {
   APP,
   CHARGES,
@@ -31,6 +35,7 @@ import {
   PERSON,
   STATE
 } from '../../../utils/constants/ReduxStateConsts';
+import { getInfoForEditCase } from '../ParticipantActions';
 import type { GoToRoute } from '../../../core/router/RoutingActions';
 
 const { BLACK } = Colors;

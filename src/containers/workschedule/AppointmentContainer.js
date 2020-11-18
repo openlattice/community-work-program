@@ -1,4 +1,7 @@
-// @flow
+/*
+ * @flow
+ */
+
 import React, { useEffect, useState } from 'react';
 
 import styled, { css } from 'styled-components';
@@ -21,6 +24,7 @@ import {
 } from 'lattice-ui-kit';
 import { useGoToRoute } from 'lattice-utils';
 import { connect } from 'react-redux';
+import type { UUID } from 'lattice';
 
 import CheckInDetailsModal from '../participant/schedule/CheckInDetailsModal';
 import CheckInModal from '../participant/schedule/CheckInModal';

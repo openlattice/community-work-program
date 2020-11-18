@@ -1,9 +1,13 @@
-// @flow
+/*
+ * @flow
+ */
+
 import { Map, setIn } from 'immutable';
 import { DataProcessingUtils } from 'lattice-fabricate';
+import type { UUID } from 'lattice';
 
-import { getEntityProperties } from '../../../utils/DataUtils';
 import { PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
+import { getEntityProperties } from '../../../utils/DataUtils';
 
 const { getPageSectionKey } = DataProcessingUtils;
 const { NAME } = PROPERTY_TYPE_FQNS;

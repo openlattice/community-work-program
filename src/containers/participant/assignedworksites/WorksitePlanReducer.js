@@ -1,11 +1,14 @@
-// @flow
+/*
+ * @flow
+ */
+
 import {
   List,
   Map,
   fromJS,
 } from 'immutable';
 import { RequestStates } from 'redux-reqseq';
-import type { FQN } from 'lattice';
+import type { FQN, UUID } from 'lattice';
 import type { SequenceAction } from 'redux-reqseq';
 
 import {

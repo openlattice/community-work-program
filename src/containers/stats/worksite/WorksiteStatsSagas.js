@@ -1,4 +1,7 @@
-// @flow
+/*
+ * @flow
+ */
+
 import FS from 'file-saver';
 import Papa from 'papaparse';
 import isFunction from 'lodash/isFunction';
@@ -17,6 +20,7 @@ import {
   SearchApiSagas,
 } from 'lattice-sagas';
 import { DateTime } from 'luxon';
+import type { UUID } from 'lattice';
 import type { SequenceAction } from 'redux-reqseq';
 
 import {
@@ -54,8 +58,8 @@ import { ALL_TIME, MONTHLY, YEARLY } from '../consts/TimeConsts';
 
 const { getEntitySetData } = DataApiActions;
 const { getEntitySetDataWorker } = DataApiSagas;
-const { executeSearch, searchEntityNeighborsWithFilter } = SearchApiActions;
-const { executeSearchWorker, searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
+const { searchEntitySetData, searchEntityNeighborsWithFilter } = SearchApiActions;
+const { searchEntitySetDataWorker, searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
 const {
   APPOINTMENT,
   CHECK_INS,
@@ -407,7 +411,7 @@ function* getHoursWorkedByWorksiteWorker(action :SequenceAction) :Generator<*, *
           fuzzy: false
         }]
       });
-      response = yield call(executeSearchWorker, executeSearch({ searchOptions }));
+      response = yield call(searchEntitySetDataWorker, searchEntitySetData(searchOptions));
       if (response.error) throw response.error;
       const checkIns :List = fromJS(response.data.hits);
       const checkInEKIDs :UUID[] = [];
@@ -513,7 +517,7 @@ function* getMonthlyParticipantsByWorksiteWorker(action :SequenceAction) :Genera
         fuzzy: false
       }]
     });
-    response = yield call(executeSearchWorker, executeSearch({ searchOptions }));
+    response = yield call(searchEntitySetDataWorker, searchEntitySetData(searchOptions));
     if (response.error) throw response.error;
     const checkIns :List = fromJS(response.data.hits);
     const checkInEKIDs :UUID[] = [];
