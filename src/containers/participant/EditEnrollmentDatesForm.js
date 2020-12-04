@@ -1,26 +1,27 @@
 // @flow
 import React, { Component } from 'react';
+
 import styled from 'styled-components';
 import { Map } from 'immutable';
-import { DateTime } from 'luxon';
+import { DataProcessingUtils, Form } from 'lattice-fabricate';
 import { Card, CardHeader, CardStack } from 'lattice-ui-kit';
-import { Form, DataProcessingUtils } from 'lattice-fabricate';
+import { DateTime } from 'luxon';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { RequestStates } from 'redux-reqseq';
-import type { RequestSequence, RequestState } from 'redux-reqseq';
 import type { Match } from 'react-router';
+import type { RequestSequence, RequestState } from 'redux-reqseq';
+
+import { editEnrollmentDates, getDiversionPlan } from './ParticipantActions';
+import { schema, uiSchema } from './schemas/EditEnrollmentDatesSchemas';
 
 import LogoLoader from '../../components/LogoLoader';
-
 import * as Routes from '../../core/router/Routes';
 import { BackNavButton } from '../../components/controls/index';
-import { editEnrollmentDates, getDiversionPlan } from './ParticipantActions';
-import { goToRoute } from '../../core/router/RoutingActions';
-import { schema, uiSchema } from './schemas/EditEnrollmentDatesSchemas';
-import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { goToRoute } from '../../core/router/RoutingActions';
 import { PARTICIPANT_PROFILE_WIDTH } from '../../core/style/Sizes';
+import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
 import {
   APP,
   EDM,
@@ -163,11 +164,6 @@ class EditCaseInfoForm extends Component<Props, State> {
       formData[sectionOneKey][getEntityAddressKey(
         0, DIVERSION_PLAN, DATETIME_END
       )] = DateTime.fromISO(sentenceEndDate).toISODate();
-    }
-    if (!sentenceEndDate && sentenceDate) {
-      formData[sectionOneKey][getEntityAddressKey(
-        0, DIVERSION_PLAN, DATETIME_END
-      )] = DateTime.fromISO(sentenceDate).plus({ days: 90 }).toLocaleString();
     }
 
     this.setState({ formData });
