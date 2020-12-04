@@ -2,19 +2,20 @@
  * @flow
  */
 
-import { DateTime, Interval } from 'luxon';
-import { DataProcessingUtils } from 'lattice-fabricate';
 import {
   List,
   Map,
   fromJS,
   getIn,
 } from 'immutable';
+import { DataProcessingUtils } from 'lattice-fabricate';
+import { DateTime, Interval } from 'luxon';
 import type { DurationUnit } from 'luxon';
 
 import { isDefined } from './LangUtils';
-import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../core/edm/constants/FullyQualifiedNames';
+
 import { EMPTY_FIELD } from '../containers/participants/ParticipantsConstants';
+import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../core/edm/constants/FullyQualifiedNames';
 
 const { getEntityAddressKey, getPageSectionKey } = DataProcessingUtils;
 const { APPOINTMENT } = APP_TYPE_FQNS;
@@ -150,15 +151,11 @@ const getCheckInDeadline = (sentenceDateTime :string, checkInDeadline ? :string)
   return EMPTY_FIELD;
 };
 
-const getSentenceEndDate = (sentenceEndDateTime :string, sentenceDateTime :string) :string => {
+const getSentenceEndDate = (sentenceEndDateTime :string) :string => {
 
   const sentenceEndDateObj :DateTime = DateTime.fromISO(sentenceEndDateTime);
   if (sentenceEndDateObj.isValid) {
     return sentenceEndDateObj.toLocaleString(DateTime.DATE_SHORT);
-  }
-  const sentenceDateObj :DateTime = DateTime.fromISO(sentenceDateTime);
-  if (sentenceDateObj.isValid) {
-    return sentenceDateObj.plus({ days: 90 }).toLocaleString();
   }
   return EMPTY_FIELD;
 };
