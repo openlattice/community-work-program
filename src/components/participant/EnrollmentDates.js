@@ -41,7 +41,7 @@ const EnrollmentDates = ({
 
   const sentenceDate = formatAsDate(sentenceDateTime);
   const checkInDeadlineDate = getCheckInDeadline(sentenceDateTime, checkInDeadline);
-  const sentenceEndDate = getSentenceEndDate(sentenceEndDateTime, sentenceDateTime);
+  const sentenceEndDate = getSentenceEndDate(sentenceEndDateTime);
   const orientationDate = formatAsDate(orientationDateTime);
   const workStartDate = formatAsDate(workStartDateTime);
   const checkedInDate = formatAsDate(checkInDate);
