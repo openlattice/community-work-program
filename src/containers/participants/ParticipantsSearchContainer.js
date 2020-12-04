@@ -288,7 +288,7 @@ class ParticipantsSearchContainer extends Component<Props, State> {
           [ALL_PARTICIPANTS_COLUMNS[1]]: getPersonFullName(person),
           [ALL_PARTICIPANTS_COLUMNS[2]]: toString(calculateAge(dateOfBirth)),
           [ALL_PARTICIPANTS_COLUMNS[3]]: formatAsDate(sentenceDateTime),
-          [ALL_PARTICIPANTS_COLUMNS[4]]: getSentenceEndDate(sentenceEndDateTime, sentenceDateTime),
+          [ALL_PARTICIPANTS_COLUMNS[4]]: getSentenceEndDate(sentenceEndDateTime),
           [ALL_PARTICIPANTS_COLUMNS[5]]: status,
           [ALL_PARTICIPANTS_COLUMNS[6]]: toString(warningsCount),
           [ALL_PARTICIPANTS_COLUMNS[7]]: toString(violationsCount),
