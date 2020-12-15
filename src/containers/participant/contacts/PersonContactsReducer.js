@@ -22,7 +22,6 @@ import {
   getPersonContactInfo,
 } from './PersonContactsActions';
 
-import { CONTACT_METHODS } from '../../../core/edm/constants/DataModelConsts';
 import { PERSON_CONTACTS, SHARED } from '../../../utils/constants/ReduxStateConsts';
 
 const { EMAIL, PERSON_ADDRESS, PHONE } = PERSON_CONTACTS;

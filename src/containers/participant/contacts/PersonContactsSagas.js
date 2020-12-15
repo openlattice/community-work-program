@@ -37,7 +37,6 @@ import {
   getPersonContactInfo,
 } from './PersonContactsActions';
 
-import { CONTACT_METHODS } from '../../../core/edm/constants/DataModelConsts';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { submitDataGraph, submitPartialReplace } from '../../../core/sagas/data/DataActions';
 import { submitDataGraphWorker, submitPartialReplaceWorker } from '../../../core/sagas/data/DataSagas';
