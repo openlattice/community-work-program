@@ -100,6 +100,7 @@ export const PROPERTY_TYPE_FQNS :Object = {
   GENDER: FQN.of('bhr.gender'),
   HOURS_WORKED: FQN.of('ol.hoursworked'),
   IMAGE_DATA: FQN.of('ol.imagedata'),
+  INACTIVE: FQN.of('ol.inactive'),
   INCIDENT_START_DATETIME: FQN.of('incident.startdatetime'),
   JUSTICE_XREF: FQN.of('justice.xref'),
   LAST_NAME: FQN.of('nc.PersonSurName'),
