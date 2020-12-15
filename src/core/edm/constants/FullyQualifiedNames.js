@@ -117,7 +117,6 @@ export const PROPERTY_TYPE_FQNS :Object = {
   PERSON_NOTES: FQN.of('housing.notes'),
   PHONE_NUMBER: FQN.of('contact.phonenumber'),
   PICTURE: FQN.of('person.picture'),
-  PREFERRED: FQN.of('ol.preferred'),
   RACE: FQN.of('nc.PersonRace'),
   REQUIRED_HOURS: FQN.of('ol.requiredhours'),
   REQUIRED_HOURS_TEXT: FQN.of('ol.requiredhourstext'),
