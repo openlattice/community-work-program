@@ -37,7 +37,6 @@ import {
   getPersonContactInfo,
 } from './PersonContactsActions';
 
-import { CONTACT_METHODS } from '../../../core/edm/constants/DataModelConsts';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { submitDataGraph, submitPartialReplace } from '../../../core/sagas/data/DataActions';
 import { submitDataGraphWorker, submitPartialReplaceWorker } from '../../../core/sagas/data/DataSagas';
@@ -57,8 +56,8 @@ const { ADDRESS, CONTACT_INFORMATION, PEOPLE } = APP_TYPE_FQNS;
 const {
   EMAIL,
   ENTITY_KEY_ID,
+  INACTIVE,
   PHONE_NUMBER,
-  PREFERRED,
 } = PROPERTY_TYPE_FQNS;
 const getAppFromState = (state) => state.get(STATE.APP, Map());
 const getEdmFromState = (state) => state.get(STATE.EDM, Map());
@@ -437,26 +436,28 @@ function* getPersonContactInfoWorker(action :SequenceAction) :Generator<*, *, *>
     );
     if (response.error) throw response.error;
 
-    const contactInfo :Map = Map().withMutations((mutator :Map) => {
+    const contactInfoList :List = List().withMutations((mutator :List) => {
       if (response.data[personEKID]) {
-        fromJS(response.data[personEKID])
-          .map((contactInfoNeighbor :Map) => getNeighborDetails(contactInfoNeighbor))
-          .forEach((contact :Map) => {
-            const { [PREFERRED]: preferred } = getEntityProperties(contact, [PREFERRED]);
-            let email :Map = mutator.get(CONTACT_METHODS.EMAIL, Map());
-            let phone :Map = mutator.get(CONTACT_METHODS.PHONE, Map());
-            if (contact.get(PHONE_NUMBER) && preferred) {
-              phone = contact;
-            }
-            if (contact.get(EMAIL) && preferred) {
-              email = contact;
-            }
-            mutator.set(CONTACT_METHODS.EMAIL, email);
-            mutator.set(CONTACT_METHODS.PHONE, phone);
-          });
+        fromJS(response.data[personEKID]).forEach((contactInfoNeighbor :Map) => {
+          mutator.push(getNeighborDetails(contactInfoNeighbor));
+        });
       }
     });
-    yield put(getPersonContactInfo.success(id, contactInfo));
+
+    const allPhoneNumbers :List = contactInfoList.filter((contact :Map) => contact.has(PHONE_NUMBER));
+    const allEmails :List = contactInfoList.filter((contact :Map) => contact.has(EMAIL));
+
+    const activePhone = allPhoneNumbers.find((contact :Map) => {
+      const { [INACTIVE]: inactive } = getEntityProperties(contact, [INACTIVE]);
+      return contact.get(INACTIVE) && isDefined(inactive) && !inactive;
+    }) || Map();
+
+    const activeEmail = allEmails.find((contact :Map) => {
+      const { [INACTIVE]: inactive } = getEntityProperties(contact, [INACTIVE]);
+      return contact.get(INACTIVE) && isDefined(inactive) && !inactive;
+    }) || Map();
+
+    yield put(getPersonContactInfo.success(id, { activeEmail, activePhone }));
   }
   catch (error) {
     workerResponse.error = error;
