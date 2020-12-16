@@ -92,11 +92,11 @@ const {
   EMAIL,
   ENTITY_KEY_ID,
   FULL_ADDRESS,
+  INACTIVE,
   LAST_NAME,
   NAME,
   ORIENTATION_DATETIME,
   PHONE_NUMBER,
-  PREFERRED,
   STATUS,
 } = PROPERTY_TYPE_FQNS;
 const {
@@ -319,13 +319,13 @@ class AddParticipantForm extends Component<Props, State> {
       dataToSubmit = setIn(dataToSubmit, [sectionTwo, addressKey], getIn(dataToSubmit, [sectionTwo, addressKey]) || '');
       dataToSubmit = setIn(
         dataToSubmit,
-        [getPageSectionKey(1, 2), getEntityAddressKey(0, CONTACT_INFORMATION, PREFERRED)],
-        true
+        [getPageSectionKey(1, 2), getEntityAddressKey(0, CONTACT_INFORMATION, INACTIVE)],
+        false
       );
       dataToSubmit = setIn(
         dataToSubmit,
-        [getPageSectionKey(1, 2), getEntityAddressKey(1, CONTACT_INFORMATION, PREFERRED)],
-        true
+        [getPageSectionKey(1, 2), getEntityAddressKey(1, CONTACT_INFORMATION, INACTIVE)],
+        false
       );
 
       associations.push([CONTACT_INFO_GIVEN, 0, CONTACT_INFORMATION, personIndexOrEKID, APP_TYPE_FQNS.PEOPLE, {}]);
