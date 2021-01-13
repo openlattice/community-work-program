@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 
 import isEmpty from 'lodash/isEmpty';
-import { Map, fromJS } from 'immutable';
+import { Map, fromJS, setIn } from 'immutable';
 import { DataProcessingUtils, Form } from 'lattice-fabricate';
 import { Card, CardHeader } from 'lattice-ui-kit';
 import {
@@ -29,13 +29,14 @@ import { getContactFormData } from '../utils/EditContactsUtils';
 const { getEntityKeyId } = DataUtils;
 const { isDefined } = LangUtils;
 const {
+  getEntityAddressKey,
   getPageSectionKey,
   processAssociationEntityData,
   processEntityData,
 } = DataProcessingUtils;
 const { isPending } = ReduxUtils;
 const { CONTACT_INFORMATION, CONTACT_INFO_GIVEN, PEOPLE } = APP_TYPE_FQNS;
-const { PHONE_NUMBER } = PROPERTY_TYPE_FQNS;
+const { INACTIVE, PHONE_NUMBER } = PROPERTY_TYPE_FQNS;
 const { ENTITY_SET_IDS_BY_ORG, SELECTED_ORG_ID } = APP;
 const { PROPERTY_TYPES, TYPE_IDS_BY_FQNS } = EDM;
 const { ACTIONS } = SHARED;
@@ -81,7 +82,12 @@ const EditPhoneForm = ({ participant, phone } :Props) => {
   const onSubmit = ({ formData: submittedFormData }) => {
     if ((!isDefined(phone) || phone.isEmpty())
       && !isEmpty(submittedFormData[getPageSectionKey(1, 1)])) {
-      const entityData = processEntityData(submittedFormData, entitySetIds, propertyTypeIds);
+      const updatedFormData = setIn(
+        submittedFormData,
+        [getPageSectionKey(1, 1), getEntityAddressKey(0, CONTACT_INFORMATION, INACTIVE)],
+        false
+      );
+      const entityData = processEntityData(updatedFormData, entitySetIds, propertyTypeIds);
       const associations = [[CONTACT_INFO_GIVEN, 0, CONTACT_INFORMATION, personEKID, PEOPLE]];
       const associationEntityData = processAssociationEntityData(associations, entitySetIds, propertyTypeIds);
       dispatch(addPersonPhone({ associationEntityData, entityData }));
