@@ -14,6 +14,7 @@ import participantReducer from '../../containers/participant/ParticipantReducer'
 import participantsReducer from '../../containers/participants/ParticipantsReducer';
 import personContactsReducer from '../../containers/participant/contacts/PersonContactsReducer';
 import printParticipantReducer from '../../containers/participant/print/PrintParticipantReducer';
+import searchReducer from '../../containers/search/reducers';
 import statsReducer from '../../containers/stats/StatsReducer';
 import workScheduleReducer from '../../containers/workschedule/WorkScheduleReducer';
 import worksitePlanReducer from '../../containers/participant/assignedworksites/WorksitePlanReducer';
@@ -32,6 +33,7 @@ export default function reduxReducer(routerHistory :any) {
     personContacts: personContactsReducer,
     printParticipant: printParticipantReducer,
     router: connectRouter(routerHistory),
+    search: searchReducer,
     stats: statsReducer,
     workSchedule: workScheduleReducer,
     worksitePlans: worksitePlanReducer,
