@@ -1,6 +1,8 @@
 // @flow
 import React, { Component } from 'react';
+
 import styled from 'styled-components';
+import { List, Map } from 'immutable';
 import {
   Button,
   Card,
@@ -9,20 +11,20 @@ import {
   DatePicker,
   Input,
   Label,
-  SearchResults,
   PaginationToolbar,
+  SearchResults,
 } from 'lattice-ui-kit';
-import { List, Map } from 'immutable';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
+import { SEARCH_EXISTING_PEOPLE, searchExistingPeople, selectExistingPerson } from './NewParticipantActions';
+
 import NoParticipantsFound from '../../dashboard/NoParticipantsFound';
-import { formatExistingPeopleData } from '../utils/NewParticipantUtils';
 import { isNonEmptyString } from '../../../utils/LangUtils';
 import { requestIsFailure, requestIsPending, requestIsSuccess } from '../../../utils/RequestStateUtils';
-import { SEARCH_EXISTING_PEOPLE, searchExistingPeople, selectExistingPerson } from './NewParticipantActions';
 import { PEOPLE, SHARED, STATE } from '../../../utils/constants/ReduxStateConsts';
+import { formatExistingPeopleData } from '../utils/NewParticipantUtils';
 
 const { PEOPLE_ALREADY_IN_ENTITY_SET } = PEOPLE;
 const { ACTIONS, REQUEST_STATE } = SHARED;
@@ -97,18 +99,17 @@ class SearchExistingPeople extends Component<Props, State> {
     this.setState({ dob: date });
   }
 
-  searchExistingPeople = (e :SyntheticEvent<HTMLInputElement> | void, startIndex :?number) => {
+  searchExistingPeople = (e :SyntheticEvent<HTMLInputElement> | void, startIndex :?number = 0) => {
     const { actions } = this.props;
     const { dob, firstName, lastName } = this.state;
 
     if (isNonEmptyString(firstName) || isNonEmptyString(lastName) || isNonEmptyString(dob)) {
-      const start = startIndex || 0;
       actions.searchExistingPeople({
         dob,
         firstName,
         lastName,
         maxHits: MAX_HITS,
-        start,
+        start: startIndex,
       });
     }
   }

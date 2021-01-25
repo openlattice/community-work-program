@@ -21,6 +21,7 @@ import * as ParticipantsSagas from '../../containers/participants/ParticipantsSa
 import * as PersonContactsSagas from '../../containers/participant/contacts/PersonContactsSagas';
 import * as PrintParticipantSagas from '../../containers/participant/print/PrintParticipantSagas';
 import * as RoutingSagas from '../router/RoutingSagas';
+import * as SearchSagas from '../../containers/search/sagas';
 import * as StatsSagas from '../../containers/stats/StatsSagas';
 import * as WorkScheduleSagas from '../../containers/workschedule/WorkScheduleSagas';
 import * as WorksitePlanSagas from '../../containers/participant/assignedworksites/WorksitePlanSagas';
@@ -147,6 +148,9 @@ export default function* sagas() :Generator<*, *, *> {
 
     // PrintParticipantSagas
     fork(PrintParticipantSagas.getInfoForPrintInfractionWatcher),
+
+    // SearchSagas
+    fork(SearchSagas.searchParticipantsWatcher),
 
     // StatsSagas
     fork(StatsSagas.getStatsDataWatcher),
