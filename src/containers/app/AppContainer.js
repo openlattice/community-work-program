@@ -40,6 +40,7 @@ import OpenLatticeLogo from '../../assets/images/logo_v2.png';
 import ParticipantProfileContainer from '../participant/ParticipantProfileContainer';
 import ParticipantsSearchContainer from '../participants/ParticipantsSearchContainer';
 import PrintWorkScheduleContainer from '../workschedule/PrintWorkScheduleContainer';
+import SearchParticipants from '../search/SearchParticipants';
 import StatsContainer from '../stats/StatsContainer';
 import WorkScheduleContainer from '../workschedule/WorkScheduleContainer';
 import WorksiteProfile from '../worksites/WorksiteProfile';
@@ -115,6 +116,7 @@ class AppContainer extends Component<Props> {
       <Route path={Routes.PRINT_WORK_SCHEDULE} component={PrintWorkScheduleContainer} />
       <Route path={Routes.WORK_SCHEDULE} component={WorkScheduleContainer} />
       <Route path={Routes.WORKSITES} component={WorksitesContainer} />
+      <Route path={Routes.SEARCH} component={SearchParticipants} />
       <Route exact strict path={Routes.ADD_PARTICIPANT} component={AddParticipantContainer} />
       <Route path={Routes.PARTICIPANT_PROFILE} component={ParticipantProfileContainer} />
       <Route path={Routes.PARTICIPANTS} component={ParticipantsSearchContainer} />
@@ -173,6 +175,7 @@ class AppContainer extends Component<Props> {
                       <NavLink to={Routes.DASHBOARD} />
                       <NavLink to={Routes.DASHBOARD}>Dashboard</NavLink>
                       <NavLink to={Routes.PARTICIPANTS}>Participants</NavLink>
+                      <NavLink to={Routes.SEARCH}>Search</NavLink>
                       <NavLink to={Routes.WORKSITES}>Work Sites</NavLink>
                       <NavLink to={Routes.WORK_SCHEDULE}>Work Schedule</NavLink>
                       <NavLink to={Routes.STATS}>Stats</NavLink>

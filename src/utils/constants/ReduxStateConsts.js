@@ -184,6 +184,14 @@ export const PRINT_PARTICIPANT = {
   REQUEST_STATE: 'requestState',
 };
 
+/* Search */
+
+export const SEARCH = {
+  SEARCH: 'search',
+  SEARCHED_PARTICIPANTS: 'searchedParticipants',
+  TOTAL_HITS: 'totalHits',
+};
+
 /* Stats */
 export const STATS = {
   ACTIVE_ENROLLMENTS_BY_COURT_TYPE: 'activeEnrollmentsByCourtType',
