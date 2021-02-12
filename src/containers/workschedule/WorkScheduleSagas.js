@@ -82,7 +82,7 @@ function* getPersonCourtTypeWorker(action :SequenceAction) :Generator<*, *, *> {
 
   try {
 
-    const { appointmentEKIDByWorksitePlanEKID, worksitePlanEKIDs } = value;
+    const { worksitePlanEKIDs, worksitePlanEKIDByAppointmentEKID } = value;
     const app = yield select(getAppFromState);
     const worksitePlanESID :UUID = getEntitySetIdFromApp(app, WORKSITE_PLAN);
     const diversionPlanESID :UUID = getEntitySetIdFromApp(app, DIVERSION_PLAN);
@@ -109,7 +109,6 @@ function* getPersonCourtTypeWorker(action :SequenceAction) :Generator<*, *, *> {
       diversionPlanByWorksitePlanEKID.valueSeq().toList().forEach((ekid :string) => {
         diversionPlanEKIDs.push(ekid);
       });
-      const worksitePlanEKIDByDiversionPlanEKID :Map = diversionPlanByWorksitePlanEKID.flip();
 
       const courtCasesESID :UUID = getEntitySetIdFromApp(app, MANUAL_PRETRIAL_COURT_CASES);
       searchFilter = {
@@ -129,10 +128,11 @@ function* getPersonCourtTypeWorker(action :SequenceAction) :Generator<*, *, *> {
         courtCasesByDiversionPlanEKID = courtCasesByDiversionPlanEKID
           .map((neighborList :List) => neighborList.get(0))
           .map((neighbor :Map) => getNeighborDetails(neighbor));
-        courtCasesByDiversionPlanEKID.forEach((courtCase :Map, diversionPlanEKID :UUID) => {
+
+        worksitePlanEKIDByAppointmentEKID.forEach((worksitePlanEKID, appointmentEKID) => {
+          const diversionPlanEKID = diversionPlanByWorksitePlanEKID.get(worksitePlanEKID, '');
+          const courtCase = courtCasesByDiversionPlanEKID.get(diversionPlanEKID, '');
           const { [COURT_CASE_TYPE]: courtType } = getEntityProperties(courtCase, [COURT_CASE_TYPE]);
-          const worksitePlanEKID :UUID = worksitePlanEKIDByDiversionPlanEKID.get(diversionPlanEKID, '');
-          const appointmentEKID :UUID = appointmentEKIDByWorksitePlanEKID.get(worksitePlanEKID, '');
           courtTypeByAppointmentEKID = courtTypeByAppointmentEKID.set(appointmentEKID, courtType);
         });
       }
