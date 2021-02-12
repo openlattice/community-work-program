@@ -285,18 +285,16 @@ function* getWorksiteAndPersonNamesWorker(action :SequenceAction) :Generator<*, 
     }
     const worksitePlans :Map = fromJS(response.data);
     const setOfWorksitePlanEKIDs :Set<*> = new Set();
-    let appointmentWorksitePlanEKIDMap :Map = Map();
+    let worksitePlanEKIDByAppointmentEKID :Map = Map();
 
     worksitePlans.forEach((worksitePlanList :List, appointmentEKID :UUID) => {
       const worksitePlan :Map = getNeighborDetails(worksitePlanList.get(0));
       const worksitePlanEKID :UUID = getEntityKeyId(worksitePlan);
       setOfWorksitePlanEKIDs.add(worksitePlanEKID);
-      appointmentWorksitePlanEKIDMap = appointmentWorksitePlanEKIDMap.set(appointmentEKID, worksitePlanEKID);
+      worksitePlanEKIDByAppointmentEKID = worksitePlanEKIDByAppointmentEKID.set(appointmentEKID, worksitePlanEKID);
     });
     const worksitePlanEKIDs :UUID[] = Array.from(setOfWorksitePlanEKIDs);
-
-    const appointmentEKIDByWorksitePlanEKID :Map = appointmentWorksitePlanEKIDMap.flip();
-    yield call(getPersonCourtTypeWorker, getPersonCourtType({ appointmentEKIDByWorksitePlanEKID, worksitePlanEKIDs }));
+    yield call(getPersonCourtTypeWorker, getPersonCourtType({ worksitePlanEKIDs, worksitePlanEKIDByAppointmentEKID }));
 
     const worksiteESID :UUID = getEntitySetIdFromApp(app, WORKSITE);
     const peopleESID :UUID = getEntitySetIdFromApp(app, PEOPLE);
@@ -332,7 +330,7 @@ function* getWorksiteAndPersonNamesWorker(action :SequenceAction) :Generator<*, 
 
     yield call(getWorksitePlansByPersonWorker, getWorksitePlansByPerson({ personEKIDs }));
 
-    appointmentWorksitePlanEKIDMap.forEach((worksitePlanEKID :UUID, appointmentEKID :UUID) => {
+    worksitePlanEKIDByAppointmentEKID.forEach((worksitePlanEKID :UUID, appointmentEKID :UUID) => {
       const worksite :Map = worksitesByWorksitePlan.get(worksitePlanEKID);
       const { [NAME]: worksiteName } = getEntityProperties(worksite, [NAME]);
       worksiteNamesByAppointmentEKID = worksiteNamesByAppointmentEKID.set(appointmentEKID, worksiteName);
