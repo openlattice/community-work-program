@@ -7,7 +7,7 @@ import {
 } from '@redux-saga/core/effects';
 import { List, Map, fromJS } from 'immutable';
 import { SearchApiActions, SearchApiSagas } from 'lattice-sagas';
-import { LangUtils, Logger } from 'lattice-utils';
+import { DataUtils, LangUtils, Logger } from 'lattice-utils';
 import { DateTime } from 'luxon';
 import type { Saga } from '@redux-saga/core';
 import type { UUID } from 'lattice';
@@ -22,10 +22,11 @@ import {
 import { STATE } from '../../../utils/constants/ReduxStateConsts';
 import { SEARCH_PARTICIPANTS, searchParticipants } from '../actions';
 
+const { getEntityKeyId } = DataUtils;
 const { isNonEmptyString } = LangUtils;
-const { searchEntitySetData } = SearchApiActions;
-const { searchEntitySetDataWorker } = SearchApiSagas;
-const { PEOPLE } = APP_TYPE_FQNS;
+const { searchEntitySetData, searchEntityNeighborsWithFilter } = SearchApiActions;
+const { searchEntitySetDataWorker, searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
+const { DIVERSION_PLAN, PEOPLE } = APP_TYPE_FQNS;
 const { DOB, FIRST_NAME, LAST_NAME } = PROPERTY_TYPE_FQNS;
 
 const getAppFromState = (state) => state.get(STATE.APP, Map());
@@ -115,6 +116,24 @@ function* searchParticipantsWorker(action :SequenceAction) :Saga<*> {
       if (response.error) throw response.error;
       searchedParticipants = fromJS(response.data.hits);
       totalHits = response.data.numHits;
+
+      const diversionPlanESID :UUID = getEntitySetIdFromApp(app, DIVERSION_PLAN);
+      const participantEKIDs = searchedParticipants.map((participant) => getEntityKeyId(participant)).toJS();
+      const filter = {
+        entityKeyIds: participantEKIDs,
+        destinationEntitySetIds: [diversionPlanESID],
+        sourceEntitySetIds: [],
+      };
+      response = yield call(
+        searchEntityNeighborsWithFilterWorker,
+        searchEntityNeighborsWithFilter({ entitySetId: peopleESID, filter })
+      );
+      if (response.error) throw response.error;
+      const participantEKIDsWithDiversionPlans = fromJS(response.data).keySeq().toList();
+      searchedParticipants = searchedParticipants.filter((participant) => {
+        const participantEKID :?UUID = getEntityKeyId(participant);
+        return participantEKIDsWithDiversionPlans.includes(participantEKID);
+      });
     }
 
     yield put(searchParticipants.success(id, { searchedParticipants, totalHits }));
