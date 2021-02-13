@@ -118,10 +118,7 @@ function* searchParticipantsWorker(action :SequenceAction) :Saga<*> {
       totalHits = response.data.numHits;
 
       const diversionPlanESID :UUID = getEntitySetIdFromApp(app, DIVERSION_PLAN);
-      const participantEKIDs = [];
-      searchedParticipants.forEach((participant :Map) => {
-        participantEKIDs.push(getEntityKeyId(participant));
-      });
+      const participantEKIDs = searchedParticipants.map((participant) => getEntityKeyId(participant)).toJS();
       const filter = {
         entityKeyIds: participantEKIDs,
         destinationEntitySetIds: [diversionPlanESID],
