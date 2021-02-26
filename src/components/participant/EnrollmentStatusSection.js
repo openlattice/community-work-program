@@ -102,10 +102,8 @@ const EnrollmentStatusSection = ({
         </CardSegment>
       </Card>
       <AddNewPlanStatusModal
-          currentStatus={status}
-          isOpen={isChangeStatusModalVisible}
-          onClose={() => setChangeStatusModalVisibility(false)}
-          personName={firstName} />
+          isVisible={isChangeStatusModalVisible}
+          onClose={() => setChangeStatusModalVisibility(false)} />
     </SectionWrapper>
   );
 };
