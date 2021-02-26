@@ -19,7 +19,7 @@ import { PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames
 import { getEntityProperties } from '../../utils/DataUtils';
 import { EMPTY_FIELD } from '../participants/ParticipantsConstants';
 
-const { GREEN, NEUTRAL } = Colors;
+const { GREEN } = Colors;
 const { DATETIME_COMPLETED, DESCRIPTION, HOURS_WORKED } = PROPERTY_TYPE_FQNS;
 
 const successfulStatuses = [ENROLLMENT_STATUSES.COMPLETED, ENROLLMENT_STATUSES.SUCCESSFUL];
@@ -47,7 +47,7 @@ const BannerInnerWrapper = styled.div`
 `;
 
 const BannerText = styled.div`
-  color: ${(props) => (props.bannerMode === 'success' ? GREEN.G400 : NEUTRAL.N700)};
+  color: ${(props) => (props.bannerMode === 'success' ? GREEN.G400 : 'white')};
 `;
 
 const DataGridWithMargin = styled(DataGrid)`
