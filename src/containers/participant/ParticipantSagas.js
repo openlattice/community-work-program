@@ -1187,28 +1187,35 @@ function* getEnrollmentStatusWorker(action :SequenceAction) :Generator<*, *, *> 
         .map((enrollmentList :List) => enrollmentList.map((enrollment :Map) => getNeighborDetails(enrollment)));
 
       /*
-       * 3. Find most recent enrollment status, if any exist.
+       * 3. Find most recent enrollment status for the most recent diversion plan, if any enrollment statuses exist.
        */
       let mostRecentEnrollmentStatusesByDiversionPlan :Map = Map();
+      let firstEnrollmentStatusesByDiversionPlan :Map = Map();
       if (enrollmentStatusesByDiversionPlan.count() > 0) {
 
-        mostRecentEnrollmentStatusesByDiversionPlan = enrollmentStatusesByDiversionPlan
-          .map((statusList :List) => {
-            /* filter out enrollment statuses that have blank effective date values before sorting */
-            const statusesWithEffectiveDates :List = statusList
-              .filter((status :Map) => isDefined(status.get(EFFECTIVE_DATE)));
-            const sortedStatusList :List = sortEntitiesByDateProperty(statusesWithEffectiveDates, [EFFECTIVE_DATE]);
-            return sortedStatusList.last() || Map();
-          });
-        enrollmentStatus = sortEntitiesByDateProperty(
-          mostRecentEnrollmentStatusesByDiversionPlan, [EFFECTIVE_DATE]
+        enrollmentStatusesByDiversionPlan.forEach((statusList :List, diversionPlanEKID :UUID) => {
+          /* filter out enrollment statuses that have blank effective date values before sorting */
+          const statusesWithEffectiveDates :List = statusList
+            .filter((status :Map) => isDefined(status.get(EFFECTIVE_DATE)));
+          const sortedStatusList :List = sortEntitiesByDateProperty(statusesWithEffectiveDates, [EFFECTIVE_DATE]);
+          firstEnrollmentStatusesByDiversionPlan = firstEnrollmentStatusesByDiversionPlan
+            .set(diversionPlanEKID, sortedStatusList.first() || Map());
+          mostRecentEnrollmentStatusesByDiversionPlan = mostRecentEnrollmentStatusesByDiversionPlan
+            .set(diversionPlanEKID, sortedStatusList.last() || Map());
+        });
+
+        const mostRecentFirstEnrollmentStatus = sortEntitiesByDateProperty(
+          firstEnrollmentStatusesByDiversionPlan, [EFFECTIVE_DATE]
         ).last();
+        const diversionPlanEKIDForSelectedStatus = firstEnrollmentStatusesByDiversionPlan
+          .findKey((status :Map) => getEntityKeyId(status) === getEntityKeyId(mostRecentFirstEnrollmentStatus));
+        enrollmentStatus = mostRecentEnrollmentStatusesByDiversionPlan.get(diversionPlanEKIDForSelectedStatus, Map());
+
         /*
          * 4. Additionally, return relevant diversion plan.
          */
-        const diversionPlanEKID :UUID = mostRecentEnrollmentStatusesByDiversionPlan
-          .findKey((status :Map) => getEntityKeyId(status) === getEntityKeyId(enrollmentStatus));
-        diversionPlan = allDiversionPlans.find((plan :Map) => getEntityKeyId(plan) === diversionPlanEKID);
+        diversionPlan = allDiversionPlans
+          .find((plan :Map) => getEntityKeyId(plan) === diversionPlanEKIDForSelectedStatus);
       }
 
       // some integrated people won't have enrollment statuses but will have a diversion plan:
