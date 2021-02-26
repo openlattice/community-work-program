@@ -43,6 +43,8 @@ import {
 } from './ParticipantActions';
 
 import { PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { RESET_REQUEST_STATE } from '../../core/redux/actions';
+import { resetRequestStateReducer } from '../../core/redux/reducers';
 import {
   getEntityKeyId,
   getPropertyFqnFromEdm,
@@ -160,6 +162,10 @@ const INITIAL_STATE :Map<*, *> = fromJS({
 export default function participantReducer(state :Map<*, *> = INITIAL_STATE, action :SequenceAction) :Map<*, *> {
 
   switch (action.type) {
+
+    case RESET_REQUEST_STATE: {
+      return resetRequestStateReducer(state, action);
+    }
 
     case addNewDiversionPlanStatus.case(action.type): {
       return addNewDiversionPlanStatus.reducer(state, action, {
