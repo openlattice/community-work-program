@@ -64,14 +64,12 @@ const StatusText = styled.div`
 
 type Props = {
   enrollmentStatus :Map;
-  firstName :string;
   violations :List;
   warnings :List;
 };
 
 const EnrollmentStatusSection = ({
   enrollmentStatus,
-  firstName,
   violations,
   warnings,
 } :Props) => {
