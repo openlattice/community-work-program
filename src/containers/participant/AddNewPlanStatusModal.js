@@ -162,20 +162,11 @@ const AddNewPlanStatusModal = ({ isVisible, onClose } :Props) => {
         updatedFormData,
         [getPageSectionKey(1, 1), getEntityAddressKey(0, ENROLLMENT_STATUS, STATUS)]
       );
-      if (successfulStatuses.includes(status)) {
-        updatedFormData = setIn(
-          updatedFormData,
-          [getPageSectionKey(1, 1), getPageSectionKey(1, 2), getEntityAddressKey(0, PROGRAM_OUTCOME, COMPLETED)],
-          true
-        );
-      }
-      if (unsuccessfulStatuses.includes(status)) {
-        updatedFormData = setIn(
-          updatedFormData,
-          [getPageSectionKey(1, 1), getPageSectionKey(1, 2), getEntityAddressKey(0, PROGRAM_OUTCOME, COMPLETED)],
-          false
-        );
-      }
+      updatedFormData = setIn(
+        updatedFormData,
+        [getPageSectionKey(1, 1), getPageSectionKey(1, 2), getEntityAddressKey(0, PROGRAM_OUTCOME, COMPLETED)],
+        successfulStatuses.includes(status) || false
+      );
 
       // 4. work site statuses need to be updated to either completed or canceled:
       const hoursWorked = getIn(updatedFormData, hoursWorkedPath);
