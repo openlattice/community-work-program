@@ -432,10 +432,7 @@ class ParticipantProfile extends Component<Props, State> {
     }
 
     const personEKID :UUID = getEntityKeyId(participant);
-    const {
-      [FIRST_NAME]: firstName,
-      [PERSON_NOTES]: personNotes
-    } = getEntityProperties(participant, [FIRST_NAME, PERSON_NOTES]);
+    const { [PERSON_NOTES]: personNotes } = getEntityProperties(participant, [FIRST_NAME, PERSON_NOTES]);
     let { [STATUS]: status } = getEntityProperties(enrollmentStatus, [STATUS]);
     if (!isDefined(status)) status = ENROLLMENT_STATUSES.AWAITING_CHECKIN;
 
@@ -500,7 +497,6 @@ class ParticipantProfile extends Component<Props, State> {
               </EnrollmentControlsWrapper>
               <EnrollmentStatusSection
                   enrollmentStatus={enrollmentStatus}
-                  firstName={firstName}
                   violations={violations}
                   warnings={warnings} />
               <EnrollmentDates
