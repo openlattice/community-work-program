@@ -1132,7 +1132,7 @@ function* getEnrollmentStatusWorker(action :SequenceAction) :Generator<*, *, *> 
   let allDiversionPlans :List = List();
 
   try {
-    yield put(getEnrollmentStatus.request(id));
+    yield put(getEnrollmentStatus.request(id, value));
     const { personEKID } = value;
     if (value === null || value === undefined) {
       throw ERR_ACTION_VALUE_NOT_DEFINED;
