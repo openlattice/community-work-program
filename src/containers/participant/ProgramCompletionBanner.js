@@ -7,10 +7,10 @@ import { Map, OrderedMap, fromJS } from 'immutable';
 import {
   Banner,
   Button,
-  Colors,
   DataGrid,
   Label,
-  Modal
+  Modal,
+  Typography,
 } from 'lattice-ui-kit';
 import { DateTime } from 'luxon';
 
@@ -19,7 +19,6 @@ import { PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames
 import { getEntityProperties } from '../../utils/DataUtils';
 import { EMPTY_FIELD } from '../participants/ParticipantsConstants';
 
-const { GREEN, NEUTRAL } = Colors;
 const { DATETIME_COMPLETED, DESCRIPTION, HOURS_WORKED } = PROPERTY_TYPE_FQNS;
 
 const successfulStatuses = [ENROLLMENT_STATUSES.COMPLETED, ENROLLMENT_STATUSES.SUCCESSFUL];
@@ -42,12 +41,13 @@ const ModalInnerWrapper = styled.div`
 const BannerInnerWrapper = styled.div`
   align-items: center;
   align-self: center;
+  color: 'white';
   display: flex;
   justify-content: space-between;
-`;
 
-const BannerText = styled.div`
-  color: ${(props) => (props.bannerMode === 'success' ? GREEN.G400 : NEUTRAL.N700)};
+  button {
+    margin-left: 10px;
+  }
 `;
 
 const DataGridWithMargin = styled(DataGrid)`
@@ -140,9 +140,9 @@ class ProgramCompletionBanner extends Component<Props, State> {
       <BannerWrapper>
         <Banner isOpen mode={bannerMode}>
           <BannerInnerWrapper>
-            <BannerText bannerMode={bannerMode}>{ outcomeStatement }</BannerText>
-            <Button onClick={this.showOutcomeReportModal} variant="text">
-              <BannerText bannerMode={bannerMode}>View Outcome Report</BannerText>
+            <Typography>{ outcomeStatement }</Typography>
+            <Button color="inherit" onClick={this.showOutcomeReportModal} variant="text">
+              View Outcome Report
             </Button>
           </BannerInnerWrapper>
         </Banner>
