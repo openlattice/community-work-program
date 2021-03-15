@@ -120,15 +120,15 @@ const SearchParticipants = () => {
         <CardSegment>
           <SearchGrid>
             <span>
-              <Label>First name</Label>
-              <Input
-                  name="firstName"
-                  onChange={onInputChange} />
-            </span>
-            <span>
               <Label>Last name</Label>
               <Input
                   name="lastName"
+                  onChange={onInputChange} />
+            </span>
+            <span>
+              <Label>First name</Label>
+              <Input
+                  name="firstName"
                   onChange={onInputChange} />
             </span>
             <span>
