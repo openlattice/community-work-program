@@ -108,7 +108,7 @@ import { getInfractionTypes, getParticipantInfractions } from './infractions/Inf
 import { getInfractionTypesWorker, getParticipantInfractionsWorker } from './infractions/InfractionsSagas';
 
 import Logger from '../../utils/Logger';
-import { ASSOCIATION_DETAILS } from '../../core/edm/constants/DataModelConsts';
+import { ASSOCIATION_DETAILS, ENROLLMENT_STATUSES } from '../../core/edm/constants/DataModelConsts';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import {
   createOrReplaceAssociation,
@@ -164,6 +164,14 @@ const {
   REQUIRED_HOURS,
   STATUS,
 } = PROPERTY_TYPE_FQNS;
+
+const COMPLETION_STATUSES = [
+  ENROLLMENT_STATUSES.CLOSED,
+  ENROLLMENT_STATUSES.COMPLETED,
+  ENROLLMENT_STATUSES.REMOVED_NONCOMPLIANT,
+  ENROLLMENT_STATUSES.SUCCESSFUL,
+  ENROLLMENT_STATUSES.UNSUCCESSFUL,
+];
 
 const getAppFromState = (state) => state.get(STATE.APP, Map());
 const getEdmFromState = (state) => state.get(STATE.EDM, Map());
@@ -1200,8 +1208,18 @@ function* getEnrollmentStatusWorker(action :SequenceAction) :Generator<*, *, *> 
           const sortedStatusList :List = sortEntitiesByDateProperty(statusesWithEffectiveDates, [EFFECTIVE_DATE]);
           firstEnrollmentStatusesByDiversionPlan = firstEnrollmentStatusesByDiversionPlan
             .set(diversionPlanEKID, sortedStatusList.first() || Map());
+          /*
+           * For enrollment status display on profile, prioritize "completion" statuses.
+           * If user enters out-of-order dates for a series of statuses, the "most recent" status might not be
+           * the "completion" status. So the following lines address that scenario.
+           */
+          const completionStatus :?Map = sortedStatusList.find((statusInList :Map) => {
+            const { [STATUS]: status } = getEntityProperties(statusInList, [STATUS]);
+            return COMPLETION_STATUSES.includes(status);
+          });
+          const mostRecentStatus :Map = completionStatus || sortedStatusList.last() || Map();
           mostRecentEnrollmentStatusesByDiversionPlan = mostRecentEnrollmentStatusesByDiversionPlan
-            .set(diversionPlanEKID, sortedStatusList.last() || Map());
+            .set(diversionPlanEKID, mostRecentStatus);
         });
 
         const mostRecentFirstEnrollmentStatus = sortEntitiesByDateProperty(
