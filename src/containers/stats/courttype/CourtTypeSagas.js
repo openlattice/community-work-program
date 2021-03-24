@@ -28,11 +28,13 @@ import {
   GET_ENROLLMENTS_BY_COURT_TYPE,
   GET_HOURS_BY_COURT_TYPE,
   GET_MONTHLY_PARTICIPANTS_BY_COURT_TYPE,
+  GET_MONTHLY_PARTICIPANTS_WITH_NO_CHECK_INS,
   GET_TOTAL_PARTICIPANTS_BY_COURT_TYPE,
   downloadCourtTypeData,
   getEnrollmentsByCourtType,
   getHoursByCourtType,
   getMonthlyParticipantsByCourtType,
+  getMonthlyParticipantsWithNoCheckIns,
   getTotalParticipantsByCourtType,
 } from './CourtTypeActions';
 
@@ -527,6 +529,200 @@ function* getTotalParticipantsByCourtTypeWatcher() :Generator<*, *, *> {
   yield takeEvery(GET_TOTAL_PARTICIPANTS_BY_COURT_TYPE, getTotalParticipantsByCourtTypeWorker);
 }
 
+function* getMonthlyParticipantsWithNoCheckInsWorker(action :SequenceAction) :Generator<*, *, *> {
+  const { id, value } = action;
+  let monthlyParticipantsWithNoCheckInsByCourtType :Map = fromJS(courtTypeCountObj)
+    .asMutable()
+    .map(() => List());
+  let workerResponse = { data: {} };
+
+  try {
+    yield put(getMonthlyParticipantsWithNoCheckIns.request(id));
+    const { month, year } = value;
+
+    const app = yield select(getAppFromState);
+    const edm = yield select(getEdmFromState);
+    const enrollmentStatusESID :UUID = getEntitySetIdFromApp(app, ENROLLMENT_STATUS);
+    const effectiveDatePTID :UUID = getPropertyTypeIdFromEdm(edm, EFFECTIVE_DATE);
+
+    const searchOptions = {
+      entitySetIds: [enrollmentStatusESID],
+      start: 0,
+      maxHits: 10000,
+      constraints: []
+    };
+    const mmMonth :string = month < 10 ? `0${month}` : `${month}`;
+    const firstDateOfMonth = DateTime.fromISO(`${year}-${mmMonth}-01`);
+    const searchTerm = getUTCDateRangeSearchString(effectiveDatePTID, 'month', firstDateOfMonth);
+    searchOptions.constraints.push({
+      min: 1,
+      constraints: [{
+        searchTerm,
+        fuzzy: false
+      }]
+    });
+    let response = yield call(searchEntitySetDataWorker, searchEntitySetData(searchOptions));
+    if (response.error) throw response.error;
+    const enrollmentStatusesDuringMonth :Object[] = response.data.hits;
+    const enrollmentStatusEKIDs = enrollmentStatusesDuringMonth.map((status) => getEntityKeyId(status));
+
+    if (enrollmentStatusEKIDs.length) {
+
+      const diversionPlanESID :UUID = getEntitySetIdFromApp(app, DIVERSION_PLAN);
+      let searchFilter :Object = {
+        entityKeyIds: enrollmentStatusEKIDs,
+        destinationEntitySetIds: [diversionPlanESID],
+        sourceEntitySetIds: [diversionPlanESID],
+      };
+      response = yield call(
+        searchEntityNeighborsWithFilterWorker,
+        searchEntityNeighborsWithFilter({ entitySetId: enrollmentStatusESID, filter: searchFilter })
+      );
+      if (response.error) throw response.error;
+      const diversionPlanEKIDs :UUID[] = [];
+      fromJS(response.data).forEach((neighborsList :List) => {
+        const diversionPlanEKID :?UUID = getEntityKeyId(getNeighborDetails(neighborsList.get(0)));
+        if (diversionPlanEKID) diversionPlanEKIDs.push(diversionPlanEKID);
+      });
+
+      if (diversionPlanEKIDs.length) {
+
+        const worksitePlanESID :UUID = getEntitySetIdFromApp(app, WORKSITE_PLAN);
+        const peopleESID :UUID = getEntitySetIdFromApp(app, PEOPLE);
+        const courtCaseESID :UUID = getEntitySetIdFromApp(app, MANUAL_PRETRIAL_COURT_CASES);
+        searchFilter = {
+          entityKeyIds: diversionPlanEKIDs,
+          destinationEntitySetIds: [courtCaseESID],
+          sourceEntitySetIds: [peopleESID, worksitePlanESID],
+        };
+        response = yield call(
+          searchEntityNeighborsWithFilterWorker,
+          searchEntityNeighborsWithFilter({ entitySetId: diversionPlanESID, filter: searchFilter })
+        );
+        if (response.error) throw response.error;
+        let worksitePlanEKIDs :UUID[] = [];
+        let personNameByDiversionPlanEKID :Map = Map();
+        let courtCaseByDiversionPlanEKID :Map = Map();
+        const diversionPlanEKIDsWithNoWorksitePlans :UUID[] = [];
+        const diversionPlanEKIDByWorksitePlanEKID = Map().withMutations((mutator) => {
+          fromJS(response.data).forEach((neighborsList :List, diversionPlanEKID :UUID) => {
+            const person = neighborsList.find((neighbor) => getNeighborESID(neighbor) === peopleESID);
+            const personName = getPersonFullName(getNeighborDetails(person));
+            personNameByDiversionPlanEKID = personNameByDiversionPlanEKID.set(diversionPlanEKID, personName);
+
+            const worksitePlans = neighborsList
+              .filter((neighbor) => getNeighborESID(neighbor) === worksitePlanESID)
+              .map((neighbor) => getNeighborDetails(neighbor));
+            const worksitePlanEKIDsForDiversionPlan = worksitePlans
+              .map((worksitePlan) => getEntityKeyId(worksitePlan));
+            if (worksitePlans.isEmpty()) {
+              diversionPlanEKIDsWithNoWorksitePlans.push(diversionPlanEKID);
+            }
+            worksitePlanEKIDs = worksitePlanEKIDs.concat(worksitePlanEKIDsForDiversionPlan.toJS());
+            worksitePlanEKIDsForDiversionPlan.forEach((worksitePlanEKID :UUID) => {
+              mutator.set(worksitePlanEKID, diversionPlanEKID);
+            });
+
+            const courtCaseNeighbor = neighborsList.find((neighbor) => getNeighborESID(neighbor) === courtCaseESID);
+            courtCaseByDiversionPlanEKID = courtCaseByDiversionPlanEKID
+              .set(diversionPlanEKID, getNeighborDetails(courtCaseNeighbor));
+          });
+        });
+
+        diversionPlanEKIDsWithNoWorksitePlans.forEach((diversionPlanEKID :UUID) => {
+          monthlyParticipantsWithNoCheckInsByCourtType = updateMonthlyParticipantMap(
+            monthlyParticipantsWithNoCheckInsByCourtType,
+            diversionPlanEKID,
+            personNameByDiversionPlanEKID,
+            courtCaseByDiversionPlanEKID,
+          );
+        });
+
+        const appointmentESID :UUID = getEntitySetIdFromApp(app, APPOINTMENT);
+        searchFilter = {
+          entityKeyIds: worksitePlanEKIDs,
+          destinationEntitySetIds: [],
+          sourceEntitySetIds: [appointmentESID],
+        };
+        response = yield call(
+          searchEntityNeighborsWithFilterWorker,
+          searchEntityNeighborsWithFilter({ entitySetId: worksitePlanESID, filter: searchFilter })
+        );
+        if (response.error) throw response.error;
+        let appointmentEKIDs :UUID[] = [];
+        const worksitePlanEKIDByAppointmentEKID :Map = Map().withMutations((mutator) => {
+          fromJS(response.data).forEach((neighborsList :List, worksitePlanEKID :UUID) => {
+            const appointmentEKIDsForWorksitePlan = neighborsList
+              .map((neighbor) => getEntityKeyId(getNeighborDetails(neighbor)));
+            appointmentEKIDs = appointmentEKIDs.concat(appointmentEKIDsForWorksitePlan.toJS());
+            appointmentEKIDsForWorksitePlan.forEach((appointmentEKID :UUID) => {
+              mutator.set(appointmentEKID, worksitePlanEKID);
+            });
+          });
+        });
+
+        const worksitePlanEKIDsWithNoAppointments :UUID[] = worksitePlanEKIDs
+          .filter((worksitePlanEKID :UUID) => !fromJS(response.data).keySeq().toList()
+            .includes(worksitePlanEKID));
+
+        worksitePlanEKIDsWithNoAppointments.forEach((worksitePlanEKID :UUID) => {
+          const diversionPlanEKID :UUID = diversionPlanEKIDByWorksitePlanEKID.get(worksitePlanEKID, '');
+          monthlyParticipantsWithNoCheckInsByCourtType = updateMonthlyParticipantMap(
+            monthlyParticipantsWithNoCheckInsByCourtType,
+            diversionPlanEKID,
+            personNameByDiversionPlanEKID,
+            courtCaseByDiversionPlanEKID,
+          );
+        });
+
+        const checkInsESID :UUID = getEntitySetIdFromApp(app, CHECK_INS);
+        searchFilter = {
+          entityKeyIds: appointmentEKIDs,
+          destinationEntitySetIds: [],
+          sourceEntitySetIds: [checkInsESID],
+        };
+        response = yield call(
+          searchEntityNeighborsWithFilterWorker,
+          searchEntityNeighborsWithFilter({ entitySetId: appointmentESID, filter: searchFilter })
+        );
+        if (response.error) throw response.error;
+        const checkInNeighborsByAppointmentEKID = fromJS(response.data);
+
+        const appointmentEKIDsWithNoCheckIns :UUID[] = appointmentEKIDs
+          .filter((appointmentEKID) => !checkInNeighborsByAppointmentEKID.keySeq().toList().includes(appointmentEKID));
+
+        appointmentEKIDsWithNoCheckIns.forEach((appointmentEKID :UUID) => {
+          const worksitePlanEKID :UUID = worksitePlanEKIDByAppointmentEKID.get(appointmentEKID, '');
+          const diversionPlanEKID :UUID = diversionPlanEKIDByWorksitePlanEKID.get(worksitePlanEKID, '');
+          monthlyParticipantsWithNoCheckInsByCourtType = updateMonthlyParticipantMap(
+            monthlyParticipantsWithNoCheckInsByCourtType,
+            diversionPlanEKID,
+            personNameByDiversionPlanEKID,
+            courtCaseByDiversionPlanEKID,
+          );
+        });
+      }
+      monthlyParticipantsWithNoCheckInsByCourtType = monthlyParticipantsWithNoCheckInsByCourtType.asImmutable();
+      workerResponse = { data: monthlyParticipantsWithNoCheckInsByCourtType };
+    }
+    yield put(getMonthlyParticipantsWithNoCheckIns.success(id, monthlyParticipantsWithNoCheckInsByCourtType));
+  }
+  catch (error) {
+    workerResponse = { error };
+    LOG.error(action.type, error);
+    yield put(getMonthlyParticipantsWithNoCheckIns.failure(id, error));
+  }
+  finally {
+    yield put(getMonthlyParticipantsWithNoCheckIns.finally(id));
+  }
+  return workerResponse;
+}
+
+function* getMonthlyParticipantsWithNoCheckInsWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(GET_MONTHLY_PARTICIPANTS_WITH_NO_CHECK_INS, getMonthlyParticipantsWithNoCheckInsWorker);
+}
+
 /*
  *
  * CourtTypeActions.getMonthlyParticipantsByCourtType()
@@ -910,6 +1106,8 @@ export {
   getHoursByCourtTypeWorker,
   getMonthlyParticipantsByCourtTypeWatcher,
   getMonthlyParticipantsByCourtTypeWorker,
+  getMonthlyParticipantsWithNoCheckInsWatcher,
+  getMonthlyParticipantsWithNoCheckInsWorker,
   getTotalParticipantsByCourtTypeWatcher,
   getTotalParticipantsByCourtTypeWorker,
 };
