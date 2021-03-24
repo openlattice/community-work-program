@@ -707,6 +707,7 @@ function* getEnrollmentsByCourtTypeWorker(action :SequenceAction) :Generator<*, 
   if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
   let response :Object = {};
   let activeEnrollmentsByCourtType :Map = fromJS(courtTypeCountObj).asMutable();
+  let becameActiveEnrollmentsByCourtType :Map = fromJS(courtTypeCountObj).asMutable();
   let closedEnrollmentsByCourtType :Map = fromJS(courtTypeCountObj).asMutable();
   let jobSearchEnrollmentsByCourtType :Map = fromJS(courtTypeCountObj).asMutable();
   let successfulEnrollmentsByCourtType :Map = fromJS(courtTypeCountObj).asMutable();
@@ -805,11 +806,31 @@ function* getEnrollmentsByCourtTypeWorker(action :SequenceAction) :Generator<*, 
           */
           enrollmentStatusesForDiversionPlan.forEach((enrollmentStatusEKID :UUID) => {
             const enrollmentStatus :Map = enrollmentStatusByEKID.get(enrollmentStatusEKID, Map());
-            const { [STATUS]: status } = getEntityProperties(enrollmentStatus, [STATUS]);
+            const {
+              [EFFECTIVE_DATE]: effectiveDateTime,
+              [STATUS]: status
+            } = getEntityProperties(enrollmentStatus, [EFFECTIVE_DATE, STATUS]);
 
             if (ACTIVE_STATUSES.includes(status)) {
               const count :number = activeEnrollmentsByCourtType.get(courtType, 0);
               activeEnrollmentsByCourtType = activeEnrollmentsByCourtType.set(courtType, count + 1);
+
+              if (status === ENROLLMENT_STATUSES.ACTIVE) {
+                const effectiveDateAsDateTime = DateTime.fromISO(effectiveDateTime);
+                const becameActiveCount :number = becameActiveEnrollmentsByCourtType.get(courtType, 0);
+                if (timeFrame === MONTHLY) {
+                  if (month === effectiveDateAsDateTime.month && year === effectiveDateAsDateTime.year) {
+                    becameActiveEnrollmentsByCourtType = becameActiveEnrollmentsByCourtType
+                      .set(courtType, becameActiveCount + 1);
+                  }
+                }
+                else if (timeFrame === YEARLY) {
+                  if (year === effectiveDateAsDateTime.year) {
+                    becameActiveEnrollmentsByCourtType = becameActiveEnrollmentsByCourtType
+                      .set(courtType, becameActiveCount + 1);
+                  }
+                }
+              }
             }
             if (status === ENROLLMENT_STATUSES.JOB_SEARCH) {
               const count :number = jobSearchEnrollmentsByCourtType.get(courtType, 0);
@@ -837,6 +858,7 @@ function* getEnrollmentsByCourtTypeWorker(action :SequenceAction) :Generator<*, 
     }
 
     activeEnrollmentsByCourtType = activeEnrollmentsByCourtType.asImmutable();
+    becameActiveEnrollmentsByCourtType = becameActiveEnrollmentsByCourtType.asImmutable();
     closedEnrollmentsByCourtType = closedEnrollmentsByCourtType.asImmutable();
     jobSearchEnrollmentsByCourtType = jobSearchEnrollmentsByCourtType.asImmutable();
     successfulEnrollmentsByCourtType = successfulEnrollmentsByCourtType.asImmutable();
@@ -844,6 +866,7 @@ function* getEnrollmentsByCourtTypeWorker(action :SequenceAction) :Generator<*, 
 
     yield put(getEnrollmentsByCourtType.success(id, {
       activeEnrollmentsByCourtType,
+      becameActiveEnrollmentsByCourtType,
       closedEnrollmentsByCourtType,
       jobSearchEnrollmentsByCourtType,
       successfulEnrollmentsByCourtType,
