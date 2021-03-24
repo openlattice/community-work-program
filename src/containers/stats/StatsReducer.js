@@ -5,6 +5,14 @@ import type { SequenceAction } from 'redux-reqseq';
 
 import { GET_STATS_DATA, getStatsData } from './StatsActions';
 import {
+  DOWNLOAD_CHARGES_STATS,
+  GET_CHARGES_STATS,
+  GET_INDIVIDUAL_CHARGE_TYPE_STATS,
+  downloadChargesStats,
+  getChargesStats,
+  getIndividualChargeTypeStats,
+} from './charges/ChargesStatsActions';
+import {
   DOWNLOAD_COURT_TYPE_DATA,
   GET_ENROLLMENTS_BY_COURT_TYPE,
   GET_HOURS_BY_COURT_TYPE,
@@ -17,6 +25,14 @@ import {
   getTotalParticipantsByCourtType,
 } from './courttype/CourtTypeActions';
 import {
+  DOWNLOAD_DEMOGRAPHICS_DATA,
+  GET_MONTHLY_DEMOGRAPHICS,
+  GET_PARTICIPANTS_DEMOGRAPHICS,
+  downloadDemographicsData,
+  getMonthlyDemographics,
+  getParticipantsDemographics,
+} from './demographics/DemographicsActions';
+import {
   DOWNLOAD_WORKSITE_STATS_DATA,
   GET_HOURS_WORKED_BY_WORKSITE,
   GET_MONTHLY_PARTICIPANTS_BY_WORKSITE,
@@ -26,28 +42,14 @@ import {
   getMonthlyParticipantsByWorksite,
   getWorksiteStatsData,
 } from './worksite/WorksiteStatsActions';
-import {
-  DOWNLOAD_DEMOGRAPHICS_DATA,
-  GET_MONTHLY_DEMOGRAPHICS,
-  GET_PARTICIPANTS_DEMOGRAPHICS,
-  downloadDemographicsData,
-  getMonthlyDemographics,
-  getParticipantsDemographics,
-} from './demographics/DemographicsActions';
-import {
-  DOWNLOAD_CHARGES_STATS,
-  GET_CHARGES_STATS,
-  GET_INDIVIDUAL_CHARGE_TYPE_STATS,
-  downloadChargesStats,
-  getChargesStats,
-  getIndividualChargeTypeStats,
-} from './charges/ChargesStatsActions';
+
 import { SHARED, STATS } from '../../utils/constants/ReduxStateConsts';
 
 const { ACTIONS, REQUEST_STATE } = SHARED;
 const {
   ACTIVE_ENROLLMENTS_BY_COURT_TYPE,
   ARREST_CHARGE_TABLE_DATA,
+  BECAME_ACTIVE_ENROLLMENTS_BY_COURT_TYPE,
   CLOSED_ENROLLMENTS_BY_COURT_TYPE,
   COURT_CHARGE_TABLE_DATA,
   ETHNICITY_DEMOGRAPHICS,
@@ -122,6 +124,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   },
   [ACTIVE_ENROLLMENTS_BY_COURT_TYPE]: Map(),
   [ARREST_CHARGE_TABLE_DATA]: List(),
+  [BECAME_ACTIVE_ENROLLMENTS_BY_COURT_TYPE]: Map(),
   [CLOSED_ENROLLMENTS_BY_COURT_TYPE]: Map(),
   [COURT_CHARGE_TABLE_DATA]: List(),
   [HOURS_BY_COURT_TYPE]: Map(),
@@ -217,6 +220,7 @@ export default function statsReducer(state :Map<*, *> = INITIAL_STATE, action :O
           const { value } = seqAction;
           const {
             activeEnrollmentsByCourtType,
+            becameActiveEnrollmentsByCourtType,
             closedEnrollmentsByCourtType,
             jobSearchEnrollmentsByCourtType,
             successfulEnrollmentsByCourtType,
@@ -224,6 +228,7 @@ export default function statsReducer(state :Map<*, *> = INITIAL_STATE, action :O
           } = value;
           return state
             .set(ACTIVE_ENROLLMENTS_BY_COURT_TYPE, activeEnrollmentsByCourtType)
+            .set(BECAME_ACTIVE_ENROLLMENTS_BY_COURT_TYPE, becameActiveEnrollmentsByCourtType)
             .set(CLOSED_ENROLLMENTS_BY_COURT_TYPE, closedEnrollmentsByCourtType)
             .set(JOB_SEARCH_ENROLLMENTS_BY_COURT_TYPE, jobSearchEnrollmentsByCourtType)
             .set(SUCCESSFUL_ENROLLMENTS_BY_COURT_TYPE, successfulEnrollmentsByCourtType)
