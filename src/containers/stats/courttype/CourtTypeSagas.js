@@ -84,6 +84,33 @@ const getEdmFromState = (state) => state.get(STATE.EDM, Map());
 const LOG = new Logger('CourtTypeSagas');
 
 /*
+ * updateMonthlyParticipantMap
+ */
+
+const updateMonthlyParticipantMap = (
+  participantsAndHoursByCourtType :Map,
+  diversionPlanEKID :UUID,
+  personNameByDiversionPlanEKID :Map,
+  courtCaseByDiversionPlanEKID :Map,
+) => {
+
+  let updatedMap :Map = participantsAndHoursByCourtType;
+  const personName = personNameByDiversionPlanEKID.get(diversionPlanEKID, '');
+  const courtCase = courtCaseByDiversionPlanEKID.get(diversionPlanEKID, Map());
+  const { [COURT_CASE_TYPE]: courtType } = getEntityProperties(courtCase, [COURT_CASE_TYPE]);
+  if (isDefined(updatedMap.get(courtType))) {
+    let listOfParticipantsAndTheirHours :List = updatedMap
+      .get(courtType, List());
+    if (!listOfParticipantsAndTheirHours.find((participantMap :Map) => participantMap
+      .get('personName') === personName)) {
+      listOfParticipantsAndTheirHours = listOfParticipantsAndTheirHours.push(fromJS({ personName, hours: 0 }));
+    }
+    updatedMap = updatedMap.set(courtType, listOfParticipantsAndTheirHours);
+  }
+  return updatedMap;
+};
+
+/*
  *
  * CourtTypeActions.downloadCourtTypeData()
  *
