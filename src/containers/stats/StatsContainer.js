@@ -54,6 +54,7 @@ const {
 } = Colors;
 const {
   ACTIVE_ENROLLMENTS_BY_COURT_TYPE,
+  BECAME_ACTIVE_ENROLLMENTS_BY_COURT_TYPE,
   CLOSED_ENROLLMENTS_BY_COURT_TYPE,
   JOB_SEARCH_ENROLLMENTS_BY_COURT_TYPE,
   SUCCESSFUL_ENROLLMENTS_BY_COURT_TYPE,
@@ -186,6 +187,7 @@ type Props = {
     getWorksiteStatsData :RequestSequence;
   };
   activeEnrollmentsByCourtType :Map;
+  becameActiveEnrollmentsByCourtType :Map;
   closedEnrollmentsByCourtType :Map;
   entitySetIds :Map;
   jobSearchEnrollmentsByCourtType :Map;
@@ -208,6 +210,7 @@ type Props = {
 const StatsContainer = ({
   actions,
   activeEnrollmentsByCourtType,
+  becameActiveEnrollmentsByCourtType,
   closedEnrollmentsByCourtType,
   entitySetIds,
   jobSearchEnrollmentsByCourtType,
@@ -239,6 +242,7 @@ const StatsContainer = ({
   const courtTypeGraphsComponent = (
     <CourtTypeGraphs
         activeEnrollmentsByCourtType={activeEnrollmentsByCourtType}
+        becameActiveEnrollmentsByCourtType={becameActiveEnrollmentsByCourtType}
         closedEnrollmentsByCourtType={closedEnrollmentsByCourtType}
         dataIsLoading={dataIsLoading}
         jobSearchEnrollmentsByCourtType={jobSearchEnrollmentsByCourtType}
@@ -369,6 +373,7 @@ const mapStateToProps = (state :Map) => {
   const selectedOrgId :string = app.get(SELECTED_ORG_ID);
   return {
     [ACTIVE_ENROLLMENTS_BY_COURT_TYPE]: stats.get(ACTIVE_ENROLLMENTS_BY_COURT_TYPE),
+    [BECAME_ACTIVE_ENROLLMENTS_BY_COURT_TYPE]: stats.get(BECAME_ACTIVE_ENROLLMENTS_BY_COURT_TYPE),
     [CLOSED_ENROLLMENTS_BY_COURT_TYPE]: stats.get(CLOSED_ENROLLMENTS_BY_COURT_TYPE),
     [JOB_SEARCH_ENROLLMENTS_BY_COURT_TYPE]: stats.get(JOB_SEARCH_ENROLLMENTS_BY_COURT_TYPE),
     [SUCCESSFUL_ENROLLMENTS_BY_COURT_TYPE]: stats.get(SUCCESSFUL_ENROLLMENTS_BY_COURT_TYPE),
