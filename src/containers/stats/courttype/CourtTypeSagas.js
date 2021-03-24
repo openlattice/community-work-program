@@ -21,6 +21,7 @@ import {
 import { DataUtils } from 'lattice-utils';
 import { DateTime } from 'luxon';
 import type { UUID } from 'lattice';
+import type { WorkerResponse } from 'lattice-sagas';
 import type { SequenceAction } from 'redux-reqseq';
 
 import {
@@ -534,7 +535,7 @@ function* getMonthlyParticipantsWithNoCheckInsWorker(action :SequenceAction) :Ge
   let monthlyParticipantsWithNoCheckInsByCourtType :Map = fromJS(courtTypeCountObj)
     .asMutable()
     .map(() => List());
-  let workerResponse = { data: {} };
+  let workerResponse :WorkerResponse = { data: {} };
 
   try {
     yield put(getMonthlyParticipantsWithNoCheckIns.request(id));
