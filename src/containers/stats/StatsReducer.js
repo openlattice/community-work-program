@@ -5,17 +5,35 @@ import type { SequenceAction } from 'redux-reqseq';
 
 import { GET_STATS_DATA, getStatsData } from './StatsActions';
 import {
+  DOWNLOAD_CHARGES_STATS,
+  GET_CHARGES_STATS,
+  GET_INDIVIDUAL_CHARGE_TYPE_STATS,
+  downloadChargesStats,
+  getChargesStats,
+  getIndividualChargeTypeStats,
+} from './charges/ChargesStatsActions';
+import {
   DOWNLOAD_COURT_TYPE_DATA,
   GET_ENROLLMENTS_BY_COURT_TYPE,
   GET_HOURS_BY_COURT_TYPE,
   GET_MONTHLY_PARTICIPANTS_BY_COURT_TYPE,
+  GET_MONTHLY_PARTICIPANTS_WITH_NO_CHECK_INS,
   GET_TOTAL_PARTICIPANTS_BY_COURT_TYPE,
   downloadCourtTypeData,
   getEnrollmentsByCourtType,
   getHoursByCourtType,
   getMonthlyParticipantsByCourtType,
+  getMonthlyParticipantsWithNoCheckIns,
   getTotalParticipantsByCourtType,
 } from './courttype/CourtTypeActions';
+import {
+  DOWNLOAD_DEMOGRAPHICS_DATA,
+  GET_MONTHLY_DEMOGRAPHICS,
+  GET_PARTICIPANTS_DEMOGRAPHICS,
+  downloadDemographicsData,
+  getMonthlyDemographics,
+  getParticipantsDemographics,
+} from './demographics/DemographicsActions';
 import {
   DOWNLOAD_WORKSITE_STATS_DATA,
   GET_HOURS_WORKED_BY_WORKSITE,
@@ -26,22 +44,7 @@ import {
   getMonthlyParticipantsByWorksite,
   getWorksiteStatsData,
 } from './worksite/WorksiteStatsActions';
-import {
-  DOWNLOAD_DEMOGRAPHICS_DATA,
-  GET_MONTHLY_DEMOGRAPHICS,
-  GET_PARTICIPANTS_DEMOGRAPHICS,
-  downloadDemographicsData,
-  getMonthlyDemographics,
-  getParticipantsDemographics,
-} from './demographics/DemographicsActions';
-import {
-  DOWNLOAD_CHARGES_STATS,
-  GET_CHARGES_STATS,
-  GET_INDIVIDUAL_CHARGE_TYPE_STATS,
-  downloadChargesStats,
-  getChargesStats,
-  getIndividualChargeTypeStats,
-} from './charges/ChargesStatsActions';
+
 import { SHARED, STATS } from '../../utils/constants/ReduxStateConsts';
 
 const { ACTIONS, REQUEST_STATE } = SHARED;
@@ -350,6 +353,19 @@ export default function statsReducer(state :Map<*, *> = INITIAL_STATE, action :O
         FAILURE: () => state
           .setIn([ACTIONS, GET_MONTHLY_PARTICIPANTS_BY_WORKSITE, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, GET_MONTHLY_PARTICIPANTS_BY_WORKSITE, action.id]),
+      });
+    }
+
+    case getMonthlyParticipantsWithNoCheckIns.case(action.type): {
+      return getMonthlyParticipantsWithNoCheckIns.reducer(state, action, {
+        REQUEST: () => state
+          .setIn([ACTIONS, GET_MONTHLY_PARTICIPANTS_WITH_NO_CHECK_INS, action.id], action)
+          .setIn([ACTIONS, GET_MONTHLY_PARTICIPANTS_WITH_NO_CHECK_INS, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => state
+          .setIn([ACTIONS, GET_MONTHLY_PARTICIPANTS_WITH_NO_CHECK_INS, REQUEST_STATE], RequestStates.SUCCESS),
+        FAILURE: () => state
+          .setIn([ACTIONS, GET_MONTHLY_PARTICIPANTS_WITH_NO_CHECK_INS, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, GET_MONTHLY_PARTICIPANTS_WITH_NO_CHECK_INS, action.id]),
       });
     }
 
