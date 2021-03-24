@@ -909,6 +909,15 @@ function* getMonthlyParticipantsByCourtTypeWorker(action :SequenceAction) :Gener
           }
         });
       });
+
+      response = yield call(
+        getMonthlyParticipantsWithNoCheckInsWorker,
+        getMonthlyParticipantsWithNoCheckIns({ month, year })
+      );
+      if (response.error) throw response.error;
+      const monthlyParticipantsWithNoCheckInsByCourtType :Map = response.data;
+      monthlyParticipantsByCourtType = monthlyParticipantsWithNoCheckInsByCourtType
+        .mergeDeep(monthlyParticipantsByCourtType);
     }
 
     monthlyParticipantsByCourtType = monthlyParticipantsByCourtType.asImmutable();
