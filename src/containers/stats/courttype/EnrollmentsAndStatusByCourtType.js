@@ -112,6 +112,7 @@ type Props = {
     getStatsData :RequestSequence;
   };
   activeEnrollmentsByCourtType :Map;
+  becameActiveEnrollmentsByCourtType :Map,
   closedEnrollmentsByCourtType :Map;
   jobSearchEnrollmentsByCourtType :Map;
   requestStates :{
@@ -127,6 +128,7 @@ type Props = {
 const EnrollmentsAndStatusByCourtType = ({
   actions,
   activeEnrollmentsByCourtType,
+  becameActiveEnrollmentsByCourtType,
   closedEnrollmentsByCourtType,
   jobSearchEnrollmentsByCourtType,
   requestStates,
@@ -193,19 +195,25 @@ const EnrollmentsAndStatusByCourtType = ({
     const courtType :string = v.y;
     if (!isDefined(courtType)) return [];
     const active = activeEnrollmentsByCourtType.get(courtType, 0);
+    const becameActive = becameActiveEnrollmentsByCourtType.get(courtType, 0);
     const closed = closedEnrollmentsByCourtType.get(courtType, 0);
     const jobSearch = jobSearchEnrollmentsByCourtType.get(courtType, 0);
     const successful = successfulEnrollmentsByCourtType.get(courtType, 0);
     const unsuccessful = unsuccessfulEnrollmentsByCourtType.get(courtType, 0);
-    return [
+    const statusCounts = [
       { title: courtType, value: '' },
       { title: 'successful', value: successful },
       { title: 'unsuccessful', value: unsuccessful },
       { title: 'closed', value: closed },
       { title: 'active', value: active },
+      { title: '[became active]', value: becameActive },
       { title: 'job search', value: jobSearch },
       { title: 'total', value: active + closed + jobSearch + successful + unsuccessful },
     ];
+    if (timeFrame.value === ALL_TIME) {
+      statusCounts.splice(5, 1);
+    }
+    return statusCounts;
   };
   return (
     <Card>

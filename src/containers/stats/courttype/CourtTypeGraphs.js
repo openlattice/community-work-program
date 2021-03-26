@@ -1,5 +1,6 @@
 // @flow
 import React from 'react';
+
 import { Map } from 'immutable';
 import { CardStack } from 'lattice-ui-kit';
 
@@ -10,6 +11,7 @@ import ParticipantsByCourtType from './ParticipantsByCourtType';
 
 type Props = {
   activeEnrollmentsByCourtType :Map;
+  becameActiveEnrollmentsByCourtType :Map,
   closedEnrollmentsByCourtType :Map;
   jobSearchEnrollmentsByCourtType :Map;
   successfulEnrollmentsByCourtType :Map;
@@ -18,6 +20,7 @@ type Props = {
 
 const CourtTypeGraphs = ({
   activeEnrollmentsByCourtType,
+  becameActiveEnrollmentsByCourtType,
   closedEnrollmentsByCourtType,
   jobSearchEnrollmentsByCourtType,
   successfulEnrollmentsByCourtType,
@@ -27,6 +30,7 @@ const CourtTypeGraphs = ({
   <CardStack>
     <EnrollmentsAndStatusByCourtType
         activeEnrollmentsByCourtType={activeEnrollmentsByCourtType}
+        becameActiveEnrollmentsByCourtType={becameActiveEnrollmentsByCourtType}
         closedEnrollmentsByCourtType={closedEnrollmentsByCourtType}
         jobSearchEnrollmentsByCourtType={jobSearchEnrollmentsByCourtType}
         successfulEnrollmentsByCourtType={successfulEnrollmentsByCourtType}

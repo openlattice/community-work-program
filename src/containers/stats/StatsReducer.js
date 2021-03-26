@@ -51,6 +51,7 @@ const { ACTIONS, REQUEST_STATE } = SHARED;
 const {
   ACTIVE_ENROLLMENTS_BY_COURT_TYPE,
   ARREST_CHARGE_TABLE_DATA,
+  BECAME_ACTIVE_ENROLLMENTS_BY_COURT_TYPE,
   CLOSED_ENROLLMENTS_BY_COURT_TYPE,
   COURT_CHARGE_TABLE_DATA,
   ETHNICITY_DEMOGRAPHICS,
@@ -125,6 +126,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   },
   [ACTIVE_ENROLLMENTS_BY_COURT_TYPE]: Map(),
   [ARREST_CHARGE_TABLE_DATA]: List(),
+  [BECAME_ACTIVE_ENROLLMENTS_BY_COURT_TYPE]: Map(),
   [CLOSED_ENROLLMENTS_BY_COURT_TYPE]: Map(),
   [COURT_CHARGE_TABLE_DATA]: List(),
   [HOURS_BY_COURT_TYPE]: Map(),
@@ -220,6 +222,7 @@ export default function statsReducer(state :Map<*, *> = INITIAL_STATE, action :O
           const { value } = seqAction;
           const {
             activeEnrollmentsByCourtType,
+            becameActiveEnrollmentsByCourtType,
             closedEnrollmentsByCourtType,
             jobSearchEnrollmentsByCourtType,
             successfulEnrollmentsByCourtType,
@@ -227,6 +230,7 @@ export default function statsReducer(state :Map<*, *> = INITIAL_STATE, action :O
           } = value;
           return state
             .set(ACTIVE_ENROLLMENTS_BY_COURT_TYPE, activeEnrollmentsByCourtType)
+            .set(BECAME_ACTIVE_ENROLLMENTS_BY_COURT_TYPE, becameActiveEnrollmentsByCourtType)
             .set(CLOSED_ENROLLMENTS_BY_COURT_TYPE, closedEnrollmentsByCourtType)
             .set(JOB_SEARCH_ENROLLMENTS_BY_COURT_TYPE, jobSearchEnrollmentsByCourtType)
             .set(SUCCESSFUL_ENROLLMENTS_BY_COURT_TYPE, successfulEnrollmentsByCourtType)
