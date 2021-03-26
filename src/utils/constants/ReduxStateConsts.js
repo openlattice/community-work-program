@@ -196,6 +196,7 @@ export const SEARCH = {
 export const STATS = {
   ACTIVE_ENROLLMENTS_BY_COURT_TYPE: 'activeEnrollmentsByCourtType',
   ARREST_CHARGE_TABLE_DATA: 'arrestChargeTableData',
+  BECAME_ACTIVE_ENROLLMENTS_BY_COURT_TYPE: 'becameActiveEnrollmentsByCourtType',
   CLOSED_ENROLLMENTS_BY_COURT_TYPE: 'closedEnrollmentsByCourtType',
   COURT_CHARGE_TABLE_DATA: 'courtChargeTableData',
   ETHNICITY_DEMOGRAPHICS: 'ethnicityDemographics',
