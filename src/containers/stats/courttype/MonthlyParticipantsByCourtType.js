@@ -13,6 +13,7 @@ import {
   IconButton,
   Select,
   Spinner,
+  Typography,
 } from 'lattice-ui-kit';
 import { DateTime } from 'luxon';
 import { connect } from 'react-redux';
@@ -132,7 +133,7 @@ const MonthlyParticipantsByCourtTypeList = ({ actions, monthlyParticipantsByCour
                 return (
                   <ExpansionPanel key={courtTypeName}>
                     <StyledExpansionPanelSummary expandIcon={expandIcon}>
-                      <div>{ title }</div>
+                      <Typography variant="body2">{ title }</Typography>
                     </StyledExpansionPanelSummary>
                     <ExpansionPanelDetails>
                       <CardSegment padding="0">
