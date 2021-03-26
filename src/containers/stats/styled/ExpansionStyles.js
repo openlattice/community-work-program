@@ -11,7 +11,6 @@ const { NEUTRAL } = Colors;
 const expandIcon = <FontAwesomeIcon color={NEUTRAL.N900} icon={faChevronDown} size="xs" />;
 
 const StyledExpansionPanelSummary = styled(ExpansionPanelSummary)`
-
   && {
     background-color: white;
   }
