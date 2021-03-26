@@ -58,8 +58,9 @@ class EditPlanNotesForm extends Component<Props, State> {
   constructor(props :Props) {
     super(props);
 
+    const { [PERSON_NOTES]: notes } = getEntityProperties(props.person, [PERSON_NOTES]);
     this.state = {
-      newNotes: '',
+      newNotes: notes,
     };
   }
 

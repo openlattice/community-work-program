@@ -58,8 +58,10 @@ class EditPlanNotesForm extends Component<Props, State> {
   constructor(props :Props) {
     super(props);
 
+    const { [NOTES]: notes } = getEntityProperties(props.diversionPlan, [NOTES]);
+
     this.state = {
-      newNotes: '',
+      newNotes: notes,
     };
   }
 
