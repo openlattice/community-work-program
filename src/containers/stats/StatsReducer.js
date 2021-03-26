@@ -17,11 +17,13 @@ import {
   GET_ENROLLMENTS_BY_COURT_TYPE,
   GET_HOURS_BY_COURT_TYPE,
   GET_MONTHLY_PARTICIPANTS_BY_COURT_TYPE,
+  GET_MONTHLY_PARTICIPANTS_WITH_NO_CHECK_INS,
   GET_TOTAL_PARTICIPANTS_BY_COURT_TYPE,
   downloadCourtTypeData,
   getEnrollmentsByCourtType,
   getHoursByCourtType,
   getMonthlyParticipantsByCourtType,
+  getMonthlyParticipantsWithNoCheckIns,
   getTotalParticipantsByCourtType,
 } from './courttype/CourtTypeActions';
 import {
@@ -355,6 +357,19 @@ export default function statsReducer(state :Map<*, *> = INITIAL_STATE, action :O
         FAILURE: () => state
           .setIn([ACTIONS, GET_MONTHLY_PARTICIPANTS_BY_WORKSITE, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, GET_MONTHLY_PARTICIPANTS_BY_WORKSITE, action.id]),
+      });
+    }
+
+    case getMonthlyParticipantsWithNoCheckIns.case(action.type): {
+      return getMonthlyParticipantsWithNoCheckIns.reducer(state, action, {
+        REQUEST: () => state
+          .setIn([ACTIONS, GET_MONTHLY_PARTICIPANTS_WITH_NO_CHECK_INS, action.id], action)
+          .setIn([ACTIONS, GET_MONTHLY_PARTICIPANTS_WITH_NO_CHECK_INS, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => state
+          .setIn([ACTIONS, GET_MONTHLY_PARTICIPANTS_WITH_NO_CHECK_INS, REQUEST_STATE], RequestStates.SUCCESS),
+        FAILURE: () => state
+          .setIn([ACTIONS, GET_MONTHLY_PARTICIPANTS_WITH_NO_CHECK_INS, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, GET_MONTHLY_PARTICIPANTS_WITH_NO_CHECK_INS, action.id]),
       });
     }
 

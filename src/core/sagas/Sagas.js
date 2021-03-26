@@ -71,6 +71,7 @@ export default function* sagas() :Generator<*, *, *> {
     fork(CourtTypeSagas.getEnrollmentsByCourtTypeWatcher),
     fork(CourtTypeSagas.getHoursByCourtTypeWatcher),
     fork(CourtTypeSagas.getMonthlyParticipantsByCourtTypeWatcher),
+    fork(CourtTypeSagas.getMonthlyParticipantsWithNoCheckInsWatcher),
     fork(CourtTypeSagas.getTotalParticipantsByCourtTypeWatcher),
 
     // DataSagas
