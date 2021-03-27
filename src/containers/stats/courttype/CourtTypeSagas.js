@@ -889,17 +889,17 @@ function* getMonthlyParticipantsByCourtTypeWorker(action :SequenceAction) :Gener
           const hours :number = hoursByCheckInEKID.get(checkInEKID, 0);
 
           if (isDefined(monthlyParticipantsByCourtType.get(courtType))) {
-            let participantsAndTheirHoursByCourtType :Map = monthlyParticipantsByCourtType.get(courtType, Map());
-            if (!isDefined(participantsAndTheirHoursByCourtType.get(personName))) {
-              participantsAndTheirHoursByCourtType = participantsAndTheirHoursByCourtType.set(personName, hours);
+            let hoursByParticipantName :Map = monthlyParticipantsByCourtType.get(courtType, Map());
+            if (!isDefined(hoursByParticipantName.get(personName))) {
+              hoursByParticipantName = hoursByParticipantName.set(personName, hours);
             }
             else {
-              const currentHours = participantsAndTheirHoursByCourtType.get(personName);
-              participantsAndTheirHoursByCourtType = participantsAndTheirHoursByCourtType
+              const currentHours = hoursByParticipantName.get(personName);
+              hoursByParticipantName = hoursByParticipantName
                 .set(personName, currentHours + hours);
             }
             monthlyParticipantsByCourtType = monthlyParticipantsByCourtType
-              .set(courtType, participantsAndTheirHoursByCourtType);
+              .set(courtType, hoursByParticipantName);
           }
         });
       });
