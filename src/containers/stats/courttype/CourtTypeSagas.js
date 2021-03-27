@@ -915,8 +915,12 @@ function* getMonthlyParticipantsByCourtTypeWorker(action :SequenceAction) :Gener
         .mergeDeepWith((oldVal, newVal) => oldVal + newVal, monthlyParticipantsByCourtType);
 
       monthlyParticipantsByCourtType = monthlyParticipantsByCourtType
-        .map((courtTypeMap :Map) => courtTypeMap.keySeq().toList()
-          .map((personName :string) => fromJS({ personName, hours: courtTypeMap.get(personName) })));
+        .map((courtTypeMap :Map) => (
+          courtTypeMap
+            .keySeq()
+            .toList()
+            .map((personName :string) => fromJS({ personName, hours: courtTypeMap.get(personName) }))
+        ));
     }
 
     monthlyParticipantsByCourtType = monthlyParticipantsByCourtType.asImmutable();
