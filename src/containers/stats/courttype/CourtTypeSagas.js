@@ -887,23 +887,19 @@ function* getMonthlyParticipantsByCourtTypeWorker(action :SequenceAction) :Gener
           const courtType :string = courtTypesByDiversionPlanEKIDs.get(diversionPlanEKID, '');
           const personName :string = personNameByPersonEKID.get(personEKID, '');
           const hours :number = hoursByCheckInEKID.get(checkInEKID, 0);
+
           if (isDefined(monthlyParticipantsByCourtType.get(courtType))) {
-            let listOfParticipantsAndTheirHours :List = monthlyParticipantsByCourtType.get(courtType, List());
-            if (!listOfParticipantsAndTheirHours
-              .find((participantMap :Map) => participantMap.get('personName') === personName)) {
-              listOfParticipantsAndTheirHours = listOfParticipantsAndTheirHours.push(fromJS({ personName, hours }));
+            let participantsAndTheirHoursByCourtType :Map = monthlyParticipantsByCourtType.get(courtType, Map());
+            if (!isDefined(participantsAndTheirHoursByCourtType.get(personName))) {
+              participantsAndTheirHoursByCourtType = participantsAndTheirHoursByCourtType.set(personName, hours);
             }
             else {
-              const participantIndex :number = listOfParticipantsAndTheirHours
-                .findIndex((participantMap :Map) => participantMap.get('personName') === personName);
-              listOfParticipantsAndTheirHours = listOfParticipantsAndTheirHours
-                .setIn(
-                  [participantIndex, 'hours'],
-                  listOfParticipantsAndTheirHours.getIn([participantIndex, 'hours']) + hours
-                );
+              const currentHours = participantsAndTheirHoursByCourtType.get(personName);
+              participantsAndTheirHoursByCourtType = participantsAndTheirHoursByCourtType
+                .set(personName, currentHours + hours);
             }
             monthlyParticipantsByCourtType = monthlyParticipantsByCourtType
-              .set(courtType, listOfParticipantsAndTheirHours);
+              .set(courtType, participantsAndTheirHoursByCourtType);
           }
         });
       });
