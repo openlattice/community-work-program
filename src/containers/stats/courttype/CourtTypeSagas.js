@@ -910,8 +910,9 @@ function* getMonthlyParticipantsByCourtTypeWorker(action :SequenceAction) :Gener
       );
       if (response.error) throw response.error;
       const monthlyParticipantsWithNoCheckInsByCourtType :Map = response.data;
+
       monthlyParticipantsByCourtType = monthlyParticipantsWithNoCheckInsByCourtType
-        .mergeDeep(monthlyParticipantsByCourtType);
+        .mergeDeepWith((oldVal, newVal) => oldVal + newVal, monthlyParticipantsByCourtType);
     }
 
     monthlyParticipantsByCourtType = monthlyParticipantsByCourtType.asImmutable();
