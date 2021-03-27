@@ -531,7 +531,7 @@ function* getMonthlyParticipantsWithNoCheckInsWorker(action :SequenceAction) :Ge
   const { id, value } = action;
   let monthlyParticipantsWithNoCheckInsByCourtType :Map = fromJS(courtTypeCountObj)
     .asMutable()
-    .map(() => List());
+    .map(() => Map());
   let workerResponse :WorkerResponse = { data: {} };
 
   try {
@@ -733,7 +733,7 @@ function* getMonthlyParticipantsByCourtTypeWorker(action :SequenceAction) :Gener
   if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
   let monthlyParticipantsByCourtType :Map = fromJS(courtTypeCountObj)
     .asMutable()
-    .map(() => List());
+    .map(() => Map());
 
   try {
     yield put(getMonthlyParticipantsByCourtType.request(id));
