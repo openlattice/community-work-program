@@ -102,13 +102,10 @@ const updateMonthlyParticipantMap = (
   const courtCase = courtCaseByDiversionPlanEKID.get(diversionPlanEKID, Map());
   const { [COURT_CASE_TYPE]: courtType } = getEntityProperties(courtCase, [COURT_CASE_TYPE]);
   if (isDefined(updatedMap.get(courtType))) {
-    let listOfParticipantsAndTheirHours :List = updatedMap
-      .get(courtType, List());
-    if (!listOfParticipantsAndTheirHours.find((participantMap :Map) => participantMap
-      .get('personName') === personName)) {
-      listOfParticipantsAndTheirHours = listOfParticipantsAndTheirHours.push(fromJS({ personName, hours: 0 }));
-    }
-    updatedMap = updatedMap.set(courtType, listOfParticipantsAndTheirHours);
+    let participantsAndTheirHoursByCourtType :Map = updatedMap.get(courtType, Map());
+    const participantHours = participantsAndTheirHoursByCourtType.get(personName, 0);
+    participantsAndTheirHoursByCourtType = participantsAndTheirHoursByCourtType.set(personName, participantHours);
+    updatedMap = updatedMap.set(courtType, participantsAndTheirHoursByCourtType);
   }
   return updatedMap;
 };
