@@ -102,13 +102,10 @@ const updateMonthlyParticipantMap = (
   const courtCase = courtCaseByDiversionPlanEKID.get(diversionPlanEKID, Map());
   const { [COURT_CASE_TYPE]: courtType } = getEntityProperties(courtCase, [COURT_CASE_TYPE]);
   if (isDefined(updatedMap.get(courtType))) {
-    let listOfParticipantsAndTheirHours :List = updatedMap
-      .get(courtType, List());
-    if (!listOfParticipantsAndTheirHours.find((participantMap :Map) => participantMap
-      .get('personName') === personName)) {
-      listOfParticipantsAndTheirHours = listOfParticipantsAndTheirHours.push(fromJS({ personName, hours: 0 }));
-    }
-    updatedMap = updatedMap.set(courtType, listOfParticipantsAndTheirHours);
+    let participantsAndTheirHoursByCourtType :Map = updatedMap.get(courtType, Map());
+    const participantHours = participantsAndTheirHoursByCourtType.get(personName, 0);
+    participantsAndTheirHoursByCourtType = participantsAndTheirHoursByCourtType.set(personName, participantHours);
+    updatedMap = updatedMap.set(courtType, participantsAndTheirHoursByCourtType);
   }
   return updatedMap;
 };
@@ -534,7 +531,7 @@ function* getMonthlyParticipantsWithNoCheckInsWorker(action :SequenceAction) :Ge
   const { id, value } = action;
   let monthlyParticipantsWithNoCheckInsByCourtType :Map = fromJS(courtTypeCountObj)
     .asMutable()
-    .map(() => List());
+    .map(() => Map());
   let workerResponse :WorkerResponse = { data: {} };
 
   try {
@@ -736,7 +733,7 @@ function* getMonthlyParticipantsByCourtTypeWorker(action :SequenceAction) :Gener
   if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
   let monthlyParticipantsByCourtType :Map = fromJS(courtTypeCountObj)
     .asMutable()
-    .map(() => List());
+    .map(() => Map());
 
   try {
     yield put(getMonthlyParticipantsByCourtType.request(id));
@@ -890,23 +887,19 @@ function* getMonthlyParticipantsByCourtTypeWorker(action :SequenceAction) :Gener
           const courtType :string = courtTypesByDiversionPlanEKIDs.get(diversionPlanEKID, '');
           const personName :string = personNameByPersonEKID.get(personEKID, '');
           const hours :number = hoursByCheckInEKID.get(checkInEKID, 0);
+
           if (isDefined(monthlyParticipantsByCourtType.get(courtType))) {
-            let listOfParticipantsAndTheirHours :List = monthlyParticipantsByCourtType.get(courtType, List());
-            if (!listOfParticipantsAndTheirHours
-              .find((participantMap :Map) => participantMap.get('personName') === personName)) {
-              listOfParticipantsAndTheirHours = listOfParticipantsAndTheirHours.push(fromJS({ personName, hours }));
+            let hoursByParticipantName :Map = monthlyParticipantsByCourtType.get(courtType, Map());
+            if (!isDefined(hoursByParticipantName.get(personName))) {
+              hoursByParticipantName = hoursByParticipantName.set(personName, hours);
             }
             else {
-              const participantIndex :number = listOfParticipantsAndTheirHours
-                .findIndex((participantMap :Map) => participantMap.get('personName') === personName);
-              listOfParticipantsAndTheirHours = listOfParticipantsAndTheirHours
-                .setIn(
-                  [participantIndex, 'hours'],
-                  listOfParticipantsAndTheirHours.getIn([participantIndex, 'hours']) + hours
-                );
+              const currentHours = hoursByParticipantName.get(personName);
+              hoursByParticipantName = hoursByParticipantName
+                .set(personName, currentHours + hours);
             }
             monthlyParticipantsByCourtType = monthlyParticipantsByCourtType
-              .set(courtType, listOfParticipantsAndTheirHours);
+              .set(courtType, hoursByParticipantName);
           }
         });
       });
@@ -917,8 +910,17 @@ function* getMonthlyParticipantsByCourtTypeWorker(action :SequenceAction) :Gener
       );
       if (response.error) throw response.error;
       const monthlyParticipantsWithNoCheckInsByCourtType :Map = response.data;
+
       monthlyParticipantsByCourtType = monthlyParticipantsWithNoCheckInsByCourtType
-        .mergeDeep(monthlyParticipantsByCourtType);
+        .mergeDeepWith((oldVal, newVal) => oldVal + newVal, monthlyParticipantsByCourtType);
+
+      monthlyParticipantsByCourtType = monthlyParticipantsByCourtType
+        .map((courtTypeMap :Map) => (
+          courtTypeMap
+            .keySeq()
+            .toList()
+            .map((personName :string) => fromJS({ personName, hours: courtTypeMap.get(personName) }))
+        ));
     }
 
     monthlyParticipantsByCourtType = monthlyParticipantsByCourtType.asImmutable();
