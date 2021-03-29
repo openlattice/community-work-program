@@ -1,11 +1,14 @@
 // @flow
 import React from 'react';
-import styled from 'styled-components';
-import { ExpansionPanelSummary } from 'lattice-ui-kit';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faChevronDown } from '@fortawesome/pro-light-svg-icons';
 
-const expandIcon = <FontAwesomeIcon icon={faChevronDown} size="xs" />;
+import styled from 'styled-components';
+import { faChevronDown } from '@fortawesome/pro-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { Colors, ExpansionPanelSummary } from 'lattice-ui-kit';
+
+const { NEUTRAL } = Colors;
+
+const expandIcon = <FontAwesomeIcon color={NEUTRAL.N900} icon={faChevronDown} size="xs" />;
 
 const StyledExpansionPanelSummary = styled(ExpansionPanelSummary)`
   && {

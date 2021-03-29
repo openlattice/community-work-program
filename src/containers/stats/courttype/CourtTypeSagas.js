@@ -18,8 +18,10 @@ import {
   SearchApiActions,
   SearchApiSagas,
 } from 'lattice-sagas';
+import { DataUtils } from 'lattice-utils';
 import { DateTime } from 'luxon';
 import type { UUID } from 'lattice';
+import type { WorkerResponse } from 'lattice-sagas';
 import type { SequenceAction } from 'redux-reqseq';
 
 import {
@@ -27,11 +29,13 @@ import {
   GET_ENROLLMENTS_BY_COURT_TYPE,
   GET_HOURS_BY_COURT_TYPE,
   GET_MONTHLY_PARTICIPANTS_BY_COURT_TYPE,
+  GET_MONTHLY_PARTICIPANTS_WITH_NO_CHECK_INS,
   GET_TOTAL_PARTICIPANTS_BY_COURT_TYPE,
   downloadCourtTypeData,
   getEnrollmentsByCourtType,
   getHoursByCourtType,
   getMonthlyParticipantsByCourtType,
+  getMonthlyParticipantsWithNoCheckIns,
   getTotalParticipantsByCourtType,
 } from './CourtTypeActions';
 
@@ -39,7 +43,6 @@ import Logger from '../../../utils/Logger';
 import { ENROLLMENT_STATUSES } from '../../../core/edm/constants/DataModelConsts';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import {
-  getEntityKeyId,
   getEntityProperties,
   getEntitySetIdFromApp,
   getNeighborDetails,
@@ -59,6 +62,7 @@ const { getEntitySetData } = DataApiActions;
 const { getEntitySetDataWorker } = DataApiSagas;
 const { searchEntitySetData, searchEntityNeighborsWithFilter } = SearchApiActions;
 const { searchEntitySetDataWorker, searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
+const { getEntityKeyId } = DataUtils;
 const {
   APPOINTMENT,
   CHECK_INS,
@@ -81,6 +85,30 @@ const {
 const getAppFromState = (state) => state.get(STATE.APP, Map());
 const getEdmFromState = (state) => state.get(STATE.EDM, Map());
 const LOG = new Logger('CourtTypeSagas');
+
+/*
+ * updateMonthlyParticipantMap
+ */
+
+const updateMonthlyParticipantMap = (
+  participantsAndHoursByCourtType :Map,
+  diversionPlanEKID :UUID,
+  personNameByDiversionPlanEKID :Map,
+  courtCaseByDiversionPlanEKID :Map,
+) => {
+
+  let updatedMap :Map = participantsAndHoursByCourtType;
+  const personName = personNameByDiversionPlanEKID.get(diversionPlanEKID, '');
+  const courtCase = courtCaseByDiversionPlanEKID.get(diversionPlanEKID, Map());
+  const { [COURT_CASE_TYPE]: courtType } = getEntityProperties(courtCase, [COURT_CASE_TYPE]);
+  if (isDefined(updatedMap.get(courtType))) {
+    let participantsAndTheirHoursByCourtType :Map = updatedMap.get(courtType, Map());
+    const participantHours = participantsAndTheirHoursByCourtType.get(personName, 0);
+    participantsAndTheirHoursByCourtType = participantsAndTheirHoursByCourtType.set(personName, participantHours);
+    updatedMap = updatedMap.set(courtType, participantsAndTheirHoursByCourtType);
+  }
+  return updatedMap;
+};
 
 /*
  *
@@ -219,8 +247,8 @@ function* getHoursByCourtTypeWorker(action :SequenceAction) :Generator<*, *, *> 
 
       const checkInEKIDs :UUID[] = [];
       checkInsWithinMonth.forEach((checkIn :Map) => {
-        const checkInEKID :UUID = getEntityKeyId(checkIn);
-        checkInEKIDs.push(checkInEKID);
+        const checkInEKID :?UUID = getEntityKeyId(checkIn);
+        if (checkInEKID) checkInEKIDs.push(checkInEKID);
       });
 
       if (checkInEKIDs.length) {
@@ -242,7 +270,7 @@ function* getHoursByCourtTypeWorker(action :SequenceAction) :Generator<*, *, *> 
         appointmentAndPeopleNeighbors.forEach((neighborsList :List, checkInEKID :UUID) => {
           const appointmentNeighbor :Map = neighborsList
             .find((neighbor :Map) => getNeighborESID(neighbor) === appointmentESID);
-          const appointmentEKID :UUID = getEntityKeyId(getNeighborDetails(appointmentNeighbor));
+          const appointmentEKID :?UUID = getEntityKeyId(getNeighborDetails(appointmentNeighbor));
           if (isDefined(appointmentEKID)) appointmentEKIDs.push(appointmentEKID);
           appointmentEKIDsByCheckInEKIDs.set(checkInEKID, appointmentEKID);
 
@@ -266,8 +294,8 @@ function* getHoursByCourtTypeWorker(action :SequenceAction) :Generator<*, *, *> 
         );
         if (response.error) throw response.error;
         fromJS(response.data).forEach((neighborsList :List, appointmentEKID :UUID) => {
-          const worksitePlanEKID :UUID = getEntityKeyId(getNeighborDetails(neighborsList.get(0)));
-          worksitePlanEKIDs.push(worksitePlanEKID);
+          const worksitePlanEKID :?UUID = getEntityKeyId(getNeighborDetails(neighborsList.get(0)));
+          if (worksitePlanEKID) worksitePlanEKIDs.push(worksitePlanEKID);
           worksitePlanEKIDsByAppointmentEKIDs.set(appointmentEKID, worksitePlanEKID);
         });
 
@@ -278,8 +306,8 @@ function* getHoursByCourtTypeWorker(action :SequenceAction) :Generator<*, *, *> 
       response = yield call(getEntitySetDataWorker, getEntitySetData({ entitySetId: worksitePlanESID }));
       if (response.error) throw response.error;
       fromJS(response.data).forEach((plan :Map) => {
-        const worksitePlanEKID :UUID = getEntityKeyId(plan);
-        worksitePlanEKIDs.push(worksitePlanEKID);
+        const worksitePlanEKID :?UUID = getEntityKeyId(plan);
+        if (worksitePlanEKID) worksitePlanEKIDs.push(worksitePlanEKID);
         const { [HOURS_WORKED]: hours } = getEntityProperties(plan, [HOURS_WORKED]);
         const hoursToSet :number = isEmptyString(hours) ? 0 : hours;
         hoursByWorksitePlanEKID.set(worksitePlanEKID, hoursToSet);
@@ -301,8 +329,8 @@ function* getHoursByCourtTypeWorker(action :SequenceAction) :Generator<*, *, *> 
       const diversionPlanEKIDs :UUID[] = [];
       const diversionPlanEKIDsByWorksitePlanEKIDs :Map = Map().withMutations((map :Map) => {
         fromJS(response.data).forEach((neighborsList :List, worksitePlanEKID :UUID) => {
-          const diversionPlanEKID :UUID = getEntityKeyId(getNeighborDetails(neighborsList.get(0)));
-          diversionPlanEKIDs.push(diversionPlanEKID);
+          const diversionPlanEKID :?UUID = getEntityKeyId(getNeighborDetails(neighborsList.get(0)));
+          if (diversionPlanEKID) diversionPlanEKIDs.push(diversionPlanEKID);
           map.set(worksitePlanEKID, diversionPlanEKID);
         });
       }).asImmutable();
@@ -396,7 +424,10 @@ function* getTotalParticipantsByCourtTypeWorker(action :SequenceAction) :Generat
     if (timeFrame === ALL_TIME) {
       response = yield call(getEntitySetDataWorker, getEntitySetData({ entitySetId: diversionPlanESID }));
       if (response.error) throw response.error;
-      fromJS(response.data).forEach((plan :Map) => diversionPlanEKIDs.push(getEntityKeyId(plan)));
+      fromJS(response.data).forEach((plan :Map) => {
+        const planEKID :?UUID = getEntityKeyId(plan);
+        if (planEKID) diversionPlanEKIDs.push(planEKID);
+      });
     }
     else {
       const searchOptions = {
@@ -428,7 +459,10 @@ function* getTotalParticipantsByCourtTypeWorker(action :SequenceAction) :Generat
       response = yield call(searchEntitySetDataWorker, searchEntitySetData(searchOptions));
       if (response.error) throw response.error;
       const diversionPlans :List = fromJS(response.data.hits);
-      diversionPlans.forEach((plan :Map) => diversionPlanEKIDs.push(getEntityKeyId(plan)));
+      fromJS(response.data).forEach((plan :Map) => {
+        const planEKID :?UUID = getEntityKeyId(plan);
+        if (planEKID) diversionPlans.push(planEKID);
+      });
     }
 
     if (diversionPlanEKIDs.length) {
@@ -460,7 +494,7 @@ function* getTotalParticipantsByCourtTypeWorker(action :SequenceAction) :Generat
               [COURT_CASE_TYPE]
             );
 
-            const personEKID :UUID = getEntityKeyId(getNeighborDetails(personNeighbor));
+            const personEKID :?UUID = getEntityKeyId(getNeighborDetails(personNeighbor));
             let personCourtTypes :List = map.get(personEKID, List());
 
             if (!personCourtTypes.includes(courtType) && isDefined(totalParticipantsByCourtType.get(courtType))) {
@@ -493,6 +527,200 @@ function* getTotalParticipantsByCourtTypeWatcher() :Generator<*, *, *> {
   yield takeEvery(GET_TOTAL_PARTICIPANTS_BY_COURT_TYPE, getTotalParticipantsByCourtTypeWorker);
 }
 
+function* getMonthlyParticipantsWithNoCheckInsWorker(action :SequenceAction) :Generator<*, *, *> {
+  const { id, value } = action;
+  let monthlyParticipantsWithNoCheckInsByCourtType :Map = fromJS(courtTypeCountObj)
+    .asMutable()
+    .map(() => Map());
+  let workerResponse :WorkerResponse = { data: {} };
+
+  try {
+    yield put(getMonthlyParticipantsWithNoCheckIns.request(id));
+    const { month, year } = value;
+
+    const app = yield select(getAppFromState);
+    const edm = yield select(getEdmFromState);
+    const enrollmentStatusESID :UUID = getEntitySetIdFromApp(app, ENROLLMENT_STATUS);
+    const effectiveDatePTID :UUID = getPropertyTypeIdFromEdm(edm, EFFECTIVE_DATE);
+
+    const searchOptions = {
+      entitySetIds: [enrollmentStatusESID],
+      start: 0,
+      maxHits: 10000,
+      constraints: []
+    };
+    const mmMonth :string = month < 10 ? `0${month}` : `${month}`;
+    const firstDateOfMonth = DateTime.fromISO(`${year}-${mmMonth}-01`);
+    const searchTerm = getUTCDateRangeSearchString(effectiveDatePTID, 'month', firstDateOfMonth);
+    searchOptions.constraints.push({
+      min: 1,
+      constraints: [{
+        searchTerm,
+        fuzzy: false
+      }]
+    });
+    let response = yield call(searchEntitySetDataWorker, searchEntitySetData(searchOptions));
+    if (response.error) throw response.error;
+    const enrollmentStatusesDuringMonth :Object[] = response.data.hits;
+    const enrollmentStatusEKIDs = enrollmentStatusesDuringMonth.map((status) => getEntityKeyId(status));
+
+    if (enrollmentStatusEKIDs.length) {
+
+      const diversionPlanESID :UUID = getEntitySetIdFromApp(app, DIVERSION_PLAN);
+      let searchFilter :Object = {
+        entityKeyIds: enrollmentStatusEKIDs,
+        destinationEntitySetIds: [diversionPlanESID],
+        sourceEntitySetIds: [diversionPlanESID],
+      };
+      response = yield call(
+        searchEntityNeighborsWithFilterWorker,
+        searchEntityNeighborsWithFilter({ entitySetId: enrollmentStatusESID, filter: searchFilter })
+      );
+      if (response.error) throw response.error;
+      const diversionPlanEKIDs :UUID[] = [];
+      fromJS(response.data).forEach((neighborsList :List) => {
+        const diversionPlanEKID :?UUID = getEntityKeyId(getNeighborDetails(neighborsList.get(0)));
+        if (diversionPlanEKID) diversionPlanEKIDs.push(diversionPlanEKID);
+      });
+
+      if (diversionPlanEKIDs.length) {
+
+        const worksitePlanESID :UUID = getEntitySetIdFromApp(app, WORKSITE_PLAN);
+        const peopleESID :UUID = getEntitySetIdFromApp(app, PEOPLE);
+        const courtCaseESID :UUID = getEntitySetIdFromApp(app, MANUAL_PRETRIAL_COURT_CASES);
+        searchFilter = {
+          entityKeyIds: diversionPlanEKIDs,
+          destinationEntitySetIds: [courtCaseESID],
+          sourceEntitySetIds: [peopleESID, worksitePlanESID],
+        };
+        response = yield call(
+          searchEntityNeighborsWithFilterWorker,
+          searchEntityNeighborsWithFilter({ entitySetId: diversionPlanESID, filter: searchFilter })
+        );
+        if (response.error) throw response.error;
+        let worksitePlanEKIDs :UUID[] = [];
+        let personNameByDiversionPlanEKID :Map = Map();
+        let courtCaseByDiversionPlanEKID :Map = Map();
+        const diversionPlanEKIDsWithNoWorksitePlans :UUID[] = [];
+        const diversionPlanEKIDByWorksitePlanEKID = Map().withMutations((mutator) => {
+          fromJS(response.data).forEach((neighborsList :List, diversionPlanEKID :UUID) => {
+            const person = neighborsList.find((neighbor) => getNeighborESID(neighbor) === peopleESID);
+            const personName = getPersonFullName(getNeighborDetails(person));
+            personNameByDiversionPlanEKID = personNameByDiversionPlanEKID.set(diversionPlanEKID, personName);
+
+            const worksitePlans = neighborsList
+              .filter((neighbor) => getNeighborESID(neighbor) === worksitePlanESID)
+              .map((neighbor) => getNeighborDetails(neighbor));
+            const worksitePlanEKIDsForDiversionPlan = worksitePlans
+              .map((worksitePlan) => getEntityKeyId(worksitePlan));
+            if (worksitePlans.isEmpty()) {
+              diversionPlanEKIDsWithNoWorksitePlans.push(diversionPlanEKID);
+            }
+            worksitePlanEKIDs = worksitePlanEKIDs.concat(worksitePlanEKIDsForDiversionPlan.toJS());
+            worksitePlanEKIDsForDiversionPlan.forEach((worksitePlanEKID :UUID) => {
+              mutator.set(worksitePlanEKID, diversionPlanEKID);
+            });
+
+            const courtCaseNeighbor = neighborsList.find((neighbor) => getNeighborESID(neighbor) === courtCaseESID);
+            courtCaseByDiversionPlanEKID = courtCaseByDiversionPlanEKID
+              .set(diversionPlanEKID, getNeighborDetails(courtCaseNeighbor));
+          });
+        });
+
+        diversionPlanEKIDsWithNoWorksitePlans.forEach((diversionPlanEKID :UUID) => {
+          monthlyParticipantsWithNoCheckInsByCourtType = updateMonthlyParticipantMap(
+            monthlyParticipantsWithNoCheckInsByCourtType,
+            diversionPlanEKID,
+            personNameByDiversionPlanEKID,
+            courtCaseByDiversionPlanEKID,
+          );
+        });
+
+        const appointmentESID :UUID = getEntitySetIdFromApp(app, APPOINTMENT);
+        searchFilter = {
+          entityKeyIds: worksitePlanEKIDs,
+          destinationEntitySetIds: [],
+          sourceEntitySetIds: [appointmentESID],
+        };
+        response = yield call(
+          searchEntityNeighborsWithFilterWorker,
+          searchEntityNeighborsWithFilter({ entitySetId: worksitePlanESID, filter: searchFilter })
+        );
+        if (response.error) throw response.error;
+        let appointmentEKIDs :UUID[] = [];
+        const worksitePlanEKIDByAppointmentEKID :Map = Map().withMutations((mutator) => {
+          fromJS(response.data).forEach((neighborsList :List, worksitePlanEKID :UUID) => {
+            const appointmentEKIDsForWorksitePlan = neighborsList
+              .map((neighbor) => getEntityKeyId(getNeighborDetails(neighbor)));
+            appointmentEKIDs = appointmentEKIDs.concat(appointmentEKIDsForWorksitePlan.toJS());
+            appointmentEKIDsForWorksitePlan.forEach((appointmentEKID :UUID) => {
+              mutator.set(appointmentEKID, worksitePlanEKID);
+            });
+          });
+        });
+
+        const worksitePlanEKIDsWithNoAppointments :UUID[] = worksitePlanEKIDs
+          .filter((worksitePlanEKID :UUID) => !fromJS(response.data).keySeq().toList()
+            .includes(worksitePlanEKID));
+
+        worksitePlanEKIDsWithNoAppointments.forEach((worksitePlanEKID :UUID) => {
+          const diversionPlanEKID :UUID = diversionPlanEKIDByWorksitePlanEKID.get(worksitePlanEKID, '');
+          monthlyParticipantsWithNoCheckInsByCourtType = updateMonthlyParticipantMap(
+            monthlyParticipantsWithNoCheckInsByCourtType,
+            diversionPlanEKID,
+            personNameByDiversionPlanEKID,
+            courtCaseByDiversionPlanEKID,
+          );
+        });
+
+        const checkInsESID :UUID = getEntitySetIdFromApp(app, CHECK_INS);
+        searchFilter = {
+          entityKeyIds: appointmentEKIDs,
+          destinationEntitySetIds: [],
+          sourceEntitySetIds: [checkInsESID],
+        };
+        response = yield call(
+          searchEntityNeighborsWithFilterWorker,
+          searchEntityNeighborsWithFilter({ entitySetId: appointmentESID, filter: searchFilter })
+        );
+        if (response.error) throw response.error;
+        const checkInNeighborsByAppointmentEKID = fromJS(response.data);
+
+        const appointmentEKIDsWithNoCheckIns :UUID[] = appointmentEKIDs
+          .filter((appointmentEKID) => !checkInNeighborsByAppointmentEKID.keySeq().toList().includes(appointmentEKID));
+
+        appointmentEKIDsWithNoCheckIns.forEach((appointmentEKID :UUID) => {
+          const worksitePlanEKID :UUID = worksitePlanEKIDByAppointmentEKID.get(appointmentEKID, '');
+          const diversionPlanEKID :UUID = diversionPlanEKIDByWorksitePlanEKID.get(worksitePlanEKID, '');
+          monthlyParticipantsWithNoCheckInsByCourtType = updateMonthlyParticipantMap(
+            monthlyParticipantsWithNoCheckInsByCourtType,
+            diversionPlanEKID,
+            personNameByDiversionPlanEKID,
+            courtCaseByDiversionPlanEKID,
+          );
+        });
+      }
+      monthlyParticipantsWithNoCheckInsByCourtType = monthlyParticipantsWithNoCheckInsByCourtType.asImmutable();
+      workerResponse = { data: monthlyParticipantsWithNoCheckInsByCourtType };
+    }
+    yield put(getMonthlyParticipantsWithNoCheckIns.success(id, monthlyParticipantsWithNoCheckInsByCourtType));
+  }
+  catch (error) {
+    workerResponse = { error };
+    LOG.error(action.type, error);
+    yield put(getMonthlyParticipantsWithNoCheckIns.failure(id, error));
+  }
+  finally {
+    yield put(getMonthlyParticipantsWithNoCheckIns.finally(id));
+  }
+  return workerResponse;
+}
+
+function* getMonthlyParticipantsWithNoCheckInsWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(GET_MONTHLY_PARTICIPANTS_WITH_NO_CHECK_INS, getMonthlyParticipantsWithNoCheckInsWorker);
+}
+
 /*
  *
  * CourtTypeActions.getMonthlyParticipantsByCourtType()
@@ -505,7 +733,7 @@ function* getMonthlyParticipantsByCourtTypeWorker(action :SequenceAction) :Gener
   if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
   let monthlyParticipantsByCourtType :Map = fromJS(courtTypeCountObj)
     .asMutable()
-    .map(() => List());
+    .map(() => Map());
 
   try {
     yield put(getMonthlyParticipantsByCourtType.request(id));
@@ -541,7 +769,10 @@ function* getMonthlyParticipantsByCourtTypeWorker(action :SequenceAction) :Gener
     if (response.error) throw response.error;
     const checkIns :List = fromJS(response.data.hits);
     const checkInEKIDs :UUID[] = [];
-    checkIns.forEach((checkIn :Map) => checkInEKIDs.push(getEntityKeyId(checkIn)));
+    checkIns.forEach((checkIn :Map) => {
+      const checkInEKID :?UUID = getEntityKeyId(checkIn);
+      if (checkInEKID) checkInEKIDs.push(checkInEKID);
+    });
 
     if (checkInEKIDs.length) {
       const peopleESID :UUID = getEntitySetIdFromApp(app, PEOPLE);
@@ -568,14 +799,14 @@ function* getMonthlyParticipantsByCourtTypeWorker(action :SequenceAction) :Gener
         appointmentAndPeopleNeighbors.forEach((neighborsList :List, checkInEKID :UUID) => {
           const appointmentNeighbor :Map = neighborsList
             .find((neighbor :Map) => getNeighborESID(neighbor) === appointmentESID);
-          const appointmentEKID :UUID = getEntityKeyId(getNeighborDetails(appointmentNeighbor));
+          const appointmentEKID :?UUID = getEntityKeyId(getNeighborDetails(appointmentNeighbor));
           if (isDefined(appointmentEKID)) appointmentEKIDs.push(appointmentEKID);
           appointmentEKIDsByCheckInEKIDs = appointmentEKIDsByCheckInEKIDs.set(checkInEKID, appointmentEKID);
 
           const personNeighbor :Map = neighborsList
             .find((neighbor :Map) => getNeighborESID(neighbor) === peopleESID);
           const person :Map = getNeighborDetails(personNeighbor);
-          const personEKID :UUID = getEntityKeyId(person);
+          const personEKID :?UUID = getEntityKeyId(person);
           map.update(personEKID, List(), (ekids) => ekids.concat(fromJS([checkInEKID])));
 
           const personName :string = getPersonFullName(person);
@@ -603,8 +834,8 @@ function* getMonthlyParticipantsByCourtTypeWorker(action :SequenceAction) :Gener
       const worksitePlanEKIDs :UUID[] = [];
       const worksitePlanEKIDsByAppointmentEKIDs :Map = Map().withMutations((map :Map) => {
         fromJS(response.data).forEach((neighborsList :List, appointmentEKID :UUID) => {
-          const worksitePlanEKID :UUID = getEntityKeyId(getNeighborDetails(neighborsList.get(0)));
-          worksitePlanEKIDs.push(worksitePlanEKID);
+          const worksitePlanEKID :?UUID = getEntityKeyId(getNeighborDetails(neighborsList.get(0)));
+          if (worksitePlanEKID) worksitePlanEKIDs.push(worksitePlanEKID);
           map.set(appointmentEKID, worksitePlanEKID);
         });
       }).asImmutable();
@@ -623,8 +854,8 @@ function* getMonthlyParticipantsByCourtTypeWorker(action :SequenceAction) :Gener
       const diversionPlanEKIDs :UUID[] = [];
       const diversionPlanEKIDsByWorksitePlanEKIDs :Map = Map().withMutations((map :Map) => {
         fromJS(response.data).forEach((neighborsList :List, worksitePlanEKID :UUID) => {
-          const diversionPlanEKID :UUID = getEntityKeyId(getNeighborDetails(neighborsList.get(0)));
-          diversionPlanEKIDs.push(diversionPlanEKID);
+          const diversionPlanEKID :?UUID = getEntityKeyId(getNeighborDetails(neighborsList.get(0)));
+          if (diversionPlanEKID) diversionPlanEKIDs.push(diversionPlanEKID);
           map.set(worksitePlanEKID, diversionPlanEKID);
         });
       }).asImmutable();
@@ -656,26 +887,40 @@ function* getMonthlyParticipantsByCourtTypeWorker(action :SequenceAction) :Gener
           const courtType :string = courtTypesByDiversionPlanEKIDs.get(diversionPlanEKID, '');
           const personName :string = personNameByPersonEKID.get(personEKID, '');
           const hours :number = hoursByCheckInEKID.get(checkInEKID, 0);
+
           if (isDefined(monthlyParticipantsByCourtType.get(courtType))) {
-            let listOfParticipantsAndTheirHours :List = monthlyParticipantsByCourtType.get(courtType, List());
-            if (!listOfParticipantsAndTheirHours
-              .find((participantMap :Map) => participantMap.get('personName') === personName)) {
-              listOfParticipantsAndTheirHours = listOfParticipantsAndTheirHours.push(fromJS({ personName, hours }));
+            let hoursByParticipantName :Map = monthlyParticipantsByCourtType.get(courtType, Map());
+            if (!isDefined(hoursByParticipantName.get(personName))) {
+              hoursByParticipantName = hoursByParticipantName.set(personName, hours);
             }
             else {
-              const participantIndex :number = listOfParticipantsAndTheirHours
-                .findIndex((participantMap :Map) => participantMap.get('personName') === personName);
-              listOfParticipantsAndTheirHours = listOfParticipantsAndTheirHours
-                .setIn(
-                  [participantIndex, 'hours'],
-                  listOfParticipantsAndTheirHours.getIn([participantIndex, 'hours']) + hours
-                );
+              const currentHours = hoursByParticipantName.get(personName);
+              hoursByParticipantName = hoursByParticipantName
+                .set(personName, currentHours + hours);
             }
             monthlyParticipantsByCourtType = monthlyParticipantsByCourtType
-              .set(courtType, listOfParticipantsAndTheirHours);
+              .set(courtType, hoursByParticipantName);
           }
         });
       });
+
+      response = yield call(
+        getMonthlyParticipantsWithNoCheckInsWorker,
+        getMonthlyParticipantsWithNoCheckIns({ month, year })
+      );
+      if (response.error) throw response.error;
+      const monthlyParticipantsWithNoCheckInsByCourtType :Map = response.data;
+
+      monthlyParticipantsByCourtType = monthlyParticipantsWithNoCheckInsByCourtType
+        .mergeDeepWith((oldVal, newVal) => oldVal + newVal, monthlyParticipantsByCourtType);
+
+      monthlyParticipantsByCourtType = monthlyParticipantsByCourtType
+        .map((courtTypeMap :Map) => (
+          courtTypeMap
+            .keySeq()
+            .toList()
+            .map((personName :string) => fromJS({ personName, hours: courtTypeMap.get(personName) }))
+        ));
     }
 
     monthlyParticipantsByCourtType = monthlyParticipantsByCourtType.asImmutable();
@@ -752,8 +997,8 @@ function* getEnrollmentsByCourtTypeWorker(action :SequenceAction) :Generator<*, 
     const enrollmentStatusEKIDs :UUID[] = [];
     const enrollmentStatusByEKID :Map = Map().withMutations((map :Map) => {
       enrollmentStatuses.forEach((enrollmentStatus :Map) => {
-        const enrollmentStatusEKID :UUID = getEntityKeyId(enrollmentStatus);
-        enrollmentStatusEKIDs.push(enrollmentStatusEKID);
+        const enrollmentStatusEKID :?UUID = getEntityKeyId(enrollmentStatus);
+        if (enrollmentStatusEKID) enrollmentStatusEKIDs.push(enrollmentStatusEKID);
         map.set(enrollmentStatusEKID, enrollmentStatus);
       });
     });
@@ -774,8 +1019,8 @@ function* getEnrollmentsByCourtTypeWorker(action :SequenceAction) :Generator<*, 
       const diversionPlanEKIDs :UUID[] = [];
       const enrollmentStatusEKIDsByDiversionPlanEKID :Map = Map().withMutations((map :Map) => {
         diversionPlanNeighbors.forEach((neighborsList :List, enrollmentStatusEKID :UUID) => {
-          const diversionPlanEKID :UUID = getEntityKeyId(getNeighborDetails(neighborsList.get(0)));
-          diversionPlanEKIDs.push(diversionPlanEKID);
+          const diversionPlanEKID :?UUID = getEntityKeyId(getNeighborDetails(neighborsList.get(0)));
+          if (diversionPlanEKID) diversionPlanEKIDs.push(diversionPlanEKID);
           let enrollmentStatusesForDiversionPlan :List = map.get(diversionPlanEKID, List());
           enrollmentStatusesForDiversionPlan = enrollmentStatusesForDiversionPlan.push(enrollmentStatusEKID);
           map.set(diversionPlanEKID, enrollmentStatusesForDiversionPlan);
@@ -896,6 +1141,8 @@ export {
   getHoursByCourtTypeWorker,
   getMonthlyParticipantsByCourtTypeWatcher,
   getMonthlyParticipantsByCourtTypeWorker,
+  getMonthlyParticipantsWithNoCheckInsWatcher,
+  getMonthlyParticipantsWithNoCheckInsWorker,
   getTotalParticipantsByCourtTypeWatcher,
   getTotalParticipantsByCourtTypeWorker,
 };
