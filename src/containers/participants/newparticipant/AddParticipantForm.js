@@ -346,7 +346,7 @@ class AddParticipantForm extends Component<Props, State> {
     const { newChargeEntities, newChargeAssociations } = formatNewArrestChargeDataAndAssociations(
       charges,
       0,
-      { personIndexOrEKID: 0, diversionPlanIndexOrEKID: 0 }
+      { personIndexOrEKID, diversionPlanIndexOrEKID: 0 }
     );
     dataToSubmit[getPageSectionKey(1, 4)] = newChargeEntities;
     associations = associations.concat(newChargeAssociations);
