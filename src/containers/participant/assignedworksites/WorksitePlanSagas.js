@@ -972,13 +972,12 @@ function* checkInForAppointmentWorker(action :SequenceAction) :Generator<*, *, *
       const checkInDetailsESID :UUID = getEntitySetIdFromApp(app, CHECK_IN_DETAILS);
       const hoursWorkedPTID :UUID = getPropertyTypeIdFromEdm(edm, HOURS_WORKED);
       const { entityData } = value;
-      const numberHoursWorked :number = entityData[checkInDetailsESID][0][hoursWorkedPTID][0];
 
       const { associationEntityData } = value;
       const fulfillsESID :UUID = getEntitySetIdFromApp(app, FULFILLS);
       const appointmentEKID :UUID = associationEntityData[fulfillsESID][0].dstEntityKeyId;
 
-      response = yield call(updateHoursWorkedWorker, updateHoursWorked({ appointmentEKID, numberHoursWorked }));
+      response = yield call(updateHoursWorkedWorker, updateHoursWorked({ appointmentEKID }));
       if (response.error) throw response.error;
 
       const storedCheckInEntity :Map = fromJS(entityData[checkInESID][0]);
@@ -1027,12 +1026,12 @@ function* deleteCheckInWorker(action :SequenceAction) :Generator<*, *, *> {
   try {
     yield put(deleteCheckIn.request(id, value));
 
-    const { appointmentEKID, checkInToDelete, numberHoursWorked } = value;
+    const { appointmentEKID, checkInToDelete, worksitePlanEKID } = value;
 
     let response :Object = yield call(deleteEntitiesWorker, deleteEntities(checkInToDelete));
     if (response.error) throw response.error;
 
-    response = yield call(updateHoursWorkedWorker, updateHoursWorked({ appointmentEKID, numberHoursWorked }));
+    response = yield call(updateHoursWorkedWorker, updateHoursWorked({ appointmentEKID, worksitePlanEKID }));
     if (response.error) throw response.error;
 
     yield put(deleteCheckIn.success(id));
