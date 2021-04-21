@@ -57,6 +57,7 @@ const {
   UPDATE_HOURS_WORKED,
   WORKSITES_BY_WORKSITE_PLAN,
   WORKSITE_PLANS_LIST,
+  WORKSITE_PLAN_EKID_BY_APPOINTMENT_EKID,
   WORKSITE_PLAN_STATUSES,
   WORK_APPOINTMENTS_BY_WORKSITE_PLAN,
 } = WORKSITE_PLANS;
@@ -112,6 +113,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [CHECK_INS_BY_APPOINTMENT]: Map(),
   [WORKSITES_BY_WORKSITE_PLAN]: Map(),
   [WORKSITE_PLANS_LIST]: List(),
+  [WORKSITE_PLAN_EKID_BY_APPOINTMENT_EKID]: Map(),
   [WORKSITE_PLAN_STATUSES]: Map(),
   [WORK_APPOINTMENTS_BY_WORKSITE_PLAN]: Map(),
 });
@@ -559,18 +561,10 @@ export default function worksitePlanReducer(state :Map<*, *> = INITIAL_STATE, ac
           .setIn([ACTIONS, GET_WORK_APPOINTMENTS, action.id], fromJS(action))
           .setIn([ACTIONS, GET_WORK_APPOINTMENTS, REQUEST_STATE], RequestStates.PENDING),
         SUCCESS: () => {
-
-          if (!state.hasIn([ACTIONS, GET_WORK_APPOINTMENTS, action.id])) {
-            return state;
-          }
-
-          const { value } = action;
-          if (value === null || value === undefined) {
-            return state;
-          }
-
+          const { workAppointmentsByWorksitePlan, worksitePlanEKIDByAppointmentEKID } = action.value;
           return state
-            .set(WORK_APPOINTMENTS_BY_WORKSITE_PLAN, value)
+            .set(WORK_APPOINTMENTS_BY_WORKSITE_PLAN, workAppointmentsByWorksitePlan)
+            .set(WORKSITE_PLAN_EKID_BY_APPOINTMENT_EKID, worksitePlanEKIDByAppointmentEKID)
             .setIn([ACTIONS, GET_WORK_APPOINTMENTS, REQUEST_STATE], RequestStates.SUCCESS);
         },
         FAILURE: () => state
