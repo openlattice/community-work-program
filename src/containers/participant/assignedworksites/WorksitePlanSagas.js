@@ -512,6 +512,7 @@ function* getWorkAppointmentsWorker(action :SequenceAction) :Generator<*, *, *> 
   const { id, value } = action;
   let response :Object = {};
   let workAppointmentsByWorksitePlan :Map = Map();
+  let worksitePlanEKIDByAppointmentEKID :Map = Map();
 
   try {
     yield put(getWorkAppointments.request(id));
@@ -544,17 +545,20 @@ function* getWorkAppointmentsWorker(action :SequenceAction) :Generator<*, *, *> 
         .map((appointmentsList :List) => appointmentsList.map((appt :Map) => getNeighborDetails(appt)));
 
       const workAppointmentEKIDs :UUID[] = [];
-      workAppointmentsByWorksitePlan
-        .forEach((appointmentsList :List) => {
-          appointmentsList.forEach((appt :Map) => {
-            const appointmentEKID :UUID = getEntityKeyId(appt);
-            workAppointmentEKIDs.push(appointmentEKID);
+      worksitePlanEKIDByAppointmentEKID = Map().withMutations((mutator) => {
+        workAppointmentsByWorksitePlan
+          .forEach((appointmentsList :List, worksitePlanEKID :UUID) => {
+            appointmentsList.forEach((appt :Map) => {
+              const appointmentEKID :UUID = getEntityKeyId(appt);
+              workAppointmentEKIDs.push(appointmentEKID);
+              mutator.set(appointmentEKID, worksitePlanEKID);
+            });
           });
-        });
+      });
       yield call(getAppointmentCheckInsWorker, getAppointmentCheckIns({ workAppointmentEKIDs }));
     }
 
-    yield put(getWorkAppointments.success(id, workAppointmentsByWorksitePlan));
+    yield put(getWorkAppointments.success(id, { workAppointmentsByWorksitePlan, worksitePlanEKIDByAppointmentEKID }));
   }
   catch (error) {
     LOG.error('caught exception in getWorkAppointmentsWorker()', error);
