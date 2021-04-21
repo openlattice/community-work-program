@@ -298,9 +298,10 @@ function* getWorksiteAndPersonNamesWorker(action :SequenceAction) :Generator<*, 
 
     const worksiteESID :UUID = getEntitySetIdFromApp(app, WORKSITE);
     const peopleESID :UUID = getEntitySetIdFromApp(app, PEOPLE);
+    const diversionPlanESID :UUID = getEntitySetIdFromApp(app, DIVERSION_PLAN);
     const worksiteFilter = {
       entityKeyIds: worksitePlanEKIDs,
-      destinationEntitySetIds: [worksiteESID],
+      destinationEntitySetIds: [diversionPlanESID, worksiteESID],
       sourceEntitySetIds: [peopleESID],
     };
     response = yield call(
@@ -312,7 +313,9 @@ function* getWorksiteAndPersonNamesWorker(action :SequenceAction) :Generator<*, 
     }
     let worksitesByWorksitePlan :Map = Map();
     let peopleByWorksitePlan :Map = Map();
+    let diversionPlanByWorksitePlan :Map = Map();
     const personEKIDs :UUID[] = [];
+    const diversionPlanEKIDs :UUID[] = [];
 
     fromJS(response.data)
       .forEach((neighborsList :List, worksitePlanEKID :UUID) => {
@@ -324,6 +327,11 @@ function* getWorksiteAndPersonNamesWorker(action :SequenceAction) :Generator<*, 
           if (getNeighborESID(neighbor) === peopleESID) {
             personEKIDs.push(getEntityKeyId(entity));
             peopleByWorksitePlan = peopleByWorksitePlan.set(worksitePlanEKID, entity);
+          }
+          if (getNeighborESID(neighbor) === diversionPlanESID) {
+            const diversionPlanEKID :UUID = getEntityKeyId(entity);
+            diversionPlanByWorksitePlan = diversionPlanByWorksitePlan.set(worksitePlanEKID, diversionPlanEKID);
+            diversionPlanEKIDs.push(diversionPlanEKID);
           }
         });
       });
