@@ -66,7 +66,6 @@ import {
   submitPartialReplaceWorker
 } from '../../../core/sagas/data/DataSagas';
 import {
-  getEntityKeyId,
   getEntityProperties,
   getEntitySetIdFromApp,
   getNeighborDetails,
@@ -78,7 +77,7 @@ import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../../utils/Errors';
 import { isDefined } from '../../../utils/LangUtils';
 import { STATE, WORKSITES } from '../../../utils/constants/ReduxStateConsts';
 
-const { getPropertyValue } = DataUtils;
+const { getEntityKeyId, getPropertyValue } = DataUtils;
 const { isValidUUID } = ValidationUtils;
 const { getEntityData } = DataApiActions;
 const { getEntityDataWorker } = DataApiSagas;
@@ -284,7 +283,7 @@ function* editAppointmentWorker(action :SequenceAction) :Generator<*, *, *> {
       );
       if (response.error) throw response.error;
       const addressesAssociation :Map = fromJS(response.data).getIn([appointmentEKID, 0, ASSOCIATION_DETAILS]);
-      const addressesEKID :UUID = getEntityKeyId(addressesAssociation);
+      const addressesEKID :?UUID = getEntityKeyId(addressesAssociation);
       const addressesESID :UUID = getEntitySetIdFromApp(app, ADDRESSES);
       const associationsToDelete :Object[] = [
         { entitySetId: addressesESID, entityKeyIds: [addressesEKID] }
@@ -461,8 +460,8 @@ function* getAppointmentCheckInsWorker(action :SequenceAction) :Generator<*, *, 
       checkInData
         .forEach((checkIns :List) => {
           checkIns.forEach((checkIn :Map) => {
-            const checkInEKID :UUID = getEntityKeyId(checkIn);
-            checkInEKIDs.push(checkInEKID);
+            const checkInEKID :?UUID = getEntityKeyId(checkIn);
+            if (checkInEKID) checkInEKIDs.push(checkInEKID);
           });
         });
       const checkInDetailsESID :UUID = getEntitySetIdFromApp(app, CHECK_IN_DETAILS);
@@ -484,7 +483,7 @@ function* getAppointmentCheckInsWorker(action :SequenceAction) :Generator<*, *, 
       /* Store hours worked property from check-in details on check-in to save additional lookups */
       checkInData
         .forEach((checkInEntity :List, appointmentEKID :UUID) => {
-          const checkInEKID :UUID = getEntityKeyId(checkInEntity.get(0));
+          const checkInEKID :?UUID = getEntityKeyId(checkInEntity.get(0));
           const checkInDetails = checkInDetailsByCheckIn.getIn([checkInEKID, 0]);
 
           let checkIn :Map = checkInEntity.get(0);
@@ -536,7 +535,8 @@ function* getWorkAppointmentsWorker(action :SequenceAction) :Generator<*, *, *> 
     const appointmentESID :UUID = getEntitySetIdFromApp(app, APPOINTMENT);
     const worksitePlanEKIDs :string[] = [];
     worksitePlans.forEach((worksitePlan :Map) => {
-      worksitePlanEKIDs.push(getEntityKeyId(worksitePlan));
+      const worksitePlanEKID :?UUID = getEntityKeyId(worksitePlan);
+      if (worksitePlanEKID) worksitePlanEKIDs.push(worksitePlanEKID);
     });
 
     const searchFilter :Object = {
@@ -560,8 +560,8 @@ function* getWorkAppointmentsWorker(action :SequenceAction) :Generator<*, *, *> 
         workAppointmentsByWorksitePlan
           .forEach((appointmentsList :List, worksitePlanEKID :UUID) => {
             appointmentsList.forEach((appt :Map) => {
-              const appointmentEKID :UUID = getEntityKeyId(appt);
-              workAppointmentEKIDs.push(appointmentEKID);
+              const appointmentEKID :?UUID = getEntityKeyId(appt);
+              if (appointmentEKID) workAppointmentEKIDs.push(appointmentEKID);
               mutator.set(appointmentEKID, worksitePlanEKID);
             });
           });
@@ -605,7 +605,10 @@ function* getWorksiteByWorksitePlanWorker(action :SequenceAction) :Generator<*, 
       throw ERR_ACTION_VALUE_NOT_DEFINED;
     }
     const worksitePlanEKIDs :UUID[] = [];
-    worksitePlans.forEach((plan :Map) => worksitePlanEKIDs.push(getEntityKeyId(plan)));
+    worksitePlans.forEach((plan :Map) => {
+      const worksitePlanEKID :?UUID = getEntityKeyId(plan);
+      if (worksitePlanEKID) worksitePlanEKIDs.push(worksitePlanEKID);
+    });
 
     const app = yield select(getAppFromState);
     const worksitePlanESID :UUID = getEntitySetIdFromApp(app, WORKSITE_PLAN);
@@ -671,7 +674,8 @@ function* getWorksitePlanStatusesWorker(action :SequenceAction) :Generator<*, *,
     const worksitePlanESID :UUID = getEntitySetIdFromApp(app, WORKSITE_PLAN);
     const worksitePlanEKIDs :string[] = [];
     worksitePlans.forEach((worksitePlan :Map) => {
-      worksitePlanEKIDs.push(getEntityKeyId(worksitePlan));
+      const worksitePlanEKID :?UUID = getEntityKeyId(worksitePlan);
+      if (worksitePlanEKID) worksitePlanEKIDs.push(worksitePlanEKID);
     });
 
     const params :Object = {
@@ -825,7 +829,8 @@ function* updateHoursWorkedWorker(action :SequenceAction) :Generator<*, *, *> {
 
         if (response.data[appointmentEKID]) {
           worksitePlan = getNeighborDetails(fromJS(response.data[appointmentEKID][0]));
-          worksitePlanEKIDForAppointment = getEntityKeyId(worksitePlan);
+          const worksitePlanEKIDFound :?UUID = getEntityKeyId(worksitePlan);
+          worksitePlanEKIDForAppointment = worksitePlanEKIDFound || worksitePlanEKID;
         }
       }
     }
