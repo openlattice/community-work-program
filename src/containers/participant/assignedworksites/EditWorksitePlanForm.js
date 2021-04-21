@@ -43,12 +43,7 @@ const {
   RELATED_TO,
   WORKSITE_PLAN,
 } = APP_TYPE_FQNS;
-const {
-  EFFECTIVE_DATE,
-  HOURS_WORKED,
-  REQUIRED_HOURS,
-  STATUS,
-} = PROPERTY_TYPE_FQNS;
+const { EFFECTIVE_DATE, REQUIRED_HOURS, STATUS } = PROPERTY_TYPE_FQNS;
 const { ENTITY_SET_IDS_BY_ORG, SELECTED_ORG_ID } = APP;
 const { PROPERTY_TYPES, TYPE_IDS_BY_FQNS } = EDM;
 
@@ -68,7 +63,6 @@ type Props = {
 };
 
 type State = {
-  hoursWorked :number | null;
   newStatus :string;
   requiredHours :number | null;
 };
@@ -78,7 +72,6 @@ class EditWorksitePlanForm extends Component<Props, State> {
   constructor(props :Props) {
     super(props);
     this.state = {
-      hoursWorked: null,
       newStatus: '',
       requiredHours: null,
     };
@@ -102,13 +95,12 @@ class EditWorksitePlanForm extends Component<Props, State> {
       propertyTypeIds,
       worksitePlan,
     } = this.props;
-    const { hoursWorked, newStatus, requiredHours } = this.state;
+    const { newStatus, requiredHours } = this.state;
 
     const worksitePlanEKID :UUID = getEntityKeyId(worksitePlan);
     const nowAsIso = DateTime.local().toISO();
 
     const worksitePlanESID :UUID = entitySetIds.get(WORKSITE_PLAN);
-    const hoursWorkedPTID :UUID = propertyTypeIds.get(HOURS_WORKED);
     const requiredHoursPTID :UUID = propertyTypeIds.get(REQUIRED_HOURS);
 
     let statusEntityData :{} = {};
@@ -119,9 +111,6 @@ class EditWorksitePlanForm extends Component<Props, State> {
       }
     };
 
-    if (isDefined(hoursWorked)) {
-      worksitePlanDataToEdit[worksitePlanESID][worksitePlanEKID][hoursWorkedPTID] = [hoursWorked];
-    }
     if (isDefined(requiredHours)) {
       worksitePlanDataToEdit[worksitePlanESID][worksitePlanEKID][requiredHoursPTID] = [requiredHours];
     }
@@ -160,22 +149,9 @@ class EditWorksitePlanForm extends Component<Props, State> {
       worksitePlan,
       worksitePlanStatus
     } = this.props;
-    const {
-      [HOURS_WORKED]: hoursWorked,
-      [REQUIRED_HOURS]: requiredHours
-    } = getEntityProperties(worksitePlan, [HOURS_WORKED, REQUIRED_HOURS]);
+    const { [REQUIRED_HOURS]: requiredHours } = getEntityProperties(worksitePlan, [REQUIRED_HOURS]);
     return (
       <FormWrapper>
-        <FormRow>
-          <RowContent>
-            <Label>Hours worked at site</Label>
-            <Input
-                defaultValue={hoursWorked}
-                name="hoursWorked"
-                onChange={this.handleInputChange}
-                type="text" />
-          </RowContent>
-        </FormRow>
         <FormRow>
           <RowContent>
             <Label>Required hours at site</Label>
