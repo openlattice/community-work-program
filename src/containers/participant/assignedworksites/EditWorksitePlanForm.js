@@ -12,6 +12,7 @@ import {
   Label,
   Select,
 } from 'lattice-ui-kit';
+import { DataUtils } from 'lattice-utils';
 import { DateTime } from 'luxon';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
@@ -28,10 +29,10 @@ import {
 } from '../../../components/Layout';
 import { WORKSITE_ENROLLMENT_STATUSES } from '../../../core/edm/constants/DataModelConsts';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
-import { getEntityKeyId, getEntityProperties } from '../../../utils/DataUtils';
 import { isDefined } from '../../../utils/LangUtils';
 import { APP, EDM, STATE } from '../../../utils/constants/ReduxStateConsts';
 
+const { getEntityKeyId, getPropertyValue } = DataUtils;
 const {
   getEntityAddressKey,
   getPageSectionKey,
@@ -43,12 +44,7 @@ const {
   RELATED_TO,
   WORKSITE_PLAN,
 } = APP_TYPE_FQNS;
-const {
-  EFFECTIVE_DATE,
-  HOURS_WORKED,
-  REQUIRED_HOURS,
-  STATUS,
-} = PROPERTY_TYPE_FQNS;
+const { EFFECTIVE_DATE, REQUIRED_HOURS, STATUS } = PROPERTY_TYPE_FQNS;
 const { ENTITY_SET_IDS_BY_ORG, SELECTED_ORG_ID } = APP;
 const { PROPERTY_TYPES, TYPE_IDS_BY_FQNS } = EDM;
 
@@ -68,7 +64,6 @@ type Props = {
 };
 
 type State = {
-  hoursWorked :number | null;
   newStatus :string;
   requiredHours :number | null;
 };
@@ -78,7 +73,6 @@ class EditWorksitePlanForm extends Component<Props, State> {
   constructor(props :Props) {
     super(props);
     this.state = {
-      hoursWorked: null,
       newStatus: '',
       requiredHours: null,
     };
@@ -102,27 +96,25 @@ class EditWorksitePlanForm extends Component<Props, State> {
       propertyTypeIds,
       worksitePlan,
     } = this.props;
-    const { hoursWorked, newStatus, requiredHours } = this.state;
+    const { newStatus, requiredHours } = this.state;
 
-    const worksitePlanEKID :UUID = getEntityKeyId(worksitePlan);
+    const worksitePlanEKID :?UUID = getEntityKeyId(worksitePlan);
     const nowAsIso = DateTime.local().toISO();
 
     const worksitePlanESID :UUID = entitySetIds.get(WORKSITE_PLAN);
-    const hoursWorkedPTID :UUID = propertyTypeIds.get(HOURS_WORKED);
     const requiredHoursPTID :UUID = propertyTypeIds.get(REQUIRED_HOURS);
 
-    let statusEntityData :{} = {};
-    let statusAssociationData :{} = {};
-    const worksitePlanDataToEdit :{} = {
-      [worksitePlanESID]: {
-        [worksitePlanEKID]: {}
-      }
+    let statusEntityData = {};
+    let statusAssociationData = {};
+    const worksitePlanDataToEdit = {
+      [worksitePlanESID]: {}
     };
 
-    if (isDefined(hoursWorked)) {
-      worksitePlanDataToEdit[worksitePlanESID][worksitePlanEKID][hoursWorkedPTID] = [hoursWorked];
+    if (isDefined(worksitePlanEKID)) {
+      worksitePlanDataToEdit[worksitePlanESID][worksitePlanEKID] = {};
     }
-    if (isDefined(requiredHours)) {
+
+    if (isDefined(requiredHours) && isDefined(worksitePlanEKID)) {
       worksitePlanDataToEdit[worksitePlanESID][worksitePlanEKID][requiredHoursPTID] = [requiredHours];
     }
 
@@ -160,22 +152,9 @@ class EditWorksitePlanForm extends Component<Props, State> {
       worksitePlan,
       worksitePlanStatus
     } = this.props;
-    const {
-      [HOURS_WORKED]: hoursWorked,
-      [REQUIRED_HOURS]: requiredHours
-    } = getEntityProperties(worksitePlan, [HOURS_WORKED, REQUIRED_HOURS]);
+    const requiredHours :number = getPropertyValue(worksitePlan, [REQUIRED_HOURS, 0]);
     return (
       <FormWrapper>
-        <FormRow>
-          <RowContent>
-            <Label>Hours worked at site</Label>
-            <Input
-                defaultValue={hoursWorked}
-                name="hoursWorked"
-                onChange={this.handleInputChange}
-                type="text" />
-          </RowContent>
-        </FormRow>
         <FormRow>
           <RowContent>
             <Label>Required hours at site</Label>

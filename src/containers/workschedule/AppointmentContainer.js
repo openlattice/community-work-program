@@ -50,7 +50,7 @@ import {
 
 const { getStyleVariation } = StyleUtils;
 const { NEUTRAL, PURPLE, YELLOW } = Colors;
-const { CHECK_INS_BY_APPOINTMENT, WORKSITES_BY_WORKSITE_PLAN } = WORKSITE_PLANS;
+const { CHECK_INS_BY_APPOINTMENT, WORKSITES_BY_WORKSITE_PLAN, WORKSITE_PLAN_EKID_BY_APPOINTMENT_EKID } = WORKSITE_PLANS;
 const { PARTICIPANT } = PERSON;
 const { PERSON_BY_APPOINTMENT_EKID } = WORK_SCHEDULE;
 const { ENTITY_KEY_ID, FIRST_NAME, LAST_NAME } = PROPERTY_TYPE_FQNS;
@@ -109,6 +109,7 @@ type Props = {
   participant :Map;
   personByAppointmentEKID :Map;
   result :Map;
+  worksitePlanEKIDByAppointmentEKID :Map;
   worksitesByWorksitePlan :Map;
 };
 
@@ -117,6 +118,7 @@ const AppointmentContainer = ({
   participant,
   personByAppointmentEKID,
   result,
+  worksitePlanEKIDByAppointmentEKID,
   worksitesByWorksitePlan,
 } :Props) => {
 
@@ -139,7 +141,6 @@ const AppointmentContainer = ({
     setHours(storedHours);
     setNumHours(hoursScheduled);
   }, [result]);
-
   const personName = result.get('personName');
   const worksiteName = result.get('worksiteName');
   const courtType = result.get('courtType');
@@ -173,6 +174,8 @@ const AppointmentContainer = ({
     checkedInSymbol = ExclamationIcon;
   }
   const hoursToDisplay = getHoursForDisplay(numHours, checkIn);
+
+  const worksitePlanEKID :UUID = worksitePlanEKIDByAppointmentEKID.get(appointmentEKID, '');
 
   const goToParticipantProfile = useGoToRoute(
     Routes.PARTICIPANT_PROFILE.replace(':participantId', personEKID)
@@ -247,7 +250,8 @@ const AppointmentContainer = ({
           appointmentEKID={appointmentEKID}
           checkIn={checkIn}
           isOpen={isCheckInDetailsModalVisible}
-          onClose={() => handleCheckInDetailsModalVisibility(false)} />
+          onClose={() => handleCheckInDetailsModalVisibility(false)}
+          worksitePlanEKID={worksitePlanEKID} />
       <DeleteAppointmentModal
           appointment={result}
           appointmentEKID={appointmentEKID}
@@ -275,6 +279,7 @@ const mapStateToProps = (state :Map) => {
     [PARTICIPANT]: person.get(PARTICIPANT),
     [PERSON_BY_APPOINTMENT_EKID]: workSchedule.get(PERSON_BY_APPOINTMENT_EKID),
     [WORKSITES_BY_WORKSITE_PLAN]: worksitePlans.get(WORKSITES_BY_WORKSITE_PLAN),
+    [WORKSITE_PLAN_EKID_BY_APPOINTMENT_EKID]: worksitePlans.get(WORKSITE_PLAN_EKID_BY_APPOINTMENT_EKID),
   });
 };
 
