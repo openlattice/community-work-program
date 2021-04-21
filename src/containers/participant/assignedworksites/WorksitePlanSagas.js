@@ -1,3 +1,4 @@
+// @flow
 import {
   all,
   call,
@@ -5,13 +6,19 @@ import {
   select,
   takeEvery,
 } from '@redux-saga/core/effects';
-// @flow
 import {
   List,
   Map,
   fromJS,
 } from 'immutable';
-import { SearchApiActions, SearchApiSagas } from 'lattice-sagas';
+import {
+  DataApiActions,
+  DataApiSagas,
+  SearchApiActions,
+  SearchApiSagas,
+} from 'lattice-sagas';
+import { DataUtils, ValidationUtils } from 'lattice-utils';
+import type { UUID } from 'lattice';
 import type { SequenceAction } from 'redux-reqseq';
 
 import {
@@ -71,6 +78,10 @@ import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../../utils/Errors';
 import { isDefined } from '../../../utils/LangUtils';
 import { STATE, WORKSITES } from '../../../utils/constants/ReduxStateConsts';
 
+const { getPropertyValue } = DataUtils;
+const { isValidUUID } = ValidationUtils;
+const { getEntityData } = DataApiActions;
+const { getEntityDataWorker } = DataApiSagas;
 const { searchEntityNeighborsWithFilter } = SearchApiActions;
 const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
 const {
@@ -789,55 +800,137 @@ function* updateHoursWorkedWorker(action :SequenceAction) :Generator<*, *, *> {
   try {
     yield put(updateHoursWorked.request(id, value));
 
-    const { appointmentEKID, numberHoursWorked } = value;
+    const { appointmentEKID, worksitePlanEKID } = value;
 
     const app = yield select(getAppFromState);
+    const edm = yield select(getEdmFromState);
     const appointmentESID :UUID = getEntitySetIdFromApp(app, APPOINTMENT);
     const worksitePlanESID :UUID = getEntitySetIdFromApp(app, WORKSITE_PLAN);
 
-    const searchFilter :{} = {
-      entityKeyIds: [appointmentEKID],
-      destinationEntitySetIds: [worksitePlanESID],
-      sourceEntitySetIds: [],
-    };
-    response = yield call(
-      searchEntityNeighborsWithFilterWorker,
-      searchEntityNeighborsWithFilter({ entitySetId: appointmentESID, filter: searchFilter })
-    );
-    if (response.error) {
-      throw response.error;
-    }
-    if (response.data[appointmentEKID]) {
+    let worksitePlanEKIDForAppointment :UUID = worksitePlanEKID;
+    let worksitePlan :Map = Map();
 
-      const worksitePlan :Map = getNeighborDetails(fromJS(response.data[appointmentEKID][0]));
-      const edm = yield select(getEdmFromState);
-      const hoursWorkedPTID :UUID = getPropertyTypeIdFromEdm(edm, HOURS_WORKED);
-      const worksitePlanEKID :UUID = getEntityKeyId(worksitePlan);
-      const { [HOURS_WORKED]: hoursWorkedOld } = getEntityProperties(worksitePlan, [HOURS_WORKED]);
-      const hoursWorkedToDate = hoursWorkedOld + numberHoursWorked;
-      const worksitePlanDataToUpdate :{} = {
-        [worksitePlanEKID]: {
-          [hoursWorkedPTID]: [hoursWorkedToDate]
+    if (!isValidUUID(worksitePlanEKID)) {
+      if (isValidUUID(appointmentEKID)) {
+        const searchFilter = {
+          entityKeyIds: [appointmentEKID],
+          destinationEntitySetIds: [worksitePlanESID],
+          sourceEntitySetIds: [],
+        };
+        response = yield call(
+          searchEntityNeighborsWithFilterWorker,
+          searchEntityNeighborsWithFilter({ entitySetId: appointmentESID, filter: searchFilter })
+        );
+        if (response.error) throw response.error;
+
+        if (response.data[appointmentEKID]) {
+          worksitePlan = getNeighborDetails(fromJS(response.data[appointmentEKID][0]));
+          worksitePlanEKIDForAppointment = getEntityKeyId(worksitePlan);
         }
-      };
-      const entityData :{} = {
-        [worksitePlanESID]: worksitePlanDataToUpdate
-      };
+      }
+    }
+    else {
+      response = yield call(
+        getEntityDataWorker,
+        getEntityData({ entitySetId: worksitePlanESID, entityKeyId: worksitePlanEKID })
+      );
+      if (response.error) throw response.error;
+      worksitePlan = fromJS(response.data);
+    }
 
-      response = yield call(submitPartialReplaceWorker, submitPartialReplace({ entityData }));
-      if (response.error) {
-        throw response.error;
+    newWorksitePlan = worksitePlan;
+
+    const checkInsESID :UUID = getEntitySetIdFromApp(app, CHECK_INS);
+    const checkInDetailsESID :UUID = getEntitySetIdFromApp(app, CHECK_IN_DETAILS);
+
+    if (!worksitePlan.isEmpty()) {
+      /*
+       * Get the current hours worked count from worksite plan's check-ins before updating to keep
+       * "hours worked" on worksite plan consistent with check-ins.
+       * This involves fetching neighbors:
+       *    appointment(s) -> addresses -> worksite plan
+       *    check-in -> fulfills -> appointment
+       *    check-in -> has -> check-in details (hours worked stored on check-in details)
+       */
+      let hoursTotalFromCheckIns :number = 0;
+
+      let filter = {
+        entityKeyIds: [worksitePlanEKIDForAppointment],
+        destinationEntitySetIds: [],
+        sourceEntitySetIds: [appointmentESID],
+      };
+      response = yield call(
+        searchEntityNeighborsWithFilterWorker,
+        searchEntityNeighborsWithFilter({ entitySetId: worksitePlanESID, filter })
+      );
+      if (response.error) throw response.error;
+      const appointmentEKIDs :UUID[] = fromJS(response.data)
+        .get(worksitePlanEKIDForAppointment, List())
+        .map((appointmentNeighbor :Map) => getNeighborDetails(appointmentNeighbor))
+        .map((appointment :Map) => getEntityKeyId(appointment))
+        .toJS();
+
+      if (appointmentEKIDs.length) {
+        filter = {
+          entityKeyIds: appointmentEKIDs,
+          destinationEntitySetIds: [],
+          sourceEntitySetIds: [checkInsESID],
+        };
+        response = yield call(
+          searchEntityNeighborsWithFilterWorker,
+          searchEntityNeighborsWithFilter({ entitySetId: appointmentESID, filter })
+        );
+        if (response.error) throw response.error;
+        const checkInEKIDs :UUID[] = fromJS(response.data)
+          .valueSeq()
+          .toList()
+          .map((checkInNeighborList :List) => getNeighborDetails(checkInNeighborList.get(0, Map())))
+          .map((checkIn :Map) => getEntityKeyId(checkIn))
+          .toJS();
+
+        if (checkInEKIDs.length) {
+          filter = {
+            entityKeyIds: checkInEKIDs,
+            destinationEntitySetIds: [checkInDetailsESID],
+            sourceEntitySetIds: [],
+          };
+          response = yield call(
+            searchEntityNeighborsWithFilterWorker,
+            searchEntityNeighborsWithFilter({ entitySetId: checkInsESID, filter })
+          );
+          if (response.error) throw response.error;
+
+          fromJS(response.data).forEach((checkInDetailsNeighborList :List) => {
+            const checkInDetails :Map = getNeighborDetails(checkInDetailsNeighborList.get(0, Map()));
+            const checkInHoursWorked :number = getPropertyValue(checkInDetails, [HOURS_WORKED, 0]);
+            hoursTotalFromCheckIns += checkInHoursWorked;
+          });
+        }
       }
 
-      newWorksitePlan = worksitePlan;
-      newWorksitePlan = newWorksitePlan.setIn([HOURS_WORKED, 0], hoursWorkedToDate);
+      const currentHoursWorkedOnWorksitePlan = getPropertyValue(worksitePlan, [HOURS_WORKED, 0]);
+
+      if (hoursTotalFromCheckIns !== currentHoursWorkedOnWorksitePlan) {
+        const hoursWorkedPTID :UUID = getPropertyTypeIdFromEdm(edm, HOURS_WORKED);
+        const entityData = {
+          [worksitePlanESID]: {
+            [worksitePlanEKIDForAppointment]: {
+              [hoursWorkedPTID]: [hoursTotalFromCheckIns]
+            }
+          }
+        };
+        response = yield call(submitPartialReplaceWorker, submitPartialReplace({ entityData }));
+        if (response.error) throw response.error;
+        newWorksitePlan = newWorksitePlan.setIn([HOURS_WORKED, 0], hoursTotalFromCheckIns);
+      }
     }
 
+    workerResponse.data = newWorksitePlan;
     yield put(updateHoursWorked.success(id, newWorksitePlan));
   }
   catch (error) {
     workerResponse.error = error;
-    LOG.error('caught exception in updateHoursWorkedWorker()', error);
+    LOG.error(action.type, error);
     yield put(updateHoursWorked.failure(id, error));
   }
   finally {
