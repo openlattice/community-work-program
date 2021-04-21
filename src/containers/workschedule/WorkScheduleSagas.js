@@ -170,67 +170,52 @@ function* getWorksitePlansByPersonWorker(action :SequenceAction) :Generator<*, *
     yield put(getWorksitePlansByPerson.request(id));
     const { value } = action;
     if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
-    const { personEKIDs } = value;
+    const {
+      diversionPlanByWorksitePlan,
+      peopleByWorksitePlan,
+      worksitePlansByDiversionPlanEKID,
+    } = value;
 
-    const app = yield select(getAppFromState);
-    const worksitePlanESID :UUID = getEntitySetIdFromApp(app, WORKSITE_PLAN);
-    const peopleESID :UUID = getEntitySetIdFromApp(app, PEOPLE);
-
-    let searchFilter :Object = {
-      entityKeyIds: personEKIDs,
-      destinationEntitySetIds: [worksitePlanESID],
-      sourceEntitySetIds: [],
-    };
-    response = yield call(
-      searchEntityNeighborsWithFilterWorker,
-      searchEntityNeighborsWithFilter({ entitySetId: peopleESID, filter: searchFilter })
-    );
-    if (response.error) throw response.error;
     const worksitePlanEKIDs :UUID[] = [];
-    const personEKIDByWorksitePlanEKID :Map = Map().asMutable();
 
-    let worksitesByWorksitePlanEKIDByPersonEKID :Map = Map().withMutations((map :Map) => {
-      fromJS(response.data).forEach((neighborsList :List, personEKID :UUID) => {
-        neighborsList.forEach((worksitePlanNeighbor :Map) => {
-          const worksitePlanEKID :UUID = getEntityKeyId(getNeighborDetails(worksitePlanNeighbor));
+    const personEKIDByWorksitePlanEKID :Map = Map().withMutations((mutator) => {
+      peopleByWorksitePlan.forEach((person :Map, worksitePlanEKIDForAppointment :UUID) => {
+        const diversionPlanEKID :UUID = diversionPlanByWorksitePlan.get(worksitePlanEKIDForAppointment, '');
+        const worksitePlans :List = worksitePlansByDiversionPlanEKID.get(diversionPlanEKID, List());
+        const personEKID :UUID = getEntityKeyId(person);
+        worksitePlans.forEach((worksitePlan :Map) => {
+          const worksitePlanEKID :UUID = getEntityKeyId(worksitePlan);
           worksitePlanEKIDs.push(worksitePlanEKID);
-
-          personEKIDByWorksitePlanEKID.set(worksitePlanEKID, personEKID);
-
-          let worksitesByWorksitePlanForCurrentPerson :Map = map.get(personEKID, Map());
-
-          if (!isDefined(worksitesByWorksitePlanForCurrentPerson.get(worksitePlanEKID))) {
-            worksitesByWorksitePlanForCurrentPerson = worksitesByWorksitePlanForCurrentPerson
-              .set(worksitePlanEKID, Map());
-          }
-          map.set(personEKID, worksitesByWorksitePlanForCurrentPerson);
+          mutator.set(worksitePlanEKID, personEKID);
         });
       });
     });
 
+    const app = yield select(getAppFromState);
+    const worksitePlanESID :UUID = getEntitySetIdFromApp(app, WORKSITE_PLAN);
     const worksiteESID :UUID = getEntitySetIdFromApp(app, WORKSITE);
-    searchFilter = {
+
+    const filter = {
       entityKeyIds: worksitePlanEKIDs,
       destinationEntitySetIds: [worksiteESID],
       sourceEntitySetIds: [],
     };
     response = yield call(
       searchEntityNeighborsWithFilterWorker,
-      searchEntityNeighborsWithFilter({ entitySetId: worksitePlanESID, filter: searchFilter })
+      searchEntityNeighborsWithFilter({ entitySetId: worksitePlanESID, filter })
     );
     if (response.error) throw response.error;
 
-    fromJS(response.data).forEach((neighborsList :List, worksitePlanEKID :UUID) => {
-      const worksite :Map = getNeighborDetails(neighborsList.get(0));
-      const personEKID :UUID = personEKIDByWorksitePlanEKID.get(worksitePlanEKID, '');
-      let worksitesByWorksitePlanEKID :Map = worksitesByWorksitePlanEKIDByPersonEKID.get(personEKID, Map());
-      if (isDefined(worksitesByWorksitePlanEKID.get(worksitePlanEKID))) {
-        worksitesByWorksitePlanEKID = worksitesByWorksitePlanEKID.set(worksitePlanEKID, worksite);
-      }
-      worksitesByWorksitePlanEKIDByPersonEKID = worksitesByWorksitePlanEKIDByPersonEKID
-        .set(personEKID, worksitesByWorksitePlanEKID);
+    const worksitesByWorksitePlanEKIDByPersonEKID :Map = Map().withMutations((mutator) => {
+      fromJS(response.data).forEach((worksiteNeighborsList :List, worksitePlanEKID :UUID) => {
+        const worksite :Map = getNeighborDetails(worksiteNeighborsList.get(0, Map()));
+        const personEKID :UUID = personEKIDByWorksitePlanEKID.get(worksitePlanEKID, '');
+        const worksitesByWorksitePlanEKIDS = mutator.get(personEKID, Map());
+        mutator.set(personEKID, worksitesByWorksitePlanEKIDS.set(worksitePlanEKID, worksite));
+      });
     });
 
+    workerResponse.data = worksitesByWorksitePlanEKIDByPersonEKID;
     yield put(getWorksitePlansByPerson.success(id, worksitesByWorksitePlanEKIDByPersonEKID));
   }
   catch (error) {
