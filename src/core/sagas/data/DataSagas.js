@@ -13,9 +13,6 @@ import { DataApiActions, DataApiSagas } from 'lattice-sagas';
 import type { UUID } from 'lattice';
 import type { SequenceAction } from 'redux-reqseq';
 
-import Logger from '../../../utils/Logger';
-import { ERR_ACTION_VALUE_NOT_DEFINED, ERR_ACTION_VALUE_TYPE, ERR_WORKER_SAGA } from '../../../utils/Errors';
-import { isDefined } from '../../../utils/LangUtils';
 import {
   CREATE_OR_REPLACE_ASSOCIATION,
   DELETE_ENTITIES,
@@ -26,6 +23,10 @@ import {
   submitDataGraph,
   submitPartialReplace,
 } from './DataActions';
+
+import Logger from '../../../utils/Logger';
+import { ERR_ACTION_VALUE_NOT_DEFINED, ERR_ACTION_VALUE_TYPE, ERR_WORKER_SAGA } from '../../../utils/Errors';
+import { isDefined } from '../../../utils/LangUtils';
 
 const LOG = new Logger('DataSagas');
 const { DataGraphBuilder } = Models;
@@ -188,6 +189,7 @@ function* deleteEntitiesWorker(action :SequenceAction) :Generator<*, *, *> {
           entityKeyIds,
           entitySetId,
           deleteType: DeleteTypes.SOFT,
+          block: false,
         }));
       });
 
