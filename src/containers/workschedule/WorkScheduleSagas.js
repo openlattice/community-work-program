@@ -336,7 +336,29 @@ function* getWorksiteAndPersonNamesWorker(action :SequenceAction) :Generator<*, 
         });
       });
 
-    yield call(getWorksitePlansByPersonWorker, getWorksitePlansByPerson({ personEKIDs }));
+    let worksitePlansByDiversionPlanEKID :Map = Map();
+
+    if (diversionPlanEKIDs.length) {
+      const diversionPlanFilter = {
+        entityKeyIds: diversionPlanEKIDs,
+        destinationEntitySetIds: [],
+        sourceEntitySetIds: [worksitePlanESID],
+      };
+      response = yield call(
+        searchEntityNeighborsWithFilterWorker,
+        searchEntityNeighborsWithFilter({ entitySetId: diversionPlanESID, filter: diversionPlanFilter })
+      );
+      if (response.error) throw response.error;
+      worksitePlansByDiversionPlanEKID = fromJS(response.data)
+        .map((worksitePlanNeighborsList :List) => worksitePlanNeighborsList
+          .map((worksitePlanNeighbor :Map) => getNeighborDetails(worksitePlanNeighbor)));
+    }
+
+    yield call(getWorksitePlansByPersonWorker, getWorksitePlansByPerson({
+      diversionPlanByWorksitePlan,
+      peopleByWorksitePlan,
+      worksitePlansByDiversionPlanEKID
+    }));
 
     worksitePlanEKIDByAppointmentEKID.forEach((worksitePlanEKID :UUID, appointmentEKID :UUID) => {
       const worksite :Map = worksitesByWorksitePlan.get(worksitePlanEKID);
