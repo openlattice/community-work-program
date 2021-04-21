@@ -253,6 +253,7 @@ export const WORKSITE_PLANS = {
   UPDATE_HOURS_WORKED: 'updateHoursWorked',
   WORKSITES_BY_WORKSITE_PLAN: 'worksitesByWorksitePlan',
   WORKSITE_PLANS_LIST: 'worksitePlansList',
+  WORKSITE_PLAN_EKID_BY_APPOINTMENT_EKID: 'worksitePlanEKIDByAppointmentEKID',
   WORKSITE_PLAN_STATUSES: 'worksitePlanStatuses',
   WORK_APPOINTMENTS_BY_WORKSITE_PLAN: 'workAppointmentsByWorksitePlan',
 };
