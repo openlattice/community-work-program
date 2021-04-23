@@ -184,7 +184,7 @@ function* deleteEntitiesWorker(action :SequenceAction) :Generator<*, *, *> {
 
       const deleteRequests = value.map((dataObject) => {
 
-        const { entitySetId, entityKeyIds } = dataObject;
+        const { block, entitySetId, entityKeyIds } = dataObject;
         return call(deleteEntityDataWorker, deleteEntityData({
           entityKeyIds,
           entitySetId,
