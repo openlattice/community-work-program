@@ -53,6 +53,7 @@ class DeleteAppointmentForm extends Component<Props, State> {
 
     const appointmentESID :UUID = getEntitySetIdFromApp(app, APPOINTMENT);
     const appointmentToDelete :Object[] = [{
+      block: false,
       entitySetId: appointmentESID,
       entityKeyIds: [appointmentEKID]
     }];
