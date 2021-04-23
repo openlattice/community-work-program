@@ -113,7 +113,7 @@ const EditPersonPhotoForm = ({ participant, personPhoto } :Props) => {
 
   const onSubmit = () => {
     const personEKID = getEntityKeyId(participant);
-    const associations = [
+    const associations :Array<Array<*>> = [
       [IS_PICTURE_OF, 0, IMAGE, personEKID, PEOPLE, {}]
     ];
     const entityData :Object = processEntityData(formData, entitySetIds, propertyTypeIds, mappers);

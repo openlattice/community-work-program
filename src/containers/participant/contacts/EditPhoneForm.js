@@ -88,7 +88,7 @@ const EditPhoneForm = ({ participant, phone } :Props) => {
         false
       );
       const entityData = processEntityData(updatedFormData, entitySetIds, propertyTypeIds);
-      const associations = [[CONTACT_INFO_GIVEN, 0, CONTACT_INFORMATION, personEKID, PEOPLE]];
+      const associations :Array<Array<*>> = [[CONTACT_INFO_GIVEN, 0, CONTACT_INFORMATION, personEKID, PEOPLE]];
       const associationEntityData = processAssociationEntityData(associations, entitySetIds, propertyTypeIds);
       dispatch(addPersonPhone({ associationEntityData, entityData }));
     }

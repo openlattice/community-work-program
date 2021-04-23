@@ -198,7 +198,7 @@ class EditCourtChargesForm extends Component<Props, State> {
     chargesFormData[getPageSectionKey(1, 1)] = newChargesList;
 
     const entityData :{} = processEntityData(chargesFormData, entitySetIds, propertyTypeIds);
-    const associations = [];
+    const associations :Array<Array<*>> = [];
 
     const personEKID = getEntityKeyId(participant);
     const caseEKID = getEntityKeyId(personCase);
