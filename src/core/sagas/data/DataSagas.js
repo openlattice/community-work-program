@@ -189,7 +189,7 @@ function* deleteEntitiesWorker(action :SequenceAction) :Generator<*, *, *> {
           entityKeyIds,
           entitySetId,
           deleteType: DeleteTypes.SOFT,
-          block: block || true,
+          block: block || false,
         }));
       });
 
