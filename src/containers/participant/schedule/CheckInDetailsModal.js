@@ -142,7 +142,7 @@ const CheckInDetailsModal = ({
   const removeCheckIn = useCallback(
     () => dispatch(deleteCheckIn({
       appointmentEKID,
-      checkInToDelete: [{ entitySetId: checkInESID, entityKeyIds: [checkInEKID] }],
+      checkInToDelete: [{ block: false, entitySetId: checkInESID, entityKeyIds: [checkInEKID] }],
       worksitePlanEKID,
     })),
     [appointmentEKID, checkInEKID, checkInESID, dispatch, worksitePlanEKID]
