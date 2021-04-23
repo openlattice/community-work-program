@@ -113,7 +113,7 @@ class EditWorksiteAddressForm extends Component<Props, State> {
     } = this.props;
 
     const worksiteEKID :UUID = getEntityKeyId(worksite);
-    const associations = [
+    const associations :Array<Array<*>> = [
       [LOCATED_AT, worksiteEKID, WORKSITE, 0, ADDRESS, {}]
     ];
     const entityData :Object = processEntityData(formData, entitySetIds, propertyTypeIds);

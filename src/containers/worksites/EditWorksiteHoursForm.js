@@ -161,7 +161,7 @@ class EditWorksiteHoursForm extends Component<Props, State> {
 
     const worksiteEKID :UUID = getEntityKeyId(worksite);
     const appointmentEntities = getEntitiesForWorksiteSchedule(formData);
-    const associations = [];
+    const associations :Array<Array<*>> = [];
 
     const entityCount :number = fromJS(appointmentEntities[getPageSectionKey(1, 1)]).count() / 2;
     for (let i = 0; i < entityCount; i += 1) {

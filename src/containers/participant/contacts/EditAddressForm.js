@@ -86,7 +86,7 @@ const EditAddressForm = ({ address, participant } :Props) => {
     if ((!isDefined(address) || address.isEmpty())
       && !isEmpty(submittedFormData[getPageSectionKey(1, 1)])) {
       const entityData = processEntityData(submittedFormData, entitySetIds, propertyTypeIds);
-      const associations = [[LOCATED_AT, personEKID, PEOPLE, 0, ADDRESS]];
+      const associations :Array<Array<*>> = [[LOCATED_AT, personEKID, PEOPLE, 0, ADDRESS]];
       const associationEntityData = processAssociationEntityData(associations, entitySetIds, propertyTypeIds);
       dispatch(addPersonAddress({ associationEntityData, entityData }));
     }

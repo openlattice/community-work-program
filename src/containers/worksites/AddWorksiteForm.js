@@ -70,7 +70,7 @@ class AddWorksiteForm extends Component<Props, State> {
     };
   }
 
-  handleDateChange = (name :FQN) => (date :string) => {
+  handleDateChange = (name :string) => (date :string) => {
     const { newWorksiteData } = this.state;
     const splitDate :number[] = date.split('-')
       .map((string :string) => parseInt(string, 10));
