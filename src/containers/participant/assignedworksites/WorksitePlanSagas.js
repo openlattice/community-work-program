@@ -286,7 +286,7 @@ function* editAppointmentWorker(action :SequenceAction) :Generator<*, *, *> {
       const addressesEKID :?UUID = getEntityKeyId(addressesAssociation);
       const addressesESID :UUID = getEntitySetIdFromApp(app, ADDRESSES);
       const associationsToDelete :Object[] = [
-        { entitySetId: addressesESID, entityKeyIds: [addressesEKID] }
+        { block: false, entitySetId: addressesESID, entityKeyIds: [addressesEKID] }
       ];
       const associations :{} = {
         [addressesESID]: [
