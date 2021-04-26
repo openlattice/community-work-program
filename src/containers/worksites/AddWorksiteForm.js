@@ -17,7 +17,7 @@ import {
 import { DateTime } from 'luxon';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import type { FQN, UUID } from 'lattice';
+import type { UUID } from 'lattice';
 import type { RequestSequence } from 'redux-reqseq';
 
 import { addWorksite } from './WorksitesActions';
@@ -70,7 +70,7 @@ class AddWorksiteForm extends Component<Props, State> {
     };
   }
 
-  handleDateChange = (name :FQN) => (date :string) => {
+  handleDateChange = (name :string) => (date :string) => {
     const { newWorksiteData } = this.state;
     const splitDate :number[] = date.split('-')
       .map((string :string) => parseInt(string, 10));

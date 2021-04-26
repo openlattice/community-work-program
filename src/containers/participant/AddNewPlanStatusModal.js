@@ -134,7 +134,7 @@ const AddNewPlanStatusModal = ({ isVisible, onClose } :Props) => {
       updatedFormData = setIn(updatedFormData, effectiveDateKeyPath, effectiveDateAsDateTime);
     }
 
-    const associations = [
+    const associations :Array<Array<*>> = [
       [RELATED_TO, 0, ENROLLMENT_STATUS, diversionPlanEKID, DIVERSION_PLAN, {}]
     ];
 
