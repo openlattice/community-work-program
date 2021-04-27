@@ -80,6 +80,7 @@ type Props = {
   checkIn :Map;
   isOpen :boolean;
   onClose :() => void;
+  worksitePlanEKID :UUID;
 };
 
 const CheckInDetailsModal = ({
@@ -87,6 +88,7 @@ const CheckInDetailsModal = ({
   checkIn,
   isOpen,
   onClose,
+  worksitePlanEKID,
 } :Props) => {
 
   const deleteCheckInRequestState :RequestState = useSelector((store :Map) => store.getIn([
@@ -140,10 +142,10 @@ const CheckInDetailsModal = ({
   const removeCheckIn = useCallback(
     () => dispatch(deleteCheckIn({
       appointmentEKID,
-      checkInToDelete: [{ entitySetId: checkInESID, entityKeyIds: [checkInEKID] }],
-      numberHoursWorked: -hoursWorked,
+      checkInToDelete: [{ block: false, entitySetId: checkInESID, entityKeyIds: [checkInEKID] }],
+      worksitePlanEKID,
     })),
-    [appointmentEKID, checkInEKID, checkInESID, dispatch, hoursWorked]
+    [appointmentEKID, checkInEKID, checkInESID, dispatch, worksitePlanEKID]
   );
 
   return (
