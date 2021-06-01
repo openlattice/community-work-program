@@ -45,7 +45,7 @@ const {
   CHECK_INS,
   CHECK_IN_DETAILS,
   FULFILLS,
-  HAS,
+  RELATED_TO,
   PEOPLE,
 } = APP_TYPE_FQNS;
 const {
@@ -214,9 +214,9 @@ class CheckInForm extends Component<Props, State> {
     const appointmentEKID :UUID = appointment.get(ENTITY_KEY_ID);
     const associations = [];
 
-    associations.push([HAS, personEKID, PEOPLE, 0, CHECK_INS, {}]);
+    associations.push([RELATED_TO, personEKID, PEOPLE, 0, CHECK_INS, {}]);
     associations.push([FULFILLS, 0, CHECK_INS, appointmentEKID, APPOINTMENT, {}]);
-    associations.push([HAS, 0, CHECK_INS, 0, CHECK_IN_DETAILS, {}]);
+    associations.push([RELATED_TO, 0, CHECK_INS, 0, CHECK_IN_DETAILS, {}]);
 
     const entityData :{} = processEntityData(newCheckInData, entitySetIds, propertyTypeIds);
     const associationEntityData :{} = processAssociationEntityData(fromJS(associations), entitySetIds, propertyTypeIds);
