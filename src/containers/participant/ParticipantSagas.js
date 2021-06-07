@@ -23,6 +23,7 @@ import {
   SearchApiActions,
   SearchApiSagas,
 } from 'lattice-sagas';
+import { DataUtils } from 'lattice-utils';
 import { DateTime } from 'luxon';
 import type { FQN, UUID } from 'lattice';
 import type { SequenceAction } from 'redux-reqseq';
@@ -143,6 +144,7 @@ const { getEntityData, getEntitySetData } = DataApiActions;
 const { getEntityDataWorker, getEntitySetDataWorker } = DataApiSagas;
 const { searchEntityNeighborsWithFilter } = SearchApiActions;
 const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
+const { getPropertyValue } = DataUtils;
 const {
   DIVERSION_PLAN,
   ENROLLMENT_STATUS,
@@ -1205,7 +1207,13 @@ function* getEnrollmentStatusWorker(action :SequenceAction) :Generator<*, *, *> 
           /* filter out enrollment statuses that have blank effective date values before sorting */
           const statusesWithEffectiveDates :List = statusList
             .filter((status :Map) => isDefined(status.get(EFFECTIVE_DATE)));
-          const sortedStatusList :List = sortEntitiesByDateProperty(statusesWithEffectiveDates, [EFFECTIVE_DATE]);
+          let sortedStatusList :List = sortEntitiesByDateProperty(statusesWithEffectiveDates, [EFFECTIVE_DATE]);
+          // sort list again, pushing "awaiting check-in" statuses to the front:
+          sortedStatusList = sortedStatusList.sort((status :Map) => {
+            const statusName = getPropertyValue(status, [STATUS, 0]);
+            if (statusName === ENROLLMENT_STATUSES.AWAITING_CHECKIN) return -1;
+            return 0;
+          });
           firstEnrollmentStatusesByDiversionPlan = firstEnrollmentStatusesByDiversionPlan
             .set(diversionPlanEKID, sortedStatusList.first() || Map());
           /*
