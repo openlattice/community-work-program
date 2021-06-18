@@ -22,7 +22,7 @@ import {
   IconButton,
   StyleUtils
 } from 'lattice-ui-kit';
-import { useGoToRoute } from 'lattice-utils';
+import { DataUtils, useGoToRoute } from 'lattice-utils';
 import { connect } from 'react-redux';
 import type { UUID } from 'lattice';
 
@@ -41,19 +41,20 @@ import {
   WORKSITE_PLANS,
   WORK_SCHEDULE,
 } from '../../utils/constants/ReduxStateConsts';
-import {
-  doesCheckInMatchAppointment,
-  get24HourTimeForCheckIn,
-  getHoursForDisplay,
-  getHoursScheduled,
-} from '../participant/utils/CheckInUtils';
+import { get24HourTimeForCheckIn, getHoursForDisplay, getHoursScheduled } from '../participant/utils/CheckInUtils';
 
 const { getStyleVariation } = StyleUtils;
+const { getPropertyValue } = DataUtils;
 const { NEUTRAL, PURPLE, YELLOW } = Colors;
 const { CHECK_INS_BY_APPOINTMENT, WORKSITES_BY_WORKSITE_PLAN, WORKSITE_PLAN_EKID_BY_APPOINTMENT_EKID } = WORKSITE_PLANS;
 const { PARTICIPANT } = PERSON;
 const { PERSON_BY_APPOINTMENT_EKID } = WORK_SCHEDULE;
-const { ENTITY_KEY_ID, FIRST_NAME, LAST_NAME } = PROPERTY_TYPE_FQNS;
+const {
+  ENTITY_KEY_ID,
+  FIRST_NAME,
+  HOURS_WORKED,
+  LAST_NAME,
+} = PROPERTY_TYPE_FQNS;
 
 const CheckedInIcon = (
   <FontAwesomeIcon icon={faCheckCircle} color={PURPLE.P300} size="lg" />
@@ -169,8 +170,8 @@ const AppointmentContainer = ({
   const assignedWorksites :List = worksitesByWorksitePlan.valueSeq().toList();
 
   let checkedInSymbol = CheckedInIcon;
-  const checkInHoursEqualAppointmentHours = doesCheckInMatchAppointment(numHours, checkIn);
-  if (!checkInHoursEqualAppointmentHours) {
+  const numberHoursWorked = getPropertyValue(checkIn, [HOURS_WORKED, 0]);
+  if (!numberHoursWorked) {
     checkedInSymbol = ExclamationIcon;
   }
   const hoursToDisplay = getHoursForDisplay(numHours, checkIn);
