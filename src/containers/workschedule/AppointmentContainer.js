@@ -171,7 +171,7 @@ const AppointmentContainer = ({
 
   let checkedInSymbol = CheckedInIcon;
   const numberHoursWorked = getPropertyValue(checkIn, [HOURS_WORKED, 0]);
-  if (!numberHoursWorked) {
+  if (numberHoursWorked === 0) {
     checkedInSymbol = ExclamationIcon;
   }
   const hoursToDisplay = getHoursForDisplay(numHours, checkIn);
