@@ -41,6 +41,7 @@ import {
   reassignJudge,
   updatePersonPhoto,
 } from './ParticipantActions';
+import { EDIT_PROGRAM_OUTCOME, editProgramOutcome } from './outcome/ProgramOutcomeActions';
 
 import { PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { RESET_REQUEST_STATE } from '../../core/redux/actions';
@@ -426,6 +427,30 @@ export default function participantReducer(state :Map<*, *> = INITIAL_STATE, act
         FAILURE: () => state
           .setIn([ACTIONS, EDIT_PERSON_CASE, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, EDIT_PERSON_CASE, action.id]),
+      });
+    }
+
+    case editProgramOutcome.case(action.type): {
+      return editProgramOutcome.reducer(state, action, {
+        REQUEST: () => state
+          .setIn([ACTIONS, EDIT_PROGRAM_OUTCOME, action.id], action)
+          .setIn([ACTIONS, EDIT_PROGRAM_OUTCOME, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => {
+          const { newEnrollmentStatusData, newProgramOutcomeData } = action.value;
+          return state
+            .set(
+              ENROLLMENT_STATUS,
+              state.get(ENROLLMENT_STATUS).mergeWith((oldVal, newVal) => newVal, newEnrollmentStatusData)
+            )
+            .set(
+              PROGRAM_OUTCOME,
+              state.get(PROGRAM_OUTCOME).mergeWith((oldVal, newVal) => newVal, newProgramOutcomeData)
+            )
+            .setIn([ACTIONS, EDIT_PROGRAM_OUTCOME, REQUEST_STATE], RequestStates.SUCCESS);
+        },
+        FAILURE: () => state
+          .setIn([ACTIONS, EDIT_PROGRAM_OUTCOME, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, EDIT_PROGRAM_OUTCOME, action.id]),
       });
     }
 
