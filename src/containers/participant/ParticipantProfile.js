@@ -26,7 +26,7 @@ import CreateWorkAppointmentModal from './schedule/CreateAppointmentModal';
 import EnrollmentTableRow from './enrollment/EnrollmentTableRow';
 import InfractionsContainer from './infractions/InfractionsContainer';
 import ParticipantWorkScheduleContainer from './schedule/ParticipantWorkScheduleContainer';
-import ProgramCompletionBanner from './ProgramCompletionBanner';
+import ProgramCompletionBanner from './outcome/ProgramCompletionBanner';
 import generateDiversionPlanOptions from './utils/ParticipantProfileUtils';
 import { getAllParticipantInfo, getEnrollmentFromDiversionPlan } from './ParticipantActions';
 import { clearAppointmentsAndPlans } from './assignedworksites/WorksitePlanActions';
