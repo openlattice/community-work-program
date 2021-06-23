@@ -1,6 +1,7 @@
 // @flow
 import React, { useEffect, useState } from 'react';
 
+import styled from 'styled-components';
 import {
   Map,
   fromJS,
@@ -38,6 +39,10 @@ const {
 } = PROPERTY_TYPE_FQNS;
 const { getEntityKeyId, getPropertyValue } = DataUtils;
 const { isDefined } = LangUtils;
+
+const ModalInnerWrapper = styled.div`
+  padding-bottom: 30px;
+`;
 
 type Props = {
   isVisible :boolean;
@@ -145,19 +150,19 @@ const ProgramOutcomeModal = ({ isVisible, onClose } :Props) => {
   return (
     <Modal
         isVisible={isVisible}
-        onClickSecondary={onClose}
         onClose={onClose}
-        textSecondary="Close"
         textTitle="Program Outcome"
         viewportScrolling>
-      <Form
-          disabled
-          formContext={formContext}
-          formData={formData}
-          noPadding
-          onChange={onChange}
-          schema={schema}
-          uiSchema={uiSchema} />
+      <ModalInnerWrapper>
+        <Form
+            disabled
+            formContext={formContext}
+            formData={formData}
+            noPadding
+            onChange={onChange}
+            schema={schema}
+            uiSchema={uiSchema} />
+      </ModalInnerWrapper>
     </Modal>
   );
 };
