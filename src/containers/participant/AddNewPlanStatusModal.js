@@ -148,8 +148,8 @@ const AddNewPlanStatusModal = ({ isVisible, onClose } :Props) => {
         getPageSectionKey(1, 2),
         getEntityAddressKey(0, PROGRAM_OUTCOME, HOURS_WORKED)
       ];
-      const hoursWorkedAsInt = parseInt(getIn(updatedFormData, hoursWorkedPath, '0'), 10);
-      updatedFormData = setIn(updatedFormData, hoursWorkedPath, hoursWorkedAsInt);
+      const hoursWorkedAsFloat = parseFloat(getIn(updatedFormData, hoursWorkedPath, '0'));
+      updatedFormData = setIn(updatedFormData, hoursWorkedPath, hoursWorkedAsFloat);
 
       /* 2. program outcome must be marked as completed (true) if status is completed or successful,
             and not completed (false) if status is removed noncompliant or unsuccessful or closed: */
