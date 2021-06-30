@@ -187,7 +187,7 @@ function* downloadParticipantsWorker(action :SequenceAction) :Generator<*, *, *>
     if (response.error) throw response.error;
     const diversionPlanNeighbors :Map = fromJS(response.data);
 
-    const csvData :Object[] = [];
+    let csvData :Object[] = [];
 
     fromJS(diversionPlans).forEach((diversionPlan :Map) => {
       const diversionPlanEKID = getEntityKeyId(diversionPlan);
@@ -256,6 +256,14 @@ function* downloadParticipantsWorker(action :SequenceAction) :Generator<*, *, *>
       };
 
       csvData.push(csvRow);
+    });
+
+    csvData = csvData.sort((csvRow1, csvRow2) => {
+      const name1 = csvRow1.Person.toUpperCase();
+      const name2 = csvRow2.Person.toUpperCase();
+      if (name1 < name2) return -1;
+      if (name1 > name2) return 1;
+      return 0;
     });
 
     const csv = Papa.unparse(csvData);
