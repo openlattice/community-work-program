@@ -194,7 +194,7 @@ class AppContainer extends Component<Props> {
                   )
                 }
               </AppContentWrapper>
-              <ContactSupport />
+              { !isPrintView && <ContactSupport /> }
             </AppContainerWrapper>
           </StylesProvider>
         </MuiPickersUtilsProvider>
