@@ -76,7 +76,7 @@ const PenningtonSherrifsHeader = styled.img.attrs({
 
 const TextWrapper = styled.div`
   display: flex;
-  margin-bottom: 20px;
+  margin-bottom: 5px;
   max-width: ${APP_CONTENT_WIDTH}px;
   overflow-wrap: break-word;
 `;
@@ -222,10 +222,10 @@ class PrintInfractionContainer extends Component<Props, State> {
     const username = userInfo.name || EMPTY_FIELD;
     return (
       <Card>
-        <CardSegment>
+        <CardSegment padding="10px">
           <PenningtonSherrifsHeader />
         </CardSegment>
-        <CardSegment>
+        <CardSegment padding="10px">
           <Label subtle>Date</Label>
           <TextWrapper>{ infractionDate }</TextWrapper>
           <RowWrapper>
@@ -241,7 +241,7 @@ class PrintInfractionContainer extends Component<Props, State> {
           <Label subtle>Violation Type</Label>
           <TextWrapper>{ infractionCategory }</TextWrapper>
         </CardSegment>
-        <CardSegment>
+        <CardSegment padding="10px">
           {
             caseFieldRowArray.map((num :number) => (
               <div key={num}>
@@ -279,11 +279,11 @@ class PrintInfractionContainer extends Component<Props, State> {
             ))
           }
         </CardSegment>
-        <CardSegment>
+        <CardSegment padding="10px">
           <Label subtle>Narrative</Label>
           <TextWrapper>{ narrative }</TextWrapper>
         </CardSegment>
-        <CardSegment>
+        <CardSegment padding="10px">
           <Label subtle>Work Program Staff Person</Label>
           <TextWrapper>{ username }</TextWrapper>
         </CardSegment>
