@@ -298,7 +298,8 @@ function* getParticipantPhotosWorker(action :SequenceAction) :Generator<*, *, *>
     const imageESID :UUID = getEntitySetIdFromApp(app, IMAGE);
     const participantEKIDs :UUID[] = [];
     participants.forEach((participant :Map) => {
-      participantEKIDs.push(getEntityKeyId(participant));
+      const participantEKID :?UUID = getEntityKeyId(participant);
+      if (participantEKID) participantEKIDs.push(participantEKID);
     });
 
     const searchFilter = {
@@ -390,7 +391,7 @@ function* getHoursWorkedWorker(action :SequenceAction) :Generator<*, *, *> {
     diversionPlanNeighbors.forEach((diversionPlan :Map) => {
 
       const person :Map = diversionPlan.find((neighbor :Map) => getNeighborESID(neighbor) === peopleESID);
-      const personEKID :UUID = getEntityKeyId(getNeighborDetails(person));
+      const personEKID :?UUID = getEntityKeyId(getNeighborDetails(person));
       const worksitePlans :List = diversionPlan
         .filter((neighbor :Map) => getNeighborESID(neighbor) === worksitePlanESID);
       let hoursWorked :number = 0;
@@ -456,7 +457,8 @@ function* getCourtTypeWorker(action :SequenceAction) :Generator<*, *, *> {
 
     const diversionPlanEKIDs :UUID[] = [];
     currentDiversionPlansByParticipant.forEach((diversionPlan :Map) => {
-      diversionPlanEKIDs.push(getEntityKeyId(diversionPlan));
+      const diversionPlanEKID :?UUID = getEntityKeyId(diversionPlan);
+      if (diversionPlanEKID) diversionPlanEKIDs.push(diversionPlanEKID);
     });
 
     const searchFilter = {
@@ -476,7 +478,7 @@ function* getCourtTypeWorker(action :SequenceAction) :Generator<*, *, *> {
     if (!casesAndPeopleByDiversionPlan.isEmpty()) {
       casesAndPeopleByDiversionPlan.forEach((caseAndPersonNeighbors :List) => {
         const person :Map = caseAndPersonNeighbors.find((neighbor :Map) => getNeighborESID(neighbor) === peopleESID);
-        const personEKID :UUID = getEntityKeyId(getNeighborDetails(person));
+        const personEKID :?UUID = getEntityKeyId(getNeighborDetails(person));
         const courtCaseObj :Map = caseAndPersonNeighbors
           .find((neighbor :Map) => getNeighborESID(neighbor) === manualCasesESID);
         const courtCase :Map = getNeighborDetails(courtCaseObj);
@@ -779,8 +781,8 @@ function* getParticipantsWorker(action :SequenceAction) :Generator<*, *, *> {
 
       const diversionPlanEKIDs = [];
       diversionPlans.forEach((diversionPlan :Map) => {
-        const diversionPlanEKID :UUID = getEntityKeyId(diversionPlan);
-        diversionPlanEKIDs.push(diversionPlanEKID);
+        const diversionPlanEKID :?UUID = getEntityKeyId(diversionPlan);
+        if (diversionPlanEKID) diversionPlanEKIDs.push(diversionPlanEKID);
       });
 
       const searchFilter = {
@@ -803,9 +805,9 @@ function* getParticipantsWorker(action :SequenceAction) :Generator<*, *, *> {
         .toList();
 
       diversionPlans.forEach((diversionPlan :Map) => {
-        const diversionPlanEKID :UUID = getEntityKeyId(diversionPlan);
+        const diversionPlanEKID :?UUID = getEntityKeyId(diversionPlan);
         const person :Map = participantsByDiversionPlanEKID.get(diversionPlanEKID);
-        const personEKID :UUID = getEntityKeyId(person);
+        const personEKID :?UUID = getEntityKeyId(person);
         let personDiversionPlans = allDiversionPlansByParticipant.get(personEKID, List());
         personDiversionPlans = personDiversionPlans.push(diversionPlan);
         allDiversionPlansByParticipant = allDiversionPlansByParticipant.set(personEKID, personDiversionPlans);
