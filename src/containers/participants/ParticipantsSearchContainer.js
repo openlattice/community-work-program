@@ -6,7 +6,7 @@ import React, { Component } from 'react';
 
 import styled from 'styled-components';
 import toString from 'lodash/toString';
-import { faFilter } from '@fortawesome/pro-solid-svg-icons';
+import { faDownload, faFilter } from '@fortawesome/pro-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { List, Map } from 'immutable';
 import {
@@ -22,7 +22,7 @@ import { RequestStates } from 'redux-reqseq';
 import type { UUID } from 'lattice';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
-import { getDiversionPlans } from './ParticipantsActions';
+import { downloadParticipants, getDiversionPlans } from './ParticipantsActions';
 import {
   ALL,
   ALL_PARTICIPANTS_COLUMNS,
@@ -127,6 +127,7 @@ const FiltersGrid = styled.div`
 
 type Props = {
   actions:{
+    downloadParticipants :RequestSequence;
     getDiversionPlans :RequestSequence;
     goToRoute :GoToRoute;
   };
@@ -313,7 +314,7 @@ class ParticipantsSearchContainer extends Component<Props, State> {
   }
 
   render() {
-    const { getInitializeAppRequestState, getDiversionPlansRequestState } = this.props;
+    const { actions, getInitializeAppRequestState, getDiversionPlansRequestState } = this.props;
     const { filtersVisible } = this.state;
 
     if (getDiversionPlansRequestState === RequestStates.PENDING
@@ -340,6 +341,11 @@ class ParticipantsSearchContainer extends Component<Props, State> {
                 </TableHeaderItemsWrapper>
                 <TableHeaderItemsWrapper>
                   <SearchContainer search={this.searchParticipantList} />
+                  <IconButtonWrapper>
+                    <IconButton onClick={() => actions.downloadParticipants()}>
+                      <FontAwesomeIcon icon={faDownload} />
+                    </IconButton>
+                  </IconButtonWrapper>
                   <IconButtonWrapper>
                     <IconButton onClick={() => this.setState({ filtersVisible: !filtersVisible })}>
                       <FontAwesomeIcon icon={faFilter} />
@@ -414,6 +420,7 @@ const mapStateToProps = (state :Map<*, *>) => {
 
 const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
+    downloadParticipants,
     getDiversionPlans,
     goToRoute,
   }, dispatch)
