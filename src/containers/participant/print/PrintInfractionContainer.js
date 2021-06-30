@@ -250,12 +250,14 @@ class PrintInfractionContainer extends Component<Props, State> {
                     <Label subtle>Docket #</Label>
                     <Select
                         borderless
+                        hideDropdownIcon
                         options={casesOptions} />
                   </div>
                   <div>
                     <Label subtle>Judge</Label>
                     <Select
                         borderless
+                        hideDropdownIcon
                         options={judgesOptions} />
                   </div>
                 </RowWrapper>
