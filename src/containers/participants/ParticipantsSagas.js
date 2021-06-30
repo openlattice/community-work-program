@@ -16,6 +16,7 @@ import {
   SearchApiActions,
   SearchApiSagas,
 } from 'lattice-sagas';
+import { DataUtils } from 'lattice-utils';
 import { DateTime } from 'luxon';
 import type { UUID } from 'lattice';
 import type { SequenceAction } from 'redux-reqseq';
@@ -38,9 +39,10 @@ import {
   getParticipantPhotos,
   getParticipants,
 } from './ParticipantsActions';
+import { COMPLETION_STATUSES } from './ParticipantsConstants';
 
 import Logger from '../../utils/Logger';
-import { INFRACTIONS_CONSTS } from '../../core/edm/constants/DataModelConsts';
+import { ENROLLMENT_STATUSES, INFRACTIONS_CONSTS } from '../../core/edm/constants/DataModelConsts';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
 import { submitDataGraph } from '../../core/sagas/data/DataActions';
 import { submitDataGraphWorker } from '../../core/sagas/data/DataSagas';
@@ -61,6 +63,7 @@ const { getEntitySetData } = DataApiActions;
 const { getEntitySetDataWorker } = DataApiSagas;
 const { searchEntityNeighborsWithFilter } = SearchApiActions;
 const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
+const { getPropertyValue } = DataUtils;
 
 const {
   DIVERSION_PLAN,
@@ -78,6 +81,7 @@ const {
   EFFECTIVE_DATE,
   HOURS_WORKED,
   REQUIRED_HOURS,
+  STATUS,
   TYPE,
 } = PROPERTY_TYPE_FQNS;
 
@@ -464,8 +468,19 @@ function* getEnrollmentStatusesWorker(action :SequenceAction) :Generator<*, *, *
         /* filter out enrollment statuses that have blank effective date values before sorting */
         const statusesWithEffectiveDates :List = enrollmentList
           .filter((status :Map) => isDefined(status.get(EFFECTIVE_DATE)));
-        const sortedEnrollmentStatuses :List = sortEntitiesByDateProperty(statusesWithEffectiveDates, [EFFECTIVE_DATE]);
-        const mostRecentStatus = sortedEnrollmentStatuses.last();
+        let sortedEnrollmentStatuses :List = sortEntitiesByDateProperty(statusesWithEffectiveDates, [EFFECTIVE_DATE]);
+        // sort list again, pushing "awaiting check-in" statuses to the front:
+        sortedEnrollmentStatuses = sortedEnrollmentStatuses.sort((status :Map) => {
+          const statusName = getPropertyValue(status, [STATUS, 0]);
+          if (statusName === ENROLLMENT_STATUSES.AWAITING_CHECKIN) return -1;
+          return 0;
+        });
+        const completionStatus :?Map = sortedEnrollmentStatuses.find((statusInList :Map) => {
+          const status = getPropertyValue(statusInList, [STATUS, 0]);
+          return COMPLETION_STATUSES.includes(status);
+        });
+        const mostRecentStatus :Map = completionStatus || sortedEnrollmentStatuses.last() || Map();
+        // const mostRecentStatus = sortedEnrollmentStatuses.last();
 
         let { [EFFECTIVE_DATE]: storedStatusDate } = getEntityProperties(personEnrollmentStatus, [EFFECTIVE_DATE]);
         storedStatusDate = DateTime.fromISO(storedStatusDate);
