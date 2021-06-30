@@ -58,6 +58,9 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     [ADD_PARTICIPANT]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
+    [DOWNLOAD_PARTICIPANTS]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
     [GET_COURT_TYPE]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
