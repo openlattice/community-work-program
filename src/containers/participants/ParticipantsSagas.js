@@ -221,6 +221,7 @@ function* downloadParticipantsWorker(action :SequenceAction) :Generator<*, *, *>
         const statusName = getPropertyValue(status, [STATUS, 0]);
         return COMPLETION_STATUSES.includes(statusName);
       }) || sortedEnrollmentStatuses.last() || Map();
+      const status :string = getPropertyValue(mostRecentEnrollmentStatus, [STATUS, 0], '');
 
       let hoursWorked = '';
       let endDate = '';
@@ -229,7 +230,14 @@ function* downloadParticipantsWorker(action :SequenceAction) :Generator<*, *, *>
       if (isDefined(programOutcomeNeighbor)) {
         const programOutcome :Map = getNeighborDetails(programOutcomeNeighbor);
         hoursWorked = getPropertyValue(programOutcome, [HOURS_WORKED, 0], '');
-        endDate = formatAsDate(getPropertyValue(programOutcome, [DATETIME_COMPLETED, 0], ''));
+        const programOutcomeEndDateTime = getPropertyValue(programOutcome, [DATETIME_COMPLETED, 0]);
+        const enrollmentStatusDateTime = getPropertyValue(mostRecentEnrollmentStatus, [EFFECTIVE_DATE, 0]);
+        if (DateTime.fromISO(programOutcomeEndDateTime).isValid) {
+          endDate = formatAsDate(programOutcomeEndDateTime);
+        }
+        else if (COMPLETION_STATUSES.includes(status) && DateTime.fromISO(enrollmentStatusDateTime).isValid) {
+          endDate = formatAsDate(enrollmentStatusDateTime);
+        }
       }
       else {
         const worksitePlans :List = diversionPlan
@@ -254,7 +262,7 @@ function* downloadParticipantsWorker(action :SequenceAction) :Generator<*, *, *>
         Ethnicity: getPropertyValue(person, [ETHNICITY, 0], ''),
         Sex: getPropertyValue(person, [SEX, 0], ''),
         'Hours Worked': hoursWorked,
-        Status: getPropertyValue(mostRecentEnrollmentStatus, [STATUS, 0], ''),
+        Status: status,
         'Start Date': startDate,
         'End Date': endDate,
         'Court Type': courtCaseType,
