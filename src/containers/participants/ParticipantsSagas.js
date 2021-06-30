@@ -2,6 +2,8 @@
  * @flow
  */
 
+import FS from 'file-saver';
+import Papa from 'papaparse';
 import {
   all,
   call,
@@ -16,13 +18,14 @@ import {
   SearchApiActions,
   SearchApiSagas,
 } from 'lattice-sagas';
-import { DataUtils } from 'lattice-utils';
+import { DataUtils, DateTimeUtils } from 'lattice-utils';
 import { DateTime } from 'luxon';
 import type { UUID } from 'lattice';
 import type { SequenceAction } from 'redux-reqseq';
 
 import {
   ADD_PARTICIPANT,
+  DOWNLOAD_PARTICIPANTS,
   GET_COURT_TYPE,
   GET_DIVERSION_PLANS,
   GET_ENROLLMENT_STATUSES,
@@ -31,6 +34,7 @@ import {
   GET_PARTICIPANTS,
   GET_PARTICIPANT_PHOTOS,
   addParticipant,
+  downloadParticipants,
   getCourtType,
   getDiversionPlans,
   getEnrollmentStatuses,
@@ -44,10 +48,10 @@ import { COMPLETION_STATUSES } from './ParticipantsConstants';
 import Logger from '../../utils/Logger';
 import { ENROLLMENT_STATUSES, INFRACTIONS_CONSTS } from '../../core/edm/constants/DataModelConsts';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { selectEntitySetId, selectOrgId } from '../../core/redux/selectors';
 import { submitDataGraph } from '../../core/sagas/data/DataActions';
 import { submitDataGraphWorker } from '../../core/sagas/data/DataSagas';
 import {
-  getEntityKeyId,
   getEntityProperties,
   getEntitySetIdFromApp,
   getNeighborDetails,
@@ -56,6 +60,7 @@ import {
 } from '../../utils/DataUtils';
 import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../utils/Errors';
 import { isDefined } from '../../utils/LangUtils';
+import { getPersonFullName } from '../../utils/PeopleUtils';
 import { isValidUUID } from '../../utils/ValidationUtils';
 import { STATE } from '../../utils/constants/ReduxStateConsts';
 
@@ -63,7 +68,8 @@ const { getEntitySetData } = DataApiActions;
 const { getEntitySetDataWorker } = DataApiSagas;
 const { searchEntityNeighborsWithFilter } = SearchApiActions;
 const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
-const { getPropertyValue } = DataUtils;
+const { getEntityKeyId, getPropertyValue } = DataUtils;
+const { formatAsDate } = DateTimeUtils;
 
 const {
   DIVERSION_PLAN,
@@ -72,15 +78,24 @@ const {
   INFRACTION_EVENT,
   MANUAL_PRETRIAL_COURT_CASES,
   PEOPLE,
+  PROGRAM_OUTCOME,
   WORKSITE_PLAN,
 } = APP_TYPE_FQNS;
 const {
+  CHECK_IN_DATETIME,
   COMPLETED,
   COURT_CASE_TYPE,
   DATETIME,
+  DATETIME_COMPLETED,
+  DATETIME_RECEIVED,
+  DOB,
   EFFECTIVE_DATE,
+  ETHNICITY,
   HOURS_WORKED,
+  ORIENTATION_DATETIME,
+  RACE,
   REQUIRED_HOURS,
+  SEX,
   STATUS,
   TYPE,
 } = PROPERTY_TYPE_FQNS;
@@ -133,6 +148,134 @@ function* addParticipantWorker(action :SequenceAction) :Generator<*, *, *> {
 function* addParticipantWatcher() :Generator<*, *, *> {
 
   yield takeEvery(ADD_PARTICIPANT, addParticipantWorker);
+}
+
+/*
+ *
+ * ParticipantsActions.downloadParticipants()
+ *
+ */
+
+function* downloadParticipantsWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+
+  try {
+    yield put(downloadParticipants.request(id, value));
+
+    const selectedOrgId :UUID = yield select(selectOrgId());
+    const diversionPlanESID :UUID = yield select(selectEntitySetId(selectedOrgId, DIVERSION_PLAN));
+    let response = yield call(getEntitySetDataWorker, getEntitySetData({ entitySetId: diversionPlanESID }));
+    if (response.error) throw response.error;
+    const diversionPlans :Object[] = response.data;
+    const diversionPlanEKIDs = diversionPlans?.map((diversionPlan :Object) => getEntityKeyId(diversionPlan));
+
+    const enrollmentStatusESID :UUID = yield select(selectEntitySetId(selectedOrgId, ENROLLMENT_STATUS));
+    const peopleESID :UUID = yield select(selectEntitySetId(selectedOrgId, PEOPLE));
+    const programOutcomeESID :UUID = yield select(selectEntitySetId(selectedOrgId, PROGRAM_OUTCOME));
+    const worksitePlanESID :UUID = yield select(selectEntitySetId(selectedOrgId, WORKSITE_PLAN));
+
+    const filter = {
+      entityKeyIds: diversionPlanEKIDs,
+      destinationEntitySetIds: [programOutcomeESID],
+      sourceEntitySetIds: [enrollmentStatusESID, peopleESID, worksitePlanESID],
+    };
+    response = yield call(
+      searchEntityNeighborsWithFilterWorker,
+      searchEntityNeighborsWithFilter({ entitySetId: diversionPlanESID, filter })
+    );
+    if (response.error) throw response.error;
+    const diversionPlanNeighbors :Map = fromJS(response.data);
+
+    const csvData :Object[] = [];
+
+    fromJS(diversionPlans).forEach((diversionPlan :Map) => {
+      const diversionPlanEKID = getEntityKeyId(diversionPlan);
+      const neighbors = diversionPlanNeighbors.get(diversionPlanEKID, List());
+
+      const personNeighbor :Map = neighbors.find((neighbor) => getNeighborESID(neighbor) === peopleESID);
+      const person :Map = getNeighborDetails(personNeighbor);
+
+      const sentenceDateTime = getPropertyValue(diversionPlan, [DATETIME_RECEIVED, 0]);
+      const checkInDateTime = getPropertyValue(diversionPlan, [CHECK_IN_DATETIME, 0]);
+      const orientationDateTime = getPropertyValue(diversionPlan, [ORIENTATION_DATETIME, 0]);
+
+      let startDate = '';
+      if (DateTime.fromISO(sentenceDateTime).isValid) startDate = formatAsDate(sentenceDateTime);
+      else if (DateTime.fromISO(checkInDateTime).isValid) startDate = formatAsDate(checkInDateTime);
+      else if (DateTime.fromISO(orientationDateTime).isValid) startDate = formatAsDate(orientationDateTime);
+
+      const enrollmentStatusNeighbors :List = neighbors
+        .filter((neighbor) => getNeighborESID(neighbor) === enrollmentStatusESID);
+      const sortedEnrollmentStatuses = enrollmentStatusNeighbors
+        .map((neighbor :Map) => getNeighborDetails(neighbor))
+        .filter((status :Map) => isDefined(status.get(EFFECTIVE_DATE)))
+        .sortBy((status :Map) => DateTime.fromISO(getPropertyValue(status, [EFFECTIVE_DATE, 0])).valueOf())
+        .sort((status :Map) => {
+          const statusName = getPropertyValue(status, [STATUS, 0]);
+          if (statusName === ENROLLMENT_STATUSES.AWAITING_CHECKIN) return -1;
+          return 0;
+        });
+      const mostRecentEnrollmentStatus :Map = sortedEnrollmentStatuses.find((status :Map) => {
+        const statusName = getPropertyValue(status, [STATUS, 0]);
+        return COMPLETION_STATUSES.includes(statusName);
+      }) || sortedEnrollmentStatuses.last() || Map();
+
+      let hoursWorked = '';
+      let endDate = '';
+
+      const programOutcomeNeighbor = neighbors.find((neighbor) => getNeighborESID(neighbor) === programOutcomeESID);
+      if (isDefined(programOutcomeNeighbor)) {
+        const programOutcome :Map = getNeighborDetails(programOutcomeNeighbor);
+        hoursWorked = getPropertyValue(programOutcome, [HOURS_WORKED, 0], '');
+        endDate = formatAsDate(getPropertyValue(programOutcome, [DATETIME_COMPLETED, 0], ''));
+      }
+      else {
+        const worksitePlans :List = diversionPlan
+          .filter((neighbor :Map) => getNeighborESID(neighbor) === worksitePlanESID)
+          .map((neighbor :Map) => getNeighborDetails(neighbor));
+        const totalHoursWorkedToDate = worksitePlans
+          .reduce((totalHours :number, worksitePlanNeighbor :Map) => {
+            const worksitePlan = getNeighborDetails(worksitePlanNeighbor);
+            const currentHours = getPropertyValue(worksitePlan, [HOURS_WORKED, 0], 0);
+            return currentHours + totalHours;
+          }, 0);
+        hoursWorked = totalHoursWorkedToDate;
+      }
+
+      const csvRow = {
+        Person: getPersonFullName(person),
+        DOB: getPropertyValue(person, [DOB, 0], ''),
+        Race: getPropertyValue(person, [RACE, 0], ''),
+        Ethnicity: getPropertyValue(person, [ETHNICITY, 0], ''),
+        Sex: getPropertyValue(person, [SEX, 0], ''),
+        'Hours Worked': hoursWorked,
+        Status: getPropertyValue(mostRecentEnrollmentStatus, [STATUS, 0], ''),
+        'Start Date': startDate,
+        'End Date': endDate,
+      };
+
+      csvData.push(csvRow);
+    });
+
+    const csv = Papa.unparse(csvData);
+    const blob = new Blob([csv], { type: 'application/json' });
+    FS.saveAs(blob, 'CWP_Participants.csv');
+
+    yield put(downloadParticipants.success(id));
+  }
+  catch (error) {
+    LOG.error(action.type, error);
+    yield put(downloadParticipants.failure(id, error));
+  }
+  finally {
+    yield put(downloadParticipants.finally(id));
+  }
+}
+
+function* downloadParticipantsWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(DOWNLOAD_PARTICIPANTS, downloadParticipantsWorker);
 }
 
 /*
@@ -738,6 +881,8 @@ function* getDiversionPlansWatcher() :Generator<*, *, *> {
 export {
   addParticipantWatcher,
   addParticipantWorker,
+  downloadParticipantsWatcher,
+  downloadParticipantsWorker,
   getCourtTypeWatcher,
   getCourtTypeWorker,
   getDiversionPlansWatcher,
