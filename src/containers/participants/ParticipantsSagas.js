@@ -171,13 +171,14 @@ function* downloadParticipantsWorker(action :SequenceAction) :Generator<*, *, *>
     const diversionPlanEKIDs = diversionPlans?.map((diversionPlan :Object) => getEntityKeyId(diversionPlan));
 
     const enrollmentStatusESID :UUID = yield select(selectEntitySetId(selectedOrgId, ENROLLMENT_STATUS));
+    const courtCaseESID :UUID = yield select(selectEntitySetId(selectedOrgId, MANUAL_PRETRIAL_COURT_CASES));
     const peopleESID :UUID = yield select(selectEntitySetId(selectedOrgId, PEOPLE));
     const programOutcomeESID :UUID = yield select(selectEntitySetId(selectedOrgId, PROGRAM_OUTCOME));
     const worksitePlanESID :UUID = yield select(selectEntitySetId(selectedOrgId, WORKSITE_PLAN));
 
     const filter = {
       entityKeyIds: diversionPlanEKIDs,
-      destinationEntitySetIds: [programOutcomeESID],
+      destinationEntitySetIds: [courtCaseESID, programOutcomeESID],
       sourceEntitySetIds: [enrollmentStatusESID, peopleESID, worksitePlanESID],
     };
     response = yield call(
@@ -243,6 +244,9 @@ function* downloadParticipantsWorker(action :SequenceAction) :Generator<*, *, *>
         hoursWorked = totalHoursWorkedToDate;
       }
 
+      const courtCaseNeighbor = neighbors.find((neighbor :Map) => getNeighborESID(neighbor) === courtCaseESID);
+      const courtCaseType = getPropertyValue(getNeighborDetails(courtCaseNeighbor), [COURT_CASE_TYPE, 0], '');
+
       const csvRow = {
         Person: getPersonFullName(person),
         DOB: getPropertyValue(person, [DOB, 0], ''),
@@ -253,6 +257,7 @@ function* downloadParticipantsWorker(action :SequenceAction) :Generator<*, *, *>
         Status: getPropertyValue(mostRecentEnrollmentStatus, [STATUS, 0], ''),
         'Start Date': startDate,
         'End Date': endDate,
+        'Court Type': courtCaseType,
       };
 
       csvData.push(csvRow);
