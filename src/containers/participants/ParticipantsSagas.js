@@ -280,7 +280,7 @@ function* downloadParticipantsWorker(action :SequenceAction) :Generator<*, *, *>
     });
 
     const csv = Papa.unparse(csvData);
-    const blob = new Blob([csv], { type: 'application/json' });
+    const blob = new Blob([csv], { type: 'text/csv' });
     FS.saveAs(blob, 'CWP_Participants.csv');
 
     yield put(downloadParticipants.success(id));
