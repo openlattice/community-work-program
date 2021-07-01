@@ -109,6 +109,14 @@ const statusFilterDropdown :Map = Map().withMutations((map :Map) => {
   map.set('enums', STATUS_FILTER_OPTIONS);
 });
 
+const COMPLETION_STATUSES = [
+  ENROLLMENT_STATUSES.CLOSED,
+  ENROLLMENT_STATUSES.COMPLETED,
+  ENROLLMENT_STATUSES.REMOVED_NONCOMPLIANT,
+  ENROLLMENT_STATUSES.SUCCESSFUL,
+  ENROLLMENT_STATUSES.UNSUCCESSFUL,
+];
+
 /* Options lists */
 const sexOptions :Object[] = generateOptions(SEX_VALUES);
 const raceOptions :Object[] = generateOptions(RACE_VALUES);
@@ -136,6 +144,7 @@ const courtTypeFilterDropdown :Map = Map().withMutations((map :Map) => {
 export {
   ALL,
   ALL_PARTICIPANTS_COLUMNS,
+  COMPLETION_STATUSES,
   COURT_TYPE_FILTER_OPTIONS,
   EMPTY_FIELD,
   FILTERS,

@@ -7,7 +7,10 @@ import { RequestStates } from 'redux-reqseq';
 import type { SequenceAction } from 'redux-reqseq';
 
 import {
+  DOWNLOAD_PARTICIPANTS,
+  RESET_REQUEST_STATE,
   addParticipant,
+  downloadParticipants,
   getCourtType,
   getDiversionPlans,
   getEnrollmentStatuses,
@@ -15,7 +18,6 @@ import {
   getInfractions,
   getParticipantPhotos,
   getParticipants,
-  RESET_REQUEST_STATE,
 } from './ParticipantsActions';
 import {
   RESET_SEARCHED_PARTICIPANTS,
@@ -24,6 +26,7 @@ import {
   searchExistingPeople,
   selectExistingPerson,
 } from './newparticipant/NewParticipantActions';
+
 import { PEOPLE } from '../../utils/constants/ReduxStateConsts';
 
 const {
@@ -53,6 +56,9 @@ const {
 const INITIAL_STATE :Map<*, *> = fromJS({
   [ACTIONS]: {
     [ADD_PARTICIPANT]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
+    [DOWNLOAD_PARTICIPANTS]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
     [GET_COURT_TYPE]: {
@@ -136,6 +142,18 @@ export default function participantsReducer(state :Map<*, *> = INITIAL_STATE, ac
         FAILURE: () => state
           .setIn([ACTIONS, ADD_PARTICIPANT, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, ADD_PARTICIPANT, action.id]),
+      });
+    }
+
+    case downloadParticipants.case(action.type): {
+      return downloadParticipants.reducer(state, action, {
+        REQUEST: () => state
+          .setIn([ACTIONS, DOWNLOAD_PARTICIPANTS, action.id], action)
+          .setIn([ACTIONS, DOWNLOAD_PARTICIPANTS, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => state.setIn([ACTIONS, DOWNLOAD_PARTICIPANTS, REQUEST_STATE], RequestStates.SUCCESS),
+        FAILURE: () => state
+          .setIn([ACTIONS, DOWNLOAD_PARTICIPANTS, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, DOWNLOAD_PARTICIPANTS, action.id]),
       });
     }
 

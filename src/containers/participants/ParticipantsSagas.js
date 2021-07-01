@@ -2,6 +2,8 @@
  * @flow
  */
 
+import FS from 'file-saver';
+import Papa from 'papaparse';
 import {
   all,
   call,
@@ -16,12 +18,14 @@ import {
   SearchApiActions,
   SearchApiSagas,
 } from 'lattice-sagas';
+import { DataUtils, DateTimeUtils } from 'lattice-utils';
 import { DateTime } from 'luxon';
 import type { UUID } from 'lattice';
 import type { SequenceAction } from 'redux-reqseq';
 
 import {
   ADD_PARTICIPANT,
+  DOWNLOAD_PARTICIPANTS,
   GET_COURT_TYPE,
   GET_DIVERSION_PLANS,
   GET_ENROLLMENT_STATUSES,
@@ -30,6 +34,7 @@ import {
   GET_PARTICIPANTS,
   GET_PARTICIPANT_PHOTOS,
   addParticipant,
+  downloadParticipants,
   getCourtType,
   getDiversionPlans,
   getEnrollmentStatuses,
@@ -38,14 +43,15 @@ import {
   getParticipantPhotos,
   getParticipants,
 } from './ParticipantsActions';
+import { COMPLETION_STATUSES } from './ParticipantsConstants';
 
 import Logger from '../../utils/Logger';
-import { INFRACTIONS_CONSTS } from '../../core/edm/constants/DataModelConsts';
+import { ENROLLMENT_STATUSES, INFRACTIONS_CONSTS } from '../../core/edm/constants/DataModelConsts';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../core/edm/constants/FullyQualifiedNames';
+import { selectEntitySetId, selectOrgId } from '../../core/redux/selectors';
 import { submitDataGraph } from '../../core/sagas/data/DataActions';
 import { submitDataGraphWorker } from '../../core/sagas/data/DataSagas';
 import {
-  getEntityKeyId,
   getEntityProperties,
   getEntitySetIdFromApp,
   getNeighborDetails,
@@ -54,6 +60,7 @@ import {
 } from '../../utils/DataUtils';
 import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../utils/Errors';
 import { isDefined } from '../../utils/LangUtils';
+import { getPersonFullName } from '../../utils/PeopleUtils';
 import { isValidUUID } from '../../utils/ValidationUtils';
 import { STATE } from '../../utils/constants/ReduxStateConsts';
 
@@ -61,6 +68,8 @@ const { getEntitySetData } = DataApiActions;
 const { getEntitySetDataWorker } = DataApiSagas;
 const { searchEntityNeighborsWithFilter } = SearchApiActions;
 const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
+const { getEntityKeyId, getPropertyValue } = DataUtils;
+const { formatAsDate } = DateTimeUtils;
 
 const {
   DIVERSION_PLAN,
@@ -69,15 +78,25 @@ const {
   INFRACTION_EVENT,
   MANUAL_PRETRIAL_COURT_CASES,
   PEOPLE,
+  PROGRAM_OUTCOME,
   WORKSITE_PLAN,
 } = APP_TYPE_FQNS;
 const {
+  CHECK_IN_DATETIME,
   COMPLETED,
   COURT_CASE_TYPE,
   DATETIME,
+  DATETIME_COMPLETED,
+  DATETIME_RECEIVED,
+  DOB,
   EFFECTIVE_DATE,
+  ETHNICITY,
   HOURS_WORKED,
+  ORIENTATION_DATETIME,
+  RACE,
   REQUIRED_HOURS,
+  SEX,
+  STATUS,
   TYPE,
 } = PROPERTY_TYPE_FQNS;
 
@@ -133,6 +152,155 @@ function* addParticipantWatcher() :Generator<*, *, *> {
 
 /*
  *
+ * ParticipantsActions.downloadParticipants()
+ *
+ */
+
+function* downloadParticipantsWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+
+  try {
+    yield put(downloadParticipants.request(id, value));
+
+    const selectedOrgId :UUID = yield select(selectOrgId());
+    const diversionPlanESID :UUID = yield select(selectEntitySetId(selectedOrgId, DIVERSION_PLAN));
+    let response = yield call(getEntitySetDataWorker, getEntitySetData({ entitySetId: diversionPlanESID }));
+    if (response.error) throw response.error;
+    const diversionPlans :Object[] = response.data;
+    const diversionPlanEKIDs = diversionPlans?.map((diversionPlan :Object) => getEntityKeyId(diversionPlan));
+
+    const enrollmentStatusESID :UUID = yield select(selectEntitySetId(selectedOrgId, ENROLLMENT_STATUS));
+    const courtCaseESID :UUID = yield select(selectEntitySetId(selectedOrgId, MANUAL_PRETRIAL_COURT_CASES));
+    const peopleESID :UUID = yield select(selectEntitySetId(selectedOrgId, PEOPLE));
+    const programOutcomeESID :UUID = yield select(selectEntitySetId(selectedOrgId, PROGRAM_OUTCOME));
+    const worksitePlanESID :UUID = yield select(selectEntitySetId(selectedOrgId, WORKSITE_PLAN));
+
+    const filter = {
+      entityKeyIds: diversionPlanEKIDs,
+      destinationEntitySetIds: [courtCaseESID, programOutcomeESID],
+      sourceEntitySetIds: [enrollmentStatusESID, peopleESID, worksitePlanESID],
+    };
+    response = yield call(
+      searchEntityNeighborsWithFilterWorker,
+      searchEntityNeighborsWithFilter({ entitySetId: diversionPlanESID, filter })
+    );
+    if (response.error) throw response.error;
+    const diversionPlanNeighbors :Map = fromJS(response.data);
+
+    let csvData :Object[] = [];
+
+    fromJS(diversionPlans).forEach((diversionPlan :Map) => {
+      const diversionPlanEKID = getEntityKeyId(diversionPlan);
+      const neighbors = diversionPlanNeighbors.get(diversionPlanEKID, List());
+
+      const personNeighbor :Map = neighbors.find((neighbor) => getNeighborESID(neighbor) === peopleESID);
+      const person :Map = getNeighborDetails(personNeighbor);
+
+      const sentenceDateTime = getPropertyValue(diversionPlan, [DATETIME_RECEIVED, 0]);
+      const checkInDateTime = getPropertyValue(diversionPlan, [CHECK_IN_DATETIME, 0]);
+      const orientationDateTime = getPropertyValue(diversionPlan, [ORIENTATION_DATETIME, 0]);
+
+      let startDate = '';
+      if (DateTime.fromISO(sentenceDateTime).isValid) startDate = formatAsDate(sentenceDateTime);
+      else if (DateTime.fromISO(checkInDateTime).isValid) startDate = formatAsDate(checkInDateTime);
+      else if (DateTime.fromISO(orientationDateTime).isValid) startDate = formatAsDate(orientationDateTime);
+
+      const enrollmentStatusNeighbors :List = neighbors
+        .filter((neighbor) => getNeighborESID(neighbor) === enrollmentStatusESID);
+      const sortedEnrollmentStatuses = enrollmentStatusNeighbors
+        .map((neighbor :Map) => getNeighborDetails(neighbor))
+        .filter((status :Map) => isDefined(status.get(EFFECTIVE_DATE)))
+        .sortBy((status :Map) => DateTime.fromISO(getPropertyValue(status, [EFFECTIVE_DATE, 0])).valueOf())
+        .sort((status :Map) => {
+          const statusName = getPropertyValue(status, [STATUS, 0]);
+          if (statusName === ENROLLMENT_STATUSES.AWAITING_CHECKIN) return -1;
+          return 0;
+        });
+      const mostRecentEnrollmentStatus :Map = sortedEnrollmentStatuses.find((status :Map) => {
+        const statusName = getPropertyValue(status, [STATUS, 0]);
+        return COMPLETION_STATUSES.includes(statusName);
+      }) || sortedEnrollmentStatuses.last() || Map();
+      const status :string = getPropertyValue(mostRecentEnrollmentStatus, [STATUS, 0], '');
+
+      let hoursWorked = '';
+      let endDate = '';
+
+      const programOutcomeNeighbor = neighbors.find((neighbor) => getNeighborESID(neighbor) === programOutcomeESID);
+      if (isDefined(programOutcomeNeighbor)) {
+        const programOutcome :Map = getNeighborDetails(programOutcomeNeighbor);
+        hoursWorked = getPropertyValue(programOutcome, [HOURS_WORKED, 0], '');
+        const programOutcomeEndDateTime = getPropertyValue(programOutcome, [DATETIME_COMPLETED, 0]);
+        const enrollmentStatusDateTime = getPropertyValue(mostRecentEnrollmentStatus, [EFFECTIVE_DATE, 0]);
+        if (DateTime.fromISO(programOutcomeEndDateTime).isValid) {
+          endDate = formatAsDate(programOutcomeEndDateTime);
+        }
+        else if (COMPLETION_STATUSES.includes(status) && DateTime.fromISO(enrollmentStatusDateTime).isValid) {
+          endDate = formatAsDate(enrollmentStatusDateTime);
+        }
+      }
+      else {
+        const worksitePlans :List = diversionPlan
+          .filter((neighbor :Map) => getNeighborESID(neighbor) === worksitePlanESID)
+          .map((neighbor :Map) => getNeighborDetails(neighbor));
+        const totalHoursWorkedToDate = worksitePlans
+          .reduce((totalHours :number, worksitePlanNeighbor :Map) => {
+            const worksitePlan = getNeighborDetails(worksitePlanNeighbor);
+            const currentHours = getPropertyValue(worksitePlan, [HOURS_WORKED, 0], 0);
+            return currentHours + totalHours;
+          }, 0);
+        hoursWorked = totalHoursWorkedToDate;
+      }
+
+      const courtCaseNeighbor = neighbors.find((neighbor :Map) => getNeighborESID(neighbor) === courtCaseESID);
+      const courtCaseType = getPropertyValue(getNeighborDetails(courtCaseNeighbor), [COURT_CASE_TYPE, 0], '');
+
+      const csvRow = {
+        Person: getPersonFullName(person),
+        DOB: getPropertyValue(person, [DOB, 0], ''),
+        Race: getPropertyValue(person, [RACE, 0], ''),
+        Ethnicity: getPropertyValue(person, [ETHNICITY, 0], ''),
+        Sex: getPropertyValue(person, [SEX, 0], ''),
+        'Hours Worked': hoursWorked,
+        Status: status,
+        'Start Date': startDate,
+        'End Date': endDate,
+        'Court Type': courtCaseType,
+      };
+
+      csvData.push(csvRow);
+    });
+
+    csvData = csvData.sort((csvRow1, csvRow2) => {
+      const name1 = csvRow1.Person.toUpperCase();
+      const name2 = csvRow2.Person.toUpperCase();
+      if (name1 < name2) return -1;
+      if (name1 > name2) return 1;
+      return 0;
+    });
+
+    const csv = Papa.unparse(csvData);
+    const blob = new Blob([csv], { type: 'text/csv' });
+    FS.saveAs(blob, 'CWP_Participants.csv');
+
+    yield put(downloadParticipants.success(id));
+  }
+  catch (error) {
+    LOG.error(action.type, error);
+    yield put(downloadParticipants.failure(id, error));
+  }
+  finally {
+    yield put(downloadParticipants.finally(id));
+  }
+}
+
+function* downloadParticipantsWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(DOWNLOAD_PARTICIPANTS, downloadParticipantsWorker);
+}
+
+/*
+ *
  * ParticipantActions.getParticipantPhotos()
  *
  */
@@ -151,7 +319,8 @@ function* getParticipantPhotosWorker(action :SequenceAction) :Generator<*, *, *>
     const imageESID :UUID = getEntitySetIdFromApp(app, IMAGE);
     const participantEKIDs :UUID[] = [];
     participants.forEach((participant :Map) => {
-      participantEKIDs.push(getEntityKeyId(participant));
+      const participantEKID :?UUID = getEntityKeyId(participant);
+      if (participantEKID) participantEKIDs.push(participantEKID);
     });
 
     const searchFilter = {
@@ -243,7 +412,7 @@ function* getHoursWorkedWorker(action :SequenceAction) :Generator<*, *, *> {
     diversionPlanNeighbors.forEach((diversionPlan :Map) => {
 
       const person :Map = diversionPlan.find((neighbor :Map) => getNeighborESID(neighbor) === peopleESID);
-      const personEKID :UUID = getEntityKeyId(getNeighborDetails(person));
+      const personEKID :?UUID = getEntityKeyId(getNeighborDetails(person));
       const worksitePlans :List = diversionPlan
         .filter((neighbor :Map) => getNeighborESID(neighbor) === worksitePlanESID);
       let hoursWorked :number = 0;
@@ -309,7 +478,8 @@ function* getCourtTypeWorker(action :SequenceAction) :Generator<*, *, *> {
 
     const diversionPlanEKIDs :UUID[] = [];
     currentDiversionPlansByParticipant.forEach((diversionPlan :Map) => {
-      diversionPlanEKIDs.push(getEntityKeyId(diversionPlan));
+      const diversionPlanEKID :?UUID = getEntityKeyId(diversionPlan);
+      if (diversionPlanEKID) diversionPlanEKIDs.push(diversionPlanEKID);
     });
 
     const searchFilter = {
@@ -329,7 +499,7 @@ function* getCourtTypeWorker(action :SequenceAction) :Generator<*, *, *> {
     if (!casesAndPeopleByDiversionPlan.isEmpty()) {
       casesAndPeopleByDiversionPlan.forEach((caseAndPersonNeighbors :List) => {
         const person :Map = caseAndPersonNeighbors.find((neighbor :Map) => getNeighborESID(neighbor) === peopleESID);
-        const personEKID :UUID = getEntityKeyId(getNeighborDetails(person));
+        const personEKID :?UUID = getEntityKeyId(getNeighborDetails(person));
         const courtCaseObj :Map = caseAndPersonNeighbors
           .find((neighbor :Map) => getNeighborESID(neighbor) === manualCasesESID);
         const courtCase :Map = getNeighborDetails(courtCaseObj);
@@ -464,8 +634,19 @@ function* getEnrollmentStatusesWorker(action :SequenceAction) :Generator<*, *, *
         /* filter out enrollment statuses that have blank effective date values before sorting */
         const statusesWithEffectiveDates :List = enrollmentList
           .filter((status :Map) => isDefined(status.get(EFFECTIVE_DATE)));
-        const sortedEnrollmentStatuses :List = sortEntitiesByDateProperty(statusesWithEffectiveDates, [EFFECTIVE_DATE]);
-        const mostRecentStatus = sortedEnrollmentStatuses.last();
+        let sortedEnrollmentStatuses :List = sortEntitiesByDateProperty(statusesWithEffectiveDates, [EFFECTIVE_DATE]);
+        // sort list again, pushing "awaiting check-in" statuses to the front:
+        sortedEnrollmentStatuses = sortedEnrollmentStatuses.sort((status :Map) => {
+          const statusName = getPropertyValue(status, [STATUS, 0]);
+          if (statusName === ENROLLMENT_STATUSES.AWAITING_CHECKIN) return -1;
+          return 0;
+        });
+        const completionStatus :?Map = sortedEnrollmentStatuses.find((statusInList :Map) => {
+          const status = getPropertyValue(statusInList, [STATUS, 0]);
+          return COMPLETION_STATUSES.includes(status);
+        });
+        const mostRecentStatus :Map = completionStatus || sortedEnrollmentStatuses.last() || Map();
+        // const mostRecentStatus = sortedEnrollmentStatuses.last();
 
         let { [EFFECTIVE_DATE]: storedStatusDate } = getEntityProperties(personEnrollmentStatus, [EFFECTIVE_DATE]);
         storedStatusDate = DateTime.fromISO(storedStatusDate);
@@ -621,8 +802,8 @@ function* getParticipantsWorker(action :SequenceAction) :Generator<*, *, *> {
 
       const diversionPlanEKIDs = [];
       diversionPlans.forEach((diversionPlan :Map) => {
-        const diversionPlanEKID :UUID = getEntityKeyId(diversionPlan);
-        diversionPlanEKIDs.push(diversionPlanEKID);
+        const diversionPlanEKID :?UUID = getEntityKeyId(diversionPlan);
+        if (diversionPlanEKID) diversionPlanEKIDs.push(diversionPlanEKID);
       });
 
       const searchFilter = {
@@ -645,9 +826,9 @@ function* getParticipantsWorker(action :SequenceAction) :Generator<*, *, *> {
         .toList();
 
       diversionPlans.forEach((diversionPlan :Map) => {
-        const diversionPlanEKID :UUID = getEntityKeyId(diversionPlan);
+        const diversionPlanEKID :?UUID = getEntityKeyId(diversionPlan);
         const person :Map = participantsByDiversionPlanEKID.get(diversionPlanEKID);
-        const personEKID :UUID = getEntityKeyId(person);
+        const personEKID :?UUID = getEntityKeyId(person);
         let personDiversionPlans = allDiversionPlansByParticipant.get(personEKID, List());
         personDiversionPlans = personDiversionPlans.push(diversionPlan);
         allDiversionPlansByParticipant = allDiversionPlansByParticipant.set(personEKID, personDiversionPlans);
@@ -723,6 +904,8 @@ function* getDiversionPlansWatcher() :Generator<*, *, *> {
 export {
   addParticipantWatcher,
   addParticipantWorker,
+  downloadParticipantsWatcher,
+  downloadParticipantsWorker,
   getCourtTypeWatcher,
   getCourtTypeWorker,
   getDiversionPlansWatcher,
