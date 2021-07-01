@@ -8,6 +8,9 @@ import type { RequestSequence } from 'redux-reqseq';
 const ADD_PARTICIPANT :'ADD_PARTICIPANT' = 'ADD_PARTICIPANT';
 const addParticipant :RequestSequence = newRequestSequence(ADD_PARTICIPANT);
 
+const DOWNLOAD_PARTICIPANTS :'DOWNLOAD_PARTICIPANTS' = 'DOWNLOAD_PARTICIPANTS';
+const downloadParticipants :RequestSequence = newRequestSequence(DOWNLOAD_PARTICIPANTS);
+
 const GET_COURT_TYPE :'GET_COURT_TYPE' = 'GET_COURT_TYPE';
 const getCourtType :RequestSequence = newRequestSequence(GET_COURT_TYPE);
 
@@ -39,6 +42,7 @@ function resetRequestState(actionType :string) {
 
 export {
   ADD_PARTICIPANT,
+  DOWNLOAD_PARTICIPANTS,
   GET_COURT_TYPE,
   GET_DIVERSION_PLANS,
   GET_ENROLLMENT_STATUSES,
@@ -48,6 +52,7 @@ export {
   GET_PARTICIPANT_PHOTOS,
   RESET_REQUEST_STATE,
   addParticipant,
+  downloadParticipants,
   getCourtType,
   getDiversionPlans,
   getEnrollmentStatuses,

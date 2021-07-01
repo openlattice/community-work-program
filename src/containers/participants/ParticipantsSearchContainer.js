@@ -6,7 +6,7 @@ import React, { Component } from 'react';
 
 import styled from 'styled-components';
 import toString from 'lodash/toString';
-import { faFilter } from '@fortawesome/pro-solid-svg-icons';
+import { faDownload, faFilter } from '@fortawesome/pro-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { List, Map } from 'immutable';
 import {
@@ -15,14 +15,16 @@ import {
   IconButton,
   Label,
   Select,
+  Spinner,
 } from 'lattice-ui-kit';
+import { ReduxUtils } from 'lattice-utils';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { RequestStates } from 'redux-reqseq';
 import type { UUID } from 'lattice';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
-import { getDiversionPlans } from './ParticipantsActions';
+import { DOWNLOAD_PARTICIPANTS, downloadParticipants, getDiversionPlans } from './ParticipantsActions';
 import {
   ALL,
   ALL_PARTICIPANTS_COLUMNS,
@@ -61,7 +63,12 @@ import { generateTableHeaders } from '../../utils/FormattingUtils';
 import { isDefined } from '../../utils/LangUtils';
 import { getHoursServed, getPersonFullName, getPersonPictureForTable } from '../../utils/PeopleUtils';
 import { getSentenceEndDate } from '../../utils/ScheduleUtils';
-import { APP, PEOPLE, STATE } from '../../utils/constants/ReduxStateConsts';
+import {
+  APP,
+  PEOPLE,
+  SHARED,
+  STATE,
+} from '../../utils/constants/ReduxStateConsts';
 import type { GoToRoute } from '../../core/router/RoutingActions';
 
 const { ENTITY_SET_IDS_BY_ORG, SELECTED_ORG_ID } = APP;
@@ -74,6 +81,7 @@ const {
   PARTICIPANT_PHOTOS_BY_PARTICIPANT_EKID,
   PARTICIPANTS,
 } = PEOPLE;
+const { ACTIONS, REQUEST_STATE } = SHARED;
 const {
   DATETIME_END,
   DATETIME_RECEIVED,
@@ -84,6 +92,7 @@ const {
 } = PROPERTY_TYPE_FQNS;
 const { VIOLATION, WARNING } = INFRACTIONS_CONSTS;
 const { REQUIRED, WORKED } = HOURS_CONSTS;
+const { isPending } = ReduxUtils;
 
 const defaultStatusFilterOption :Map = statusFilterDropdown.get('enums')
   .find((obj) => obj.value.toUpperCase() === ALL);
@@ -117,6 +126,7 @@ const TableHeaderTopRow = styled(TableHeaderItemsWrapper)`
 
 const IconButtonWrapper = styled.div`
   margin-right: 10px;
+  min-width: 36px;
 `;
 
 const FiltersGrid = styled.div`
@@ -127,11 +137,13 @@ const FiltersGrid = styled.div`
 
 type Props = {
   actions:{
+    downloadParticipants :RequestSequence;
     getDiversionPlans :RequestSequence;
     goToRoute :GoToRoute;
   };
   courtTypeByParticipant :Map;
   currentDiversionPlansByParticipant :Map;
+  downloadRequestState :RequestState;
   enrollmentByParticipant :Map;
   entitySetIds :Map;
   getInitializeAppRequestState :RequestState;
@@ -313,7 +325,12 @@ class ParticipantsSearchContainer extends Component<Props, State> {
   }
 
   render() {
-    const { getInitializeAppRequestState, getDiversionPlansRequestState } = this.props;
+    const {
+      actions,
+      downloadRequestState,
+      getInitializeAppRequestState,
+      getDiversionPlansRequestState,
+    } = this.props;
     const { filtersVisible } = this.state;
 
     if (getDiversionPlansRequestState === RequestStates.PENDING
@@ -340,6 +357,17 @@ class ParticipantsSearchContainer extends Component<Props, State> {
                 </TableHeaderItemsWrapper>
                 <TableHeaderItemsWrapper>
                   <SearchContainer search={this.searchParticipantList} />
+                  <IconButtonWrapper>
+                    {
+                      isPending(downloadRequestState)
+                        ? <Spinner />
+                        : (
+                          <IconButton onClick={() => actions.downloadParticipants()}>
+                            <FontAwesomeIcon icon={faDownload} />
+                          </IconButton>
+                        )
+                    }
+                  </IconButtonWrapper>
                   <IconButtonWrapper>
                     <IconButton onClick={() => this.setState({ filtersVisible: !filtersVisible })}>
                       <FontAwesomeIcon icon={faFilter} />
@@ -406,14 +434,16 @@ const mapStateToProps = (state :Map<*, *>) => {
     [INFRACTION_COUNTS_BY_PARTICIPANT]: people.get(INFRACTION_COUNTS_BY_PARTICIPANT),
     [PARTICIPANT_PHOTOS_BY_PARTICIPANT_EKID]: people.get(PARTICIPANT_PHOTOS_BY_PARTICIPANT_EKID),
     [PARTICIPANTS]: people.get(PARTICIPANTS),
+    downloadRequestState: people.getIn([ACTIONS, DOWNLOAD_PARTICIPANTS, REQUEST_STATE]),
     entitySetIds: app.getIn([ENTITY_SET_IDS_BY_ORG, selectedOrgId], Map()),
-    getDiversionPlansRequestState: people.getIn([PEOPLE.ACTIONS, PEOPLE.GET_DIVERSION_PLANS, PEOPLE.REQUEST_STATE]),
-    getInitializeAppRequestState: app.getIn([APP.ACTIONS, APP.INITIALIZE_APPLICATION, APP.REQUEST_STATE]),
+    getDiversionPlansRequestState: people.getIn([ACTIONS, PEOPLE.GET_DIVERSION_PLANS, REQUEST_STATE]),
+    getInitializeAppRequestState: app.getIn([ACTIONS, APP.INITIALIZE_APPLICATION, REQUEST_STATE]),
   };
 };
 
 const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
+    downloadParticipants,
     getDiversionPlans,
     goToRoute,
   }, dispatch)

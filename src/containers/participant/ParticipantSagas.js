@@ -136,7 +136,7 @@ import { isDefined } from '../../utils/LangUtils';
 import { getCombinedDateTime } from '../../utils/ScheduleUtils';
 import { isValidUUID } from '../../utils/ValidationUtils';
 import { STATE } from '../../utils/constants/ReduxStateConsts';
-import { EMPTY_FIELD } from '../participants/ParticipantsConstants';
+import { COMPLETION_STATUSES, EMPTY_FIELD } from '../participants/ParticipantsConstants';
 import { getWorksites } from '../worksites/WorksitesActions';
 import { getWorksitesWorker } from '../worksites/WorksitesSagas';
 
@@ -166,14 +166,6 @@ const {
   REQUIRED_HOURS,
   STATUS,
 } = PROPERTY_TYPE_FQNS;
-
-const COMPLETION_STATUSES = [
-  ENROLLMENT_STATUSES.CLOSED,
-  ENROLLMENT_STATUSES.COMPLETED,
-  ENROLLMENT_STATUSES.REMOVED_NONCOMPLIANT,
-  ENROLLMENT_STATUSES.SUCCESSFUL,
-  ENROLLMENT_STATUSES.UNSUCCESSFUL,
-];
 
 const getAppFromState = (state) => state.get(STATE.APP, Map());
 const getEdmFromState = (state) => state.get(STATE.EDM, Map());
