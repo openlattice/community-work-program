@@ -35,34 +35,27 @@ import Logger from '../../../utils/Logger';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import {
   getEntityKeyId,
-  getEntityProperties,
   getEntitySetIdFromApp,
   getNeighborDetails,
-  getPropertyTypeIdFromEdm,
-  getUTCDateRangeSearchString,
 } from '../../../utils/DataUtils';
 import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../../utils/Errors';
 import { isDefined } from '../../../utils/LangUtils';
 import { STATE } from '../../../utils/constants/ReduxStateConsts';
-import { ACTIVE_STATUSES } from '../consts/CourtTypeConsts';
 import { getDemographicsFromPersonData } from '../utils/DemographicsUtils';
 
 const { getEntitySetData } = DataApiActions;
 const { getEntitySetDataWorker } = DataApiSagas;
-const { searchEntitySetData, searchEntityNeighborsWithFilter } = SearchApiActions;
-const { searchEntitySetDataWorker, searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
+const { searchEntityNeighborsWithFilter } = SearchApiActions;
+const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
 const { getPropertyValue } = DataUtils;
 
-const { DIVERSION_PLAN, ENROLLMENT_STATUS, PEOPLE } = APP_TYPE_FQNS;
+const { DIVERSION_PLAN, PEOPLE } = APP_TYPE_FQNS;
 const {
   CHECKIN_DATETIME,
   DATETIME_RECEIVED,
-  EFFECTIVE_DATE,
   ORIENTATION_DATETIME,
-  STATUS,
 } = PROPERTY_TYPE_FQNS;
 const getAppFromState = (state) => state.get(STATE.APP, Map());
-const getEdmFromState = (state) => state.get(STATE.EDM, Map());
 
 const LOG = new Logger('DemographicsSagas');
 
