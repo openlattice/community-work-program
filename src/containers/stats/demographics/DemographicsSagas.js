@@ -17,6 +17,7 @@ import {
   SearchApiActions,
   SearchApiSagas,
 } from 'lattice-sagas';
+import { DataUtils } from 'lattice-utils';
 import { DateTime } from 'luxon';
 import type { UUID } from 'lattice';
 import type { SequenceAction } from 'redux-reqseq';
@@ -50,9 +51,16 @@ const { getEntitySetData } = DataApiActions;
 const { getEntitySetDataWorker } = DataApiSagas;
 const { searchEntitySetData, searchEntityNeighborsWithFilter } = SearchApiActions;
 const { searchEntitySetDataWorker, searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
+const { getPropertyValue } = DataUtils;
 
 const { DIVERSION_PLAN, ENROLLMENT_STATUS, PEOPLE } = APP_TYPE_FQNS;
-const { EFFECTIVE_DATE, STATUS } = PROPERTY_TYPE_FQNS;
+const {
+  CHECKIN_DATETIME,
+  DATETIME_RECEIVED,
+  EFFECTIVE_DATE,
+  ORIENTATION_DATETIME,
+  STATUS,
+} = PROPERTY_TYPE_FQNS;
 const getAppFromState = (state) => state.get(STATE.APP, Map());
 const getEdmFromState = (state) => state.get(STATE.EDM, Map());
 
@@ -140,88 +148,78 @@ function* getMonthlyDemographicsWorker(action :SequenceAction) :Generator<*, *, 
     const { month, year } = value;
 
     /*
-      Get all active participants for a given month. Return their demographics.
-      1. Search for enrollment statuses with effective dates within that month.
-      2. Filter out non-active statuses.
-      3. Find diversion plan neighbors, and then person neighbors.
+      Get demographics for all participants who started CWP within the selected month.
+      Objective is to find diversion plans that have a start date within month.
+      Most diversion plans use sentence date as start date, but some use check-in date or orientation date.
     */
 
     const app = yield select(getAppFromState);
-    const edm = yield select(getEdmFromState);
-    const enrollmentStatusESID :UUID = getEntitySetIdFromApp(app, ENROLLMENT_STATUS);
-    const effectiveDatePTID :UUID = getPropertyTypeIdFromEdm(edm, EFFECTIVE_DATE);
-    const searchOptions = {
-      entitySetIds: [enrollmentStatusESID],
-      start: 0,
-      maxHits: 10000,
-      constraints: []
-    };
+    const diversionPlanESID :UUID = getEntitySetIdFromApp(app, DIVERSION_PLAN);
 
-    let searchTerm :string = '';
-
-    const mmMonth :string = month < 10 ? `0${month}` : month;
-    const firstDateOfMonth :DateTime = DateTime.fromISO(`${year}-${mmMonth}-01`);
-    searchTerm = getUTCDateRangeSearchString(effectiveDatePTID, 'month', firstDateOfMonth);
-    searchOptions.constraints.push({
-      min: 1,
-      constraints: [{
-        searchTerm,
-        fuzzy: false
-      }]
-    });
-    response = yield call(searchEntitySetDataWorker, searchEntitySetData(searchOptions));
+    response = yield call(getEntitySetDataWorker, getEntitySetData({ entitySetId: diversionPlanESID }));
     if (response.error) throw response.error;
-    const enrollmentStatusEKIDs :UUID[] = [];
-    fromJS(response.data.hits)
-      .forEach((enrollmentStatus :Map) => {
-        const { [STATUS]: status } = getEntityProperties(enrollmentStatus, [STATUS]);
-        if (ACTIVE_STATUSES.includes(status)) {
-          enrollmentStatusEKIDs.push(getEntityKeyId(enrollmentStatus));
+
+    const diversionPlans :List = fromJS(response.data);
+
+    const diversionPlansBeginningSelectedMonth = List().withMutations((mutator) => {
+      diversionPlans.forEach((diversionPlan :Map) => {
+        const sentenceDateTime = getPropertyValue(diversionPlan, [DATETIME_RECEIVED, 0]);
+        const checkInDateTime = getPropertyValue(diversionPlan, [CHECKIN_DATETIME, 0]);
+        const orientationDateTime = getPropertyValue(diversionPlan, [ORIENTATION_DATETIME, 0]);
+
+        if (isDefined(sentenceDateTime)) {
+          const sentenceDateTimeObj = DateTime.fromISO(sentenceDateTime);
+          const sentenceDateMonth = sentenceDateTimeObj.month;
+          const sentenceDateYear = sentenceDateTimeObj.year;
+          if (sentenceDateMonth === month && sentenceDateYear === year) {
+            mutator.push(diversionPlan);
+          }
+        }
+        else if (isDefined(checkInDateTime)) {
+          const checkInDateTimeObj = DateTime.fromISO(checkInDateTime);
+          const checkInDateMonth = checkInDateTimeObj.month;
+          const checkInDateYear = checkInDateTimeObj.year;
+          if (checkInDateMonth === month && checkInDateYear === year) {
+            mutator.push(diversionPlan);
+          }
+        }
+        else if (isDefined(orientationDateTime)) {
+          const orientationDateTimeObj = DateTime.fromISO(orientationDateTime);
+          const orientationDateMonth = orientationDateTimeObj.month;
+          const orientationDateYear = orientationDateTimeObj.year;
+          if (orientationDateMonth === month && orientationDateYear === year) {
+            mutator.push(diversionPlan);
+          }
         }
       });
+    });
 
-    if (enrollmentStatusEKIDs.length) {
-      const diversionPlanESID :UUID = getEntitySetIdFromApp(app, DIVERSION_PLAN);
-      let searchFilter :Object = {
-        entityKeyIds: enrollmentStatusEKIDs,
-        destinationEntitySetIds: [diversionPlanESID],
-        sourceEntitySetIds: [diversionPlanESID],
+    const diversionPlanEKIDs :UUID[] = diversionPlansBeginningSelectedMonth
+      .map((diversionPlan :Map) => getEntityKeyId(diversionPlan))
+      .toJS();
+
+    if (diversionPlanEKIDs.length) {
+      const peopleESID :UUID = getEntitySetIdFromApp(app, PEOPLE);
+      const searchFilter = {
+        entityKeyIds: diversionPlanEKIDs,
+        destinationEntitySetIds: [],
+        sourceEntitySetIds: [peopleESID],
       };
       response = yield call(
         searchEntityNeighborsWithFilterWorker,
-        searchEntityNeighborsWithFilter({ entitySetId: enrollmentStatusESID, filter: searchFilter })
+        searchEntityNeighborsWithFilter({ entitySetId: diversionPlanESID, filter: searchFilter })
       );
       if (response.error) throw response.error;
-      const diversionPlanNeighbors :Map = fromJS(response.data);
-      const diversionPlanEKIDs :UUID[] = [];
-      diversionPlanNeighbors.forEach((neighborsList :List) => {
-        const diversionPlanEKID :UUID = getEntityKeyId(getNeighborDetails(neighborsList.get(0)));
-        diversionPlanEKIDs.push(diversionPlanEKID);
-      });
-
-      if (diversionPlanEKIDs.length) {
-        const peopleESID :UUID = getEntitySetIdFromApp(app, PEOPLE);
-        searchFilter = {
-          entityKeyIds: diversionPlanEKIDs,
-          destinationEntitySetIds: [],
-          sourceEntitySetIds: [peopleESID],
-        };
-        response = yield call(
-          searchEntityNeighborsWithFilterWorker,
-          searchEntityNeighborsWithFilter({ entitySetId: diversionPlanESID, filter: searchFilter })
-        );
-        if (response.error) throw response.error;
-        const participantNeighbors :Map = fromJS(response.data)
-          .map((neighborsList) => getNeighborDetails(neighborsList.get(0)))
-          .valueSeq()
-          .toList();
-        nonDuplicatedPersonMap = Map().withMutations((map :Map) => {
-          participantNeighbors.forEach((person :Map) => {
-            const personEKID = getEntityKeyId(person);
-            if (!isDefined(map.get(personEKID))) map.set(personEKID, person);
-          });
+      const participantNeighbors :Map = fromJS(response.data)
+        .map((neighborsList) => getNeighborDetails(neighborsList.get(0)))
+        .valueSeq()
+        .toList();
+      nonDuplicatedPersonMap = Map().withMutations((map :Map) => {
+        participantNeighbors.forEach((person :Map) => {
+          const personEKID = getEntityKeyId(person);
+          if (!isDefined(map.get(personEKID))) map.set(personEKID, person);
         });
-      }
+      });
     }
 
     const {
