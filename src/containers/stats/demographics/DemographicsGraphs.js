@@ -12,7 +12,6 @@ import {
   CardStack,
   IconButton,
   Select,
-  Spinner,
 } from 'lattice-ui-kit';
 import { DateTime } from 'luxon';
 import { connect } from 'react-redux';
@@ -102,6 +101,9 @@ const DemographicsGraphs = ({
     actions.getMonthlyDemographics({ month: month.value, year: year.value });
   };
 
+  const isFetchingDemographics = requestIsPending(requestStates[GET_MONTHLY_DEMOGRAPHICS])
+    || requestIsPending(requestStates[GET_PARTICIPANTS_DEMOGRAPHICS]);
+
   return (
     <>
       <CardSegment padding="0 0 30px 0">
@@ -139,49 +141,43 @@ const DemographicsGraphs = ({
           )
         }
       </CardSegment>
-      {
-        requestIsPending(requestStates[GET_MONTHLY_DEMOGRAPHICS])
-            || requestIsPending(requestStates[GET_PARTICIPANTS_DEMOGRAPHICS])
-          ? (
-            <Spinner size="2x" />
-          ) : (
-            <CardStack>
-              <Card>
-                <DemographicsCardHeader>
-                  <div>Race</div>
-                  <Button
-                      isLoading={requestIsPending(requestStates[DOWNLOAD_DEMOGRAPHICS_DATA])}
-                      onClick={() => actions.downloadDemographicsData(formatRadialChartData(raceDemographics))}>
-                    Download
-                  </Button>
-                </DemographicsCardHeader>
-                <RaceChart raceDemographics={raceDemographics} />
-              </Card>
-              <Card>
-                <DemographicsCardHeader>
-                  <div>Ethnicity</div>
-                  <Button
-                      isLoading={requestIsPending(requestStates[DOWNLOAD_DEMOGRAPHICS_DATA])}
-                      onClick={() => actions.downloadDemographicsData(formatRadialChartData(ethnicityDemographics))}>
-                    Download
-                  </Button>
-                </DemographicsCardHeader>
-                <EthnicityChart ethnicityDemographics={ethnicityDemographics} />
-              </Card>
-              <Card>
-                <DemographicsCardHeader>
-                  <div>Sex</div>
-                  <Button
-                      isLoading={requestIsPending(requestStates[DOWNLOAD_DEMOGRAPHICS_DATA])}
-                      onClick={() => actions.downloadDemographicsData(formatRadialChartData(sexDemographics))}>
-                    Download
-                  </Button>
-                </DemographicsCardHeader>
-                <SexChart sexDemographics={sexDemographics} />
-              </Card>
-            </CardStack>
-          )
-      }
+      <CardStack>
+        <Card>
+          <DemographicsCardHeader>
+            <div>Race</div>
+            <Button
+                isLoading={requestIsPending(requestStates[DOWNLOAD_DEMOGRAPHICS_DATA])}
+                onClick={() => actions.downloadDemographicsData(formatRadialChartData(raceDemographics))}>
+              Download
+            </Button>
+          </DemographicsCardHeader>
+          <RaceChart isFetchingDemographics={isFetchingDemographics} raceDemographics={raceDemographics} />
+        </Card>
+        <Card>
+          <DemographicsCardHeader>
+            <div>Ethnicity</div>
+            <Button
+                isLoading={requestIsPending(requestStates[DOWNLOAD_DEMOGRAPHICS_DATA])}
+                onClick={() => actions.downloadDemographicsData(formatRadialChartData(ethnicityDemographics))}>
+              Download
+            </Button>
+          </DemographicsCardHeader>
+          <EthnicityChart
+              ethnicityDemographics={ethnicityDemographics}
+              isFetchingDemographics={isFetchingDemographics} />
+        </Card>
+        <Card>
+          <DemographicsCardHeader>
+            <div>Sex</div>
+            <Button
+                isLoading={requestIsPending(requestStates[DOWNLOAD_DEMOGRAPHICS_DATA])}
+                onClick={() => actions.downloadDemographicsData(formatRadialChartData(sexDemographics))}>
+              Download
+            </Button>
+          </DemographicsCardHeader>
+          <SexChart isFetchingDemographics={isFetchingDemographics} sexDemographics={sexDemographics} />
+        </Card>
+      </CardStack>
     </>
   );
 };
