@@ -1,8 +1,6 @@
 // @flow
 import React, { useState } from 'react';
 
-import { faSearch } from '@fortawesome/pro-duotone-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { List, Map } from 'immutable';
 import {
   Button,
@@ -11,7 +9,6 @@ import {
   CardStack,
   ExpansionPanel,
   ExpansionPanelDetails,
-  IconButton,
   Select,
   Spinner,
 } from 'lattice-ui-kit';
@@ -91,12 +88,24 @@ const WorksiteGraphs = ({
   const [participantsMonth, setParticipantsMonth] = useState(MONTHS_OPTIONS[today.month - 1]);
   const [participantsYear, setParticipantsYear] = useState(currentYearOption);
 
-  const getHoursData = () => {
-    actions.getHoursWorkedByWorksite({ month: hoursMonth.value, year: hoursYear.value, timeFrame: timeFrame.value });
+  const onChangeHoursMonth = (newMonth :Object) => {
+    setHoursMonth(newMonth);
+    actions.getHoursWorkedByWorksite({ month: newMonth.value, year: hoursYear.value, timeFrame: timeFrame.value });
   };
 
-  const getParticipantsData = () => {
-    actions.getMonthlyParticipantsByWorksite({ month: participantsMonth.value, year: participantsYear.value });
+  const onChangeHoursYear = (newYear :Object) => {
+    setHoursYear(newYear);
+    actions.getHoursWorkedByWorksite({ month: hoursMonth.value, year: newYear.value, timeFrame: timeFrame.value });
+  };
+
+  const onChangeParticipantsMonth = (newMonth :Object) => {
+    setParticipantsMonth(newMonth);
+    actions.getMonthlyParticipantsByWorksite({ month: newMonth.value, year: participantsYear.value });
+  };
+
+  const onChangeParticipantsYear = (newYear :Object) => {
+    setParticipantsYear(newYear);
+    actions.getMonthlyParticipantsByWorksite({ month: participantsMonth.value, year: newYear.value });
   };
 
   const onTimeFrameSelectChange = (option :Object) => {
@@ -160,18 +169,15 @@ const WorksiteGraphs = ({
                     <Select
                         isDisabled={timeFrame.value === YEARLY}
                         name="month"
-                        onChange={setHoursMonth}
+                        onChange={onChangeHoursMonth}
                         options={MONTHS_OPTIONS}
                         placeholder={MONTHS_OPTIONS[today.month - 1].label} />
                     <Select
                         name="year"
-                        onChange={setHoursYear}
+                        onChange={onChangeHoursYear}
                         options={YEARS_OPTIONS}
                         placeholder={today.year} />
                   </SelectsWrapper>
-                  <IconButton onClick={getHoursData}>
-                    <FontAwesomeIcon icon={faSearch} />
-                  </IconButton>
                 </ActionsWrapper>
               </InnerHeaderRow>
             )
@@ -203,18 +209,15 @@ const WorksiteGraphs = ({
             <SelectsWrapper>
               <Select
                   name="month"
-                  onChange={setParticipantsMonth}
+                  onChange={onChangeParticipantsMonth}
                   options={MONTHS_OPTIONS}
                   placeholder={MONTHS_OPTIONS[today.month - 1].label} />
               <Select
                   name="year"
-                  onChange={setParticipantsYear}
+                  onChange={onChangeParticipantsYear}
                   options={YEARS_OPTIONS}
                   placeholder={today.year} />
             </SelectsWrapper>
-            <IconButton onClick={getParticipantsData}>
-              <FontAwesomeIcon icon={faSearch} />
-            </IconButton>
           </ActionsWrapper>
         </GraphHeader>
       </Card>
