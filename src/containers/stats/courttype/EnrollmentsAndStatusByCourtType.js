@@ -2,15 +2,12 @@
 import React, { useState } from 'react';
 
 import styled from 'styled-components';
-import { faSearch } from '@fortawesome/pro-duotone-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { List, Map } from 'immutable';
 import {
   Button,
   Card,
   CardSegment,
   Colors,
-  IconButton,
   Select,
   Spinner,
 } from 'lattice-ui-kit';
@@ -148,10 +145,21 @@ const EnrollmentsAndStatusByCourtType = ({
     }
     else setTimeFrame(option);
   };
-  const getNewEnrollmentsData = () => {
+
+  const onChangeMonth = (newMonth :Object) => {
+    setEnrollmentsMonth(newMonth);
+    actions.getEnrollmentsByCourtType({
+      month: newMonth.value,
+      year: enrollmentsYear.value,
+      timeFrame: timeFrame.value
+    });
+  };
+
+  const onChangeYear = (newYear :Object) => {
+    setEnrollmentsYear(newYear);
     actions.getEnrollmentsByCourtType({
       month: enrollmentsMonth.value,
-      year: enrollmentsYear.value,
+      year: newYear.value,
       timeFrame: timeFrame.value
     });
   };
@@ -242,18 +250,15 @@ const EnrollmentsAndStatusByCourtType = ({
                   <Select
                       isDisabled={timeFrame.value === YEARLY}
                       name="month"
-                      onChange={setEnrollmentsMonth}
+                      onChange={onChangeMonth}
                       options={MONTHS_OPTIONS}
                       placeholder={MONTHS_OPTIONS[today.month - 1].label} />
                   <Select
                       name="year"
-                      onChange={setEnrollmentsYear}
+                      onChange={onChangeYear}
                       options={YEARS_OPTIONS}
                       placeholder={today.year} />
                 </SelectsWrapper>
-                <IconButton onClick={getNewEnrollmentsData}>
-                  <FontAwesomeIcon icon={faSearch} />
-                </IconButton>
               </ActionsWrapper>
             </InnerHeaderRow>
           )

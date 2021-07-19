@@ -1,15 +1,12 @@
 // @flow
 import React, { useState } from 'react';
 
-import { faSearch } from '@fortawesome/pro-duotone-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { List, Map } from 'immutable';
 import {
   Button,
   Card,
   CardSegment,
   Colors,
-  IconButton,
   Select,
   Spinner,
 } from 'lattice-ui-kit';
@@ -114,8 +111,14 @@ const ParticipantsByCourtTypeGraph = ({
     else setTimeFrame(option);
   };
 
-  const getNewParticipantsData = () => {
-    actions.getTotalParticipantsByCourtType({ month: month.value, year: year.value, timeFrame: timeFrame.value });
+  const onChangeMonth = (newMonth :Object) => {
+    setMonth(newMonth);
+    actions.getTotalParticipantsByCourtType({ month: newMonth.value, year: year.value, timeFrame: timeFrame.value });
+  };
+
+  const onChangeYear = (newYear :Object) => {
+    setYear(newYear);
+    actions.getTotalParticipantsByCourtType({ month: month.value, year: newYear.value, timeFrame: timeFrame.value });
   };
 
   return (
@@ -145,18 +148,15 @@ const ParticipantsByCourtTypeGraph = ({
                   <Select
                       isDisabled={timeFrame.value === YEARLY}
                       name="month"
-                      onChange={setMonth}
+                      onChange={onChangeMonth}
                       options={MONTHS_OPTIONS}
                       placeholder={MONTHS_OPTIONS[today.month - 1].label} />
                   <Select
                       name="year"
-                      onChange={setYear}
+                      onChange={onChangeYear}
                       options={YEARS_OPTIONS}
                       placeholder={today.year} />
                 </SelectsWrapper>
-                <IconButton onClick={getNewParticipantsData}>
-                  <FontAwesomeIcon icon={faSearch} />
-                </IconButton>
               </ActionsWrapper>
             </InnerHeaderRow>
           )

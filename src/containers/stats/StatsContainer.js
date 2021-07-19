@@ -164,7 +164,7 @@ const StatsBoxSkeleton = () => (
     </StatsRow>
     <StatsRow>
       {
-        [0, 1].map((num) => (
+        [0, 1, 2].map((num) => (
           <StatBox key={num}>
             <Skeleton height={48} width="48px" />
             <StatBoxInnerWrapper>

@@ -1,15 +1,12 @@
 // @flow
 import React, { useState } from 'react';
 
-import { faSearch } from '@fortawesome/pro-duotone-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { List, Map } from 'immutable';
 import {
   Button,
   Card,
   CardSegment,
   Colors,
-  IconButton,
   Select,
   Spinner,
 } from 'lattice-ui-kit';
@@ -99,8 +96,14 @@ const HoursByCourtType = ({
     else setTimeFrame(option);
   };
 
-  const getNewHoursData = () => {
-    actions.getHoursByCourtType({ month: hoursMonth.value, year: hoursYear.value, timeFrame: timeFrame.value });
+  const onChangeMonth = (newMonth :Object) => {
+    setHoursMonth(newMonth);
+    actions.getHoursByCourtType({ month: newMonth.value, year: hoursYear.value, timeFrame: timeFrame.value });
+  };
+
+  const onChangeYear = (newYear :Object) => {
+    setHoursYear(newYear);
+    actions.getHoursByCourtType({ month: hoursMonth.value, year: newYear.value, timeFrame: timeFrame.value });
   };
 
   const downloadParticipantsAndHoursData = () => {
@@ -149,18 +152,15 @@ const HoursByCourtType = ({
                   <Select
                       isDisabled={timeFrame.value === YEARLY}
                       name="month"
-                      onChange={setHoursMonth}
+                      onChange={onChangeMonth}
                       options={MONTHS_OPTIONS}
                       placeholder={MONTHS_OPTIONS[today.month - 1].label} />
                   <Select
                       name="year"
-                      onChange={setHoursYear}
+                      onChange={onChangeYear}
                       options={YEARS_OPTIONS}
                       placeholder={today.year} />
                 </SelectsWrapper>
-                <IconButton onClick={getNewHoursData}>
-                  <FontAwesomeIcon icon={faSearch} />
-                </IconButton>
               </ActionsWrapper>
             </InnerHeaderRow>
           )
