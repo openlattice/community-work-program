@@ -9,6 +9,7 @@ import {
   CardSegment,
   CardStack,
   Select,
+  Typography,
 } from 'lattice-ui-kit';
 import { DateTime } from 'luxon';
 import { connect } from 'react-redux';
@@ -110,6 +111,7 @@ const DemographicsGraphs = ({
   return (
     <>
       <CardSegment padding="0 0 30px 0">
+        <Typography gutterBottom>Select the timeframe for viewing participant demographics:</Typography>
         <InnerHeaderRow>
           <HeaderActionsWrapper>
             <SmallSelectWrapper>
