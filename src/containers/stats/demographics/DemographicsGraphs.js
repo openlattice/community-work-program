@@ -2,15 +2,12 @@
 import React, { useState } from 'react';
 
 import styled from 'styled-components';
-import { faSearch } from '@fortawesome/pro-duotone-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Map } from 'immutable';
 import {
   Button,
   Card,
   CardSegment,
   CardStack,
-  IconButton,
   Select,
 } from 'lattice-ui-kit';
 import { DateTime } from 'luxon';
@@ -97,8 +94,14 @@ const DemographicsGraphs = ({
     else setTimeFrame(option);
   };
 
-  const getMonthlyDemographicsData = () => {
-    actions.getMonthlyDemographics({ month: month.value, year: year.value });
+  const onChangeMonth = (newMonth :Object) => {
+    setMonth(newMonth);
+    actions.getMonthlyDemographics({ month: newMonth.value, year: year.value });
+  };
+
+  const onChangeYear = (newYear :Object) => {
+    setYear(newYear);
+    actions.getMonthlyDemographics({ month: month.value, year: newYear.value });
   };
 
   const isFetchingDemographics = requestIsPending(requestStates[GET_MONTHLY_DEMOGRAPHICS])
@@ -124,18 +127,15 @@ const DemographicsGraphs = ({
                 <SelectsWrapper>
                   <Select
                       name="month"
-                      onChange={setMonth}
+                      onChange={onChangeMonth}
                       options={MONTHS_OPTIONS}
                       placeholder={MONTHS_OPTIONS[today.month - 1].label} />
                   <Select
                       name="year"
-                      onChange={setYear}
+                      onChange={onChangeYear}
                       options={YEARS_OPTIONS}
                       placeholder={today.year} />
                 </SelectsWrapper>
-                <IconButton onClick={getMonthlyDemographicsData}>
-                  <FontAwesomeIcon icon={faSearch} />
-                </IconButton>
               </ActionsWrapper>
             </InnerHeaderRow>
           )
