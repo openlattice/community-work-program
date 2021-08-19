@@ -1,5 +1,5 @@
 // @flow
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { List, Map } from 'immutable';
 import {
@@ -35,7 +35,6 @@ import { requestIsPending } from '../../../utils/RequestStateUtils';
 import { SHARED, STATE, STATS } from '../../../utils/constants/ReduxStateConsts';
 import { getStatsData } from '../StatsActions';
 import {
-  ALL_TIME,
   MONTHLY,
   MONTHS_OPTIONS,
   TIME_FRAME_OPTIONS,
@@ -103,23 +102,15 @@ const ParticipantsByCourtTypeGraph = ({
     ...toolTipStyle
   };
 
-  const onTimeFrameSelectChange = (option :Object) => {
-    if (option.value === ALL_TIME) {
-      actions.getTotalParticipantsByCourtType({ month: month.value, year: year.value, timeFrame: ALL_TIME });
-      setTimeFrame(option);
-    }
-    else setTimeFrame(option);
+  const onChangeSelect = (selectedTimeValue :Object, event :Object) => {
+    if (event.name === 'month') setMonth(selectedTimeValue);
+    if (event.name === 'year') setYear(selectedTimeValue);
+    if (event.name === 'timeframe') setTimeFrame(selectedTimeValue);
   };
 
-  const onChangeMonth = (newMonth :Object) => {
-    setMonth(newMonth);
-    actions.getTotalParticipantsByCourtType({ month: newMonth.value, year: year.value, timeFrame: timeFrame.value });
-  };
-
-  const onChangeYear = (newYear :Object) => {
-    setYear(newYear);
-    actions.getTotalParticipantsByCourtType({ month: month.value, year: newYear.value, timeFrame: timeFrame.value });
-  };
+  useEffect(() => {
+    actions.getTotalParticipantsByCourtType({ month: month.value, year: year.value, timeFrame: timeFrame.value });
+  }, [actions, month, year, timeFrame]);
 
   return (
     <Card>
@@ -129,7 +120,8 @@ const ParticipantsByCourtTypeGraph = ({
           <HeaderActionsWrapper>
             <SmallSelectWrapper>
               <Select
-                  onChange={onTimeFrameSelectChange}
+                  name="timeframe"
+                  onChange={onChangeSelect}
                   options={TIME_FRAME_OPTIONS}
                   placeholder={TIME_FRAME_OPTIONS[2].label} />
             </SmallSelectWrapper>
@@ -148,12 +140,12 @@ const ParticipantsByCourtTypeGraph = ({
                   <Select
                       isDisabled={timeFrame.value === YEARLY}
                       name="month"
-                      onChange={onChangeMonth}
+                      onChange={onChangeSelect}
                       options={MONTHS_OPTIONS}
                       placeholder={MONTHS_OPTIONS[today.month - 1].label} />
                   <Select
                       name="year"
-                      onChange={onChangeYear}
+                      onChange={onChangeSelect}
                       options={YEARS_OPTIONS}
                       placeholder={today.year} />
                 </SelectsWrapper>
