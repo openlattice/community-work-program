@@ -1,5 +1,5 @@
 // @flow
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { List, Map } from 'immutable';
 import {
@@ -35,7 +35,6 @@ import { requestIsPending } from '../../../utils/RequestStateUtils';
 import { SHARED, STATE, STATS } from '../../../utils/constants/ReduxStateConsts';
 import { getStatsData } from '../StatsActions';
 import {
-  ALL_TIME,
   MONTHLY,
   MONTHS_OPTIONS,
   TIME_FRAME_OPTIONS,
@@ -88,23 +87,15 @@ const HoursByCourtType = ({
   const currentYearOption :Object = YEARS_OPTIONS.find((obj) => obj.value === today.year);
   const [hoursYear, setHoursYear] = useState(currentYearOption);
 
-  const onTimeFrameSelectChange = (option :Object) => {
-    if (option.value === ALL_TIME) {
-      actions.getHoursByCourtType({ month: hoursMonth.value, year: hoursYear.value, timeFrame: ALL_TIME });
-      setTimeFrame(option);
-    }
-    else setTimeFrame(option);
+  const onChangeSelect = (selectedTimeValue :Object, event :Object) => {
+    if (event.name === 'month') setHoursMonth(selectedTimeValue);
+    if (event.name === 'year') setHoursYear(selectedTimeValue);
+    if (event.name === 'timeframe') setTimeFrame(selectedTimeValue);
   };
 
-  const onChangeMonth = (newMonth :Object) => {
-    setHoursMonth(newMonth);
-    actions.getHoursByCourtType({ month: newMonth.value, year: hoursYear.value, timeFrame: timeFrame.value });
-  };
-
-  const onChangeYear = (newYear :Object) => {
-    setHoursYear(newYear);
-    actions.getHoursByCourtType({ month: hoursMonth.value, year: newYear.value, timeFrame: timeFrame.value });
-  };
+  useEffect(() => {
+    actions.getHoursByCourtType({ month: hoursMonth.value, year: hoursYear.value, timeFrame: timeFrame.value });
+  }, [actions, hoursMonth, hoursYear, timeFrame]);
 
   const downloadParticipantsAndHoursData = () => {
     const formattedParticipantsAndHoursData :List = formatHoursByCourtTypeDataForDownload(
@@ -133,7 +124,8 @@ const HoursByCourtType = ({
           <HeaderActionsWrapper>
             <SmallSelectWrapper>
               <Select
-                  onChange={onTimeFrameSelectChange}
+                  name="timeframe"
+                  onChange={onChangeSelect}
                   options={TIME_FRAME_OPTIONS}
                   placeholder={TIME_FRAME_OPTIONS[0].label} />
             </SmallSelectWrapper>
@@ -152,12 +144,12 @@ const HoursByCourtType = ({
                   <Select
                       isDisabled={timeFrame.value === YEARLY}
                       name="month"
-                      onChange={onChangeMonth}
+                      onChange={onChangeSelect}
                       options={MONTHS_OPTIONS}
                       placeholder={MONTHS_OPTIONS[today.month - 1].label} />
                   <Select
                       name="year"
-                      onChange={onChangeYear}
+                      onChange={onChangeSelect}
                       options={YEARS_OPTIONS}
                       placeholder={today.year} />
                 </SelectsWrapper>
