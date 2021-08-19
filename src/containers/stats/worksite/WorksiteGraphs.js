@@ -1,5 +1,5 @@
 // @flow
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { List, Map } from 'immutable';
 import {
@@ -30,7 +30,6 @@ import {
 import { requestIsPending } from '../../../utils/RequestStateUtils';
 import { SHARED, STATE, STATS } from '../../../utils/constants/ReduxStateConsts';
 import {
-  ALL_TIME,
   MONTHLY,
   MONTHS_OPTIONS,
   TIME_FRAME_OPTIONS,
@@ -88,33 +87,24 @@ const WorksiteGraphs = ({
   const [participantsMonth, setParticipantsMonth] = useState(MONTHS_OPTIONS[today.month - 1]);
   const [participantsYear, setParticipantsYear] = useState(currentYearOption);
 
-  const onChangeHoursMonth = (newMonth :Object) => {
-    setHoursMonth(newMonth);
-    actions.getHoursWorkedByWorksite({ month: newMonth.value, year: hoursYear.value, timeFrame: timeFrame.value });
+  const onChangeHoursSelect = (selectedTimeValue :Object, event :Object) => {
+    if (event.name === 'month') setHoursMonth(selectedTimeValue);
+    if (event.name === 'year') setHoursYear(selectedTimeValue);
+    if (event.name === 'timeframe') setTimeFrame(selectedTimeValue);
   };
 
-  const onChangeHoursYear = (newYear :Object) => {
-    setHoursYear(newYear);
-    actions.getHoursWorkedByWorksite({ month: hoursMonth.value, year: newYear.value, timeFrame: timeFrame.value });
+  useEffect(() => {
+    actions.getHoursWorkedByWorksite({ month: hoursMonth.value, year: hoursYear.value, timeFrame: timeFrame.value });
+  }, [actions, hoursMonth, hoursYear, timeFrame]);
+
+  const onChangeParticipantsSelect = (selectedTimeValue :Object, event :Object) => {
+    if (event.name === 'month') setParticipantsMonth(selectedTimeValue);
+    if (event.name === 'year') setParticipantsYear(selectedTimeValue);
   };
 
-  const onChangeParticipantsMonth = (newMonth :Object) => {
-    setParticipantsMonth(newMonth);
-    actions.getMonthlyParticipantsByWorksite({ month: newMonth.value, year: participantsYear.value });
-  };
-
-  const onChangeParticipantsYear = (newYear :Object) => {
-    setParticipantsYear(newYear);
-    actions.getMonthlyParticipantsByWorksite({ month: participantsMonth.value, year: newYear.value });
-  };
-
-  const onTimeFrameSelectChange = (option :Object) => {
-    if (option.value === ALL_TIME) {
-      actions.getHoursWorkedByWorksite();
-      setTimeFrame(option);
-    }
-    else setTimeFrame(option);
-  };
+  useEffect(() => {
+    actions.getMonthlyParticipantsByWorksite({ month: participantsMonth.value, year: participantsYear.value });
+  }, [actions, participantsMonth, participantsYear]);
 
   const worksites :List = participantsByWorksite.keySeq().toList().sort();
 
@@ -150,7 +140,8 @@ const WorksiteGraphs = ({
             <HeaderActionsWrapper>
               <SmallSelectWrapper>
                 <Select
-                    onChange={onTimeFrameSelectChange}
+                    name="timeframe"
+                    onChange={onChangeHoursSelect}
                     options={TIME_FRAME_OPTIONS}
                     placeholder={TIME_FRAME_OPTIONS[2].label} />
               </SmallSelectWrapper>
@@ -169,12 +160,12 @@ const WorksiteGraphs = ({
                     <Select
                         isDisabled={timeFrame.value === YEARLY}
                         name="month"
-                        onChange={onChangeHoursMonth}
+                        onChange={onChangeHoursSelect}
                         options={MONTHS_OPTIONS}
                         placeholder={MONTHS_OPTIONS[today.month - 1].label} />
                     <Select
                         name="year"
-                        onChange={onChangeHoursYear}
+                        onChange={onChangeHoursSelect}
                         options={YEARS_OPTIONS}
                         placeholder={today.year} />
                   </SelectsWrapper>
@@ -209,12 +200,12 @@ const WorksiteGraphs = ({
             <SelectsWrapper>
               <Select
                   name="month"
-                  onChange={onChangeParticipantsMonth}
+                  onChange={onChangeParticipantsSelect}
                   options={MONTHS_OPTIONS}
                   placeholder={MONTHS_OPTIONS[today.month - 1].label} />
               <Select
                   name="year"
-                  onChange={onChangeParticipantsYear}
+                  onChange={onChangeParticipantsSelect}
                   options={YEARS_OPTIONS}
                   placeholder={today.year} />
             </SelectsWrapper>
