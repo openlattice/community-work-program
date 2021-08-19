@@ -1,5 +1,5 @@
 // @flow
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import styled from 'styled-components';
 import { Map } from 'immutable';
@@ -95,15 +95,14 @@ const DemographicsGraphs = ({
     else setTimeFrame(option);
   };
 
-  const onChangeMonth = (newMonth :Object) => {
-    setMonth(newMonth);
-    actions.getMonthlyDemographics({ month: newMonth.value, year: year.value });
+  const onChangeSelect = (selectedTimeValue :Object, event :Object) => {
+    if (event.name === 'month') setMonth(selectedTimeValue);
+    if (event.name === 'year') setYear(selectedTimeValue);
   };
 
-  const onChangeYear = (newYear :Object) => {
-    setYear(newYear);
-    actions.getMonthlyDemographics({ month: month.value, year: newYear.value });
-  };
+  useEffect(() => {
+    actions.getMonthlyDemographics({ month: month.value, year: year.value });
+  }, [actions, month, year]);
 
   const isFetchingDemographics = requestIsPending(requestStates[GET_MONTHLY_DEMOGRAPHICS])
     || requestIsPending(requestStates[GET_PARTICIPANTS_DEMOGRAPHICS]);
@@ -129,12 +128,12 @@ const DemographicsGraphs = ({
                 <SelectsWrapper>
                   <Select
                       name="month"
-                      onChange={onChangeMonth}
+                      onChange={onChangeSelect}
                       options={MONTHS_OPTIONS}
                       placeholder={MONTHS_OPTIONS[today.month - 1].label} />
                   <Select
                       name="year"
-                      onChange={onChangeYear}
+                      onChange={onChangeSelect}
                       options={YEARS_OPTIONS}
                       placeholder={today.year} />
                 </SelectsWrapper>
