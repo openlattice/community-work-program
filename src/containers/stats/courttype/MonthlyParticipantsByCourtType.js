@@ -1,5 +1,5 @@
 // @flow
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { List, Map } from 'immutable';
 import {
@@ -63,21 +63,17 @@ const MonthlyParticipantsByCourtTypeList = ({ actions, monthlyParticipantsByCour
   const currentYearOption :Object = YEARS_OPTIONS.find((obj) => obj.value === today.year);
   const [year, setYear] = useState(currentYearOption);
 
-  const onChangeMonth = (newMonth :Object) => {
-    setMonth(newMonth);
-    actions.getMonthlyParticipantsByCourtType({
-      month: newMonth.value,
-      year: year.value,
-    });
+  const onChangeSelect = (selectedTimeValue :Object, event :Object) => {
+    if (event.name === 'month') setMonth(selectedTimeValue);
+    if (event.name === 'year') setYear(selectedTimeValue);
   };
 
-  const onChangeYear = (newYear :Object) => {
-    setYear(newYear);
+  useEffect(() => {
     actions.getMonthlyParticipantsByCourtType({
       month: month.value,
-      year: newYear.value,
+      year: year.value,
     });
-  };
+  }, [actions, month, year]);
 
   const downloadParticipantsByCourtType = () => {
     const formattedData :List = formatParticipantsByCourtTypeDataForDownload(monthlyParticipantsByCourtType);
@@ -105,12 +101,12 @@ const MonthlyParticipantsByCourtTypeList = ({ actions, monthlyParticipantsByCour
             <SelectsWrapper>
               <Select
                   name="month"
-                  onChange={onChangeMonth}
+                  onChange={onChangeSelect}
                   options={MONTHS_OPTIONS}
                   placeholder={MONTHS_OPTIONS[today.month - 1].label} />
               <Select
                   name="year"
-                  onChange={onChangeYear}
+                  onChange={onChangeSelect}
                   options={YEARS_OPTIONS}
                   placeholder={today.year} />
             </SelectsWrapper>
