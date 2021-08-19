@@ -461,9 +461,9 @@ function* getTotalParticipantsByCourtTypeWorker(action :SequenceAction) :Generat
       response = yield call(searchEntitySetDataWorker, searchEntitySetData(searchOptions));
       if (response.error) throw response.error;
       const diversionPlans :List = fromJS(response.data.hits);
-      fromJS(response.data).forEach((plan :Map) => {
+      diversionPlans.forEach((plan :Map) => {
         const planEKID :?UUID = getEntityKeyId(plan);
-        if (planEKID) diversionPlans.push(planEKID);
+        if (planEKID) diversionPlanEKIDs.push(planEKID);
       });
     }
 
@@ -491,10 +491,7 @@ function* getTotalParticipantsByCourtTypeWorker(action :SequenceAction) :Generat
             .find((neighbor :Map) => getNeighborESID(neighbor) === courtCaseESID);
 
           if (isDefined(courtCaseNeighbor)) {
-            const { [COURT_CASE_TYPE]: courtType } = getEntityProperties(
-              getNeighborDetails(courtCaseNeighbor),
-              [COURT_CASE_TYPE]
-            );
+            const courtType = getPropertyValue(getNeighborDetails(courtCaseNeighbor), [COURT_CASE_TYPE, 0]);
 
             const personEKID :?UUID = getEntityKeyId(getNeighborDetails(personNeighbor));
             let personCourtTypes :List = map.get(personEKID, List());
