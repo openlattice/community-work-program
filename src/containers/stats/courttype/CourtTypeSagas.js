@@ -49,11 +49,13 @@ import {
   getNeighborESID,
   getPropertyTypeIdFromEdm,
   getUTCDateRangeSearchString,
+  sortEntitiesByDateProperty,
 } from '../../../utils/DataUtils';
 import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../../utils/Errors';
 import { isDefined, isEmptyString } from '../../../utils/LangUtils';
 import { getPersonFullName } from '../../../utils/PeopleUtils';
 import { STATE } from '../../../utils/constants/ReduxStateConsts';
+import { COMPLETION_STATUSES } from '../../participants/ParticipantsConstants';
 import { ACTIVE_STATUSES, courtTypeCountObj } from '../consts/CourtTypeConsts';
 import { DOWNLOAD_CONSTS } from '../consts/StatsConsts';
 import { ALL_TIME, MONTHLY, YEARLY } from '../consts/TimeConsts';
@@ -62,7 +64,7 @@ const { getEntitySetData } = DataApiActions;
 const { getEntitySetDataWorker } = DataApiSagas;
 const { searchEntitySetData, searchEntityNeighborsWithFilter } = SearchApiActions;
 const { searchEntitySetDataWorker, searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
-const { getEntityKeyId } = DataUtils;
+const { getEntityKeyId, getPropertyValue } = DataUtils;
 const {
   APPOINTMENT,
   CHECK_INS,
@@ -459,9 +461,9 @@ function* getTotalParticipantsByCourtTypeWorker(action :SequenceAction) :Generat
       response = yield call(searchEntitySetDataWorker, searchEntitySetData(searchOptions));
       if (response.error) throw response.error;
       const diversionPlans :List = fromJS(response.data.hits);
-      fromJS(response.data).forEach((plan :Map) => {
+      diversionPlans.forEach((plan :Map) => {
         const planEKID :?UUID = getEntityKeyId(plan);
-        if (planEKID) diversionPlans.push(planEKID);
+        if (planEKID) diversionPlanEKIDs.push(planEKID);
       });
     }
 
@@ -489,10 +491,7 @@ function* getTotalParticipantsByCourtTypeWorker(action :SequenceAction) :Generat
             .find((neighbor :Map) => getNeighborESID(neighbor) === courtCaseESID);
 
           if (isDefined(courtCaseNeighbor)) {
-            const { [COURT_CASE_TYPE]: courtType } = getEntityProperties(
-              getNeighborDetails(courtCaseNeighbor),
-              [COURT_CASE_TYPE]
-            );
+            const courtType = getPropertyValue(getNeighborDetails(courtCaseNeighbor), [COURT_CASE_TYPE, 0]);
 
             const personEKID :?UUID = getEntityKeyId(getNeighborDetails(personNeighbor));
             let personCourtTypes :List = map.get(personEKID, List());
@@ -966,42 +965,68 @@ function* getEnrollmentsByCourtTypeWorker(action :SequenceAction) :Generator<*, 
     const edm = yield select(getEdmFromState);
     const enrollmentStatusESID :UUID = getEntitySetIdFromApp(app, ENROLLMENT_STATUS);
     const effectiveDatePTID :UUID = getPropertyTypeIdFromEdm(edm, EFFECTIVE_DATE);
-    const searchOptions = {
-      entitySetIds: [enrollmentStatusESID],
-      start: 0,
-      maxHits: 10000,
-      constraints: []
-    };
 
-    let searchTerm :string = '';
-
-    if (timeFrame === MONTHLY) {
-      const mmMonth :string = month < 10 ? `0${month}` : month;
-      const firstDateOfMonth :DateTime = DateTime.fromISO(`${year}-${mmMonth}-01`);
-      searchTerm = getUTCDateRangeSearchString(effectiveDatePTID, 'month', firstDateOfMonth);
-    }
-    else if (timeFrame === YEARLY) {
-      const firstDateOfYear :DateTime = DateTime.fromISO(`${year}-01-01`);
-      searchTerm = getUTCDateRangeSearchString(effectiveDatePTID, 'year', firstDateOfYear);
-    }
-    searchOptions.constraints.push({
-      min: 1,
-      constraints: [{
-        searchTerm,
-        fuzzy: false
-      }]
-    });
-    response = yield call(searchEntitySetDataWorker, searchEntitySetData(searchOptions));
-    if (response.error) throw response.error;
-    const enrollmentStatuses :List = fromJS(response.data.hits);
     const enrollmentStatusEKIDs :UUID[] = [];
-    const enrollmentStatusByEKID :Map = Map().withMutations((map :Map) => {
-      enrollmentStatuses.forEach((enrollmentStatus :Map) => {
-        const enrollmentStatusEKID :?UUID = getEntityKeyId(enrollmentStatus);
-        if (enrollmentStatusEKID) enrollmentStatusEKIDs.push(enrollmentStatusEKID);
-        map.set(enrollmentStatusEKID, enrollmentStatus);
+    let enrollmentStatusByEKID :Map = Map();
+
+    if (timeFrame === ALL_TIME) {
+      response = yield call(getEntitySetDataWorker, getEntitySetData({ entitySetId: enrollmentStatusESID }));
+      if (response.error) throw response.error;
+      fromJS(response.data).forEach((enrollmentStatus) => {
+        const effectiveDateTime = getPropertyValue(enrollmentStatus, [EFFECTIVE_DATE, 0], undefined);
+        const status = getPropertyValue(enrollmentStatus, [STATUS, 0], undefined);
+        if (isDefined(effectiveDateTime) && isDefined(status)) {
+          const enrollmentStatusEKID = getEntityKeyId(enrollmentStatus);
+          if (enrollmentStatusEKID) {
+            enrollmentStatusEKIDs.push(enrollmentStatusEKID);
+            enrollmentStatusByEKID = enrollmentStatusByEKID.set(enrollmentStatusEKID, enrollmentStatus);
+          }
+        }
       });
-    });
+    }
+    else {
+      const searchOptions = {
+        entitySetIds: [enrollmentStatusESID],
+        start: 0,
+        maxHits: 10000,
+        constraints: []
+      };
+
+      let searchTerm :string = '';
+
+      if (timeFrame === MONTHLY) {
+        const mmMonth :string = month < 10 ? `0${month}` : month;
+        const firstDateOfMonth :DateTime = DateTime.fromISO(`${year}-${mmMonth}-01`);
+        searchTerm = getUTCDateRangeSearchString(effectiveDatePTID, 'month', firstDateOfMonth);
+      }
+      else if (timeFrame === YEARLY) {
+        const firstDateOfYear :DateTime = DateTime.fromISO(`${year}-01-01`);
+        searchTerm = getUTCDateRangeSearchString(effectiveDatePTID, 'year', firstDateOfYear);
+      }
+      searchOptions.constraints.push({
+        min: 1,
+        constraints: [{
+          searchTerm,
+          fuzzy: false
+        }]
+      });
+      response = yield call(searchEntitySetDataWorker, searchEntitySetData(searchOptions));
+      if (response.error) throw response.error;
+      const enrollmentStatuses :List = fromJS(response.data.hits);
+      enrollmentStatusByEKID = Map().withMutations((map :Map) => {
+        enrollmentStatuses.forEach((enrollmentStatus :Map) => {
+          const effectiveDateTime = getPropertyValue(enrollmentStatus, [EFFECTIVE_DATE, 0], undefined);
+          const status = getPropertyValue(enrollmentStatus, [STATUS, 0], undefined);
+          if (isDefined(effectiveDateTime) && isDefined(status)) {
+            const enrollmentStatusEKID :?UUID = getEntityKeyId(enrollmentStatus);
+            if (enrollmentStatusEKID) {
+              enrollmentStatusEKIDs.push(enrollmentStatusEKID);
+              map.set(enrollmentStatusEKID, enrollmentStatus);
+            }
+          }
+        });
+      });
+    }
 
     if (enrollmentStatusEKIDs.length) {
       const diversionPlanESID :UUID = getEntitySetIdFromApp(app, DIVERSION_PLAN);
@@ -1042,62 +1067,70 @@ function* getEnrollmentsByCourtTypeWorker(action :SequenceAction) :Generator<*, 
         const courtCaseNeighbors :Map = fromJS(response.data);
         courtCaseNeighbors.forEach((neighborsList :List, diversionPlanEKID :UUID) => {
           const courtCase :Map = getNeighborDetails(neighborsList.get(0));
-          const { [COURT_CASE_TYPE]: courtType } = getEntityProperties(courtCase, [COURT_CASE_TYPE]);
-          const enrollmentStatusesForDiversionPlan :List = enrollmentStatusEKIDsByDiversionPlanEKID
+          const courtType = getPropertyValue(courtCase, [COURT_CASE_TYPE, 0]);
+          const enrollmentStatusEKIDsForDiversionPlan :List = enrollmentStatusEKIDsByDiversionPlanEKID
             .get(diversionPlanEKID, List());
-          /*
-            i'll add all enrollment statuses here, but this could be revised to use only the most
-            recent enrollment status, so enrollments (diversionPlans) aren't double counted:
-          */
-          enrollmentStatusesForDiversionPlan.forEach((enrollmentStatusEKID :UUID) => {
-            const enrollmentStatus :Map = enrollmentStatusByEKID.get(enrollmentStatusEKID, Map());
-            const {
-              [EFFECTIVE_DATE]: effectiveDateTime,
-              [STATUS]: status
-            } = getEntityProperties(enrollmentStatus, [EFFECTIVE_DATE, STATUS]);
 
-            if (ACTIVE_STATUSES.includes(status)) {
-              const count :number = activeEnrollmentsByCourtType.get(courtType, 0);
-              activeEnrollmentsByCourtType = activeEnrollmentsByCourtType.set(courtType, count + 1);
+          // find the most recent enrollment status for the diversion plan
+          const enrollmentStatuses = enrollmentStatusEKIDsForDiversionPlan
+            .map((enrollmentStatusEKID :UUID) => enrollmentStatusByEKID.get(enrollmentStatusEKID, Map()));
+          let sortedEnrollmentStatuses = sortEntitiesByDateProperty(enrollmentStatuses, [EFFECTIVE_DATE]);
+          sortedEnrollmentStatuses = sortedEnrollmentStatuses.sort((enrollmentStatus :Map) => {
+            const status = getPropertyValue(enrollmentStatus, [STATUS, 0]);
+            if (status === ENROLLMENT_STATUSES.AWAITING_CHECKIN) return -1;
+            return 0;
+          });
+          const completionStatus :?Map = sortedEnrollmentStatuses.find((enrollmentStatus :Map) => {
+            const status = getPropertyValue(enrollmentStatus, [STATUS, 0]);
+            return COMPLETION_STATUSES.includes(status);
+          });
+          const mostRecentStatus :Map = completionStatus || sortedEnrollmentStatuses.last() || Map();
 
-              if (status === ENROLLMENT_STATUSES.ACTIVE) {
-                const effectiveDateAsDateTime = DateTime.fromISO(effectiveDateTime);
-                const becameActiveCount :number = becameActiveEnrollmentsByCourtType.get(courtType, 0);
-                if (timeFrame === MONTHLY) {
-                  if (month === effectiveDateAsDateTime.month && year === effectiveDateAsDateTime.year) {
-                    becameActiveEnrollmentsByCourtType = becameActiveEnrollmentsByCourtType
-                      .set(courtType, becameActiveCount + 1);
-                  }
+          // distribute enrollments by status and court type:
+          const effectiveDateTime = getPropertyValue(mostRecentStatus, [EFFECTIVE_DATE, 0]);
+          const status = getPropertyValue(mostRecentStatus, [STATUS, 0]);
+
+          if (ACTIVE_STATUSES.includes(status)) {
+            const count :number = activeEnrollmentsByCourtType.get(courtType, 0);
+            activeEnrollmentsByCourtType = activeEnrollmentsByCourtType.set(courtType, count + 1);
+
+            if (status === ENROLLMENT_STATUSES.ACTIVE) {
+              const effectiveDateAsDateTime = DateTime.fromISO(effectiveDateTime);
+              const becameActiveCount :number = becameActiveEnrollmentsByCourtType.get(courtType, 0);
+              if (timeFrame === MONTHLY) {
+                if (month === effectiveDateAsDateTime.month && year === effectiveDateAsDateTime.year) {
+                  becameActiveEnrollmentsByCourtType = becameActiveEnrollmentsByCourtType
+                    .set(courtType, becameActiveCount + 1);
                 }
-                else if (timeFrame === YEARLY) {
-                  if (year === effectiveDateAsDateTime.year) {
-                    becameActiveEnrollmentsByCourtType = becameActiveEnrollmentsByCourtType
-                      .set(courtType, becameActiveCount + 1);
-                  }
+              }
+              else if (timeFrame === YEARLY) {
+                if (year === effectiveDateAsDateTime.year) {
+                  becameActiveEnrollmentsByCourtType = becameActiveEnrollmentsByCourtType
+                    .set(courtType, becameActiveCount + 1);
                 }
               }
             }
-            if (status === ENROLLMENT_STATUSES.JOB_SEARCH) {
-              const count :number = jobSearchEnrollmentsByCourtType.get(courtType, 0);
-              jobSearchEnrollmentsByCourtType = jobSearchEnrollmentsByCourtType
-                .set(courtType, count + 1);
-            }
-            if (status === ENROLLMENT_STATUSES.COMPLETED || status === ENROLLMENT_STATUSES.SUCCESSFUL) {
-              const count :number = successfulEnrollmentsByCourtType.get(courtType, 0);
-              successfulEnrollmentsByCourtType = successfulEnrollmentsByCourtType
-                .set(courtType, count + 1);
-            }
-            if (status === ENROLLMENT_STATUSES.REMOVED_NONCOMPLIANT || status === ENROLLMENT_STATUSES.UNSUCCESSFUL) {
-              const count :number = unsuccessfulEnrollmentsByCourtType.get(courtType, 0);
-              unsuccessfulEnrollmentsByCourtType = unsuccessfulEnrollmentsByCourtType
-                .set(courtType, count + 1);
-            }
-            if (status === ENROLLMENT_STATUSES.CLOSED) {
-              const count :number = closedEnrollmentsByCourtType.get(courtType, 0);
-              closedEnrollmentsByCourtType = closedEnrollmentsByCourtType
-                .set(courtType, count + 1);
-            }
-          });
+          }
+          if (status === ENROLLMENT_STATUSES.JOB_SEARCH) {
+            const count :number = jobSearchEnrollmentsByCourtType.get(courtType, 0);
+            jobSearchEnrollmentsByCourtType = jobSearchEnrollmentsByCourtType
+              .set(courtType, count + 1);
+          }
+          if (status === ENROLLMENT_STATUSES.COMPLETED || status === ENROLLMENT_STATUSES.SUCCESSFUL) {
+            const count :number = successfulEnrollmentsByCourtType.get(courtType, 0);
+            successfulEnrollmentsByCourtType = successfulEnrollmentsByCourtType
+              .set(courtType, count + 1);
+          }
+          if (status === ENROLLMENT_STATUSES.REMOVED_NONCOMPLIANT || status === ENROLLMENT_STATUSES.UNSUCCESSFUL) {
+            const count :number = unsuccessfulEnrollmentsByCourtType.get(courtType, 0);
+            unsuccessfulEnrollmentsByCourtType = unsuccessfulEnrollmentsByCourtType
+              .set(courtType, count + 1);
+          }
+          if (status === ENROLLMENT_STATUSES.CLOSED) {
+            const count :number = closedEnrollmentsByCourtType.get(courtType, 0);
+            closedEnrollmentsByCourtType = closedEnrollmentsByCourtType
+              .set(courtType, count + 1);
+          }
         });
       }
     }

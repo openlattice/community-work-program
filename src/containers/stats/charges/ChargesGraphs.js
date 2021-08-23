@@ -1,5 +1,6 @@
 // @flow
 import React from 'react';
+
 import styled from 'styled-components';
 import { List, Map } from 'immutable';
 import { Button, CardStack } from 'lattice-ui-kit';
@@ -7,19 +8,20 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
+import { DOWNLOAD_CHARGES_STATS, downloadChargesStats } from './ChargesStatsActions';
+
 import ChargesHeadCell from '../../../components/table/ChargesHeadCell';
 import ChargesTableRow from '../../../components/table/ChargesTableRow';
 import TableHeaderRow from '../../../components/table/TableHeaderRow';
 import {
-  TableCell,
   CustomTable,
   TableCard,
+  TableCell,
   TableHeader,
   TableName,
 } from '../../../components/table/styled/index';
 import { generateTableHeaders } from '../../../utils/FormattingUtils';
 import { requestIsPending } from '../../../utils/RequestStateUtils';
-import { DOWNLOAD_CHARGES_STATS, downloadChargesStats } from './ChargesStatsActions';
 import { SHARED, STATE, STATS } from '../../../utils/constants/ReduxStateConsts';
 import { ARREST_CHARGE_HEADERS, COURT_CHARGE_HEADERS } from '../consts/StatsConsts';
 
@@ -73,7 +75,7 @@ const ChargesGraphs = ({
 } :Props) => (
   <CardStack>
     <TableCard>
-      <ChargesTableHeader padding="40px">
+      <ChargesTableHeader padding="40px" vertical={false}>
         <TableName>
           Arrest Charges
         </TableName>
@@ -90,7 +92,7 @@ const ChargesGraphs = ({
           isLoading={false} />
     </TableCard>
     <TableCard>
-      <ChargesTableHeader padding="40px">
+      <ChargesTableHeader padding="40px" vertical={false}>
         <TableName>
           Court Charges
         </TableName>
