@@ -1,8 +1,6 @@
 // @flow
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
-import { faSearch } from '@fortawesome/pro-duotone-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { List, Map } from 'immutable';
 import {
   Button,
@@ -10,7 +8,6 @@ import {
   CardSegment,
   ExpansionPanel,
   ExpansionPanelDetails,
-  IconButton,
   Select,
   Spinner,
   Typography,
@@ -66,9 +63,17 @@ const MonthlyParticipantsByCourtTypeList = ({ actions, monthlyParticipantsByCour
   const currentYearOption :Object = YEARS_OPTIONS.find((obj) => obj.value === today.year);
   const [year, setYear] = useState(currentYearOption);
 
-  const getNewData = () => {
-    actions.getMonthlyParticipantsByCourtType({ month: month.value, year: year.value });
+  const onChangeSelect = (selectedTimeValue :Object, event :Object) => {
+    if (event.name === 'month') setMonth(selectedTimeValue);
+    if (event.name === 'year') setYear(selectedTimeValue);
   };
+
+  useEffect(() => {
+    actions.getMonthlyParticipantsByCourtType({
+      month: month.value,
+      year: year.value,
+    });
+  }, [actions, month, year]);
 
   const downloadParticipantsByCourtType = () => {
     const formattedData :List = formatParticipantsByCourtTypeDataForDownload(monthlyParticipantsByCourtType);
@@ -96,18 +101,15 @@ const MonthlyParticipantsByCourtTypeList = ({ actions, monthlyParticipantsByCour
             <SelectsWrapper>
               <Select
                   name="month"
-                  onChange={setMonth}
+                  onChange={onChangeSelect}
                   options={MONTHS_OPTIONS}
                   placeholder={MONTHS_OPTIONS[today.month - 1].label} />
               <Select
                   name="year"
-                  onChange={setYear}
+                  onChange={onChangeSelect}
                   options={YEARS_OPTIONS}
                   placeholder={today.year} />
             </SelectsWrapper>
-            <IconButton onClick={getNewData}>
-              <FontAwesomeIcon icon={faSearch} />
-            </IconButton>
           </ActionsWrapper>
         </GraphHeader>
       </Card>

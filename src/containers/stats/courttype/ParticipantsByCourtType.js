@@ -1,15 +1,12 @@
 // @flow
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
-import { faSearch } from '@fortawesome/pro-duotone-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { List, Map } from 'immutable';
 import {
   Button,
   Card,
   CardSegment,
   Colors,
-  IconButton,
   Select,
   Spinner,
 } from 'lattice-ui-kit';
@@ -38,7 +35,6 @@ import { requestIsPending } from '../../../utils/RequestStateUtils';
 import { SHARED, STATE, STATS } from '../../../utils/constants/ReduxStateConsts';
 import { getStatsData } from '../StatsActions';
 import {
-  ALL_TIME,
   MONTHLY,
   MONTHS_OPTIONS,
   TIME_FRAME_OPTIONS,
@@ -106,17 +102,15 @@ const ParticipantsByCourtTypeGraph = ({
     ...toolTipStyle
   };
 
-  const onTimeFrameSelectChange = (option :Object) => {
-    if (option.value === ALL_TIME) {
-      actions.getTotalParticipantsByCourtType({ month: month.value, year: year.value, timeFrame: ALL_TIME });
-      setTimeFrame(option);
-    }
-    else setTimeFrame(option);
+  const onChangeSelect = (selectedTimeValue :Object, event :Object) => {
+    if (event.name === 'month') setMonth(selectedTimeValue);
+    if (event.name === 'year') setYear(selectedTimeValue);
+    if (event.name === 'timeframe') setTimeFrame(selectedTimeValue);
   };
 
-  const getNewParticipantsData = () => {
+  useEffect(() => {
     actions.getTotalParticipantsByCourtType({ month: month.value, year: year.value, timeFrame: timeFrame.value });
-  };
+  }, [actions, month, year, timeFrame]);
 
   return (
     <Card>
@@ -126,7 +120,8 @@ const ParticipantsByCourtTypeGraph = ({
           <HeaderActionsWrapper>
             <SmallSelectWrapper>
               <Select
-                  onChange={onTimeFrameSelectChange}
+                  name="timeframe"
+                  onChange={onChangeSelect}
                   options={TIME_FRAME_OPTIONS}
                   placeholder={TIME_FRAME_OPTIONS[2].label} />
             </SmallSelectWrapper>
@@ -145,18 +140,15 @@ const ParticipantsByCourtTypeGraph = ({
                   <Select
                       isDisabled={timeFrame.value === YEARLY}
                       name="month"
-                      onChange={setMonth}
+                      onChange={onChangeSelect}
                       options={MONTHS_OPTIONS}
                       placeholder={MONTHS_OPTIONS[today.month - 1].label} />
                   <Select
                       name="year"
-                      onChange={setYear}
+                      onChange={onChangeSelect}
                       options={YEARS_OPTIONS}
                       placeholder={today.year} />
                 </SelectsWrapper>
-                <IconButton onClick={getNewParticipantsData}>
-                  <FontAwesomeIcon icon={faSearch} />
-                </IconButton>
               </ActionsWrapper>
             </InnerHeaderRow>
           )
