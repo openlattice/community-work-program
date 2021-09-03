@@ -51,11 +51,11 @@ import {
   getUTCDateRangeSearchString,
 } from '../../../utils/DataUtils';
 import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../../utils/Errors';
-import { isDefined, isEmptyString, isNonEmptyString } from '../../../utils/LangUtils';
+import { isDefined } from '../../../utils/LangUtils';
 import { getPersonFullName } from '../../../utils/PeopleUtils';
 import { STATE } from '../../../utils/constants/ReduxStateConsts';
 import { DOWNLOAD_CONSTS } from '../consts/StatsConsts';
-import { ALL_TIME, MONTHLY, YEARLY } from '../consts/TimeConsts';
+import { MONTHLY, YEARLY } from '../consts/TimeConsts';
 
 const { getEntitySetData } = DataApiActions;
 const { getEntitySetDataWorker } = DataApiSagas;
@@ -66,14 +66,11 @@ const {
   APPOINTMENT,
   CHECK_INS,
   CHECK_IN_DETAILS,
-  DIVERSION_PLAN,
   PEOPLE,
   WORKSITE,
   WORKSITE_PLAN,
 } = APP_TYPE_FQNS;
 const {
-  DATETIME_END,
-  INCIDENT_START_DATETIME,
   DATETIME_START,
   HOURS_WORKED,
   NAME,
