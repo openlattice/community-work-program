@@ -1,16 +1,13 @@
 // @flow
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import styled from 'styled-components';
-import { faSearch } from '@fortawesome/pro-duotone-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { List, Map } from 'immutable';
 import {
   Button,
   Card,
   CardSegment,
   Colors,
-  IconButton,
   Select,
   Spinner,
 } from 'lattice-ui-kit';
@@ -141,20 +138,20 @@ const EnrollmentsAndStatusByCourtType = ({
   const [enrollmentsMonth, setEnrollmentsMonth] = useState(MONTHS_OPTIONS[today.month - 1]);
   const currentYearOption :Object = YEARS_OPTIONS.find((obj) => obj.value === today.year);
   const [enrollmentsYear, setEnrollmentsYear] = useState(currentYearOption);
-  const onTimeFrameSelectChange = (option :Object) => {
-    if (option.value === ALL_TIME) {
-      actions.getStatsData();
-      setTimeFrame(option);
-    }
-    else setTimeFrame(option);
+
+  const onChangeSelect = (selectedTimeValue :Object, event :Object) => {
+    if (event.name === 'month') setEnrollmentsMonth(selectedTimeValue);
+    if (event.name === 'year') setEnrollmentsYear(selectedTimeValue);
+    if (event.name === 'timeframe') setTimeFrame(selectedTimeValue);
   };
-  const getNewEnrollmentsData = () => {
+
+  useEffect(() => {
     actions.getEnrollmentsByCourtType({
       month: enrollmentsMonth.value,
       year: enrollmentsYear.value,
       timeFrame: timeFrame.value
     });
-  };
+  }, [actions, enrollmentsMonth, enrollmentsYear, timeFrame]);
 
   const downloadEnrollmentsData = () => {
     const formattedEnrollmentsData :List = formatEnrollmentsDataForDownload(
@@ -223,7 +220,8 @@ const EnrollmentsAndStatusByCourtType = ({
           <HeaderActionsWrapper>
             <SmallSelectWrapper>
               <Select
-                  onChange={onTimeFrameSelectChange}
+                  name="timeframe"
+                  onChange={onChangeSelect}
                   options={TIME_FRAME_OPTIONS}
                   placeholder={TIME_FRAME_OPTIONS[2].label} />
             </SmallSelectWrapper>
@@ -242,18 +240,15 @@ const EnrollmentsAndStatusByCourtType = ({
                   <Select
                       isDisabled={timeFrame.value === YEARLY}
                       name="month"
-                      onChange={setEnrollmentsMonth}
+                      onChange={onChangeSelect}
                       options={MONTHS_OPTIONS}
                       placeholder={MONTHS_OPTIONS[today.month - 1].label} />
                   <Select
                       name="year"
-                      onChange={setEnrollmentsYear}
+                      onChange={onChangeSelect}
                       options={YEARS_OPTIONS}
                       placeholder={today.year} />
                 </SelectsWrapper>
-                <IconButton onClick={getNewEnrollmentsData}>
-                  <FontAwesomeIcon icon={faSearch} />
-                </IconButton>
               </ActionsWrapper>
             </InnerHeaderRow>
           )

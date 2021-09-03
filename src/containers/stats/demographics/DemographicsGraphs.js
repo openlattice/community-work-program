@@ -1,18 +1,15 @@
 // @flow
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import styled from 'styled-components';
-import { faSearch } from '@fortawesome/pro-duotone-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Map } from 'immutable';
 import {
   Button,
   Card,
   CardSegment,
   CardStack,
-  IconButton,
   Select,
-  Spinner,
+  Typography,
 } from 'lattice-ui-kit';
 import { DateTime } from 'luxon';
 import { connect } from 'react-redux';
@@ -98,13 +95,22 @@ const DemographicsGraphs = ({
     else setTimeFrame(option);
   };
 
-  const getMonthlyDemographicsData = () => {
-    actions.getMonthlyDemographics({ month: month.value, year: year.value });
+  const onChangeSelect = (selectedTimeValue :Object, event :Object) => {
+    if (event.name === 'month') setMonth(selectedTimeValue);
+    if (event.name === 'year') setYear(selectedTimeValue);
   };
+
+  useEffect(() => {
+    actions.getMonthlyDemographics({ month: month.value, year: year.value });
+  }, [actions, month, year]);
+
+  const isFetchingDemographics = requestIsPending(requestStates[GET_MONTHLY_DEMOGRAPHICS])
+    || requestIsPending(requestStates[GET_PARTICIPANTS_DEMOGRAPHICS]);
 
   return (
     <>
       <CardSegment padding="0 0 30px 0">
+        <Typography gutterBottom>Select the timeframe for viewing participant demographics:</Typography>
         <InnerHeaderRow>
           <HeaderActionsWrapper>
             <SmallSelectWrapper>
@@ -122,66 +128,57 @@ const DemographicsGraphs = ({
                 <SelectsWrapper>
                   <Select
                       name="month"
-                      onChange={setMonth}
+                      onChange={onChangeSelect}
                       options={MONTHS_OPTIONS}
                       placeholder={MONTHS_OPTIONS[today.month - 1].label} />
                   <Select
                       name="year"
-                      onChange={setYear}
+                      onChange={onChangeSelect}
                       options={YEARS_OPTIONS}
                       placeholder={today.year} />
                 </SelectsWrapper>
-                <IconButton onClick={getMonthlyDemographicsData}>
-                  <FontAwesomeIcon icon={faSearch} />
-                </IconButton>
               </ActionsWrapper>
             </InnerHeaderRow>
           )
         }
       </CardSegment>
-      {
-        requestIsPending(requestStates[GET_MONTHLY_DEMOGRAPHICS])
-            || requestIsPending(requestStates[GET_PARTICIPANTS_DEMOGRAPHICS])
-          ? (
-            <Spinner size="2x" />
-          ) : (
-            <CardStack>
-              <Card>
-                <DemographicsCardHeader>
-                  <div>Race</div>
-                  <Button
-                      isLoading={requestIsPending(requestStates[DOWNLOAD_DEMOGRAPHICS_DATA])}
-                      onClick={() => actions.downloadDemographicsData(formatRadialChartData(raceDemographics))}>
-                    Download
-                  </Button>
-                </DemographicsCardHeader>
-                <RaceChart raceDemographics={raceDemographics} />
-              </Card>
-              <Card>
-                <DemographicsCardHeader>
-                  <div>Ethnicity</div>
-                  <Button
-                      isLoading={requestIsPending(requestStates[DOWNLOAD_DEMOGRAPHICS_DATA])}
-                      onClick={() => actions.downloadDemographicsData(formatRadialChartData(ethnicityDemographics))}>
-                    Download
-                  </Button>
-                </DemographicsCardHeader>
-                <EthnicityChart ethnicityDemographics={ethnicityDemographics} />
-              </Card>
-              <Card>
-                <DemographicsCardHeader>
-                  <div>Sex</div>
-                  <Button
-                      isLoading={requestIsPending(requestStates[DOWNLOAD_DEMOGRAPHICS_DATA])}
-                      onClick={() => actions.downloadDemographicsData(formatRadialChartData(sexDemographics))}>
-                    Download
-                  </Button>
-                </DemographicsCardHeader>
-                <SexChart sexDemographics={sexDemographics} />
-              </Card>
-            </CardStack>
-          )
-      }
+      <CardStack>
+        <Card>
+          <DemographicsCardHeader>
+            <div>Race</div>
+            <Button
+                isLoading={requestIsPending(requestStates[DOWNLOAD_DEMOGRAPHICS_DATA])}
+                onClick={() => actions.downloadDemographicsData(formatRadialChartData(raceDemographics))}>
+              Download
+            </Button>
+          </DemographicsCardHeader>
+          <RaceChart isFetchingDemographics={isFetchingDemographics} raceDemographics={raceDemographics} />
+        </Card>
+        <Card>
+          <DemographicsCardHeader>
+            <div>Ethnicity</div>
+            <Button
+                isLoading={requestIsPending(requestStates[DOWNLOAD_DEMOGRAPHICS_DATA])}
+                onClick={() => actions.downloadDemographicsData(formatRadialChartData(ethnicityDemographics))}>
+              Download
+            </Button>
+          </DemographicsCardHeader>
+          <EthnicityChart
+              ethnicityDemographics={ethnicityDemographics}
+              isFetchingDemographics={isFetchingDemographics} />
+        </Card>
+        <Card>
+          <DemographicsCardHeader>
+            <div>Sex</div>
+            <Button
+                isLoading={requestIsPending(requestStates[DOWNLOAD_DEMOGRAPHICS_DATA])}
+                onClick={() => actions.downloadDemographicsData(formatRadialChartData(sexDemographics))}>
+              Download
+            </Button>
+          </DemographicsCardHeader>
+          <SexChart isFetchingDemographics={isFetchingDemographics} sexDemographics={sexDemographics} />
+        </Card>
+      </CardStack>
     </>
   );
 };

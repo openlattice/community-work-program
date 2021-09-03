@@ -1,8 +1,6 @@
 // @flow
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
-import { faSearch } from '@fortawesome/pro-duotone-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { List, Map } from 'immutable';
 import {
   Button,
@@ -11,7 +9,6 @@ import {
   CardStack,
   ExpansionPanel,
   ExpansionPanelDetails,
-  IconButton,
   Select,
   Spinner,
 } from 'lattice-ui-kit';
@@ -33,7 +30,6 @@ import {
 import { requestIsPending } from '../../../utils/RequestStateUtils';
 import { SHARED, STATE, STATS } from '../../../utils/constants/ReduxStateConsts';
 import {
-  ALL_TIME,
   MONTHLY,
   MONTHS_OPTIONS,
   TIME_FRAME_OPTIONS,
@@ -91,21 +87,24 @@ const WorksiteGraphs = ({
   const [participantsMonth, setParticipantsMonth] = useState(MONTHS_OPTIONS[today.month - 1]);
   const [participantsYear, setParticipantsYear] = useState(currentYearOption);
 
-  const getHoursData = () => {
+  const onChangeHoursSelect = (selectedTimeValue :Object, event :Object) => {
+    if (event.name === 'month') setHoursMonth(selectedTimeValue);
+    if (event.name === 'year') setHoursYear(selectedTimeValue);
+    if (event.name === 'timeframe') setTimeFrame(selectedTimeValue);
+  };
+
+  useEffect(() => {
     actions.getHoursWorkedByWorksite({ month: hoursMonth.value, year: hoursYear.value, timeFrame: timeFrame.value });
+  }, [actions, hoursMonth, hoursYear, timeFrame]);
+
+  const onChangeParticipantsSelect = (selectedTimeValue :Object, event :Object) => {
+    if (event.name === 'month') setParticipantsMonth(selectedTimeValue);
+    if (event.name === 'year') setParticipantsYear(selectedTimeValue);
   };
 
-  const getParticipantsData = () => {
+  useEffect(() => {
     actions.getMonthlyParticipantsByWorksite({ month: participantsMonth.value, year: participantsYear.value });
-  };
-
-  const onTimeFrameSelectChange = (option :Object) => {
-    if (option.value === ALL_TIME) {
-      actions.getHoursWorkedByWorksite();
-      setTimeFrame(option);
-    }
-    else setTimeFrame(option);
-  };
+  }, [actions, participantsMonth, participantsYear]);
 
   const worksites :List = participantsByWorksite.keySeq().toList().sort();
 
@@ -141,7 +140,8 @@ const WorksiteGraphs = ({
             <HeaderActionsWrapper>
               <SmallSelectWrapper>
                 <Select
-                    onChange={onTimeFrameSelectChange}
+                    name="timeframe"
+                    onChange={onChangeHoursSelect}
                     options={TIME_FRAME_OPTIONS}
                     placeholder={TIME_FRAME_OPTIONS[2].label} />
               </SmallSelectWrapper>
@@ -160,18 +160,15 @@ const WorksiteGraphs = ({
                     <Select
                         isDisabled={timeFrame.value === YEARLY}
                         name="month"
-                        onChange={setHoursMonth}
+                        onChange={onChangeHoursSelect}
                         options={MONTHS_OPTIONS}
                         placeholder={MONTHS_OPTIONS[today.month - 1].label} />
                     <Select
                         name="year"
-                        onChange={setHoursYear}
+                        onChange={onChangeHoursSelect}
                         options={YEARS_OPTIONS}
                         placeholder={today.year} />
                   </SelectsWrapper>
-                  <IconButton onClick={getHoursData}>
-                    <FontAwesomeIcon icon={faSearch} />
-                  </IconButton>
                 </ActionsWrapper>
               </InnerHeaderRow>
             )
@@ -203,18 +200,15 @@ const WorksiteGraphs = ({
             <SelectsWrapper>
               <Select
                   name="month"
-                  onChange={setParticipantsMonth}
+                  onChange={onChangeParticipantsSelect}
                   options={MONTHS_OPTIONS}
                   placeholder={MONTHS_OPTIONS[today.month - 1].label} />
               <Select
                   name="year"
-                  onChange={setParticipantsYear}
+                  onChange={onChangeParticipantsSelect}
                   options={YEARS_OPTIONS}
                   placeholder={today.year} />
             </SelectsWrapper>
-            <IconButton onClick={getParticipantsData}>
-              <FontAwesomeIcon icon={faSearch} />
-            </IconButton>
           </ActionsWrapper>
         </GraphHeader>
       </Card>
