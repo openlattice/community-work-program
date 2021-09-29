@@ -1,8 +1,7 @@
 // @flow
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 
 import styled from 'styled-components';
-import { Map } from 'immutable';
 import {
   Button,
   Card,
@@ -13,19 +12,15 @@ import {
 } from 'lattice-ui-kit';
 import { ReduxUtils, useRequestState } from 'lattice-utils';
 import { DateTime } from 'luxon';
-import { connect } from 'react-redux';
-import { bindActionCreators } from 'redux';
-import type { RequestSequence, RequestState } from 'redux-reqseq';
+import { useDispatch, useSelector } from 'react-redux';
 
 import EthnicityChart from './EthnicityChart';
 import RaceChart from './RaceChart';
 import SexChart from './SexChart';
 import {
   DOWNLOAD_DEMOGRAPHICS_DATA,
-  GET_MONTHLY_DEMOGRAPHICS,
   GET_PARTICIPANTS_DEMOGRAPHICS,
   downloadDemographicsData,
-  getMonthlyDemographics,
   getParticipantsDemographics,
 } from './DemographicsActions';
 
@@ -47,7 +42,7 @@ import {
 } from '../styled/GraphStyles';
 import { formatRadialChartData } from '../utils/StatsUtils';
 
-const { ACTIONS, REQUEST_STATE } = SHARED;
+const { ACTIONS } = SHARED;
 const { ETHNICITY_DEMOGRAPHICS, RACE_DEMOGRAPHICS, SEX_DEMOGRAPHICS } = STATS;
 const { isPending } = ReduxUtils;
 
