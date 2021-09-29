@@ -28,10 +28,8 @@ import {
 } from './courttype/CourtTypeActions';
 import {
   DOWNLOAD_DEMOGRAPHICS_DATA,
-  GET_MONTHLY_DEMOGRAPHICS,
   GET_PARTICIPANTS_DEMOGRAPHICS,
   downloadDemographicsData,
-  getMonthlyDemographics,
   getParticipantsDemographics,
 } from './demographics/DemographicsActions';
 import {
@@ -102,9 +100,6 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     [GET_HOURS_BY_COURT_TYPE]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
-    [GET_MONTHLY_DEMOGRAPHICS]: {
-      [REQUEST_STATE]: RequestStates.STANDBY
-    },
     [GET_MONTHLY_PARTICIPANTS_BY_COURT_TYPE]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
@@ -129,11 +124,13 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [BECAME_ACTIVE_ENROLLMENTS_BY_COURT_TYPE]: Map(),
   [CLOSED_ENROLLMENTS_BY_COURT_TYPE]: Map(),
   [COURT_CHARGE_TABLE_DATA]: List(),
+  [ETHNICITY_DEMOGRAPHICS]: Map(),
   [HOURS_BY_COURT_TYPE]: Map(),
   [HOURS_BY_WORKSITE]: Map(),
   [JOB_SEARCH_ENROLLMENTS_BY_COURT_TYPE]: Map(),
   [MONTHLY_PARTICIPANTS_BY_COURT_TYPE]: Map(),
   [PARTICIPANTS_BY_WORKSITE]: Map(),
+  [RACE_DEMOGRAPHICS]: Map(),
   [SEX_DEMOGRAPHICS]: Map(),
   [SUCCESSFUL_ENROLLMENTS_BY_COURT_TYPE]: Map(),
   [TOTAL_ACTIVE_ENROLLMENTS_COUNT]: 0,
@@ -370,28 +367,6 @@ export default function statsReducer(state :Map<*, *> = INITIAL_STATE, action :O
         FAILURE: () => state
           .setIn([ACTIONS, GET_MONTHLY_PARTICIPANTS_WITH_NO_CHECK_INS, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, GET_MONTHLY_PARTICIPANTS_WITH_NO_CHECK_INS, action.id]),
-      });
-    }
-
-    case getMonthlyDemographics.case(action.type): {
-
-      return getMonthlyDemographics.reducer(state, action, {
-
-        REQUEST: () => state
-          .setIn([ACTIONS, GET_MONTHLY_DEMOGRAPHICS, action.id], action)
-          .setIn([ACTIONS, GET_MONTHLY_DEMOGRAPHICS, REQUEST_STATE], RequestStates.PENDING),
-        SUCCESS: () => {
-          const seqAction :SequenceAction = (action :any);
-          const { ethnicityDemographics, raceDemographics, sexDemographics } = seqAction.value;
-          return state
-            .set(ETHNICITY_DEMOGRAPHICS, ethnicityDemographics)
-            .set(RACE_DEMOGRAPHICS, raceDemographics)
-            .set(SEX_DEMOGRAPHICS, sexDemographics)
-            .setIn([ACTIONS, GET_MONTHLY_DEMOGRAPHICS, REQUEST_STATE], RequestStates.SUCCESS);
-        },
-        FAILURE: () => state
-          .setIn([ACTIONS, GET_MONTHLY_DEMOGRAPHICS, REQUEST_STATE], RequestStates.FAILURE),
-        FINALLY: () => state.deleteIn([ACTIONS, GET_MONTHLY_DEMOGRAPHICS, action.id]),
       });
     }
 

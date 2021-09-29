@@ -227,7 +227,6 @@ const StatsContainer = ({
 
   const reducedFetchRequestStates = reduceRequestStates([
     requestStates[GET_CHARGES_STATS],
-    requestStates[GET_PARTICIPANTS_DEMOGRAPHICS],
     requestStates[GET_STATS_DATA],
     requestStates[GET_WORKSITE_STATS_DATA]
   ]);

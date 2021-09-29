@@ -24,10 +24,8 @@ import type { SequenceAction } from 'redux-reqseq';
 
 import {
   DOWNLOAD_DEMOGRAPHICS_DATA,
-  GET_MONTHLY_DEMOGRAPHICS,
   GET_PARTICIPANTS_DEMOGRAPHICS,
   downloadDemographicsData,
-  getMonthlyDemographics,
   getParticipantsDemographics,
 } from './DemographicsActions';
 
@@ -41,6 +39,7 @@ import {
 import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../../utils/Errors';
 import { isDefined } from '../../../utils/LangUtils';
 import { STATE } from '../../../utils/constants/ReduxStateConsts';
+import { ALL_TIME } from '../consts/TimeConsts';
 import { getDemographicsFromPersonData } from '../utils/DemographicsUtils';
 
 const { getEntitySetData } = DataApiActions;
@@ -124,75 +123,35 @@ function* downloadDemographicsDataWatcher() :Generator<*, *, *> {
 
 /*
  *
- * DemographicsSagas.getMonthlyDemographics()
+ * DemographicsSagas.getParticipantsDemographics()
  *
  */
 
-function* getMonthlyDemographicsWorker(action :SequenceAction) :Generator<*, *, *> {
+function* getParticipantsDemographicsWorker(action :SequenceAction) :Generator<*, *, *> {
 
   const { id } = action;
   let response :Object = {};
   let nonDuplicatedPersonMap :Map = Map();
+  let ethnicityDemographics :Map = Map();
+  let raceDemographics :Map = Map();
+  let sexDemographics :Map = Map();
 
   try {
-    yield put(getMonthlyDemographics.request(id));
+    yield put(getParticipantsDemographics.request(id));
     const { value } = action;
-    if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
-    const { month, year } = value;
 
-    /*
-      Get demographics for all participants who started CWP within the selected month.
-      Objective is to find diversion plans that have a start date within month.
-      Most diversion plans use sentence date as start date, but some use check-in date or orientation date.
-    */
+    const { month, timeFrame, year } = value;
 
     const app = yield select(getAppFromState);
     const diversionPlanESID :UUID = getEntitySetIdFromApp(app, DIVERSION_PLAN);
+    const peopleESID :UUID = getEntitySetIdFromApp(app, PEOPLE);
 
-    response = yield call(getEntitySetDataWorker, getEntitySetData({ entitySetId: diversionPlanESID }));
-    if (response.error) throw response.error;
+    if (timeFrame === ALL_TIME || !timeFrame) {
+      response = yield call(getEntitySetDataWorker, getEntitySetData({ entitySetId: diversionPlanESID }));
+      if (response.error) throw response.error;
+      const diversionPlans :List = fromJS(response.data).map((plan :Map) => getNeighborDetails(plan));
+      const diversionPlanEKIDs :UUID[] = diversionPlans.map((plan :Map) => getEntityKeyId(plan)).toJS();
 
-    const diversionPlans :List = fromJS(response.data);
-
-    const diversionPlansBeginningSelectedMonth = List().withMutations((mutator) => {
-      diversionPlans.forEach((diversionPlan :Map) => {
-        const sentenceDateTime = getPropertyValue(diversionPlan, [DATETIME_RECEIVED, 0]);
-        const checkInDateTime = getPropertyValue(diversionPlan, [CHECKIN_DATETIME, 0]);
-        const orientationDateTime = getPropertyValue(diversionPlan, [ORIENTATION_DATETIME, 0]);
-
-        if (isDefined(sentenceDateTime)) {
-          const sentenceDateTimeObj = DateTime.fromISO(sentenceDateTime);
-          const sentenceDateMonth = sentenceDateTimeObj.month;
-          const sentenceDateYear = sentenceDateTimeObj.year;
-          if (sentenceDateMonth === month && sentenceDateYear === year) {
-            mutator.push(diversionPlan);
-          }
-        }
-        else if (isDefined(checkInDateTime)) {
-          const checkInDateTimeObj = DateTime.fromISO(checkInDateTime);
-          const checkInDateMonth = checkInDateTimeObj.month;
-          const checkInDateYear = checkInDateTimeObj.year;
-          if (checkInDateMonth === month && checkInDateYear === year) {
-            mutator.push(diversionPlan);
-          }
-        }
-        else if (isDefined(orientationDateTime)) {
-          const orientationDateTimeObj = DateTime.fromISO(orientationDateTime);
-          const orientationDateMonth = orientationDateTimeObj.month;
-          const orientationDateYear = orientationDateTimeObj.year;
-          if (orientationDateMonth === month && orientationDateYear === year) {
-            mutator.push(diversionPlan);
-          }
-        }
-      });
-    });
-
-    const diversionPlanEKIDs :UUID[] = diversionPlansBeginningSelectedMonth
-      .map((diversionPlan :Map) => getEntityKeyId(diversionPlan))
-      .toJS();
-
-    if (diversionPlanEKIDs.length) {
-      const peopleESID :UUID = getEntitySetIdFromApp(app, PEOPLE);
       const searchFilter = {
         entityKeyIds: diversionPlanEKIDs,
         destinationEntitySetIds: [],
@@ -213,80 +172,93 @@ function* getMonthlyDemographicsWorker(action :SequenceAction) :Generator<*, *, 
           if (!isDefined(map.get(personEKID))) map.set(personEKID, person);
         });
       });
+
+      const {
+        ethnicityDemographicsData,
+        raceDemographicsData,
+        sexDemographicsData,
+      } = getDemographicsFromPersonData(nonDuplicatedPersonMap);
+
+      ethnicityDemographics = ethnicityDemographicsData;
+      raceDemographics = raceDemographicsData;
+      sexDemographics = sexDemographicsData;
     }
+    else {
+      response = yield call(getEntitySetDataWorker, getEntitySetData({ entitySetId: diversionPlanESID }));
+      if (response.error) throw response.error;
 
-    const {
-      ethnicityDemographics,
-      raceDemographics,
-      sexDemographics,
-    } = getDemographicsFromPersonData(nonDuplicatedPersonMap);
+      const diversionPlans :List = fromJS(response.data);
 
-    yield put(getMonthlyDemographics.success(id, { ethnicityDemographics, raceDemographics, sexDemographics }));
-  }
-  catch (error) {
-    LOG.error(action.type, error);
-    yield put(getMonthlyDemographics.failure(id, error));
-  }
-  finally {
-    yield put(getMonthlyDemographics.finally(id));
-  }
-}
+      const diversionPlansBeginningSelectedMonth = List().withMutations((mutator) => {
+        diversionPlans.forEach((diversionPlan :Map) => {
+          const sentenceDateTime = getPropertyValue(diversionPlan, [DATETIME_RECEIVED, 0]);
+          const checkInDateTime = getPropertyValue(diversionPlan, [CHECKIN_DATETIME, 0]);
+          const orientationDateTime = getPropertyValue(diversionPlan, [ORIENTATION_DATETIME, 0]);
 
-function* getMonthlyDemographicsWatcher() :Generator<*, *, *> {
-
-  yield takeEvery(GET_MONTHLY_DEMOGRAPHICS, getMonthlyDemographicsWorker);
-}
-
-/*
- *
- * DemographicsSagas.getParticipantsDemographics()
- *
- */
-
-function* getParticipantsDemographicsWorker(action :SequenceAction) :Generator<*, *, *> {
-
-  const { id } = action;
-  let response :Object = {};
-
-  try {
-    yield put(getParticipantsDemographics.request(id));
-
-    const app = yield select(getAppFromState);
-    const diversionPlanESID :UUID = getEntitySetIdFromApp(app, DIVERSION_PLAN);
-
-    response = yield call(getEntitySetDataWorker, getEntitySetData({ entitySetId: diversionPlanESID }));
-    if (response.error) throw response.error;
-    const diversionPlans :List = fromJS(response.data).map((plan :Map) => getNeighborDetails(plan));
-    const diversionPlanEKIDs :UUID[] = [];
-    diversionPlans.forEach((plan :Map) => diversionPlanEKIDs.push(getEntityKeyId(plan)));
-
-    const peopleESID :UUID = getEntitySetIdFromApp(app, PEOPLE);
-    const searchFilter = {
-      entityKeyIds: diversionPlanEKIDs,
-      destinationEntitySetIds: [],
-      sourceEntitySetIds: [peopleESID],
-    };
-    response = yield call(
-      searchEntityNeighborsWithFilterWorker,
-      searchEntityNeighborsWithFilter({ entitySetId: diversionPlanESID, filter: searchFilter })
-    );
-    if (response.error) throw response.error;
-    const participantNeighbors :Map = fromJS(response.data)
-      .map((neighborsList) => getNeighborDetails(neighborsList.get(0)))
-      .valueSeq()
-      .toList();
-    const nonDuplicatedPersonMap :Map = Map().withMutations((map :Map) => {
-      participantNeighbors.forEach((person :Map) => {
-        const personEKID = getEntityKeyId(person);
-        if (!isDefined(map.get(personEKID))) map.set(personEKID, person);
+          if (isDefined(sentenceDateTime)) {
+            const sentenceDateTimeObj = DateTime.fromISO(sentenceDateTime);
+            const sentenceDateMonth = sentenceDateTimeObj.month;
+            const sentenceDateYear = sentenceDateTimeObj.year;
+            if (sentenceDateMonth === month && sentenceDateYear === year) {
+              mutator.push(diversionPlan);
+            }
+          }
+          else if (isDefined(checkInDateTime)) {
+            const checkInDateTimeObj = DateTime.fromISO(checkInDateTime);
+            const checkInDateMonth = checkInDateTimeObj.month;
+            const checkInDateYear = checkInDateTimeObj.year;
+            if (checkInDateMonth === month && checkInDateYear === year) {
+              mutator.push(diversionPlan);
+            }
+          }
+          else if (isDefined(orientationDateTime)) {
+            const orientationDateTimeObj = DateTime.fromISO(orientationDateTime);
+            const orientationDateMonth = orientationDateTimeObj.month;
+            const orientationDateYear = orientationDateTimeObj.year;
+            if (orientationDateMonth === month && orientationDateYear === year) {
+              mutator.push(diversionPlan);
+            }
+          }
+        });
       });
-    });
 
-    const {
-      ethnicityDemographics,
-      raceDemographics,
-      sexDemographics,
-    } = getDemographicsFromPersonData(nonDuplicatedPersonMap);
+      const diversionPlanEKIDs :UUID[] = diversionPlansBeginningSelectedMonth
+        .map((diversionPlan :Map) => getEntityKeyId(diversionPlan))
+        .toJS();
+
+      if (diversionPlanEKIDs.length) {
+        const searchFilter = {
+          entityKeyIds: diversionPlanEKIDs,
+          destinationEntitySetIds: [],
+          sourceEntitySetIds: [peopleESID],
+        };
+        response = yield call(
+          searchEntityNeighborsWithFilterWorker,
+          searchEntityNeighborsWithFilter({ entitySetId: diversionPlanESID, filter: searchFilter })
+        );
+        if (response.error) throw response.error;
+        const participantNeighbors :Map = fromJS(response.data)
+          .map((neighborsList) => getNeighborDetails(neighborsList.get(0)))
+          .valueSeq()
+          .toList();
+        nonDuplicatedPersonMap = Map().withMutations((map :Map) => {
+          participantNeighbors.forEach((person :Map) => {
+            const personEKID = getEntityKeyId(person);
+            if (!isDefined(map.get(personEKID))) map.set(personEKID, person);
+          });
+        });
+      }
+
+      const {
+        ethnicityDemographicsData,
+        raceDemographicsData,
+        sexDemographicsData,
+      } = getDemographicsFromPersonData(nonDuplicatedPersonMap);
+
+      ethnicityDemographics = ethnicityDemographicsData;
+      raceDemographics = raceDemographicsData;
+      sexDemographics = sexDemographicsData;
+    }
 
     yield put(getParticipantsDemographics.success(id, { ethnicityDemographics, raceDemographics, sexDemographics }));
   }
@@ -307,8 +279,6 @@ function* getParticipantsDemographicsWatcher() :Generator<*, *, *> {
 export {
   downloadDemographicsDataWatcher,
   downloadDemographicsDataWorker,
-  getMonthlyDemographicsWatcher,
-  getMonthlyDemographicsWorker,
   getParticipantsDemographicsWatcher,
   getParticipantsDemographicsWorker,
 };
