@@ -11,6 +11,7 @@ import {
   Select,
   Typography,
 } from 'lattice-ui-kit';
+import { ReduxUtils, useRequestState } from 'lattice-utils';
 import { DateTime } from 'luxon';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
@@ -28,7 +29,6 @@ import {
   getParticipantsDemographics,
 } from './DemographicsActions';
 
-import { requestIsPending } from '../../../utils/RequestStateUtils';
 import { SHARED, STATE, STATS } from '../../../utils/constants/ReduxStateConsts';
 import {
   ALL_TIME,
@@ -49,6 +49,7 @@ import { formatRadialChartData } from '../utils/StatsUtils';
 
 const { ACTIONS, REQUEST_STATE } = SHARED;
 const { ETHNICITY_DEMOGRAPHICS, RACE_DEMOGRAPHICS, SEX_DEMOGRAPHICS } = STATS;
+const { isPending } = ReduxUtils;
 
 const DEMOGRAPHICS_TIME_FRAME_OPTIONS :Object[] = [TIME_FRAME_OPTIONS[0], TIME_FRAME_OPTIONS[2]];
 
@@ -112,9 +113,19 @@ const DemographicsGraphs = ({
     }
   };
 
+  const fetchRequestState = useRequestState([
+    STATE.STATS,
+    ACTIONS,
+    GET_PARTICIPANTS_DEMOGRAPHICS,
+  ]);
+  const isFetchingDemographics = isPending(fetchRequestState);
 
-  const isFetchingDemographics = requestIsPending(requestStates[GET_MONTHLY_DEMOGRAPHICS])
-    || requestIsPending(requestStates[GET_PARTICIPANTS_DEMOGRAPHICS]);
+  const downloadRequestState = useRequestState([
+    STATE.STATS,
+    ACTIONS,
+    DOWNLOAD_DEMOGRAPHICS_DATA,
+  ]);
+  const isDownloadingDemographics = isPending(downloadRequestState);
 
   return (
     <>
@@ -156,8 +167,8 @@ const DemographicsGraphs = ({
           <DemographicsCardHeader>
             <div>Race</div>
             <Button
-                isLoading={requestIsPending(requestStates[DOWNLOAD_DEMOGRAPHICS_DATA])}
                 onClick={() => actions.downloadDemographicsData(formatRadialChartData(raceDemographics))}>
+                isLoading={isDownloadingDemographics}
               Download
             </Button>
           </DemographicsCardHeader>
@@ -167,8 +178,8 @@ const DemographicsGraphs = ({
           <DemographicsCardHeader>
             <div>Ethnicity</div>
             <Button
-                isLoading={requestIsPending(requestStates[DOWNLOAD_DEMOGRAPHICS_DATA])}
                 onClick={() => actions.downloadDemographicsData(formatRadialChartData(ethnicityDemographics))}>
+                isLoading={isDownloadingDemographics}
               Download
             </Button>
           </DemographicsCardHeader>
@@ -180,8 +191,8 @@ const DemographicsGraphs = ({
           <DemographicsCardHeader>
             <div>Sex</div>
             <Button
-                isLoading={requestIsPending(requestStates[DOWNLOAD_DEMOGRAPHICS_DATA])}
                 onClick={() => actions.downloadDemographicsData(formatRadialChartData(sexDemographics))}>
+                isLoading={isDownloadingDemographics}
               Download
             </Button>
           </DemographicsCardHeader>
