@@ -92,20 +92,26 @@ const DemographicsGraphs = ({
 
   const onTimeFrameSelectChange = (option :Object) => {
     if (option.value === ALL_TIME) {
-      actions.getParticipantsDemographics();
-      setTimeFrame(option);
+      dispatch(getParticipantsDemographics({ timeFrame: option.value }));
+      setTimeFrame(option.value);
     }
-    else setTimeFrame(option);
+    else {
+      setTimeFrame(option.value);
+      dispatch(getParticipantsDemographics({ month, timeFrame: option.value, year }));
+    }
   };
 
-  const onChangeSelect = (selectedTimeValue :Object, event :Object) => {
-    if (event.name === 'month') setMonth(selectedTimeValue);
-    if (event.name === 'year') setYear(selectedTimeValue);
+  const onChangeMonthSelect = (selectedTimeValue :Object, event :Object) => {
+    if (event.name === 'month') {
+      setMonth(selectedTimeValue.value);
+      dispatch(getParticipantsDemographics({ month: selectedTimeValue.value, timeFrame: MONTHLY, year }));
+    }
+    if (event.name === 'year') {
+      setYear(selectedTimeValue.value);
+      dispatch(getParticipantsDemographics({ month, timeFrame: MONTHLY, year: selectedTimeValue.value }));
+    }
   };
 
-  useEffect(() => {
-    actions.getMonthlyDemographics({ month: month.value, year: year.value });
-  }, [actions, month, year]);
 
   const isFetchingDemographics = requestIsPending(requestStates[GET_MONTHLY_DEMOGRAPHICS])
     || requestIsPending(requestStates[GET_PARTICIPANTS_DEMOGRAPHICS]);
