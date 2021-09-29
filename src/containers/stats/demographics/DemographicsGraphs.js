@@ -186,27 +186,4 @@ const DemographicsGraphs = ({
   );
 };
 
-const mapStateToProps = (state :Map) => {
-  const stats = state.get(STATE.STATS);
-  return {
-    [ETHNICITY_DEMOGRAPHICS]: stats.get(ETHNICITY_DEMOGRAPHICS),
-    [RACE_DEMOGRAPHICS]: stats.get(RACE_DEMOGRAPHICS),
-    requestStates: {
-      [DOWNLOAD_DEMOGRAPHICS_DATA]: stats.getIn([ACTIONS, DOWNLOAD_DEMOGRAPHICS_DATA, REQUEST_STATE]),
-      [GET_MONTHLY_DEMOGRAPHICS]: stats.getIn([ACTIONS, GET_MONTHLY_DEMOGRAPHICS, REQUEST_STATE]),
-      [GET_PARTICIPANTS_DEMOGRAPHICS]: stats.getIn([ACTIONS, GET_PARTICIPANTS_DEMOGRAPHICS, REQUEST_STATE]),
-    },
-    [SEX_DEMOGRAPHICS]: stats.get(SEX_DEMOGRAPHICS),
-  };
-};
-
-const mapDispatchToProps = (dispatch) => ({
-  actions: bindActionCreators({
-    downloadDemographicsData,
-    getMonthlyDemographics,
-    getParticipantsDemographics,
-  }, dispatch)
-});
-
-// $FlowFixMe
-export default connect(mapStateToProps, mapDispatchToProps)(DemographicsGraphs);
+export default DemographicsGraphs;
