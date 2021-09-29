@@ -82,10 +82,13 @@ const DemographicsGraphs = ({
 } :Props) => {
 
   const today :DateTime = DateTime.local();
-  const [timeFrame, setTimeFrame] = useState(DEMOGRAPHICS_TIME_FRAME_OPTIONS[1]);
-  const [month, setMonth] = useState(MONTHS_OPTIONS[today.month - 1]);
+  const [timeFrame, setTimeFrame] = useState(DEMOGRAPHICS_TIME_FRAME_OPTIONS[1].value);
+  const [month, setMonth] = useState(MONTHS_OPTIONS[today.month - 1].value);
   const currentYearOption :Object = YEARS_OPTIONS.find((obj) => obj.value === today.year);
-  const [year, setYear] = useState(currentYearOption);
+  const currentYear = currentYearOption.value;
+  const [year, setYear] = useState(currentYear);
+
+  const dispatch = useDispatch();
 
   const onTimeFrameSelectChange = (option :Object) => {
     if (option.value === ALL_TIME) {
