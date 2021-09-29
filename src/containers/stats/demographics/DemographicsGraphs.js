@@ -53,29 +53,11 @@ const DemographicsCardHeader = styled(GraphHeader)`
   justify-content: space-between;
 `;
 
-type Props = {
-  actions :{
-    downloadDemographicsData :RequestSequence;
-    getMonthlyDemographics :RequestSequence;
-    getParticipantsDemographics :RequestSequence;
-  };
-  ethnicityDemographics :Map;
-  raceDemographics :Map;
-  requestStates :{
-    DOWNLOAD_DEMOGRAPHICS_DATA :RequestState;
-    GET_MONTHLY_DEMOGRAPHICS :RequestState;
-    GET_PARTICIPANTS_DEMOGRAPHICS :RequestState;
-  };
-  sexDemographics :Map;
-};
+const DemographicsGraphs = () => {
 
-const DemographicsGraphs = ({
-  actions,
-  ethnicityDemographics,
-  raceDemographics,
-  requestStates,
-  sexDemographics
-} :Props) => {
+  const ethnicityDemographics = useSelector((store) => store.getIn([STATE.STATS, ETHNICITY_DEMOGRAPHICS]));
+  const raceDemographics = useSelector((store) => store.getIn([STATE.STATS, RACE_DEMOGRAPHICS]));
+  const sexDemographics = useSelector((store) => store.getIn([STATE.STATS, SEX_DEMOGRAPHICS]));
 
   const today :DateTime = DateTime.local();
   const [timeFrame, setTimeFrame] = useState(DEMOGRAPHICS_TIME_FRAME_OPTIONS[1].value);
@@ -162,8 +144,8 @@ const DemographicsGraphs = ({
           <DemographicsCardHeader>
             <div>Race</div>
             <Button
-                onClick={() => actions.downloadDemographicsData(formatRadialChartData(raceDemographics))}>
                 isLoading={isDownloadingDemographics}
+                onClick={() => dispatch(downloadDemographicsData(formatRadialChartData(raceDemographics)))}>
               Download
             </Button>
           </DemographicsCardHeader>
@@ -173,8 +155,8 @@ const DemographicsGraphs = ({
           <DemographicsCardHeader>
             <div>Ethnicity</div>
             <Button
-                onClick={() => actions.downloadDemographicsData(formatRadialChartData(ethnicityDemographics))}>
                 isLoading={isDownloadingDemographics}
+                onClick={() => dispatch(downloadDemographicsData(formatRadialChartData(ethnicityDemographics)))}>
               Download
             </Button>
           </DemographicsCardHeader>
@@ -186,8 +168,8 @@ const DemographicsGraphs = ({
           <DemographicsCardHeader>
             <div>Sex</div>
             <Button
-                onClick={() => actions.downloadDemographicsData(formatRadialChartData(sexDemographics))}>
                 isLoading={isDownloadingDemographics}
+                onClick={() => dispatch(downloadDemographicsData(formatRadialChartData(sexDemographics)))}>
               Download
             </Button>
           </DemographicsCardHeader>
