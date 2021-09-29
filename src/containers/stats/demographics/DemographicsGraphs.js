@@ -142,18 +142,18 @@ const DemographicsGraphs = ({
           </HeaderActionsWrapper>
         </InnerHeaderRow>
         {
-          timeFrame.value === MONTHLY && (
+          timeFrame === MONTHLY && (
             <InnerHeaderRow>
               <ActionsWrapper>
                 <SelectsWrapper>
                   <Select
                       name="month"
-                      onChange={onChangeSelect}
+                      onChange={onChangeMonthSelect}
                       options={MONTHS_OPTIONS}
                       placeholder={MONTHS_OPTIONS[today.month - 1].label} />
                   <Select
                       name="year"
-                      onChange={onChangeSelect}
+                      onChange={onChangeMonthSelect}
                       options={YEARS_OPTIONS}
                       placeholder={today.year} />
                 </SelectsWrapper>
