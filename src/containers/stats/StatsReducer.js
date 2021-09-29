@@ -400,11 +400,6 @@ export default function statsReducer(state :Map<*, *> = INITIAL_STATE, action :O
         SUCCESS: () => {
           const seqAction :SequenceAction = (action :any);
           const { ethnicityDemographics, raceDemographics, sexDemographics } = seqAction.value;
-          // console.log('REDUCER');
-          // console.log('ethnicityDemographics ', ethnicityDemographics);
-          // console.log('raceDemographics ', raceDemographics);
-          // console.log('sexDemographics ', sexDemographics);
-          // console.log('------------------------------------------------');
           return state
             .set(ETHNICITY_DEMOGRAPHICS, ethnicityDemographics)
             .set(RACE_DEMOGRAPHICS, raceDemographics)
