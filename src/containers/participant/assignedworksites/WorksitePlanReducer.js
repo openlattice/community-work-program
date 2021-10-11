@@ -32,6 +32,8 @@ import {
 } from './WorksitePlanActions';
 
 import { PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
+import { RESET_REQUEST_STATE } from '../../../core/redux/actions';
+import { resetRequestStateReducer } from '../../../core/redux/reducers';
 import {
   findEntityPathInMap,
   getEntityKeyId,
@@ -139,6 +141,10 @@ export default function worksitePlanReducer(state :Map<*, *> = INITIAL_STATE, ac
     case RESET_DELETE_CHECK_IN_REQUEST_STATE: {
       return state
         .setIn([ACTIONS, DELETE_CHECK_IN, REQUEST_STATE], RequestStates.STANDBY);
+    }
+
+    case RESET_REQUEST_STATE: {
+      return resetRequestStateReducer(state, action);
     }
 
     case checkInForAppointment.case(action.type): {
