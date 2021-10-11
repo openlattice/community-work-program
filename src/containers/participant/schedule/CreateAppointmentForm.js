@@ -15,12 +15,14 @@ import {
   Select,
   TimePicker,
 } from 'lattice-ui-kit';
+import { ReduxUtils } from 'lattice-utils';
 import { DateTime } from 'luxon';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import type { UUID } from 'lattice';
-import type { RequestSequence } from 'redux-reqseq';
+import type { RequestSequence, RequestState } from 'redux-reqseq';
 
+import ErrorMessage from '../../../components/error/ErrorMessage';
 import {
   ButtonsRow,
   FormRow,
@@ -37,8 +39,9 @@ import {
 import {
   APP,
   EDM,
+  SHARED,
   STATE,
-  WORKSITE_PLANS
+  WORKSITE_PLANS,
 } from '../../../utils/constants/ReduxStateConsts';
 import { createWorkAppointments } from '../assignedworksites/WorksitePlanActions';
 
@@ -48,6 +51,7 @@ const {
   processAssociationEntityData,
   processEntityData
 } = DataProcessingUtils;
+const { isFailure } = ReduxUtils;
 const {
   ADDRESSES,
   APPOINTMENT,
@@ -59,7 +63,8 @@ const { DATETIME_END, INCIDENT_START_DATETIME, NAME } = PROPERTY_TYPE_FQNS;
 
 const { ENTITY_SET_IDS_BY_ORG, SELECTED_ORG_ID } = APP;
 const { PROPERTY_TYPES, TYPE_IDS_BY_FQNS } = EDM;
-const { WORKSITES_BY_WORKSITE_PLAN } = WORKSITE_PLANS;
+const { ACTIONS, REQUEST_STATE } = SHARED;
+const { CREATE_WORK_APPOINTMENTS, WORKSITES_BY_WORKSITE_PLAN } = WORKSITE_PLANS;
 
 const START = 'start';
 const END = 'end';
@@ -99,6 +104,9 @@ type Props = {
   onDiscard :() => void;
   personEKID :UUID;
   propertyTypeIds :Map;
+  requestStates:{
+    CREATE_WORK_APPOINTMENTS :RequestState;
+  };
   worksitesByWorksitePlan :Map;
 };
 
@@ -253,6 +261,7 @@ class CreateWorkAppointmentForm extends Component<Props, State> {
     const {
       isLoading,
       onDiscard,
+      requestStates,
       worksitesByWorksitePlan,
     } = this.props;
     const { isRepeatingAppointment } = this.state;
@@ -264,6 +273,7 @@ class CreateWorkAppointmentForm extends Component<Props, State> {
     });
 
     const NUMBERS_OPTIONS = generateWeekOptionsList();
+    const createAppointmentFailed :boolean = isFailure(requestStates[CREATE_WORK_APPOINTMENTS]);
 
     return (
       <FormWrapper>
@@ -352,6 +362,7 @@ class CreateWorkAppointmentForm extends Component<Props, State> {
             Submit
           </Button>
         </ButtonsRow>
+        { createAppointmentFailed && <ErrorMessage errorMessage="Could not create appointment. Please try again." /> }
       </FormWrapper>
     );
   }
@@ -364,6 +375,9 @@ const mapStateToProps = (state :Map) => {
   return ({
     entitySetIds: app.getIn([ENTITY_SET_IDS_BY_ORG, selectedOrgId], Map()),
     propertyTypeIds: edm.getIn([TYPE_IDS_BY_FQNS, PROPERTY_TYPES], Map()),
+    requestStates: {
+      [CREATE_WORK_APPOINTMENTS]: state.getIn([STATE.WORKSITE_PLANS, ACTIONS, CREATE_WORK_APPOINTMENTS, REQUEST_STATE])
+    },
     [WORKSITES_BY_WORKSITE_PLAN]: state.getIn([STATE.WORKSITE_PLANS, WORKSITES_BY_WORKSITE_PLAN]),
   });
 };
