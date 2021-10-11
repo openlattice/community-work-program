@@ -30,6 +30,7 @@ import {
   RowContent
 } from '../../../components/Layout';
 import { APP_TYPE_FQNS, PROPERTY_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
+import { resetRequestState } from '../../../core/redux/actions';
 import { getEntityProperties } from '../../../utils/DataUtils';
 import {
   getCombinedDateTime,
@@ -98,6 +99,7 @@ const RadioButtonsWrapper = styled.div`
 type Props = {
   actions:{
     createWorkAppointments :RequestSequence;
+    resetRequestState :(string[]) => void;
   };
   entitySetIds :Map;
   isLoading :boolean;
@@ -257,10 +259,15 @@ class CreateWorkAppointmentForm extends Component<Props, State> {
     actions.createWorkAppointments({ associationEntityData, entityData });
   }
 
+  handleOnClose = () => {
+    const { actions, onDiscard } = this.props;
+    actions.resetRequestState([ACTIONS, CREATE_WORK_APPOINTMENTS]);
+    onDiscard();
+  }
+
   render() {
     const {
       isLoading,
-      onDiscard,
       requestStates,
       worksitesByWorksitePlan,
     } = this.props;
@@ -354,7 +361,7 @@ class CreateWorkAppointmentForm extends Component<Props, State> {
             : null
         }
         <ButtonsRow>
-          <Button onClick={onDiscard}>Discard</Button>
+          <Button onClick={this.handleOnClose}>Discard</Button>
           <Button
               color="primary"
               isLoading={isLoading}
@@ -384,7 +391,8 @@ const mapStateToProps = (state :Map) => {
 
 const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
-    createWorkAppointments
+    createWorkAppointments,
+    resetRequestState,
   }, dispatch)
 });
 
