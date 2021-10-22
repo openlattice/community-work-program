@@ -34,13 +34,18 @@ type Props = {
 class CheckInModal extends Component<Props> {
 
   componentDidUpdate(prevProps :Props) {
-    const { actions, checkInForAppointmentState, onClose } = this.props;
+    const { checkInForAppointmentState } = this.props;
     const { checkInForAppointmentState: prevSumbitState } = prevProps;
     if (checkInForAppointmentState === RequestStates.SUCCESS
       && prevSumbitState === RequestStates.PENDING) {
-      onClose();
-      actions.resetCheckInRequestState();
+      this.handleOnClose();
     }
+  }
+
+  handleOnClose = () => {
+    const { actions, onClose } = this.props;
+    onClose();
+    actions.resetCheckInRequestState();
   }
 
   render() {
@@ -48,7 +53,6 @@ class CheckInModal extends Component<Props> {
       appointment,
       checkInForAppointmentState,
       isOpen,
-      onClose,
       personEKID,
       personName,
     } = this.props;
@@ -56,13 +60,13 @@ class CheckInModal extends Component<Props> {
     return (
       <Modal
           isVisible={isOpen}
-          onClose={onClose}
+          onClose={this.handleOnClose}
           textTitle="Check In Participant"
           viewportScrolling>
         <CheckInForm
             appointment={appointment}
             isLoading={checkInForAppointmentState === RequestStates.PENDING}
-            onDiscard={onClose}
+            onDiscard={this.handleOnClose}
             personEKID={personEKID}
             personName={personName} />
       </Modal>
