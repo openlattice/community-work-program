@@ -24,7 +24,7 @@ type Props = {
 };
 
 const ErrorMessage = ({ errorMessage, padding } :Props) => (
-  <CardSegment padding={padding}>
+  <CardSegment borderless padding={padding}>
     <ErrorWrapper>
       <FontAwesomeIcon icon={faExclamationCircle} color={RED.R300} />
       <Error>{ errorMessage }</Error>
