@@ -8,6 +8,7 @@ import EnrollmentsAndStatusByCourtType from './EnrollmentsAndStatusByCourtType';
 import HoursByCourtType from './HoursByCourtType';
 import MonthlyParticipantsByCourtType from './MonthlyParticipantsByCourtType';
 import ParticipantsByCourtType from './ParticipantsByCourtType';
+import ReferralsByCourtType from './ReferralsByCourtType';
 
 type Props = {
   activeEnrollmentsByCourtType :Map;
@@ -28,6 +29,7 @@ const CourtTypeGraphs = ({
 } :Props) => (
 
   <CardStack>
+    <ReferralsByCourtType />
     <EnrollmentsAndStatusByCourtType
         activeEnrollmentsByCourtType={activeEnrollmentsByCourtType}
         becameActiveEnrollmentsByCourtType={becameActiveEnrollmentsByCourtType}
