@@ -18,12 +18,14 @@ import {
   GET_HOURS_BY_COURT_TYPE,
   GET_MONTHLY_PARTICIPANTS_BY_COURT_TYPE,
   GET_MONTHLY_PARTICIPANTS_WITH_NO_CHECK_INS,
+  GET_REFERRALS_BY_COURT_TYPE,
   GET_TOTAL_PARTICIPANTS_BY_COURT_TYPE,
   downloadCourtTypeData,
   getEnrollmentsByCourtType,
   getHoursByCourtType,
   getMonthlyParticipantsByCourtType,
   getMonthlyParticipantsWithNoCheckIns,
+  getReferralsByCourtType,
   getTotalParticipantsByCourtType,
 } from './courttype/CourtTypeActions';
 import {
@@ -59,6 +61,7 @@ const {
   MONTHLY_PARTICIPANTS_BY_COURT_TYPE,
   PARTICIPANTS_BY_WORKSITE,
   RACE_DEMOGRAPHICS,
+  REFERRALS_BY_COURT_TYPE,
   SEX_DEMOGRAPHICS,
   SUCCESSFUL_ENROLLMENTS_BY_COURT_TYPE,
   TOTAL_ACTIVE_ENROLLMENTS_COUNT,
@@ -109,6 +112,9 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     [GET_PARTICIPANTS_DEMOGRAPHICS]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
+    [GET_REFERRALS_BY_COURT_TYPE]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
     [GET_STATS_DATA]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
@@ -131,6 +137,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [MONTHLY_PARTICIPANTS_BY_COURT_TYPE]: Map(),
   [PARTICIPANTS_BY_WORKSITE]: Map(),
   [RACE_DEMOGRAPHICS]: Map(),
+  [REFERRALS_BY_COURT_TYPE]: Map(),
   [SEX_DEMOGRAPHICS]: Map(),
   [SUCCESSFUL_ENROLLMENTS_BY_COURT_TYPE]: Map(),
   [TOTAL_ACTIVE_ENROLLMENTS_COUNT]: 0,
@@ -409,6 +416,20 @@ export default function statsReducer(state :Map<*, *> = INITIAL_STATE, action :O
         FAILURE: () => state
           .setIn([ACTIONS, GET_PARTICIPANTS_DEMOGRAPHICS, REQUEST_STATE], RequestStates.FAILURE),
         FINALLY: () => state.deleteIn([ACTIONS, GET_PARTICIPANTS_DEMOGRAPHICS, action.id]),
+      });
+    }
+
+    case getReferralsByCourtType.case(action.type): {
+      return getReferralsByCourtType.reducer(state, action, {
+        REQUEST: () => state
+          .setIn([ACTIONS, GET_REFERRALS_BY_COURT_TYPE, action.id], action)
+          .setIn([ACTIONS, GET_REFERRALS_BY_COURT_TYPE, REQUEST_STATE], RequestStates.PENDING),
+        SUCCESS: () => state
+          .set(REFERRALS_BY_COURT_TYPE, action.value)
+          .setIn([ACTIONS, GET_REFERRALS_BY_COURT_TYPE, REQUEST_STATE], RequestStates.SUCCESS),
+        FAILURE: () => state
+          .setIn([ACTIONS, GET_REFERRALS_BY_COURT_TYPE, REQUEST_STATE], RequestStates.FAILURE),
+        FINALLY: () => state.deleteIn([ACTIONS, GET_REFERRALS_BY_COURT_TYPE, action.id]),
       });
     }
 
