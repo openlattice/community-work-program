@@ -3,7 +3,6 @@ import React, { useEffect, useState } from 'react';
 
 import styled from 'styled-components';
 import {
-  Button,
   CardSegment,
   Select,
   Spinner,
@@ -35,7 +34,6 @@ import {
 } from '../consts/TimeConsts';
 import {
   ActionsWrapper,
-  HeaderActionsWrapper,
   InnerHeaderRow,
   SelectsWrapper,
   SmallSelectWrapper,
