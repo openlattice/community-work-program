@@ -89,7 +89,6 @@ const CourtTypeStatsTable = () => {
   const dispatch = useDispatch();
 
   const [selectedCourtType, setCourtType] = useState(COURT_TYPE_OPTIONS[0]);
-  // console.log('selectedCourtType ', selectedCourtType);
 
   const onChangeSelect = (selectedTimeValue :Object, event :Object) => {
     if (event.name === 'courtType') setCourtType(selectedTimeValue);

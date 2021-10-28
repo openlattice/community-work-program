@@ -169,10 +169,6 @@ function* getStatsByCourtTypeWorker(action :SequenceAction) :Generator<*, *, *> 
 
     enrollmentStatusCountsForCourtType = enrollmentStatusCountsForCourtType.asImmutable();
 
-    // console.log('enrollmentStatusCountsForCourtType ', enrollmentStatusCountsForCourtType.toJS());
-    // console.log('totalEnrollmentsForCourtType ', totalEnrollmentsForCourtType);
-    // console.log('totalParticipantsForCourtType ', totalParticipantsForCourtType);
-
     yield put(getStatsByCourtType.success(id, {
       enrollmentStatusCountsForCourtType,
       totalEnrollmentsForCourtType,
