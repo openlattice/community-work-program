@@ -12,6 +12,7 @@ import * as AppSagas from '../../containers/app/AppSagas';
 import * as ChargesSagas from '../../containers/participant/charges/ChargesSagas';
 import * as ChargesStatsSagas from '../../containers/stats/charges/ChargesStatsSagas';
 import * as CourtTypeSagas from '../../containers/stats/courttype/CourtTypeSagas';
+import * as CourtTypeStatsSagas from '../../containers/stats/courttype/sagas';
 import * as DemographicsSagas from '../../containers/stats/demographics/DemographicsSagas';
 import * as EDMSagas from '../edm/EDMSagas';
 import * as InfractionsSagas from '../../containers/participant/infractions/InfractionsSagas';
@@ -75,6 +76,9 @@ export default function* sagas() :Generator<*, *, *> {
     fork(CourtTypeSagas.getMonthlyParticipantsWithNoCheckInsWatcher),
     fork(CourtTypeSagas.getReferralsByCourtTypeWatcher),
     fork(CourtTypeSagas.getTotalParticipantsByCourtTypeWatcher),
+
+    // CourtTypeStatsSagas
+    fork(CourtTypeStatsSagas.getStatsByCourtTypeWatcher),
 
     // DataSagas
     fork(DataSagas.createOrReplaceAssociationWatcher),
