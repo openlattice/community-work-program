@@ -27,6 +27,10 @@ const getMonthlyParticipantsWithNoCheckIns :RequestSequence = newRequestSequence
 const GET_REFERRALS_BY_COURT_TYPE :'GET_REFERRALS_BY_COURT_TYPE' = 'GET_REFERRALS_BY_COURT_TYPE';
 const getReferralsByCourtType :RequestSequence = newRequestSequence(GET_REFERRALS_BY_COURT_TYPE);
 
+const GET_REPEAT_PARTICIPANTS_BY_COURT_TYPE
+  :'GET_REPEAT_PARTICIPANTS_BY_COURT_TYPE' = 'GET_REPEAT_PARTICIPANTS_BY_COURT_TYPE';
+const getRepeatParticipantsByCourtType :RequestSequence = newRequestSequence(GET_REPEAT_PARTICIPANTS_BY_COURT_TYPE);
+
 const GET_TOTAL_PARTICIPANTS_BY_COURT_TYPE
   :'GET_TOTAL_PARTICIPANTS_BY_COURT_TYPE' = 'GET_TOTAL_PARTICIPANTS_BY_COURT_TYPE';
 const getTotalParticipantsByCourtType :RequestSequence = newRequestSequence(GET_TOTAL_PARTICIPANTS_BY_COURT_TYPE);
@@ -38,6 +42,7 @@ export {
   GET_MONTHLY_PARTICIPANTS_BY_COURT_TYPE,
   GET_MONTHLY_PARTICIPANTS_WITH_NO_CHECK_INS,
   GET_REFERRALS_BY_COURT_TYPE,
+  GET_REPEAT_PARTICIPANTS_BY_COURT_TYPE,
   GET_STATS_BY_COURT_TYPE,
   GET_TOTAL_PARTICIPANTS_BY_COURT_TYPE,
   downloadCourtTypeData,
@@ -46,6 +51,7 @@ export {
   getMonthlyParticipantsByCourtType,
   getMonthlyParticipantsWithNoCheckIns,
   getReferralsByCourtType,
+  getRepeatParticipantsByCourtType,
   getStatsByCourtType,
   getTotalParticipantsByCourtType,
 };

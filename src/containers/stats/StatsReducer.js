@@ -3,6 +3,7 @@ import { List, Map, fromJS } from 'immutable';
 import { RequestStates } from 'redux-reqseq';
 import type { SequenceAction } from 'redux-reqseq';
 
+import getRepeatParticipantsByCourtTypeReducer from './courttype/reducers/getRepeatParticipantsByCourtTypeReducer';
 import getStatsByCourtTypeReducer from './courttype/reducers/getStatsByCourtTypeReducer';
 import { GET_STATS_DATA, getStatsData } from './StatsActions';
 import {
@@ -20,6 +21,7 @@ import {
   GET_MONTHLY_PARTICIPANTS_BY_COURT_TYPE,
   GET_MONTHLY_PARTICIPANTS_WITH_NO_CHECK_INS,
   GET_REFERRALS_BY_COURT_TYPE,
+  GET_REPEAT_PARTICIPANTS_BY_COURT_TYPE,
   GET_STATS_BY_COURT_TYPE,
   GET_TOTAL_PARTICIPANTS_BY_COURT_TYPE,
   downloadCourtTypeData,
@@ -28,6 +30,7 @@ import {
   getMonthlyParticipantsByCourtType,
   getMonthlyParticipantsWithNoCheckIns,
   getReferralsByCourtType,
+  getRepeatParticipantsByCourtType,
   getStatsByCourtType,
   getTotalParticipantsByCourtType,
 } from './courttype/CourtTypeActions';
@@ -66,6 +69,7 @@ const {
   PARTICIPANTS_BY_WORKSITE,
   RACE_DEMOGRAPHICS,
   REFERRALS_BY_COURT_TYPE,
+  REPEAT_PARTICIPANT_COUNTS_BY_COURT_TYPE,
   SEX_DEMOGRAPHICS,
   SUCCESSFUL_ENROLLMENTS_BY_COURT_TYPE,
   TOTAL_ACTIVE_ENROLLMENTS_COUNT,
@@ -121,6 +125,9 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     [GET_REFERRALS_BY_COURT_TYPE]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
+    [GET_REPEAT_PARTICIPANTS_BY_COURT_TYPE]: {
+      [REQUEST_STATE]: RequestStates.STANDBY
+    },
     [GET_STATS_BY_COURT_TYPE]: {
       [REQUEST_STATE]: RequestStates.STANDBY
     },
@@ -148,6 +155,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [PARTICIPANTS_BY_WORKSITE]: Map(),
   [RACE_DEMOGRAPHICS]: Map(),
   [REFERRALS_BY_COURT_TYPE]: Map(),
+  [REPEAT_PARTICIPANT_COUNTS_BY_COURT_TYPE]: Map(),
   [SEX_DEMOGRAPHICS]: Map(),
   [SUCCESSFUL_ENROLLMENTS_BY_COURT_TYPE]: Map(),
   [TOTAL_ACTIVE_ENROLLMENTS_COUNT]: 0,
@@ -168,6 +176,10 @@ export default function statsReducer(state :Map<*, *> = INITIAL_STATE, action :O
 
     case getStatsByCourtType.case(action.type): {
       return getStatsByCourtTypeReducer(state, action);
+    }
+
+    case getRepeatParticipantsByCourtType.case(action.type): {
+      return getRepeatParticipantsByCourtTypeReducer(state, action);
     }
 
     case downloadCourtTypeData.case(action.type): {
