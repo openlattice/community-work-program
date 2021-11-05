@@ -30,12 +30,14 @@ import {
   GET_HOURS_BY_COURT_TYPE,
   GET_MONTHLY_PARTICIPANTS_BY_COURT_TYPE,
   GET_MONTHLY_PARTICIPANTS_WITH_NO_CHECK_INS,
+  GET_REFERRALS_BY_COURT_TYPE,
   GET_TOTAL_PARTICIPANTS_BY_COURT_TYPE,
   downloadCourtTypeData,
   getEnrollmentsByCourtType,
   getHoursByCourtType,
   getMonthlyParticipantsByCourtType,
   getMonthlyParticipantsWithNoCheckIns,
+  getReferralsByCourtType,
   getTotalParticipantsByCourtType,
 } from './CourtTypeActions';
 
@@ -78,9 +80,11 @@ const {
 const {
   CHECK_IN_DATETIME,
   COURT_CASE_TYPE,
+  DATETIME_RECEIVED,
   DATETIME_START,
   EFFECTIVE_DATE,
   HOURS_WORKED,
+  ORIENTATION_DATETIME,
   STATUS,
 } = PROPERTY_TYPE_FQNS;
 
@@ -1165,6 +1169,104 @@ function* getEnrollmentsByCourtTypeWatcher() :Generator<*, *, *> {
   yield takeEvery(GET_ENROLLMENTS_BY_COURT_TYPE, getEnrollmentsByCourtTypeWorker);
 }
 
+/*
+ *
+ * CourtTypeActions.getReferralsByCourtType()
+ *
+ */
+
+function* getReferralsByCourtTypeWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  const { id, value } = action;
+  let referralsByCourtType :Map = fromJS(courtTypeCountObj).asMutable();
+
+  try {
+    yield put(getReferralsByCourtType.request(id));
+    const { month, timeFrame, year } = value;
+
+    const app = yield select(getAppFromState);
+    const diversionPlanESID :UUID = getEntitySetIdFromApp(app, DIVERSION_PLAN);
+
+    let response :Object = yield call(getEntitySetDataWorker, getEntitySetData({ entitySetId: diversionPlanESID }));
+    if (response.error) throw response.error;
+    const diversionPlans :List = fromJS(response.data);
+    const diversionPlanEKIDs :UUID[] = diversionPlans.map((diversionPlan :Map) => getEntityKeyId(diversionPlan)).toJS();
+
+    const courtCaseESID :UUID = getEntitySetIdFromApp(app, MANUAL_PRETRIAL_COURT_CASES);
+    const filter = {
+      entityKeyIds: diversionPlanEKIDs,
+      destinationEntitySetIds: [courtCaseESID],
+      sourceEntitySetIds: [],
+    };
+    response = yield call(
+      searchEntityNeighborsWithFilterWorker,
+      searchEntityNeighborsWithFilter({ entitySetId: diversionPlanESID, filter })
+    );
+    if (response.error) throw response.error;
+    const courtCaseByDiversionPlanEKID :Map = fromJS(response.data)
+      .map((courtCaseNeighbors :List) => getNeighborDetails(courtCaseNeighbors.get(0)));
+
+    if (timeFrame === ALL_TIME) {
+      diversionPlans.forEach((diversionPlan :Map) => {
+        const diversionPlanEKID :?UUID = getEntityKeyId(diversionPlan);
+        const courtCase :Map = courtCaseByDiversionPlanEKID.get(diversionPlanEKID);
+        const courtType = getPropertyValue(courtCase, [COURT_CASE_TYPE, 0]);
+
+        const courtTypeReferralCount = referralsByCourtType.get(courtType);
+        if (isDefined(courtTypeReferralCount)) referralsByCourtType.set(courtType, courtTypeReferralCount + 1);
+      });
+    }
+    else {
+      diversionPlans.forEach((diversionPlan :Map) => {
+        const sentenceDateTime = getPropertyValue(diversionPlan, [DATETIME_RECEIVED, 0], undefined);
+        const orientationDateTime = getPropertyValue(diversionPlan, [ORIENTATION_DATETIME, 0], undefined);
+        const checkInDateTime = getPropertyValue(diversionPlan, [CHECK_IN_DATETIME, 0], undefined);
+        const sentenceDateTimeObj = DateTime.fromISO(sentenceDateTime);
+        const orientationDateTimeObj = DateTime.fromISO(orientationDateTime);
+        const checkInDateTimeObj = DateTime.fromISO(checkInDateTime);
+
+        const diversionPlanEKID :?UUID = getEntityKeyId(diversionPlan);
+        const courtCase :Map = courtCaseByDiversionPlanEKID.get(diversionPlanEKID);
+        const courtType = getPropertyValue(courtCase, [COURT_CASE_TYPE, 0]);
+        const courtTypeReferralCount = referralsByCourtType.get(courtType);
+
+        if (sentenceDateTimeObj.isValid && month === sentenceDateTimeObj.month && year === sentenceDateTimeObj.year) {
+          if (isDefined(courtTypeReferralCount)) referralsByCourtType.set(courtType, courtTypeReferralCount + 1);
+        }
+        else if (orientationDateTimeObj.isValid
+            && month === orientationDateTimeObj.month
+            && year === orientationDateTimeObj.year) {
+
+          if (isDefined(courtTypeReferralCount)) referralsByCourtType.set(courtType, courtTypeReferralCount + 1);
+        }
+        else if (checkInDateTimeObj.isValid
+            && month === checkInDateTimeObj.month
+            && year === checkInDateTimeObj.year) {
+
+          if (isDefined(courtTypeReferralCount)) referralsByCourtType.set(courtType, courtTypeReferralCount + 1);
+        }
+
+      });
+    }
+
+    referralsByCourtType = referralsByCourtType.asImmutable();
+
+    yield put(getReferralsByCourtType.success(id, referralsByCourtType));
+  }
+  catch (error) {
+    LOG.error(action.type, error);
+    yield put(getReferralsByCourtType.failure(id, error));
+  }
+  finally {
+    yield put(getReferralsByCourtType.finally(id));
+  }
+}
+
+function* getReferralsByCourtTypeWatcher() :Generator<*, *, *> {
+
+  yield takeEvery(GET_REFERRALS_BY_COURT_TYPE, getReferralsByCourtTypeWorker);
+}
+
 export {
   downloadCourtTypeDataWatcher,
   downloadCourtTypeDataWorker,
@@ -1176,6 +1278,8 @@ export {
   getMonthlyParticipantsByCourtTypeWorker,
   getMonthlyParticipantsWithNoCheckInsWatcher,
   getMonthlyParticipantsWithNoCheckInsWorker,
+  getReferralsByCourtTypeWatcher,
+  getReferralsByCourtTypeWorker,
   getTotalParticipantsByCourtTypeWatcher,
   getTotalParticipantsByCourtTypeWorker,
 };

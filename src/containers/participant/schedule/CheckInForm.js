@@ -9,18 +9,19 @@ import { Map, fromJS } from 'immutable';
 import { DataProcessingUtils } from 'lattice-fabricate';
 import {
   Button,
-  Colors,
   Input,
   Label,
   Radio,
   TimePicker,
 } from 'lattice-ui-kit';
+import { ReduxUtils } from 'lattice-utils';
 import { DateTime } from 'luxon';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import type { UUID } from 'lattice';
-import type { RequestSequence } from 'redux-reqseq';
+import type { RequestSequence, RequestState } from 'redux-reqseq';
 
+import ErrorMessage from '../../../components/error/ErrorMessage';
 import {
   ButtonsRow,
   FormRow,
@@ -33,12 +34,14 @@ import {
   APP,
   EDM,
   PERSON,
-  STATE
+  SHARED,
+  STATE,
+  WORKSITE_PLANS,
 } from '../../../utils/constants/ReduxStateConsts';
 import { checkInForAppointment } from '../assignedworksites/WorksitePlanActions';
 import { get24HourTimeForCheckIn, getHoursScheduled } from '../utils/CheckInUtils';
 
-const { RED } = Colors;
+const { isFailure } = ReduxUtils;
 
 const {
   APPOINTMENT,
@@ -59,6 +62,8 @@ const {
 const { ENTITY_SET_IDS_BY_ORG, SELECTED_ORG_ID } = APP;
 const { PROPERTY_TYPES, TYPE_IDS_BY_FQNS } = EDM;
 const { PARTICIPANT } = PERSON;
+const { ACTIONS, REQUEST_STATE } = SHARED;
+const { CHECK_IN_FOR_APPOINTMENT } = WORKSITE_PLANS;
 
 const {
   getEntityAddressKey,
@@ -73,11 +78,6 @@ const RadioWrapper = styled.span`
   margin-right: 20px;
 `;
 
-const ErrorMessage = styled.div`
-  color: ${RED.R300};
-  max-width: 351px;
-`;
-
 type Props = {
   actions:{
     checkInForAppointment :RequestSequence;
@@ -89,6 +89,9 @@ type Props = {
   personEKID :UUID;
   personName :string;
   propertyTypeIds :Map;
+  requestStates :{
+    CHECK_IN_FOR_APPOINTMENT :RequestState;
+  };
 };
 
 type State = {
@@ -224,7 +227,12 @@ class CheckInForm extends Component<Props, State> {
   }
 
   render() {
-    const { isLoading, onDiscard, personName } = this.props;
+    const {
+      isLoading,
+      onDiscard,
+      personName,
+      requestStates
+    } = this.props;
     const {
       checkedIn,
       newCheckInData,
@@ -242,6 +250,9 @@ class CheckInForm extends Component<Props, State> {
     const formHoursAndTimesConflict :boolean = hoursCalculatedFromFormTimes !== hoursInFormData;
 
     const checkInQuestion = `Did ${personName} appear for this work appointment?`;
+
+    const checkInForAppointmentFailed :boolean = isFailure(requestStates[CHECK_IN_FOR_APPOINTMENT]);
+
     return (
       <FormWrapper>
         <FormRow>
@@ -312,13 +323,17 @@ class CheckInForm extends Component<Props, State> {
           formHoursAndTimesConflict && (
             <FormRow>
               <RowContent>
-                <ErrorMessage>
-                  There is a conflict between hours entered and times selected. Please fix before submitting.
-                </ErrorMessage>
+                <ErrorMessage
+                    errorMessage={`There is a conflict between hours entered and times selected.
+                      Please fix before submitting.`}
+                    padding="0" />
               </RowContent>
             </FormRow>
           )
         }
+        { checkInForAppointmentFailed && (
+          <ErrorMessage errorMessage="Could not check in for appointment. Please try again." padding="0" />
+        )}
         <ButtonsRow>
           <Button onClick={onDiscard}>Discard</Button>
           <Button
@@ -343,6 +358,9 @@ const mapStateToProps = (state :Map) => {
     entitySetIds: app.getIn([ENTITY_SET_IDS_BY_ORG, selectedOrgId], Map()),
     propertyTypeIds: edm.getIn([TYPE_IDS_BY_FQNS, PROPERTY_TYPES], Map()),
     [PARTICIPANT]: person.get(PARTICIPANT),
+    requestStates: {
+      [CHECK_IN_FOR_APPOINTMENT]: state.getIn([STATE.WORKSITE_PLANS, ACTIONS, CHECK_IN_FOR_APPOINTMENT, REQUEST_STATE])
+    },
   });
 };
 

@@ -4,10 +4,13 @@ import React from 'react';
 import { Map } from 'immutable';
 import { CardStack } from 'lattice-ui-kit';
 
+import CourtTypeStatsTable from './CourtTypeStatsTable';
 import EnrollmentsAndStatusByCourtType from './EnrollmentsAndStatusByCourtType';
 import HoursByCourtType from './HoursByCourtType';
 import MonthlyParticipantsByCourtType from './MonthlyParticipantsByCourtType';
 import ParticipantsByCourtType from './ParticipantsByCourtType';
+import ReferralsByCourtType from './ReferralsByCourtType';
+import RepeatParticipantsByCourtType from './RepeatParticipantsByCourtType';
 
 type Props = {
   activeEnrollmentsByCourtType :Map;
@@ -28,6 +31,9 @@ const CourtTypeGraphs = ({
 } :Props) => (
 
   <CardStack>
+    <CourtTypeStatsTable />
+    <ReferralsByCourtType />
+    <RepeatParticipantsByCourtType />
     <EnrollmentsAndStatusByCourtType
         activeEnrollmentsByCourtType={activeEnrollmentsByCourtType}
         becameActiveEnrollmentsByCourtType={becameActiveEnrollmentsByCourtType}

@@ -73,7 +73,7 @@ import {
   getPropertyTypeIdFromEdm,
   sortEntitiesByDateProperty,
 } from '../../../utils/DataUtils';
-import { ERR_ACTION_VALUE_NOT_DEFINED } from '../../../utils/Errors';
+import { ERR_ACTION_VALUE_NOT_DEFINED, ERR_ACTION_VALUE_TYPE } from '../../../utils/Errors';
 import { isDefined } from '../../../utils/LangUtils';
 import { STATE, WORKSITES } from '../../../utils/constants/ReduxStateConsts';
 
@@ -226,10 +226,10 @@ function* deleteAppointmentWorker(action :SequenceAction) :Generator<*, *, *> {
   try {
     yield put(deleteAppointment.request(id, value));
 
+    if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
+    if (!isDefined(value.entitySetId) || !isDefined(value.entityKeyIds)) throw ERR_ACTION_VALUE_TYPE;
     const response :Object = yield call(deleteEntitiesWorker, deleteEntities(value));
-    if (response.error) {
-      throw response.error;
-    }
+    if (response.error) throw response.error;
 
     yield put(deleteAppointment.success(id));
   }

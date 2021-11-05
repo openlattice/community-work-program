@@ -7,11 +7,13 @@ import React, { Component } from 'react';
 import styled from 'styled-components';
 import { Map } from 'immutable';
 import { Button, Colors, Label } from 'lattice-ui-kit';
+import { ReduxUtils } from 'lattice-utils';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import type { UUID } from 'lattice';
-import type { RequestSequence } from 'redux-reqseq';
+import type { RequestSequence, RequestState } from 'redux-reqseq';
 
+import ErrorMessage from '../../../components/error/ErrorMessage';
 import {
   ButtonsRow,
   FormRow,
@@ -20,11 +22,13 @@ import {
 } from '../../../components/Layout';
 import { APP_TYPE_FQNS } from '../../../core/edm/constants/FullyQualifiedNames';
 import { getEntitySetIdFromApp } from '../../../utils/DataUtils';
-import { STATE } from '../../../utils/constants/ReduxStateConsts';
-import { deleteAppointment } from '../assignedworksites/WorksitePlanActions';
+import { SHARED, STATE } from '../../../utils/constants/ReduxStateConsts';
+import { DELETE_APPOINTMENT, deleteAppointment } from '../assignedworksites/WorksitePlanActions';
 
 const { PURPLE } = Colors;
 const { APPOINTMENT } = APP_TYPE_FQNS;
+const { ACTIONS, REQUEST_STATE } = SHARED;
+const { isFailure } = ReduxUtils;
 
 const ColoredText = styled.div`
   color: ${PURPLE.P300};
@@ -40,6 +44,9 @@ type Props = {
   appointmentEKID :UUID;
   isLoading :boolean;
   onDiscard :() => void;
+  requestStates :{
+    DELETE_APPOINTMENT :RequestState;
+  };
 };
 
 type State = {
@@ -65,11 +72,14 @@ class DeleteAppointmentForm extends Component<Props, State> {
       appointment,
       isLoading,
       onDiscard,
+      requestStates,
     } = this.props;
     const day = appointment.get('day');
     const worksiteName = appointment.get('worksiteName');
     const hours = appointment.get('hours');
     const personName = appointment.get('personName');
+
+    const deleteAppointmentFailed = isFailure(requestStates[DELETE_APPOINTMENT]);
 
     return (
       <FormWrapper>
@@ -86,6 +96,9 @@ class DeleteAppointmentForm extends Component<Props, State> {
             <ColoredText>{ worksiteName }</ColoredText>
           </RowContent>
         </FormRow>
+        { deleteAppointmentFailed && (
+          <ErrorMessage errorMessage="Could not delete appointment. Please try again." padding="0" />
+        )}
         <ButtonsRow>
           <Button onClick={onDiscard}>No</Button>
           <Button
@@ -102,6 +115,9 @@ class DeleteAppointmentForm extends Component<Props, State> {
 
 const mapStateToProps = (state :Map) => ({
   app: state.get(STATE.APP),
+  requestStates: {
+    [DELETE_APPOINTMENT]: state.getIn([STATE.WORKSITE_PLANS, ACTIONS, DELETE_APPOINTMENT, REQUEST_STATE])
+  },
 });
 
 const mapDispatchToProps = (dispatch) => ({
