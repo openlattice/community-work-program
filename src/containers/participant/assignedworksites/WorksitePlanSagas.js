@@ -225,9 +225,7 @@ function* deleteAppointmentWorker(action :SequenceAction) :Generator<*, *, *> {
 
   try {
     yield put(deleteAppointment.request(id, value));
-
     if (!isDefined(value)) throw ERR_ACTION_VALUE_NOT_DEFINED;
-    if (!isDefined(value.entitySetId) || !isDefined(value.entityKeyIds)) throw ERR_ACTION_VALUE_TYPE;
     const response :Object = yield call(deleteEntitiesWorker, deleteEntities(value));
     if (response.error) throw response.error;
 
