@@ -10,6 +10,7 @@ export const WORKSITES :string = '/worksitesbyorganization';
 export const WORK_SCHEDULE :string = '/workschedule';
 export const STATS :string = '/stats';
 export const SEARCH :string = '/search';
+export const DOWNLOAD :string = '/download';
 
 export const ADD_PARTICIPANT :string = `${PARTICIPANTS}/add`;
 

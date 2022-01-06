@@ -33,6 +33,7 @@ import { INITIALIZE_APPLICATION, initializeApplication, switchOrganization } fro
 
 import AddParticipantContainer from '../participants/newparticipant/AddParticipantContainer';
 import DashboardContainer from '../dashboard/DashboardContainer';
+import DownloadContainer from '../download/DownloadContainer';
 import EditWorksiteHoursForm from '../worksites/EditWorksiteHoursForm';
 import EditWorksiteInfoForm from '../worksites/EditWorksiteInfoForm';
 import LogoLoader from '../../components/LogoLoader';
@@ -121,6 +122,7 @@ class AppContainer extends Component<Props> {
       <Route path={Routes.PARTICIPANT_PROFILE} component={ParticipantProfileContainer} />
       <Route path={Routes.PARTICIPANTS} component={ParticipantsSearchContainer} />
       <Route path={Routes.STATS} component={StatsContainer} />
+      <Route path={Routes.DOWNLOAD} component={DownloadContainer} />
       <Route path={Routes.DASHBOARD} component={DashboardContainer} />
       <Redirect to={Routes.DASHBOARD} />
     </Switch>
@@ -179,6 +181,7 @@ class AppContainer extends Component<Props> {
                       <NavLink to={Routes.WORKSITES}>Work Sites</NavLink>
                       <NavLink to={Routes.WORK_SCHEDULE}>Work Schedule</NavLink>
                       <NavLink to={Routes.STATS}>Stats</NavLink>
+                      <NavLink to={Routes.DOWNLOAD}>Download</NavLink>
                     </AppNavigationWrapper>
                   </AppHeaderWrapper>
                 )
