@@ -14,6 +14,7 @@ import * as ChargesStatsSagas from '../../containers/stats/charges/ChargesStatsS
 import * as CourtTypeSagas from '../../containers/stats/courttype/CourtTypeSagas';
 import * as CourtTypeStatsSagas from '../../containers/stats/courttype/sagas';
 import * as DemographicsSagas from '../../containers/stats/demographics/DemographicsSagas';
+import * as DownloadSagas from '../../containers/download/sagas';
 import * as EDMSagas from '../edm/EDMSagas';
 import * as InfractionsSagas from '../../containers/participant/infractions/InfractionsSagas';
 import * as NewParticipantSagas from '../../containers/participants/newparticipant/NewParticipantSagas';
@@ -90,6 +91,9 @@ export default function* sagas() :Generator<*, *, *> {
     // DemographicsSagas
     fork(DemographicsSagas.downloadDemographicsDataWatcher),
     fork(DemographicsSagas.getParticipantsDemographicsWatcher),
+
+    // DownloadSagas
+    fork(DownloadSagas.downloadEnrollmentsWatcher),
 
     // EDMSagas
     fork(EDMSagas.getEntityDataModelTypesWatcher),

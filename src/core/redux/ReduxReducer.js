@@ -8,6 +8,7 @@ import { combineReducers } from 'redux-immutable';
 
 import appReducer from '../../containers/app/AppReducer';
 import chargesReducer from '../../containers/participant/charges/ChargesReducer';
+import downloadReducer from '../../containers/download/reducers';
 import edmReducer from '../edm/EDMReducer';
 import infractionsReducer from '../../containers/participant/infractions/InfractionsReducer';
 import participantReducer from '../../containers/participant/ParticipantReducer';
@@ -27,6 +28,7 @@ export default function reduxReducer(routerHistory :any) {
     app: appReducer,
     auth: AuthReducer,
     charges: chargesReducer,
+    download: downloadReducer,
     edm: edmReducer,
     infractions: infractionsReducer,
     people: participantsReducer,
