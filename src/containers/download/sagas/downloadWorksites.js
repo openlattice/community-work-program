@@ -87,3 +87,23 @@ export {
   downloadWorksitesWatcher,
   downloadWorksitesWorker,
 };
+
+// {
+//   [diversionPlanEKID]: {
+//     ...properties,
+//     diversion_plan_openlattice.@id: [diversionPlanEKID],
+//     people_openlattice.@id: [personEKID],
+//     worksitePlans: [{
+//       ...properties,
+//       worksite_plan_openlattice.@id: [worksitePlanEKID],
+//       worksite_openlattice.@id: [worksiteEKID],
+//     }],
+//     appointments: {
+//       [worksitePlanEKID]: [{ ...properties }]
+//     },
+//     checkIns: {
+//       [appointmentEKID]: { ...properties }
+//     },
+//     programOutcome: { ...properties }
+//   }
+// }
