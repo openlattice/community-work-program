@@ -1,14 +1,18 @@
 // @flow
-import { List, Map, fromJS } from 'immutable';
+import { Map, fromJS } from 'immutable';
 import { ReduxConstants } from 'lattice-utils';
 import { RequestStates } from 'redux-reqseq';
 
 import downloadEnrollmentsReducer from './downloadEnrollmentsReducer';
+import downloadWorksitesReducer from './downloadWorksitesReducer';
 
-import { SEARCH } from '../../../utils/constants/ReduxStateConsts';
-import { DOWNLOAD_ENROLLMENTS, downloadEnrollments } from '../actions';
+import {
+  DOWNLOAD_ENROLLMENTS,
+  DOWNLOAD_WORKSITES,
+  downloadEnrollments,
+  downloadWorksites,
+} from '../actions';
 
-const { SEARCHED_PARTICIPANTS, TOTAL_HITS } = SEARCH;
 const { REQUEST_STATE } = ReduxConstants;
 
 const INITIAL_STATE :Map = fromJS({
@@ -16,9 +20,9 @@ const INITIAL_STATE :Map = fromJS({
   [DOWNLOAD_ENROLLMENTS]: {
     [REQUEST_STATE]: RequestStates.STANDBY
   },
-  // data
-  [SEARCHED_PARTICIPANTS]: List(),
-  [TOTAL_HITS]: 0,
+  [DOWNLOAD_WORKSITES]: {
+    [REQUEST_STATE]: RequestStates.STANDBY
+  },
 });
 
 export default function reducer(state :Map = INITIAL_STATE, action :Object) {
@@ -27,6 +31,10 @@ export default function reducer(state :Map = INITIAL_STATE, action :Object) {
 
     case downloadEnrollments.case(action.type): {
       return downloadEnrollmentsReducer(state, action);
+    }
+
+    case downloadWorksites.case(action.type): {
+      return downloadWorksitesReducer(state, action);
     }
 
     default:

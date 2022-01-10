@@ -1,20 +1,19 @@
 // @flow
 import React from 'react';
 
-import { Button } from 'lattice-ui-kit';
+import { Button, CardStack } from 'lattice-ui-kit';
 import { useDispatch } from 'react-redux';
 
-import { downloadEnrollments } from './actions';
+import { downloadEnrollments, downloadWorksites } from './actions';
 
 const DownloadContainer = () => {
   const dispatch = useDispatch();
 
-  const onDownloadClick = () => {
-    dispatch(downloadEnrollments());
-  };
-
   return (
-    <Button color="primary" onClick={onDownloadClick}>Download Enrollments, etc.</Button>
+    <CardStack>
+      <Button color="primary" onClick={() => dispatch(downloadEnrollments())}>Download Enrollments, etc.</Button>
+      <Button onClick={() => dispatch(downloadWorksites())}>Download Worksites</Button>
+    </CardStack>
   );
 };
 

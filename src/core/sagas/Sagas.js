@@ -94,6 +94,7 @@ export default function* sagas() :Generator<*, *, *> {
 
     // DownloadSagas
     fork(DownloadSagas.downloadEnrollmentsWatcher),
+    fork(DownloadSagas.downloadWorksitesWatcher),
 
     // EDMSagas
     fork(EDMSagas.getEntityDataModelTypesWatcher),
