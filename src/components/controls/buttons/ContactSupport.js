@@ -26,7 +26,7 @@ const QuestionMarkIcon = styled(FontAwesomeIcon).attrs(() => ({
 
 const ContactSupportButton = () => (
   <SupportButton
-      href="https://support.openlattice.com/servicedesk/customer/portal/1"
+      href="https://openlattice.atlassian.net/servicedesk/customer/portals"
       target="_blank"
       variant="outlined">
     <QuestionMarkIcon />
